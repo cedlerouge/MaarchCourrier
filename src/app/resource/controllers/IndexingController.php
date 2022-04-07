@@ -250,15 +250,13 @@ class IndexingController
                 return $response->withStatus(400)->withJson(['errors' => 'Doctype does not exists']);
             }
             $delay = $doctype['process_delay'];
-        } elseif (!empty($queryParams['priority'])) {
+        }
+        if (!empty($queryParams['priority'])) {
             $priority = PriorityModel::getById(['id' => $queryParams['priority'], 'select' => ['delays']]);
             if (empty($priority)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Priority does not exists']);
             }
             $delay = $priority['delays'];
-        }
-        if ($delay == 0) {
-            return $response->withJson(['processLimitDate' => null]);
         }
         if (!Validator::intVal()->validate($delay)) {
             return $response->withStatus(400)->withJson(['errors' => 'Delay is not a numeric value']);

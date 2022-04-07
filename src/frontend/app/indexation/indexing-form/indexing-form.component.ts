@@ -1233,7 +1233,14 @@ export class IndexingFormComponent implements OnInit {
     calcLimitDate(field: any, value: any) {
         let limitDate: any = null;
         if (this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: { 'doctype': value } }).pipe(
+            const objToSend: any = {
+                doctype: value,
+                priority: this.arrFormControl['priority']?.value
+            };
+            if (this.functions.empty(this.arrFormControl['priority']?.value)) {
+                delete objToSend.priority;
+            }
+            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
                     this.arrFormControl['processLimitDate'].setValue(limitDate);
@@ -1243,7 +1250,6 @@ export class IndexingFormComponent implements OnInit {
                 tap((data: any) => {
                     this.arrFormControl['priority'].setValue(data.priority);
                     this.setPriorityColor(null, data.priority);
-
                 }),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
@@ -1257,7 +1263,14 @@ export class IndexingFormComponent implements OnInit {
         let limitDate: any = null;
 
         if (this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: { 'priority': value } }).pipe(
+            const objToSend: any = {
+                priority: value,
+                doctype: this.arrFormControl['doctype']?.value
+            };
+            if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
+                delete objToSend.doctype;
+            } 
+            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
                     this.arrFormControl['processLimitDate'].setValue(limitDate);
