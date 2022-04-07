@@ -491,9 +491,11 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
 
 // valide circuit visa
 // only, if all documents of letterbox are signed
-if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($value['WorkflowCompleted'])) {
+if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($validateVisaWorkflow)) {
     foreach ($validateVisaWorkflow as $key => $value) {
-        \ExternalSignatoryBook\controllers\FastParapheurController::processVisaWorkflow(['res_id' => $key, 'processSignatory' => true]);
+        if (!empty($value['WorkflowCompleted'])) {
+            \ExternalSignatoryBook\controllers\FastParapheurController::processVisaWorkflow(['res_id' => $key, 'processSignatory' => true]);
+        }
     }
 }
 
