@@ -253,6 +253,8 @@ if (!empty($retrievedMails['error'])) {
     Bt_writeLog(['level' => 'ERROR', 'message' => $retrievedMails['error']]);
 }
 
+$validateVisaWorkflow = [];
+
 // On dégele les pj et on créé une nouvelle ligne si le document a été signé
 $nbMailsRetrieved = 0;
 foreach ($retrievedMails['noVersion'] as $resId => $value) {
@@ -320,6 +322,10 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
         }
         Bt_validatedMail(['status' => $status, 'resId' => $value['res_id_master']]);
 
+        if (empty($validateVisaWorkflow[$value['res_id_master']]['WorkflowCompleted'])) {
+            $validateVisaWorkflow[$value['res_id_master']]['WorkflowCompleted'] = true;
+        }
+
         $historyInfo = 'La signature de la pièce jointe ' . $historyIdentifier . ' a été validée dans le parapheur externe' . $additionalHistoryInfo;
     } elseif ($value['status'] == 'refused') {
         if (!empty($value['encodedFile'])) {
@@ -373,6 +379,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             'data' => [$value['res_id_master']]
         ]);
     
+        $validateVisaWorkflow[$value['res_id_master']]['WorkflowCompleted'] = false;
         $historyInfo = 'La signature de la pièce jointe ' . $historyIdentifier . ' a été refusée dans le parapheur externe' . $additionalHistoryInfo;
     }
     if (in_array($value['status'], ['validated', 'refused'])) {
@@ -458,6 +465,11 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             if ($value['status'] == 'validatedNote') {
                 $status = $validatedStatusAnnot;
             }
+
+            if (empty($validateVisaWorkflow[$value['res_id']]['WorkflowCompleted'])) {
+                $validateVisaWorkflow[$value['res_id']]['WorkflowCompleted'] = true;
+            }
+
             $history = 'Le document ' . $historyIdentifier . ' a été validé dans le parapheur externe' . $additionalHistoryInfo;
         } elseif (in_array($value['status'], ['refusedNote', 'refused'])) {
             Bt_writeLog(['level' => 'INFO', 'message' => 'Document refused']);
@@ -465,6 +477,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             if ($value['status'] == 'refusedNote') {
                 $status = $refusedStatusAnnot;
             }
+            $validateVisaWorkflow[$value['res_id']]['WorkflowCompleted'] = false;
             $history = 'Le document ' . $historyIdentifier . ' a été refusé dans le parapheur externe' . $additionalHistoryInfo;
         }
         Bt_history([
@@ -482,6 +495,14 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             'data'    => [$resId]
         ]);
         $nbMailsRetrieved++;
+    }
+}
+
+// valide circuit visa
+// only, if all documents of letterbox are signed
+if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($value['WorkflowCompleted'])) {
+    foreach ($validateVisaWorkflow as $key => $value) {
+        \ExternalSignatoryBook\controllers\FastParapheurController::processVisaWorkflow(['res_id' => $key, 'processSignatory' => true]);
     }
 }
 
