@@ -83,12 +83,11 @@ class FastParapheurController
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                     $aArgs['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $aArgs['idsToRetrieve'][$version][$resId]['res_id_master']]);
+                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $aArgs['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $aArgs['idsToRetrieve'][$version][$resId]['res_id']]);
                     $aArgs['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
-                    FastParapheurController::processVisaWorkflow(['res_id_master' => $value['res_id_master'], 'res_id' => $value['res_id'], 'processSignatory' => true]);
                     break;
                 } elseif ($state == $aArgs['config']['data']['refusedState']) {
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $aArgs['idsToRetrieve'][$version][$resId]['res_id_master']]);
+                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $aArgs['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $aArgs['idsToRetrieve'][$version][$resId]['res_id']]);
                     $response = FastParapheurController::getRefusalMessage(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'refused';
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
