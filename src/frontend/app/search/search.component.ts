@@ -2,13 +2,14 @@ import { Component, OnInit, ViewChild, EventEmitter, ViewContainerRef, TemplateR
 import { TranslateService } from '@ngx-translate/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { CriteriaToolComponent } from './criteria-tool/criteria-tool.component';
 import { SearchResultListComponent } from './result-list/search-result-list.component';
 import { NotificationService } from '@service/notification/notification.service';
+import { PrivilegeService } from '@service/privileges.service';
 
 
 @Component({
@@ -34,11 +35,13 @@ export class SearchComponent implements OnInit {
     constructor(
         _activatedRoute: ActivatedRoute,
         public translate: TranslateService,
-        private headerService: HeaderService,
         public viewContainerRef: ViewContainerRef,
         public appService: AppService,
         public functions: FunctionsService,
-        private notify: NotificationService
+        private headerService: HeaderService,
+        private notify: NotificationService,
+        private privilegeService: PrivilegeService,
+        private router: Router,
     ) {
         _activatedRoute.queryParams.subscribe(
             params => {
@@ -56,6 +59,10 @@ export class SearchComponent implements OnInit {
         this.headerService.sideBarAdmin = true;
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
         this.headerService.setHeader(this.translate.instant('lang.searchMails'), '', '');
+        if (this.privilegeService.getCurrentUserMenus().find((privilege: any) => privilege.id === 'adv_search_mlb') === undefined) {
+            this.notify.handleSoftErrors(this.translate.instant('lang.cannotAccessPage'));
+            this.router.navigate(['/home']);
+        }
     }
 
     setLaunchWithSearchTemplate(templates: any) {
