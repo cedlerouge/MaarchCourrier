@@ -1,4 +1,6 @@
 <?php
+// WARNING: logs for this file are only enabled if the app root log4php.xml is set to INFO or DEBUG!
+// no logs will be written to technique.log if only the custom log4php.xml is modified.
 
 $options = getopt("c:n:", ["config:", "notif:"]);
 
@@ -155,6 +157,7 @@ foreach ($baskets as $basket) {
                     }
                 }
                 if (!empty($aValues)) {
+                    writeLog(['message' => $info, 'level' => 'DEBUG']);
                     \SrcCore\models\DatabaseModel::insertMultiple([
                         'table'   => 'notif_event_stack',
                         'columns' => ['table_name', 'notification_sid', 'record_id', 'user_id', 'event_info', 'event_date'],
