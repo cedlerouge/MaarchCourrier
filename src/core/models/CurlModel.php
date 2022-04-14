@@ -140,6 +140,12 @@ class CurlModel
         if (!empty($args['cookie'])) {
             $opts[CURLOPT_COOKIE] = $args['cookie'];
         }
+        //Options
+        if (!empty($args['options'])) {
+            foreach ($args['options'] as $key => $option) {
+                $opts[$key] = $option;
+            }
+        }          
 
         //QueryParams
         if (!empty($args['queryParams'])) {
