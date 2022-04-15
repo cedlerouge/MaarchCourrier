@@ -279,48 +279,35 @@ class FastParapheurController
 
         $zip->close();
 
-        $b64Attachment = base64_encode(file_get_contents($zipFilePath));
+        $b64Attachment = file_get_contents($zipFilePath);
         $fileName      = $attachmentFileName . '.zip';
         $circuitId     = str_replace('.', '-', $aArgs['circuitId']);
-
-        $xmlPostString = '<?xml version="1.0" encoding="utf-8"?>
-            <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sei="http://sei.ws.fast.cdc.com/">
-                <soapenv:Header/>
-                    <soapenv:Body>
-                        <sei:upload>
-                            <label>' . $aArgs['label'] . '</label>
-                            <comment></comment>
-                            <subscriberId>' . $aArgs['subscriberId'] . '</subscriberId>
-                            <circuitId>' . $circuitId . '</circuitId>
-                            <dataFileVO>
-                                <dataHandler>' . $b64Attachment . '</dataHandler>
-                                <filename>' . $fileName . '</filename>
-                            </dataFileVO>
-                        </sei:upload>
-                    </soapenv:Body>
-            </soapenv:Envelope>';
-
-        $curlReturn = CurlModel::execSOAP([
-            'xmlPostString' => $xmlPostString,
-            'url'           => $aArgs['config']['data']['url'],
+        
+        $curlReturn = CurlModel::exec([
+            'url'           => $aArgs['config']['data']['url'] . '/v2/' . $aArgs['subscriberId'] . '/' . $circuitId . '/upload',
+            'method'        => 'POST',
             'options'       => [
                 CURLOPT_SSLCERT       => $aArgs['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $aArgs['config']['data']['certPass'],
                 CURLOPT_SSLCERTTYPE   => $aArgs['config']['data']['certType']
+            ],
+            'multipartBody' => [
+                'content'   => ['isFile' => true, 'filename' => $fileName, 'content' => $b64Attachment],
+                'label'     => $aArgs['label'],
+                'comment'   => ""
             ]
         ]);
 
         if ($curlReturn['infos']['http_code'] == 404) {
             return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
-        } elseif (!empty($curlReturn['error'])) {
-            return ['error' => $curlReturn['error']];
-        } elseif (!empty($curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0])) {
-            $error = (string)$curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->faultstring . PHP_EOL;
-            return ['error' => $error];
+        } elseif (!empty($curlReturn['errors'])) {
+            return ['error' => $curlReturn['errors']];
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            return ['error' => $curlReturn['response']['developerMessage']];
         }
 
         FastParapheurController::processVisaWorkflow(['res_id_master' => $aArgs['resIdMaster'], 'processSignatory' => false]);
-        $documentId = $curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->children('http://sei.ws.fast.cdc.com/')->uploadResponse->children();
+        $documentId = $curlReturn['response'];
         return ['success' => (string)$documentId];
     }
 
