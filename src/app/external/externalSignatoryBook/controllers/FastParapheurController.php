@@ -325,7 +325,7 @@ class FastParapheurController
             echo $curlReturn['response']['developerMessage'];
             return false;
         } else {
-            return ['b64FileContent' => (string)$curlReturn['response']];
+            return ['b64FileContent' => base64_encode($curlReturn['response'])];
         }
     }
 
