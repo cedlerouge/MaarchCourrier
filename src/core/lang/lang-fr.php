@@ -422,7 +422,7 @@ define("_DOC_ADD_TO_MAILEVA", "Courrier intégré aux envois Maileva");
 define("_DOC_REMOVE_FROM_MAILEVA", "Courrier retiré des envois Maileva");
 define("_SET_BINDING_DOCUMENT", "Courrier défini comme engageant");
 define("_SET_NON_BINDING_DOCUMENT", "Courrier défini comme non engageant");
-define("_RETENTION_RULE_FROZEN", "Durée d'utilitée courante gelée");
+define("_RETENTION_RULE_FROZEN", "Durée d'utilité courante gelée");
 define("_BINDING_DOCUMENT", "Document engageant");
 define("_YES", "Oui");
 define("_NO", "Non");
