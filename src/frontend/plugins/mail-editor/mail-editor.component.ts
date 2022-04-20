@@ -448,10 +448,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getCopies() {
-        return this.copies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showCopies) {
+            return this.copies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     setInvisibleCopies(invisibleCopies: any) {
@@ -460,10 +464,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getInvisibleCopies() {
-        return this.invisibleCopies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showInvisibleCopies) {
+            return this.invisibleCopies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     isSelectedAttachMail(item: any, type: string) {
