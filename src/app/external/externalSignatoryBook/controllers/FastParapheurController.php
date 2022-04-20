@@ -65,12 +65,23 @@ class FastParapheurController
                 return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
             }
 
-            $isError = $curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body;
-            if (!empty($isError ->Fault[0]) && !empty($value['res_id_master'])) {
-                echo 'PJ n° ' . $resId . ' et document original n° ' . $value['res_id_master'] . ' : ' . (string)$curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->faultstring . PHP_EOL;
+            $isError = $curlReturn['response']->xpath('//soap:Fault/faultstring');
+            if (!empty($isError[0]) && !empty($value['res_id_master'])) {
+                echo 'PJ n° ' . $resId . ' et document original n° ' . $value['res_id_master'] . ' : ' . (string)$isError[0] . PHP_EOL;
+                AttachmentModel::update([
+                    'set'     => ['status' => 'A_TRA'],
+                    'where'   => ['res_id = ?'],
+                    'data'    => [$resId],
+                    'postSet' => ['external_id' => '(external_id - \'signatureBookId\')']
+                ]);
                 continue;
-            } elseif (!empty($isError->Fault[0])) {
-                echo 'Document principal n° ' . $resId . ' : ' . (string)$curlReturn['response']->children('http://schemas.xmlsoap.org/soap/envelope/')->Body->Fault[0]->children()->faultstring . PHP_EOL;
+            } elseif (!empty($isError[0])) {
+                echo 'Document principal n° ' . $resId . ' : ' . (string)$isError[0] . PHP_EOL;
+                ResModel::update([
+                    'where'   => ['res_id = ?'],
+                    'data'    => [$resId],
+                    'postSet' => ['external_id' => '(external_id - \'signatureBookId\')']
+                ]);
                 continue;
             }
 
