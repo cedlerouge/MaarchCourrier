@@ -105,6 +105,47 @@ foreach ($baskets as $basket) {
             });
         }
 
+        // tri les user par user dest/cc d'un courrier
+        if (in_array($notification['diffusion_type'], ['dest_user', 'copy_user'])) {
+            $dataListInstances = [];
+            if ($notification['diffusion_type'] == 'dest_user') {
+                $dataListInstances = ['entity_id', 'dest'];
+            } elseif ($notification['diffusion_type'] == 'copy_user') {
+                $dataListInstances = ['entity_id', 'cc'];
+            }
+            $tmpUsersNentitiesOfInstance = \Entity\models\ListInstanceModel::get([
+                // 'select'    => ['item_id', 'item_type', 'item_mode'], 
+                'select'    => ['distinct(item_id)', 'item_type'], 
+                'where'     => ['difflist_type = ?', 'item_mode = ?'], 
+                'data'      => $dataListInstances
+            ]);
+
+            $usersNentitiesOfInstance = [];
+            
+            $users = array_filter($usersNentitiesOfInstance, function ($userOrEntityOfInstance) {
+                if ($userOrEntityOfInstance['item_type'] == 'user_id') {
+                    return true;
+                } elseif ($userOrEntityOfInstance['item_type'] == 'entity_id') {
+                    return ['hello' => 'JL', 'item_id' => $userOrEntityOfInstance['item_id']];
+                }
+                return false;
+            });
+
+            var_dump($users);
+
+            foreach ($tmpUsersNentitiesOfInstance as $user) {
+                $usersNentitiesOfInstance[] = $user['item_id'];
+            }
+            
+            $users = \User\models\UserModel::get([
+                'select'    => ['user_id', 'id'],
+                'where'     => ['id IN (?)'],
+                'data'      => [$usersNentitiesOfInstance]
+            ]);
+
+            // var_dump($users);
+        }
+
         $countUsersToNotify = count($users);
         writeLog(['message' => "Group {$group['group_id']} : {$countUsersToNotify} user(s) to notify", 'level' => 'INFO']);
 
@@ -131,43 +172,77 @@ foreach ($baskets as $basket) {
                 'select' => ['res_id'],
                 'where'  => [$whereClause]
             ]);
-            if (!empty($resources)) {
-                $resourcesNumber = count($resources);
-                writeLog(['message' => "{$resourcesNumber} document(s) to process for {$userToNotify['user_id']}", 'level' => 'INFO']);
 
-                $info = "Notification [{$basket['basket_id']}] pour {$userToNotify['user_id']}";
-                if (!empty($realUserId)) {
-                    $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', '(user_id = ? OR user_id = ?)'], 'data' => [$info, $userToNotify['id'], $userId]]);
-                } else {
-                    $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', 'user_id = ?'], 'data' => [$info, $userToNotify['id']]]);
-                }
+            // tri les courrier par status
+            if (in_array($notification['diffusion_type'], ['dest_user', 'copy_user'])) {
+                // var_dump("For dest_user | User : $userId | diffusionParams -> " . implode(", ", $diffusionParams) . ' :::::: ' . $GLOBALS['id']);
 
-                $aRecordId = array_column($notificationEvents, 'record_id', 'record_id');
-                $aValues   = [];
+                $resources = DatabaseModel::select([
+                    'select'    => ['*'],
+                    'table'     => ['res_letterbox'],
+                    'where'     => ['res_id = ?', 'difflist_type = ?'],
+                    'data'      => empty($aArgs['data']) ? [] : $aArgs['data']
+                ]);
+        
+
+                $tmpResources = [];
                 foreach ($resources as $resource) {
-                    if (empty($aRecordId[$resource['res_id']])) {
-                        $aValues[] = [
-                            'res_letterbox',
-                            $notification['notification_sid'],
-                            $resource['res_id'],
-                            $userId,
-                            $info,
-                            'CURRENT_TIMESTAMP'
-                        ];
+
+                    
+
+                    
+                    // \Entity\controllers\ListInstanceController::getListInstanceByIdResId();
+
+                    if (!empty($diffusionParams) && !in_array($resource['status'], $diffusionParams)) {
+                        continue;
                     }
                 }
-                if (!empty($aValues)) {
-                    writeLog(['message' => $info, 'level' => 'DEBUG']);
-                    \SrcCore\models\DatabaseModel::insertMultiple([
-                        'table'   => 'notif_event_stack',
-                        'columns' => ['table_name', 'notification_sid', 'record_id', 'user_id', 'event_info', 'event_date'],
-                        'values'  => $aValues
-                    ]);
-                }
+            }
+
+            if ($notification['diffusion_type'] == 'dest_user' && !in_array($userToNotify['id'], $diffusionParams)) {
+                continue;
+            }
+
+            if (!empty($resources)) {
+
+                // $resourcesNumber = count($resources);
+                // writeLog(['message' => "{$resourcesNumber} document(s) to process for {$userToNotify['user_id']}", 'level' => 'INFO']);
+
+                // $info = "Notification [{$basket['basket_id']}] pour {$userToNotify['user_id']}";
+                // if (!empty($realUserId)) {
+                //     $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', '(user_id = ? OR user_id = ?)'], 'data' => [$info, $userToNotify['id'], $userId]]);
+                // } else {
+                //     $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', 'user_id = ?'], 'data' => [$info, $userToNotify['id']]]);
+                // }
+
+                // $aRecordId = array_column($notificationEvents, 'record_id', 'record_id');
+                // $aValues   = [];
+                // foreach ($resources as $resource) {
+                //     if (empty($aRecordId[$resource['res_id']])) {
+                //         $aValues[] = [
+                //             'res_letterbox',
+                //             $notification['notification_sid'],
+                //             $resource['res_id'],
+                //             $userId,
+                //             $info,
+                //             'CURRENT_TIMESTAMP'
+                //         ];
+                //     }
+                // }
+                // if (!empty($aValues)) {
+                //     writeLog(['message' => $info, 'level' => 'DEBUG']);
+                //     \SrcCore\models\DatabaseModel::insertMultiple([
+                //         'table'   => 'notif_event_stack',
+                //         'columns' => ['table_name', 'notification_sid', 'record_id', 'user_id', 'event_info', 'event_date'],
+                //         'values'  => $aValues
+                //     ]);
+                // }
             }
         }
     }        
 }
+
+die();
 
 writeLog(['message' => "Scanning events for notification {$notification['notification_sid']}", 'level' => 'INFO']);
 
