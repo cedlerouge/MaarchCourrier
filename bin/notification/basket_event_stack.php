@@ -110,7 +110,7 @@ foreach ($baskets as $basket) {
 
         foreach ($users as $userToNotify) {
 
-            if ($notification['diffusion_type'] == 'users' && !in_array($userToNotify['id'], $diffusionParams)) {
+            if ($notification['diffusion_type'] == 'user' && !in_array($userToNotify['id'], $diffusionParams)) {
                 continue;
             }
 
