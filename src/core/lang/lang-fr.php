@@ -495,3 +495,5 @@ define('_VIA_ACTION', "via l'action");
 define('_VISA_WORKFLOW_NOT_FOUND', "Aucun circuit visa trouvé!");
 define('_NO_BUSINESS_ID', "Aucun identifiant de fast parapheur!");
 define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché au courrier!");
+define('_FOR_PJ', "Pour la PJ");
+define('_FOR_MAIN_DOC', "Pour le Document principal");
