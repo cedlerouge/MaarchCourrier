@@ -491,3 +491,7 @@ define('_SUCCESS', "Réussi");
 define('_ERROR', "Erreur");
 
 define('_VIA_ACTION', "via l'action");
+
+define('_VISA_WORKFLOW_NOT_FOUND', "Aucun circuit visa trouvé!");
+define('_NO_BUSINESS_ID', "Aucun identifiant de fast parapheur!");
+define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché au courrier!");

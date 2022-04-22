@@ -484,3 +484,7 @@ define('_SUCCESS', "Success");
 define('_ERROR', "Error");
 
 define('_VIA_ACTION', "via action");
+
+define('_VISA_WORKFLOW_NOT_FOUND', "No visa workflow found!");
+define('_NO_BUSINESS_ID', "No identification found for fast parapheur!");
+define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Assign entity is not defined for this resource!");
