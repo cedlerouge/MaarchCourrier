@@ -27,7 +27,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\DatabaseModel;
 use User\models\UserModel;
-use Respect\Validation\Validator;
+use SrcCore\models\ValidatorModel;
 
 /**
     * @codeCoverageIgnore
@@ -77,7 +77,12 @@ class FastParapheurController
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master']]);
-                    $response = FastParapheurController::getRefusalMessage(['config' => $args['config'], 'documentId' => $value['external_id']]);
+                    $response = FastParapheurController::getRefusalMessage([
+                        'config'        => $args['config'],
+                        'documentId'    => $value['external_id'],
+                        'res_id_master' => $value['res_id_master'],
+                        'resId'         => $resId
+                    ]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'refused';
                     $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
                     break;
@@ -133,11 +138,8 @@ class FastParapheurController
 
     public static function upload(array $args)
     {
-        if (!Validator::stringType()->notEmpty()->validate($args['circuitId'])) {
-            return ['error' => 'no signatories in the visa circuit'];
-        } elseif (!Validator::stringType()->notEmpty()->validate($args['businessId'])) {
-            return ['error' => 'no signatories in the visa circuit'];
-        }
+        ValidatorModel::notEmpty($args, ['circuitId', 'label', 'businessId']);
+        ValidatorModel::stringType($args, ['circuitId', 'label', 'businessId']);
 
         $circuitId    = $args['circuitId'];
         $label        = $args['label'];
@@ -358,7 +360,25 @@ class FastParapheurController
             $user = UserModel::getById(['id' => $signatory['user_id'], 'select' => ['user_id']]);
         }
 
-        return FastParapheurController::upload(['config' => $config, 'resIdMaster' => $args['resIdMaster'], 'businessId' => $signatory['business_id'], 'circuitId' => $user['user_id'], 'label' => $redactor['short_label']]);
+        if (empty($signatory['business_id'])) {
+            return ['error' => _NO_BUSINESS_ID];
+        }
+
+        if (empty($user['user_id'])) {
+            return ['error' => _VISA_WORKFLOW_NOT_FOUND];
+        }
+
+        if (empty($redactor['short_label'])) {
+            return ['error' => _VISA_WORKFLOW_ENTITY_NOT_FOUND];
+        }
+
+        return FastParapheurController::upload([
+            'config'        => $config, 
+            'resIdMaster'   => $args['resIdMaster'], 
+            'businessId'    => $signatory['business_id'], 
+            'circuitId'     => $user['user_id'], 
+            'label'         => $redactor['short_label']
+        ]);
     }
 
     public static function getRefusalMessage(array $args)
@@ -373,10 +393,18 @@ class FastParapheurController
             ]
         ]);
         
-        if (!empty($curlReturn['response']['developerMessage'])) {
+        $response = "";
+        if (!empty($curlReturn['response']['developerMessage']) && !empty($value['res_id_master']) ) {
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
-            $response = implode('.', $str);
+            $response = _FOR_PJ . " $pjName : " . implode('.', $str);
+
+        } elseif (!empty($curlReturn['response']['developerMessage']) && !empty($value['resId'])) {
+            $str = explode(':', $curlReturn['response']['developerMessage']);
+            unset($str[0]);
+            $response = _FOR_MAIN_DOC . " : " . implode('.', $str);
+        } elseif (!empty($curlReturn['response']['comment'])) {
+            $response = $curlReturn['response']['comment'];
         }
         return $response;
     }
