@@ -53,7 +53,7 @@ class FastParapheurController
                 ]
             ]);           
 
-            if ($curlReturn['infos']['http_code'] == 404) {
+            if ($curlReturn['code'] == 404) {
                 return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
             }
 
@@ -80,8 +80,8 @@ class FastParapheurController
                     $response = FastParapheurController::getRefusalMessage([
                         'config'        => $args['config'],
                         'documentId'    => $value['external_id'],
-                        'res_id_master' => $value['res_id_master'],
-                        'resId'         => $resId
+                        'res_id'         => $resId,
+                        'version'       => $version
                     ]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'refused';
                     $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
@@ -294,7 +294,7 @@ class FastParapheurController
             ]
         ]);
 
-        if ($curlReturn['infos']['http_code'] == 404) {
+        if ($curlReturn['code'] == 404) {
             return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
         } elseif (!empty($curlReturn['errors'])) {
             return ['error' => $curlReturn['errors']];
@@ -320,7 +320,7 @@ class FastParapheurController
             'fileResponse'  => true
         ]);
 
-        if ($curlReturn['infos']['http_code'] == 404) {
+        if ($curlReturn['code'] == 404) {
             echo "Erreur 404 : {$curlReturn['raw']}";
             return false;
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
@@ -393,18 +393,26 @@ class FastParapheurController
             ]
         ]);
         
-        $response = "";
-        if (!empty($curlReturn['response']['developerMessage']) && !empty($value['res_id_master']) ) {
-            $str = explode(':', $curlReturn['response']['developerMessage']);
-            unset($str[0]);
-            $response = _FOR_PJ . " $pjName : " . implode('.', $str);
+        var_dump($curlReturn['response']);
 
-        } elseif (!empty($curlReturn['response']['developerMessage']) && !empty($value['resId'])) {
+        $response = "";
+        if (!empty($curlReturn['response']['developerMessage']) && $args['version'] == 'noVersion') {
+            $attachmentName = AttachmentModel::getById(['select' => ['title'], 'id' => $args['res_id']]);
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
-            $response = _FOR_MAIN_DOC . " : " . implode('.', $str);
+            $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . implode('.', $str);
+
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            $str = explode(':', $curlReturn['response']['developerMessage']);
+            unset($str[0]);
+            $response = _FOR_MAIN_DOC . ". " . implode('.', $str);
+
+        } elseif (!empty($curlReturn['response']['comment']) && $args['version'] == 'noVersion') {
+            $attachmentName = AttachmentModel::getById(['select' => ['title'], 'id' => $args['res_id']]);
+            $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . $curlReturn['response']['comment'];
+
         } elseif (!empty($curlReturn['response']['comment'])) {
-            $response = $curlReturn['response']['comment'];
+            $response = _FOR_MAIN_DOC . ". " . $curlReturn['response']['comment'];
         }
         return $response;
     }
