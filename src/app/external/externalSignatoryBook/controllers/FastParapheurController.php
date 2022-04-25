@@ -392,8 +392,6 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
             ]
         ]);
-        
-        var_dump($curlReturn['response']);
 
         $response = "";
         if (!empty($curlReturn['response']['developerMessage']) && $args['version'] == 'noVersion') {
