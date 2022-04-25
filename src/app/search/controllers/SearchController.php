@@ -57,14 +57,23 @@ class SearchController
 {
     public function get(Request $request, Response $response)
     {
-        $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
-        if (empty($adminSearch)) {
-            return $response->withStatus(400)->withJson(['errors' => 'No admin_search configuration found', 'lang' => 'noAdminSearchConfiguration']);
+        // $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
+        // if (empty($adminSearch)) {
+        //     return $response->withStatus(400)->withJson(['errors' => 'No admin_search configuration found', 'lang' => 'noAdminSearchConfiguration']);
+        // }
+
+        $body = $request->getParsedBody();
+
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'adv_search_mlb', 'userId' => $GLOBALS['id']]) && !$body['linkedResource']) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        } else {
+            $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
+            if (empty($adminSearch)) {
+                return $response->withStatus(400)->withJson(['errors' => 'No admin_search configuration found', 'lang' => 'noAdminSearchConfiguration']);
+            }
         }
 
         ini_set('memory_limit', -1);
-
-        $body = $request->getParsedBody();
 
         $userdataClause = SearchController::getUserDataClause(['userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']]);
         $searchWhere    = $userdataClause['searchWhere'];
