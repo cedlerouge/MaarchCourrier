@@ -12,7 +12,9 @@
             [defaultCriteria]="['chrono', 'subject','recipients','senders']"></app-criteria-tool>
             <div id="toolTemplate" style="padding-top: 10px;"></div>
         </div>
-        <app-search-result-list #appSearchResultList [linkedRes]="data.linkedRes" [actionMode]="false" [hideFilter]="true" [appCriteriaTool]="this.appCriteriaTool" [standalone]="true"></app-search-result-list>
+        <app-search-result-list #appSearchResultList [linkedRes]="data.linkedRes" [actionMode]="false" [hideFilter]="true"
+            [from]="'linkedResource'" [appCriteriaTool]="this.appCriteriaTool" [standalone]="true">
+        </app-search-result-list>
     </mat-dialog-content>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">
