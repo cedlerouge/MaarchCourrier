@@ -647,8 +647,12 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 data = data.filter((contact: any) => !this.functions.empty(contact.email) || contact.type === 'contactGroup').map((contact: any) => {
                     let label: string;
                     if (contact.type === 'user' || contact.type === 'contact') {
-                        if (!this.functions.empty(contact.firstname) || !this.functions.empty(contact.lastname)) {
-                            label = contact.firstname + ' ' + contact.lastname;
+                        if (!this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = `${contact.firstname} ${contact.lastname}`;
+                        } else if (this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = contact.lastname;
+                        } else if (!this.functions.empty(contact.firstname) && this.functions.empty(contact.lastname)) {
+                            label = contact.firstname;
                         } else {
                             label = contact.company;
                         }
