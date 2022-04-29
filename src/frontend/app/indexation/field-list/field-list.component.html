@@ -12,7 +12,7 @@
             <div class="fieldInput" [class.advancedInput]="field.type === 'checkbox'">
                 <ng-container *ngIf="['string', 'autocomplete', 'banAutocomplete', 'contact'].indexOf(field.type) > -1">
                     <mat-form-field class="input-form" floatLabel="never">
-                        <textarea matInput [placeholder]="'lang.' + field.type + 'Input' | translate" matTextareaAutosize
+                        <textarea matInput [placeholder]="'lang.' + field.type + 'Input' | translate" cdkTextareaAutosize
                             matAutosizeMinRows="1" cdkAutosizeMaxRows="6" disabled></textarea>
                     </mat-form-field>
                 </ng-container>
@@ -83,7 +83,7 @@
                 <div class="fieldInput">
                     <ng-container *ngIf="field.type === 'string' || field.type === 'autocomplete'">
                         <mat-form-field class="input-form" floatLabel="never">
-                            <textarea matInput [placeholder]="'lang.' + field.type + 'Input' | translate" matTextareaAutosize
+                            <textarea matInput [placeholder]="'lang.' + field.type + 'Input' | translate" cdkTextareaAutosize
                                 matAutosizeMinRows="1" cdkAutosizeMaxRows="6" disabled></textarea>
                         </mat-form-field>
                     </ng-container>

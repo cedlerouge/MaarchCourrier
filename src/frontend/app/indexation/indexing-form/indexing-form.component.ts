@@ -280,6 +280,11 @@ export class IndexingFormComponent implements OnInit {
     creationDateClone: Date;
     msgToDisplay: string = '';
 
+    indexingModelClone: any;
+    resDataClone: any;
+
+    entitiesArray: any[] = [];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -288,6 +293,7 @@ export class IndexingFormComponent implements OnInit {
         private headerService: HeaderService,
         public appService: AppService,
         public functions: FunctionsService,
+        private sortPipe: SortPipe,
         private route: Router
     ) {
 
@@ -608,6 +614,30 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(route).pipe(
                 tap((data: any) => {
+                    const myEntities: any[] = data.entities.map((entity: any) => ({
+                        id: entity.id,
+                        entityId: entity.entity_id,
+                        title: entity.entity_label,
+                        label: entity.entity_label,
+                        parentId: entity.parent_entity_id ?? null,
+                        level: entity.level,
+                        enbled: entity.enabled
+                    }));
+
+                    const parents: any[] = this.sortPipe.transform(myEntities.filter((item: any) => this.functions.empty(item.parentId)), 'title');
+                    parents.forEach((entity: any, index: number) => {
+                        this.entitiesArray.push(entity);
+                        const soretdArray: any[] = this.sortPipe.transform(myEntities.filter((item: any) => item.parentId === entity.entityId), 'title');
+                        soretdArray.forEach((element: any) => {
+                            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+                            this.entitiesArray.push(element);
+                            this.getEntity(myEntities, element);
+                        });
+                    })
+
+                    this.entitiesArray = [... new Set(this.entitiesArray)];
+
                     if (this.adminMode) {
                         let title = '';
                         elem.values = [
@@ -618,16 +648,11 @@ export class IndexingFormComponent implements OnInit {
                                 disabled: false
                             }
                         ];
-                        elem.values = elem.values.concat(data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
+                        elem.values = elem.values.concat(this.entitiesArray.map((entity: any) => {
                             return {
                                 id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
+                                title: entity.title,
+                                label: entity.label,
                                 disabled: false
                             };
                         }));
@@ -643,17 +668,12 @@ export class IndexingFormComponent implements OnInit {
                             elem.default_value = defaultVal.length > 0 ? defaultVal[0].id : null;
                             this.arrFormControl[elem.identifier].setValue(defaultVal.length > 0 ? defaultVal[0].id : '');
                         }
-                        elem.values = data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
+                        elem.values = this.entitiesArray.map((entity: any) => {
                             return {
                                 id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
-                                disabled: !entity.enabled
+                                title: entity.title,
+                                label: entity.label,
+                                disabled: entity.enabled
                             };
                         });
                         elem.event = 'loadDiffusionList';
@@ -664,6 +684,16 @@ export class IndexingFormComponent implements OnInit {
             ).subscribe();
         });
 
+    }
+
+    getEntity(all: any[], entity: any) {
+        const soretdArray: any[] = this.sortPipe.transform(all.filter((item: any) => item.parentId === entity.entityId), 'title');
+        soretdArray.forEach((element: any) => {
+            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+            this.entitiesArray.push(element);
+            this.getEntity(all, element);
+        })
     }
 
     setInitiatorField(elem: any) {
@@ -809,6 +839,7 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(`../rest/resources/${this.resId}`).pipe(
                 tap(async (data: any) => {
+                    this.resDataClone = JSON.parse(JSON.stringify(data));
                     this.creationDateClone = JSON.parse(JSON.stringify(data['creationDate']));
                     await Promise.all(this.fieldCategories.map(async (element: any) => {
 
@@ -868,6 +899,22 @@ export class IndexingFormComponent implements OnInit {
                     if (saveResourceState) {
                         this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
                     }
+                    if (this.indexingModelClone.master === null) {
+                        const mandatoryFields: any[] = this.indexingModelClone.fields.filter((item: any) => !item.mandatory && !this.functions.empty(item.default_value) && item.identifier !== 'documentDate');
+                        mandatoryFields.forEach((element: any) => {
+                            if (this.functions.empty(this.resDataClone[element.identifier]) && !element.identifier.includes('CustomField')) {
+                                this.arrFormControl[element.identifier].setValue(this.resDataClone[element.identifier]);
+                            } else if (element.identifier.includes('CustomField')) {
+                                const customFieldId: number = +element.identifier.substr(element.identifier.indexOf('_') + 1);
+                                if (this.functions.empty(this.resDataClone.customFields[customFieldId])) {
+                                    this.arrFormControl[element.identifier].setValue('');
+                                }
+                            }
+                        });
+                        this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
+                    }
+                    const priorityField: any = this.currentResourceValues.find((field: any) => field.identifier === 'priority')?.default_value;
+                    this.setPriorityColor(null, !this.functions.empty(priorityField) ? priorityField : '');
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -1005,6 +1052,7 @@ export class IndexingFormComponent implements OnInit {
                         }
 
                     });
+                    this.indexingModelClone = JSON.parse(JSON.stringify(data.indexingModel));
                 }
 
                 await this.initElemForm(saveResourceState);
@@ -1022,6 +1070,12 @@ export class IndexingFormComponent implements OnInit {
         this.http.get(`../rest/indexingModels/${id}`).pipe(
             tap((data: any) => {
                 this.allowedValues = data.indexingModel.fields.find((item: any) => item.identifier === 'doctype').allowedValues;
+                if (this.functions.empty(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues)) {
+                    this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues = this.allowedValues;
+                    if (this.allowedValues?.length > 0) {
+                        this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'));
+                    }
+                }
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -1135,14 +1189,8 @@ export class IndexingFormComponent implements OnInit {
     }
 
     isEmptyField(field: any) {
-        if (field.identifier === 'doctype') {
-            if (this.functions.empty(field.allowedValues)) {
-                field.allowedValues = this.allowedValues;
-                this.setAllowedValues(field);
-            }
-        } else if (this.arrFormControl[field.identifier].value === null) {
+        if (this.arrFormControl[field.identifier].value === null) {
             return true;
-
         } else if (Array.isArray(this.arrFormControl[field.identifier].value)) {
             if (this.arrFormControl[field.identifier].value.length > 0) {
                 return false;
@@ -1309,7 +1357,7 @@ export class IndexingFormComponent implements OnInit {
         if (!this.functions.empty(this.resId) && !afterSaveEvent) {
             this.http.get(`../rest/resources/${this.resId}`).pipe(
                 tap ((data: any) => {
-                    if (!this.functions.empty(data['doctype']) && field.allowedValues.indexOf(data['doctype']) === -1) {
+                    if (!this.functions.empty(data['doctype']) && field.allowedValues?.indexOf(data['doctype']) === -1) {
                         field.values.find((item: any) => item.id === data['doctype']).disabled = false;
                     }
                 }),

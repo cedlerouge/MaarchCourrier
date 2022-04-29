@@ -422,7 +422,7 @@ define("_DOC_ADD_TO_MAILEVA", "Courrier intégré aux envois Maileva");
 define("_DOC_REMOVE_FROM_MAILEVA", "Courrier retiré des envois Maileva");
 define("_SET_BINDING_DOCUMENT", "Courrier défini comme engageant");
 define("_SET_NON_BINDING_DOCUMENT", "Courrier défini comme non engageant");
-define("_RETENTION_RULE_FROZEN", "Durée d'utilitée courante gelée");
+define("_RETENTION_RULE_FROZEN", "Durée d'utilité courante gelée");
 define("_BINDING_DOCUMENT", "Document engageant");
 define("_YES", "Oui");
 define("_NO", "Non");
@@ -491,3 +491,9 @@ define('_SUCCESS', "Réussi");
 define('_ERROR', "Erreur");
 
 define('_VIA_ACTION', "via l'action");
+
+define('_VISA_WORKFLOW_NOT_FOUND', "Aucun circuit visa trouvé!");
+define('_NO_BUSINESS_ID', "Aucun identifiant de fast parapheur!");
+define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché au courrier!");
+define("_FOR_ATTACHMENT", "Pour la PJ");
+define('_FOR_MAIN_DOC', "Pour le Document principal");

@@ -1,7 +1,7 @@
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { COMMA, FF_SEMICOLON, SEMICOLON } from '@angular/cdk/keycodes';
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,6 +26,10 @@ declare let tinymce: any;
 })
 export class MailEditorComponent implements OnInit, OnDestroy {
 
+    @ViewChild('recipientsField', {static: false}) recipientsField: ElementRef;
+    @ViewChild('copiesField', {static: false}) copiesField: ElementRef;
+    @ViewChild('invisibleCopiesField', {static: false}) invisibleCopiesField: ElementRef;
+
     @Input() resId: number = null;
     @Input() emailId: any = null;
     @Input() emailType: 'email' | 'acknowledgementReceipt' = 'email';
@@ -34,6 +38,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     @Input() recipientDisabled: boolean = false;
 
     @Input() recipientHide: boolean = false;
+    @Input() senderHide: boolean = false;
     @Input() attachmentsHide: boolean = false;
     @Input() bodyHide: boolean = false;
     @Input() subjectHide: boolean = false;
@@ -443,10 +448,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getCopies() {
-        return this.copies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showCopies) {
+            return this.copies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     setInvisibleCopies(invisibleCopies: any) {
@@ -455,10 +464,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getInvisibleCopies() {
-        return this.invisibleCopies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showInvisibleCopies) {
+            return this.invisibleCopies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     isSelectedAttachMail(item: any, type: string) {
@@ -634,8 +647,12 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 data = data.filter((contact: any) => !this.functions.empty(contact.email) || contact.type === 'contactGroup').map((contact: any) => {
                     let label: string;
                     if (contact.type === 'user' || contact.type === 'contact') {
-                        if (!this.functions.empty(contact.firstname) || !this.functions.empty(contact.lastname)) {
-                            label = contact.firstname + ' ' + contact.lastname;
+                        if (!this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = `${contact.firstname} ${contact.lastname}`;
+                        } else if (this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = contact.lastname;
+                        } else if (!this.functions.empty(contact.firstname) && this.functions.empty(contact.lastname)) {
+                            label = contact.firstname;
                         } else {
                             label = contact.company;
                         }
@@ -704,10 +721,8 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         const arrRawAdd: string[] = rawAddresses.split(/[,;]+/);
 
         if (!this.functions.empty(arrRawAdd)) {
-
             setTimeout(() => {
                 this.recipientsInput.setValue(null);
-
                 this[type + 'Field'].nativeElement.value = '';
             }, 0);
 
@@ -1001,10 +1016,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
             }
         });
 
-        const formatSender = {
+        const formatSender = !this.functions.empty(this.currentSender) ? {
             email: this.currentSender.email,
             entityId: !this.functions.empty(this.currentSender.entityId) ? this.currentSender.entityId : null
-        };
+        } : null;
 
         return {
             document: objAttach,
