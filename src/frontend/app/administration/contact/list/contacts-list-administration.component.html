@@ -64,6 +64,7 @@
                                 style="text-align: center;font-size: 10px;color: white;background: #135F7F;padding: 5px;font-weight: bold;">
                                 {{selection.selected.length}} {{'lang.selectedContacts' | translate}}
                             </div>
+                            <button mat-menu-item (click)="mergeContacts(selection)" [disabled]="selection.selected.length < 2">{{'lang.merge' | translate}}</button>
                             <button mat-menu-item (click)="openContactsGroupModal()">{{'lang.newCorrespondentsGroup' | translate}}</button>
                             <button mat-menu-item [matMenuTriggerFor]="correspondentsGroupMenu" (menuOpened)="getCorrespondentsGroups()">{{'lang.associateToCorrespondentsGroup' | translate}}</button>
                         </mat-menu>
@@ -72,6 +73,7 @@
                                 style="text-align: center;font-size: 10px;color: white;background: #135F7F;padding: 5px;font-weight: bold;">
                                 {{selection.selected.length}} {{'lang.selectedContacts' | translate}}
                             </div>
+                            <button mat-menu-item (click)="mergeContacts(selection)" [disabled]="selection.selected.length < 2">{{'lang.merge' | translate}}</button>
                             <button mat-menu-item (click)="openContactsGroupModal()">{{'lang.newCorrespondentsGroup' | translate}}</button>
                             <button mat-menu-item [matMenuTriggerFor]="correspondentsGroupMenu" (menuOpened)="getCorrespondentsGroups()">{{'lang.associateToCorrespondentsGroup' | translate}}</button>
                         </mat-menu>

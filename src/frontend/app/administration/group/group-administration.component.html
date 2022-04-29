@@ -42,7 +42,7 @@
                                 <mat-form-field>
                                     <textarea matInput name="clause" title="{{'lang.clauseGroup' | translate}}"
                                         placeholder="{{'lang.clauseGroup' | translate}}"
-                                        [(ngModel)]="group.security.where_clause" required matTextareaAutosize
+                                        [(ngModel)]="group.security.where_clause" required cdkTextareaAutosize
                                         matAutosizeMinRows="1" matAutosizeMaxRows="5"></textarea>
                                     <mat-icon style="cursor:pointer;" color="primary" matSuffix
                                         class="fa fa-info-circle" matTooltip="{{'lang.keywordHelper' | translate}}"

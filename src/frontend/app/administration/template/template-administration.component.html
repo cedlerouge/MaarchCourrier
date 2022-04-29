@@ -60,7 +60,7 @@
                                     <mat-form-field>
                                         <textarea matInput name="description" [(ngModel)]="template.description"
                                             name="template_comment" placeholder="{{'lang.description' | translate}}"
-                                            title="{{'lang.description' | translate}}" matTextareaAutosize
+                                            title="{{'lang.description' | translate}}" cdkTextareaAutosize
                                             matAutosizeMinRows="2" matAutosizeMaxRows="5" required>
                                     </textarea>
                                     </mat-form-field>
@@ -196,7 +196,7 @@
                                     <mat-form-field>
                                         <textarea matInput [(ngModel)]="template.file.content" name="templateTxt"
                                             id="templateTxt" placeholder="{{'lang.contentTxtTemplate' | translate}}"
-                                            title="{{'lang.contentTxtTemplate' | translate}}" matTextareaAutosize
+                                            title="{{'lang.contentTxtTemplate' | translate}}" cdkTextareaAutosize
                                             matAutosizeMinRows="5" matAutosizeMaxRows="5"
                                             [required]="template.target!='acknowledgementReceipt'">
                                     </textarea>
