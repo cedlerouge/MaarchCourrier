@@ -28,6 +28,7 @@ use SrcCore\models\CurlModel;
 use SrcCore\models\DatabaseModel;
 use User\models\UserModel;
 use SrcCore\models\ValidatorModel;
+use Respect\Validation\Validator;
 
 /**
     * @codeCoverageIgnore
@@ -360,12 +361,17 @@ class FastParapheurController
             $user = UserModel::getById(['id' => $signatory['user_id'], 'select' => ['user_id']]);
         }
 
-        if (empty($signatory['business_id'])) {
-            return ['error' => _NO_BUSINESS_ID];
-        }
-
         if (empty($user['user_id'])) {
             return ['error' => _VISA_WORKFLOW_NOT_FOUND];
+        }
+
+        // check if circuidId is an email
+        if (Validator::email()->notEmpty()->validate($user['user_id'])) {
+            $user['user_id'] = explode("@", $user['user_id'])[0];
+        }
+
+        if (empty($signatory['business_id'])) {
+            return ['error' => _NO_BUSINESS_ID];
         }
 
         if (empty($redactor['short_label'])) {
