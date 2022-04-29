@@ -16,6 +16,7 @@ namespace Entity\controllers;
 
 use Basket\models\GroupBasketRedirectModel;
 use Contact\models\ContactGroupListModel;
+use Contact\models\ContactModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Entity\models\ListTemplateItemModel;
@@ -26,6 +27,7 @@ use History\controllers\HistoryController;
 use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
+use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -530,6 +532,9 @@ class EntityController
             'where'     => ["indexation_parameters->'entities' @> ?"],
             'data'      => ['"'.$dyingEntity['id'].'"']
         ]);
+        //ResourceContact
+        ResourceContactModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['item_id = ?', 'type = ?'], 'data' => [$dyingEntity['id'], 'entity']]);
+//        'where' => ['item_id = ?', 'item_type = ?'], 'data' => [$dyingEntity['id'], 'entity_id'
 
 
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
