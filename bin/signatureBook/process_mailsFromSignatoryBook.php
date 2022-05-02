@@ -162,6 +162,15 @@ try {
 \SrcCore\models\DatabasePDO::reset();
 new \SrcCore\models\DatabasePDO(['customId' => $GLOBALS['customId']]);
 
+// Load lang variables
+$language = \SrcCore\models\CoreConfigModel::getLanguage();
+$customID = $config['customID'] ?? null;
+
+if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
+    require_once("custom/{$customID}/src/core/lang/lang-{$language}.php");
+}
+require_once("src/core/lang/lang-{$language}.php");
+
 $GLOBALS['errorLckFile'] = $GLOBALS['batchDirectory'] . DIRECTORY_SEPARATOR . $GLOBALS['batchName'] .'_error.lck';
 $GLOBALS['lckFile']      = $GLOBALS['batchDirectory'] . DIRECTORY_SEPARATOR . $GLOBALS['batchName'] . '.lck';
 

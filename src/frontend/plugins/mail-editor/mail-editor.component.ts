@@ -448,10 +448,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getCopies() {
-        return this.copies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showCopies) {
+            return this.copies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     setInvisibleCopies(invisibleCopies: any) {
@@ -460,10 +464,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getInvisibleCopies() {
-        return this.invisibleCopies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showInvisibleCopies) {
+            return this.invisibleCopies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     isSelectedAttachMail(item: any, type: string) {
@@ -639,8 +647,12 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 data = data.filter((contact: any) => !this.functions.empty(contact.email) || contact.type === 'contactGroup').map((contact: any) => {
                     let label: string;
                     if (contact.type === 'user' || contact.type === 'contact') {
-                        if (!this.functions.empty(contact.firstname) || !this.functions.empty(contact.lastname)) {
-                            label = contact.firstname + ' ' + contact.lastname;
+                        if (!this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = `${contact.firstname} ${contact.lastname}`;
+                        } else if (this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = contact.lastname;
+                        } else if (!this.functions.empty(contact.firstname) && this.functions.empty(contact.lastname)) {
+                            label = contact.firstname;
                         } else {
                             label = contact.company;
                         }

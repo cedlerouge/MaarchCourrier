@@ -283,6 +283,8 @@ export class IndexingFormComponent implements OnInit {
     indexingModelClone: any;
     resDataClone: any;
 
+    entitiesArray: any[] = [];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -291,6 +293,7 @@ export class IndexingFormComponent implements OnInit {
         private headerService: HeaderService,
         public appService: AppService,
         public functions: FunctionsService,
+        private sortPipe: SortPipe,
         private route: Router
     ) {
 
@@ -611,6 +614,30 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(route).pipe(
                 tap((data: any) => {
+                    const myEntities: any[] = data.entities.map((entity: any) => ({
+                        id: entity.id,
+                        entityId: entity.entity_id,
+                        title: entity.entity_label,
+                        label: entity.entity_label,
+                        parentId: entity.parent_entity_id ?? null,
+                        level: entity.level,
+                        enbled: entity.enabled
+                    }));
+
+                    const parents: any[] = this.sortPipe.transform(myEntities.filter((item: any) => this.functions.empty(item.parentId)), 'title');
+                    parents.forEach((entity: any, index: number) => {
+                        this.entitiesArray.push(entity);
+                        const soretdArray: any[] = this.sortPipe.transform(myEntities.filter((item: any) => item.parentId === entity.entityId), 'title');
+                        soretdArray.forEach((element: any) => {
+                            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+                            this.entitiesArray.push(element);
+                            this.getEntity(myEntities, element);
+                        });
+                    })
+
+                    this.entitiesArray = [... new Set(this.entitiesArray)];
+
                     if (this.adminMode) {
                         let title = '';
                         elem.values = [
@@ -621,16 +648,11 @@ export class IndexingFormComponent implements OnInit {
                                 disabled: false
                             }
                         ];
-                        elem.values = elem.values.concat(data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
+                        elem.values = elem.values.concat(this.entitiesArray.map((entity: any) => {
                             return {
                                 id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
+                                title: entity.title,
+                                label: entity.label,
                                 disabled: false
                             };
                         }));
@@ -646,17 +668,12 @@ export class IndexingFormComponent implements OnInit {
                             elem.default_value = defaultVal.length > 0 ? defaultVal[0].id : null;
                             this.arrFormControl[elem.identifier].setValue(defaultVal.length > 0 ? defaultVal[0].id : '');
                         }
-                        elem.values = data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
+                        elem.values = this.entitiesArray.map((entity: any) => {
                             return {
                                 id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
-                                disabled: !entity.enabled
+                                title: entity.title,
+                                label: entity.label,
+                                disabled: entity.enabled
                             };
                         });
                         elem.event = 'loadDiffusionList';
@@ -667,6 +684,16 @@ export class IndexingFormComponent implements OnInit {
             ).subscribe();
         });
 
+    }
+
+    getEntity(all: any[], entity: any) {
+        const soretdArray: any[] = this.sortPipe.transform(all.filter((item: any) => item.parentId === entity.entityId), 'title');
+        soretdArray.forEach((element: any) => {
+            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+            this.entitiesArray.push(element);
+            this.getEntity(all, element);
+        })
     }
 
     setInitiatorField(elem: any) {

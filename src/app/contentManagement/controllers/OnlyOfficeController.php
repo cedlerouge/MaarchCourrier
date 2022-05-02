@@ -47,14 +47,18 @@ class OnlyOfficeController
             return $response->withJson(['enabled' => false]);
         }
 
-        $coreUrl = str_replace('rest/', '', UrlController::getCoreUrl());
+        $customConfig = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $appUrl = $customConfig['config']['maarchUrl'];
+        if (empty($appUrl)) {
+            $appUrl = str_replace('rest/', '', UrlController::getCoreUrl());
+        }
 
         $configurations = [
             'enabled'    => true,
             'serverUri'  => $configuration['onlyoffice']['uri'],
             'serverPort' => (int)$configuration['onlyoffice']['port'],
             'serverSsl'  => $configuration['onlyoffice']['ssl'],
-            'coreUrl'    => $coreUrl
+            'coreUrl'    => $appUrl
         ];
 
         return $response->withJson($configurations);
