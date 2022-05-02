@@ -120,7 +120,7 @@ class RegisteredMailController
 
             $set['number'] = $range[0]['current_number'];
 
-            $resource['alt_identifier'] = RegisteredMailController::getRegisteredMailNumber(['type' => $body['type'], 'rawNumber' => $range[0]['current_number']]);
+            $resource['alt_identifier'] = RegisteredMailController::getRegisteredMailNumber(['type' => $body['type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
             ResModel::update([
                 'set'   => ['alt_identifier' => $resource['alt_identifier']],
                 'where' => ['res_id = ?'],
@@ -134,7 +134,7 @@ class RegisteredMailController
             'data'  => [$args['resId']]
         ]);
 
-        RegisteredMailController::generateRegisteredMailPDf([
+        RegisteredMailController::generateRegisteredMailPDF([
             'registeredMailNumber' => $resource['alt_identifier'],
             'type'                 => $body['type'],
             'warranty'             => $body['warranty'],
@@ -174,7 +174,7 @@ class RegisteredMailController
             return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
-        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{4}) ?([0-9])/", $body['number'])) {
+        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{2}) ?([0-9]) ?([A-Z]{2})/", $body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is not valid']);
         }
 
@@ -266,7 +266,7 @@ class RegisteredMailController
             return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
-        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{4}) ?([0-9])/", $body['number'])) {
+        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{2}) ?([0-9]) ?([A-Z]{2})/", $body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is not valid']);
         }
 
@@ -381,7 +381,7 @@ class RegisteredMailController
             }
 
             $resId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'res_id_mlb_seq']);
-            $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $registeredMail['registeredMail_type'], 'rawNumber' => $range[0]['current_number']]);
+            $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $registeredMail['registeredMail_type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
             $data = StoreController::prepareResourceStorage([
                 'resId'         => $resId,
                 'subject'       => json_decode($indexingModelField[1]['default_value']),
@@ -436,7 +436,7 @@ class RegisteredMailController
                 'generated'     => 'false',
             ]);
 
-            RegisteredMailController::generateRegisteredMailPDf([
+            RegisteredMailController::generateRegisteredMailPDF([
                 'registeredMailNumber' => $registeredMailNumber,
                 'type'                 => $registeredMail['registeredMail_type'],
                 'warranty'             => $registeredMail['registeredMail_warranty'],
@@ -466,24 +466,29 @@ class RegisteredMailController
 
     public static function getRegisteredMailNumber(array $args)
     {
-        $number = str_pad($args['rawNumber'], 10, "0", STR_PAD_LEFT);
-        $s1 = $number[1] + $number[3] + $number[5] + $number[7] + $number[9];
-        $s2 = $number[0] + $number[2] + $number[4] + $number[6] + $number[8];
-        $s3 = $s1 * 3 + $s2;
+        // source: Universal Postal Union S10 standard
+        // https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf
+        $weights = [8, 6, 4, 2, 3, 5, 9, 7];
 
-        $modS3 = $s3 % 10;
-        if ($modS3 === 0) {
-            $key = 0;
-        } else {
-            $key = 10 - $modS3;
+        $number = str_split(str_pad($args['rawNumber'], 8, "0", STR_PAD_LEFT));
+
+        $checkDigit = 0;
+        foreach ($number as $index => $digit) {
+            $checkDigit += $weights[$index] * $digit;
+        }
+        $checkDigit = 11 - ($checkDigit % 11);
+        if ($checkDigit == 10) {
+            $checkDigit = 0;
+        } elseif ($checkDigit == 11) {
+            $checkDigit = 5;
         }
 
-        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]} {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]}{$number[8]}{$number[9]} {$key}";
+        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]} {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]} {$checkDigit} {$args['countryCode']}";
 
         return $registeredMailNumber;
     }
 
-    public static function generateRegisteredMailPDf(array $args)
+    public static function generateRegisteredMailPDF(array $args)
     {
         $resource = ResModel::getById(['select' => ['typist'], 'resId' => $args['resId']]);
         $primaryEntity = UserModel::getPrimaryEntityById(['select' => ['short_label'], 'id' => $resource['typist']]);
