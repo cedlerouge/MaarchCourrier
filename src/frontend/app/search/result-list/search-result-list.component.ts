@@ -44,6 +44,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
     @Input() appCriteriaTool: CriteriaToolComponent;
     @Input() sidenavRight: MatSidenav;
     @Input() linkedRes: any[] = [];
+    @Input() from: string = '';
 
     @Output() loadingResult = new EventEmitter<boolean>();
 
@@ -314,7 +315,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
                         this.isLoadingResults = true;
                         this.loadingResult.emit(true);
                         return this.resultListDatabase!.getRepoIssues(
-                            this.sort.active, this.sort.direction, this.paginator.pageIndex, this.searchUrl, this.listProperties, this.paginator.pageSize, this.criteria, this.dataFilters);
+                            this.sort.active, this.sort.direction, this.paginator.pageIndex, this.searchUrl, this.listProperties, this.paginator.pageSize, this.criteria, this.dataFilters, this.from);
                     } else {
                         /**
                          * To resolve the error :
@@ -813,13 +814,18 @@ export class ResultListHttpDao {
 
     constructor(private http: HttpClient, private criteriaSearchService: CriteriaSearchService) { }
 
-    getRepoIssues(sort: string, order: string, page: number, href: string, filters: any, pageSize: number, criteria: any, sideFilters: any): Observable<BasketList> {
+    getRepoIssues(sort: string, order: string, page: number, href: string, filters: any, pageSize: number, criteria: any, sideFilters: any, from: string = ''): Observable<BasketList> {
         this.criteriaSearchService.updateListsPropertiesPage(page);
         this.criteriaSearchService.updateListsPropertiesPageSize(pageSize);
         this.criteriaSearchService.updateListsPropertiesCriteria(criteria);
         const offset = page * pageSize;
         const requestUrl = `${href}?limit=${pageSize}&offset=${offset}&order=${filters.order}&orderDir=${filters.orderDir}`;
-        const dataToSend = Object.assign({}, this.criteriaSearchService.formatDatas(JSON.parse(JSON.stringify(criteria))), { filters: sideFilters });
+        let dataToSend = Object.assign({}, this.criteriaSearchService.formatDatas(JSON.parse(JSON.stringify(criteria))), { filters: sideFilters });
+        dataToSend = {
+            ... dataToSend,
+            linkedResource: from === 'linkedResource' ? true : false
+        };
+
         return this.http.post<BasketList>(requestUrl, dataToSend);
     }
 }
