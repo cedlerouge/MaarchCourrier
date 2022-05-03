@@ -73,7 +73,6 @@ class FastParapheurController
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master']]);
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
-                    FastParapheurController::processVisaWorkflow(['res_id_master' => $value['res_id_master'], 'res_id' => $value['res_id'], 'processSignatory' => true]);
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master']]);
