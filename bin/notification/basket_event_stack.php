@@ -80,7 +80,7 @@ foreach ($baskets as $basket) {
 
     foreach ($groups as $group) {
         $diffusionParams = empty($notification['diffusion_properties']) ? [] : explode(",", $notification['diffusion_properties']);
-        
+
         if ($notification['diffusion_type'] == 'group' && !in_array($group['group_id'], $diffusionParams)) {
             continue;
         }
@@ -123,32 +123,45 @@ foreach ($baskets as $basket) {
         }
 
         if ($notification['diffusion_type'] == 'copy_list') {
+            if ($basket['basket_id'] != "CopyMailBasket") {
+                continue;
+            } else {
 
-            $tmpUsersOrEntitiesOfInstance = \Entity\models\ListInstanceModel::get([
-                'select'    => ['distinct(item_id)', 'item_type'],
-                'where'     => ['difflist_type = ?', 'item_mode = ?'],
-                'data'      => ['entity_id', 'cc']
-            ]);
+                $tmpUsersOrEntitiesOfInstance = \Entity\models\ListInstanceModel::get([
+                    'select'    => ['distinct(item_id)', 'item_type'],
+                    'where'     => ['difflist_type = ?', 'item_mode = ?'],
+                    'data'      => ['entity_id', 'cc']
+                ]);
+                $usersTmp = $users;
+                $users = [];
+                foreach ($usersTmp as $userTmp) {
+                    foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
+                        if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
 
-            $usersTmp = $users;
-            $users = [];
-            foreach ($usersTmp as $userTmp) {
-                foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
+                            if (strpos(json_encode($users), $userTmp['user_id']) === false) {
+                                $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
+                                continue;
+                            }
+                        } else if ($userOrentity['item_type'] == 'entity_id') {
 
-                    if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
-                        $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
-                        continue;
-                    } else if ($userOrentity['item_type'] == 'entity_id') {
+                            $usersOfEntity = \Entity\models\EntityModel::getWithUserEntities([
+                                'select'    => ['user_id as id'],
+                                'where'     => ['entities.id = ?'],
+                                'data'      => [$userOrentity['item_id']]
+                            ]);
+                            $usersFromEntity = \User\models\UserModel::get([
+                                'select'    => ['id', 'user_id'],
+                                'where'     => ['id IN (?)'],
+                                'data'      => [array_column($usersOfEntity, 'id')]
+                            ]);
+                            foreach ($usersFromEntity as $userFromEntity) {
 
-                        $usersOfEntities = \Entity\models\EntityModel::getWithUserEntities([
-                            'select'    => ['user_id as id'],
-                            'where'     => ['entities.entity_id in (?)'],
-                            'data'      => [$userOrentity['item_id']]
-                        ]);
-                        if (!empty($usersOfEntities)) {
-                            $users[] = ['user_id' => $usersOfEntities['user_id'], 'id' => $usersOfEntities['id']];
-                            continue;
-                        }                           
+                                if (strpos(json_encode($users), $userFromEntity['user_id']) === false) {
+                                    $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
+                                    continue;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -181,7 +194,7 @@ foreach ($baskets as $basket) {
                 'where'  => [$whereClause]
             ]);
 
-            if (in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) && !empty($resources)) {
+            if (in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams)) {
 
                 $resources = \Resource\models\ResModel::getOnView([
                     'select' => ['res_id', 'status'],
