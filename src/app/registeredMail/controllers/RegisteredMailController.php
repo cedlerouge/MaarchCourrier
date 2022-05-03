@@ -174,7 +174,7 @@ class RegisteredMailController
             return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
-        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{2}) ?([0-9]) ?([A-Z]{2})/", $body['number'])) {
+        } elseif (!preg_match("/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/", $body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is not valid']);
         }
 
@@ -266,7 +266,7 @@ class RegisteredMailController
             return $response->withStatus(400)->withJson(['errors' => "Body type is empty or is not 'distributed' or 'notDistributed'"]);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is empty or not a string']);
-        } elseif (!preg_match("/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{2}) ?([0-9]) ?([A-Z]{2})/", $body['number'])) {
+        } elseif (!preg_match("/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/", $body['number'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body number is not valid']);
         }
 
@@ -466,24 +466,40 @@ class RegisteredMailController
 
     public static function getRegisteredMailNumber(array $args)
     {
-        // source: Universal Postal Union S10 standard
-        // https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf
-        $weights = [8, 6, 4, 2, 3, 5, 9, 7];
+        $numberLength = $args['type'] == 'RW' ? 8 : 10;
+        $number = str_split(str_pad($args['rawNumber'], $numberLength, "0", STR_PAD_LEFT));
+        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]} {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]}";
+        if ($args['type'] == 'RW') {
+            // International Registered Mail Number
+            // source: Universal Postal Union S10 standard
+            // https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf
+            $weights = [8, 6, 4, 2, 3, 5, 9, 7];
 
-        $number = str_split(str_pad($args['rawNumber'], 8, "0", STR_PAD_LEFT));
-
-        $checkDigit = 0;
-        foreach ($number as $index => $digit) {
-            $checkDigit += $weights[$index] * $digit;
-        }
-        $checkDigit = 11 - ($checkDigit % 11);
-        if ($checkDigit == 10) {
             $checkDigit = 0;
-        } elseif ($checkDigit == 11) {
-            $checkDigit = 5;
-        }
+            foreach ($number as $index => $digit) {
+                $checkDigit += $weights[$index] * $digit;
+            }
+            $checkDigit = 11 - ($checkDigit % 11);
+            if ($checkDigit == 10) {
+                $checkDigit = 0;
+            } elseif ($checkDigit == 11) {
+                $checkDigit = 5;
+            }
 
-        $registeredMailNumber = "{$args['type']} {$number[0]}{$number[1]}{$number[2]} {$number[3]}{$number[4]}{$number[5]} {$number[6]}{$number[7]} {$checkDigit} {$args['countryCode']}";
+            $registeredMailNumber .= " {$checkDigit} {$args['countryCode']}";
+        } else {
+            // La Poste FRANCE uses EAN13
+            $s1 = $number[1] + $number[3] + $number[5] + $number[7] + $number[9];
+            $s2 = $number[0] + $number[2] + $number[4] + $number[6] + $number[8];
+            $s3 = $s1 * 3 + $s2;
+
+            $checkDigit = $s3 % 10;
+            if ($checkDigit != 0) {
+                $checkDigit = 10 - $checkDigit;
+            }
+
+            $registeredMailNumber .= "{$number[8]}{$number[9]} {$checkDigit}";
+        }
 
         return $registeredMailNumber;
     }

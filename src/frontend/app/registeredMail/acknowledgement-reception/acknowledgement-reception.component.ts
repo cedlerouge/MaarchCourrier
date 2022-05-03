@@ -59,7 +59,7 @@ export class AcknowledgementReceptionComponent implements OnInit {
 
     ngOnInit() {
         this.headerService.setHeader(this.translate.instant('lang.arReception'));
-        const validatorNumber: ValidatorFn[] = [Validators.pattern(/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{2}) ?([0-9]) ?([A-Z]{2})/), Validators.required];
+        const validatorNumber: ValidatorFn[] = [Validators.pattern(/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/), Validators.required];
         this.adminFormGroup = this._formBuilder.group({
             type: ['', Validators.required],
             number: ['', validatorNumber],
