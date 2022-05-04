@@ -108,7 +108,7 @@ trait RegisteredMailTrait
             'generated'     => empty($args['data']['generated']) ? 'false' : 'true',
         ]);
 
-        $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $args['data']['type'], 'rawNumber' => $range[0]['current_number']]);
+        $registeredMailNumber = RegisteredMailController::getRegisteredMailNumber(['type' => $args['data']['type'], 'rawNumber' => $range[0]['current_number'], 'countryCode' => 'FR']);
         ResModel::update([
             'set'   => ['alt_identifier' => $registeredMailNumber],
             'where' => ['res_id = ?'],
