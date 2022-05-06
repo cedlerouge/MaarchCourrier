@@ -138,10 +138,6 @@ foreach ($baskets as $basket) {
                     foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
                         if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
 
-                            if (strpos(json_encode($users), $userTmp['user_id']) === false) {
-                                $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
-                                continue;
-                            }
                             if(in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
                                 $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
                                 continue;
@@ -172,8 +168,6 @@ foreach ($baskets as $basket) {
                 }
             }
         }
-
-        var_dump($users);
 
         $countUsersToNotify = count($users);
         writeLog(['message' => "Group {$group['group_id']} : {$countUsersToNotify} user(s) to notify", 'level' => 'INFO']);
