@@ -149,16 +149,18 @@ foreach ($baskets as $basket) {
                                 'where'     => ['entities.id = ?'],
                                 'data'      => [$userOrentity['item_id']]
                             ]);
-                            $usersFromEntity = \User\models\UserModel::get([
-                                'select'    => ['id', 'user_id'],
-                                'where'     => ['id IN (?)'],
-                                'data'      => [array_column($usersOfEntity, 'id')]
-                            ]);
-                            foreach ($usersFromEntity as $userFromEntity) {
-
-                                if (strpos(json_encode($users), $userFromEntity['user_id']) === false) {
-                                    $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
-                                    continue;
+                            if(!empty($usersOfEntity)) {
+                                $usersFromEntity = \User\models\UserModel::get([
+                                    'select'    => ['id', 'user_id'],
+                                    'where'     => ['id IN (?)'],
+                                    'data'      => [array_column($usersOfEntity, 'id')]
+                                ]);
+                                foreach ($usersFromEntity as $userFromEntity) {
+    
+                                    if (strpos(json_encode($users), $userFromEntity['user_id']) === false) {
+                                        $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
+                                        continue;
+                                    }
                                 }
                             }
                         }
@@ -189,19 +191,13 @@ foreach ($baskets as $basket) {
                 $userId     = $redirectedBasket[0]['actual_user_id'];
             }
 
+            $resourcesWhere = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$whereClause, 'status IN (?)'] : [$whereClause];
+            $resourcesData  = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$diffusionParams] : [];
             $resources = \Resource\models\ResModel::getOnView([
                 'select' => ['res_id'],
-                'where'  => [$whereClause]
+                'where'  => $resourcesWhere,
+                'data'   => $resourcesData
             ]);
-
-            if (in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams)) {
-
-                $resources = \Resource\models\ResModel::getOnView([
-                    'select' => ['res_id', 'status'],
-                    'where'  => [$whereClause, 'status IN (?)'],
-                    'data'   => [$diffusionParams]
-                ]);
-            }
 
             if (!empty($resources)) {
 
