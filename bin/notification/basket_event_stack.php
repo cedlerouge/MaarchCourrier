@@ -142,6 +142,10 @@ foreach ($baskets as $basket) {
                                 $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
                                 continue;
                             }
+                            if(in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
+                                $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
+                                continue;
+                            }
                         } else if ($userOrentity['item_type'] == 'entity_id') {
 
                             $usersOfEntity = \Entity\models\EntityModel::getWithUserEntities([
@@ -157,7 +161,7 @@ foreach ($baskets as $basket) {
                                 ]);
                                 foreach ($usersFromEntity as $userFromEntity) {
     
-                                    if (strpos(json_encode($users), $userFromEntity['user_id']) === false) {
+                                    if(in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
                                         $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
                                         continue;
                                     }
@@ -168,6 +172,8 @@ foreach ($baskets as $basket) {
                 }
             }
         }
+
+        var_dump($users);
 
         $countUsersToNotify = count($users);
         writeLog(['message' => "Group {$group['group_id']} : {$countUsersToNotify} user(s) to notify", 'level' => 'INFO']);
