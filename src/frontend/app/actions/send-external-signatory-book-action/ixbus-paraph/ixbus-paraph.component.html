@@ -16,7 +16,7 @@
             <div class="col-sm-12">
                 <app-plugin-select-search [showLabel]="true" [class]="''" [label]="'lang.natureIxbusParapheur' | translate"
                                       [placeholderLabel]="'lang.natureIxbusParapheur' | translate" [formControlSelect]="selectNature"
-                                      [datas]="natures" (afterSelected)="ixbusDatas.nature = selectNature.value;changeModel(selectNature.value)"
+                                      [datas]="natures" (afterSelected)="ixbusDatas.nature = selectNature.value; changeModel(selectNature.value)"
                                       style="width:100%;" [required]="true">
                 </app-plugin-select-search>
             </div>
