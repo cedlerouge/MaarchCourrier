@@ -703,6 +703,17 @@ class AutoCompleteController
     {
         $data = $request->getQueryParams();
         $data['address'] = TextFormatModel::normalize(['string' => str_replace(['*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'], ' ', $data['address'])]);
+        $addressWords = explode(' ', $data['address']);
+        foreach ($addressWords as $key => $value) {
+            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
+                unset($addressWords[$key]);
+                continue;
+            }
+        }
+        $data['address'] = implode(' ', $addressWords);
+        if (empty($data['address'])) {
+            return $response->withJson([]);
+        }
 
         $check = Validator::stringType()->notEmpty()->validate($data['address']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
@@ -712,9 +723,21 @@ class AutoCompleteController
 
         $useSectors = ParameterModel::getById(['id' => 'useSectorsForAddresses', 'select' => ['param_value_int']]);
         if (!empty($useSectors['param_value_int']) && $useSectors['param_value_int'] == 1) {
+            $addressFieldNames = ['address_number', 'address_street', 'address_postcode', 'address_town'];
+            $fields = AutoCompleteController::getInsensitiveFieldsForRequest([
+                'fields' => $addressFieldNames
+            ]);
+            $requestData = AutoCompleteController::getDataForRequest([
+                'search'       => $data['address'],
+                'fields'       => $fields,
+                'fieldsNumber' => count($addressFieldNames),
+                'where'        => [],
+                'data'         => []
+            ]);
             $hits = ContactAddressSectorModel::get([
                 'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
-                'where'   => ["unaccent(concat(address_number, ' ', address_street, ' ', address_postcode, ' ', address_town)) ~* '.*{$data['address']}.*'"],
+                'where'   => $requestData['where'],
+                'data'    => $requestData['data'],
                 'orderBy' => ['id desc'],
                 'limit'   => 100
             ]);
@@ -750,21 +773,6 @@ class AutoCompleteController
 
         $index = \Zend_Search_Lucene::open($path);
         \Zend_Search_Lucene::setResultSetLimit(100);
-
-        $aAddress = explode(' ', $data['address']);
-        foreach ($aAddress as $key => $value) {
-            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
-                unset($aAddress[$key]);
-                continue;
-            }
-            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
-                $aAddress[$key] .= '*';
-            }
-        }
-        $data['address'] = implode(' ', $aAddress);
-        if (empty($data['address'])) {
-            return $response->withJson([]);
-        }
 
         $hits = $index->find($data['address']);
 
