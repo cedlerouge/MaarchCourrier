@@ -702,6 +702,12 @@ class AutoCompleteController
     public static function getBanAddresses(Request $request, Response $response)
     {
         $data = $request->getQueryParams();
+        $check = Validator::stringType()->notEmpty()->validate($data['address']);
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
+        if (!$check) {
+            return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
+        }
+
         $data['address'] = TextFormatModel::normalize(['string' => str_replace(['*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'], ' ', $data['address'])]);
         $addressWords = explode(' ', $data['address']);
         foreach ($addressWords as $key => $value) {
@@ -713,12 +719,6 @@ class AutoCompleteController
         $data['address'] = implode(' ', $addressWords);
         if (empty($data['address'])) {
             return $response->withJson([]);
-        }
-
-        $check = Validator::stringType()->notEmpty()->validate($data['address']);
-        $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
-        if (!$check) {
-            return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
         $useSectors = ParameterModel::getById(['id' => 'useSectorsForAddresses', 'select' => ['param_value_int']]);
