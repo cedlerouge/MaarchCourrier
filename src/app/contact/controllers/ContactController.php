@@ -865,9 +865,9 @@ class ContactController
 
         sort($departments, SORT_NUMERIC);
 
-        $defaultDepartment = ParameterModel::getById(['id' => 'defaultDepartment', 'select' => ['param_value_int']]);
+        $defaultDepartment = ParameterModel::getById(['id' => 'defaultDepartment', 'select' => ['param_value_string']]);
 
-        return $response->withJson(['departments' => $departments, 'default' => empty($defaultDepartment['param_value_int']) ? null : $defaultDepartment['param_value_int']]);
+        return $response->withJson(['departments' => $departments, 'default' => empty($defaultDepartment['param_value_string']) ? null : $defaultDepartment['param_value_string']]);
     }
 
     public function getDuplicatedContacts(Request $request, Response $response)
