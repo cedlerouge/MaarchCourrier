@@ -59,17 +59,15 @@ class CoreControllerTest extends TestCase
 
     public function testGetLanguage()
     {
-        $this->assertFileExists("src/core/lang/lang-en.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-en.php", '');
-        include("src/core/lang/lang-en.php");
-        $this->assertFileExists("src/core/lang/lang-nl.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-nl.php", '');
-        include("src/core/lang/lang-nl.php");
+        // availableLanguages from CoreConfigModel::getLanguage();
+        $availableLanguages = ['en', 'fr', 'nl'];
 
+        foreach ($availableLanguages as $value) {
+            $this->assertFileExists("src/core/lang/lang-{$value}.php");
+            $this->assertStringNotEqualsFile("src/core/lang/lang-{$value}.php", '');
+        }
         $language = \SrcCore\models\CoreConfigModel::getLanguage();
-        $this->assertFileExists("src/core/lang/lang-{$language}.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-{$language}.php", '');
-        include("src/core/lang/lang-{$language}.php");
+        require_once("src/core/lang/lang-{$language}.php");
         
         $this->assertFileDoesNotExist("src/core/lang/lang-zh.php");
     }

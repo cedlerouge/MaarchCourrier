@@ -114,7 +114,13 @@ class AutoCompleteController
             $excludedUsers = array_column($usersAlreadyConnected, 'external_id');
         }
 
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $loadedXml = null;
+        $customId = CoreConfigModel::getCustomId();
+        if (!empty($customId) && file_exists("custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml")) {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => "custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml"]);
+        } else {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        }
 
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
@@ -701,7 +707,8 @@ class AutoCompleteController
     {
         $data = $request->getQueryParams();
 
-        $check = Validator::stringType()->notEmpty()->validate($data['address']);
+        $check = Validator::arrayType()->notEmpty()->validate($data);
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['address']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
