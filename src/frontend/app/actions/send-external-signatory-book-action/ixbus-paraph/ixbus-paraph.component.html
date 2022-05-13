@@ -25,7 +25,7 @@
             <div class="col-sm-12">
                 <app-plugin-select-search [showLabel]="true" [class]="''" [label]="'lang.workflowModelIxbus' | translate"
                                       [placeholderLabel]="'lang.workflowModelIxbus' | translate" [formControlSelect]="selectWorkflow"
-                                      [datas]="messagesModel" (afterSelected)="ixbusDatas.messageModel = selectWorkflow.value"
+                                      [datas]="messagesModel" [disabled]="messagesModel.length === 0" (afterSelected)="ixbusDatas.messageModel = selectWorkflow.value"
                                       style="width:100%;" [required]="true">
                 </app-plugin-select-search>
             </div>
@@ -34,7 +34,7 @@
             <div class="col-sm-12">
                 <app-plugin-select-search [showLabel]="true" [class]="''" [label]="'lang.loginIxbus' | translate"
                                       [placeholderLabel]="'lang.loginIxbus' | translate" [formControlSelect]="selectUser"
-                                      [datas]="users" (afterSelected)="ixbusDatas.userId = selectUser.value"
+                                      [datas]="users" [disabled]="users.length === 0" (afterSelected)="ixbusDatas.userId = selectUser.value"
                                       style="width:100%;" [required]="true">
                 </app-plugin-select-search>
             </div>
