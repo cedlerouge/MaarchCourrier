@@ -120,7 +120,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     }
 
     getEncodedDocument(data: any) {
-        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: data } }).pipe(
+        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: data.url } }).pipe(
             tap((result: any) => {
                 this.file.content = result.encodedFile;
                 this.isSaving = false;
@@ -299,11 +299,18 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                 title: 'Edition',
                 url: `${this.appUrl}${this.params.docUrl}?filename=${this.tmpFilename}`,
                 permissions: {
-                    comment: false,
+                    comment: true,
                     download: true,
                     edit: this.editMode,
                     print: true,
-                    review: false
+                    deleteCommentAuthorOnly: true,
+                    editCommentAuthorOnly: true,
+                    review: false,
+                    commentGroups: {
+                        edit: ['owner'],
+                        remove: ['owner'],
+                        view: ""
+                    },
                 }
             },
             editorConfig: {
@@ -313,7 +320,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                 mode: 'edit',
                 customization: {
                     chat: false,
-                    comments: false,
+                    comments: true,
                     compactToolbar: false,
                     feedback: false,
                     forcesave: false,
@@ -323,8 +330,9 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                     zoom: -2,
                 },
                 user: {
-                    id: '1',
-                    name: ' '
+                    id: this.headerService.user.id.toString(),
+                    name: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
+                    group: 'owner'
                 },
             },
         };
