@@ -51,8 +51,6 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
 
         this.adminFormGroup = this._formBuilder.group(this.attachmentType);
         this.loading = true;
-        console.log(typeof this.attachmentType['signable'].value);
-
         this.route.params.subscribe(async (params) => {
             this.id = params['id'];
             if (typeof params['id'] === 'undefined') {
@@ -66,6 +64,10 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
                         Object.keys(this.attachmentType).forEach(key => {
                             this.attachmentType[key].setValue(data[key]);
                             if (key === 'typeId') {
+                                this.attachmentType[key].disable();
+                            }
+                            if (key === 'visible' && this.attachmentType['typeId'].value === 'signed_response') {
+                                this.attachmentType[key].setValue(false);
                                 this.attachmentType[key].disable();
                             }
                         });
