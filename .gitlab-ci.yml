@@ -74,8 +74,8 @@ job_e2e:
 # only:
 #   - schedules
 
-job_php-7.4:
- image: php:7.4-apache
+job_php-8.1:
+ image: php:8.1-apache
  stage: test
  services:
    - name: postgres:10.1
@@ -89,12 +89,58 @@ job_php-7.4:
 # except:
 #   - schedules
  rules:
-   - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+  - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
 
- artifacts:
+  artifacts:
+    paths:
+      - test/unitTests/build/
+    expire_in: 2h
+  coverage: '^\s*Lines:\s*\d+.\d+\%'
+
+job_php-8.0:
+ image: php:8.0-apache
+ stage: test
+ services:
+   - name: postgres:10.1
+     command: [ "-c", "datestyle=iso,dmy" ]
+ script:
+   - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
+   - chmod +x /usr/local/bin/phpunit
+   - phpunit --coverage-text --colors=never
+# only:
+#   - develop
+# except:
+#   - schedules
+  rules:
+   - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+  artifacts:
    paths:
      - test/unitTests/build/
    expire_in: 2h
+  coverage: '^\s*Lines:\s*\d+.\d+\%'
+
+job_php-7.4:
+  image: php:7.4-apache
+  stage: test
+  services:
+   - name: postgres:10.1
+     command: [ "-c", "datestyle=iso,dmy" ]
+  script:
+   - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
+   - chmod +x /usr/local/bin/phpunit
+   - phpunit --coverage-text --colors=never
+# only:
+#   - develop
+# except:
+#   - schedules
+  rules:
+   - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+
+  artifacts:
+   paths:
+     - test/unitTests/build/
+   expire_in: 2h
+  coverage: '^\s*Lines:\s*\d+.\d+\%'
 
 logs:
   image: debian:10-slim
