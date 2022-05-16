@@ -39,6 +39,8 @@ use User\models\UserModel;
 use Folder\models\FolderModel;
 use Folder\controllers\FolderController;
 use MessageExchange\controllers\AnnuaryController;
+use Parameter\models\ParameterModel;
+use Contact\models\ContactAddressSectorModel;
 
 class AutoCompleteController
 {
@@ -700,14 +702,63 @@ class AutoCompleteController
     public static function getBanAddresses(Request $request, Response $response)
     {
         $data = $request->getQueryParams();
-
         $check = Validator::stringType()->notEmpty()->validate($data['address']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
-        $customId = CoreConfigModel::getCustomId();
 
+        $data['address'] = TextFormatModel::normalize(['string' => str_replace(['*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'], ' ', $data['address'])]);
+        $addressWords = explode(' ', $data['address']);
+        foreach ($addressWords as $key => $value) {
+            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
+                unset($addressWords[$key]);
+                continue;
+            }
+        }
+        $data['address'] = implode(' ', $addressWords);
+        if (empty($data['address'])) {
+            return $response->withJson([]);
+        }
+
+        $useSectors = ParameterModel::getById(['id' => 'useSectorsForAddresses', 'select' => ['param_value_int']]);
+        if (!empty($useSectors['param_value_int']) && $useSectors['param_value_int'] == 1) {
+            $addressFieldNames = ['address_number', 'address_street', 'address_postcode', 'address_town'];
+            $fields = AutoCompleteController::getInsensitiveFieldsForRequest([
+                'fields' => $addressFieldNames
+            ]);
+            $requestData = AutoCompleteController::getDataForRequest([
+                'search'       => $data['address'],
+                'fields'       => $fields,
+                'fieldsNumber' => count($addressFieldNames),
+                'where'        => [],
+                'data'         => []
+            ]);
+            $hits = ContactAddressSectorModel::get([
+                'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
+                'where'   => $requestData['where'],
+                'data'    => $requestData['data'],
+                'orderBy' => ['id desc'],
+                'limit'   => 100
+            ]);
+            $addresses = [];
+            foreach ($hits as $hit) {
+                $addresses[] = [
+                    'banId'      => $hit['ban_id'],
+                    'lon'        => null,
+                    'lat'        => null,
+                    'number'     => $hit['address_number'],
+                    'afnorName'  => $hit['address_street'],
+                    'postalCode' => $hit['address_postcode'],
+                    'city'       => $hit['address_town'],
+                    'address'    => "{$hit['address_number']} {$hit['address_street']}, {$hit['address_town']} ({$hit['address_postcode']})",
+                    'sector'     => $hit['label']
+                ];
+            }
+            return $response->withJson($addresses);
+        }
+
+        $customId = CoreConfigModel::getCustomId();
         if (is_dir("custom/{$customId}/referential/ban/indexes/{$data['department']}")) {
             $path = "custom/{$customId}/referential/ban/indexes/{$data['department']}";
         } elseif (is_dir('referential/ban/indexes/' . $data['department'])) {
@@ -723,23 +774,7 @@ class AutoCompleteController
         $index = \Zend_Search_Lucene::open($path);
         \Zend_Search_Lucene::setResultSetLimit(100);
 
-        $data['address'] = str_replace(['*', '~', '-', '\''], ' ', $data['address']);
-        $aAddress = explode(' ', $data['address']);
-        foreach ($aAddress as $key => $value) {
-            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
-                unset($aAddress[$key]);
-                continue;
-            }
-            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
-                $aAddress[$key] .= '*';
-            }
-        }
-        $data['address'] = implode(' ', $aAddress);
-        if (empty($data['address'])) {
-            return $response->withJson([]);
-        }
-
-        $hits = $index->find(TextFormatModel::normalize(['string' => $data['address']]));
+        $hits = $index->find($data['address']);
 
         $addresses = [];
         foreach ($hits as $key => $hit) {
