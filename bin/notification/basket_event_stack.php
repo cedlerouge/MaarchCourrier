@@ -138,7 +138,7 @@ foreach ($baskets as $basket) {
                     foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
                         if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
 
-                            if(in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
+                            if(!in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
                                 $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
                                 continue;
                             }
@@ -157,7 +157,7 @@ foreach ($baskets as $basket) {
                                 ]);
                                 foreach ($usersFromEntity as $userFromEntity) {
     
-                                    if(in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
+                                    if(!in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
                                         $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
                                         continue;
                                     }
