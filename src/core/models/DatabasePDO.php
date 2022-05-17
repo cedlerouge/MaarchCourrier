@@ -89,6 +89,12 @@ class DatabasePDO
                     if (!empty($jsonFile['database'][$key + 1])) {
                         continue;
                     } else {
+                        LogsController::add([
+                            'level'         => 'SQL',
+                            'sqlQuery'      => '',
+                            'sqlData'       => '',
+                            'sqlException'  => $PDOException->getMessage()
+                        ]);
                         throw new \Exception($PDOException->getMessage());
                     }
                 }

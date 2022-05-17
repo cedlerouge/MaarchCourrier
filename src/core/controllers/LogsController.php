@@ -28,8 +28,8 @@ class LogsController
 {
     public static function add(array $args){
         
-        $logLine   = LogsController::prepareLogLine($args);
         $logConfig = LogsController::getLogConfig();
+        $logLine   = LogsController::prepareLogLine(['logConfig' => $logConfig, 'lineData' => $args]);
 
         if ($args['level'] == $logConfig['queries']['level']) {
             LogsController::logWithMonolog([
@@ -40,12 +40,11 @@ class LogsController
                 'maxFiles'  => $logConfig['queries']['maxFiles'],
                 'line'      => $logLine
             ]);
-            return;
         }
         LogsController::logWithMonolog([
             'name'      => $logConfig['customId'] ?? 'SCRIPT',
             'path'      => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
-            'level'     => $args['level'],
+            'level'     => empty($args['isTech']) ? $logConfig['logFontionnel']['level'] : $logConfig['logTechnique']['level'],
             'maxSize'   => empty($args['isTech']) ? $logConfig['logFontionnel']['maxSize'] : $logConfig['logTechnique']['maxSize'],
             'maxFiles'  => empty($args['isTech']) ? $logConfig['logFontionnel']['maxFiles'] : $logConfig['logTechnique']['maxFiles'],
             'line'      => $logLine
@@ -53,13 +52,6 @@ class LogsController
     }
 
     private static function prepareLogLine(array $args) {
-        if ($args['level'] == "SQL") {
-            $logLine = "[" . $args['sqlQuery'] . "][" . $args['sqlData'] ?? '' . "][" . $args['sqlException'] ?? '' . "]" ;
-            // $logLine = TextFormatModel::htmlWasher($logLine);
-            // $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
-
-            return $logLine;
-        }
         $logLine = str_replace(
             [
                 '%RESULT%',
@@ -75,18 +67,23 @@ class LogsController
             [
                 'OK',
                 'MAARCH',
-                $args['tableName'],
-                $args['recordId'],
-                $args['eventType'],
+                $args['lineData']['tableName'],
+                $args['lineData']['recordId'],
+                $args['lineData']['eventType'],
                 $GLOBALS['login'] ?? '',
-                $args['eventId'],
-                $args['moduleId'],
+                $args['lineData']['eventId'],
+                $args['lineData']['moduleId'],
                 $_SERVER['REMOTE_ADDR'] ?? ''
             ],
             "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
         );
-        $logLine    = TextFormatModel::htmlWasher($logLine);
-        $logLine    = TextFormatModel::removeAccent(['string' => $logLine]);
+        if ($args['lineData']['level'] == $args['logConfig']['queries']['level']) {
+            $logLine  = empty($args['lineData']['sqlQuery']) ? '[]' : "[" . $args['lineData']['sqlQuery'] . "]";
+            $logLine .= empty($args['lineData']['sqlData']) ? '[]' : "[" . $args['lineData']['sqlData'] . "]";
+            $logLine .= empty($args['lineData']['sqlException']) ? '[]' : "[" . $args['lineData']['sqlException'] . "]";
+        }
+        $logLine = TextFormatModel::htmlWasher($logLine);
+        $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
         return $logLine;
     }
 
@@ -122,6 +119,7 @@ class LogsController
     }
 
     protected static function logWithMonolog(array $log) {
+        
         ValidatorModel::notEmpty($log, ['name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['name', 'path', 'line']);
 
@@ -137,7 +135,7 @@ class LogsController
         $output = "[%datetime%][%channel%][%level_name%][%message%]\n";
         $formatter = new LineFormatter($output, $dateFormat);
 
-        $streamHandler = new StreamHandler($log['path'], $log['level']);
+        $streamHandler = new StreamHandler($log['path'], Logger::toMonologLevel($log['level']), false, 0655);
         $streamHandler->setFormatter($formatter);
 
         $logger = new Logger($log['name']);
