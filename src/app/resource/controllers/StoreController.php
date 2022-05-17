@@ -381,7 +381,7 @@ class StoreController
 
     public static function prepareAttachmentStorage(array $args)
     {
-        $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono', 'signable']]);
+        $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono', 'signable', 'signed_by_default']]);
         $attachmentsTypes = array_column($attachmentsTypes, null, 'type_id');
         if ($attachmentsTypes[$args['type']]['chrono'] && empty($args['chrono'])) {
             $resource = ResModel::getById(['select' => ['destination', 'type_id'], 'resId' => $args['resIdMaster']]);
@@ -393,6 +393,8 @@ class StoreController
             $linkSign = "{$args['originId']},res_attachments";
             AttachmentModel::update(['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$args['originId']]]);
             unset($args['originId']);
+        } elseif ($attachmentsTypes[$args['type']]['signed_by_default']) {
+            $args['status'] = 'SIGN';
         }
 
         $relation = 1;
