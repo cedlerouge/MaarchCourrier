@@ -14,6 +14,8 @@
 
 namespace SrcCore\models;
 
+use \SrcCore\controllers\LogsController;
+
 class DatabasePDO
 {
     private static $pdo             = null;
@@ -133,11 +135,12 @@ class DatabasePDO
                 $query = $db->query($queryString, $data);
             } else {
                 $param = implode(', ', $data);
-                $file = fopen('queries_error.log', 'a');
-                fwrite($file, '[' . date('Y-m-d H:i:s') . '] ' . $queryString . PHP_EOL);
-                fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$param}]" . PHP_EOL);
-                fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$PDOException->getMessage()}]" . PHP_EOL);
-                fclose($file);
+                LogsController::add([
+                    'level'         => 'SQL',
+                    'sqlQuery'      => $queryString . PHP_EOL,
+                    'sqlData'       => $param,
+                    'sqlException'  => $PDOException->getMessage()
+                ]);
 
                 throw new \Exception($PDOException->getMessage());
             }
@@ -151,10 +154,12 @@ class DatabasePDO
         try {
             self::$pdo->exec($query);
         } catch (\PDOException $PDOException) {
-            $file = fopen('queries_error.log', 'a');
-            fwrite($file, '[' . date('Y-m-d H:i:s') . '] ' . $query . PHP_EOL);
-            fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$PDOException->getMessage()}]" . PHP_EOL);
-            fclose($file);
+            LogsController::add([
+                'level'         => 'SQL',
+                'sqlQuery'      => $query . PHP_EOL,
+                'sqlData'       => '',
+                'sqlException'  => $PDOException->getMessage()
+            ]);
 
             throw new \Exception($PDOException->getMessage());
         }

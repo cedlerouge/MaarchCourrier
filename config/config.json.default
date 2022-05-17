@@ -78,6 +78,12 @@
             "file": "/var/www/html/MaarchCourrier/technique.log",
             "maxFileSize": "10MB",
             "maxBackupFiles": "10"
+        },
+        "queries": {
+            "level": "SQL",
+            "file": "/var/www/html/MaarchCourrier/queries_error.log",
+            "maxFileSize": "10MB",
+            "maxBackupFiles": "10"
         }
     }
 }

@@ -21,14 +21,27 @@ use SrcCore\models\CoreConfigModel;
 use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FilterHandler;
 use Monolog\Formatter\LineFormatter;
 
 class LogsController
 {
     public static function add(array $args){
-        $logLine = LogsController::prepareLogLine($args);
+        
+        $logLine   = LogsController::prepareLogLine($args);
         $logConfig = LogsController::getLogConfig();
 
+        if ($args['level'] == $logConfig['queries']['level']) {
+            LogsController::logWithMonolog([
+                'name'      => $logConfig['customId'] ?? 'SCRIPT',
+                'path'      => $logConfig['queries']['file'],
+                'level'     => "INFO",
+                'maxSize'   => $logConfig['queries']['maxSize'],
+                'maxFiles'  => $logConfig['queries']['maxFiles'],
+                'line'      => $logLine
+            ]);
+            return;
+        }
         LogsController::logWithMonolog([
             'name'      => $logConfig['customId'] ?? 'SCRIPT',
             'path'      => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
@@ -40,6 +53,13 @@ class LogsController
     }
 
     private static function prepareLogLine(array $args) {
+        if ($args['level'] == "SQL") {
+            $logLine = "[" . $args['sqlQuery'] . "][" . $args['sqlData'] ?? '' . "][" . $args['sqlException'] ?? '' . "]" ;
+            // $logLine = TextFormatModel::htmlWasher($logLine);
+            // $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
+
+            return $logLine;
+        }
         $logLine = str_replace(
             [
                 '%RESULT%',
@@ -93,6 +113,9 @@ class LogsController
             $logConfig['logTechnique']['file']            = 'technique.log';
             $logConfig['logTechnique']['maxFileSize']     = '10MB';
             $logConfig['logTechnique']['maxBackupFiles']  = '10';
+            $logConfig['queries']['file']            = 'queries_error.log';
+            $logConfig['queries']['maxFileSize']     = '10MB';
+            $logConfig['queries']['maxBackupFiles']  = '10';
         }
         $logConfig['customId'] = $customId;
         return $logConfig;
@@ -109,7 +132,7 @@ class LogsController
         ]);
 
         // the default date format is "Y-m-d\TH:i:sP"
-        $dateFormat = "d/m/Y HH:mm:ss";
+        $dateFormat = "d/m/Y H:i:s";
         // the default format -> "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
         $output = "[%datetime%][%channel%][%level_name%][%message%]\n";
         $formatter = new LineFormatter($output, $dateFormat);
@@ -130,7 +153,7 @@ class LogsController
             case 'INFO':
                 $logger->info($log['line']);
                 break;
-            case 'WARN':
+            case 'WARNING':
                 $logger->warning($log['line']);
                 break;
             case 'ERROR':
@@ -144,9 +167,6 @@ class LogsController
                 break;
             case 'EMERGENCY':
                 $logger->emergency($log['line']);
-                break;
-            default:
-                $logger->info($log['line']);
                 break;
         }
         $logger->close();
