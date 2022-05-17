@@ -18,82 +18,28 @@ namespace SrcCore\controllers;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
-
-require_once 'apps/maarch_entreprise/tools/log4php/Logger.php'; //TODO composer
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
 
 class LogsController
 {
-    public static function buildLoggingMethod()
-    {
-        $loggingMethods = [];
+    public static function add(array $args){
+        $logLine = LogsController::prepareLogLine($args);
+        $logConfig = LogsController::getLogConfig();
 
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'apps/maarch_entreprise/xml/logging_method.xml']);
-        if ($loadedXml) {
-            foreach ($loadedXml->METHOD as $METHOD) {
-                $loggingMethods[] = [
-                    'ID'               => (string)$METHOD->ID,
-                    'ACTIVATED'        => (boolean)$METHOD->ENABLED,
-                    'LOGGER_NAME_TECH' => (string)$METHOD->LOGGER_NAME_TECH,
-                    'LOGGER_NAME_FUNC' => (string)$METHOD->LOGGER_NAME_FUNC,
-                    'LOG_FORMAT'       => (string)$METHOD->APPLI_LOG_FORMAT,
-                    'CODE_METIER'      => (string)$METHOD->CODE_METIER
-                ];
-            }
-        } else {
-            $loggingMethods[0]['ID']               = 'database';
-            $loggingMethods[0]['ACTIVATED']        = true;
-            $loggingMethods[1]['ID']               = 'log4php';
-            $loggingMethods[1]['ACTIVATED']        = true;
-            $loggingMethods[1]['LOGGER_NAME_TECH'] = 'loggerTechnique';
-            $loggingMethods[1]['LOGGER_NAME_FUNC'] = 'loggerFonctionnel';
-            $loggingMethods[1]['LOG_FORMAT']       = '[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]';
-            $loggingMethods[1]['CODE_METIER']      = 'MAARCH';
-        }
-
-        return $loggingMethods;
+        LogsController::logWithMonolog([
+            'name'      => $logConfig['customId'] ?? 'SCRIPT',
+            'path'      => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
+            'level'     => $args['level'],
+            'maxSize'   => empty($args['isTech']) ? $logConfig['logFontionnel']['maxSize'] : $logConfig['logTechnique']['maxSize'],
+            'maxFiles'  => empty($args['isTech']) ? $logConfig['logFontionnel']['maxFiles'] : $logConfig['logTechnique']['maxFiles'],
+            'line'      => $logLine
+        ]);
     }
 
-    public static function writeLog(array $aArgs)
-    {
-        ValidatorModel::notEmpty($aArgs, ['logLine', 'level', 'loggerName']);
-        ValidatorModel::stringType($aArgs, ['logLine', 'level', 'loggerName']);
-
-        $customId = CoreConfigModel::getCustomId();
-        if (file_exists("custom/{$customId}/apps/maarch_entreprise/xml/log4php.xml")) {
-            $path = "custom/{$customId}/apps/maarch_entreprise/xml/log4php.xml";
-        } elseif (file_exists('apps/maarch_entreprise/xml/log4php.xml')) {
-            $path = 'apps/maarch_entreprise/xml/log4php.xml';
-        } else {
-            $path = 'apps/maarch_entreprise/xml/log4php.default.xml';
-        }
-
-        \Logger::configure($path);
-        $logger = \Logger::getLogger($aArgs['loggerName']);
-
-        switch ($aArgs['level']) {
-            case 'DEBUG':
-                $logger->debug($aArgs['logLine']);
-                break;
-            case 'INFO':
-                $logger->info($aArgs['logLine']);
-                break;
-            case 'WARN':
-                $logger->warn($aArgs['logLine']);
-                break;
-            case 'ERROR':
-                $logger->error($aArgs['logLine']);
-                break;
-            case 'FATAL':
-                $logger->fatal($aArgs['logLine']);
-                break;
-        }
-    }
-
-    protected static function addToLog4php(array $aArgs)
-    {
-        ValidatorModel::notEmpty($aArgs, ['traceInformations', 'loggingMethod']);
-        ValidatorModel::arrayType($aArgs, ['traceInformations', 'loggingMethod']);
-
+    private static function prepareLogLine(array $args) {
         $logLine = str_replace(
             [
                 '%RESULT%',
@@ -108,60 +54,127 @@ class LogsController
             ],
             [
                 'OK',
-                $aArgs['loggingMethod']['CODE_METIER'],
-                $aArgs['traceInformations']['WHERE'],
-                $aArgs['traceInformations']['ID'],
-                $aArgs['traceInformations']['HOW'],
-                $aArgs['traceInformations']['USER'],
-                $aArgs['traceInformations']['WHAT'],
-                $aArgs['traceInformations']['ID_MODULE'],
-                $aArgs['traceInformations']['REMOTE_IP']
+                'MAARCH',
+                $args['tableName'],
+                $args['recordId'],
+                $args['eventType'],
+                $GLOBALS['login'] ?? '',
+                $args['eventId'],
+                $args['moduleId'],
+                $_SERVER['REMOTE_ADDR'] ?? ''
             ],
-            $aArgs['loggingMethod']['LOG_FORMAT']
+            "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
         );
-
-        $loggerName = (empty($aArgs['isTech']) ? $aArgs['loggingMethod']['LOGGER_NAME_FUNC'] : $aArgs['loggingMethod']['LOGGER_NAME_TECH']);
         $logLine    = TextFormatModel::htmlWasher($logLine);
         $logLine    = TextFormatModel::removeAccent(['string' => $logLine]);
-
-        LogsController::writeLog([
-            'loggerName' => $loggerName,
-            'logLine'    => $logLine,
-            'level'      => $aArgs['traceInformations']['LEVEL']
-        ]);
+        return $logLine;
     }
 
-    public static function add(array $aArgs)
-    {
-        $traceInformations = [
-            'WHERE'     => $aArgs['tableName'],
-            'ID'        => $aArgs['recordId'],
-            'HOW'       => $aArgs['eventType'],
-            'USER'      => $GLOBALS['login'] ?? '',
-            'WHAT'      => $aArgs['eventId'],
-            'ID_MODULE' => $aArgs['moduleId'],
-            'REMOTE_IP' => $_SERVER['REMOTE_ADDR'] ?? '',
-            'LEVEL'     => $aArgs['level']
-        ];
+    private static function getLogConfig() {
+        $path = null;
+        $customId = CoreConfigModel::getCustomId();
+        if (file_exists("custom/{$customId}/config/config.json")) {
+            $path = "custom/{$customId}/config/config.json";
+        } elseif (file_exists('config/config.json')) {
+            $path = 'config/config.json';
+        } else {
+            $path = 'config/config.json.default';
+        }
 
-        $loggingMethods = LogsController::buildLoggingMethod();
+        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path])['log'];
+        if (empty($logConfig)) {
+            $logConfig = [];
+            $logConfig['enable']       = true;
+            $logConfig['logFormat']    = "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]";
+            $logConfig['businessCode'] = 'MAARCH';
+            $logConfig['logFontionnel']['file']           = 'fonctionnel.log';
+            $logConfig['logFontionnel']['maxFileSize']    = '10MB';
+            $logConfig['logFontionnel']['maxBackupFiles'] = '10';
+            $logConfig['logTechnique']['file']            = 'technique.log';
+            $logConfig['logTechnique']['maxFileSize']     = '10MB';
+            $logConfig['logTechnique']['maxBackupFiles']  = '10';
+        }
+        $logConfig['customId'] = $customId;
+        return $logConfig;
+    }
 
-        foreach ($loggingMethods as $loggingMethod) {
-            if ($loggingMethod['ACTIVATED'] == true) {
-                if ($loggingMethod['ID'] == 'log4php') {
-                    if (empty($loggingMethod['LOGGER_NAME_TECH'])) {
-                        $loggingMethod['LOGGER_NAME_TECH'] = 'loggerTechnique';
+    protected static function logWithMonolog(array $log) {
+        ValidatorModel::notEmpty($log, ['name', 'path', 'level', 'line']);
+        ValidatorModel::stringType($log, ['name', 'path', 'line']);
+
+        LogsController::rotateLogByFileSize([
+            'path'      => $log['path'],
+            'maxSize'   => $log['maxSize'],
+            'maxFiles'  => $log['maxFiles']
+        ]);
+
+        // the default date format is "Y-m-d\TH:i:sP"
+        $dateFormat = "d/m/Y HH:mm:ss";
+        // the default format -> "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
+        $output = "[%datetime%][%channel%][%level_name%][%message%]\n";
+        $formatter = new LineFormatter($output, $dateFormat);
+
+        $streamHandler = new StreamHandler($log['path'], $log['level']);
+        $streamHandler->setFormatter($formatter);
+
+        $logger = new Logger($log['name']);
+        $logger->pushHandler($streamHandler);
+
+        switch ($log['level']) {
+            case 'DEBUG':
+                $logger->debug($log['line']);
+                break;
+            case 'NOTICE':
+                $logger->notice($log['line']);
+                break;
+            case 'INFO':
+                $logger->info($log['line']);
+                break;
+            case 'WARN':
+                $logger->warning($log['line']);
+                break;
+            case 'ERROR':
+                $logger->error($log['line']);
+                break;
+            case 'CRITICAL':
+                $logger->critical($log['line']);
+                break;
+            case 'ALERT':
+                $logger->alert($log['line']);
+                break;
+            case 'EMERGENCY':
+                $logger->emergency($log['line']);
+                break;
+            default:
+                $logger->info($log['line']);
+                break;
+        }
+        $logger->close();
+    }
+
+    private static function rotateLogByFileSize(array $file) {
+        ValidatorModel::notEmpty($file, ['path']);
+        ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
+        ValidatorModel::stringType($file, ['path']);
+
+        if (file_exists($log['path']) && !empty($log['maxSize']) && $log['maxSize'] > 0 && filesize($log['path']) > $log['maxSize']) {
+            $path_parts = pathinfo($log['path']);
+            $pattern = $path_parts['dirname']. '/'. $path_parts['filename']. "-%d.". $path_parts['extension'];
+
+            // delete last log
+            $fn = sprintf($pattern, $log['maxFiles']);
+            if (file_exists($fn)) { unlink($fn);}
+
+            // shift file names (add '-%index' before the extension)
+            if (!empty($file['maxFiles'])) {
+                for ($i = $log['maxFiles']-1; $i > 0; $i--) {
+                    $fn = sprintf($pattern, $i);
+                    if(file_exists($fn)) { 
+                        rename($fn, sprintf($pattern, $i+1)); 
                     }
-                    if (empty($loggingMethod['LOGGER_NAME_FUNC'])) {
-                        $loggingMethod['LOGGER_NAME_FUNC'] = 'loggerFonctionnel';
-                    }
-                    LogsController::addToLog4php([
-                        'traceInformations' => $traceInformations,
-                        'loggingMethod'     => $loggingMethod,
-                        'isTech'            => $aArgs['isTech'],
-                    ]);
                 }
             }
+            rename($log['path'], sprintf($pattern, 1));
         }
     }
 }

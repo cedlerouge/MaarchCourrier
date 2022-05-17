@@ -62,5 +62,22 @@
         "M2M": {
             "gec": "maarch_courrier"
         }
+    },
+    "log": {
+        "enable": true,
+        "logFormat": "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]",
+        "businessCode": "MAARCH",
+        "logFontionnel": {
+            "level": "ERROR",
+            "file": "/var/www/html/MaarchCourrier/fonctionnel.log",
+            "maxFileSize": "10MB",
+            "maxBackupFiles": "10"
+        },
+        "logTechnique": {
+            "level": "ERROR",
+            "file": "/var/www/html/MaarchCourrier/technique.log",
+            "maxFileSize": "10MB",
+            "maxBackupFiles": "10"
+        }
     }
 }
