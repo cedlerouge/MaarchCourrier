@@ -18,6 +18,8 @@ namespace SrcCore\controllers;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
+
+// using Monolog version 2.6.0
 use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -150,27 +152,35 @@ class LogsController
 
         switch ($log['level']) {
             case 'DEBUG':
+                // Use for detailed debug information
                 $logger->debug($log['line']);
                 break;
-            case 'NOTICE':
-                $logger->notice($log['line']);
-                break;
             case 'INFO':
+                // Use for user logs in, SQL logs
                 $logger->info($log['line']);
                 break;
+            case 'NOTICE':
+                // Use for uncommon events
+                $logger->notice($log['line']);
+                break;
             case 'WARNING':
+                // Use for exceptional occurrences that are not errors. Examples: Use of deprecated APIs, poor use of an API, undesirable things that are not necessarily wrong.
                 $logger->warning($log['line']);
                 break;
             case 'ERROR':
+                // Use for runtime errors
                 $logger->error($log['line']);
                 break;
             case 'CRITICAL':
+                // Use for critical conditions. Example: Application component unavailable, unexpected exception.
                 $logger->critical($log['line']);
                 break;
             case 'ALERT':
+                // Use for actions that must be taken immediately. Example: Entire website down, database unavailable, etc.
                 $logger->alert($log['line']);
                 break;
             case 'EMERGENCY':
+                // Use for urgent alert.
                 $logger->emergency($log['line']);
                 break;
         }
