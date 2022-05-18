@@ -50,8 +50,8 @@ class LogsController
             'name'        => $logConfig['customId'] ?? 'SCRIPT',
             'path'        => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
             'level'       => $args['level'],
-            'maxSize'     => empty($args['isTech']) ? $logConfig['logFontionnel']['maxSize'] : $logConfig['logTechnique']['maxSize'],
-            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFontionnel']['maxFiles'] : $logConfig['logTechnique']['maxFiles'],
+            'maxSize'     => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFontionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
+            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFontionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
             'line'        => $logLine
         ]);
     }
@@ -192,24 +192,41 @@ class LogsController
         ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
         ValidatorModel::stringType($file, ['path']);
 
-        if (file_exists($log['path']) && !empty($log['maxSize']) && $log['maxSize'] > 0 && filesize($log['path']) > $log['maxSize']) {
-            $path_parts = pathinfo($log['path']);
+        if (file_exists($file['path']) && !empty($file['maxSize']) && $file['maxSize'] > 0 && filesize($file['path']) > $file['maxSize']) {
+            $path_parts = pathinfo($file['path']);
             $pattern = $path_parts['dirname']. '/'. $path_parts['filename']. "-%d.". $path_parts['extension'];
 
-            // delete last log
-            $fn = sprintf($pattern, $log['maxFiles']);
+            // delete last file
+            $fn = sprintf($pattern, $file['maxFiles']);
             if (file_exists($fn)) { unlink($fn);}
 
             // shift file names (add '-%index' before the extension)
             if (!empty($file['maxFiles'])) {
-                for ($i = $log['maxFiles']-1; $i > 0; $i--) {
+                for ($i = $file['maxFiles']-1; $i > 0; $i--) {
                     $fn = sprintf($pattern, $i);
                     if(file_exists($fn)) { 
                         rename($fn, sprintf($pattern, $i+1)); 
                     }
                 }
             }
-            rename($log['path'], sprintf($pattern, 1));
+            rename($file['path'], sprintf($pattern, 1));
         }
     }
+
+    private static function setMaxFileSize($value) {
+		$maxFileSize = null;
+		$numpart = substr($value,0, strlen($value) -2);
+		$suffix = strtoupper(substr($value, -2));
+
+		switch($suffix) {
+			case 'KB': $maxFileSize = (int)((int)$numpart * 1024); break;
+			case 'MB': $maxFileSize = (int)((int)$numpart * 1024 * 1024); break;
+			case 'GB': $maxFileSize = (int)((int)$numpart * 1024 * 1024 * 1024); break;
+			default:
+				if(is_numeric($value)) {
+					$maxFileSize = (int)$value;
+				}
+		}
+		return $maxFileSize;
+	}
 }
