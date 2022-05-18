@@ -33,6 +33,7 @@ class LogsController
 
         if ($args['level'] == $logConfig['queries']['level']) {
             LogsController::logWithMonolog([
+                'levelConfig' => "INFO",
                 'name'      => $logConfig['customId'] ?? 'SCRIPT',
                 'path'      => $logConfig['queries']['file'],
                 'level'     => "INFO",
@@ -40,14 +41,16 @@ class LogsController
                 'maxFiles'  => $logConfig['queries']['maxFiles'],
                 'line'      => $logLine
             ]);
+            return;
         }
         LogsController::logWithMonolog([
-            'name'      => $logConfig['customId'] ?? 'SCRIPT',
-            'path'      => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
-            'level'     => empty($args['isTech']) ? $logConfig['logFontionnel']['level'] : $logConfig['logTechnique']['level'],
-            'maxSize'   => empty($args['isTech']) ? $logConfig['logFontionnel']['maxSize'] : $logConfig['logTechnique']['maxSize'],
-            'maxFiles'  => empty($args['isTech']) ? $logConfig['logFontionnel']['maxFiles'] : $logConfig['logTechnique']['maxFiles'],
-            'line'      => $logLine
+            'levelConfig' => empty($args['isTech']) ? $logConfig['logFontionnel']['level'] : $logConfig['logTechnique']['level'],
+            'name'        => $logConfig['customId'] ?? 'SCRIPT',
+            'path'        => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
+            'level'       => $args['level'],
+            'maxSize'     => empty($args['isTech']) ? $logConfig['logFontionnel']['maxSize'] : $logConfig['logTechnique']['maxSize'],
+            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFontionnel']['maxFiles'] : $logConfig['logTechnique']['maxFiles'],
+            'line'        => $logLine
         ]);
     }
 
@@ -120,9 +123,12 @@ class LogsController
 
     protected static function logWithMonolog(array $log) {
         
-        ValidatorModel::notEmpty($log, ['name', 'path', 'level', 'line']);
+        ValidatorModel::notEmpty($log, ['levelConfig', 'name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['name', 'path', 'line']);
 
+        if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
+            return;
+        }
         LogsController::rotateLogByFileSize([
             'path'      => $log['path'],
             'maxSize'   => $log['maxSize'],
@@ -135,11 +141,12 @@ class LogsController
         $output = "[%datetime%][%channel%][%level_name%][%message%]\n";
         $formatter = new LineFormatter($output, $dateFormat);
 
-        $streamHandler = new StreamHandler($log['path'], Logger::toMonologLevel($log['level']), false, 0655);
+        $streamHandler = new StreamHandler($log['path']);
         $streamHandler->setFormatter($formatter);
 
         $logger = new Logger($log['name']);
-        $logger->pushHandler($streamHandler);
+        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($log['level']));
+        $logger->pushHandler($filterHandler);
 
         switch ($log['level']) {
             case 'DEBUG':
