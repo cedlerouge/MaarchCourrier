@@ -2650,5 +2650,7 @@
     "notifTargetDesc": "The <i>[res_letterbox.linktodetail], [res_letterbox.linktodoc]</i> and <i>[res_letterbox.linktoprocess]</i> merge variables require the <br> application URL to be filled in : <b>Administration -> Settings -> Personalization -> Application URL</b>",
     "separatorsEmail": "To separate email addresses, use \",\" or \";\"",
     "cannotAccessPage": "Cannot access the page",
-    "systemType": "System type"
+    "systemType": "System type",
+    "signedByDefault_attachment": "Associate the «Signed» status",
+    "signedByDefault_attachmentDesc": "When creating/modifying, the attachment automatically takes on the signed status"
 }

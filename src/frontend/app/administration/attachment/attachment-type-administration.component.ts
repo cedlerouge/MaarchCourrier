@@ -31,6 +31,7 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         icon: new FormControl({ value: '', disabled: false }),
         versionEnabled: new FormControl({ value: false, disabled: false }),
         newVersionDefault: new FormControl({ value: false, disabled: false }),
+        signedByDefault: new FormControl({ value: false, disabled: false})
     };
 
     constructor(
@@ -62,7 +63,7 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
                 this.http.get(`../rest/attachmentsTypes/${this.id}`).pipe(
                     tap((data: any) => {
                         Object.keys(this.attachmentType).forEach(key => {
-                            this.attachmentType[key].setValue(data[key]);
+                            this.attachmentType[key].setValue(data[key] === null ? false : data[key]);
                             if (key === 'typeId') {
                                 this.attachmentType[key].disable();
                             }

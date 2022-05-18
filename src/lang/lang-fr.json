@@ -2648,5 +2648,7 @@
     "notifTargetDesc": "Les champs de fusion <i>[res_letterbox.linktodetail], [res_letterbox.linktodoc]</i> et <i>[res_letterbox.linktoprocess]</i> requièrent que l’URL de l’application <br> soit renseignée dans : <b>Administration -> Paramètres -> Personnalisation -> URL de l'application</b>",
     "separatorsEmail": "Pour séparer les adresses courriels, utiliser les \",\" ou \";\"",
     "cannotAccessPage": "Impossible d'accéder à la page",
-    "systemType": "Type système"
+    "systemType": "Type système",
+    "signedByDefault_attachment": "Associer le statut «Signé»",
+    "signedByDefault_attachmentDesc": "Lors de la création/modification, la pièce jointe prend automatiquement le statut signé"
 }
