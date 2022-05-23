@@ -103,7 +103,7 @@ class StoreController
             }
 
             if (!empty($args['encodedFile'])) {
-                $fileContent    = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
+                $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
                 if (empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) && $data['status'] != 'SEND_MASS') {
                     $tmpPath = CoreConfigModel::getTmpPath();
@@ -134,7 +134,20 @@ class StoreController
             }
 
             if (empty($args['id'])) {
+                $signedByDefault = AttachmentTypeModel::getByTypeId(['typeId' => $data['attachment_type'], 'select' => ['signed_by_default']]);
+                $signedByDefault = $signedByDefault['signed_by_default'] ?? false;
+                if ($signedByDefault) {
+                    $data['status'] = 'SIGN';
+                }
                 $id = AttachmentModel::create($data);
+                if ($signedByDefault) {
+                    $versionData = $data;
+                    $versionData['res_id']          = DatabaseModel::getNextSequenceValue(['sequenceId' => 'res_attachment_res_id_seq']);
+                    $versionData['status']          = 'TRA';
+                    $versionData['attachment_type'] = 'signed_response';
+                    $versionData['origin']          = "{$id},res_attachments";
+                    AttachmentModel::create($versionData);
+                }
             } else {
                 AttachmentModel::update(['set' => $data, 'where' => ['res_id = ?'], 'data' => [$args['id']]]);
                 $id = $args['id'];
@@ -381,7 +394,7 @@ class StoreController
 
     public static function prepareAttachmentStorage(array $args)
     {
-        $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono', 'signable', 'signed_by_default']]);
+        $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'chrono', 'signable']]);
         $attachmentsTypes = array_column($attachmentsTypes, null, 'type_id');
         if ($attachmentsTypes[$args['type']]['chrono'] && empty($args['chrono'])) {
             $resource = ResModel::getById(['select' => ['destination', 'type_id'], 'resId' => $args['resIdMaster']]);
@@ -393,8 +406,6 @@ class StoreController
             $linkSign = "{$args['originId']},res_attachments";
             AttachmentModel::update(['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$args['originId']]]);
             unset($args['originId']);
-        } elseif ($attachmentsTypes[$args['type']]['signed_by_default']) {
-            $args['status'] = 'SIGN';
         }
 
         $relation = 1;
