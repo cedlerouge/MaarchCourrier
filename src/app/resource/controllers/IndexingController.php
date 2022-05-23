@@ -244,6 +244,8 @@ class IndexingController
     {
         $queryParams = $request->getQueryParams();
 
+        // if delay is 0, then the process limit date is today
+        $delay = 0;
         if (!empty($queryParams['doctype'])) {
             $doctype = DoctypeModel::getById(['id' => $queryParams['doctype'], 'select' => ['process_delay']]);
             if (empty($doctype)) {
@@ -257,6 +259,9 @@ class IndexingController
                 return $response->withStatus(400)->withJson(['errors' => 'Priority does not exists']);
             }
             $delay = $priority['delays'];
+        }
+        if (!empty($queryParams['today'])) {
+            $delay = 0;
         }
         if (!Validator::intVal()->validate($delay)) {
             return $response->withStatus(400)->withJson(['errors' => 'Delay is not a numeric value']);

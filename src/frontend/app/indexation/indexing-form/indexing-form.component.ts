@@ -283,6 +283,8 @@ export class IndexingFormComponent implements OnInit {
     indexingModelClone: any;
     resDataClone: any;
 
+    isProcessLimitDateToday: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -1028,7 +1030,16 @@ export class IndexingFormComponent implements OnInit {
                     this.indexingModelClone = JSON.parse(JSON.stringify(data.indexingModel));
                 }
 
-                await this.initElemForm(saveResourceState);
+                await this.initElemForm(saveResourceState).then(() => {
+                    // check if clock is active
+                    if (!this.functions.empty(this['indexingModels_process'])) {
+                        const processLimitDate = this['indexingModels_process'].find((element: any) => element.identifier === 'processLimitDate');
+                        if (!this.functions.empty(processLimitDate.today)) {
+                            this.isProcessLimitDateToday = true;
+                            this.calcLimitDateToday();
+                        }
+                    }
+                });
                 this.createForm();
 
             }),
@@ -1235,11 +1246,41 @@ export class IndexingFormComponent implements OnInit {
         if (this.arrFormControl['processLimitDate'] !== undefined) {
             const objToSend: any = {
                 doctype: value,
-                priority: this.arrFormControl['priority']?.value
+                priority: this.arrFormControl['priority']?.value,
+                today: this.isProcessLimitDateToday
             };
             if (this.functions.empty(this.arrFormControl['priority']?.value)) {
                 delete objToSend.priority;
             }
+            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
+                tap((data: any) => {
+                    limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
+                    this.arrFormControl['processLimitDate'].setValue(limitDate);
+                }),
+                filter((data) => this.arrFormControl['priority'] !== undefined && data.processLimitDate !== null),
+                exhaustMap(() => this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } })),
+                tap((data: any) => {
+                    this.arrFormControl['priority'].setValue(data.priority);
+                    this.setPriorityColor(null, data.priority);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        }
+    }
+
+    /**
+     * @description calculate the limit date if the clock is active
+     * @returns void
+     */
+     calcLimitDateToday() {
+        let limitDate: any = null;
+        const objToSend: any = {
+            today: true
+        };
+        if (this.arrFormControl['processLimitDate'] !== undefined) {
             this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
@@ -1265,7 +1306,8 @@ export class IndexingFormComponent implements OnInit {
         if (this.arrFormControl['processLimitDate'] !== undefined) {
             const objToSend: any = {
                 priority: value,
-                doctype: this.arrFormControl['doctype']?.value
+                doctype: this.arrFormControl['doctype']?.value,
+                today: this.isProcessLimitDateToday
             };
             if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
                 delete objToSend.doctype;
