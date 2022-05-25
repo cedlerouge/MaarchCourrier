@@ -46,12 +46,12 @@ class LogsController
             return;
         }
         LogsController::logWithMonolog([
-            'levelConfig' => empty($args['isTech']) ? $logConfig['logFontionnel']['level'] : $logConfig['logTechnique']['level'],
+            'levelConfig' => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
             'name'        => $logConfig['customId'] ?? 'SCRIPT',
-            'path'        => empty($args['isTech']) ? $logConfig['logFontionnel']['file'] : $logConfig['logTechnique']['file'],
+            'path'        => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
             'level'       => $args['level'],
-            'maxSize'     => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFontionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
-            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFontionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
+            'maxSize'     => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
+            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
             'line'        => $logLine
         ]);
     }
@@ -94,8 +94,8 @@ class LogsController
 
     private static function getLogConfig() {
         $path = null;
-        $customId = CoreConfigModel::getCustomId();
-        if (file_exists("custom/{$customId}/config/config.json")) {
+        $customId = CoreConfigModel::getCustomId() ?: null;
+        if (!empty($customId) && file_exists("custom/{$customId}/config/config.json")) {
             $path = "custom/{$customId}/config/config.json";
         } elseif (file_exists('config/config.json')) {
             $path = 'config/config.json';
@@ -109,15 +109,17 @@ class LogsController
             $logConfig['enable']       = true;
             $logConfig['logFormat']    = "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]";
             $logConfig['businessCode'] = 'MAARCH';
-            $logConfig['logFontionnel']['file']           = 'fonctionnel.log';
-            $logConfig['logFontionnel']['maxFileSize']    = '10MB';
-            $logConfig['logFontionnel']['maxBackupFiles'] = '10';
-            $logConfig['logTechnique']['file']            = 'technique.log';
-            $logConfig['logTechnique']['maxFileSize']     = '10MB';
-            $logConfig['logTechnique']['maxBackupFiles']  = '10';
-            $logConfig['queries']['file']            = 'queries_error.log';
-            $logConfig['queries']['maxFileSize']     = '10MB';
-            $logConfig['queries']['maxBackupFiles']  = '10';
+            $logConfig['logFonctionnel']['level']          = 'ERROR';
+            $logConfig['logFonctionnel']['file']           = 'fonctionnel.log';
+            $logConfig['logFonctionnel']['maxFileSize']    = '10MB';
+            $logConfig['logFonctionnel']['maxBackupFiles'] = '10';
+            $logConfig['logTechnique']['level']            = 'ERROR';
+            $logConfig['logTechnique']['file']             = 'technique.log';
+            $logConfig['logTechnique']['maxFileSize']      = '10MB';
+            $logConfig['logTechnique']['maxBackupFiles']   = '10';
+            $logConfig['queries']['file']           = 'queries_error.log';
+            $logConfig['queries']['maxFileSize']    = '10MB';
+            $logConfig['queries']['maxBackupFiles'] = '10';
         }
         $logConfig['customId'] = $customId;
         return $logConfig;
