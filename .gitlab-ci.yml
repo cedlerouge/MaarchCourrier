@@ -95,7 +95,7 @@ job_php-8.1:
     paths:
       - test/unitTests/build/
     expire_in: 2h
-  coverage: '^\s*Lines:\s*\d+.\d+\%'
+  # coverage: '^\s*Lines:\s*\d+.\d+\%'
 
 job_php-8.0:
   image: php:8.0-apache
@@ -117,7 +117,7 @@ job_php-8.0:
     paths:
       - test/unitTests/build/
     expire_in: 2h
-  coverage: '^\s*Lines:\s*\d+.\d+\%'
+  # coverage: '^\s*Lines:\s*\d+.\d+\%'
 
 job_php-7.4:
   image: php:7.4-apache
@@ -140,7 +140,7 @@ job_php-7.4:
     paths:
       - test/unitTests/build/
     expire_in: 2h
-  coverage: '^\s*Lines:\s*\d+.\d+\%'
+  # coverage: '^\s*Lines:\s*\d+.\d+\%'
 
 logs:
   image: debian:10-slim
