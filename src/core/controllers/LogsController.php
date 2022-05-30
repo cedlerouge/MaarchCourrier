@@ -20,7 +20,6 @@ use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 
 // using Monolog version 2.6.0
-use Monolog\Level;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FilterHandler;
@@ -28,20 +27,21 @@ use Monolog\Formatter\LineFormatter;
 
 class LogsController
 {
-    public static function add(array $args){
+    public static function add(array $args)
+    {
         
         $logConfig = LogsController::getLogConfig();
         $logLine   = LogsController::prepareLogLine(['logConfig' => $logConfig, 'lineData' => $args]);
 
-        if ($args['level'] == $logConfig['queries']['level']) {
+        if (!empty($args['isSql'])) {
             LogsController::logWithMonolog([
-                'levelConfig' => "INFO",
-                'name'      => $logConfig['customId'] ?? 'SCRIPT',
-                'path'      => $logConfig['queries']['file'],
-                'level'     => "INFO",
-                'maxSize'   => $logConfig['queries']['maxSize'],
-                'maxFiles'  => $logConfig['queries']['maxFiles'],
-                'line'      => $logLine
+                'levelConfig'   => $logConfig['queries']['level'],
+                'name'          => $logConfig['customId'] ?? 'SCRIPT',
+                'path'          => $logConfig['queries']['file'],
+                'level'         => $args['level'],
+                'maxSize'       => $logConfig['queries']['maxSize'],
+                'maxFiles'      => $logConfig['queries']['maxFiles'],
+                'line'          => $logLine
             ]);
             return;
         }
@@ -56,7 +56,8 @@ class LogsController
         ]);
     }
 
-    private static function prepareLogLine(array $args) {
+    private static function prepareLogLine(array $args)
+    {
         $logLine = str_replace(
             [
                 '%RESULT%',
@@ -82,9 +83,15 @@ class LogsController
             ],
             "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
         );
-        if ($args['lineData']['level'] == $args['logConfig']['queries']['level']) {
+        if (!empty($args['lineData']['isSql'])) {
             $logLine  = empty($args['lineData']['sqlQuery']) ? '[]' : "[" . $args['lineData']['sqlQuery'] . "]";
-            $logLine .= empty($args['lineData']['sqlData']) ? '[]' : "[" . $args['lineData']['sqlData'] . "]";
+            if (empty($args['lineData']['sqlData'])) {
+                $logLine .= "[]";
+            } elseif (is_array($args['lineData']['sqlData'])) {
+                $logLine .= "[" . implode(', ', $args['lineData']['sqlData']) . "]";
+            } else {
+                $logLine .= "[" . $args['lineData']['sqlData'] . "]";
+            }
             $logLine .= empty($args['lineData']['sqlException']) ? '[]' : "[" . $args['lineData']['sqlException'] . "]";
         }
         $logLine = TextFormatModel::htmlWasher($logLine);
@@ -92,7 +99,8 @@ class LogsController
         return $logLine;
     }
 
-    private static function getLogConfig() {
+    private static function getLogConfig()
+    {
         $path = null;
         $customId = CoreConfigModel::getCustomId() ?: null;
         if (!empty($customId) && file_exists("custom/{$customId}/config/config.json")) {
@@ -107,7 +115,6 @@ class LogsController
         if (empty($logConfig)) {
             $logConfig = [];
             $logConfig['enable']       = true;
-            $logConfig['logFormat']    = "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]";
             $logConfig['businessCode'] = 'MAARCH';
             $logConfig['logFonctionnel']['level']          = 'ERROR';
             $logConfig['logFonctionnel']['file']           = 'fonctionnel.log';
@@ -125,7 +132,8 @@ class LogsController
         return $logConfig;
     }
 
-    protected static function logWithMonolog(array $log) {
+    protected static function logWithMonolog(array $log)
+    {
         
         ValidatorModel::notEmpty($log, ['levelConfig', 'name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['name', 'path', 'line']);
@@ -189,14 +197,15 @@ class LogsController
         $logger->close();
     }
 
-    private static function rotateLogByFileSize(array $file) {
+    private static function rotateLogByFileSize(array $file)
+    {
         ValidatorModel::notEmpty($file, ['path']);
         ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
         ValidatorModel::stringType($file, ['path']);
 
         if (file_exists($file['path']) && !empty($file['maxSize']) && $file['maxSize'] > 0 && filesize($file['path']) > $file['maxSize']) {
             $path_parts = pathinfo($file['path']);
-            $pattern = $path_parts['dirname']. '/'. $path_parts['filename']. "-%d.". $path_parts['extension'];
+            $pattern = $path_parts['dirname'] . '/' . $path_parts['filename'] . "-%d." . $path_parts['extension'];
 
             // delete last file
             $fn = sprintf($pattern, $file['maxFiles']);
@@ -204,10 +213,10 @@ class LogsController
 
             // shift file names (add '-%index' before the extension)
             if (!empty($file['maxFiles'])) {
-                for ($i = $file['maxFiles']-1; $i > 0; $i--) {
+                for ($i = $file['maxFiles'] - 1; $i > 0; $i--) {
                     $fn = sprintf($pattern, $i);
                     if(file_exists($fn)) { 
-                        rename($fn, sprintf($pattern, $i+1)); 
+                        rename($fn, sprintf($pattern, $i + 1)); 
                     }
                 }
             }
@@ -215,7 +224,8 @@ class LogsController
         }
     }
 
-    private static function setMaxFileSize($value) {
+    private static function setMaxFileSize(string $value)
+    {
 		$maxFileSize = null;
 		$numpart = substr($value,0, strlen($value) -2);
 		$suffix = strtoupper(substr($value, -2));

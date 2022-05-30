@@ -90,9 +90,8 @@ class DatabasePDO
                         continue;
                     } else {
                         LogsController::add([
-                            'level'         => 'SQL',
-                            'sqlQuery'      => '',
-                            'sqlData'       => '',
+                            'isSql'         => true,
+                            'level'         => 'ERROR',
                             'sqlException'  => $PDOException->getMessage()
                         ]);
                         throw new \Exception($PDOException->getMessage());
@@ -104,6 +103,13 @@ class DatabasePDO
 
     public function query($queryString, array $data = [])
     {
+        LogsController::add([
+            'isSql'         => true,
+            'level'         => 'INFO',
+            'sqlQuery'      => $queryString,
+            'sqlData'       => $data,
+        ]);
+
         if (self::$type == 'ORACLE') {
             $queryString = str_ireplace('CURRENT_TIMESTAMP', 'SYSDATE', $queryString);
         }
@@ -132,7 +138,6 @@ class DatabasePDO
             } else {
                 $query = self::$preparedQueries[$queryString];
             }
-
             $query->execute($data);
         } catch (\PDOException $PDOException) {
             if (strpos($PDOException->getMessage(), 'Admin shutdown: 7') !== false || strpos($PDOException->getMessage(), 'General error: 7') !== false) {
@@ -142,7 +147,8 @@ class DatabasePDO
             } else {
                 $param = implode(', ', $data);
                 LogsController::add([
-                    'level'         => 'SQL',
+                    'isSql'         => true,
+                    'level'         => 'ERROR',
                     'sqlQuery'      => $queryString . PHP_EOL,
                     'sqlData'       => $param,
                     'sqlException'  => $PDOException->getMessage()
@@ -157,13 +163,19 @@ class DatabasePDO
 
     public function exec(string $query)
     {
+        LogsController::add([
+            'isSql'         => true,
+            'level'         => 'INFO',
+            'sqlQuery'      => $query
+        ]);
+
         try {
             self::$pdo->exec($query);
         } catch (\PDOException $PDOException) {
             LogsController::add([
-                'level'         => 'SQL',
+                'isSql'         => true,
+                'level'         => 'ERROR',
                 'sqlQuery'      => $query . PHP_EOL,
-                'sqlData'       => '',
                 'sqlException'  => $PDOException->getMessage()
             ]);
 

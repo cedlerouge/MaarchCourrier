@@ -68,19 +68,19 @@
         "businessCode": "MAARCH",
         "logFonctionnel": {
             "level": "ERROR",
-            "file": "/var/www/html/MaarchCourrier/fonctionnel.log",
+            "file": "./fonctionnel.log",
             "maxFileSize": "10MB",
             "maxBackupFiles": "10"
         },
         "logTechnique": {
             "level": "ERROR",
-            "file": "/var/www/html/MaarchCourrier/technique.log",
+            "file": "./technique.log",
             "maxFileSize": "10MB",
             "maxBackupFiles": "10"
         },
         "queries": {
-            "level": "SQL",
-            "file": "/var/www/html/MaarchCourrier/queries_error.log",
+            "level": "ERROR",
+            "file": "./queries.log",
             "maxFileSize": "10MB",
             "maxBackupFiles": "10"
         }
