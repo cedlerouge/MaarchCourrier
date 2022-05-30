@@ -44,7 +44,7 @@ job_e2e:
   stage: test
   services:
     - name: postgres:10.1
-    command: [ "-c", "datestyle=iso,dmy" ]
+      command: [ "-c", "datestyle=iso,dmy" ]
   script:
     - apt-get install -yqq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
     - service apache2 start
@@ -194,7 +194,7 @@ new_branch:
     - chmod +x ./ci/create_mr.sh
     - ./ci/create_mr.sh
 
-  new_tag:
+new_tag:
   image: debian:10-slim
   stage: deploy
   # only:
@@ -225,7 +225,7 @@ mr_end:
   # only: 
   #  - merge_requests
   rules:
-    - if: '$CI_COMMIT_MESSAGE =~ /^Merge branch/'
+    - if: "$CI_COMMIT_MESSAGE =~ /^Merge branch/"
   before_script:
     # Install git and curl command
     - apt-get update -yqq > /dev/null
