@@ -540,14 +540,14 @@ class EntityController
             'data'      => ['"'.$dyingEntity['id'].'"']
         ]);
         //ResourceContact
-        $dyingOcc = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
-        $succOcc = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_uniq(array_column($dyingOcc, 'res_id'))]]);
-        $dyingIds = array_column($dyingOcc, 'id');
+        $dyingConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
+        $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_uniq(array_column($dyingConnection, 'res_id'))]]);
+        $dyingIds = array_column($dyingConnection, 'id');
         $idsToDelete = [];
-        foreach ($dyingOcc as $d) {
-            foreach ($succOcc as $s) {
-                if ($d['mode'] == $s['mode'] && $d['res_id'] == $s['res_id']) {
-                    $idsToDelete[] = $d['id'];
+        foreach ($dyingConnection as $dyingConn) {
+            foreach ($successorConnection as $successorConn) {
+                if ($dyingConnection['mode'] == $successorConnection['mode'] && $dyingConnection['res_id'] == $successorConnection['res_id']) {
+                    $idsToDelete[] = $dyingConnection['id'];
                 }
             }
         }
