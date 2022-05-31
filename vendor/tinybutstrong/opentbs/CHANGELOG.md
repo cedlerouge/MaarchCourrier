@@ -2,7 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.7] - 2022-05-03
 
+### Bug fixes
+
+- Charts with MsOffice: merging values that are not empty and not numerical make a document that cannot be opened. Ms Word error : « Word experienced an error trying to open the file ».
+                        Now a fatal OpenTBS error is raised instead.
+
+## [1.10.6] - 2022-02-23
+
+### Bug fixes
+
+- Regression: some few XLSX formulas may keep their cached values or keep beeing dynamic array formulas.
+
+## [1.10.5] - 2022-02-22
+
+### Bug fixes
+
+- Composer : the required version of TBS is updated in order to ensure the compatibility with PHP 8.1.
+
+### Enhancements
+
+- Prevent invalid XLSX when merged sheets have dynamic array formulas (a new feature first released with Office 365 in 2018)
+
+
+## [1.10.4] - 2022-02-07
+
+### Bug fixes
+
+- OPENTBS_CHART : The chart can be located using a TBS field inside the Alt Text property.
+                  Useful because the Title property is no longer editable since Ms Office 2019.
+                  
+### Enhancements
+
+- PHP 8.1 compatibility
+
+## [1.10.3] - 2021-09-21
+
+### New features
+
+- New command OPENTBS_READ_ENTITY.
+
+### Bug fixes
+
+- Command OPENTBS_EDIT_ENTITY didn't work with argument « $SubFile = false ».
+  
 ## [1.10.2] - 2020-11-19
 
 ### Bug fixes
