@@ -546,8 +546,8 @@ class EntityController
         $idsToDelete = [];
         foreach ($dyingConnection as $dyingConn) {
             foreach ($successorConnection as $successorConn) {
-                if ($dyingConnection['mode'] == $successorConnection['mode'] && $dyingConnection['res_id'] == $successorConnection['res_id']) {
-                    $idsToDelete[] = $dyingConnection['id'];
+                if ($dyingConn['mode'] == $successorConn['mode'] && $dyingConn['res_id'] == $successorConn['res_id']) {
+                    $idsToDelete[] = $dyingConn['id'];
                 }
             }
         }
