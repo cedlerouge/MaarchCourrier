@@ -242,7 +242,7 @@ class ListInstanceController
 
             $recipientFound = false;
             foreach ($listInstanceByRes['listInstances'] as $instance) {
-                if ($instance['item_mode'] == 'dest') {
+                if (!empty($instance['item_mode']) && $instance['item_mode'] == 'dest') {
                     $recipientFound = true;
                 }
             }

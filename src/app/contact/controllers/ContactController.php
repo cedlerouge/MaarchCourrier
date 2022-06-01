@@ -153,9 +153,9 @@ class ContactController
         }
 
         if (!empty($body['communicationMeans'])) {
-            if (filter_var($body['communicationMeans']['email'], FILTER_VALIDATE_EMAIL)) {
+            if (!empty($body['communicationMeans']['email']) && filter_var($body['communicationMeans']['email'], FILTER_VALIDATE_EMAIL)) {
                 $contactBody['email'] = $body['communicationMeans']['email'];
-            } elseif (filter_var($body['communicationMeans']['url'], FILTER_VALIDATE_URL)) {
+            } elseif (!empty($body['communicationMeans']['url']) && filter_var($body['communicationMeans']['url'], FILTER_VALIDATE_URL)) {
                 $contactBody['url'] = $body['communicationMeans']['url'];
             } else {
                 return $response->withStatus(400)->withJson(['errors' => _COMMUNICATION_MEANS_VALIDATOR]);
@@ -642,8 +642,11 @@ class ContactController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        foreach ($data['contactsParameters'] as $contactParameter) {
-            unset($contactParameter['label']);
+        foreach ($data['contactsParameters'] as $key => $contactParameter) {
+
+            if ($key == "label") {
+                unset($contactParameter['label']);
+            }
             ContactParameterModel::update([
                 'set'   => [
                     'mandatory'   => empty($contactParameter['mandatory']) ? 'false' : 'true',
