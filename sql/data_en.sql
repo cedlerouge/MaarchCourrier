@@ -823,7 +823,7 @@ INSERT INTO parameters (id, param_value_string, param_value_int, param_value_dat
 INSERT INTO parameters (id, param_value_string, param_value_int, param_value_date) VALUES ('postindexing_workbatch', NULL, 1, NULL);
 INSERT INTO parameters (id, param_value_string, param_value_int, param_value_date) VALUES ('database_version', '21.03.1', NULL, NULL);
 INSERT INTO parameters (id, param_value_string, param_value_int, param_value_date) VALUES ('user_quota', '', 0, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Default department selected in the address form', NULL, 75, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Default department selected in the address form', '75', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string) VALUES ('homepage_message', 'Text appearing in the banner on the homepage, put a space to remove the banner.', 'Welcome to your <b>E</b>lectronic <b>M</b>ail <b>M</b>anagement.');
 INSERT INTO parameters (id, description, param_value_string) VALUES ('thumbnailsSize', 'Thumbnail resolution', '750x900');
 INSERT INTO parameters (id, description, param_value_int) VALUES ('keepDestForRedirection', 'If enabled (1), put recipient in copy for diffusion list when redirecting', 0);
