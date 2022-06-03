@@ -541,8 +541,9 @@ class EntityController
         ]);
         //ResourceContact
         $dyingConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
+        $successorConnection = [];
         if(!empty($dyingConnection)) {
-            $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_uniq(array_column($dyingConnection, 'res_id'))]]);
+            $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_unique(array_column($dyingConnection, 'res_id'))]]);
         }
         $dyingIds = array_column($dyingConnection, 'id');
         $idsToDelete = [];
@@ -560,7 +561,7 @@ class EntityController
             ResourceContactModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['id in (?)'], 'data' => [$dyingIds]]);
         }
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
-        
+
         HistoryController::add([
             'tableName' => 'entities',
             'recordId'  => $aArgs['id'],
