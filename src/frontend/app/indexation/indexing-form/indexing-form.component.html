@@ -73,7 +73,7 @@
                                     <mat-form-field class="input-form"
                                         [floatLabel]="appService.getViewMode() ? '' : 'never'">
                                         <mat-label *ngIf="appService.getViewMode()">{{field.label}}</mat-label>
-                                        <textarea [id]="field.identifier" matInput matTextareaAutosize
+                                        <textarea [id]="field.identifier" matInput cdkTextareaAutosize
                                             [formControl]="arrFormControl[field.identifier]"
                                             [placeholder]="!adminMode ? ('lang.typeValue' | translate) : ('lang.defaultValue' | translate)"
                                             class="subject"></textarea>

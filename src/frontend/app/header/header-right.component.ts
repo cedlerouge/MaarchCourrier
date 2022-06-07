@@ -75,7 +75,11 @@ export class HeaderRightComponent implements OnInit {
     }
 
     hideSearchBar() {
-        return this.router.url.split('?')[0] !== '/search';
+        if (this.privilegeService.getCurrentUserMenus().find((privilege: any) => privilege.id === 'adv_search_mlb') === undefined) {
+            return false;
+        } else {
+            return this.router.url.split('?')[0] !== '/search';
+        }
     }
 
     showLogout() {

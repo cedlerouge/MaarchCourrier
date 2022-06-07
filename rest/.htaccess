@@ -1,6 +1,5 @@
 <FilesMatch ".*">
-	Order allow,deny
-	Allow from all
+	Require all granted
 </FilesMatch>
 
 RewriteEngine On

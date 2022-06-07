@@ -411,7 +411,7 @@ class SummarySheetController
                         }
 
                         $nextLine = ($nextLine + 1) % 2;
-                        $pdf->MultiCell($widthNotes, 30, $label . " : {$value}", 1, 'L', false, $nextLine, '', '', true, 0, true);
+                        $pdf->MultiCell($widthNotes*2, 30, $label . " : {$value}", 1, 'L', false, 1, '', '', true, 0, true, true);
                         $pdf->SetFont('', '', 10);
                     }
                 }

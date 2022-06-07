@@ -21,6 +21,7 @@ import { ContactsGroupFormModalComponent } from '../group/form/modal/contacts-gr
 import { MatMenuTrigger } from '@angular/material/menu';
 import { LatinisePipe } from 'ngx-pipes';
 import { ContactService } from '@service/contact.service';
+import { ManageDuplicateComponent } from '../contact-duplicate/manage-duplicate/manage-duplicate.component';
 
 @Component({
     selector: 'app-contact-list',
@@ -373,6 +374,26 @@ export class ContactsListAdministrationComponent implements OnInit {
 
     handlePageEvent(event: PageEvent) {
         this.pageSize = event.pageSize;
+    }
+
+    mergeContacts(selection: any) {
+        const dialogRef = this.dialog.open(ManageDuplicateComponent, {
+            panelClass: 'maarch-modal',
+            disableClose: true,
+            data: { duplicate: selection._selected.map((contactId: any) => ({ id: contactId, type: 'contact'})) }
+        });
+        dialogRef.afterClosed().pipe(
+            filter((data: any) => !this.functions.empty(data)),
+            tap(() => {
+                this.notify.success(this.translate.instant('lang.contactsMerged'));
+                this.selection.clear();
+                this.initContactList();
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     private _filter(value: string): string[] {
