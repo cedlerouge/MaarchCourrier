@@ -1305,30 +1305,19 @@ export class IndexingFormComponent implements OnInit {
 
     calcLimitDateByPriority(field: any, value: any) {
         let limitDate: any = null;
-
+        const objToSend: any = {
+            priority: value,
+            doctype: this.arrFormControl['doctype']?.value,
+        };
+        if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
+            delete objToSend.doctype;
+        }
         if (this.arrFormControl['processLimitDate'] !== undefined) {
-            const objToSend: any = {
-                priority: value,
-                doctype: this.arrFormControl['doctype']?.value,
-                today: this.isProcessLimitDateToday
-            };
-            if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
-                delete objToSend.doctype;
-            } 
             this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
-                    if (!this.functions.empty(this.arrFormControl['priority']) ) {
-                        this.arrFormControl['priority'].setValue(data.priority);
-                        const indexingModelCloneProcessLimitDate = this.indexingModelClone.fields.find((element: any) => element.identifier === 'processLimitDate');
-
-                        if (!this.functions.empty(indexingModelCloneProcessLimitDate)) {
-                            if (this.isProcessLimitDateToday && this.functions.formatDateObjectToDateString(limitDate, true).toString() === this.functions.formatDateObjectToDateString(new Date(indexingModelCloneProcessLimitDate.default_value), true).toString()) {
-                                this.arrFormControl['priority'].disable();
-                            } else {
-                                this.arrFormControl['priority'].enable();
-                            }
-                        }
-                    }
+                    limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
+                    this.arrFormControl['processLimitDate'].setValue(limitDate);
+                    this.setPriorityColor(field, value);
                 }),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
@@ -1339,6 +1328,7 @@ export class IndexingFormComponent implements OnInit {
             this.setPriorityColor(field, value);
         }
     }
+
 
     setPriorityColor(field: any, value: any) {
         if (field !== null) {
@@ -1359,8 +1349,17 @@ export class IndexingFormComponent implements OnInit {
 
         this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } }).pipe(
             tap((data: any) => {
-                if (!this.functions.empty(this.arrFormControl['priority'])) {
+                if (!this.functions.empty(this.arrFormControl['priority']) ) {
                     this.arrFormControl['priority'].setValue(data.priority);
+                    const indexingModelCloneProcessLimitDate = this.indexingModelClone.fields.find((element: any) => element.identifier === 'processLimitDate');
+
+                    if (!this.functions.empty(indexingModelCloneProcessLimitDate)) {
+                        if (this.isProcessLimitDateToday && this.functions.formatDateObjectToDateString(limitDate, true).toString() === this.functions.formatDateObjectToDateString(new Date(indexingModelCloneProcessLimitDate.default_value), true).toString()) {
+                            this.arrFormControl['priority'].disable();
+                        } else {
+                            this.arrFormControl['priority'].enable();
+                        }
+                    }
                 }
                 this.setPriorityColor(null, data.priority);
             }),
