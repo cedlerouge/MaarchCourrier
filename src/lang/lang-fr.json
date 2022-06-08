@@ -378,6 +378,7 @@
     "contacts": "Contacts",
     "contactsAdmin": "Administration des contacts",
     "contactsAlt": "Contact(s)",
+    "contactsEntity": "courrier(s) en tant que contact",
     "contactsFillingAdministration": "Complétude des informations contacts",
     "contactsFillingCriteria": "Critères de complétude",
     "contactsFillingRate": "Taux de complétude",
