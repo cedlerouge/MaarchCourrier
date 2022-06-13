@@ -1245,10 +1245,15 @@ export class IndexingFormComponent implements OnInit {
         } else {
             this.arrFormControl[field.identifier].setValue('');
             this.arrFormControl[field.identifier].enable();
-            const clonePriority = this.indexingModelClone.fields.find((element: any) => element.identifier === 'priority');
-            if (field.identifier === 'processLimitDate' && !this.functions.empty(this.arrFormControl['priority']) && !this.functions.empty(clonePriority)) {
-                this.arrFormControl['priority'].setValue(clonePriority.default_value);
-                this.calcLimitDateByPriority(clonePriority, clonePriority.default_value);
+            if (field.identifier === 'processLimitDate' && !this.functions.empty(this.arrFormControl['priority'])) {
+                const clonePriority = this.indexingModelClone.fields.find((element: any) => element.identifier === 'priority');
+                if (!this.functions.empty(clonePriority.default_value)) {
+                    this.arrFormControl['priority'].setValue(clonePriority.default_value);
+                    this.calcLimitDateByPriority(clonePriority, clonePriority.default_value);
+                } else {
+                    this.arrFormControl['priority'].setValue('');
+                    this.setPriorityColor(null, null);
+                }
             }
         }
     }
