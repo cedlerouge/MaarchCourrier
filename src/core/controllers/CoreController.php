@@ -70,7 +70,15 @@ class CoreController
     public function externalConnectionsEnabled(Request $request, Response $response)
     {
         $connections = [];
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $customId = CoreConfigModel::getCustomId();
+        if (!empty($customId) && file_exists("custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml")) {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => "custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml"]);
+        } elseif (file_exists("modules/visa/xml/remoteSignatoryBooks.xml")) {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        } else {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml.default']);
+        }
+
         if (!empty($loadedXml->signatoryBookEnabled)) {
             $connections[(string)$loadedXml->signatoryBookEnabled] = true;
         }
