@@ -260,7 +260,7 @@ class IndexingController
             }
             $delay = $priority['delays'];
         }
-        if (!empty($queryParams['today'])) {
+        if (Validator::boolType()->notEmpty()->validate((bool) $queryParams['today'] ?? false)) {
             $delay = 0;
         }
         if (!Validator::intVal()->validate($delay)) {
