@@ -260,7 +260,7 @@ class IndexingController
             }
             $delay = $priority['delays'];
         }
-        if (Validator::boolType()->notEmpty()->validate((bool) $queryParams['today'] ?? false)) {
+        if (filter_var($queryParams['today'], FILTER_VALIDATE_BOOLEAN)) {
             $delay = 0;
         }
         if (!Validator::intVal()->validate($delay)) {
