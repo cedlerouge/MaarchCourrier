@@ -58,6 +58,7 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {

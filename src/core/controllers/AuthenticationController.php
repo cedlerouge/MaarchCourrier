@@ -262,7 +262,7 @@ class AuthenticationController
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if (in_array($loggingMethod['id'], ['standard', 'ldap'])) {
-            if (!Validator::stringType()->notEmpty()->validate($body['login']) || !Validator::stringType()->notEmpty()->validate($body['password'])) {
+            if (!Validator::stringType()->notEmpty()->validate($body['login'] ?? null) || !Validator::stringType()->notEmpty()->validate($body['password'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
             }
         }

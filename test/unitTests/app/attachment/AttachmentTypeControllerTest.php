@@ -114,11 +114,12 @@ class AttachmentTypeControllerTest extends TestCase
         $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $body = [
-            'typeId'            => 'type_test_up',
+            'typeId'            => 'type_test',
             'label'             => 'Type Test TU UP',
             'visible'           => true,
             'emailLink'         => false,
             'signable'          => true,
+            'signedByDefault'   => false,
             'chrono'            => false,
             'versionEnabled'    => true,
             'newVersionDefault' => false,
@@ -151,7 +152,7 @@ class AttachmentTypeControllerTest extends TestCase
 
         $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
         $responseBody = json_decode((string)$response->getBody(), true);
-        $this->assertSame('Attachment type does not exist', $responseBody['errors']);
+        $this->assertSame('Attachment type not found or altered', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';

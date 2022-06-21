@@ -1823,8 +1823,8 @@ class ContactController
 
         $contactToDisplay = trim($contactName . $company);
 
-        $sector = $args['contact']['sector'];
-        $email = $args['contact']['email'];
+        $sector = $args['contact']['sector'] ?? '';
+        $email = $args['contact']['email'] ?? '';
         $otherInfo = empty($address) ? "{$contactToDisplay}" : "{$contactToDisplay} - {$address}" . (!empty($sector) ? " - {$sector}" : '');
         $contact = [
             'type'           => 'contact',

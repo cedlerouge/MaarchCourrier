@@ -23,6 +23,21 @@ use Slim\Http\Response;
 
 class AttachmentTypeController
 {
+    // never displayed as attachments
+    public const HIDDEN_ATTACHMENT_TYPES = [
+        'summary_sheet',
+        'shipping_deposit_proof',
+        'shipping_acknowledgement_of_receipt'
+    ];
+
+    // neither in attachment counts nor possible to get by id
+    public const UNLISTED_ATTACHMENT_TYPES = [
+        'signed_response',
+        'summary_sheet',
+        'shipping_deposit_proof',
+        'shipping_acknowledgement_of_receipt'
+    ];
+
     public function get(Request $request, Response $response)
     {
         $rawAttachmentsTypes = AttachmentTypeModel::get(['select' => ['*'], 'where' => ['type_id <> ?'], 'data' => ['summary_sheet']]);
@@ -123,7 +138,7 @@ class AttachmentTypeController
         }
 
         $attachmentType = AttachmentTypeModel::getById(['select' => ['type_id'], 'id' => $args['id']]);
-        if (empty($attachmentType['type_id']) || $body['type_id'] != $args['id']) {
+        if (empty($attachmentType['type_id']) || $body['typeId'] != $attachmentType['type_id']) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type not found or altered']);
         }
 
@@ -156,7 +171,7 @@ class AttachmentTypeController
         if ($set['visible'] == 'true' && in_array($body['typeId'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES)) {
             return $response->withStatus(400)->withJson(['errors' => 'This attachment type cannot be made visible']);
         }
-        if ($set['signed_by_default'] == 'false' && $body['typeId'] == 'signed_response') {
+        if (!empty($set['signed_by_default']) && $set['signed_by_default'] == 'false' && $body['typeId'] == 'signed_response') {
             return $response->withStatus(400)->withJson(['errors' => 'This option cannot be disabled on this type']);
         }
 

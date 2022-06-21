@@ -701,8 +701,8 @@ class AutoCompleteController
     {
         $data = $request->getQueryParams();
 
-        $check = Validator::stringType()->notEmpty()->validate($data['address']);
-        $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
+        $check = Validator::stringType()->notEmpty()->validate($data['address'] ?? '');
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['department'] ?? '');
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }

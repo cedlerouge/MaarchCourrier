@@ -80,8 +80,8 @@ class AttachmentTypeModel
 
     public static function create(array $args)
     {
-        ValidatorModel::notEmpty($args, ['type_id', 'label', 'visible', 'email_link', 'signable', 'version_enabled', 'new_version_default', 'chrono']);
-        ValidatorModel::stringType($args, ['type_id', 'label', 'visible', 'email_link', 'signable', 'version_enabled', 'new_version_default', 'chrono', 'icon']);
+        ValidatorModel::notEmpty($args, ['type_id', 'label', 'visible', 'email_link', 'signable', 'version_enabled', 'new_version_default', 'chrono', 'signed_by_default']);
+        ValidatorModel::stringType($args, ['type_id', 'label', 'visible', 'email_link', 'signable', 'version_enabled', 'new_version_default', 'chrono', 'signed_by_default', 'icon']);
 
         $nextSequenceId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'attachment_types_id_seq']);
 
@@ -98,6 +98,7 @@ class AttachmentTypeModel
                 'chrono'                => $args['chrono'],
                 'version_enabled'       => $args['version_enabled'],
                 'new_version_default'   => $args['new_version_default'],
+                'signed_by_default'     => $args['signed_by_default']
             ]
         ]);
 
