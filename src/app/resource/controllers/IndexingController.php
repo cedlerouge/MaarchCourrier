@@ -260,8 +260,14 @@ class IndexingController
             }
             $delay = $priority['delays'];
         }
-        if (filter_var($queryParams['today'], FILTER_VALIDATE_BOOLEAN)) {
-            $delay = 0;
+        if (!empty($queryParams['today'])) {
+            $queryParams['today'] = filter_var($queryParams['today'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if (!Validator::boolType()->validate($queryParams['today'])) {
+                return $response->withStatus(400)->withJson(['errors' => 'today is not a boolean']);
+            }
+            if ($queryParams['today']) {
+                $delay = 0;
+            }
         }
         if (!Validator::intVal()->validate($delay)) {
             return $response->withStatus(400)->withJson(['errors' => 'Delay is not a numeric value']);
