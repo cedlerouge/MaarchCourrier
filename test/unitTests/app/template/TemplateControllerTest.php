@@ -672,7 +672,7 @@ class TemplateControllerTest extends TestCase
         $this->assertSame(1048, $responseBody['templates'][0]['id']);
         $this->assertSame('PR - Générique (Visa externe)', $responseBody['templates'][0]['label']);
         $this->assertSame('docx', $responseBody['templates'][0]['extension']);
-        $this->assertSame(true, $responseBody['templates'][0]['exists']);
+        $this->assertSame(false, $responseBody['templates'][0]['exists']);
         $this->assertSame('response_project', $responseBody['templates'][0]['attachmentType']);
 
 
