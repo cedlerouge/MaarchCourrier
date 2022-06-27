@@ -1028,7 +1028,9 @@ class FolderPrintController
         $tmpDir = CoreConfigModel::getTmpPath();
         $filePathInTmpNoExtension = $tmpDir . 'email_' . $email['id'] . '_' . $GLOBALS['id'];
         file_put_contents($filePathInTmpNoExtension . '.html', mb_convert_encoding($emailMeta_emailDataBody, 'HTML', 'UTF-8'));
-        ConvertPdfController::convertInPdf(['fullFilename' => $filePathInTmpNoExtension . '.html']);
+        $testJL = ConvertPdfController::convertInPdf(['fullFilename' => $filePathInTmpNoExtension . '.html']);
+
+        var_dump('JL - ConvertPdfController::convertInPdf > testJL', $testJL);
 
         if (file_exists($filePathInTmpNoExtension . '.html')) {
             unlink($filePathInTmpNoExtension . '.html');
