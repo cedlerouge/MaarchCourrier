@@ -91,8 +91,6 @@ class SignatureBookController
 
         $datas['isCurrentWorkflowUser'] = $datas['listinstance']['item_id'] == $GLOBALS['login'];
 
-        var_dump('- JL getSignatureBook() > datas', $datas);
-
         return $response->withJson($datas);
     }
 
@@ -196,18 +194,6 @@ class SignatureBookController
             'data'      => [$args['resId'], ['incoming_mail_attachment']],
             'orderBy'   => [$orderBy]
         ]);
-        var_dump("JL - attachment db select : ", [
-            'select'    => [
-                'res_id', 'title', 'identifier', 'attachment_type',
-                'status', 'typist', 'path', 'filename', 'modified_by', 'creation_date',
-                'validation_date', 'format', 'relation', 'recipient_id', 'recipient_type',
-                'origin', 'validation_date', 'origin_id'
-            ],
-            'where'     => ['res_id_master = ?', 'attachment_type not in (?)', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'],
-            'data'      => [$args['resId'], ['incoming_mail_attachment']],
-            'orderBy'   => [$orderBy]
-        ]);
-        var_dump("JL - attachment size : " . count($attachments));
 
         $canUpdateDocuments = SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $args['userId'], 'canUpdateDocuments' => true]);
 
@@ -274,7 +260,6 @@ class SignatureBookController
                 $attachments[$key]['viewerLink'] = "../rest/attachments/{$realId}/content?".rand();
             }
         }
-        var_dump("JL 2 - attachment size : " . count($attachments));
 
         $obsAttachments = AttachmentModel::get([
             'select'    => ['res_id', 'origin_id', 'relation', 'creation_date', 'title'],
@@ -310,8 +295,6 @@ class SignatureBookController
 
         $attachments = array_values($attachments);
 
-        var_dump("JL 3 - attachment size : " . count($attachments));
-
         $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['res_id', 'subject', 'alt_identifier', 'filename', 'integrations', 'format']]);
         $integrations = json_decode($resource['integrations'], true);
         if (!empty($resource['filename']) && !empty($integrations['inSignatureBook'])) {
@@ -336,7 +319,6 @@ class SignatureBookController
 
             $attachments[0]['isConverted'] = ConvertPdfController::canConvert(['extension' => $attachments[0]['format']]);
         }
-        var_dump("JL 4", $attachments);
 
         return $attachments;
     }
