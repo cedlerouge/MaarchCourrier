@@ -196,6 +196,17 @@ class SignatureBookController
             'data'      => [$args['resId'], ['incoming_mail_attachment']],
             'orderBy'   => [$orderBy]
         ]);
+        var_dump("JL - attachment db select : ", [
+            'select'    => [
+                'res_id', 'title', 'identifier', 'attachment_type',
+                'status', 'typist', 'path', 'filename', 'modified_by', 'creation_date',
+                'validation_date', 'format', 'relation', 'recipient_id', 'recipient_type',
+                'origin', 'validation_date', 'origin_id'
+            ],
+            'where'     => ['res_id_master = ?', 'attachment_type not in (?)', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'],
+            'data'      => [$args['resId'], ['incoming_mail_attachment']],
+            'orderBy'   => [$orderBy]
+        ]);
         var_dump("JL - attachment size : " . count($attachments));
 
         $canUpdateDocuments = SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $args['userId'], 'canUpdateDocuments' => true]);
