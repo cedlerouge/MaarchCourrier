@@ -595,7 +595,7 @@ class FolderPrintController
                 exec($command . ' 2>&1', $output, $return);
 
                 if (!file_exists($filePathOnTmp)) {
-                    return $response->withStatus(500)->withJson(['errors' => 'Merge PDF file not created']);
+                    return $response->withStatus(500)->withJson(['errors' => 'Merge PDF file not created 1']);
                 }
 
                 // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf, convertedAr_*.pdf and listNotes_*.pdf after merged is complete
@@ -631,7 +631,7 @@ class FolderPrintController
 
         $zip = new \ZipArchive;
         if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== TRUE) {
-            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
+            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created 2']);
         }
         foreach ($folderPrintPaths as $folderPrintPath) {
             $zip->addFile($folderPrintPath, basename($folderPrintPath));
@@ -639,7 +639,7 @@ class FolderPrintController
         $zip->close();
 
         if (!file_exists($filePathOnTmp)) {
-            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
+            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created 3']);
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
