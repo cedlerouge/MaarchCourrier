@@ -89,7 +89,7 @@ class ConvertPdfController
             exec('export HOME=' . $tmpPath . ' && ' . $command . ' 2>&1', $output, $return);
         }
 
-        return ['command' => $command.' 2>&1', 'output' => $output, 'return' => $return];
+        return ['output' => $output, 'return' => $return];
     }
     public static function tmpConvert(array $aArgs)
     {
