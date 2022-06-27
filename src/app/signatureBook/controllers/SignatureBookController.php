@@ -91,6 +91,8 @@ class SignatureBookController
 
         $datas['isCurrentWorkflowUser'] = $datas['listinstance']['item_id'] == $GLOBALS['login'];
 
+        var_dump('- JL getSignatureBook() > datas', $datas);
+
         return $response->withJson($datas);
     }
 
@@ -323,7 +325,7 @@ class SignatureBookController
 
             $attachments[0]['isConverted'] = ConvertPdfController::canConvert(['extension' => $attachments[0]['format']]);
         }
-        var_dump("JL 4", $attachments[0]);
+        var_dump("JL 4", $attachments);
 
         return $attachments;
     }
