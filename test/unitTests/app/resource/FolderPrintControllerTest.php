@@ -662,7 +662,6 @@ class FolderPrintControllerTest extends TestCase
 
         $response     = $folderPrintController->generateFile($fullRequest, new \Slim\Http\Response());
         $responseBody = json_decode((string)$response->getBody(), true);
-        var_dump($responseBody);
         $this->assertSame(200, $response->getStatusCode());
 
         $headers = $response->getHeaders();
