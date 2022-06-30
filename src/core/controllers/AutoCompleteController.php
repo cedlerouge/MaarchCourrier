@@ -116,16 +116,8 @@ class AutoCompleteController
             $excludedUsers = array_column($usersAlreadyConnected, 'external_id');
         }
 
-        $loadedXml = null;
-        $customId = CoreConfigModel::getCustomId();
-        if (!empty($customId) && file_exists("custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml")) {
-            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => "custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml"]);
-        } elseif (file_exists("modules/visa/xml/remoteSignatoryBooks.xml")) {
-            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        } else {
-            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml.default']);
-        }
-
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
