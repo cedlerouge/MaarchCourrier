@@ -50,7 +50,7 @@ class IxbusController
         return ['natures' => $curlResponse['response']['payload']];
     }
 
-    public static function getNatureDetails(Request $request, Response $response, array $args)
+    public function getNatureDetails(Request $request, Response $response, array $args)
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
