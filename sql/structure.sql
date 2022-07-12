@@ -1554,3 +1554,37 @@ CREATE TABLE address_sectors
     CONSTRAINT address_sectors_pkey PRIMARY KEY (id)
 )
     WITH (OIDS=FALSE);
+
+CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_id_seq text) returns table (chrono_id bigint) as $$
+DECLARE
+    retval bigint;
+BEGIN
+    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_id_seq ) THEN
+      EXECUTE 'CREATE SEQUENCE ' || chrono_id_seq || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 100 CACHE 1;';
+    END IF;
+    SELECT nextval(chrono_id_seq) INTO retval;
+	  RETURN QUERY SELECT retval;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
+DECLARE
+	sequence_name varchar;
+BEGIN
+    IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_outgoing_%') THEN
+      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_outgoing_%') LOOP
+        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
+      END LOOP;
+    END IF;
+	IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_incoming_%') THEN
+      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_incoming_%') LOOP
+        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
+      END LOOP;
+    END IF;
+	IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_internal_%') THEN
+      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_internal_%') LOOP
+        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
+      END LOOP;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;

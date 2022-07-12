@@ -17,6 +17,7 @@ namespace Resource\models;
 use Parameter\models\ParameterModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabaseModel;
 
 class ChronoModel
 {
@@ -86,19 +87,8 @@ class ChronoModel
      */
     public static function getChronoGlobal()
     {
-        $chronoId = 'chrono_global_' . date('Y');
-
-        $parameter = ParameterModel::getById(['id' => $chronoId, 'select' => ['param_value_int']]);
-
-        if (empty($parameter)) {
-            ParameterModel::create(['id' => $chronoId, 'param_value_int' => 1]);
-            $chrono = 1;
-        } else {
-            $chrono = $parameter['param_value_int'];
-        }
-
-        ParameterModel::update(['id' => $chronoId, 'param_value_int' => $chrono + 1]);
-
+        $chronoSeqName  = 'chrono_global_' . date('Y') . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
         return $chrono;
     }
 
@@ -107,37 +97,15 @@ class ChronoModel
      */
     public static function getChronoEntity($entityId)
     {
-        $chronoId = "chrono_{$entityId}_" . date('Y');
-
-        $parameter = ParameterModel::getById(['id' => $chronoId, 'select' => ['param_value_int']]);
-
-        if (empty($parameter)) {
-            ParameterModel::create(['id' => $chronoId, 'param_value_int' => 1]);
-            $chrono = 1;
-        } else {
-            $chrono = $parameter['param_value_int'];
-        }
-
-        ParameterModel::update(['id' => $chronoId, 'param_value_int' => $chrono + 1]);
-
+        $chronoSeqName  = "chrono_{$categoryId}_" . date('Y') . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
         return $entityId . "/" . $chrono;
     }
 
     public static function getChronoCategory($categoryId)
     {
-        $chronoId = "chrono_{$categoryId}_" . date('Y');
-
-        $parameter = ParameterModel::getById(['id' => $chronoId, 'select' => ['param_value_int']]);
-
-        if (empty($parameter)) {
-            ParameterModel::create(['id' => $chronoId, 'param_value_int' => 1]);
-            $chrono = 1;
-        } else {
-            $chrono = $parameter['param_value_int'];
-        }
-
-        ParameterModel::update(['id' => $chronoId, 'param_value_int' => $chrono + 1]);
-
+        $chronoSeqName  = "chrono_{$categoryId}_" . date('Y') . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
         return "/" . $chrono;
     }
 

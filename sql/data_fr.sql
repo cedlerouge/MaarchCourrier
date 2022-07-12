@@ -705,8 +705,10 @@ INSERT INTO parameters (id, description, param_value_string, param_value_int, pa
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('homepage_message', '', '<p><span style="font-size: 14pt;">Bienvenue sur <strong>Maarch Courrier 21.03</strong> </span><br /><span style="font-size: 14pt;">Suivez le <a title="notre guide de visite" href="https://docs.maarch.org/" target="_blank" rel="noopener"><span style="color: #f99830;"><strong>guide de visite en ligne</strong></span></a></span></p>', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('loginpage_message', '', '<p><span style="font-size: 14pt; color: #ecf0f1;"><span style="color: #000000;"><strong>Acc&eacute;der au</strong> </span><a style="color: ##3598db;" title="le guide de visite" href="https://docs.maarch.org/gitbook/html/MaarchCourrier/21.03/guu/home.html" target="_blank" rel="noopener"><strong>guide de visite en ligne</strong></a></span></p>', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('traffic_record_summary_sheet', '', '', NULL, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_outgoing_2021', '', NULL, 3, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_incoming_2021', '', NULL, 4, NULL);
+
+CREATE SEQUENCE chrono_outgoing_2021_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 3 CACHE 1;
+CREATE SEQUENCE chrono_incoming_2021_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 4 CACHE 1;
+
 INSERT INTO parameters (id, description, param_value_int) VALUES ('suggest_links_n_days_ago', 'Le nombre de jours sur lequel sont cherchés les courriers à lier', 0);
 
 INSERT INTO password_rules (id, label, value, enabled) VALUES (1, 'minLength', 6, true);

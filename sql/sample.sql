@@ -99,11 +99,10 @@ INSERT INTO user_signatures (id, user_serial_id, signature_label, signature_path
 Select setval('user_signatures_id_seq', (select max(id)+1 from user_signatures), false);
 
 --update parameters for chrono
-DELETE FROM parameters WHERE id = 'chrono_incoming_2021' OR  id = 'chrono_outgoing_2021';
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) 
-VALUES ('chrono_incoming_2021', NULL, NULL, 100, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) 
-VALUES ('chrono_outgoing_2021', NULL, NULL, 100, NULL);
+DROP SEQUENCE IF EXISTS chrono_outgoing_2021_seq;
+DROP SEQUENCE IF EXISTS chrono_incoming_2021_seq;
+CREATE SEQUENCE chrono_outgoing_2021_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 100 CACHE 1;
+CREATE SEQUENCE chrono_incoming_2021_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 100 CACHE 1;
 
 INSERT INTO notes (id, identifier, user_id, creation_date, note_text) VALUES (1, 101, 21, '2021-03-24 17:17:04.593299', 'Ma note');
 INSERT INTO notes (id, identifier, user_id, creation_date, note_text) VALUES (2, 101, 16, '2021-03-25 16:59:40.479423', '[POUR AVIS] Merci de me fournir les éléments de langage pour répondre à ce courrier.');

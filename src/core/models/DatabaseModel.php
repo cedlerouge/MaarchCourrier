@@ -16,6 +16,27 @@ namespace SrcCore\models;
 
 class DatabaseModel
 {
+        /**
+     * Database increase_chrono function
+     * @param array $args
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public static function createOrIncreaseChrono(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['chronoSeqName']);
+        ValidatorModel::stringType($args, ['chronoSeqName']);
+
+        $query = "SELECT increase_chrono('" . $args['chronoSeqName'] . "')";
+
+        $db = new DatabasePDO();
+        $stmt = $db->query($query);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row['increase_chrono'];
+    }
+
+
     /**
      * Database Nextval Sequence Function
      * @param array $args
