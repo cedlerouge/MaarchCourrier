@@ -1555,7 +1555,8 @@ CREATE TABLE address_sectors
 )
     WITH (OIDS=FALSE);
 
-CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_id_seq text) returns table (chrono_id bigint) as $$
+DROP FUNCTION IF EXISTS increase_chrono;
+CREATE OR REPLACE FUNCTION increase_chrono(chrono_id_seq text) returns table (retval bigint) as $$
 DECLARE
     retval bigint;
 BEGIN
@@ -1563,10 +1564,11 @@ BEGIN
       EXECUTE 'CREATE SEQUENCE ' || chrono_id_seq || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 100 CACHE 1;';
     END IF;
     SELECT nextval(chrono_id_seq) INTO retval;
-	  RETURN QUERY SELECT retval;
+    RETURN QUERY SELECT retval;
 END;
 $$ LANGUAGE plpgsql;
 
+DROP FUNCTION IF EXISTS reset_chronos;
 CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
 DECLARE
 	sequence_name varchar;
