@@ -390,8 +390,6 @@ class SignatureBookController
             return $response->withStatus(403)->withJson(['errors' => 'Privilege forbidden']);
         }
 
-        setlocale(LC_TIME, _DATE_LOCALE);
-
         $body = $request->getParsedBody();
         if (!Validator::intVal()->notEmpty()->validate($body['signatureId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body signatureId is empty or not an integer']);
