@@ -1569,24 +1569,22 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS reset_chronos;
-CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
 DECLARE
-	sequence_name varchar;
+    retval bigint;
 BEGIN
-    IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_outgoing_%') THEN
-      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_outgoing_%') LOOP
-        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
-      END LOOP;
+    -- Check if sequence exist, if not create
+    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
+      EXECUTE 'CREATE SEQUENCE ' || chrono_seq_name || ' INCREMENT 1 MINVALUE 100 MAXVALUE 9223372036854775807 START 100 CACHE 1;';
     END IF;
-	IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_incoming_%') THEN
-      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_incoming_%') LOOP
-        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
-      END LOOP;
+    -- Check if chrono exist in parameters table, if not create
+    IF NOT EXISTS (SELECT 0 FROM parameters where id = chrono_id_name ) THEN
+      EXECUTE 'INSERT INTO parameters (id, param_value_int) VALUES ( ''' || chrono_id_name || ''', 1)';
     END IF;
-	IF EXISTS (SELECT 0 FROM pg_class where relname LIKE 'chrono_internal_%') THEN
-      FOR sequence_name IN (SELECT relname FROM pg_class where relname LIKE 'chrono_internal_%') LOOP
-        EXECUTE 'ALTER SEQUENCE ' || sequence_name || ' restart WITH 1';
-      END LOOP;
-    END IF;
+    -- Get next value of sequence, update the value in parameters table before returning the value
+    SELECT nextval(chrono_seq_name) INTO retval;
+	  UPDATE parameters set param_value_int = retval WHERE id =  chrono_id_name;
+	  RETURN QUERY SELECT retval;
 END;
 $$ LANGUAGE plpgsql;
