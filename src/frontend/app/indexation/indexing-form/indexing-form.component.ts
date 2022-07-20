@@ -851,7 +851,14 @@ export class IndexingFormComponent implements OnInit {
                             if (Object.keys(data).indexOf(elem.identifier) > -1 || customId !== undefined) {
                                 let fieldValue: any = '';
                                 if (customId !== undefined) {
-                                    fieldValue = data.customFields[customId];
+                                    const myCustomField: any = this.availableCustomFieldsClone.find((custom: any) => custom.id.toString() === customId);
+                                    if (['select', 'radio'].indexOf(myCustomField?.type) > -1) {
+                                        fieldValue = !this.functions.empty(myCustomField.values.find((item: any) => item.id === data.customFields[customId])) ? data.customFields[customId] : '';
+                                    } else if (myCustomField?.type === 'checkbox') {
+                                        fieldValue = myCustomField.values.map((item: any) => item.id).filter((el: any) => data.customFields[customId].includes(el));
+                                    } else {
+                                        fieldValue = data.customFields[customId];
+                                    }
                                 } else {
                                     fieldValue = data[elem.identifier];
                                 }
