@@ -1052,6 +1052,9 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         if (type === 'document') {
             this.emailAttach.document.isLinked = false;
             this.emailAttach.document.original = false;
+        } else if (type === 'summarySheet') {
+            this.emailAttach.summarySheet = [];
+            this.summarySheetUnits = [];
         } else {
             this.emailAttach[type].splice(index, 1);
         }
