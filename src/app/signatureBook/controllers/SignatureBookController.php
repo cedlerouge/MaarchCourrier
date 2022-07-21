@@ -719,7 +719,7 @@ class SignatureBookController
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
-        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master']]);
+        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'attachment_type']]);
 
         $signedDocument = AttachmentModel::get([
             'select' => ['signatory_user_serial_id', 'typist'],
@@ -731,6 +731,11 @@ class SignatureBookController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         } elseif ($signedDocument[0]['signatory_user_serial_id'] != $GLOBALS['id'] && $signedDocument[0]['typist'] != $GLOBALS['id']) {
             return $response->withStatus(403)->withJson(['errors' => 'Privilege forbidden']);
+        }
+
+        $attachmentType = AttachmentTypeModel::getByTypeId(['typeId' => $attachment['attachment_type'], 'select' => ['signed_by_default']]);
+        if (!$attachmentType || $attachmentType['signed_by_default']) {
+            return $response->withStatus(403)->withJson(['errors' => 'This attachment type cannot be unsigned']);
         }
 
         AttachmentModel::update([

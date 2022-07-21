@@ -219,7 +219,7 @@
             [disabled]="!editMode || !isEditing()">{{'lang.createNewVersion' | translate}}</button>
         <button mat-raised-button color="primary" *ngIf="newVersion && sendMassMode && !loading" (click)="createNewVersion('mailing')"
             [disabled]="!editMode || !isEditing()">{{'lang.mailing' | translate}}</button>
-        <button mat-raised-button color="warn" *ngIf="!loading && attachment.status.value === 'SIGN' && this.headerService.user.id == attachment.signatoryId.value"
+        <button mat-raised-button color="warn" *ngIf="!loading && attachment.status.value === 'SIGN' && this.headerService.user.id == attachment.signatoryId.value && !signedByDefault"
             (click)="deleteSignedVersion()">{{'lang.deleteSignedVersion' | translate}}</button>
         <button mat-raised-button mat-button [disabled]="loading" (click)="closeModal()">{{'lang.close' | translate}}</button>
     </div>

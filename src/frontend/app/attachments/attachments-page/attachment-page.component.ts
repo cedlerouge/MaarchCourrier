@@ -38,6 +38,7 @@ export class AttachmentPageComponent implements OnInit {
     versions: any[] = [];
     hidePanel: boolean = false;
     newVersion: boolean = false;
+    signedByDefault: boolean = false;
 
     attachFormGroup: FormGroup = null;
 
@@ -149,6 +150,7 @@ export class AttachmentPageComponent implements OnInit {
 
                     this.attachmentsTypes = this.attachmentsTypes.filter((item: any) => item.typeId === data.type || item.visible);
                     this.newVersion = this.attachmentsTypes.filter((item: any) => item.typeId === data.type)[0].newVersionDefault;
+                    this.signedByDefault = this.attachmentsTypes.filter((item: any) => item.typeId === data.type)[0].signedByDefault;
 
                     this.attachFormGroup = new FormGroup(this.attachment);
                     resolve(true);
