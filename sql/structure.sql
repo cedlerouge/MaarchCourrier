@@ -1570,7 +1570,7 @@ $$ LANGUAGE plpgsql;
 
 DROP FUNCTION IF EXISTS reset_chronos;
 -- Create a sequence for chronos and update value in parameters table
-CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
+CREATE OR REPLACE FUNCTION public.reset_chronos(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
 DECLARE
     retval bigint;
 BEGIN
