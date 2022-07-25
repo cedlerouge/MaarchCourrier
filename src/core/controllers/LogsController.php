@@ -39,12 +39,13 @@ class LogsController
                 'name'          => $logConfig['customId'] ?? 'SCRIPT',
                 'path'          => $logConfig['queries']['file'],
                 'level'         => $args['level'],
-                'maxSize'       => $logConfig['queries']['maxSize'],
-                'maxFiles'      => $logConfig['queries']['maxFiles'],
+                'maxSize'       => $logConfig['queries']['maxFileSize'],
+                'maxFiles'      => $logConfig['queries']['maxBackupFiles'],
                 'line'          => $logLine
             ]);
             return;
         }
+
         LogsController::logWithMonolog([
             'levelConfig' => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
             'name'        => $logConfig['customId'] ?? 'SCRIPT',
@@ -124,6 +125,7 @@ class LogsController
             $logConfig['logTechnique']['file']             = 'technique.log';
             $logConfig['logTechnique']['maxFileSize']      = '10MB';
             $logConfig['logTechnique']['maxBackupFiles']   = '10';
+            $logConfig['queries']['level']          = 'ERROR';
             $logConfig['queries']['file']           = 'queries_error.log';
             $logConfig['queries']['maxFileSize']    = '10MB';
             $logConfig['queries']['maxBackupFiles'] = '10';
