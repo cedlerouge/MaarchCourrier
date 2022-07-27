@@ -851,7 +851,14 @@ export class IndexingFormComponent implements OnInit {
                             if (Object.keys(data).indexOf(elem.identifier) > -1 || customId !== undefined) {
                                 let fieldValue: any = '';
                                 if (customId !== undefined) {
-                                    fieldValue = data.customFields[customId];
+                                    const myCustomField: any = this.availableCustomFieldsClone.find((custom: any) => custom.id.toString() === customId);
+                                    if (['select', 'radio'].indexOf(myCustomField?.type) > -1) {
+                                        fieldValue = !this.functions.empty(myCustomField.values.find((item: any) => item.id === data.customFields[customId])) ? data.customFields[customId] : '';
+                                    } else if (myCustomField?.type === 'checkbox') {
+                                        fieldValue = myCustomField.values.map((item: any) => item.id).filter((el: any) => data.customFields[customId].includes(el));
+                                    } else {
+                                        fieldValue = data.customFields[customId];
+                                    }
                                 } else {
                                     fieldValue = data[elem.identifier];
                                 }
@@ -1009,11 +1016,22 @@ export class IndexingFormComponent implements OnInit {
                         indexFound = this.availableCustomFields.map(avField => avField.identifier).indexOf(field.identifier);
 
                         if (indexFound > -1) {
+                            field.type = this.availableCustomFields[indexFound].type;
                             field.label = this.availableCustomFields[indexFound].label;
-                            field.default_value = !this.functions.empty(field.default_value) ? field.default_value : this.availableCustomFields[indexFound].default_value;
                             field.values = this.availableCustomFields[indexFound].values;
                             field.type = this.availableCustomFields[indexFound].type;
                             field.SQLMode = this.availableCustomFields[indexFound].SQLMode;
+                            if (['select', 'radio', 'checkbox'].indexOf(field.type) > -1) {
+                                if (!this.functions.empty(field.default_value)) {
+                                    if (['select', 'radio'].indexOf(field.type) > -1) {
+                                        field.default_value = field.values.map((item: any) => item.id).find((elem: any) => elem.indexOf(field.default_value) > -1) ? field.default_value : null;
+                                    } else if (field.type === 'checkbox') {
+                                        field.default_value = field.values.map((item: any) => item.id).filter((element: any) => field.default_value.incoming(element));
+                                    }
+                                }
+                            } else {
+                                field.default_value = !this.functions.empty(field.default_value) ? field.default_value : this.availableCustomFields[indexFound].default_value;
+                            }
                             this.availableCustomFields.splice(indexFound, 1);
                             fieldExist = true;
                         }
