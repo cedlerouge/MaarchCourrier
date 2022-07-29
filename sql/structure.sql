@@ -603,6 +603,17 @@ CREATE TABLE notes
 )
 WITH (OIDS=FALSE);
 
+CREATE TABLE blacklist
+(
+  id SERIAL PRIMARY KEY,
+  term CHARACTER VARYING(128) UNIQUE NOT NULL
+)
+WITH (OIDS=FALSE);
+
+CREATE VIEW bad_notes AS
+  SELECT *
+  FROM notes
+  WHERE unaccent(note_text) ~* concat('\m(', array_to_string(array((select unaccent(term) from blacklist)), '|', ''), ')\M');
 
 CREATE SEQUENCE notes_entities_id_seq
   INCREMENT 1
