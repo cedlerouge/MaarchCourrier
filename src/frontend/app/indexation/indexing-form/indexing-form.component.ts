@@ -285,6 +285,7 @@ export class IndexingFormComponent implements OnInit {
 
     entitiesArray: any[] = [];
     
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -1262,7 +1263,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     launchEvent(value: any, field: any) {
-        if (field.event !== undefined && field.identifier === 'priority' && value == null && this.adminMode) {
+        if (field.event !== undefined && field.identifier === 'priority' && value === null && this.adminMode) {
             this[field.event](field, value);
             return;
         } else if (field.event !== undefined && value !== null && !this.adminMode) {
@@ -1272,14 +1273,14 @@ export class IndexingFormComponent implements OnInit {
 
     calcLimitDate(field: any, value: any) {
         let limitDate: any = null;
+        const objToSend: any = {
+            doctype: value,
+            priority: this.arrFormControl['priority']?.value
+        };
+        if (this.functions.empty(this.arrFormControl['priority']?.value)) {
+            delete objToSend.priority;
+        }
         if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
-            const objToSend: any = {
-                doctype: value,
-                priority: this.arrFormControl['priority']?.value
-            };
-            if (this.functions.empty(this.arrFormControl['priority']?.value)) {
-                delete objToSend.priority;
-            }
             this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
