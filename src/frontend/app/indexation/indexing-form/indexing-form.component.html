@@ -116,7 +116,7 @@
                                         <mat-icon color="primary" class="fas fa-database">
                                         </mat-icon>
                                     </button>
-                                    <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode && field.enabled" matPrefix
+                                    <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode && !arrFormControl[field.identifier].disabled" matPrefix
                                         mat-icon-button (click)="$event.stopPropagation();toggleTodayDate(field);"
                                         [matTooltip]="'lang.todayDate' | translate"
                                         style="position: absolute;left: -40px;">

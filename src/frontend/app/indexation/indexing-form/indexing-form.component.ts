@@ -1058,8 +1058,12 @@ export class IndexingFormComponent implements OnInit {
                 }
 
                 await this.initElemForm(saveResourceState).then(() => {
-                    if (!this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate']) && this.arrFormControl['processLimitDate'].disabled) {
+                    if (!this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
                         this.arrFormControl['processLimitDate'].enable();
+                        this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = true;
+                    } else if (this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+                        this.arrFormControl['processLimitDate'].disable();
+                        this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = false;
                     }
                 });
                 this.createForm();
@@ -1117,7 +1121,7 @@ export class IndexingFormComponent implements OnInit {
         const valArr: ValidatorFn[] = [];
 
         const disabledState = !field.enabled || this.isAlwaysDisabledField(field);
-        if (!disabledState) {
+        if (!disabledState && field.identifier !== 'processLimitDate') {
             field.enabled = true;
         }
 
@@ -1268,7 +1272,7 @@ export class IndexingFormComponent implements OnInit {
 
     calcLimitDate(field: any, value: any) {
         let limitDate: any = null;
-        if (this.arrFormControl['processLimitDate'] !== undefined) {
+        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
             const objToSend: any = {
                 doctype: value,
                 priority: this.arrFormControl['priority']?.value
@@ -1310,7 +1314,7 @@ export class IndexingFormComponent implements OnInit {
         if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
             delete objToSend.doctype;
         }
-        if (this.arrFormControl['processLimitDate'] !== undefined) {
+        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
             this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
