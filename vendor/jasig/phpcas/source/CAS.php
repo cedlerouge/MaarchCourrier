@@ -20,7 +20,7 @@
  *
  *
  * Interface class of the phpCAS library
- * PHP Version 5
+ * PHP Version 7
  *
  * @file     CAS/CAS.php
  * @category Authentication
@@ -57,7 +57,7 @@ if (!isset($_SERVER['REQUEST_URI']) && isset($_SERVER['SCRIPT_NAME']) && isset($
 /**
  * phpCAS version. accessible for the user by phpCAS::getVersion().
  */
-define('PHPCAS_VERSION', '1.3.9');
+define('PHPCAS_VERSION', '1.5.0');
 
 /**
  * @addtogroup public
@@ -135,11 +135,6 @@ define("SAML_SOAP_ENV_CLOSE", '</SOAP-ENV:Envelope>');
  * SAML Attributes
  */
 define("SAML_ATTRIBUTES", 'SAMLATTRIBS');
-
-/**
- * SAML Attributes
- */
-define("DEFAULT_ERROR", 'Internal script failure');
 
 /** @} */
 /**
@@ -330,7 +325,7 @@ class phpCAS
      *
      * @param string                   $server_version  the version of the CAS server
      * @param string                   $server_hostname the hostname of the CAS server
-     * @param string                   $server_port     the port the CAS server is running on
+     * @param int                      $server_port     the port the CAS server is running on
      * @param string                   $server_uri      the URI the CAS server is responding on
      * @param bool                     $changeSessionID Allow phpCAS to change the session_id
      *                                                  (Single Sign Out/handleLogoutRequests
@@ -597,8 +592,6 @@ class phpCAS
         }
         if (self::$_PHPCAS_VERBOSE) {
             echo "<br />\n<b>phpCAS error</b>: <font color=\"FF0000\"><b>" . __CLASS__ . "::" . $function . '(): ' . htmlentities($msg) . "</b></font> in <b>" . $file . "</b> on line <b>" . $line . "</b><br />\n";
-        } else {
-            echo "<br />\n<b>Error</b>: <font color=\"FF0000\"><b>". DEFAULT_ERROR ."</b><br />\n";
         }
         phpCAS :: trace($msg . ' in ' . $file . 'on line ' . $line );
         phpCAS :: traceEnd();

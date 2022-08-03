@@ -117,7 +117,7 @@ class AutoCompleteController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-
+        
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
@@ -702,7 +702,9 @@ class AutoCompleteController
     public static function getBanAddresses(Request $request, Response $response)
     {
         $data = $request->getQueryParams();
-        $check = Validator::stringType()->notEmpty()->validate($data['address']);
+
+        $check = Validator::arrayType()->notEmpty()->validate($data);
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['address']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);

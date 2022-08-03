@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [3.13.2] - 2022-02-23
+
+### Fixed
+
+- Version
+
+
+## [3.13.1] - 2022-02-13
+
+### Enhancements
+
+- method SetVarRefItem() supports an array of items
+
+## [3.13.0] - 2022-02-07
+
+### Enhancements
+
+- Compatibility with PHP 8.1
+
+### Added
+
+- New methods SetVarRefItem() and GetVarRefItem() : uniformize and ensure compatibility to set a VarRef items.
+
 ## [3.12.2] - 2020-11-03
 
 ### Fixed
