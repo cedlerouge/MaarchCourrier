@@ -111,6 +111,9 @@ class ParameterController
 
         ParameterModel::create($data);
         if (strpos($data['id'], 'chrono_') !== false) {
+            if (Validator::intVal()->notEmpty()->validate($data['param_value_int'])) {
+                return $response->withStatus(400)->withJson(['errors' => _PARAMETER_VALUE_INT_FOR_CHRONO]);
+            }
             DatabaseModel::createSequence(['id' => $data['id'] . '_seq', 'value' => $data['param_value_int']]);
         }
         HistoryController::add([
@@ -231,6 +234,9 @@ class ParameterController
             $body['id'] = $args['id'];
             ParameterModel::update($body);
             if (strpos($body['id'], 'chrono_') !== false) {
+                if (Validator::intVal()->notEmpty()->validate($data['param_value_int'])) {
+                    return $response->withStatus(400)->withJson(['errors' => _PARAMETER_VALUE_INT_FOR_CHRONO]);
+                }
                 DatabaseModel::updateSequence(['id' => $body['id'] . '_seq', 'value' => $body['param_value_int']]);
             }
         }

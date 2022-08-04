@@ -25,10 +25,9 @@ class DatabaseModel
      */
     public static function createSequence(array $args)
     {
-        ValidatorModel::notEmpty($args, ['id']);
+        ValidatorModel::notEmpty($args, ['id', 'value']);
         ValidatorModel::stringType($args, ['id']);
 
-        $args['value'] = empty($args['value'] ?? null) ? 1 : $args['value'];
         $query = "CREATE SEQUENCE {$args['id']} INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
 
         $db = new DatabasePDO();
