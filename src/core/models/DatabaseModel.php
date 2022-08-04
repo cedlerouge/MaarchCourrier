@@ -16,7 +16,67 @@ namespace SrcCore\models;
 
 class DatabaseModel
 {
-        /**
+    /**
+     * Database create a new sequence
+     * @param array $args
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public static function createSequence(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['id']);
+        ValidatorModel::stringType($args, ['id']);
+
+        $args['value'] = empty($args['value'] ?? null) ? 1 : $args['value'];
+        $query = "CREATE SEQUENCE {$args['id']} INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
+
+        $db = new DatabasePDO();
+        $db->query($query);
+        return true;
+    }
+
+    /**
+     * Database update an existing sequence
+     * @param array $args
+     *
+     * @return int
+     * @throws \Exception
+     */
+    public static function updateSequence(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['id', 'value']);
+        ValidatorModel::stringType($args, ['id']);
+        ValidatorModel::intType($args, ['value']);
+
+        $query = "SELECT setval('{$args['id']}', {$args['value']})";
+
+        $db = new DatabasePDO();
+        $stmt = $db->query($query);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row['setval'];
+    }
+
+    /**
+     * Database delete an existing sequence
+     * @param array $args
+     *
+     * @return bool
+     * @throws \Exception
+     */
+    public static function deleteSequence(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['id']);
+        ValidatorModel::stringType($args, ['id']);
+
+        $query = "DROP SEQUENCE IF EXISTS {$args['id']}";
+
+        $db = new DatabasePDO();
+        $db->query($query);
+        return true;
+    }
+
+    /**
      * Database increase_chrono function
      * @param array $args
      *
@@ -25,17 +85,16 @@ class DatabaseModel
      */
     public static function createOrIncreaseChrono(array $args)
     {
-        ValidatorModel::notEmpty($args, ['chronoSeqName']);
-        ValidatorModel::stringType($args, ['chronoSeqName']);
+        ValidatorModel::notEmpty($args, ['chronoIdName', 'chronoSeqName']);
+        ValidatorModel::stringType($args, ['chronoIdName', 'chronoSeqName']);
 
-        $query = "SELECT increase_chrono('" . $args['chronoSeqName'] . "')";
+        $query = "SELECT increase_chrono('{$args['chronoSeqName']}' ,'{$args['chronoIdName']}')";
 
         $db = new DatabasePDO();
         $stmt = $db->query($query);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $row['increase_chrono'];
     }
-
 
     /**
      * Database Nextval Sequence Function

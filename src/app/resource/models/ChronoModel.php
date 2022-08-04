@@ -87,8 +87,9 @@ class ChronoModel
      */
     public static function getChronoGlobal()
     {
-        $chronoSeqName  = 'chrono_global_' . date('Y') . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
+        $chronoIdName  = 'chrono_global_' . date('Y');
+        $chronoSeqName = $chronoIdName . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
         return $chrono;
     }
 
@@ -97,15 +98,17 @@ class ChronoModel
      */
     public static function getChronoEntity($entityId)
     {
-        $chronoSeqName  = "chrono_{$categoryId}_" . date('Y') . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
+        $chronoIdName  = "chrono_{$entityId}_" . date('Y');
+        $chronoSeqName = $chronoIdName . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
         return $entityId . "/" . $chrono;
     }
 
     public static function getChronoCategory($categoryId)
     {
-        $chronoSeqName  = "chrono_{$categoryId}_" . date('Y') . "_seq";
-        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoSeqName' => $chronoSeqName]);
+        $chronoIdName  = "chrono_{$categoryId}_" . date('Y');
+        $chronoSeqName = $chronoIdName . "_seq";
+        $chrono = DatabaseModel::createOrIncreaseChrono(['chronoIdName' => $chronoIdName, 'chronoSeqName' => $chronoSeqName]);
         return "/" . $chrono;
     }
 

@@ -1555,22 +1555,8 @@ CREATE TABLE address_sectors
 )
     WITH (OIDS=FALSE);
 
-DROP FUNCTION IF EXISTS increase_chrono;
-CREATE OR REPLACE FUNCTION increase_chrono(chrono_id_seq text) returns table (retval bigint) as $$
-DECLARE
-    retval bigint;
-BEGIN
-    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_id_seq ) THEN
-      EXECUTE 'CREATE SEQUENCE ' || chrono_id_seq || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 100 CACHE 1;';
-    END IF;
-    SELECT nextval(chrono_id_seq) INTO retval;
-    RETURN QUERY SELECT retval;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP FUNCTION IF EXISTS reset_chronos;
 -- Create a sequence for chronos and update value in parameters table
-CREATE OR REPLACE FUNCTION public.reset_chronos(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
+CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
 DECLARE
     retval bigint;
 BEGIN
@@ -1587,4 +1573,19 @@ BEGIN
 	  UPDATE parameters set param_value_int = retval WHERE id =  chrono_id_name;
 	  RETURN QUERY SELECT retval;
 END;
+$$ LANGUAGE plpgsql;
+
+-- reset les chronos
+DROP FUNCTION IF EXISTS reset_chronos;
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
+DECLARE
+  chrono record;
+BEGIN
+  -- Loop through each chrono found in parameters table
+	FOR chrono IN (SELECT * FROM parameters WHERE id LIKE '%_' || extract(YEAR FROM current_date)) LOOP
+    EXECUTE 'SELECT setVal(''' || CONCAT(chrono.id, '_seq') || ''', 1)';
+    UPDATE parameters SET param_value_int = '1' WHERE id = chrono.id;
+  END LOOP;
+END
 $$ LANGUAGE plpgsql;
