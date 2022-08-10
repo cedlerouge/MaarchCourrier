@@ -1436,13 +1436,11 @@ class ResController extends ResourceControlController
 
         $listEventData = json_decode($groupBasket[0]['list_event_data'], true);
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['status']]);
-        if (empty($resource['status'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Status does not exist']);
-        }
-        $status = StatusModel::getById(['id' => $resource['status'], 'select' => ['can_be_modified']]);
-        if ($status['can_be_modified'] != 'Y') {
-            $listEventData['canUpdate'] = false;
+        if (!!$listEventData['canUpdateData']) {
+            $status = StatusModel::getByResId(['select' => ['can_be_modified'], 'resId' => $args['resId'], 'collId' => 'letterbox_coll']);
+            if ($status['can_be_modified'] != 'Y') {
+                $listEventData['canUpdateData'] = false;
+            }
         }
 
         return $response->withJson(['listEventData' => $listEventData]);
