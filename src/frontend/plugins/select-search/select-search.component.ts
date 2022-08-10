@@ -50,6 +50,8 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
 
     @Input() optGroupTarget: string = null;
 
+    @Input() disabled: boolean = false;
+
     /**
      * ex : [ { id : 'group1' , label: 'Group 1'} ]
      */
