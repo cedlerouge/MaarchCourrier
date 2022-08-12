@@ -3,6 +3,8 @@
   "version": "21.03.1",
   "description": "MaarchCourrier",
   "scripts": {
+    "ng": "ng",
+    "ng-update": "ng update --allow-dirty",
     "build-prod": "ng build --configuration production",
     "build-watch": "ng build --watch",
     "build-prod-addin-outlook": "ng build --project \"addin-outlook\" --configuration production",
