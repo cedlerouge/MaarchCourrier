@@ -128,7 +128,7 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             table_sizing_mode: 'relative',
             table_resize_bars: false,
             toolbar_sticky: true,
-            toolbar_drawer: 'floating',
+            toolbar_mode: 'floating',
             table_style_by_css: true,
             content_style: 'table td { padding: 1px; vertical-align: top; }',
             forced_root_block : false,

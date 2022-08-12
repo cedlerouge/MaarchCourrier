@@ -158,7 +158,7 @@ export class CustomizationComponent implements OnInit {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
             },
             toolbar_sticky: true,
-            toolbar_drawer: 'floating',
+            toolbar_mode: 'floating',
             toolbar: !readonly ? 'undo redo | fontselect fontsizeselect | bold italic underline strikethrough forecolor | maarch_b64image | \
         alignleft aligncenter alignright alignjustify \
         bullist numlist outdent indent | removeformat' : ''
