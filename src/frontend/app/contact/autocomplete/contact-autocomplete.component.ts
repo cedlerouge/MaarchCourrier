@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
 import { SortPipe } from '../../../plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, filter, tap, switchMap, catchError, finalize, map } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
@@ -36,7 +36,7 @@ export class ContactAutocompleteComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input('control') controlAutocomplete: FormControl = new FormControl();
+    @Input('control') controlAutocomplete: UntypedFormControl = new UntypedFormControl();
 
     @Input() id: string = 'contact-autocomplete';
     @Input() exclusion: string = '';
@@ -63,7 +63,7 @@ export class ContactAutocompleteComponent implements OnInit {
     noResultFound: boolean = null;
 
     listInfo: string;
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
     options: any;
     valuesToDisplay: DisplayContactList = {

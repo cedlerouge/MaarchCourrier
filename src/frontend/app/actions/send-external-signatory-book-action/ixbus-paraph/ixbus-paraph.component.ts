@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { LocalStorageService } from '@service/local-storage.service';
 import { HeaderService } from '@service/header.service';
 import { catchError, tap } from 'rxjs/operators';
@@ -38,9 +38,9 @@ export class IxbusParaphComponent implements OnInit {
         editable: true
     };
 
-    selectNature = new FormControl();
-    selectWorkflow = new FormControl();
-    selectUser = new FormControl();
+    selectNature = new UntypedFormControl();
+    selectWorkflow = new UntypedFormControl();
+    selectUser = new UntypedFormControl();
 
     constructor(
         public translate: TranslateService,

@@ -4,7 +4,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { DiffusionsListComponent } from '../../diffusions/diffusions-list.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { map, tap, finalize, catchError, startWith } from 'rxjs/operators';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { FunctionsService } from '@service/functions.service';
@@ -41,7 +41,7 @@ export class RedirectActionComponent implements OnInit {
     };
     redirectMode = '';
     userListRedirect: any[] = [];
-    userRedirectCtrl = new FormControl();
+    userRedirectCtrl = new UntypedFormControl();
     filteredUserRedirect: Observable<any[]>;
     isDestinationChanging: boolean = false;
 

@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatExpansionPanel } from '@angular/material/expansion';
 import { MatSidenav } from '@angular/material/sidenav';
-import { FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, FormBuilder } from '@angular/forms';
+import { UntypedFormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, UntypedFormBuilder } from '@angular/forms';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { AuthService } from '@service/auth.service';
@@ -45,7 +45,7 @@ export class ProfileComponent implements OnInit {
         newPassword: '',
         reNewPassword: '',
     };
-    firstFormGroup: FormGroup;
+    firstFormGroup: UntypedFormGroup;
     ruleText: string = '';
     otherRuleText: string;
     validPassword: Boolean = false;
@@ -90,7 +90,7 @@ export class ProfileComponent implements OnInit {
         private zone: NgZone,
         private notify: NotificationService,
         public dialog: MatDialog,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private authService: AuthService,
         public headerService: HeaderService,
         public appService: AppService,
@@ -329,7 +329,7 @@ export class ProfileComponent implements OnInit {
         this.showPassword = true;
     }
 
-    matchValidator(group: FormGroup) {
+    matchValidator(group: UntypedFormGroup) {
 
         if (group.controls['newPasswordCtrl'].value == group.controls['retypePasswordCtrl'].value) {
             return false;

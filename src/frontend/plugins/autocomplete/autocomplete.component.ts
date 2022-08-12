@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Input, EventEmitter, Output, ViewChild, ElementRef } from '@angular/core';
 import { Observable, of, forkJoin } from 'rxjs';
 import { map, startWith, debounceTime, filter, switchMap, tap, exhaustMap, catchError } from 'rxjs/operators';
@@ -70,7 +70,7 @@ export class PluginAutocompleteComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input() control: FormControl;
+    @Input() control: UntypedFormControl;
 
     /**
      * Route used for set values / adding / deleting item in BDD (DataModel must return id and label)
@@ -100,7 +100,7 @@ export class PluginAutocompleteComponent implements OnInit {
 
     @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
 
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     loading = false;
 
     listInfo: string;

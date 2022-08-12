@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
 import { SortPipe } from '../../../plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, filter, distinctUntilChanged, tap, switchMap, catchError } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
@@ -27,7 +27,7 @@ export class FolderInputComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input() control: FormControl;
+    @Input() control: UntypedFormControl;
 
     @Input() returnValue: 'id' | 'object' = 'id';
 
@@ -40,7 +40,7 @@ export class FolderInputComponent implements OnInit {
     canAdd: boolean = true;
 
     listInfo: string;
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
     options: any;
     valuesToDisplay: any = {};

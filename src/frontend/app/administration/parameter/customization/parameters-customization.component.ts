@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidatorFn } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NotificationService } from '@service/notification/notification.service';
@@ -17,14 +17,14 @@ declare let tinymce: any;
     providers: [ScanPipe]
 })
 export class ParametersCustomizationComponent implements OnInit, OnDestroy {
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
     readonlyState: boolean = false;
 
     backgroundList: any[] = [];
 
     constructor(
         public translate: TranslateService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private sanitizer: DomSanitizer,
         private scanPipe: ScanPipe,

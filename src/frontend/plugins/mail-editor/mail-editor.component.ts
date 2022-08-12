@@ -2,7 +2,7 @@ import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { COMMA, FF_SEMICOLON, SEMICOLON } from '@angular/cdk/keycodes';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { SummarySheetComponent } from '@appRoot/list/summarySheet/summary-sheet.component';
@@ -74,11 +74,11 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     emailSubject: string = '';
     emailStatus: string = 'WAITING';
 
-    recipientsInput: FormControl = new FormControl({disabled: this.recipientDisabled});
+    recipientsInput: UntypedFormControl = new UntypedFormControl({disabled: this.recipientDisabled});
     filteredEmails: Observable<string[]>;
 
-    emailSignListForm = new FormControl();
-    templateEmailListForm = new FormControl();
+    emailSignListForm = new UntypedFormControl();
+    templateEmailListForm = new UntypedFormControl();
     availableEmailModels: any[] = [];
     availableSignEmailModels: any[] = [];
 

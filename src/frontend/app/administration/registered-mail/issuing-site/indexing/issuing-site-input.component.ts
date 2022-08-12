@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
@@ -20,7 +20,7 @@ export class IssuingSiteInputComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input() control: FormControl = new FormControl('');
+    @Input() control: UntypedFormControl = new UntypedFormControl('');
     @Input() registedMailType: string = null;
     @Input() showResetOption: boolean = false;
 

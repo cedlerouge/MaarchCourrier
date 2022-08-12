@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { Observable, of } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { startWith, map, tap, filter, exhaustMap, catchError } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { MatExpansionPanel } from '@angular/material/expansion';
@@ -58,8 +58,8 @@ export class CriteriaToolComponent implements OnInit {
 
     filteredCriteria: Observable<string[]>;
 
-    searchTermControl = new FormControl();
-    searchCriteria = new FormControl();
+    searchTermControl = new UntypedFormControl();
+    searchCriteria = new UntypedFormControl();
 
     infoFields: any = [
         {
@@ -104,7 +104,7 @@ export class CriteriaToolComponent implements OnInit {
 
         this.criteria.forEach((element: any) => {
             if (this.defaultCriteria.indexOf(element.identifier) > -1) {
-                element.control = new FormControl('');
+                element.control = new UntypedFormControl('');
                 this.addCriteria(element, false);
             }
         });
@@ -145,7 +145,7 @@ export class CriteriaToolComponent implements OnInit {
 
     async addCriteria(criteria: any, openPanel: boolean = true) {
         if (this.functions.empty(criteria.control) || this.functions.empty(criteria.control.value)) {
-            criteria.control = criteria.type === 'date' || criteria.type === 'integer' ? new FormControl({}) : new FormControl('');
+            criteria.control = criteria.type === 'date' || criteria.type === 'integer' ? new UntypedFormControl({}) : new UntypedFormControl('');
         }
         this.initField(criteria);
         this.currentCriteria.push(criteria);
@@ -690,7 +690,7 @@ export class CriteriaToolComponent implements OnInit {
             index = searchTemplate.query.map((field: any) => field.identifier).indexOf(element.identifier);
             if (index > -1) {
                 if (element.control === undefined) {
-                    element.control = new FormControl({ value: searchTemplate.query[index].values, disabled: false });
+                    element.control = new UntypedFormControl({ value: searchTemplate.query[index].values, disabled: false });
                 }
                 element.control.setValue(searchTemplate.query[index].values);
 

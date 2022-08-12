@@ -5,7 +5,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FunctionsService } from '@service/functions.service';
 import { tap, exhaustMap, map, startWith, catchError, finalize, filter } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { LatinisePipe, ScanPipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -54,7 +54,7 @@ export class VisaWorkflowComponent implements OnInit {
     visaModelListNotLoaded: boolean = true;
     data: any;
 
-    searchVisaSignUser = new FormControl();
+    searchVisaSignUser = new UntypedFormControl();
 
     loadedInConstructor: boolean = false;
 

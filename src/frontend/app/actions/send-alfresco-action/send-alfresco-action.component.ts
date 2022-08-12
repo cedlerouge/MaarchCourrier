@@ -5,7 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, finalize, catchError, debounceTime, filter, switchMap } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { MaarchTreeComponent } from '../../../plugins/tree/maarch-tree.component';
 import { of } from 'rxjs';
@@ -27,7 +27,7 @@ export class SendAlfrescoActionComponent implements OnInit {
 
     alfrescoFolders: any[] = [];
 
-    searchFolder = new FormControl();
+    searchFolder = new UntypedFormControl();
 
     selectedFolder: number = null;
     selectedFolderName: string = null;

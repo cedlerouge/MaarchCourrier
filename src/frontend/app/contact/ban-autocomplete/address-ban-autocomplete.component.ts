@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, filter, distinctUntilChanged, tap, switchMap, exhaustMap, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
@@ -22,7 +22,7 @@ export class AddressBanAutocompleteComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input('control') controlAutocomplete: FormControl;
+    @Input('control') controlAutocomplete: UntypedFormControl;
     @Input('admin') adminMode: boolean;
 
     @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
@@ -34,7 +34,7 @@ export class AddressBanAutocompleteComponent implements OnInit {
     canAdd: boolean = true;
 
     listInfo: string;
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
     options: any;
     valuesToDisplay: any = {};
