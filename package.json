@@ -61,7 +61,7 @@
     "@types/jquery": "^3.5.5",
     "@types/jquery.nicescroll": "^3.7.1",
     "@types/jstree": "^3.3.40",
-    "@types/tooltipster": "0.0.30",
+    "@types/tooltipster": "^0.0.31",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/eslint-plugin-tslint": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
@@ -94,7 +94,7 @@
     "tooltipster": "^4.2.8",
     "tslib": "^2.3.1",
     "tslint": "^6.1.3",
-    "typescript": "^4.5.5",
+    "typescript": "^4.7.4",
     "url-loader": "^4.1.1"
   },
   "repository": {}
