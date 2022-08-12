@@ -187,7 +187,7 @@ export class PluginAutocompleteComponent implements OnInit {
         });
 
         return forkJoin(arrayObs).pipe(
-            map(items => {
+            map((items: any[]) => {
                 items.forEach((element: any) => {
                     element.forEach((element2: any) => {
                         test.push(element2);

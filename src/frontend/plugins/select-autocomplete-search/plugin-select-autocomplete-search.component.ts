@@ -354,7 +354,7 @@ export class PluginSelectAutocompleteSearchComponent implements OnInit, OnDestro
         });
 
         return forkJoin(arrayObs).pipe(
-            map(items => {
+            map((items: any[]) => {
                 items.forEach((element: any) => {
                     element.forEach((element2: any) => {
                         let obj = {
