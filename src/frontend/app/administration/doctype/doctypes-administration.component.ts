@@ -28,7 +28,7 @@ export class DoctypesAdministrationComponent implements OnInit {
     config: any = {};
 
     doctypes: any[] = [];
-    currentType: any = false;
+    currentType: any = null;
     currentSecondLevel: any = false;
     currentFirstLevel: any = false;
     firstLevels: any = false;
@@ -49,6 +49,9 @@ export class DoctypesAdministrationComponent implements OnInit {
     archivalError: string = '';
 
     displayedColumns = ['label', 'use', 'mandatory', 'column'];
+
+    hideProcessDelay: boolean = true;
+    currentTypeClone: any = null;
 
     constructor(
         public translate: TranslateService,
@@ -188,6 +191,8 @@ export class DoctypesAdministrationComponent implements OnInit {
                     this.currentType = dataValue['doctype'];
                     this.secondLevels = dataValue['secondLevel'];
                     this.processModes = ['NORMAL', 'SVA', 'SVR'];
+                    this.currentTypeClone = JSON.parse(JSON.stringify(dataValue['doctype']));
+                    this.hideProcessDelay = this.currentType.process_delay === -1 ? false : true;
                     this.getRules();
 
                     if (move) {
@@ -460,6 +465,12 @@ export class DoctypesAdministrationComponent implements OnInit {
         $('#jstree_search').val('');
         $('#jstree').jstree(true).search('');
         this.emptyField = true;
+    }
+
+    toggleProcessDelay(value: boolean) {
+        this.hideProcessDelay = !value;
+        const processDelay: number = this.currentTypeClone.process_delay !== -1 ? this.currentTypeClone.process_delay : 0;
+        this.currentType.process_delay = !this.hideProcessDelay ? -1 : processDelay;
     }
 }
 @Component({
