@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -16,7 +16,7 @@ import { AuthService } from '@service/auth.service';
 })
 export class WelcomeComponent implements OnInit {
 
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
 
     langs: string[] = [];
 
@@ -55,7 +55,7 @@ export class WelcomeComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private authService: AuthService
     ) { }
 

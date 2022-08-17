@@ -9,7 +9,7 @@ import { tap, catchError, exhaustMap, filter, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SortPipe } from '../../../plugins/sorting.pipe';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { FormControl, Validators, FormGroup, ValidationErrors, ValidatorFn, AbstractControl } from '@angular/forms';
+import { UntypedFormControl, Validators, UntypedFormGroup, ValidationErrors, ValidatorFn, AbstractControl } from '@angular/forms';
 import { DiffusionsListComponent } from '../../diffusions/diffusions-list.component';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
@@ -253,7 +253,7 @@ export class IndexingFormComponent implements OnInit {
     availableCustomFields: any[] = [];
     availableCustomFieldsClone: any[] = null;
 
-    indexingFormGroup: FormGroup;
+    indexingFormGroup: UntypedFormGroup;
 
     arrFormControl: any = {};
 
@@ -950,7 +950,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     createForm() {
-        this.indexingFormGroup = new FormGroup(this.arrFormControl);
+        this.indexingFormGroup = new UntypedFormGroup(this.arrFormControl);
         this.loadingFormEndEvent.emit();
     }
 
@@ -982,7 +982,7 @@ export class IndexingFormComponent implements OnInit {
         await this.resetForm();
 
         if (!this.adminMode) {
-            this.arrFormControl['mail­tracking'] = new FormControl({ value: '', disabled: this.adminMode ? true : false });
+            this.arrFormControl['mail­tracking'] = new UntypedFormControl({ value: '', disabled: this.adminMode ? true : false });
         }
 
         this.http.get(`../rest/indexingModels/${indexModelId}`).pipe(
@@ -1144,7 +1144,7 @@ export class IndexingFormComponent implements OnInit {
             field.enabled = true;
         }
 
-        this.arrFormControl[field.identifier] = new FormControl({ value: field.default_value, disabled: disabledState });
+        this.arrFormControl[field.identifier] = new UntypedFormControl({ value: field.default_value, disabled: disabledState });
 
         if (field.type === 'integer') {
             valArr.push(this.regexValidator(new RegExp('[+-]?([0-9]*[.])?[0-9]+'), { 'floatNumber': '' }));
@@ -1167,7 +1167,7 @@ export class IndexingFormComponent implements OnInit {
                 valArrDest.push(this.requireDestValidatorOrEmpty({ 'isDest': '' }));
             }
 
-            this.arrFormControl['diffusionList'] = new FormControl({ value: null, disabled: false });
+            this.arrFormControl['diffusionList'] = new UntypedFormControl({ value: null, disabled: false });
 
             this.arrFormControl['diffusionList'].setValidators(valArrDest);
 

@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { AppService } from '@service/app.service';
 
 @Component({
@@ -29,7 +29,7 @@ export class StatusAdministrationComponent implements OnInit {
 
     loading: boolean = false;
 
-    statusId = new FormControl('', [Validators.required, Validators.pattern(/^[\w.-]*$/)]);
+    statusId = new UntypedFormControl('', [Validators.required, Validators.pattern(/^[\w.-]*$/)]);
 
     constructor(
         public translate: TranslateService,

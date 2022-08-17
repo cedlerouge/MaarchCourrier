@@ -2,7 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { FormBuilder, FormGroup, Validators, ValidationErrors, AbstractControl, ValidatorFn } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidationErrors, AbstractControl, ValidatorFn } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
 import { Router } from '@angular/router';
@@ -29,7 +29,7 @@ export class PasswordModificationComponent implements OnInit {
     validPassword: boolean = false;
     matchPassword: boolean = false;
     isLinear: boolean = false;
-    firstFormGroup: FormGroup;
+    firstFormGroup: UntypedFormGroup;
 
     passwordRules: any = {
         minLength: { enabled: false, value: 0 },
@@ -53,7 +53,7 @@ export class PasswordModificationComponent implements OnInit {
         private authService: AuthService,
         private headerService: HeaderService,
         private notify: NotificationService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         public dialog: MatDialog,
         public appService: AppService
     ) {
@@ -151,7 +151,7 @@ export class PasswordModificationComponent implements OnInit {
         };
     }
 
-    matchValidator(group: FormGroup) {
+    matchValidator(group: UntypedFormGroup) {
         if (group.controls['newPasswordCtrl'].value === group.controls['retypePasswordCtrl'].value) {
             return false;
         } else {

@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
-import { FormControl, NgForm } from '@angular/forms';
+import { UntypedFormControl, NgForm } from '@angular/forms';
 import { debounceTime, switchMap, distinctUntilChanged, filter, tap, map, catchError, takeUntil, startWith, exhaustMap } from 'rxjs/operators';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -45,8 +45,8 @@ export class ContactsGroupFormComponent implements OnInit, AfterViewInit {
     @Output() afterUpdate = new EventEmitter<any>();
 
     filtersChange = new EventEmitter();
-    filterInputControl = new FormControl('');
-    searchCorrespondentInputControl = new FormControl('');
+    filterInputControl = new UntypedFormControl('');
+    searchCorrespondentInputControl = new UntypedFormControl('');
 
     pageSize: number = 10;
 
@@ -258,7 +258,7 @@ export class ContactsGroupFormComponent implements OnInit, AfterViewInit {
     }
 
     initAutocompleteContacts() {
-        this.filterInputControl = new FormControl('');
+        this.filterInputControl = new UntypedFormControl('');
         this.filterInputControl.valueChanges
             .pipe(
                 tap((value) => {

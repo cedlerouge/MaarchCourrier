@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { tap, catchError, debounceTime } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { FunctionsService } from '@service/functions.service';
 
@@ -13,12 +13,12 @@ import { FunctionsService } from '@service/functions.service';
 })
 
 export class VisaParametersComponent implements OnInit {
-    visaParameters: FormGroup;
+    visaParameters: UntypedFormGroup;
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private functions: FunctionsService
     ) {

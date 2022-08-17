@@ -6,7 +6,7 @@ import {
     Output,
     DoCheck
 } from '@angular/core';
-import { ControlValueAccessor, FormControl } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl } from '@angular/forms';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
 import { take, takeUntil, startWith, map, tap } from 'rxjs/operators';
@@ -27,7 +27,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
     /** Label of the search placeholder */
     @Input() placeholderLabel = this.translate.instant('lang.chooseValue');
 
-    @Input() formControlSelect: FormControl = new FormControl();
+    @Input() formControlSelect: UntypedFormControl = new UntypedFormControl();
 
     @Input() datas: any = [];
     @Input() dataKey: string = null;
@@ -84,7 +84,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
     datasClone: any = [];
     isModelModified: boolean = false;
 
-    formControlSearch = new FormControl();
+    formControlSearch = new UntypedFormControl();
 
     selected: any[] = [];
 

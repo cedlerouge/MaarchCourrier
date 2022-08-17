@@ -92,7 +92,7 @@ export class ActionsService implements OnDestroy {
     }
 
     emitAction() {
-        this.eventAction.next();
+        this.eventAction.next(true);
     }
 
     setLoading(state: boolean) {

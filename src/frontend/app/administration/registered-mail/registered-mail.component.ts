@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,7 +19,7 @@ export class RegisteredMailComponent implements OnInit {
     creationMode: boolean;
     loading: boolean = true;
 
-    adminFormGroup: FormGroup;
+    adminFormGroup: UntypedFormGroup;
     id: number = null;
     minRange: number = 1;
 
@@ -46,7 +46,7 @@ export class RegisteredMailComponent implements OnInit {
         private notify: NotificationService,
         private headerService: HeaderService,
         public appService: AppService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) { }
 
     ngOnInit(): void {

@@ -2,7 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -21,7 +21,7 @@ declare let $: any;
 export class SearchAdministrationComponent implements OnInit {
 
     loading: boolean = true;
-    customFieldsFormControl = new FormControl({ value: '', disabled: false });
+    customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
 
 
     displayedMainData: any = [
@@ -152,7 +152,7 @@ export class SearchAdministrationComponent implements OnInit {
     displayedSecondaryDataClone: any[] = [];
 
     displayMode: string = 'label';
-    dataControl = new FormControl();
+    dataControl = new UntypedFormControl();
     filteredDataOptions: Observable<any[]>;
     listEvent: any[] = [
         {

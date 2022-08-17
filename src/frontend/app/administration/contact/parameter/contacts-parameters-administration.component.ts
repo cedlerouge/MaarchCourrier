@@ -14,7 +14,7 @@ import { of } from 'rxjs';
 import { KeyValue } from '@angular/common';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
     templateUrl: 'contacts-parameters-administration.component.html',
@@ -97,7 +97,7 @@ export class ContactsParametersAdministrationComponent implements OnInit {
                 data.civilities.forEach((civility: any, index: number) => {
                     this.civilities[index] = {};
                     Object.keys(civility).forEach((elementId: any) => {
-                        this.civilities[index][elementId] = new FormControl(civility[elementId]);
+                        this.civilities[index][elementId] = new UntypedFormControl(civility[elementId]);
                         if (elementId === 'id') {
                             this.civilities[index][elementId].disable();
                         } else {
@@ -149,7 +149,7 @@ export class ContactsParametersAdministrationComponent implements OnInit {
             tap((data: any) => {
                 newCivility.id = data.id;
                 Object.keys(newCivility).forEach((elementId: any) => {
-                    newCivility[elementId] = new FormControl(newCivility[elementId]);
+                    newCivility[elementId] = new UntypedFormControl(newCivility[elementId]);
                     if (elementId === 'id') {
                         newCivility[elementId].disable();
                     } else {
