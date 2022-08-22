@@ -60,6 +60,34 @@ export class UsersExportComponent implements OnInit {
         {
             value: 'phone',
             label: this.translate.instant('lang.usersParameters_phone')
+        },
+        {
+            value: 'status',
+            label: this.translate.instant('lang.status')
+        },
+        {
+            value: 'accountType',
+            label: this.translate.instant('lang.accountType')
+        },
+        {
+            value: 'groups',
+            label: this.translate.instant('lang.groups')
+        },
+        {
+            value : 'entities',
+            label: this.translate.instant('lang.entities')
+        },
+        {
+            value: 'baskets',
+            label: this.translate.instant('lang.baskets')
+        },
+        {
+            value: 'redirectedBaskets',
+            label: this.translate.instant('lang.redirectedBaskets')
+        },
+        {
+            value: 'assignedBaskets',
+            label: this.translate.instant('lang.assignedBaskets')
         }
     ];
 
