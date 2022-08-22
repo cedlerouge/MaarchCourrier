@@ -116,6 +116,7 @@ export class SendShippingActionComponent implements OnInit {
         this.http.put('../rest/resourcesList/integrations', { resources: this.data.resIds, integrations: { [integrationId]: !this.data.resource.integrations[integrationId] } }).pipe(
             tap(() => {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
+                this.currentShipping = null;
                 this.checkShipping();
             }),
             catchError((err: any) => {
