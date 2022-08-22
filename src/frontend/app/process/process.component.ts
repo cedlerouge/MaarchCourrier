@@ -58,6 +58,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
     isFromSearch: boolean = false;
     actionsList: any[] = [];
     actionsListLoaded: boolean = false;
+    blocOpened: boolean = true;
     currentUserId: number = null;
     currentBasketId: number = null;
     currentGroupId: number = null;

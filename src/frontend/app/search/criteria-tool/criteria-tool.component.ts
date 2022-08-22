@@ -21,6 +21,8 @@ import { FolderInputComponent } from '@appRoot/folder/indexing/folder-input.comp
 import { TagInputComponent } from '@appRoot/tag/indexing/tag-input.component';
 import { IssuingSiteInputComponent } from '@appRoot/administration/registered-mail/issuing-site/indexing/issuing-site-input.component';
 import { SortPipe } from '@plugins/sorting.pipe';
+import { CriteriaSearchService } from '@service/criteriaSearch.service';
+import { HeaderService } from '@service/header.service';
 
 @Component({
     selector: 'app-criteria-tool',
@@ -36,10 +38,12 @@ export class CriteriaToolComponent implements OnInit {
     @Input() openedPanel: boolean = true;
     @Input() isLoadingResult: boolean = false;
     @Input() class: 'main' | 'secondary' = 'main';
+    @Input() data: any = [];
 
     @Output() searchUrlGenerated = new EventEmitter<any>();
     @Output() loaded = new EventEmitter<any>();
     @Output() afterGetSearchTemplates = new EventEmitter<any>();
+    @Output() refreshDaoResult = new EventEmitter<any>();
 
     @ViewChild('criteriaTool', { static: false }) criteriaTool: MatExpansionPanel;
     @ViewChild('searchCriteriaInput', { static: false }) searchCriteriaInput: ElementRef;
@@ -76,6 +80,20 @@ export class CriteriaToolComponent implements OnInit {
         },
     ];
 
+    displayColsOrder = [
+        { 'id': 'destUser' },
+        { 'id': 'categoryId' },
+        { 'id': 'creationDate' },
+        { 'id': 'processLimitDate' },
+        { 'id': 'entityLabel' },
+        { 'id': 'subject' },
+        { 'id': 'chrono' },
+        { 'id': 'priority' },
+        { 'id': 'status' },
+        { 'id': 'typeLabel' }
+    ];
+
+    listProperties: any = {};
 
     constructor(
         private _activatedRoute: ActivatedRoute,
@@ -84,6 +102,8 @@ export class CriteriaToolComponent implements OnInit {
         public appService: AppService,
         public functions: FunctionsService,
         public indexingFields: IndexingFieldsService,
+        public criteriaSearchService: CriteriaSearchService,
+        public headerService: HeaderService,
         private dialog: MatDialog,
         private notify: NotificationService,
         private datePipe: DatePipe,
@@ -99,7 +119,7 @@ export class CriteriaToolComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         this.searchTermControl.setValue(this.searchTerm);
-
+        this.listProperties = this.criteriaSearchService.initListsProperties(this.headerService.user.id);
         this.criteria = await this.indexingFields.getAllSearchFields();
 
         this.criteria.forEach((element: any) => {
@@ -716,6 +736,21 @@ export class CriteriaToolComponent implements OnInit {
         if (index > -1) {
             this.searchTermControl.setValue(searchTemplate.query[index].values);
         }
+    }
+
+    updateFilters() {
+        this.listProperties.page = 0;
+        this.criteriaSearchService.updateListsProperties(this.listProperties);
+        this.refreshDaoResult.emit(this.listProperties);
+    }
+
+    changeOrderDir() {
+        if (this.listProperties.orderDir === 'ASC') {
+            this.listProperties.orderDir = 'DESC';
+        } else {
+            this.listProperties.orderDir = 'ASC';
+        }
+        this.updateFilters();
     }
 
     private _filter(value: string): string[] {
