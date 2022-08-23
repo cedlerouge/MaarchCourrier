@@ -245,7 +245,7 @@ class IndexingController
         $queryParams = $request->getQueryParams();
 
         // if delay is 0, then the process limit date is today
-        $delay = 0;
+        $delay = -1;
         if (!empty($queryParams['doctype'])) {
             $doctype = DoctypeModel::getById(['id' => $queryParams['doctype'], 'select' => ['process_delay']]);
             if (empty($doctype)) {
@@ -268,6 +268,9 @@ class IndexingController
             if ($queryParams['today']) {
                 $delay = 0;
             }
+        }
+        if ($delay == -1) {
+            return $response->withJson(['processLimitDate' => null]);
         }
         if (!Validator::intVal()->validate($delay)) {
             return $response->withStatus(400)->withJson(['errors' => 'Delay is not a numeric value']);

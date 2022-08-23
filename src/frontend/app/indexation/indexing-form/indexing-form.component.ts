@@ -1281,9 +1281,8 @@ export class IndexingFormComponent implements OnInit {
     }
 
     launchEvent(value: any, field: any) {
-        if (field.event !== undefined && field.identifier === 'priority' && value === null && this.adminMode) {
+        if (field.event !== undefined && field.identifier === 'priority' && value === null) {
             this[field.event](field, value);
-            return;
         } else if (field.event !== undefined && value !== null && !this.adminMode) {
             this[field.event](field, value);
         }
@@ -1330,8 +1329,10 @@ export class IndexingFormComponent implements OnInit {
             priority: value,
             doctype: this.arrFormControl['doctype']?.value
         };
-        if (this.functions.empty(this.arrFormControl['doctype']?.value)) {
+        if (!this.functions.empty(objToSend.priority) && this.functions.empty(this.arrFormControl['doctype']?.value)) {
             delete objToSend.doctype;
+        } else if (this.functions.empty(objToSend.priority) && !this.functions.empty(this.arrFormControl['doctype']?.value)) {
+            delete objToSend.priority;
         }
         if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
             this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
