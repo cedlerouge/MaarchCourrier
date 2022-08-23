@@ -9,6 +9,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { MaarchTreeComponent } from '../../../plugins/tree/maarch-tree.component';
 import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 
 declare let $: any;
 
@@ -35,17 +36,25 @@ export class SendAlfrescoActionComponent implements OnInit {
     resourcesErrors: any[] = [];
     noResourceToProcess: boolean = null;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendAlfrescoActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         await this.checkAlfresco();
         this.loading = false;
         this.getRootFolders();
@@ -75,19 +84,23 @@ export class SendAlfrescoActionComponent implements OnInit {
 
         return new Promise((resolve, reject) => {
             this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/actions/' + this.data.action.id + '/checkSendAlfresco', { resources: this.data.resIds })
-                .subscribe((data: any) => {
-                    if (!this.functions.empty(data.fatalError)) {
-                        this.notify.error(this.translate.instant('lang.' + data.reason));
+                .pipe(
+                    tap((data: any) => {
+                        if (!this.functions.empty(data.fatalError)) {
+                            this.notify.error(this.translate.instant('lang.' + data.reason));
+                            this.dialogRef.close();
+                        } else if (!this.functions.empty(data.resourcesInformations.error)) {
+                            this.resourcesErrors = data.resourcesInformations.error;
+                            this.noResourceToProcess = this.resourcesErrors.length === this.data.resIds.length;
+                        }
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
                         this.dialogRef.close();
-                    } else if (!this.functions.empty(data.resourcesInformations.error)) {
-                        this.resourcesErrors = data.resourcesInformations.error;
-                        this.noResourceToProcess = this.resourcesErrors.length === this.data.resIds.length;
-                    }
-                    resolve(true);
-                }, (err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    this.dialogRef.close();
-                });
+                        return of(false);
+                    })
+                ).subscribe();
         });
     }
 
@@ -124,6 +137,7 @@ export class SendAlfrescoActionComponent implements OnInit {
         this.loading = true;
 
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

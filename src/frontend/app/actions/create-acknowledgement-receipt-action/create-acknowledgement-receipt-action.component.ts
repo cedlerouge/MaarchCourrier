@@ -8,6 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { MailEditorComponent } from '@plugins/mail-editor/mail-editor.component';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'create-acknowledgement-receipt-action.component.html',
@@ -40,15 +41,24 @@ export class CreateAcknowledgementReceiptActionComponent implements OnInit {
 
     loadingExport: boolean;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<CreateAcknowledgementReceiptActionComponent>,
         public functions: FunctionsService,
-        @Inject(MAT_DIALOG_DATA) public data: any) { }
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private sessionStorage: SessionStorageService,
+    ) { }
 
     async ngOnInit(): Promise<void> {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         await this.checkAcknowledgementReceipt();
         this.loading = false;
     }
@@ -90,6 +100,7 @@ export class CreateAcknowledgementReceiptActionComponent implements OnInit {
     onSubmit() {
         this.startLoader();
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

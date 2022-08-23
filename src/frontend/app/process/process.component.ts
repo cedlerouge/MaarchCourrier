@@ -29,6 +29,7 @@ import { of, Subscription } from 'rxjs';
 import { TechnicalInformationComponent } from '@appRoot/indexation/technical-information/technical-information.component';
 import { NotesListComponent } from '@appRoot/notes/notes-list.component';
 import { AuthService } from '@service/auth.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 
 @Component({
@@ -52,17 +53,26 @@ export class ProcessComponent implements OnInit, OnDestroy {
     @ViewChild('appNotesList', { static: false }) appNotesList: NotesListComponent;
 
     loading: boolean = true;
-
     detailMode: boolean = false;
     isMailing: boolean = false;
     isFromSearch: boolean = false;
-    actionsList: any[] = [];
     actionsListLoaded: boolean = false;
+    logoutTrigger: boolean = false;
+
+    canShowDivBrowsing: boolean = false;
+    canGoToNext: boolean = false;
+    canGoToPrevious: boolean = false;
+
+    canGoToNextRes: any = null;
+
+    actionsList: any[] = [];
+    allResources: any[] = [];
+
     currentUserId: number = null;
     currentBasketId: number = null;
     currentGroupId: number = null;
 
-    logoutTrigger: boolean = false;
+
 
     selectedAction: any = {
         id: 0,
@@ -169,22 +179,23 @@ export class ProcessComponent implements OnInit, OnDestroy {
 
     constructor(
         public translate: TranslateService,
-        private route: ActivatedRoute,
-        private _activatedRoute: ActivatedRoute,
         public http: HttpClient,
         public dialog: MatDialog,
-        private headerService: HeaderService,
         public filtersListService: FiltersListService,
-        private notify: NotificationService,
         public overlay: Overlay,
         public viewContainerRef: ViewContainerRef,
         public appService: AppService,
         public actionService: ActionsService,
-        private contactService: ContactService,
-        private router: Router,
         public privilegeService: PrivilegeService,
         public functions: FunctionsService,
-        public authService: AuthService
+        public authService: AuthService,
+        private headerService: HeaderService,
+        private notify: NotificationService,
+        private contactService: ContactService,
+        private router: Router,
+        private route: ActivatedRoute,
+        private _activatedRoute: ActivatedRoute,
+        private sessionStorage: SessionStorageService
     ) {
 
         // ngOnInit does not call if navigate in the same component route : must be in constructor for this case
@@ -261,6 +272,8 @@ export class ProcessComponent implements OnInit, OnDestroy {
         };
 
         await this.checkAccesDocument(this.currentResourceInformations.resId);
+        this.loadAllResources();
+        
 
         this.actionService.lockResource(this.currentUserId, this.currentGroupId, this.currentBasketId, [this.currentResourceInformations.resId]);
 
@@ -396,10 +409,12 @@ export class ProcessComponent implements OnInit, OnDestroy {
                 tap((data: any) => {
                     if (data.listEventData !== null) {
                         if (this.isToolEnabled(data.listEventData.defaultTab)) {
-                            this.currentTool = data.listEventData.defaultTab;
+                            this.currentTool = !this.functions.empty(this.sessionStorage.get('currentTool')) ? this.sessionStorage.get('currentTool') : data.listEventData.defaultTab;
                         }
                         this.canEditData = data.listEventData.canUpdateData && this.functions.empty(this.currentResourceInformations.registeredMail_deposit_id);
                         this.canChangeModel = data.listEventData.canUpdateModel;
+                        this.canGoToNextRes = !this.functions.empty(data.listEventData.canGoToNextRes) ? data.listEventData.canGoToNextRes : null;
+                        this.currentResourceInformations = {... this.currentResourceInformations, canGoToNextRes: this.canGoToNextRes};
                     }
                 }),
                 catchError((err: any) => {
@@ -705,6 +720,8 @@ export class ProcessComponent implements OnInit, OnDestroy {
         }
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        // Remove the temporarily saved item in the session
+        this.sessionStorage.remove('currentTool');
     }
 
     changeTab(tabId: string) {
@@ -967,6 +984,34 @@ export class ProcessComponent implements OnInit, OnDestroy {
         if (currentActions.length > 0 && currentActions.find((action: any) => action.id === this.selectedAction.id) !== undefined) {
             this.actionService.loading = true;
             this.actionService.launchAction(this.selectedAction, this.currentUserId, this.currentGroupId, this.currentBasketId, [this.currentResourceInformations.resId], this.currentResourceInformations, false);
+        }
+    }
+
+    loadAllResources() {
+        this.actionService.loadResources(this.currentUserId, this.currentGroupId, this.currentBasketId).pipe(
+            tap((data: any) => {
+                this.canShowDivBrowsing = data.allResources.length > 1;
+                if (this.canShowDivBrowsing) {
+                    this.allResources = data.allResources;
+                    const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
+                    this.canGoToNext = !this.functions.empty(this.allResources[index + 1]);
+                    this.canGoToPrevious = !this.functions.empty(this.allResources[index - 1]);
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    goToResource(event: string = 'next' || 'previous') {
+        this.sessionStorage.save('currentTool', this.currentTool);
+        const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
+        if (event === 'next') {
+            this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[index + 1]]);
+        } else if (event === 'previous') {
+            this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[index - 1]]);
         }
     }
 }

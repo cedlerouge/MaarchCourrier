@@ -7,6 +7,7 @@ import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 
 
 @Component({
@@ -24,17 +25,25 @@ export class SendMultigestActionComponent implements OnInit {
     resourcesErrors: any[] = [];
     noResourceToProcess: boolean = null;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendMultigestActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         await this.checkMultigest();
         this.loading = false;
     }
@@ -64,6 +73,7 @@ export class SendMultigestActionComponent implements OnInit {
         this.loading = true;
 
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

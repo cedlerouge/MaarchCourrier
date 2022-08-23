@@ -10,6 +10,7 @@ import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { FunctionsService } from '@service/functions.service';
 import { Observable, of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 declare let $: any;
 
@@ -47,6 +48,10 @@ export class RedirectActionComponent implements OnInit {
 
     actionKeyword: string = '';
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -54,12 +59,15 @@ export class RedirectActionComponent implements OnInit {
         public dialogRef: MatDialogRef<RedirectActionComponent>,
         public headerService: HeaderService,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        private functionsService: FunctionsService
+        private functionsService: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
-
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         await this.getEntities();
         await this.getDefaultEntity();
 
@@ -272,6 +280,7 @@ export class RedirectActionComponent implements OnInit {
     onSubmit() {
         this.loading = true;
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

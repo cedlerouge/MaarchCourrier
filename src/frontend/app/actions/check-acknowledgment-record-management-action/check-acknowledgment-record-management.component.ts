@@ -5,6 +5,7 @@ import { NoteEditorComponent } from '@appRoot/notes/note-editor.component';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
+import { SessionStorageService } from '@service/session-storage.service';
 import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 
@@ -22,6 +23,9 @@ export class CheckAcknowledgmentRecordManagementComponent implements OnInit {
     resourcesErrors: any[] = [];
     selectedRes: number[] = [];
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -29,10 +33,14 @@ export class CheckAcknowledgmentRecordManagementComponent implements OnInit {
         private notify: NotificationService,
         public dialogRef: MatDialogRef<CheckAcknowledgmentRecordManagementComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkAcknowledgement();
     }
 
@@ -52,6 +60,7 @@ export class CheckAcknowledgmentRecordManagementComponent implements OnInit {
 
     onSubmit() {
         this.loading = true;
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction();
     }
 

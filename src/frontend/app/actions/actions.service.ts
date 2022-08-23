@@ -46,6 +46,8 @@ import { SendToRecordManagementComponent } from './send-to-record-management-act
 import { CheckReplyRecordManagementComponent } from './check-reply-record-management-action/check-reply-record-management.component';
 import { ResetRecordManagementComponent } from './reset-record-management-action/reset-record-management.component';
 import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledgment-record-management-action/check-acknowledgment-record-management.component';
+import { FiltersListService } from '@service/filtersList.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -68,6 +70,8 @@ export class ActionsService implements OnDestroy {
     indexActionRoute: string;
     processActionRoute: string;
 
+    listProperties: any = null;
+
     private eventAction = new Subject<any>();
 
     constructor(
@@ -77,9 +81,10 @@ export class ActionsService implements OnDestroy {
         private notify: NotificationService,
         private router: Router,
         public headerService: HeaderService,
-        private functions: FunctionsService
-    ) {
-    }
+        private functions: FunctionsService,
+        private filtersListService: FiltersListService,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnDestroy(): void {
         if (this.currentResourceLock) {
@@ -136,6 +141,14 @@ export class ActionsService implements OnDestroy {
     setResourceIds(resId: number[]) {
         this.currentResourceInformations['resId'] = resId;
         this.currentResIds = resId;
+    }
+
+    loadResources(currentUserId: any = this.currentUserId, currentGroupId: any = this.currentGroupId, currentBasketId: any = this.currentBasketId) {
+        this.listProperties = this.filtersListService.initListsProperties(currentUserId, currentGroupId, currentBasketId, 'basket');
+        const offset: number =  this.listProperties.page * this.listProperties.pageSize;
+        const limit: number = this.listProperties.pageSize;
+        const filters: string = this.filtersListService.getUrlFilters();
+        return this.http.get(`../rest/resourcesList/users/${currentUserId}/groups/${currentGroupId}/baskets/${currentBasketId}?limit=${limit}&offset=${offset}${filters}`);
     }
 
     launchIndexingAction(action: any, userId: number, groupId: number, datas: any) {
@@ -220,6 +233,29 @@ export class ActionsService implements OnDestroy {
         });
     }
 
+    getDefaultAction(): any {
+        const objToSend: any = {
+            showToggle: false,
+            inLocalStorage: false,
+            canGoToNextRes: false
+        };
+        if (!this.functions.empty(this.currentResourceInformations.canGoToNextRes)) {
+            // Check if the option is activated for the current basket
+            if (this.currentResourceInformations.canGoToNextRes === true) {
+                objToSend.showToggle = this.router.url.includes('process');
+                objToSend.inLocalStorage = !this.functions.empty(this.sessionStorage.get(`canGoToNextRes_basket_${this.currentBasketId}_group_${this.currentGroupId}_action_${this.currentAction.id}`));
+                objToSend.canGoToNextRes = objToSend.inLocalStorage;
+            } else {
+                objToSend.showToggle = objToSend.canGoToNextRes = false;
+                this.sessionStorage.clearAllById({basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction});
+            }
+        } else {
+            objToSend.showToggle = objToSend.canGoToNextRes = false;
+            this.sessionStorage.clearAllById({basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction});
+        }
+        return objToSend;
+    }
+
     hasLockResources() {
         return !this.functions.empty(this.currentResourceLock);
     }
@@ -290,7 +326,8 @@ export class ActionsService implements OnDestroy {
             groupId: this.currentGroupId,
             basketId: this.currentBasketId,
             indexActionRoute: this.indexActionRoute,
-            processActionRoute: this.processActionRoute
+            processActionRoute: this.processActionRoute,
+            additionalInfo: this.getDefaultAction()
         };
     }
 
@@ -313,7 +350,25 @@ export class ActionsService implements OnDestroy {
         this.notify.success(this.translate.instant('lang.action') + ' : "' + this.currentAction.label + '" ' + this.translate.instant('lang.done'));
 
         this.actionEnded = true;
-        this.eventAction.next(resIds);
+        if (this.router.url.includes('process') && !this.functions.empty(this.sessionStorage.get(`canGoToNextRes_basket_${this.currentBasketId}_group_${this.currentGroupId}_action_${this.currentAction.id}`))) {
+            this.loadResources().pipe(
+                tap((data: any) => {
+                    const index: number = data.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
+                    if (!this.functions.empty(data.allResources[index + 1])) {
+                        this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + data.allResources[index + 1]]);
+                    } else {
+                        this.eventAction.next(resIds);
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    this.eventAction.next(resIds);
+                    return of(false);
+                })
+            ).subscribe();
+        } else {
+            this.eventAction.next(resIds);
+        }
     }
 
     /* OPEN SPECIFIC ACTION */

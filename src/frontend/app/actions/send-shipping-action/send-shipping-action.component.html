@@ -123,6 +123,13 @@
                     <div class="col-md-12">
                         <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
                     </div>
+                    <div *ngIf="showToggle" class="col-md-12" style="margin: 10px 0px 10px 0px;">
+                        <mat-slide-toggle name="history" color="primary" style="margin-bottom: 15px;"
+                            [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                            {{'lang.canGoToNextRes' | translate}}
+                        </mat-slide-toggle>
+                        <mat-divider></mat-divider>
+                    </div>
                 </div>
             </mat-sidenav-content>
             <mat-sidenav mode="side" fixedTopGap="56" position='end' [opened]="attachList.length > 0"

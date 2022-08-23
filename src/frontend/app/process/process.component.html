@@ -1,5 +1,20 @@
 <mat-sidenav-container class="maarch-container">
     <ng-template #adminMenuTemplate>
+        <ng-container *ngIf="!detailMode && canShowDivBrowsing && !loading" >
+            <div class="divBrowsing" style="margin-bottom: 10px;">
+                <button mat-button color="primary" (click)="$event.stopPropagation(); goToResource('previous')"
+                    [title]="'lang.previousRes' | translate" [disabled]="!canGoToPrevious">
+                    <mat-icon class="fa fa-angle-left" style="height:auto"></mat-icon>
+                        {{'lang.previous' | translate}}
+                </button>
+                <button mat-button color="primary" (click)="$event.stopPropagation(); goToResource('next')"
+                    [title]="'lang.nextRes' | translate" [disabled]="!canGoToNext">
+                        {{'lang.next' | translate}}
+                    <mat-icon  class="fa fa-angle-right" style="height:auto"></mat-icon>
+                </button>
+            </div>
+            <mat-divider></mat-divider>
+        </ng-container>
         <div *ngIf="(resourceFreezed || resourceBinded !== null) && !loading" class="alert-message alert-message-danger"
             style="min-width: 100%; margin: 10px 0;">
             <div *ngIf="resourceFreezed" style="display: flex;align-items: center;">

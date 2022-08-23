@@ -27,6 +27,11 @@
             [disabled]="!selectedProcessTool.canUpdateData">{{'lang.canUpdateIndexingModel' | translate}}
         </mat-slide-toggle>
     </div>
+    <div style="padding: 10px;">
+        <mat-slide-toggle color="primary" [(ngModel)]="selectedProcessTool.canGoToNextRes">
+            {{'lang.canGoToNextRes' | translate}}
+        </mat-slide-toggle>
+    </div>
 </div>
 <div class="formType ratio-2 col-sm-12" *ngIf="selectedListEvent === 'signatureBookAction'">
     <div class="formType-title">

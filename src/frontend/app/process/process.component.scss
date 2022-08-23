@@ -446,4 +446,17 @@
 
 .isSelectedMenu {
     background: var(--maarch-color-secondary);
-  }
+}
+
+.divBrowsing {
+    display: flex;
+    margin-left: 25px;
+    margin-top: 10px;
+
+    button {
+        border-radius: 20px 20px 20px 20px;
+        font-weight: bold;
+        align-items: center;
+        text-align: center;
+    }
+}

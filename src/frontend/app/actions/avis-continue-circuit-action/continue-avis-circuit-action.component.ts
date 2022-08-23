@@ -8,7 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { AvisWorkflowComponent } from '../../avis/avis-workflow.component';
-
+import { SessionStorageService } from '@service/session-storage.service';
 @Component({
     templateUrl: 'continue-avis-circuit-action.component.html',
     styleUrls: ['continue-avis-circuit-action.component.scss'],
@@ -30,15 +30,24 @@ export class ContinueAvisCircuitActionComponent implements OnInit {
 
     noResourceToProcess: boolean = null;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<ContinueAvisCircuitActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService) { }
+        public functions: FunctionsService,
+        private notify: NotificationService,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnInit() {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkAvisCircuit();
     }
 
@@ -75,6 +84,7 @@ export class ContinueAvisCircuitActionComponent implements OnInit {
 
     onSubmit() {
         const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction(realResSelected);
     }
 
