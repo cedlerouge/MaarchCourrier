@@ -2655,5 +2655,9 @@
     "hideInformationsBlock": "Hide information block",
     "processDelayEnabled": "Process delay enabled",
     "processDelayDisabled": "Process delay disabled",
-    "disableProcessDelayDesc": "This type of document is no longer taken into account for the calculation of the process limit date"
+    "disableProcessDelayDesc": "This type of document is no longer taken into account for the calculation of the process limit date",
+    "nextRes": "Next mail",
+    "previousRes": "Previous mail",
+    "canGoToNextRes": "Move to next mail when action is complete",
+    "canGoToNextResDesc": "Activating this option saves this choice in your session",
 }
