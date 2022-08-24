@@ -7,6 +7,7 @@ import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, exhaustMap, catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'print-registered-mail-action.component.html',
@@ -18,19 +19,29 @@ export class PrintRegisteredMailActionComponent implements OnInit {
 
     loading: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         private functions: FunctionsService,
         public dialogRef: MatDialogRef<PrintRegisteredMailActionComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private sessionStorage: SessionStorageService
     ) { }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
+    }
 
     onSubmit() {
         this.loading = true;
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction();
     }
 

@@ -7,6 +7,7 @@ import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { catchError, finalize, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-shipping-action.component.html',
@@ -47,23 +48,32 @@ export class SendShippingActionComponent implements OnInit {
     fatalError: any = '';
     invalidEntityAddress: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendShippingActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService) { }
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnInit(): void {
         this.loading = true;
-
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkShipping();
     }
 
     onSubmit() {
         this.loading = true;
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

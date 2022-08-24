@@ -2649,6 +2649,10 @@
     "notifTargetDesc": "Les champs de fusion <i>[res_letterbox.linktodetail], [res_letterbox.linktodoc]</i> et <i>[res_letterbox.linktoprocess]</i> requièrent que l’URL de l’application <br> soit renseignée dans : <b>Administration -> Paramètres -> Personnalisation -> URL de l'application</b>",
     "separatorsEmail": "Pour séparer les adresses courriels, utiliser les \",\" ou \";\"",
     "cannotAccessPage": "Impossible d'accéder à la page",
+    "nextRes": "Courrier suivant",
+    "previousRes": "Courrier précédent",
+    "canGoToNextRes": "Passer au courrier suivant une fois l'action effectuée",
+    "canGoToNextResDesc": "L'activation de cette option permet de sauvegarder ce choix dans votre session",
     "processDelayEnabled": "Délai de traitement activé",
     "processDelayDisabled": "Délai de traitement désactivé",
     "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement"

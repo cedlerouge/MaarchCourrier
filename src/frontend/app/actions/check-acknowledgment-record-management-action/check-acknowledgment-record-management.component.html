@@ -34,6 +34,15 @@
             <div *ngIf="selectedRes.length > 0">
                 <app-note-editor #noteEditor [resIds]="selectedRes"></app-note-editor>
             </div>
+            <ng-container *ngIf="showToggle">
+                <div class="col-md-12" style="margin: 10px 0px 10px 0px;">
+                    <mat-slide-toggle name="history" color="primary"
+                        [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                        {{'lang.canGoToNextRes' | translate}}
+                    </mat-slide-toggle>
+                </div>
+                <mat-divider></mat-divider>
+            </ng-container>
         </div>
     </div>
     <span class="divider-modal"></span>

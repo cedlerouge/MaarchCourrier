@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { AvisWorkflowComponent } from '../../avis/avis-workflow.component';
 import { HeaderService } from '@service/header.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'validate-avis-parallel-action.component.html',
@@ -40,6 +41,10 @@ export class ValidateAvisParallelComponent implements OnInit, AfterViewInit {
         userDelegated: null
     };
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -47,9 +52,14 @@ export class ValidateAvisParallelComponent implements OnInit, AfterViewInit {
         public dialogRef: MatDialogRef<ValidateAvisParallelComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
-        private headerService: HeaderService) { }
+        private headerService: HeaderService,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnInit() {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkAvisCircuit();
         const userId: number = parseInt(this.data.userId, 10);
         if (userId !== this.headerService.user.id && !this.noResourceToProcess) {
@@ -99,9 +109,8 @@ export class ValidateAvisParallelComponent implements OnInit, AfterViewInit {
     }
 
     async onSubmit() {
-
         const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
-
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction(realResSelected);
 
     }
