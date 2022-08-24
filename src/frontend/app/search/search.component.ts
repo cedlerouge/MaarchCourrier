@@ -31,6 +31,7 @@ export class SearchComponent implements OnInit {
 
     dialogRef: MatDialogRef<any>;
     loadingResult: boolean = false;
+    data: any = [];
 
     constructor(
         _activatedRoute: ActivatedRoute,

@@ -20,7 +20,7 @@ export class LinkResourceModalComponent implements OnInit {
     @ViewChild('appCriteriaTool', { static: false }) appCriteriaTool: CriteriaToolComponent;
 
     searchUrl: string = '';
-
+    result: any;
 
     constructor(
         public translate: TranslateService,

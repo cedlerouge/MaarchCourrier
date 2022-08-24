@@ -57,6 +57,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
     isMailing: boolean = false;
     isFromSearch: boolean = false;
     actionsListLoaded: boolean = false;
+    blocOpened: boolean = true;
     logoutTrigger: boolean = false;
 
     canShowDivBrowsing: boolean = false;

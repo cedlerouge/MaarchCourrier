@@ -190,3 +190,120 @@ body {
         flex-direction: column !important;
     }
 }
+
+
+/**
+ * Banner
+ */
+ .banner-opened {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 10px -5px 10px;
+    border-radius: 20px;
+    margin-left: 20px;
+    padding-left: 20px;
+    padding: 0px;
+    width: 100%;
+    border: solid 1px #ccc;
+    position: relative;
+    background: var(--maarch-color-primary-light);
+    transition: all 0.3s;
+
+    .title {
+        overflow: hidden;
+        white-space: pre;
+        text-overflow: ellipsis;
+        max-width: 85%;
+        z-index: 1;
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        position: absolute;
+        top: -18px;
+        left: 20px;
+        padding: 0px;
+        margin: 0px;
+        color: white;
+
+        &-divider {
+            position: absolute;
+            width: 99%;
+            z-index: -1;
+            top: 17px;
+            background: var(--maarch-color-primary-light);
+            height: 1px; 
+        }
+    }
+
+    .content {
+        align-items: center;
+        transition: height 0.3s;
+        height: 80px;
+        display: flex;
+        overflow: hidden;
+        overflow-x: auto;
+        padding-left: 10px;
+
+        &-item {
+            flex: 1;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+}
+
+.banner-closed {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 10px -5px 10px;
+    border-radius: 20px;
+    margin-left: 20px;
+    padding-left: 20px;
+    padding: 0px;
+    width: 100%;
+    border: none;
+    position: relative;
+    background: var(--maarch-color-primary-light);
+    transition: all 0.3s;
+
+    .title {
+        overflow: hidden;
+        white-space: pre;
+        text-overflow: ellipsis;
+        max-width: 85%;
+        z-index: 1;
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        position: absolute;
+        top: -18px;
+        left: 20px;
+        padding: 0px;
+        margin: 0px;
+        color: white;
+
+        &-divider {
+            position: absolute;
+            width: 99%;
+            z-index: -1;
+            top: 17px;
+            background: var(--maarch-color-primary-light);
+            height: 0px; 
+        }
+    }
+
+    .content {
+        align-items: center;
+        transition: height 0.3s;
+        height: 0px;
+        overflow: hidden;
+        display: flex;
+        padding-left: 10px;
+
+        &-item {
+            flex: 1;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+}
