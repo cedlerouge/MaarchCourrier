@@ -60,7 +60,7 @@ job_e2e:
     - npm -v
     - npm set registry https://registry.npmjs.org/
     - npm install > /dev/null
-    - npm reload-packages
+    - npm run reload-packages
     - npm run build-prod
     - curl -o /dev/null --silent --head --write-out '%{http_code}\n' http://127.0.0.1/MaarchCourrier
     - sed -i 's~https://preview.maarchcourrier.com~http://127.0.0.1/MaarchCourrier~' /var/www/html/MaarchCourrier/test/e2e/cypress-config.json
