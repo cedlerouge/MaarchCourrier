@@ -39,7 +39,7 @@ class LogsController
                 'name'          => $logConfig['customId'] ?? 'SCRIPT',
                 'path'          => $logConfig['queries']['file'],
                 'level'         => $args['level'],
-                'maxSize'       => $logConfig['queries']['maxFileSize'],
+                'maxSize'       => LogsController::setMaxFileSize( $logConfig['queries']['maxFileSize']),
                 'maxFiles'      => $logConfig['queries']['maxBackupFiles'],
                 'line'          => $logLine
             ]);
@@ -74,12 +74,12 @@ class LogsController
             [
                 'OK',
                 'MAARCH',
-                $args['lineData']['tableName'],
-                $args['lineData']['recordId'],
-                $args['lineData']['eventType'],
+                $args['lineData']['tableName'] ?? '',
+                $args['lineData']['recordId'] ?? '',
+                $args['lineData']['eventType'] ?? '',
                 $GLOBALS['login'] ?? '',
-                $args['lineData']['eventId'],
-                $args['lineData']['moduleId'],
+                $args['lineData']['eventId'] ?? '',
+                $args['lineData']['moduleId'] ?? '',
                 $_SERVER['REMOTE_ADDR'] ?? ''
             ],
             "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
@@ -139,6 +139,7 @@ class LogsController
         
         ValidatorModel::notEmpty($log, ['levelConfig', 'name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['name', 'path', 'line']);
+        ValidatorModel::intVal($log, ['maxSize', 'maxFiles']);
 
         if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
             return;
