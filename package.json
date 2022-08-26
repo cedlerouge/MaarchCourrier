@@ -27,7 +27,7 @@
     "create-component": "echo Component name ? && read varname && ng g c $varname --module app --style=scss",
     "create-component-admin": "echo Component name ? && read varname && ng g c administration/$varname --module administration --style=scss",
     "cypress:open": "cypress open --config-file test/e2e/cypress-config.json",
-    "cypress:run": "cypress run --browser firefox --headless --config-file test/e2e/cypress-config.json"
+    "cypress:run": "cypress run --browser chrome --headless --config-file test/e2e/cypress-config.json"
   },
   "keywords": [],
   "author": "Maarch",

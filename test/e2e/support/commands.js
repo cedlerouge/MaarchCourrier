@@ -35,7 +35,7 @@ Cypress.Commands.add("login", () => {
         }
     });*/
     cy.get('#login')
-        .type('bblier')
+        .type('bbain')
     cy.get('#password')
         .type('maarch')
     cy.get('#submit')

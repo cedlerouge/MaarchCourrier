@@ -2,12 +2,13 @@ describe('Indexing document EE', () => {
   it('Record incoming mail', () => {
     cy.login();
     cy.visit('home')
-    cy.wait(500)
+    cy.wait(1000)
     cy.get('#indexing')
-      .click()
+      .click({force: true})
+      cy.wait(3000)
     cy.get('#doctype')
       .click()
-    cy.wait(500)
+    cy.wait(1000)
     cy.get('[title="Demande de renseignements"]')
       .click({force: true});
     cy.get('#priority')
@@ -26,10 +27,10 @@ describe('Indexing document EE', () => {
       .click()
     cy.get('#destination')
       .click()
-    cy.wait(500)
+    cy.wait(1000)
     cy.get('[title="Pôle Jeunesse et Sport"]')
       .click({force: true});
-    cy.wait(500)
+    cy.wait(1000)
     cy.fixture('sample.pdf').then(fileContent => {
       cy.get('#inputFileMainDoc').attachFile({
           fileContent: fileContent.toString(),
@@ -37,13 +38,14 @@ describe('Indexing document EE', () => {
           mimeType: 'application/pdf'
       });
     });
-    cy.wait(500)
+    cy.wait(1000)
     cy.get('.mat-button-wrapper')
       .contains('Valider')
       .click()
-    cy.wait(500)
+    cy.wait(1000)
     cy.get('[placeholder="Ajouter une annotation"]')
       .type('test ee')
+      cy.wait(1000)
     cy.get('.mat-dialog-content-container .mat-button-wrapper')
       .contains('Valider')
       .click()
