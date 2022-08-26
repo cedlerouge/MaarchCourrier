@@ -17,6 +17,10 @@ export class DisabledBasketPersistenceActionComponent implements OnInit {
 
     loading: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
