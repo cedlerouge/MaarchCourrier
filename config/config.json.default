@@ -70,19 +70,19 @@
             "level": "ERROR",
             "file": "./fonctionnel.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": "10"
+            "maxBackupFiles": 10
         },
         "logTechnique": {
             "level": "ERROR",
             "file": "./technique.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": "10"
+            "maxBackupFiles": 10
         },
         "queries": {
             "level": "ERROR",
             "file": "./queries.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": "10"
+            "maxBackupFiles": 10
         }
     }
 }
