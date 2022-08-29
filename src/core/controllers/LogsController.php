@@ -29,31 +29,37 @@ class LogsController
 {
     public static function add(array $args)
     {
-        
         $logConfig = LogsController::getLogConfig();
+        if (empty($logConfig)) {
+            return ['code' => 400, 'errors' => "Log config not found!"];
+        }
         $logLine   = LogsController::prepareLogLine(['logConfig' => $logConfig, 'lineData' => $args]);
 
         if (!empty($args['isSql'])) {
             LogsController::logWithMonolog([
-                'levelConfig'   => $logConfig['queries']['level'],
-                'name'          => $logConfig['customId'] ?? 'SCRIPT',
-                'path'          => $logConfig['queries']['file'],
-                'level'         => $args['level'],
-                'maxSize'       => LogsController::setMaxFileSize( $logConfig['queries']['maxFileSize']),
-                'maxFiles'      => $logConfig['queries']['maxBackupFiles'],
-                'line'          => $logLine
+                'lineFormat'        => $logConfig['lineFormat'],
+                'dateTimeFormate'   => $logConfig['dateTimeFormate'],
+                'levelConfig'       => $logConfig['queries']['level'],
+                'name'              => $logConfig['customId'] ?? 'SCRIPT',
+                'path'              => $logConfig['queries']['file'],
+                'level'             => $args['level'],
+                'maxSize'           => LogsController::setMaxFileSize( $logConfig['queries']['maxFileSize']),
+                'maxFiles'          => $logConfig['queries']['maxBackupFiles'],
+                'line'              => $logLine
             ]);
             return;
         }
 
         LogsController::logWithMonolog([
-            'levelConfig' => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
-            'name'        => $logConfig['customId'] ?? 'SCRIPT',
-            'path'        => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
-            'level'       => $args['level'],
-            'maxSize'     => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
-            'maxFiles'    => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
-            'line'        => $logLine
+            'lineFormat'        => $logConfig['lineFormat'],
+            'dateTimeFormate'   => $logConfig['dateTimeFormate'],
+            'levelConfig'       => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
+            'name'              => $logConfig['customId'] ?? 'SCRIPT',
+            'path'              => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
+            'level'             => $args['level'],
+            'maxSize'           => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
+            'maxFiles'          => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
+            'line'              => $logLine
         ]);
     }
 
@@ -114,21 +120,7 @@ class LogsController
 
         $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path])['log'];
         if (empty($logConfig)) {
-            $logConfig = [];
-            $logConfig['enable']       = true;
-            $logConfig['businessCode'] = 'MAARCH';
-            $logConfig['logFonctionnel']['level']          = 'ERROR';
-            $logConfig['logFonctionnel']['file']           = 'fonctionnel.log';
-            $logConfig['logFonctionnel']['maxFileSize']    = '10MB';
-            $logConfig['logFonctionnel']['maxBackupFiles'] = '10';
-            $logConfig['logTechnique']['level']            = 'ERROR';
-            $logConfig['logTechnique']['file']             = 'technique.log';
-            $logConfig['logTechnique']['maxFileSize']      = '10MB';
-            $logConfig['logTechnique']['maxBackupFiles']   = '10';
-            $logConfig['queries']['level']          = 'ERROR';
-            $logConfig['queries']['file']           = 'queries_error.log';
-            $logConfig['queries']['maxFileSize']    = '10MB';
-            $logConfig['queries']['maxBackupFiles'] = '10';
+            return null;
         }
         $logConfig['customId'] = $customId;
         return $logConfig;
@@ -136,9 +128,8 @@ class LogsController
 
     protected static function logWithMonolog(array $log)
     {
-        
-        ValidatorModel::notEmpty($log, ['levelConfig', 'name', 'path', 'level', 'line']);
-        ValidatorModel::stringType($log, ['name', 'path', 'line']);
+        ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormate', 'levelConfig', 'name', 'path', 'level', 'line']);
+        ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormate', 'name', 'path', 'line']);
         ValidatorModel::intVal($log, ['maxSize', 'maxFiles']);
 
         if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
@@ -150,10 +141,8 @@ class LogsController
             'maxFiles'  => $log['maxFiles']
         ]);
 
-        // the default date format is "Y-m-d\TH:i:sP"
-        $dateFormat = "d/m/Y H:i:s";
-        // the default format -> "[%datetime%] %channel%.%level_name%: %message% %context% %extra%\n"
-        $output = "[%datetime%][%channel%][%level_name%][%message%]\n";
+        $dateFormat = $log['dateTimeFormate'];
+        $output = $log['lineFormat'] . "\n";
         $formatter = new LineFormatter($output, $dateFormat);
 
         $streamHandler = new StreamHandler($log['path']);
