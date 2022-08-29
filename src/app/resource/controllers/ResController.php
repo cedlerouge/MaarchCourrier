@@ -1443,6 +1443,10 @@ class ResController extends ResourceControlController
             }
         }
 
+        if (empty($listEventData['canUpdateData'])) {
+            $listEventData['canUpdateModel'] = false;
+        }
+
         return $response->withJson(['listEventData' => $listEventData]);
     }
 
