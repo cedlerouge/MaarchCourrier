@@ -1635,23 +1635,83 @@ class UserController
         }
 
         $allowedFields = [
-            'id'        => 'id',
-            'userId'    => 'user_id',
-            'firstname' => 'firstname',
-            'lastname'  => 'lastname',
-            'phone'     => 'phone',
-            'mail'      => 'mail'
+            'id'                => 'id',
+            'userId'            => 'user_id',
+            'firstname'         => 'firstname',
+            'lastname'          => 'lastname',
+            'phone'             => 'phone',
+            'mail'              => 'mail',
+            'status'            => 'status',
+            'accountType'       => 'mode',
+            'groups'            => 'groups',
+            'entities'          => 'entities',
+            'baskets'           => 'baskets',
+            'redirectedBaskets' => 'redirectedBaskets',
+            'assignedBaskets'   => 'assignedBaskets'
         ];
         $personalFields = ['phone'];
+        $defaultFields = ['id', 'userId', 'firstname', 'lastname', 'phone', 'mail'];
+
+        $metaFieldQueries = [
+            'groups' => "(
+                SELECT string_agg(ug.group_desc, '\n')
+                FROM usergroups ug, usergroup_content ugc
+                WHERE ugc.group_id = ug.id AND ugc.user_id = users.id
+                ) AS groups",
+
+            'entities' => "(
+                SELECT string_agg(trim(' ' FROM replace(replace(
+                        e.entity_label
+                        || ' [" . _ROLE . " : ' || ue.user_role || '] '
+                        || (CASE WHEN ue.primary_entity = 'Y' THEN '(" . _PRIMARY_ENTITY . ")' ELSE '' END)
+                        || ' ',
+                    '[" . _ROLE . " : ]', ''), '  ', ' ')), '\n')
+                FROM entities e, users_entities ue
+                WHERE ue.entity_id = e.entity_id AND ue.user_id = users.id
+                ) AS entities",
+
+            'baskets' => "(
+                SELECT string_agg(
+                    b.basket_name || ' (' || ug.group_desc || ')',
+                    '\n')
+                FROM usergroups ug, usergroup_content ugc, groupbasket gb, baskets b, users_baskets_preferences ubp
+                WHERE ugc.group_id = ug.id AND gb.group_id = ug.group_id AND gb.basket_id = b.basket_id
+                    AND ubp.user_serial_id = users.id AND ubp.group_serial_id = ug.id AND ubp.basket_id = b.basket_id
+                    AND b.basket_id NOT IN (SELECT rb.basket_id FROM redirected_baskets rb WHERE rb.group_id = ug.id AND rb.owner_user_id = users.id)
+                    AND ugc.user_id = users.id
+                ) AS baskets",
+
+            'redirectedBaskets' => "(
+                SELECT string_agg(
+                    b.basket_name
+                    || ' (' || ug.group_desc || ')'
+                    || ' " . _REDIRECTED_TO . " ' || trim(' ' FROM u_actual.firstname || ' ' || u_actual.lastname),
+                    '\n')
+                FROM redirected_baskets rb, users u_actual, usergroups ug, usergroup_content ugc, baskets b
+                WHERE rb.owner_user_id = users.id AND rb.actual_user_id = u_actual.id
+                    AND rb.group_id = ug.id AND ug.id = ugc.group_id AND ugc.user_id = users.id AND rb.basket_id = b.basket_id
+                ) as \"redirectedBaskets\"",
+
+            'assignedBaskets' => "(
+                SELECT string_agg(
+                    b.basket_name
+                    || ' (' || ug.group_desc || ')'
+                    || ' " . _ASSIGNED_BY . " ' || trim(' ' FROM u_owner.firstname || ' ' || u_owner.lastname),
+                    '\n')
+                FROM redirected_baskets rb, users u_owner, usergroups ug, usergroup_content ugc, baskets b
+                WHERE rb.actual_user_id = users.id AND rb.owner_user_id = u_owner.id
+                    AND rb.group_id = ug.id AND ug.id = ugc.group_id AND ugc.user_id = u_owner.id AND rb.basket_id = b.basket_id
+                ) as \"assignedBaskets\""
+        ];
 
         $fields = [];
-        foreach ($allowedFields as $camel => $snake) {
-            $fields[] = ['label' => $snake, 'value' => $camel];
-        }
-
+        
         $body = $request->getParsedBody();
-        if (!empty($body['data'])) {
-            $fields = [];
+        if (empty($body['data'])) {
+            foreach ($defaultFields as $field) {
+                $fields[] = ['label' => $allowedFields[$field], 'value' => $field];
+            }
+        } else {
             foreach ($body['data'] as $parameter) {
                 if (!empty($parameter['label']) && is_string($parameter['label']) && !empty($parameter['value']) && is_string($parameter['value'])) {
                     if (!in_array($parameter['value'], array_keys($allowedFields))) {
@@ -1668,18 +1728,22 @@ class UserController
             return $allowedFields[$field['value']];
         }, $fields);
         foreach ($select as $key => $value) {
-            $select[$key] = 'users.' . $value;
+            if (array_key_exists($value, $metaFieldQueries)) {
+                $select[$key] = $metaFieldQueries[$value];
+            } else {
+                $select[$key] = 'users.' . $value;
+            }
         }
         if (empty($select)) {
             return $response->withStatus(400)->withJson(['errors' => 'no allowed field selected for users export']);
         }
-        $select[0] = 'DISTINCT ' . $select[0];
 
         if (UserController::isRoot(['id' => $GLOBALS['id']])) {
             $users = UserModel::get([
-                'select'    => $select,
-                'where'     => ['status != ?'],
-                'data'      => ['DEL']
+                'select'  => $select,
+                'where'   => ['status != ?'],
+                'data'    => ['DEL'],
+                'orderBy' => ['id ASC']
             ]);
         } else {
             $viewPersonaldata = false;
