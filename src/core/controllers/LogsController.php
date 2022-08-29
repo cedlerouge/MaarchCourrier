@@ -27,6 +27,35 @@ use Monolog\Formatter\LineFormatter;
 
 class LogsController
 {
+    /**
+     * @description Get log config
+     * @return  array
+     */
+    private static function getLogConfig()
+    {
+        $path = null;
+        $customId = CoreConfigModel::getCustomId() ?: null;
+        if (!empty($customId) && file_exists("custom/{$customId}/config/config.json")) {
+            $path = "custom/{$customId}/config/config.json";
+        } elseif (file_exists('config/config.json')) {
+            $path = 'config/config.json';
+        } else {
+            $path = 'config/config.json.default';
+        }
+
+        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path])['log'];
+        if (empty($logConfig)) {
+            return null;
+        }
+        $logConfig['customId'] = $customId;
+        return $logConfig;
+    }
+
+    /**
+     * @description Add log line
+     * @param   array   $args
+     * @return  void
+     */
     public static function add(array $args)
     {
         $logConfig = LogsController::getLogConfig();
@@ -63,6 +92,11 @@ class LogsController
         ]);
     }
 
+    /**
+     * @description Make log line
+     * @param   array   $args
+     * @return  string
+     */
     private static function prepareLogLine(array $args)
     {
         $logLine = str_replace(
@@ -106,26 +140,11 @@ class LogsController
         return $logLine;
     }
 
-    private static function getLogConfig()
-    {
-        $path = null;
-        $customId = CoreConfigModel::getCustomId() ?: null;
-        if (!empty($customId) && file_exists("custom/{$customId}/config/config.json")) {
-            $path = "custom/{$customId}/config/config.json";
-        } elseif (file_exists('config/config.json')) {
-            $path = 'config/config.json';
-        } else {
-            $path = 'config/config.json.default';
-        }
-
-        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path])['log'];
-        if (empty($logConfig)) {
-            return null;
-        }
-        $logConfig['customId'] = $customId;
-        return $logConfig;
-    }
-
+    /**
+     * @description     Write prepare log line with monolog
+     * @param   array   $log
+     * @return  void
+     */
     protected static function logWithMonolog(array $log)
     {
         ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormate', 'levelConfig', 'name', 'path', 'level', 'line']);
@@ -189,6 +208,11 @@ class LogsController
         $logger->close();
     }
 
+    /**
+     * @description Create new log file based on size and number of files to keep, when file size is exceeded
+     * @param   array   $file
+     * @return  void
+     */
     private static function rotateLogByFileSize(array $file)
     {
         ValidatorModel::notEmpty($file, ['path']);
@@ -216,6 +240,11 @@ class LogsController
         }
     }
 
+    /**
+     * @description Convert File size to KB
+     * @param   string   $value     The size + prefix (of 2 characters)
+     * @return  int
+     */
     private static function setMaxFileSize(string $value)
     {
 		$maxFileSize = null;
