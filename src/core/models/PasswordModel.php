@@ -24,8 +24,8 @@ class PasswordModel
         $aRules = DatabaseModel::select([
             'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'     => ['password_rules'],
-            'where'     => $aArgs['where'],
-            'data'      => $aArgs['data'],
+            'where'     => $aArgs['where'] ?? [],
+            'data'      => $aArgs['data'] ?? [],
         ]);
 
         return $aRules;

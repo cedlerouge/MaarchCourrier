@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { finalize, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -19,18 +19,18 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
     creationMode: boolean;
     loading: boolean = false;
 
-    adminFormGroup: FormGroup;
+    adminFormGroup: UntypedFormGroup;
 
     attachmentType: any = {
-        typeId: new FormControl({ value: '', disabled: false }, [Validators.required]),
-        label: new FormControl({ value: '', disabled: false }, [Validators.required]),
-        visible: new FormControl({ value: true, disabled: false }),
-        chrono: new FormControl({ value: true, disabled: false }),
-        emailLink: new FormControl({ value: false, disabled: false }),
-        signable: new FormControl({ value: false, disabled: false }),
-        icon: new FormControl({ value: '', disabled: false }),
-        versionEnabled: new FormControl({ value: false, disabled: false }),
-        newVersionDefault: new FormControl({ value: false, disabled: false }),
+        typeId: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+        label: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+        visible: new UntypedFormControl({ value: true, disabled: false }),
+        chrono: new UntypedFormControl({ value: true, disabled: false }),
+        emailLink: new UntypedFormControl({ value: false, disabled: false }),
+        signable: new UntypedFormControl({ value: false, disabled: false }),
+        icon: new UntypedFormControl({ value: '', disabled: false }),
+        versionEnabled: new UntypedFormControl({ value: false, disabled: false }),
+        newVersionDefault: new UntypedFormControl({ value: false, disabled: false }),
     };
 
     constructor(
@@ -43,7 +43,7 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         public appService: AppService,
         public functions: FunctionsService,
         public dialog: MatDialog,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
     }
 

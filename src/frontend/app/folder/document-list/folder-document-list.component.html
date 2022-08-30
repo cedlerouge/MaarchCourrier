@@ -18,7 +18,7 @@
                         <i class="far" [class.fa-plus-square]="!folderInfoOpened" [class.fa-minus-square]="folderInfoOpened" style="cursor:pointer;margin-left: 10px;"></i>&nbsp;{{'lang.folderInformations' | translate}}
                         <div *ngIf="folderInfoOpened" class="title-divider"></div>
                     </div>
-                    <div *ngIf="folderInfoOpened" class="content">
+                    <div class="content">
                         <div class="content-item">
                             {{'lang.owner' | translate}} :<br /><b>{{folderInfo.ownerDisplayName}}</b>
                         </div>

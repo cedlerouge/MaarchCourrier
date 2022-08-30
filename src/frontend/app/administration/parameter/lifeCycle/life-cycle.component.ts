@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { tap, catchError, debounceTime } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 
 @Component({
@@ -12,10 +12,10 @@ import { NotificationService } from '@service/notification/notification.service'
 })
 
 export class LifeCycleComponent implements OnInit {
-    documentFinalAction: FormGroup;
+    documentFinalAction: UntypedFormGroup;
     finalActionValues: any[] = ['restrictAccess', 'transfer', 'copy', 'delete'];
 
-    constructor(public translate: TranslateService, public http: HttpClient, private _formBuilder: FormBuilder, private notify: NotificationService) {
+    constructor(public translate: TranslateService, public http: HttpClient, private _formBuilder: UntypedFormBuilder, private notify: NotificationService) {
         this.documentFinalAction = this._formBuilder.group({
             bindingDocumentFinalAction: [''],
             nonBindingDocumentFinalAction: ['']

@@ -603,6 +603,17 @@ CREATE TABLE notes
 )
 WITH (OIDS=FALSE);
 
+CREATE TABLE blacklist
+(
+  id SERIAL PRIMARY KEY,
+  term CHARACTER VARYING(128) UNIQUE NOT NULL
+)
+WITH (OIDS=FALSE);
+
+CREATE VIEW bad_notes AS
+  SELECT *
+  FROM notes
+  WHERE unaccent(note_text) ~* concat('\m(', array_to_string(array((select unaccent(term) from blacklist)), '|', ''), ')\M');
 
 CREATE SEQUENCE notes_entities_id_seq
   INCREMENT 1
@@ -1554,3 +1565,38 @@ CREATE TABLE address_sectors
     CONSTRAINT address_sectors_pkey PRIMARY KEY (id)
 )
     WITH (OIDS=FALSE);
+
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
+DECLARE
+    retval bigint;
+BEGIN
+    -- Check if sequence exist, if not create
+    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
+      EXECUTE 'CREATE SEQUENCE ' || chrono_seq_name || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;';
+    END IF;
+    -- Check if chrono exist in parameters table, if not create
+    IF NOT EXISTS (SELECT 0 FROM parameters where id = chrono_id_name ) THEN
+      EXECUTE 'INSERT INTO parameters (id, param_value_int) VALUES ( ''' || chrono_id_name || ''', 1)';
+    END IF;
+    -- Get next value of sequence, update the value in parameters table before returning the value
+    SELECT nextval(chrono_seq_name) INTO retval;
+	  UPDATE parameters set param_value_int = retval WHERE id =  chrono_id_name;
+	  RETURN QUERY SELECT retval;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reset les chronos
+DROP FUNCTION IF EXISTS reset_chronos;
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
+DECLARE
+  chrono record;
+BEGIN
+  -- Loop through each chrono found in parameters table
+	FOR chrono IN (SELECT * FROM parameters WHERE id LIKE '%_' || extract(YEAR FROM current_date)) LOOP
+    EXECUTE 'SELECT setVal(''' || CONCAT(chrono.id, '_seq') || ''', 1)';
+    UPDATE parameters SET param_value_int = '1' WHERE id = chrono.id;
+  END LOOP;
+END
+$$ LANGUAGE plpgsql;

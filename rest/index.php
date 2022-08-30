@@ -650,6 +650,7 @@ $app->get('/maarchParapheurOtp', \ExternalSignatoryBook\controllers\MaarchParaph
 $app->get('/maarchParapheur/user/{id}/picture', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getUserPicture');
 $app->get('/externalSignatureBooks/enabled', \ExternalSignatoryBook\controllers\ExternalSignatureBookController::class . ':getEnabledSignatureBook');
 $app->get('/externalSummary/{resId}', \ExternalSummary\controllers\SummaryController::class . ':getByResId');
+$app->get('/ixbus/natureDetails/{natureId}', \ExternalSignatoryBook\controllers\IxbusController::class . ':getNatureDetails');
 
 $app->get('/externalConnectionsEnabled', \SrcCore\controllers\CoreController::class . ':externalConnectionsEnabled');
 

@@ -6,33 +6,6 @@
         *ngIf="!hideFilter"></app-filter-tool-adv-search>
 </ng-template>
 <ng-template #toolTemplate>
-    <div class="filtersContent">
-        <div style="flex: 1"></div>
-        <div class="orderTool">
-            <mat-form-field class="basket-order">
-                <mat-icon matPrefix class="fa fa-list"></mat-icon>
-                <mat-select [(ngModel)]="this.listProperties.order" (selectionChange)="updateFilters()"
-                    [disabled]="isLoadingResults || data.length === 0">
-                    <mat-option [value]="column.id" *ngFor="let column of displayColsOrder">
-                        {{'lang.' + column.id | translate}}
-                    </mat-option>
-                </mat-select>
-            </mat-form-field>
-        </div>
-        <div class="ascDescTool">
-            <button [disabled]="this.listProperties.order == '' || isLoadingResults || data.length === 0"
-                [style.opacity]="this.listProperties.order == '' ? '0.2' : '1'" mat-fab
-                [title]="this.listProperties.orderDir == 'DESC' ? ('lang.descOrder' | translate) : ('lang.ascOrder' | translate)"
-                style="color: rgba(0,0,0,0.38);" (click)="changeOrderDir();">
-                <mat-icon *ngIf="this.listProperties.orderDir == 'DESC'" fontSet="fas"
-                    fontIcon="fa-sort-amount-down fa-2x">
-                </mat-icon>
-                <mat-icon *ngIf="this.listProperties.orderDir == 'ASC'" fontSet="fas"
-                    fontIcon="fa-sort-amount-up fa-2x">
-                </mat-icon>
-            </button>
-        </div>
-    </div>
     <div class="filterBadges">
         <span *ngIf="!emptyCriteria()" class="label badge-eraser" (click)="removeCriteria('_ALL')"
             title="{{'lang.eraseAllFilters' | translate}}"><i class="fas fa-eraser"></i></span>

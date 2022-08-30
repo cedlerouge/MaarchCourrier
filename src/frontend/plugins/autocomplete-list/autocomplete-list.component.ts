@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Input, EventEmitter, Output, ViewChild, ElementRef } from '@angular/core';
 import { map, startWith } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
@@ -51,7 +51,7 @@ export class AutocompleteListComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input() datasFormControl: FormControl = new FormControl({ value: [], disabled: false });
+    @Input() datasFormControl: UntypedFormControl = new UntypedFormControl({ value: [], disabled: false });
 
 
     /**
@@ -62,7 +62,7 @@ export class AutocompleteListComponent implements OnInit {
     @ViewChild('acInput') acInput: ElementRef<HTMLInputElement>;
     @ViewChild('auto') matAutocomplete: MatAutocomplete;
 
-    inputFormControl = new FormControl();
+    inputFormControl = new UntypedFormControl();
     loading = false;
 
     listInfo: string;

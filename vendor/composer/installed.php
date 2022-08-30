@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '3bdd299cf1a0d5aa5be9606dbd4c28c034f4b965',
+        'reference' => '3234c709a74583bf2aed01501808f4f73e8292a2',
         'name' => '__root__',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '3bdd299cf1a0d5aa5be9606dbd4c28c034f4b965',
+            'reference' => '3234c709a74583bf2aed01501808f4f73e8292a2',
             'dev_requirement' => false,
         ),
         'bacon/bacon-qr-code' => array(
@@ -163,15 +163,6 @@
             'reference' => 'bfeaeef6c69f9f9429bf28925af1a2567f5ae773',
             'dev_requirement' => false,
         ),
-        'monolog/monolog' => array(
-            'pretty_version' => '2.6.0',
-            'version' => '2.6.0.0',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../monolog/monolog',
-            'aliases' => array(),
-            'reference' => '247918972acd74356b0a91dfaa5adcaec069b6c0',
-            'dev_requirement' => false,
-        ),
         'myclabs/deep-copy' => array(
             'pretty_version' => '1.11.0',
             'version' => '1.11.0.0',
@@ -284,12 +275,12 @@
             'dev_requirement' => false,
         ),
         'php-http/discovery' => array(
-            'pretty_version' => '1.14.1',
-            'version' => '1.14.1.0',
+            'pretty_version' => '1.14.2',
+            'version' => '1.14.2.0',
             'type' => 'library',
             'install_path' => __DIR__ . '/../php-http/discovery',
             'aliases' => array(),
-            'reference' => 'de90ab2b41d7d61609f504e031339776bc8c7223',
+            'reference' => 'c8d48852fbc052454af42f6de27635ddd916b959',
             'dev_requirement' => false,
         ),
         'php-http/guzzle6-adapter' => array(
@@ -519,12 +510,6 @@
             'aliases' => array(),
             'reference' => 'd49695b909c3b7628b6289db5479a1c204601f11',
             'dev_requirement' => false,
-        ),
-        'psr/log-implementation' => array(
-            'dev_requirement' => false,
-            'provided' => array(
-                0 => '1.0.0 || 2.0.0 || 3.0.0',
-            ),
         ),
         'rafikhaceb/pi-barcode' => array(
             'pretty_version' => '1.0',

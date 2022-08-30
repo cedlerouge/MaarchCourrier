@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { catchError, debounceTime, exhaustMap, filter, finalize, map, tap } from 'rxjs/operators';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
@@ -29,30 +29,30 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     attachmentsTypes: any = [];
     initialDataModified: boolean = false;
 
-    basketToRedirect = new FormControl('NumericBasket');
+    basketToRedirect = new UntypedFormControl('NumericBasket');
     metadata: any = {
-        typeId: new FormControl(),
-        statusId: new FormControl(),
-        priorityId: new FormControl(),
-        indexingModelId: new FormControl(),
-        attachmentTypeId: new FormControl(),
+        typeId: new UntypedFormControl(),
+        statusId: new UntypedFormControl(),
+        priorityId: new UntypedFormControl(),
+        indexingModelId: new UntypedFormControl(),
+        attachmentTypeId: new UntypedFormControl(),
     };
     communications = {
-        url: new FormControl('https://demo.maarchcourrier.com'),
-        login: new FormControl('cchaplin'),
-        password: new FormControl(null),
-        email: new FormControl(null),
+        url: new UntypedFormControl('https://demo.maarchcourrier.com'),
+        login: new UntypedFormControl('cchaplin'),
+        password: new UntypedFormControl(null),
+        email: new UntypedFormControl(null),
     };
     annuary = {
-        enabled: new FormControl(false),
-        organization: new FormControl('organization'),
+        enabled: new UntypedFormControl(false),
+        organization: new UntypedFormControl('organization'),
         annuaries: [
             {
-                uri: new FormControl('1.1.1.1'),
-                baseDN: new FormControl('base'),
-                login: new FormControl('Administrateur'),
-                password: new FormControl('ThePassword'),
-                ssl: new FormControl(false),
+                uri: new UntypedFormControl('1.1.1.1'),
+                baseDN: new UntypedFormControl('base'),
+                login: new UntypedFormControl('Administrateur'),
+                password: new UntypedFormControl('ThePassword'),
+                ssl: new UntypedFormControl(false),
             }
         ]
     };
@@ -240,7 +240,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
                                 data.annuary[elemId].forEach((annuaryConf: any, index: number) => {
                                     this.annuary[elemId].push({});
                                     Object.keys(annuaryConf).forEach(annuaryItem => {
-                                        this.annuary[elemId][index][annuaryItem] = new FormControl(data.annuary[elemId][index][annuaryItem]);
+                                        this.annuary[elemId][index][annuaryItem] = new UntypedFormControl(data.annuary[elemId][index][annuaryItem]);
                                         this.annuary[elemId][index][annuaryItem].valueChanges
                                             .pipe(
                                                 debounceTime(1000),
@@ -325,11 +325,11 @@ export class MaarchToMaarchParametersComponent implements OnInit {
 
     addAnnuary() {
         const newAnnuary = {
-            uri: new FormControl('1.1.1.1'),
-            baseDN: new FormControl('base'),
-            login: new FormControl('Administrateur'),
-            password: new FormControl('ThePassword'),
-            ssl: new FormControl(false),
+            uri: new UntypedFormControl('1.1.1.1'),
+            baseDN: new UntypedFormControl('base'),
+            login: new UntypedFormControl('Administrateur'),
+            password: new UntypedFormControl('ThePassword'),
+            ssl: new UntypedFormControl(false),
         };
         Object.keys(newAnnuary).forEach(annuaryItem => {
             newAnnuary[annuaryItem].valueChanges

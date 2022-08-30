@@ -262,7 +262,10 @@ class AuthenticationController
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if (in_array($loggingMethod['id'], ['standard', 'ldap'])) {
-            if (!Validator::stringType()->notEmpty()->validate($body['login']) || !Validator::stringType()->notEmpty()->validate($body['password'])) {
+            if (!array_key_exists('login', $body) || 
+                !array_key_exists('password', $body) || 
+                !Validator::stringType()->notEmpty()->validate($body['login']) || 
+                !Validator::stringType()->notEmpty()->validate($body['password'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
             }
         }
@@ -848,18 +851,19 @@ class AuthenticationController
             'GET/installer/customs', 'POST/installer/custom', 'POST/installer/database', 'POST/installer/docservers', 'POST/installer/customization',
             'PUT/installer/administrator', 'DELETE/installer/lock'
         ];
+        $expectedNames = [
+            '.',
+            '..',
+            'custom.json',
+            '.gitkeep'
+        ];
 
         if (!in_array($args['route'], $installerRoutes)) {
             return false;
         } elseif (is_file("custom/custom.json")) {
             $customs = scandir('custom');
-            if (count($customs) > 4) {
-                return false;
-            }
+            $customs = array_diff($customs, $expectedNames);
             foreach ($customs as $custom) {
-                if (in_array($custom, ['custom.json', '.', '..'])) {
-                    continue;
-                }
                 if (!is_file("custom/{$custom}/initializing.lck")) {
                     return false;
                 }

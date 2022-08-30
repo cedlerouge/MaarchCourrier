@@ -686,7 +686,7 @@ INSERT INTO notifications (notification_sid, notification_id, description, is_en
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('work_batch_autoimport_id', NULL, NULL, 1, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '21.03.1', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('user_quota', NULL, '', 0, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Département par défaut sélectionné dans les autocomplétions de la Base Adresse Nationale', NULL, 75, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Département par défaut sélectionné dans les autocomplétions de la Base Adresse Nationale', '75', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('thumbnailsSize', 'Résolution des imagettes', '750x900', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('keepDestForRedirection', 'Si activé (1), met le destinataire en copie de la liste de diffusion lors d''une action de redirection', NULL, 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('QrCodePrefix', 'Si activé (1), ajoute "Maarch_" dans le contenu des QrCode générés. (Utilisable avec MaarchCapture >= 1.4)', NULL, 0, NULL);
@@ -982,7 +982,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception</strong></span></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1003,7 +1003,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite d''acceptation<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1021,7 +1021,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite de rejet<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1039,7 +1039,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite de rejet<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1054,7 +1054,7 @@ Le pr&eacute;sent accus&eacute; de r&eacute;ception atteste de la r&eacute;cepti
 </div>', 'OFFICE_HTML', NULL, NULL, 'DOCX: AR_Masse_SVR', 'letterbox_attachment', 'acknowledgementReceipt', 'svr', NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1036, 'SVE - Courriel de réorientation', 'Modèle de courriel de réorientation d''une saisine SVE', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>[destination.entity_label]<br /><br />T&eacute;l&eacute;phone : &nbsp;&nbsp; &nbsp;[user.phone]<br />Courriel : &nbsp;&nbsp;&nbsp; [destination.email]</p>
-<p>[destination.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[destination.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 Le [res_letterbox.doc_date], vous avez transmis par voie &eacute;lectronique &agrave; la Ville une demande qui ne rel&egrave;ve pas de sa comp&eacute;tence.<br /><br />Votre demande cit&eacute;e en objet de ce courriel a &eacute;t&eacute; transmise &agrave;</div>
@@ -1068,7 +1068,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception</strong></span></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1089,7 +1089,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite d''acceptation<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Votre demande concernant :</p>
@@ -1106,7 +1106,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1047, 'EC - Générique (Visa externe)', 'Enregistrement de courrier générique', NULL, 'OFFICE', '2021/03/0001/', '0005_1707546937.docx', 'DOCX: EC01_GENERIC', 'letterbox_attachment', 'indexingFile', 'all', NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (20, 'Courriel d''accompagnement', 'Modèle de courriel d''accompagnement', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>[user.firstname] [user.lastname]<br />[userPrimaryEntity.role]<br />[userPrimaryEntity.entity_label]<br /><br />T&eacute;l&eacute;phone : &nbsp;&nbsp; &nbsp;[user.phone]<br />Courriel : &nbsp;&nbsp; &nbsp;[user.mail]</p>
-<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy;locale]</p>
+<p>[userPrimaryEntity.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
 <hr />
 <p>Bonjour,</p>
 <p>Veuillez trouver en pi&egrave;ce jointe &agrave; ce courriel notre r&eacute;ponse &agrave; votre demande du [res_letterbox.admission_date].</p>

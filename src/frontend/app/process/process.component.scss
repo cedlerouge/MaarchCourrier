@@ -176,45 +176,14 @@
     display: flex;
     flex-direction: column;
     //margin: 10px;
-    border-radius: 20px;
-    border: solid 1px #ccc;
     position: relative;
-    padding: 20px;
     padding-right: 40px;
-    background: var(--maarch-color-primary-light);
     width: 100%;
-
-    .title {
-        white-space: pre;
-        overflow: hidden;
-        max-width: 85%;
-        text-overflow: ellipsis;
-        z-index: 1;
-        font-size: 20px;
-        font-weight: bold;
-        letter-spacing: 2px;
-        position: absolute;
-        top: -18px;
-        left: 20px;
-        padding: 0px;
-        margin: 0px;
-        color: white;
-
-        &-divider {
-            position: absolute;
-            width: 99%;
-            z-index: -1;
-            top: 17px;
-            background: var(--maarch-color-primary-light);
-            height: 1px;
-        }
-    }
 
     .content {
         display: flex;
-        font-size: 15px;
         overflow: auto;
-
+        
         &-item {
             flex-direction: column;
             align-items: center;
@@ -446,4 +415,59 @@
 
 .isSelectedMenu {
     background: var(--maarch-color-secondary);
-  }
+}
+
+.criteria-container {
+    .mat-expansion-panel {
+        background: none;
+        box-shadow: none;
+    }
+
+    .mat-expansion-panel-header-title {
+        color: white;
+        align-items: center;
+    }
+
+    ::ng-deep .mat-expansion-panel-content {
+        color: white;
+    }
+
+    ::ng-deep .mat-expansion-panel-header {
+        height: 50px;
+        background: #3f88a7;
+        border-radius: 30px 30px 30px 30px;
+    }
+
+    ::ng-deep .mat-expansion-panel-header.mat-expansion-toggle-indicator-before {
+        margin: 0px 50px 5px 50px;
+    }
+
+    ::ng-deep .mat-expansion-panel-body {
+        padding-top: 5px;
+    }
+
+    ::ng-deep .mat-expansion-indicator::after {
+        color: white;
+    }
+}
+
+.block-line {
+    flex: 1;
+    border: solid 1px rgba(0, 0, 0, 0.12);
+    height: 0px;
+    background-color: white;
+    margin-top: 4px;
+}
+
+.divBrowsing {
+    display: flex;
+    margin-left: 25px;
+    margin-top: 10px;
+
+    button {
+        border-radius: 20px 20px 20px 20px;
+        font-weight: bold;
+        align-items: center;
+        text-align: center;
+    }
+}

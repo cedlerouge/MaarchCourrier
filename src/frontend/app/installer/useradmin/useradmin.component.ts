@@ -1,5 +1,5 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, ValidatorFn } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
 import { InstallerService } from '../installer.service';
@@ -15,13 +15,13 @@ export class UseradminComponent implements OnInit {
 
     @Output() tiggerInstall = new EventEmitter<string>();
 
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
 
     hide: boolean = true;
 
     constructor(
         public translate: TranslateService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private installerService: InstallerService
     ) {

@@ -153,7 +153,7 @@ class PriorityControllerTest extends TestCase
         ];
         $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
 
-        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => ((int) self::$id) * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 

@@ -32,6 +32,16 @@
                         [innerHTML]="data.resIds.length === 1 ? ('lang.reconcileMsg' | translate) : ('lang.reconcileMsg' | translate) + '<br/>' + ('lang.reconcileMsg2' | translate)">
                     </div>
                 </div>
+                <ng-container *ngIf="showToggle">
+                    <div class="row">
+                        <div class="col-md-12" style="margin: 10px 0px 15px 12px;">
+                            <mat-slide-toggle name="history" color="primary"
+                                [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                                {{'lang.canGoToNextRes' | translate}}
+                            </mat-slide-toggle>
+                        </div>
+                    </div>
+                </ng-container>
                 <div *ngIf="!noResourceToProcess" class="col-md-12">
                     <div class="bg-primary">
                         <app-criteria-tool #appCriteriaTool [openedPanel]="true" (searchUrlGenerated)="appSearchResultList.launchSearch($event)"

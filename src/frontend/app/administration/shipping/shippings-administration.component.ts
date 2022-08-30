@@ -8,7 +8,7 @@ import { MatSort } from '@angular/material/sort';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { AdministrationService } from '../administration.service';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { catchError, debounceTime, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
@@ -25,9 +25,9 @@ export class ShippingsAdministrationComponent implements OnInit {
     @ViewChild(MatSort, { static: false }) sort: MatSort;
 
     shippingConf: any = {
-        enabled: new FormControl(false),
-        authUri: new FormControl('https://connect.maileva.com', [Validators.required]),
-        uri: new FormControl('https://api.maileva.com', [Validators.required]),
+        enabled: new UntypedFormControl(false),
+        authUri: new UntypedFormControl('https://connect.maileva.com', [Validators.required]),
+        uri: new UntypedFormControl('https://api.maileva.com', [Validators.required]),
     };
 
     shippings: any[] = [];

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { KeyValue } from '@angular/common';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { catchError, debounceTime, filter, finalize, map, tap } from 'rxjs/operators';
 import { ColorEvent } from 'ngx-color';
 import { FunctionsService } from '@service/functions.service';
@@ -43,70 +43,70 @@ export class OtherParametersComponent implements OnInit {
     editorsConf: any = {
         java: {},
         onlyoffice: {
-            ssl: new FormControl(false),
-            uri: new FormControl('192.168.0.11', [Validators.required]),
-            port: new FormControl(8765, [Validators.required]),
-            token: new FormControl(''),
-            authorizationHeader: new FormControl('Authorization')
+            ssl: new UntypedFormControl(false),
+            uri: new UntypedFormControl('192.168.0.11', [Validators.required]),
+            port: new UntypedFormControl(8765, [Validators.required]),
+            token: new UntypedFormControl(''),
+            authorizationHeader: new UntypedFormControl('Authorization')
         },
         collaboraonline: {
-            ssl: new FormControl(false),
-            uri: new FormControl('192.168.0.11', [Validators.required]),
-            port: new FormControl(9980, [Validators.required]),
+            ssl: new UntypedFormControl(false),
+            uri: new UntypedFormControl('192.168.0.11', [Validators.required]),
+            port: new UntypedFormControl(9980, [Validators.required]),
         },
         office365sharepoint: {
-            tenantId: new FormControl('abc-123456789-efd', [Validators.required]),
-            clientId: new FormControl('abc-123456789-efd', [Validators.required]),
-            clientSecret: new FormControl('abc-123456789-efd'),
-            siteUrl: new FormControl('https://exemple.sharepoint.com/sites/example', [Validators.required]),
+            tenantId: new UntypedFormControl('abc-123456789-efd', [Validators.required]),
+            clientId: new UntypedFormControl('abc-123456789-efd', [Validators.required]),
+            clientSecret: new UntypedFormControl('abc-123456789-efd'),
+            siteUrl: new UntypedFormControl('https://exemple.sharepoint.com/sites/example', [Validators.required]),
         }
     };
 
     addinOutlookConf = {
-        indexingModelId: new FormControl(null, [Validators.required]),
-        typeId: new FormControl(null, [Validators.required]),
-        statusId: new FormControl(null, [Validators.required]),
-        attachmentTypeId: new FormControl(null, [Validators.required]),
+        indexingModelId: new UntypedFormControl(null, [Validators.required]),
+        typeId: new UntypedFormControl(null, [Validators.required]),
+        statusId: new UntypedFormControl(null, [Validators.required]),
+        attachmentTypeId: new UntypedFormControl(null, [Validators.required]),
     };
 
     watermark = {
-        enabled: new FormControl(true),
-        text: new FormControl('Copie conforme de [alt_identifier] le [date_now] [hour_now]'),
-        posX: new FormControl(30),
-        posY: new FormControl(35),
-        angle: new FormControl(0),
-        opacity: new FormControl(0.5),
-        font: new FormControl('helvetica'),
-        size: new FormControl(10),
-        color: new FormControl([20, 192, 30]),
+        enabled: new UntypedFormControl(true),
+        text: new UntypedFormControl('Copie conforme de [alt_identifier] le [date_now] [hour_now]'),
+        posX: new UntypedFormControl(30),
+        posY: new UntypedFormControl(35),
+        angle: new UntypedFormControl(0),
+        opacity: new UntypedFormControl(0.5),
+        font: new UntypedFormControl('helvetica'),
+        size: new UntypedFormControl(10),
+        color: new UntypedFormControl([20, 192, 30]),
     };
 
     saeConfig = {
         maarchRM: {
-            sae: new FormControl('MaarchRM'),
-            urlSAEService: new FormControl('https://demo-ap.maarchrm.com'),
-            token: new FormControl(''),
-            senderOrgRegNumber: new FormControl('org_987654321_DGS_SA'),
-            accessRuleCode: new FormControl('AR039'),
-            certificateSSL: new FormControl(''),
-            userAgent: new FormControl('service'),
-            M2M: new FormControl('maarch_courrier'),
-            statusReplyReceived: new FormControl('REPLY_SEDA'),
-            statusReplyRejected: new FormControl('REPLY_SEDA'),
-            statusMailToPurge: new FormControl('REPLY_SEDA'),
+            sae: new UntypedFormControl('MaarchRM'),
+            urlSAEService: new UntypedFormControl('https://demo-ap.maarchrm.com'),
+            token: new UntypedFormControl(''),
+            senderOrgRegNumber: new UntypedFormControl('org_987654321_DGS_SA'),
+            accessRuleCode: new UntypedFormControl('AR039'),
+            certificateSSL: new UntypedFormControl(''),
+            userAgent: new UntypedFormControl('service'),
+            M2M: new UntypedFormControl('maarch_courrier'),
+            statusReplyReceived: new UntypedFormControl('REPLY_SEDA'),
+            statusReplyRejected: new UntypedFormControl('REPLY_SEDA'),
+            statusMailToPurge: new UntypedFormControl('REPLY_SEDA'),
         },
         externalSAE: {
             retentionRules: {
-                id: new FormControl('id1'),
-                label: new FormControl('label1')
+                id: new UntypedFormControl('id1'),
+                label: new UntypedFormControl('label1')
             },
             archiveEntities: {
-                id: new FormControl('id1'),
-                label: new FormControl('label1')
+                id: new UntypedFormControl('id1'),
+                label: new UntypedFormControl('label1')
             },
             archivalAgreements: {
-                id: new FormControl('id1'),
-                label: new FormControl('label1')
+                id: new UntypedFormControl('id1'),
+                label: new UntypedFormControl('label1')
             }
         }
     };
@@ -355,15 +355,15 @@ export class OtherParametersComponent implements OnInit {
                 tap((data: any) => {
                     if (!this.functions.empty(data.configuration)) {
                         this.watermark = {
-                            enabled: new FormControl(data.configuration.enabled),
-                            text: new FormControl(data.configuration.text),
-                            posX: new FormControl(data.configuration.posX),
-                            posY: new FormControl(data.configuration.posY),
-                            angle: new FormControl(data.configuration.angle),
-                            opacity: new FormControl(data.configuration.opacity),
-                            font: new FormControl(data.configuration.font),
-                            size: new FormControl(data.configuration.size),
-                            color: new FormControl(data.configuration.color),
+                            enabled: new UntypedFormControl(data.configuration.enabled),
+                            text: new UntypedFormControl(data.configuration.text),
+                            posX: new UntypedFormControl(data.configuration.posX),
+                            posY: new UntypedFormControl(data.configuration.posY),
+                            angle: new UntypedFormControl(data.configuration.angle),
+                            opacity: new UntypedFormControl(data.configuration.opacity),
+                            font: new UntypedFormControl(data.configuration.font),
+                            size: new UntypedFormControl(data.configuration.size),
+                            color: new UntypedFormControl(data.configuration.color),
                         };
                     }
                     resolve(true);
@@ -378,10 +378,10 @@ export class OtherParametersComponent implements OnInit {
                 tap(async (data: any) => {
                     if (!this.functions.empty(data.configuration) && Object.keys(data.configuration).length > 1) {
                         this.addinOutlookConf = {
-                            indexingModelId: new FormControl(data.configuration.indexingModelId),
-                            typeId: new FormControl(data.configuration.typeId),
-                            statusId: new FormControl(data.configuration.statusId),
-                            attachmentTypeId: new FormControl(data.configuration.attachmentTypeId),
+                            indexingModelId: new UntypedFormControl(data.configuration.indexingModelId),
+                            typeId: new UntypedFormControl(data.configuration.typeId),
+                            statusId: new UntypedFormControl(data.configuration.statusId),
+                            attachmentTypeId: new UntypedFormControl(data.configuration.attachmentTypeId),
                         };
                     } else {
                         await this.setDefaultValues();
@@ -631,17 +631,17 @@ export class OtherParametersComponent implements OnInit {
                         this.saeConfig['maarchRM']['sae'].setValue(this.saeEnabled === 'externalSAE' ? data.sae : 'maarchRM');
                         if (this.saeEnabled === 'maarchRM') {
                             this.saeConfig[this.saeEnabled] = {
-                                sae: new FormControl(data.sae),
-                                urlSAEService: new FormControl(data.urlSAEService),
-                                token: new FormControl(data.token),
-                                senderOrgRegNumber: new FormControl(data.senderOrgRegNumber),
-                                accessRuleCode: new FormControl(data.accessRuleCode),
-                                certificateSSL: new FormControl(data.certificateSSL),
-                                userAgent: new FormControl(data.userAgent),
-                                M2M: new FormControl(data.M2M.gec),
-                                statusReplyReceived: new FormControl(data.statusReplyReceived),
-                                statusReplyRejected: new FormControl(data.statusReplyRejected),
-                                statusMailToPurge: new FormControl(data.statusMailToPurge),
+                                sae: new UntypedFormControl(data.sae),
+                                urlSAEService: new UntypedFormControl(data.urlSAEService),
+                                token: new UntypedFormControl(data.token),
+                                senderOrgRegNumber: new UntypedFormControl(data.senderOrgRegNumber),
+                                accessRuleCode: new UntypedFormControl(data.accessRuleCode),
+                                certificateSSL: new UntypedFormControl(data.certificateSSL),
+                                userAgent: new UntypedFormControl(data.userAgent),
+                                M2M: new UntypedFormControl(data.M2M.gec),
+                                statusReplyReceived: new UntypedFormControl(data.statusReplyReceived),
+                                statusReplyRejected: new UntypedFormControl(data.statusReplyRejected),
+                                statusMailToPurge: new UntypedFormControl(data.statusMailToPurge),
                             };
                         } else {
                             this.externalSaeName = data.sae;

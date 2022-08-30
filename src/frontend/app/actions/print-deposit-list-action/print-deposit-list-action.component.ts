@@ -7,6 +7,7 @@ import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'print-deposit-list-action.component.html',
@@ -24,43 +25,53 @@ export class PrintDepositListActionComponent implements OnInit {
 
     loadingExport: boolean;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<PrintDepositListActionComponent>,
         private functions: FunctionsService,
-        @Inject(MAT_DIALOG_DATA) public data: any) { }
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnInit(): void {
         this.loadingInit = true;
-
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkPrintDepositList();
     }
 
     checkPrintDepositList() {
         this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/actions/' + this.data.action.id + '/checkPrintDepositList', { resources: this.data.resIds })
-            .subscribe((data: any) => {
-                this.types = data.types;
-
-                this.types['2C'] = this.functions.empty(this.types['2C']) ? this.translate.instant('lang.noneItalic') : this.types['2C'];
-                this.types['2D'] = this.functions.empty(this.types['2D']) ? this.translate.instant('lang.noneItalic') : this.types['2D'];
-                this.types['RW'] = this.functions.empty(this.types['RW']) ? this.translate.instant('lang.noneItalic') : this.types['RW'];
-
-
-                this.canGenerate = data.canGenerate;
-                this.cannotGenerate = data.cannotGenerate;
-                this.loadingInit = false;
-            }, (err) => {
-                this.notify.error(err.error.errors);
-                this.dialogRef.close();
-                this.loadingInit = false;
-            });
+            .pipe(
+                tap((data: any) => {
+                    this.types = data.types;
+                    this.types['2C'] = this.functions.empty(this.types['2C']) ? this.translate.instant('lang.noneItalic') : this.types['2C'];
+                    this.types['2D'] = this.functions.empty(this.types['2D']) ? this.translate.instant('lang.noneItalic') : this.types['2D'];
+                    this.types['RW'] = this.functions.empty(this.types['RW']) ? this.translate.instant('lang.noneItalic') : this.types['RW'];
+                    this.canGenerate = data.canGenerate;
+                    this.cannotGenerate = data.cannotGenerate;
+                    this.loadingInit = false;
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err.error.errors);
+                    this.dialogRef.close();
+                    this.loadingInit = false;
+                    return of(false);
+                })
+            ).subscribe();
     }
 
     onSubmit() {
         this.loading = true;
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

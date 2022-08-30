@@ -8,6 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'give-avis-parallel-action.component.html',
@@ -34,6 +35,10 @@ export class GiveAvisParallelActionComponent implements OnInit {
         userDelegated: null
     };
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -41,10 +46,14 @@ export class GiveAvisParallelActionComponent implements OnInit {
         public dialogRef: MatDialogRef<GiveAvisParallelActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
-        public headerService: HeaderService
+        public headerService: HeaderService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     ngOnInit() {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkAvisParallel();
     }
 
@@ -87,6 +96,7 @@ export class GiveAvisParallelActionComponent implements OnInit {
 
     onSubmit() {
         const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction(realResSelected);
     }
 

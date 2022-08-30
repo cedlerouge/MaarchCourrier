@@ -1,5 +1,20 @@
 <mat-sidenav-container class="maarch-container">
     <ng-template #adminMenuTemplate>
+        <ng-container *ngIf="!detailMode && canShowDivBrowsing && !loading" >
+            <div class="divBrowsing" style="margin-bottom: 10px;">
+                <button mat-button color="primary" (click)="$event.stopPropagation(); goToResource('previous')"
+                    [title]="'lang.previousRes' | translate" [disabled]="!canGoToPrevious">
+                    <mat-icon class="fa fa-angle-left" style="height:auto"></mat-icon>
+                        {{'lang.previous' | translate}}
+                </button>
+                <button mat-button color="primary" (click)="$event.stopPropagation(); goToResource('next')"
+                    [title]="'lang.nextRes' | translate" [disabled]="!canGoToNext">
+                        {{'lang.next' | translate}}
+                    <mat-icon  class="fa fa-angle-right" style="height:auto"></mat-icon>
+                </button>
+            </div>
+            <mat-divider></mat-divider>
+        </ng-container>
         <div *ngIf="(resourceFreezed || resourceBinded !== null) && !loading" class="alert-message alert-message-danger"
             style="min-width: 100%; margin: 10px 0;">
             <div *ngIf="resourceFreezed" style="display: flex;align-items: center;">
@@ -196,7 +211,7 @@
     </ng-template>
     <mat-sidenav-content class="process-content">
         <div class="bg-head">
-            <div class="bg-head-title" [class.customContainerRight]="appService.getViewMode()">
+            <div class="bg-head-title" style="margin-bottom: -10px;" [class.customContainerRight]="appService.getViewMode()">
                 <div class="bg-head-title-label">
                     <app-header-left></app-header-left>
                 </div>
@@ -205,121 +220,129 @@
                 </div>
             </div>
             <div class="bg-head-content" [class.fullContainer]="appService.getViewMode()" style="padding-bottom: 20px;">
-                <div class="resourceInfo">
-                    <ng-container *ngIf="!loading; else elseInfoRes">
-                        <div class="title">
-                            <span style="white-space: nowrap; padding-left: 10px; padding-right: 10px"
-                                [title]="this.currentResourceInformations.subject + ' (' + this.currentResourceInformations.statusLabel + ')'">
-                                {{this.currentResourceInformations.subject}} <small
-                                    class="subSubject">{{this.currentResourceInformations.statusLabel}}</small>
-                            </span>
-                            <div class="title-divider"></div>
-                        </div>
-                        <div class="content">
-                            <button mat-icon-button
-                                [title]="this.resourceFollowed ? ('lang.untrackThisMail' | translate) : ('lang.trackThisMail' | translate)"
-                                class="categoryLabel" (click)="toggleFollow()">
-                                <mat-icon class="followIcon {{this.resourceFollowed ? 'fas':'far'}} fa-star"
-                                    style="font-size: 20px;"></mat-icon>
-                            </button>
-                            <button *ngIf="privilegeService.hasCurrentUserPrivilege('freeze_retention_rule')"
-                                mat-icon-button
-                                [title]="resourceFreezed ? ('lang.unfreezeRetentionRule' | translate) :  ('lang.freezeRetentionRule' | translate)"
-                                class="categoryLabel" (click)="toggleFreezing()">
-                                <mat-icon
-                                    class="{{this.resourceFreezed ? 'freezeUnfreezIcon':'nonFreeze'}} fas fa-snowflake"
-                                    style="font-size: 20px;"></mat-icon>
-                            </button>
-                            <button mat-icon-button
-                                *ngIf="privilegeService.hasCurrentUserPrivilege('set_binding_document')"
-                                [matMenuTriggerFor]="bindingRentalRule"
-                                [title]="'lang.setBindingDocument' | translate" class="categoryLabel">
-                                <mat-icon class="bindIcon fas fa-exclamation" style="font-size: 20px;"></mat-icon>
-                            </button>
-                            <mat-menu #bindingRentalRule="matMenu">
-                                <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === true"
-                                    (click)="toggleBinding(true)" [title]="'lang.bindingMail' | translate | stripTags"
-                                    [innerHTML]="'lang.bindingMail' | translate"></buton>
-                                <mat-divider></mat-divider>
-                                <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === false"
-                                    (click)="toggleBinding(false)"
-                                    [title]="'lang.noBindingMail' | translate | stripTags"
-                                    [innerHTML]="'lang.noBindingMail' | translate"></buton>
-                                <mat-divider></mat-divider>
-                                <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === null"
-                                    (click)="toggleBinding(null)" [title]="'lang.doNotDefine' | translate">
-                                    {{ 'lang.doNotDefine' | translate}}</buton>
-                                <mat-divider></mat-divider>
-                            </mat-menu>
-                            <div class="content-item" *ngIf="this.currentResourceInformations.priority !== undefined">
-                                <b><i class="fas fa-flag" [style.color]="this.currentResourceInformations.priorityColor"
-                                        style="font-size: 25px;padding-right: 20px;"></i>
-                                    {{this.currentResourceInformations.priorityLabel}}</b>
-                            </div>
-                            <div class="content-item">
-                                <div>{{'lang.chronoNumberShort' | translate}} :</div>
-                                <div class="content-item-value" [title]="'N° '+this.currentResourceInformations.resId">
-                                    {{this.currentResourceInformations.chrono}}</div>
-                            </div>
-                            <div class="content-item" (click)="openContact()" style="cursor:pointer">
-                                <div>
-                                    {{this.currentResourceInformations.categoryId !== 'outgoing' ? ('lang.senders' | translate) : ('lang.recipient' | translate)}}
-                                    :</div>
-                                <div class="content-item-value">{{senderLightInfo.displayName}} <i
-                                        *ngIf="this.senderLightInfo.filling" class="fas fa-circle"
-                                        style="font-size: 8px" [style.color]="this.senderLightInfo.filling"></i></div>
-                            </div>
-                            <div class="content-item"
-                                *ngIf="!functions.empty(currentResourceInformations.registeredMail_returnDate)">
-                                <div>{{'lang.returnDate' | translate}} :</div>
-                                <div class="content-item-value"
-                                    [title]="this.currentResourceInformations.registeredMail_returnDate | fullDate">
-                                    {{this.currentResourceInformations.registeredMail_returnDate | date: 'dd/MM/y'}}
-                                </div>
-                            </div>
-                            <div class="content-item"
-                                *ngIf="!functions.empty(currentResourceInformations.registeredMail_returnReason)">
-                                <div>{{'lang.returnReason' | translate}} :</div>
-                                <div class="content-item-value"
-                                    [title]="this.currentResourceInformations.registeredMail_returnReason">
-                                    {{this.currentResourceInformations.registeredMail_returnReason}}</div>
-                            </div>
-                            <div class="content-item"
-                                *ngIf="this.currentResourceInformations.processLimitDate !== undefined">
-                                <ng-container
-                                    *ngIf="this.currentResourceInformations.closingDate !== null; else elseLimitDate">
-                                    <div style="font-weight: bold;"
-                                        [title]="this.currentResourceInformations.closingDate | fullDate">
-                                        {{'lang.closed' | translate}}
-                                        {{this.currentResourceInformations.closingDate | timeAgo : 'full'}}&nbsp;&nbsp;<i
-                                            class="fa fa-lock"></i></div>
-                                </ng-container>
-                                <ng-template #elseLimitDate>
-                                    <div>{{'lang.processLimitDate' | translate}} :</div>
-                                    <div class="content-item-value"
-                                        [title]="this.currentResourceInformations.processLimitDate | fullDate"
-                                        [innerHTML]="this.currentResourceInformations.processLimitDate | timeLimit : 'badge'">
+                <div [class.banner-opened]="blocOpened" [class.banner-closed]="!blocOpened">
+                    <div class="title" style="cursor:pointer; padding-right: 10px;"
+                        (click)="blocOpened = !blocOpened; $event.stopPropagation();">
+                        <i class="far" [class.fa-plus-square]="!blocOpened" [class.fa-minus-square]="blocOpened" [title]="(!blocOpened ? 'lang.showInformationsBlock' : 'lang.hideInformationsBlock') | translate"
+                            style="cursor:pointer;margin-left: 10px; padding-left: 5px;"></i>&nbsp;
+                        <span style="white-space: nowrap; margin-left: -10px;"
+                        [title]="this.currentResourceInformations.subject + ' (' + this.currentResourceInformations.statusLabel + ')'">
+                        {{this.currentResourceInformations.subject}} <small
+                            class="subSubject">{{this.currentResourceInformations.statusLabel}}</small>
+                        </span>
+                        <div *ngIf="blocOpened" class="title-divider"></div>
+                    </div>
+                    <div class="content">
+                        <div class="resourceInfo">
+                            <ng-container *ngIf="!loading; else elseInfoRes">
+                                
+                                <div class="content">
+                                    <button mat-icon-button
+                                        [title]="this.resourceFollowed ? ('lang.untrackThisMail' | translate) : ('lang.trackThisMail' | translate)"
+                                        class="categoryLabel" (click)="toggleFollow()">
+                                        <mat-icon class="followIcon {{this.resourceFollowed ? 'fas':'far'}} fa-star"
+                                            style="font-size: 20px;"></mat-icon>
+                                    </button>
+                                    <button *ngIf="privilegeService.hasCurrentUserPrivilege('freeze_retention_rule')"
+                                        mat-icon-button
+                                        [title]="resourceFreezed ? ('lang.unfreezeRetentionRule' | translate) :  ('lang.freezeRetentionRule' | translate)"
+                                        class="categoryLabel" (click)="toggleFreezing()">
+                                        <mat-icon
+                                            class="{{this.resourceFreezed ? 'freezeUnfreezIcon':'nonFreeze'}} fas fa-snowflake"
+                                            style="font-size: 20px;"></mat-icon>
+                                    </button>
+                                    <button mat-icon-button
+                                        *ngIf="privilegeService.hasCurrentUserPrivilege('set_binding_document')"
+                                        [matMenuTriggerFor]="bindingRentalRule"
+                                        [title]="'lang.setBindingDocument' | translate" class="categoryLabel">
+                                        <mat-icon class="bindIcon fas fa-exclamation" style="font-size: 20px;"></mat-icon>
+                                    </button>
+                                    <mat-menu #bindingRentalRule="matMenu">
+                                        <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === true"
+                                            (click)="toggleBinding(true)" [title]="'lang.bindingMail' | translate | stripTags"
+                                            [innerHTML]="'lang.bindingMail' | translate"></buton>
+                                        <mat-divider></mat-divider>
+                                        <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === false"
+                                            (click)="toggleBinding(false)"
+                                            [title]="'lang.noBindingMail' | translate | stripTags"
+                                            [innerHTML]="'lang.noBindingMail' | translate"></buton>
+                                        <mat-divider></mat-divider>
+                                        <buton mat-menu-item [class.isSelectedMenu]="this.resourceBinded === null"
+                                            (click)="toggleBinding(null)" [title]="'lang.doNotDefine' | translate">
+                                            {{ 'lang.doNotDefine' | translate}}</buton>
+                                        <mat-divider></mat-divider>
+                                    </mat-menu>
+                                    <div class="content-item" *ngIf="this.currentResourceInformations.priority !== undefined">
+                                        <b><i class="fas fa-flag" [style.color]="this.currentResourceInformations.priorityColor"
+                                                style="font-size: 25px;padding-right: 20px;"></i>
+                                            {{this.currentResourceInformations.priorityLabel}}</b>
                                     </div>
-                                </ng-template>
-                            </div>
-                            <div
-                                style="position: absolute;right: 0px;top: 0px;height: 100%;display: flex;flex-direction: column;justify-content: center;">
-                                <button mat-icon-button *ngFor="let inteKey of integrationsInfo | keyvalue"
-                                    matTooltip="{{'lang.' + inteKey.key | translate}}"
-                                    (click)="toggleIntegration(inteKey.key)">
-                                    <mat-icon [class]="inteKey.value.icon"
-                                        [class.checked]="currentResourceInformations.integrations[inteKey.key]"
-                                        [class.unchecked]="!currentResourceInformations.integrations[inteKey.key]">
-                                    </mat-icon>
-                                </button>
-                            </div>
+                                    <div class="content-item">
+                                        <div>{{'lang.chronoNumberShort' | translate}} :</div>
+                                        <div class="content-item-value" [title]="'N° '+this.currentResourceInformations.resId">
+                                            {{this.currentResourceInformations.chrono}}</div>
+                                    </div>
+                                    <div class="content-item" (click)="openContact()" style="cursor:pointer">
+                                        <div>
+                                            {{this.currentResourceInformations.categoryId !== 'outgoing' ? ('lang.senders' | translate) : ('lang.recipient' | translate)}}
+                                            :</div>
+                                        <div class="content-item-value">{{senderLightInfo.displayName}} <i
+                                                *ngIf="this.senderLightInfo.filling" class="fas fa-circle"
+                                                style="font-size: 8px" [style.color]="this.senderLightInfo.filling"></i></div>
+                                    </div>
+                                    <div class="content-item"
+                                        *ngIf="!functions.empty(currentResourceInformations.registeredMail_returnDate)">
+                                        <div>{{'lang.returnDate' | translate}} :</div>
+                                        <div class="content-item-value"
+                                            [title]="this.currentResourceInformations.registeredMail_returnDate | fullDate">
+                                            {{this.currentResourceInformations.registeredMail_returnDate | date: 'dd/MM/y'}}
+                                        </div>
+                                    </div>
+                                    <div class="content-item"
+                                        *ngIf="!functions.empty(currentResourceInformations.registeredMail_returnReason)">
+                                        <div>{{'lang.returnReason' | translate}} :</div>
+                                        <div class="content-item-value"
+                                            [title]="this.currentResourceInformations.registeredMail_returnReason">
+                                            {{this.currentResourceInformations.registeredMail_returnReason}}</div>
+                                    </div>
+                                    <div class="content-item"
+                                        *ngIf="this.currentResourceInformations.processLimitDate !== undefined">
+                                        <ng-container
+                                            *ngIf="this.currentResourceInformations.closingDate !== null; else elseLimitDate">
+                                            <div style="font-weight: bold;"
+                                                [title]="this.currentResourceInformations.closingDate | fullDate">
+                                                {{'lang.closed' | translate}}
+                                                {{this.currentResourceInformations.closingDate | timeAgo : 'full'}}&nbsp;&nbsp;<i
+                                                    class="fa fa-lock"></i></div>
+                                        </ng-container>
+                                        <ng-template #elseLimitDate>
+                                            <div>{{'lang.processLimitDate' | translate}} :</div>
+                                            <div class="content-item-value"
+                                                [title]="this.currentResourceInformations.processLimitDate | fullDate"
+                                                [innerHTML]="this.currentResourceInformations.processLimitDate | timeLimit : 'badge'">
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                    <div
+                                        style="position: absolute;right: 0px;top: 0px;height: 100%;display: flex;flex-direction: column;justify-content: center;">
+                                        <button mat-icon-button *ngFor="let inteKey of integrationsInfo | keyvalue"
+                                            matTooltip="{{'lang.' + inteKey.key | translate}}"
+                                            (click)="toggleIntegration(inteKey.key)">
+                                            <mat-icon [class]="inteKey.value.icon"
+                                                [class.checked]="currentResourceInformations.integrations[inteKey.key]"
+                                                [class.unchecked]="!currentResourceInformations.integrations[inteKey.key]">
+                                            </mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-template #elseInfoRes>
+                                <div class="loadingBanner">
+                                    <mat-spinner diameter="35"></mat-spinner>
+                                </div>
+                            </ng-template>
                         </div>
-                    </ng-container>
-                    <ng-template #elseInfoRes>
-                        <div class="loadingBanner">
-                            <mat-spinner diameter="35"></mat-spinner>
-                        </div>
-                    </ng-template>
+                    </div>
                 </div>
             </div>
         </div>

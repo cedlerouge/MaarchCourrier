@@ -7,7 +7,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, FormBuilder } from '@angular/forms';
+import { UntypedFormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, UntypedFormBuilder } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { SelectionModel } from '@angular/cdk/collections';
@@ -72,7 +72,7 @@ export class UserAdministrationComponent implements OnInit {
     CurrentYear: number = new Date().getFullYear();
     currentMonth: number = new Date().getMonth() + 1;
     minDate: Date = new Date();
-    firstFormGroup: FormGroup;
+    firstFormGroup: UntypedFormGroup;
     ruleText: string = '';
     otherRuleText: string;
     validPassword: boolean = false;
@@ -133,7 +133,7 @@ export class UserAdministrationComponent implements OnInit {
         private notify: NotificationService,
         public dialog: MatDialog,
         public headerService: HeaderService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         public appService: AppService,
         public authService: AuthService,
         private privilegeService: PrivilegeService,
@@ -795,7 +795,7 @@ export class UserAdministrationComponent implements OnInit {
         }
     }
 
-    matchValidator(group: FormGroup) {
+    matchValidator(group: UntypedFormGroup) {
         if (group.controls['newPasswordCtrl'].value === group.controls['retypePasswordCtrl'].value) {
             return false;
         } else {

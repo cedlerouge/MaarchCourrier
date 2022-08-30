@@ -2,7 +2,7 @@ import { NestedTreeControl } from '@angular/cdk/tree';
 import { Component, Input, OnInit, HostListener, Output, EventEmitter } from '@angular/core';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { SortPipe } from '../../plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { tap, debounceTime } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { FunctionsService } from '@service/functions.service';
@@ -43,7 +43,7 @@ export class MaarchFlatTreeComponent implements OnInit {
     dataSource = new MatTreeNestedDataSource<any>();
 
     searchMode: boolean = false;
-    searchTerm: FormControl = new FormControl('');
+    searchTerm: UntypedFormControl = new UntypedFormControl('');
 
     lastSelectedNodeIds: any[] = [];
 

@@ -5,7 +5,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FunctionsService } from '@service/functions.service';
 import { tap, catchError } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ScanPipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -42,7 +42,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     loading: boolean = false;
     data: any;
 
-    searchVisaSignUser = new FormControl();
+    searchVisaSignUser = new UntypedFormControl();
 
     loadedInConstructor: boolean = false;
 

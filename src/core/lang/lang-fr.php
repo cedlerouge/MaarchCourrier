@@ -497,3 +497,4 @@ define('_NO_BUSINESS_ID', "Aucun identifiant de fast parapheur!");
 define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché au courrier!");
 define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
+define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');

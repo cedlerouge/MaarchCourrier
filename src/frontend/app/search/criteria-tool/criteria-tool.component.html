@@ -1,11 +1,42 @@
 <form (ngSubmit)="getCurrentCriteriaValues()" #criteriaFormUp="ngForm">
-    <mat-form-field *ngIf="!adminMode" floatLabel="never" class="basket-search">
-        <input class="metaSearch" type="text" matInput [formControl]="searchTermControl"
-            [placeholder]="'lang.quickSearchTarget' | translate">
-        <button mat-icon-button matPrefix [disabled]="isLoadingResult">
-            <mat-icon class="fas fa-search"></mat-icon>
-        </button>
-    </mat-form-field>
+    <div class="row">
+        <div class="col-md-8" style="padding-right: 10px;">
+            <mat-form-field *ngIf="!adminMode" floatLabel="never" class="basket-search">
+                <input class="metaSearch" type="text" matInput [formControl]="searchTermControl" [title]="'lang.quickSearchTarget' | translate"
+                    [placeholder]="'lang.quickSearchTarget' | translate">
+                <button mat-icon-button matPrefix [disabled]="isLoadingResult">
+                    <mat-icon class="fas fa-search"></mat-icon>
+                </button>
+            </mat-form-field>
+        </div>
+        <div class="col-md-4" style="display: flex; padding-left: 10px; margin-top: -7px;">
+            <div class="orderTool">
+                <mat-form-field class="basket-order" appearance="fill">
+                    <mat-label style="color: white;">{{'lang.sortBy' | translate}}</mat-label>
+                    <mat-select [(ngModel)]="this.listProperties.order" [title]="'lang.' + listProperties.order | translate" [ngModelOptions]="{standalone: true}" (selectionChange)="updateFilters()"
+                    [disabled]="data.length == 0">
+                    <mat-option [value]="column.id" *ngFor="let column of displayColsOrder">
+                        {{'lang.' + column.id | translate}}
+                    </mat-option>
+                </mat-select>
+                <mat-icon matPrefix class="fa fa-list" style="margin-bottom: 15px;"></mat-icon>
+                </mat-form-field>
+            </div>
+            <div class="ascDescTool">
+                <button type="button" [disabled]="this.listProperties.order == '' || data.length == 0"
+                    [style.opacity]="this.listProperties.order == '' ? '0.2' : '1'" mat-fab
+                    [title]="this.listProperties.orderDir == 'DESC' ? ('lang.descOrder' | translate) : ('lang.ascOrder' | translate)"
+                    style="color: rgba(0,0,0,0.38);" (click)="changeOrderDir();">
+                    <mat-icon *ngIf="this.listProperties.orderDir == 'DESC'" fontSet="fas"
+                        fontIcon="fa-sort-amount-down fa-2x">
+                    </mat-icon>
+                    <mat-icon *ngIf="this.listProperties.orderDir == 'ASC'" fontSet="fas"
+                        fontIcon="fa-sort-amount-up fa-2x">
+                    </mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
     <mat-accordion [class.criteria-container]="class==='main'"
         [class.criteria-container-secondary]="class==='secondary'">
         <mat-expansion-panel #criteriaTool [expanded]="openedPanel" togglePosition="before">

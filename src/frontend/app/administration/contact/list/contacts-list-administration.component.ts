@@ -11,7 +11,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { takeUntil, startWith, switchMap, map, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ConfirmComponent } from '../../../../plugins/modal/confirm.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { ContactExportComponent } from './export/contact-export.component';
 import { AdministrationService } from '../../../../app/administration/administration.service';
@@ -56,10 +56,10 @@ export class ContactsListAdministrationComponent implements OnInit {
     correspondentsGroups: any = [];
     selection = new SelectionModel<Element>(true, []);
 
-    searchContact = new FormControl();
+    searchContact = new UntypedFormControl();
     search: string = '';
     dialogRef: MatDialogRef<any>;
-    filterCorrespondentsGroups = new FormControl();
+    filterCorrespondentsGroups = new UntypedFormControl();
     filteredCorrespondentsGroups: Observable<string[]>;
 
     contextMenuPosition = { x: '0px', y: '0px' };
@@ -277,7 +277,7 @@ export class ContactsListAdministrationComponent implements OnInit {
     }
 
     initAutocompleteContacts() {
-        this.searchContact = new FormControl(this.adminService.getFilter('field'));
+        this.searchContact = new UntypedFormControl(this.adminService.getFilter('field'));
         this.searchContact.valueChanges
             .pipe(
                 tap((value) => {

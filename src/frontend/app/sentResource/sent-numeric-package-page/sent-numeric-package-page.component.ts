@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { switchMap, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { ContactService } from '@service/contact.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
@@ -36,10 +36,10 @@ export class SentNumericPackagePageComponent implements OnInit {
 
     recipients: any[] = [];
 
-    recipientsCtrl: FormControl = new FormControl();
+    recipientsCtrl: UntypedFormControl = new UntypedFormControl();
 
-    emailSignListForm = new FormControl();
-    templateEmailListForm = new FormControl();
+    emailSignListForm = new UntypedFormControl();
+    templateEmailListForm = new UntypedFormControl();
 
     filteredEmails: Observable<string[]>;
 

@@ -7,6 +7,7 @@ import { tap, exhaustMap, finalize, catchError, filter } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { NoteEditorComponent } from '@appRoot/notes/note-editor.component';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'close-mail-action.component.html',
@@ -22,16 +23,24 @@ export class CloseMailActionComponent implements OnInit {
     customFields: Array<any> = [];
     requiredFields: any;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<CloseMailActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         if (this.data.resIds.length > 0) {
             this.loading = true;
             this.checkClose();
@@ -89,6 +98,7 @@ export class CloseMailActionComponent implements OnInit {
         if (this.data.resIds.length === 0) {
             this.indexDocumentAndExecuteAction();
         } else {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

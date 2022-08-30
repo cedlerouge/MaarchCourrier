@@ -6,7 +6,7 @@ import { AppService } from '@service/app.service';
 import { catchError, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SortPipe } from '@plugins/sorting.pipe';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { AlertComponent } from '@plugins/modal/alert.component';
 import { MatDialog } from '@angular/material/dialog';
 import { FunctionsService } from '@service/functions.service';
@@ -126,8 +126,8 @@ export class IndexationAttachmentsListComponent implements OnInit {
                 file.content = this.getBase64Document(value.target.result);
                 file.format = file.name.split('.').pop();
                 this.attachments.push({
-                    subject: new FormControl(file.name.substr(0, file.name.lastIndexOf('.')), [Validators.required]),
-                    type: new FormControl(this.defaultAttachmentType, [Validators.required]),
+                    subject: new UntypedFormControl(file.name.substr(0, file.name.lastIndexOf('.')), [Validators.required]),
+                    type: new UntypedFormControl(this.defaultAttachmentType, [Validators.required]),
                     file : file
                 });
                 resolve(true);

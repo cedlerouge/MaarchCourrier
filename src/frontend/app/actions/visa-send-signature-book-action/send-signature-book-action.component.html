@@ -55,6 +55,12 @@
                 </app-visa-workflow>
                 <div *ngIf="!noResourceToProcess" style="padding-top: 10px;">
                     <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
+                    <div *ngIf="showToggle" class="row" style="margin: 10px 0px 10px 0px;">
+                        <mat-slide-toggle name="history" color="primary"
+                            [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                            {{'lang.canGoToNextRes' | translate}}
+                        </mat-slide-toggle>
+                    </div>
                 </div>
             </mat-sidenav-content>
             <mat-sidenav position='end' [opened]="data.resIds.length === 1 && noResourceToProcess" mode="side"

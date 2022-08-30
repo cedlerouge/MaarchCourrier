@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
 import { FiltersListService } from '@service/filtersList.service';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { startWith, map } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { Observable } from 'rxjs';
@@ -36,7 +36,7 @@ export class FiltersToolComponent implements OnInit {
     @Output() refreshEventAfterAction = new EventEmitter<string>();
     @Output() toggleAllRes = new EventEmitter<string>();
 
-    stateForm: FormGroup = this.fb.group({
+    stateForm: UntypedFormGroup = this.fb.group({
         stateGroup: '',
     });
 
@@ -64,7 +64,7 @@ export class FiltersToolComponent implements OnInit {
 
     isLoading: boolean = false;
 
-    constructor(public translate: TranslateService, public http: HttpClient, private filtersListService: FiltersListService, private fb: FormBuilder, private latinisePipe: LatinisePipe, public dialog: MatDialog) { }
+    constructor(public translate: TranslateService, public http: HttpClient, private filtersListService: FiltersListService, private fb: UntypedFormBuilder, private latinisePipe: LatinisePipe, public dialog: MatDialog) { }
 
     ngOnInit(): void {
 

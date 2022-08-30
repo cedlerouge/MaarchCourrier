@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, exhaustMap, catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'confirm-action.component.html',
@@ -17,21 +18,31 @@ export class ConfirmActionComponent implements OnInit {
 
     loading: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<ConfirmActionComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private sessionStorage: SessionStorageService,
     ) { }
 
-    ngOnInit(): void { }
+    ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
+    }
 
     onSubmit() {
         this.loading = true;
         if (this.data.resIds.length === 0) {
             this.indexDocumentAndExecuteAction();
         } else {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

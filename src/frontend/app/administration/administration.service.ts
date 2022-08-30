@@ -7,7 +7,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort, MatSortable } from '@angular/material/sort';
 import { of ,  merge } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { catchError, startWith, tap } from 'rxjs/operators';
 
 @Injectable()
@@ -137,7 +137,7 @@ export class AdministrationService {
     };
     dataSource: MatTableDataSource<any>;
     filterColumns: string[];
-    searchTerm: FormControl = new FormControl('');
+    searchTerm: UntypedFormControl = new UntypedFormControl('');
     currentAdminId: string = '';
 
     constructor(
@@ -162,7 +162,7 @@ export class AdministrationService {
         } else {
             this.saveDefaultFilter();
         }
-        this.searchTerm = new FormControl('');
+        this.searchTerm = new UntypedFormControl('');
 
         this.searchTerm.valueChanges
             .pipe(
