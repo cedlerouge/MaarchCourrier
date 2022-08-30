@@ -161,7 +161,7 @@ class LogsController
         ]);
 
         $dateFormat = $log['dateTimeFormate'];
-        $output = $log['lineFormat'] . "\n";
+        $output = $log['lineFormat'];
         $formatter = new LineFormatter($output, $dateFormat);
 
         $streamHandler = new StreamHandler($log['path']);
