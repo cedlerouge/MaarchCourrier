@@ -43,12 +43,12 @@ class LogsController
             $path = 'config/config.json.default';
         }
 
-        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path])['log'];
-        if (empty($logConfig)) {
+        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path]);
+        if (empty($logConfig['log'])) {
             return null;
         }
-        $logConfig['customId'] = $customId;
-        return $logConfig;
+        $logConfig['log']['customId'] = $customId;
+        return $logConfig['log'];
     }
 
     /**
