@@ -129,7 +129,7 @@ class LogsController
             if (empty($args['lineData']['sqlData'])) {
                 $logLine .= "[]";
             } elseif (is_array($args['lineData']['sqlData'])) {
-                $logLine .= "[" . implode(', ', $args['lineData']['sqlData']) . "]";
+                $logLine .= "[" . json_encode($args['lineData']['sqlData']) . "]";
             } else {
                 $logLine .= "[" . $args['lineData']['sqlData'] . "]";
             }
