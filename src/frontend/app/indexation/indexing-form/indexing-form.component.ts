@@ -624,7 +624,7 @@ export class IndexingFormComponent implements OnInit {
                         label: entity.entity_label,
                         parentId: entity.parent_entity_id ?? null,
                         level: entity.level,
-                        enbled: entity.enabled
+                        enabled: entity.enabled
                     }));
 
                     const parents: any[] = this.sortPipe.transform(myEntities.filter((item: any) => this.functions.empty(item.parentId)), 'title');
@@ -676,7 +676,7 @@ export class IndexingFormComponent implements OnInit {
                                 id: entity.id,
                                 title: entity.title,
                                 label: entity.label,
-                                disabled: entity.enabled
+                                disabled: !entity.enabled
                             };
                         });
                         elem.event = 'loadDiffusionList';
