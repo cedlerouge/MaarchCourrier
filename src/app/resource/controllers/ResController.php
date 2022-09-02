@@ -1407,16 +1407,16 @@ class ResController extends ResourceControlController
 
     public function getProcessingData(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->validate($args['groupId'])) {
+        if (!Validator::intVal()->validate($args['groupId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'groupId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['userId'])) {
+        if (!Validator::intVal()->validate($args['userId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'userId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['basketId'])) {
+        if (!Validator::intVal()->validate($args['basketId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'basketId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['resId'])) {
+        if (!Validator::intVal()->validate($args['resId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
 
@@ -1436,13 +1436,15 @@ class ResController extends ResourceControlController
 
         $listEventData = json_decode($groupBasket[0]['list_event_data'], true);
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['status']]);
-        if (empty($resource['status'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Status does not exist']);
+        if (!empty($listEventData['canUpdateData'])) {
+            $status = StatusModel::getByResId(['select' => ['can_be_modified'], 'resId' => $args['resId'], 'collId' => 'letterbox_coll']);
+            if (empty($status['can_be_modified']) || $status['can_be_modified'] != 'Y') {
+                $listEventData['canUpdateData'] = false;
+            }
         }
-        $status = StatusModel::getById(['id' => $resource['status'], 'select' => ['can_be_modified']]);
-        if ($status['can_be_modified'] != 'Y') {
-            $listEventData['canUpdate'] = false;
+
+        if (empty($listEventData['canUpdateData'])) {
+            $listEventData['canUpdateModel'] = false;
         }
 
         return $response->withJson(['listEventData' => $listEventData]);

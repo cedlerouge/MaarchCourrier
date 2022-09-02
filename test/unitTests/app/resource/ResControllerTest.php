@@ -1960,7 +1960,8 @@ class ResControllerTest extends TestCase
         $this->assertIsArray($responseBody['listEventData']);
         $this->assertNotEmpty($responseBody['listEventData']);
         $this->assertSame('dashboard', $responseBody['listEventData']['defaultTab']);
-        $this->assertSame(false, $responseBody['listEventData']['canUpdate']);
+        $this->assertSame(false, $responseBody['listEventData']['canUpdateData']);
+        $this->assertSame(false, $responseBody['listEventData']['canUpdateModel']);
 
         $GLOBALS['login'] = 'superadmin';
         $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
