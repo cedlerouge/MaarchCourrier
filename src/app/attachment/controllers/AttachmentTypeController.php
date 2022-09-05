@@ -138,7 +138,7 @@ class AttachmentTypeController
         }
 
         $attachmentType = AttachmentTypeModel::getById(['select' => ['type_id'], 'id' => $args['id']]);
-        if (empty($attachmentType['type_id']) || $body['typeId'] != $attachmentType['type_id']) {
+        if (empty($attachmentType['type_id']) || (!empty($body['typeId']) && $body['typeId'] != $attachmentType['type_id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type not found or altered']);
         }
 
@@ -168,7 +168,7 @@ class AttachmentTypeController
             $set['icon'] = $body['icon'];
         }
 
-        if ($set['visible'] == 'true' && in_array($body['typeId'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES)) {
+        if ($set['visible'] == 'true' && in_array($attachmentType['type_id'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES)) {
             return $response->withStatus(400)->withJson(['errors' => 'This attachment type cannot be made visible']);
         }
         if (!empty($set['signed_by_default']) && $set['signed_by_default'] == 'false' && $body['typeId'] == 'signed_response') {
