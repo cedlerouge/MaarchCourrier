@@ -284,7 +284,6 @@ export class IndexingFormComponent implements OnInit {
     resDataClone: any;
 
     entitiesArray: any[] = [];
-    
 
     constructor(
         public translate: TranslateService,
@@ -617,6 +616,7 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(route).pipe(
                 tap((data: any) => {
+                    this.entitiesArray = [];
                     const myEntities: any[] = data.entities.map((entity: any) => ({
                         id: entity.id,
                         entityId: entity.entity_id,
@@ -637,12 +637,12 @@ export class IndexingFormComponent implements OnInit {
                             this.entitiesArray.push(element);
                             this.getEntity(myEntities, element);
                         });
-                    })
+                    });
 
                     this.entitiesArray = [... new Set(this.entitiesArray)];
 
                     if (this.adminMode) {
-                        let title = '';
+                        const title = '';
                         elem.values = [
                             {
                                 id: '#myPrimaryEntity',
@@ -651,16 +651,14 @@ export class IndexingFormComponent implements OnInit {
                                 disabled: false
                             }
                         ];
-                        elem.values = elem.values.concat(this.entitiesArray.map((entity: any) => {
-                            return {
-                                id: entity.id,
-                                title: entity.title,
-                                label: entity.label,
-                                disabled: false
-                            };
-                        }));
+                        elem.values = elem.values.concat(this.entitiesArray.map((entity: any) => ({
+                            id: entity.id,
+                            title: entity.title,
+                            label: entity.label,
+                            disabled: false
+                        })));
                     } else {
-                        let title = '';
+                        const title = '';
                         if (elem.default_value === '#myPrimaryEntity') {
                             this.selfDest = this.currentCategory === 'outgoing';
                             elem.default_value = this.headerService.user.entities[0]?.id;
@@ -671,14 +669,13 @@ export class IndexingFormComponent implements OnInit {
                             elem.default_value = defaultVal.length > 0 ? defaultVal[0].id : null;
                             this.arrFormControl[elem.identifier].setValue(defaultVal.length > 0 ? defaultVal[0].id : '');
                         }
-                        elem.values = this.entitiesArray.map((entity: any) => {
-                            return {
-                                id: entity.id,
-                                title: entity.title,
-                                label: entity.label,
-                                disabled: !entity.enabled
-                            };
-                        });
+                        elem.values = this.entitiesArray.map((entity: any) => ({
+                            id: entity.id,
+                            title: entity.title,
+                            label: entity.label,
+                            disabled: !entity.enabled
+                        }));
+                        elem.values = [... new Set(elem.values)];
                         elem.event = 'loadDiffusionList';
                         elem.allowedEntities = elem.values.filter((val: any) => val.disabled === false).map((entities: any) => entities.id);
                     }
@@ -696,7 +693,7 @@ export class IndexingFormComponent implements OnInit {
             element.label = nonBreakingSpace.repeat(element.level) + element.label;
             this.entitiesArray.push(element);
             this.getEntity(all, element);
-        })
+        });
     }
 
     setInitiatorField(elem: any) {
