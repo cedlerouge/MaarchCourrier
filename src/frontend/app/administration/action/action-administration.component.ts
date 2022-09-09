@@ -14,7 +14,8 @@ import { of } from 'rxjs';
 
 
 @Component({
-    templateUrl: 'action-administration.component.html'
+    templateUrl: 'action-administration.component.html',
+    styleUrls: ['action-administration.component.scss']
 })
 export class ActionAdministrationComponent implements OnInit {
 
@@ -119,6 +120,7 @@ export class ActionAdministrationComponent implements OnInit {
                         this.loading = false;
                         if (this.action.actionPageId === 'close_mail') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.requiredFields, disabled: false });
+                            console.log("JL - customFieldsFormControl : ", this.customFieldsFormControl);
                             this.selectedFieldsId = [];
                             if (this.action.parameters.requiredFields) {
                                 this.selectedFieldsId = this.action.parameters.requiredFields;
@@ -126,7 +128,9 @@ export class ActionAdministrationComponent implements OnInit {
                             this.selectedFieldsId.forEach((element: any) => {
                                 this.availableCustomFields.forEach((availableElement: any) => {
                                     if (availableElement.id === element) {
-                                        this.selectedFieldsValue.push(availableElement.label);
+                                        console.log("JL - availableElement | element : ", availableElement, element);
+
+                                        this.selectedFieldsValue.push(availableElement);
                                     }
                                 });
                             });
@@ -186,7 +190,7 @@ export class ActionAdministrationComponent implements OnInit {
             }
         });
         if (this.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
-            this.selectedFieldsValue.push(this.selectedValue.label);
+            this.selectedFieldsValue.push(this.selectedValue);
             this.selectedFieldsId.push(this.customFieldsFormControl.value);
         }
         this.customFieldsFormControl.reset();
@@ -227,5 +231,26 @@ export class ActionAdministrationComponent implements OnInit {
                     this.notify.error(err.error.errors);
                 });
         }
+    }
+
+    toggleTodayDate(field: any) {
+        // field.today = !field.today;
+        console.log("JL - toggleTodayDate", field);
+
+        // if (field.today) {
+        //     this.arrFormControl[field.identifier].disable();
+        //     this.arrFormControl[field.identifier].setValue(new Date());
+        // } else {
+        //     this.arrFormControl[field.identifier].setValue('');
+        //     this.arrFormControl[field.identifier].enable();
+        // }
+    }
+
+    launchEvent(value: any, field: any) {
+        console.log("JL - launchEvent(value, field)", value, field);
+    }
+
+    getCheckboxListLabel(selectedItemId: any, items: any) {
+        return items.filter((item: any) => item.label === selectedItemId)[0].label;
     }
 }
