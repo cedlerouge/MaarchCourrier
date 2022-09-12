@@ -190,12 +190,26 @@ class ActionMethodController
         return true;
     }
 
-    public static function closeMailAction(array $aArgs)
+    public static function closeMailAction(array $args)
     {
-        ValidatorModel::notEmpty($aArgs, ['resId']);
-        ValidatorModel::intVal($aArgs, ['resId']);
+        ValidatorModel::notEmpty($args, ['resId']);
+        ValidatorModel::intVal($args, ['resId']);
 
-        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$aArgs['resId']]]);
+        $set   = ['closing_date' => 'CURRENT_TIMESTAMP'];
+        $where = ['res_id = ?', 'closing_date is null'];
+
+        $requiredFields = $args['action']['parameters']['requiredFields'];
+
+        if (!empty($requiredFields)) {
+            $requiredFieldMapping = [];
+            foreach($requiredFields as $requiredFieldItem) {
+                $idCustom = explode("_", $requiredFieldItem['id'])[1];
+                $requiredFieldMapping[$idCustom] = $requiredFieldItem['value'];
+            }
+            $set['custom_fields'] = json_encode($requiredFieldMapping);
+        }
+
+        ResModel::update(['set' => $set, 'where' => $where, 'data' => [$args['resId']]]);
 
         return true;
     }
