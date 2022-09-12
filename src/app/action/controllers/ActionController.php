@@ -183,9 +183,8 @@ class ActionController
                 $customFields = CustomFieldModel::get(['select' => ['id']]);
                 $customFields = array_column($customFields, 'id');
                 foreach ($parameters['requiredFields'] as $requiredField) {
-                    if (strpos($requiredField, 'indexingCustomField_') !== false) {
-                        $idCustom = explode("_", $requiredField);
-                        $idCustom = $idCustom[1];
+                    if (strpos($requiredField['id'], 'indexingCustomField_') !== false) {
+                        $idCustom = explode("_", $requiredField['id'])[1];
                         if (!in_array($idCustom, $customFields)) {
                             return $response->withStatus(400)->withJson(['errors' => 'Data custom field does not exist']);
                         }
