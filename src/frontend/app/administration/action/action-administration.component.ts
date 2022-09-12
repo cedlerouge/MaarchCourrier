@@ -248,7 +248,11 @@ export class ActionAdministrationComponent implements OnInit {
      * @param position Position from selectedFieldsValue 
      */
     resetFieldItemValue(fieldItemValue: any, position: any) {
-        this.selectedFieldItems.selectedFieldsValue[position].selectedValues = null;
+        const field = this.selectedFieldItems.selectedFieldsValue[position];
+        field.selectedValues = null;
+        if (fieldItemValue.type === "date" && field.today !== undefined) {
+            field.today = false;
+        }
     }
 
     /**
