@@ -21,6 +21,7 @@ export class ActionAdministrationComponent implements OnInit {
 
     @ViewChild('snav2', { static: true }) public sidenavRight: MatSidenav;
 
+    today: Date = new Date();
     creationMode: boolean;
     action: any = {};
     statuses: any[] = [];
@@ -33,8 +34,10 @@ export class ActionAdministrationComponent implements OnInit {
     loading: boolean = false;
     availableCustomFields: Array<any> = [];
     customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
+
     selectedFieldsValue: Array<any> = [];
-    selectedFieldsId: Array<any> = [];
+    selectedFieldItems = {selectedFieldsId: [], selectedFieldsValue: []};
+
     selectedValue: any;
     arMode: any;
     canAddCopies: boolean;
@@ -120,17 +123,28 @@ export class ActionAdministrationComponent implements OnInit {
                         this.loading = false;
                         if (this.action.actionPageId === 'close_mail') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.requiredFields, disabled: false });
-                            console.log("JL - customFieldsFormControl : ", this.customFieldsFormControl);
-                            this.selectedFieldsId = [];
-                            if (this.action.parameters.requiredFields) {
-                                this.selectedFieldsId = this.action.parameters.requiredFields;
-                            }
-                            this.selectedFieldsId.forEach((element: any) => {
-                                this.availableCustomFields.forEach((availableElement: any) => {
-                                    if (availableElement.id === element) {
-                                        console.log("JL - availableElement | element : ", availableElement, element);
 
-                                        this.selectedFieldsValue.push(availableElement);
+                            this.selectedFieldItems.selectedFieldsId = [];
+
+                            if (this.action.parameters.requiredFields) {
+                                this.selectedFieldItems.selectedFieldsId = this.action.parameters.requiredFields;
+                            }
+                            this.selectedFieldItems.selectedFieldsId.forEach((element: any) => {
+                                this.availableCustomFields.forEach((availableElement: any) => {
+                                    if (availableElement.id === element.id) {
+                                        availableElement.selectedValues = this.functions.empty(element.value) ? null : element.value;
+
+                                        if (availableElement.type === 'date' && !this.functions.empty(element.value)) {
+                                            if (this.functions.formatDateObjectToDateString(new Date()) == this.functions.formatDateObjectToDateString(new Date(element.value))) {
+                                                availableElement.today = true;
+                                            } else{
+                                                availableElement.today = false;
+                                            }
+                                        } else if (['contact', 'banAutocomplete'].includes(availableElement.type)) {
+                                            availableElement.untypedFormControl = new UntypedFormControl({ value: element.value, disabled: false });
+                                        }
+
+                                        this.selectedFieldItems.selectedFieldsValue.push(availableElement);
                                     }
                                 });
                             });
@@ -183,35 +197,141 @@ export class ActionAdministrationComponent implements OnInit {
 
     }
 
+    /**
+     * @description Add selected custom field to selectedFieldsValue and selectedFieldsId list
+     */
     getSelectedFields() {
         this.availableCustomFields.forEach((element: any) => {
             if (element.id === this.customFieldsFormControl.value) {
                 this.selectedValue = element;
             }
         });
-        if (this.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
-            this.selectedFieldsValue.push(this.selectedValue);
-            this.selectedFieldsId.push(this.customFieldsFormControl.value);
+
+        if (this.selectedFieldItems.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
+            this.selectedValue.selectedValues = null;
+            if (this.selectedValue.type === 'date') {
+                this.selectedValue.today = false;
+            } else if (['contact', 'banAutocomplete'].includes(this.selectedValue.type)) {
+                this.selectedValue.untypedFormControl = new UntypedFormControl({ value: this.selectedValue.selectedValues, disabled: false });
+            }
+            this.selectedFieldItems.selectedFieldsValue.push(this.selectedValue);
+            this.selectedFieldItems.selectedFieldsId.push(this.customFieldsFormControl);
         }
         this.customFieldsFormControl.reset();
     }
 
+    /**
+     * @description Remove custom fields
+     * @param index custom fields position in selectedFieldsValue
+     */
     removeSelectedFields(index: number) {
-        this.selectedFieldsValue.splice(index, 1);
-        this.selectedFieldsId.splice(index, 1);
+        this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
+        this.selectedFieldItems.selectedFieldsId.splice(index, 1);
     }
 
+    /**
+     * @description Set date for today or not
+     * @param fieldItemValue Date field object
+     */
+     toggleTodayDate(fieldItemValue: any) {
+        fieldItemValue.today = !fieldItemValue.today;
+        if (fieldItemValue.today) {
+            fieldItemValue.selectedValues = new Date();
+        } else {
+            fieldItemValue.selectedValues = null;
+        }
+    }
+
+    /**
+     * @description Rest selectedValues from selectedFieldsValue
+     * @param fieldItemValue Field object
+     * @param position Position from selectedFieldsValue 
+     */
+    resetFieldItemValue(fieldItemValue: any, position: any) {
+        this.selectedFieldItems.selectedFieldsValue[position].selectedValues = null;
+    }
+
+    /**
+     * @description Get label from an array
+     * @param selectedLabel selected label
+     * @param fieldItemValues List of values 
+     * @returns Labels
+     */
+     getCheckboxListLabel(selectedLabel: any, fieldItemValues: any) {
+        return fieldItemValues.filter((item: any) => item.label === selectedLabel)[0].label;
+    }
+
+    /**
+     * @description Add selection contact (user or entity)
+     * @param contact User or Entity object
+     * @param fieldItemValue Contact field object
+     */
+     selectedContact(contact: any, fieldItemValue: any) {
+        if (!this.functions.empty(fieldItemValue.selectedValues)) {
+            const contactExist = fieldItemValue.selectedValues.find((elem: any) => elem.id === contact.id && elem.type === contact.type);
+            if (this.functions.empty(contactExist)) {
+                fieldItemValue.selectedValues.push(contact);
+            }
+        } else {
+            fieldItemValue.selectedValues = [contact];
+        }
+    }
+
+    /**
+     * @description Remove contact (user or entity)
+     * @param concatId Number or false if remove all contacts
+     * @param fieldItemValue Contact field object
+     */
+    removeContactEvent(concatId: any, fieldItemValue: any) {
+        if (!this.functions.empty(concatId) && Number.isInteger(concatId)) {
+            fieldItemValue.selectedValues = fieldItemValue.selectedValues.filter((element: any) => element.id !== concatId);
+        } else {
+            fieldItemValue.selectedValues = [];
+        }
+    }
+
+    /**
+     * @description Add selected Ban address
+     * @param addressBan Selected address
+     * @param fieldItemValue Address Auto Complete field
+     */
+    selectedAddressBan(addressBan: any, fieldItemValue: any) {
+        fieldItemValue.selectedValues = [addressBan];
+    }
+
+    /**
+     * @description Remove Ban address
+     * @param addressBanId Number
+     * @param fieldItemValue Address Ban field object
+     */
+    removeAddressBanEvent(addressBanId: any, fieldItemValue: any) {
+        if (!this.functions.empty(addressBanId) && Number.isInteger(addressBanId)) {
+            fieldItemValue.selectedValues = fieldItemValue.selectedValues.filter((element: any) => element.id !== addressBanId);
+        } else {
+            fieldItemValue.selectedValues = [];
+        }
+    }
+
+    /**
+     * @description Map action object before API create/update call. 
+     */
     onSubmit() {
         if (this.action.actionPageId === 'close_mail') {
-            this.action.parameters = { requiredFields: this.selectedFieldsId };
+            const requiredFieldList = [];
+            this.selectedFieldItems.selectedFieldsValue.forEach((item: any) => {
+                if (!this.functions.empty(item.selectedValues)) {
+                    requiredFieldList.push({id: item.id, value: item.selectedValues});
+                }
+            });
+            this.action.parameters = { requiredFields: requiredFieldList };
         } else if (this.action.actionPageId === 'create_acknowledgement_receipt') {
             this.action.parameters = { mode: this.arMode, canAddCopies : this.canAddCopies };
         } else if (this.intermediateStatusActions.indexOf(this.action.actionPageId) !== -1) {
             this.action.parameters = { successStatus: this.successStatus, errorStatus: this.errorStatus };
         }
-
         this.action.action_page = this.action.actionPageId;
         this.action.component = this.actionPagesService.getAllActionPages(this.action.actionPageId).component;
+        
         if (this.creationMode) {
             this.http.post('../rest/actions', this.action)
                 .subscribe(() => {
@@ -231,26 +351,5 @@ export class ActionAdministrationComponent implements OnInit {
                     this.notify.error(err.error.errors);
                 });
         }
-    }
-
-    toggleTodayDate(field: any) {
-        // field.today = !field.today;
-        console.log("JL - toggleTodayDate", field);
-
-        // if (field.today) {
-        //     this.arrFormControl[field.identifier].disable();
-        //     this.arrFormControl[field.identifier].setValue(new Date());
-        // } else {
-        //     this.arrFormControl[field.identifier].setValue('');
-        //     this.arrFormControl[field.identifier].enable();
-        // }
-    }
-
-    launchEvent(value: any, field: any) {
-        console.log("JL - launchEvent(value, field)", value, field);
-    }
-
-    getCheckboxListLabel(selectedItemId: any, items: any) {
-        return items.filter((item: any) => item.label === selectedItemId)[0].label;
     }
 }
