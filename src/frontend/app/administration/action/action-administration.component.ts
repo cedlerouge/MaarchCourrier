@@ -271,13 +271,17 @@ export class ActionAdministrationComponent implements OnInit {
      * @param fieldItemValue Contact field object
      */
      selectedContact(contact: any, fieldItemValue: any) {
+        const arrInfo = [];
+        arrInfo.push(contact.firstname);
+        arrInfo.push(contact.lastname);
+
         if (!this.functions.empty(fieldItemValue.selectedValues)) {
             const contactExist = fieldItemValue.selectedValues.find((elem: any) => elem.id === contact.id && elem.type === contact.type);
             if (this.functions.empty(contactExist)) {
-                fieldItemValue.selectedValues.push(contact);
+                fieldItemValue.selectedValues.push({id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ')});
             }
         } else {
-            fieldItemValue.selectedValues = [contact];
+            fieldItemValue.selectedValues = [{id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ')}];
         }
     }
 
