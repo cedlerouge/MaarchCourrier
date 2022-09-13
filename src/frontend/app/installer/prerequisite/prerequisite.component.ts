@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { of } from 'rxjs';
@@ -16,7 +16,7 @@ export class PrerequisiteComponent implements OnInit {
 
     @ViewChildren('packageItem') packageItem: QueryList<any>;
 
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
 
     prerequisites: any = {};
 
@@ -109,7 +109,7 @@ export class PrerequisiteComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private _formBuilder: FormBuilder
+        private _formBuilder: UntypedFormBuilder
     ) { }
 
     ngOnInit(): void {

@@ -10,6 +10,7 @@ import { FunctionsService } from '@service/functions.service';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { ActionsService } from '../actions.service';
 import { Router } from '@angular/router';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-signature-book-action.component.html',
@@ -43,6 +44,10 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     lastOneIsSign: any = true;
     lastOneMustBeSignatory: any = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -50,7 +55,8 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         public dialogRef: MatDialogRef<SendSignatureBookActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
-        public route: Router
+        public route: Router,
+        private sessionStorage: SessionStorageService
     ) { }
 
     async ngAfterViewInit(): Promise<void> {
@@ -59,6 +65,9 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             this.checkSignatureBookInIndexingPage();
         }
         this.initVisaWorkflow();
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.loading = false;
     }
 
@@ -79,6 +88,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             const res = await this.appVisaWorkflow.saveVisaWorkflow(realResSelected);
 
             if (res) {
+                this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
                 this.executeAction(realResSelected);
             }
         }

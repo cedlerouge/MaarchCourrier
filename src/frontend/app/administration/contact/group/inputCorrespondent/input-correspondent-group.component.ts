@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent, MatAutocomplete } from '@angular/material/autocomplete';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, finalize, map, tap } from 'rxjs/operators';
@@ -32,7 +32,7 @@ export class InputCorrespondentGroupComponent implements OnInit {
 
     visible = true;
     separatorKeysCodes: number[] = [ENTER, COMMA];
-    correspondentGroupsForm = new FormControl();
+    correspondentGroupsForm = new UntypedFormControl();
     filteredcorrespondentGroups: Observable<string[]>;
     correspondentGroups: any[] = [];
     allCorrespondentGroups: any[] = [];

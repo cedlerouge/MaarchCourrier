@@ -8,6 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { SearchResultListComponent } from '@appRoot/search/result-list/search-result-list.component';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'reconcile-action.component.html',
@@ -25,22 +26,30 @@ export class ReconcileActionComponent implements OnInit {
     selectedRes: number[] = [];
     noResourceToProcess: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<ReconcileActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.checkReconcile();
     }
 
     onSubmit() {
         this.loading = true;
-
+        this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
         this.executeAction();
     }
 

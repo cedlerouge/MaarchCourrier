@@ -10,7 +10,7 @@ import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { AlertComponent } from '@plugins/modal/alert.component';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { PluginSelectSearchComponent } from '@plugins/select-search/select-search.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { EcplOnlyofficeViewerComponent } from '@plugins/onlyoffice-api-js/onlyoffice-viewer.component';
 import { FunctionsService } from '@service/functions.service';
 import { DocumentViewerModalComponent } from './modal/document-viewer-modal.component';
@@ -146,7 +146,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     listTemplates: any[] = [];
     externalId: any = {};
 
-    templateListForm = new FormControl();
+    templateListForm = new UntypedFormControl();
 
     resourceDatas: any;
 

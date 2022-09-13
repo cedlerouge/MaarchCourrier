@@ -1,9 +1,13 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { LocalStorageService } from '@service/local-storage.service';
 import { HeaderService } from '@service/header.service';
+import { catchError, tap } from 'rxjs/operators';
+import { NotificationService } from '@service/notification/notification.service';
+import { of } from 'rxjs';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     selector: 'app-ixbus-paraph',
@@ -34,15 +38,17 @@ export class IxbusParaphComponent implements OnInit {
         editable: true
     };
 
-    selectNature = new FormControl();
-    selectWorkflow = new FormControl();
-    selectUser = new FormControl();
+    selectNature = new UntypedFormControl();
+    selectWorkflow = new UntypedFormControl();
+    selectUser = new UntypedFormControl();
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         public headerService: HeaderService,
-        private localStorage: LocalStorageService
+        public functions: FunctionsService,
+        private localStorage: LocalStorageService,
+        private notifications: NotificationService
     ) { }
 
     ngOnInit(): void {
@@ -58,15 +64,26 @@ export class IxbusParaphComponent implements OnInit {
     }
 
     changeModel(natureId: string) {
-        this.messagesModel = [];
-        this.additionalsInfos.ixbus.messagesModel[natureId].forEach((element: any) => {
-            this.messagesModel.push({id: element.identifiant, label: element.nom});
-        });
-
-        this.users = [];
-        this.additionalsInfos.ixbus.users[natureId].forEach((element: any) => {
-            this.users.push({id: element.identifiant, label: element.prenom + ' ' + element.nom});
-        });
+        this.http.get(`../rest/ixbus/natureDetails/${natureId}`).pipe(
+            tap((data: any) => {
+                if (!this.functions.empty(data.messageModels)) {
+                    this.messagesModel = data.messageModels.map((message: any) => ({
+                        id: message.identifiant,
+                        label: message.nom
+                    }));
+                }
+                if (!this.functions.empty(data.users)) {
+                    this.users = data.users.map((user: any) => ({
+                        id: user.identifiant,
+                        label: `${user.prenom} ${user.nom}`
+                    }));
+                }
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     isValidParaph() {

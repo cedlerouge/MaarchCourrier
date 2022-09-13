@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidatorFn } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { StepAction } from '../types';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -26,14 +26,14 @@ export class CustomizationComponent implements OnInit {
     @Input() appDatabase: DatabaseComponent;
     @Input() appWelcome: WelcomeComponent;
 
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
     readonlyState: boolean = false;
 
     backgroundList: any[] = [];
 
     constructor(
         public translate: TranslateService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private sanitizer: DomSanitizer,
         private scanPipe: ScanPipe,
@@ -158,7 +158,7 @@ export class CustomizationComponent implements OnInit {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
             },
             toolbar_sticky: true,
-            toolbar_drawer: 'floating',
+            toolbar_mode: 'floating',
             toolbar: !readonly ? 'undo redo | fontselect fontsizeselect | bold italic underline strikethrough forecolor | maarch_b64image | \
         alignleft aligncenter alignright alignjustify \
         bullist numlist outdent indent | removeformat' : ''

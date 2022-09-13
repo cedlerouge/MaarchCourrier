@@ -7,7 +7,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
 import { SortPipe } from '../../../plugins/sorting.pipe';
-import { FormControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, Validators, UntypedFormGroup } from '@angular/forms';
 import { DocumentViewerComponent } from '../../viewer/document-viewer.component';
 import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
@@ -40,7 +40,7 @@ export class AttachmentPageComponent implements OnInit {
     newVersion: boolean = false;
     signedByDefault: boolean = false;
 
-    attachFormGroup: FormGroup = null;
+    attachFormGroup: UntypedFormGroup = null;
 
     editMode: boolean = false;
 
@@ -123,27 +123,27 @@ export class AttachmentPageComponent implements OnInit {
                     this.sendMassMode = data.status === 'SEND_MASS';
 
                     this.attachment = {
-                        typist: new FormControl({ value: data.typist, disabled: true }, [Validators.required]),
-                        typistLabel: new FormControl({ value: data.typistLabel, disabled: true }, [Validators.required]),
-                        creationDate: new FormControl({ value: data.creationDate, disabled: true }, [Validators.required]),
-                        modificationDate: new FormControl({ value: data.modificationDate, disabled: true }),
-                        modifiedBy: new FormControl({ value: data.modifiedBy, disabled: true }),
-                        signatory: new FormControl({ value: data.signatory, disabled: true }),
-                        signatoryId: new FormControl({ value: data.signatoryId, disabled: true }),
-                        signDate: new FormControl({ value: data.signDate, disabled: true }),
-                        resId: new FormControl({ value: this.data.resId, disabled: true }, [Validators.required]),
-                        chrono: new FormControl({ value: data.chrono, disabled: true }),
-                        originId: new FormControl({ value: data.originId, disabled: true }),
-                        resIdMaster: new FormControl({ value: data.resIdMaster, disabled: true }, [Validators.required]),
-                        status: new FormControl({ value: data.status, disabled: true }, [Validators.required]),
-                        relation: new FormControl({ value: data.relation, disabled: true }, [Validators.required]),
-                        title: new FormControl({ value: data.title, disabled: !this.editMode }, [Validators.required]),
-                        recipient: new FormControl({ value: contact, disabled: !this.editMode }),
-                        type: new FormControl({ value: data.type, disabled: !this.editMode }, [Validators.required]),
-                        validationDate: new FormControl({ value: data.validationDate !== null ? new Date(data.validationDate) : null, disabled: !this.editMode }),
-                        signedResponse: new FormControl({ value: data.signedResponse, disabled: false }),
-                        encodedFile: new FormControl({ value: '_CURRENT_FILE', disabled: !this.editMode }, [Validators.required]),
-                        format: new FormControl({ value: data.format, disabled: true }, [Validators.required])
+                        typist: new UntypedFormControl({ value: data.typist, disabled: true }, [Validators.required]),
+                        typistLabel: new UntypedFormControl({ value: data.typistLabel, disabled: true }, [Validators.required]),
+                        creationDate: new UntypedFormControl({ value: data.creationDate, disabled: true }, [Validators.required]),
+                        modificationDate: new UntypedFormControl({ value: data.modificationDate, disabled: true }),
+                        modifiedBy: new UntypedFormControl({ value: data.modifiedBy, disabled: true }),
+                        signatory: new UntypedFormControl({ value: data.signatory, disabled: true }),
+                        signatoryId: new UntypedFormControl({ value: data.signatoryId, disabled: true }),
+                        signDate: new UntypedFormControl({ value: data.signDate, disabled: true }),
+                        resId: new UntypedFormControl({ value: this.data.resId, disabled: true }, [Validators.required]),
+                        chrono: new UntypedFormControl({ value: data.chrono, disabled: true }),
+                        originId: new UntypedFormControl({ value: data.originId, disabled: true }),
+                        resIdMaster: new UntypedFormControl({ value: data.resIdMaster, disabled: true }, [Validators.required]),
+                        status: new UntypedFormControl({ value: data.status, disabled: true }, [Validators.required]),
+                        relation: new UntypedFormControl({ value: data.relation, disabled: true }, [Validators.required]),
+                        title: new UntypedFormControl({ value: data.title, disabled: !this.editMode }, [Validators.required]),
+                        recipient: new UntypedFormControl({ value: contact, disabled: !this.editMode }),
+                        type: new UntypedFormControl({ value: data.type, disabled: !this.editMode }, [Validators.required]),
+                        validationDate: new UntypedFormControl({ value: data.validationDate !== null ? new Date(data.validationDate) : null, disabled: !this.editMode }),
+                        signedResponse: new UntypedFormControl({ value: data.signedResponse, disabled: false }),
+                        encodedFile: new UntypedFormControl({ value: '_CURRENT_FILE', disabled: !this.editMode }, [Validators.required]),
+                        format: new UntypedFormControl({ value: data.format, disabled: true }, [Validators.required])
                     };
 
                     this.versions = data.versions;
@@ -152,7 +152,7 @@ export class AttachmentPageComponent implements OnInit {
                     this.newVersion = this.attachmentsTypes.filter((item: any) => item.typeId === data.type)[0].newVersionDefault;
                     this.signedByDefault = this.attachmentsTypes.filter((item: any) => item.typeId === data.type)[0].signedByDefault;
 
-                    this.attachFormGroup = new FormGroup(this.attachment);
+                    this.attachFormGroup = new UntypedFormGroup(this.attachment);
                     resolve(true);
                 }),
                 catchError((err: any) => {

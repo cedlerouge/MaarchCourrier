@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { map, tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-external-note-book-action.component.html',
@@ -27,17 +28,24 @@ export class SendExternalNoteBookActionComponent implements OnInit {
     };
     errors: any;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendExternalNoteBookActionComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private sessionStorage: SessionStorageService
     ) { }
 
     ngOnInit(): void {
         this.loading = true;
-
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/checkExternalNoteBook', { resources: this.data.resIds }).pipe(
             map((data: any) => {
                 data.additionalsInfos.users.forEach((element: any) => {
@@ -62,6 +70,7 @@ export class SendExternalNoteBookActionComponent implements OnInit {
         this.loading = true;
 
         if ( this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

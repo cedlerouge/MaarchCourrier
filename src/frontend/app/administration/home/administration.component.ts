@@ -7,7 +7,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { Observable, of } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { NotificationService } from '@service/notification/notification.service';
@@ -31,7 +31,7 @@ export class AdministrationComponent implements OnInit, AfterViewInit {
     classementServices: any[] = [];
     supervisionServices: any[] = [];
 
-    searchService = new FormControl();
+    searchService = new UntypedFormControl();
 
     administrations: any[] = [];
     filteredAdministrations: Observable<string[]>;

@@ -15,6 +15,12 @@
                         <b>{{data.entity.entity_label}}</b> {{'lang.isCopyTo' | translate}}
                         <b>{{data.entity.instances}}</b> {{'lang.documents' | translate}}</p>
                 </mat-list-item>
+                <mat-list-item *ngIf="data.entity.contact > 0">
+                    <mat-icon color="primary" mat-list-icon class="fa fa-address-book fa-2x"></mat-icon>
+                    <p mat-line>
+                        <b>{{data.entity.entity_label}}</b> {{'lang.isLinkedTo' | translate | lowercase}}
+                        <b>{{data.entity.contact}}</b> {{'lang.contactsEntity' | translate | lowercase}}</p>
+                </mat-list-item>
                 <mat-list-item *ngIf="data.entity.users.length > 0">
                     <mat-icon color="primary" mat-list-icon class="fa fa-user fa-2x"></mat-icon>
                     <p mat-line>

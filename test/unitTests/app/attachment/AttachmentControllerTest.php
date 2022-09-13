@@ -304,6 +304,7 @@ class AttachmentControllerTest extends TestCase
 
         $response = $attachmentController->getThumbnailContent($request, new \Slim\Http\Response(), ['id' => self::$versionAttachmentId]);
         $responseBody = json_decode((string)$response->getBody(), true);
+
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
         $this->assertSame(403, $response->getStatusCode());
 
@@ -536,6 +537,7 @@ class AttachmentControllerTest extends TestCase
 
         $response     = $attachmentController->create($fullRequest, new \Slim\Http\Response());
         $responseBody = json_decode((string)$response->getBody());
+
         $mailingId = $responseBody->id;
         $this->assertIsInt($mailingId);
 

@@ -11,7 +11,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "allowedCommonJsDependencies": ["pdfjs-dist/es5/web/pdf_viewer", "pdfjs-dist/es5/build/pdf", "papaparse/papaparse.min.js", "ng2-pdf-viewer"],
+            "allowedCommonJsDependencies": ["pdfjs-dist/es5/web/pdf_viewer", "pdfjs-dist/es5/build/pdf", "papaparse/papaparse.min.js", "ng2-pdf-viewer", "clone-deep", "pdfjs-dist/build/pdf", "pdfjs-dist/web/pdf_viewer"],
             "outputPath": "dist",
             "index": "src/frontend/index.html",
             "polyfills": "src/frontend/polyfills.ts",
@@ -221,7 +221,6 @@
       }
     }
   },
-  "defaultProject": "maarchCourrier",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
@@ -230,5 +229,8 @@
     "@schematics/angular:directive": {
       "prefix": "app"
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

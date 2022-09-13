@@ -442,3 +442,4 @@ define("_REGISTERED_NUMBER_RANGE_DELETED", "Registered number range deleted"); /
 
 define('_REGISTERED_MAIL_DISTRIBUTED', 'Acknowledgement receipt received : registered mail distributed'); //TO TRANSLATE
 define('_REGISTERED_MAIL_NOT_DISTRIBUTED', 'Acknowledgement receipt received : registered mail not distributed'); //TO TRANSLATE
+define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'The Integer type is mandatory for chrono numbers!'); //TO TRANSLATE

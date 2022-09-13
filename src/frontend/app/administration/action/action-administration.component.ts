@@ -8,7 +8,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { tap, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ActionPagesService } from '@service/actionPages.service';
 import { of } from 'rxjs';
 
@@ -31,7 +31,7 @@ export class ActionAdministrationComponent implements OnInit {
 
     loading: boolean = false;
     availableCustomFields: Array<any> = [];
-    customFieldsFormControl = new FormControl({ value: '', disabled: false });
+    customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
     selectedFieldsValue: Array<any> = [];
     selectedFieldsId: Array<any> = [];
     selectedValue: any;
@@ -40,10 +40,10 @@ export class ActionAdministrationComponent implements OnInit {
     successStatus: any;
     errorStatus: any;
 
-    selectActionPageId = new FormControl();
-    selectStatusId = new FormControl();
-    selectSuccessStatusId = new FormControl();
-    selectErrorStatusId = new FormControl();
+    selectActionPageId = new UntypedFormControl();
+    selectStatusId = new UntypedFormControl();
+    selectSuccessStatusId = new UntypedFormControl();
+    selectErrorStatusId = new UntypedFormControl();
 
     intermediateStatusActions = ['sendToRecordManagement', 'sendToExternalSignatureBook', 'send_to_visa', 'visa_workflow'];
 
@@ -118,7 +118,7 @@ export class ActionAdministrationComponent implements OnInit {
                         await this.getCustomFields();
                         this.loading = false;
                         if (this.action.actionPageId === 'close_mail') {
-                            this.customFieldsFormControl = new FormControl({ value: this.action.parameters.requiredFields, disabled: false });
+                            this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.requiredFields, disabled: false });
                             this.selectedFieldsId = [];
                             if (this.action.parameters.requiredFields) {
                                 this.selectedFieldsId = this.action.parameters.requiredFields;

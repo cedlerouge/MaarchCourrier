@@ -11,6 +11,7 @@ import { IParaphComponent } from './i-paraph/i-paraph.component';
 import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -53,16 +54,25 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     mainDocumentSigned: boolean = false;
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendExternalSignatoryBookActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        private changeDetectorRef: ChangeDetectorRef) { }
+        private changeDetectorRef: ChangeDetectorRef,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     ngOnInit(): void {
         this.loading = true;
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         if (this.data.resource.integrations['inSignatureBook']) {
             this.http.get(`../rest/resources/${this.data.resource.resId}/versionsInformations`).pipe(
                 tap((data: any) => {
@@ -86,6 +96,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         } else {
             this.loading = true;
             if (this.data.resIds.length > 0) {
+                this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
                 this.executeAction();
             }
         }

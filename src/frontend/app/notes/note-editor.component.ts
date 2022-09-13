@@ -6,7 +6,7 @@ import { catchError, tap, debounceTime, filter } from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { LatinisePipe } from 'ngx-pipes';
 
 @Component({
@@ -36,7 +36,7 @@ export class NoteEditorComponent implements OnInit {
     entitiesRestriction: string[] = [];
 
 
-    searchTerm: FormControl = new FormControl();
+    searchTerm: UntypedFormControl = new UntypedFormControl();
     entitiesList: any[] = [];
 
     constructor(

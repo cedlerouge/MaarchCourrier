@@ -646,8 +646,10 @@ class MergeController
         ValidatorModel::intVal($args, ['resId']);
         ValidatorModel::stringType($args, ['type']);
 
+        setlocale(LC_TIME, _DATE_LOCALE);
+        
         $mergeData = [
-            'date'   => date('d-m-Y'),
+            'date'   => date('c'),
             'user'   => UserModel::getLabelledUserById(['id' => $GLOBALS['id']]),
             'entity' => UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['*']])
         ];

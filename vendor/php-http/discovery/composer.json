@@ -17,11 +17,9 @@
         "graham-campbell/phpspec-skip-example-extension": "^5.0",
         "php-http/httplug": "^1.0 || ^2.0",
         "php-http/message-factory": "^1.0",
-        "phpspec/phpspec": "^5.1 || ^6.1",
-        "puli/composer-plugin": "1.0.0-beta10"
+        "phpspec/phpspec": "^5.1 || ^6.1"
     },
     "suggest": {
-        "puli/composer-plugin": "Sets up Puli which is recommended for Discovery to work. Check http://docs.php-http.org/en/latest/discovery.html for more details.",
         "php-http/message": "Allow to use Guzzle, Diactoros or Slim Framework factories"
     },
     "autoload": {

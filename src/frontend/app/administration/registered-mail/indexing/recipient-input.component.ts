@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FormControl, FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { UntypedFormControl, FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -18,7 +18,7 @@ export class RegisteredMailRecipientInputComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input() control: FormControl;
+    @Input() control: UntypedFormControl;
 
     @Input() registeredMailType: string;
 
@@ -26,7 +26,7 @@ export class RegisteredMailRecipientInputComponent implements OnInit {
     civilities: any[] = [];
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
-    addressBANControl = new FormControl();
+    addressBANControl = new UntypedFormControl();
     addressBANLoading: boolean = false;
     addressBANResult: any[] = [];
     addressBANFilteredResult: Observable<string[]>;
@@ -35,7 +35,7 @@ export class RegisteredMailRecipientInputComponent implements OnInit {
 
     countries: any = [];
     countriesFilteredResult: Observable<string[]>;
-    countryControl = new FormControl();
+    countryControl = new UntypedFormControl();
 
     constructor(
         public translate: TranslateService,

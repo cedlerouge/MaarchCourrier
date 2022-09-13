@@ -9,7 +9,7 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { catchError, tap, map, exhaustMap, filter, finalize } from 'rxjs/operators';
 import { SortPipe } from '@plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ManageDuplicateComponent } from './manage-duplicate/manage-duplicate.component';
 import { ContactService } from '@service/contact.service';
 
@@ -29,7 +29,7 @@ export class ContactDuplicateComponent implements OnInit {
 
     contactFields: any = [];
 
-    addCriteriaSelect = new FormControl();
+    addCriteriaSelect = new UntypedFormControl();
 
     currentFieldsSearch: any = [];
 

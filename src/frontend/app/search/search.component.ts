@@ -31,6 +31,7 @@ export class SearchComponent implements OnInit {
 
     dialogRef: MatDialogRef<any>;
     loadingResult: boolean = false;
+    data: any = [];
 
     constructor(
         _activatedRoute: ActivatedRoute,
@@ -67,7 +68,7 @@ export class SearchComponent implements OnInit {
 
     setLaunchWithSearchTemplate(templates: any) {
         if (this.searchTemplateId !== null) {
-            const template = templates.find((itemTemplate: any) => itemTemplate.id == this.searchTemplateId);
+            const template = templates.find((itemTemplate: any) => itemTemplate.id === (+this.searchTemplateId));
             if (template !== undefined) {
                 this.appCriteriaTool.selectSearchTemplate(template);
                 this.appCriteriaTool.getCurrentCriteriaValues();

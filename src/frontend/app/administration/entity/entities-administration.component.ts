@@ -18,7 +18,7 @@ import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { AvisWorkflowComponent } from '../../avis/avis-workflow.component';
 import { Observable, of } from 'rxjs';
 import { EntitiesExportComponent } from './export/entities-export.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { InputCorrespondentGroupComponent } from '../contact/group/inputCorrespondent/input-correspondent-group.component';
 
 declare let $: any;
@@ -66,7 +66,7 @@ export class EntitiesAdministrationComponent implements OnInit {
 
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
-    addressBANControl = new FormControl();
+    addressBANControl = new UntypedFormControl();
     addressBANLoading: boolean = false;
     addressBANResult: any[] = [];
     addressBANFilteredResult: Observable<string[]>;

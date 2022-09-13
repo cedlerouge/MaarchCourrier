@@ -47,6 +47,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
     @Input() from: string = '';
 
     @Output() loadingResult = new EventEmitter<boolean>();
+    @Output() dataResult = new EventEmitter<any>();
 
     @ViewChild('filterTemplate', { static: true }) filterTemplate: TemplateRef<any>;
     @ViewChild('toolTemplate', { static: true }) toolTemplate: TemplateRef<any>;
@@ -223,6 +224,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
 
 
         this.loading = false;
+        this.dataResult.emit([]);
     }
 
 
@@ -330,6 +332,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
                     this.isLoadingResults = false;
                     this.loadingResult.emit(false);
                     data = this.processPostData(data);
+                    this.dataResult.emit(data);
                     this.templateColumns = data.templateColumns;
                     this.dataFilters = data.filters;
                     this.criteriaSearchService.updateListsPropertiesFilters(data.filters);
@@ -348,6 +351,7 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
                     this.allResInBasket = [];
                     this.isLoadingResults = false;
                     this.loadingResult.emit(false);
+                    this.dataResult.emit([]);
                     this.initSearch = false;
                     return of(false);
                 })
@@ -779,23 +783,6 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
                 this.appCriteriaTool.resetAllCriteria();
             }
         }
-    }
-
-    updateFilters() {
-        this.listProperties.page = 0;
-
-        this.criteriaSearchService.updateListsProperties(this.listProperties);
-
-        this.refreshDao();
-    }
-
-    changeOrderDir() {
-        if (this.listProperties.orderDir === 'ASC') {
-            this.listProperties.orderDir = 'DESC';
-        } else {
-            this.listProperties.orderDir = 'ASC';
-        }
-        this.updateFilters();
     }
 
     getSelectedResources() {

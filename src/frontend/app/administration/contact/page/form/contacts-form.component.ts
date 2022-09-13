@@ -6,7 +6,7 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { AppService } from '@service/app.service';
 import { MatDialog } from '@angular/material/dialog';
 import { switchMap, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged, finalize, map, startWith } from 'rxjs/operators';
-import { FormControl, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormControl, Validators, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContactService } from '@service/contact.service';
 import { FunctionsService } from '@service/functions.service';
@@ -57,7 +57,7 @@ export class ContactsFormComponent implements OnInit {
     countriesFilteredResult: Observable<string[]>;
     postcodesTownFilteredResult: Observable<string[]>;
     postcodesFilteredResult: Observable<string[]>;
-    countryControl = new FormControl();
+    countryControl = new UntypedFormControl();
 
     loading: boolean = false;
 
@@ -88,7 +88,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_company'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: true,
             filling: false,
@@ -99,7 +99,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_civility'),
             type: 'select',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -110,7 +110,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_firstname'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -121,7 +121,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_lastname'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -132,7 +132,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_function'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -143,7 +143,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.contactsParameters_department'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -154,7 +154,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.email'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: true,
             filling: false,
@@ -165,7 +165,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.phoneNumber'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: true,
             filling: false,
@@ -176,7 +176,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'mainInfo',
             label: this.translate.instant('lang.note'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -187,7 +187,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressAdditional1'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -198,7 +198,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressNumber'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -209,7 +209,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressStreet'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -220,7 +220,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressAdditional2'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -231,7 +231,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressPostcode'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -242,7 +242,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressTown'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -253,7 +253,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_addressCountry'),
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -264,7 +264,7 @@ export class ContactsFormComponent implements OnInit {
             unit: 'address',
             label: this.translate.instant('lang.contactsParameters_sector'),
             type: 'string',
-            control: new FormControl({ value: '', disabled: true }),
+            control: new UntypedFormControl({ value: '', disabled: true }),
             required: false,
             display: false,
             filling: false,
@@ -276,7 +276,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.communicationMean'),
             desc: `${this.translate.instant('lang.communicationMeanDesc')} (${this.translate.instant('lang.see')} <a href="${this.maarch2maarchUrl}" target="_blank">MAARCH2MAARCH</a>)`,
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -288,7 +288,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.IdMaarch2Maarch'),
             desc: `${this.translate.instant('lang.m2mContactInfo')} (${this.translate.instant('lang.see')} <a href="${this.maarch2maarchUrl}" target="_blank">MAARCH2MAARCH</a>)`,
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -300,7 +300,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.userIdMaarch2Maarch'),
             desc: `${this.translate.instant('lang.userIdMaarch2MaarchDesc')}`,
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -312,7 +312,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.userPasswordMaarch2Maarch'),
             desc: `${this.translate.instant('lang.userPasswordMaarch2MaarchDesc')}`,
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -324,7 +324,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.email'),
             desc: `${this.translate.instant('lang.m2mEmailDesc')}`,
             type: 'string',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: false,
             filling: false,
@@ -336,7 +336,7 @@ export class ContactsFormComponent implements OnInit {
             label: this.translate.instant('lang.correspondentsGroups'),
             desc: this.translate.instant('lang.correspondentsGroups'),
             type: 'correspondentsGroups',
-            control: new FormControl(),
+            control: new UntypedFormControl(),
             required: false,
             display: true,
             filling: false,
@@ -347,7 +347,7 @@ export class ContactsFormComponent implements OnInit {
 
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
-    addressBANControl = new FormControl();
+    addressBANControl = new UntypedFormControl();
     addressBANLoading: boolean = false;
     addressBANResult: any[] = [];
     addressBANFilteredResult: Observable<string[]>;
@@ -505,7 +505,7 @@ export class ContactsFormComponent implements OnInit {
                     unit: 'complement',
                     label: null,
                     type: null,
-                    control: new FormControl(),
+                    control: new UntypedFormControl(),
                     required: false,
                     display: false,
                     values: []
@@ -664,7 +664,7 @@ export class ContactsFormComponent implements OnInit {
                             unit: 'maarch2maarch',
                             label: id,
                             type: 'string',
-                            control: new FormControl({ value: data.externalId[id], disabled: true }),
+                            control: new UntypedFormControl({ value: data.externalId[id], disabled: true }),
                             required: false,
                             display: true,
                             filling: false,
@@ -676,7 +676,7 @@ export class ContactsFormComponent implements OnInit {
                             unit: 'complement',
                             label: id,
                             type: 'string',
-                            control: new FormControl({ value: data.externalId[id], disabled: true }),
+                            control: new UntypedFormControl({ value: data.externalId[id], disabled: true }),
                             required: false,
                             display: true,
                             filling: false,
@@ -834,7 +834,7 @@ export class ContactsFormComponent implements OnInit {
 
     initForm() {
         this.contactForm.forEach(element => {
-            element.control = new FormControl({ value: '', disabled: false });
+            element.control = new UntypedFormControl({ value: '', disabled: false });
         });
     }
 
@@ -1085,7 +1085,7 @@ export class ContactsFormComponent implements OnInit {
                 unit: 'maarch2maarch',
                 label: 'm2m_annuary_id',
                 type: 'string',
-                control: new FormControl({ value: '', disabled: true }),
+                control: new UntypedFormControl({ value: '', disabled: true }),
                 required: false,
                 display: true,
                 filling: false,

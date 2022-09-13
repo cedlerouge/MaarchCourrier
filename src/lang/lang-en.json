@@ -2649,8 +2649,18 @@
     "allDoctypesDesc": "This option enabled automatically adds new types to the list below",
     "notifTargetDesc": "The <i>[res_letterbox.linktodetail], [res_letterbox.linktodoc]</i> and <i>[res_letterbox.linktoprocess]</i> merge variables require the <br> application URL to be filled in : <b>Administration -> Settings -> Personalization -> Application URL</b>",
     "separatorsEmail": "To separate email addresses, use \",\" or \";\"",
-    "cannotAccessPage": "Cannot access the page",
     "systemType": "System type",
     "signedByDefault_attachment": "Associate the «Signed» status",
-    "signedByDefault_attachmentDesc": "When creating/modifying, the attachment automatically takes on the signed status"
+    "signedByDefault_attachmentDesc": "When creating/modifying, the attachment automatically takes on the signed status",
+    "cannotAccessPage": "Cannot access page",
+    "sortBy": "Sort by",
+    "showInformationsBlock": "Show information block",
+    "hideInformationsBlock": "Hide information block",
+    "processDelayEnabled": "Process delay enabled",
+    "processDelayDisabled": "Process delay disabled",
+    "disableProcessDelayDesc": "This type of document is no longer taken into account for the calculation of the process limit date",
+    "nextRes": "Next mail",
+    "previousRes": "Previous mail",
+    "canGoToNextRes": "Move to next mail when action is complete",
+    "canGoToNextResDesc": "Activating this option saves this choice in your session"
 }

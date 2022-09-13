@@ -79,6 +79,4 @@ ALTER SEQUENCE shippings_id_seq restart WITH 1;
 
 
 /* reset chrono */
-UPDATE parameters SET param_value_int = '1' WHERE id = 'chrono_outgoing_' || extract(YEAR FROM current_date);
-UPDATE parameters SET param_value_int = '1' WHERE id = 'chrono_incoming_' || extract(YEAR FROM current_date);
-UPDATE parameters SET param_value_int = '1' WHERE id = 'chrono_internal_' || extract(YEAR FROM current_date);
+SELECT reset_chronos();

@@ -11,7 +11,7 @@ import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
 import { PrivilegeService } from '@service/privileges.service';
 import { SortPipe } from '@plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
     templateUrl: 'tile-create.component.html',
@@ -29,10 +29,10 @@ export class TileCreateComponent implements OnInit {
     chartTypes: any[] = [];
     chartModes: any[] = [];
     searchTemplates: any[] = [];
-    searchTemplatesControl: FormControl = new FormControl();
+    searchTemplatesControl: UntypedFormControl = new UntypedFormControl();
 
     menus: any[] = [];
-    menusControl: FormControl = new FormControl();
+    menusControl: UntypedFormControl = new UntypedFormControl();
 
     position: string = null;
     tileLabel: string = null;

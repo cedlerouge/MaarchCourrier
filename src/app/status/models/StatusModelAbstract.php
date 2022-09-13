@@ -68,6 +68,34 @@ abstract class StatusModelAbstract
         return $aReturn;
     }
 
+    public static function getByResId(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['resId', 'collId']);
+        ValidatorModel::intVal($args, ['resId']);
+        ValidatorModel::stringType($args, ['collId']);
+
+        $joinTable = $args['collId'] == 'attachments_coll' ? 'res_attachments' : 'res_letterbox';
+
+        $select = empty($args['select']) ? ['*'] : $args['select'];
+        foreach ($select as $key => $val) {
+            $select[$key] = 'status.' . trim($val);
+        }
+
+        $status = DatabaseModel::select([
+            'select'    => $select,
+            'table'     => ['status', $joinTable . ' AS r'],
+            'left_join' => ['status.id = r.status'],
+            'where'     => ['r.res_id = ?'],
+            'data'      => [$args['resId']]
+        ]);
+
+        if (empty($status[0])) {
+            return [];
+        }
+
+        return $status[0];
+    }
+
     public static function create(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'label_status']);

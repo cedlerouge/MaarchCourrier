@@ -23,6 +23,9 @@ use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\TextFormatModel;
+use Slim\Http\Request;
+use Slim\Http\Response;
+use SrcCore\models\CoreConfigModel;
 
 /**
     * @codeCoverageIgnore
@@ -31,38 +34,11 @@ class IxbusController
 {
     public static function getInitializeDatas($config)
     {
-        $natures = IxbusController::getNature(['config' => $config]);
-        if (!empty($natures['error'])) {
-            return ['error' => $natures['error']];
-        }
-
-        $rawResponse['natures']       = $natures['natures'];
-        $rawResponse['messagesModel'] = [];
-
-        foreach ($natures['natures'] as $nature) {
-            $messagesModels = IxbusController::getMessagesModel(['config' => $config, 'natureId' => $nature['identifiant']]);
-            if (!empty($messagesModels['error'])) {
-                return ['error' => $messagesModels['error']];
-            }
-            $rawResponse['messagesModel'][$nature['identifiant']] = $messagesModels['messageModels'];
-
-            $users = IxbusController::getNatureUsers(['config' => $config, 'natureId' => $nature['identifiant']]);
-            if (!empty($users['error'])) {
-                return ['error' => $users['error']];
-            }
-            $rawResponse['users'][$nature['identifiant']] = $users['users'];
-        }
-
-        return $rawResponse;
-    }
-
-    public static function getNature($aArgs)
-    {
         $curlResponse = CurlModel::exec([
-                'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/nature',
-                'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
-                'method'  => 'GET'
-            ]);
+            'url'     => rtrim($config['data']['url'], '/') . '/api/parapheur/v1/nature',
+            'headers' => ['IXBUS_API:' . $config['data']['tokenAPI']],
+            'method'  => 'GET'
+        ]);
 
         if (!empty($curlResponse['response']['error'])) {
             return ['error' => $curlResponse['message']];
@@ -74,38 +50,56 @@ class IxbusController
         return ['natures' => $curlResponse['response']['payload']];
     }
 
-    public static function getMessagesModel($aArgs)
+    public function getNatureDetails(Request $request, Response $response, array $args)
     {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return $response->withStatus(500)->withJson(['errors' => 'remote signatory book: no configuration file found']);
+        }
+        $config = ['id' => (string)$loadedXml->signatoryBookEnabled];
+        if ($config['id'] != 'ixbus') {
+            return $response->withStatus(400)->withJson(['errors' => 'ixbus is disabled']);
+        }
+        foreach ($loadedXml->signatoryBook as $value) {
+            if ($value->id == $config['id']) {
+                $config['data'] = (array)$value;
+                break;
+            }
+        }
+        if (empty($config['data']['url'])) {
+            return $response->withStatus(500)->withJson(['errors' => 'no ixbus url configured']);
+        }
+
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/circuit/' . $aArgs['natureId'],
-            'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
-            'method'  => 'GET'
+            'method'  => 'GET',
+            'url'     => rtrim($config['data']['url'], '/') . '/api/parapheur/v1/circuit/' . $args['natureId'],
+            'headers' => ['IXBUS_API:' . $config['data']['tokenAPI']]
         ]);
 
-        if (!empty($curlResponse['response']['error'])) {
-            return ['error' => $curlResponse['message']];
+        if (empty($curlResponse['response']['payload']) || !empty($curlResponse['response']['error'])) {
+            return $response->withStatus(500)->withJson(['errors' => $curlResponse['message'] ?? "HTTP {$curlResponse['code']} while contacting ixbus"]);
         }
 
         foreach ($curlResponse['response']['payload'] as $key => $value) {
             unset($curlResponse['response']['payload'][$key]['etapes']);
             unset($curlResponse['response']['payload'][$key]['options']);
         }
-        return ['messageModels' => $curlResponse['response']['payload']];
-    }
 
-    public static function getNatureUsers($aArgs)
-    {
+        $return = ['messageModels' => $curlResponse['response']['payload']];
+
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/nature/' . $aArgs['natureId'] . '/redacteur',
-            'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'url'     => rtrim($config['data']['url'], '/') . '/api/parapheur/v1/nature/' . $args['natureId'] . '/redacteur',
+            'headers' => ['IXBUS_API:' . $config['data']['tokenAPI']],
             'method'  => 'GET'
         ]);
 
-        if (!empty($curlResponse['response']['error'])) {
-            return ['error' => $curlResponse['message']];
+        if (empty($curlResponse['response']['payload']) || !empty($curlResponse['response']['error'])) {
+            return $response->withStatus(500)->withJson(['errors' => $curlResponse['message'] ?? "HTTP {$curlResponse['code']} while contacting ixbus"]);
         }
 
-        return ['users' => $curlResponse['response']['payload']];
+        $return['users'] = $curlResponse['response']['payload'];
+
+        return $response->withJson($return);
     }
 
     public static function sendDatas($aArgs)
