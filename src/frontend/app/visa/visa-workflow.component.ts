@@ -58,6 +58,8 @@ export class VisaWorkflowComponent implements OnInit {
 
     loadedInConstructor: boolean = false;
 
+    workflowSignatoryRole: string;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -89,6 +91,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.checkWorkflowSignatoryRole();
         if (!this.functions.empty(this.resId) && !this.loadedInConstructor) {
             // this.initFilterVisaModelList();
             this.loadWorkflow(this.resId);
@@ -463,8 +466,12 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     isValidWorkflow() {
-        if ((this.visaWorkflow.items.filter((item: any) => item.requested_signature).length > 0 && this.visaWorkflow.items.filter((item: any) => (!item.hasPrivilege || !item.isValid) && (item.process_date === null || this.functions.empty(item.process_date))).length === 0) && this.visaWorkflow.items.length > 0) {
-            return true;
+        if ((this.visaWorkflow.items.filter((item: any) => (!item.hasPrivilege || !item.isValid) && (item.process_date === null || this.functions.empty(item.process_date))).length === 0) && this.visaWorkflow.items.length > 0) {
+            if (this.workflowSignatoryRole === 'optional') {
+                return true;
+            } else {
+                return this.visaWorkflow.items.filter((item: any) => item.requested_signature).length > 0;
+            }
         } else {
             return false;
         }
@@ -568,6 +575,20 @@ export class VisaWorkflowComponent implements OnInit {
         }
 
         return source.includes(search);
+    }
+
+    checkWorkflowSignatoryRole() {
+        this.http.get('../rest/parameters/workflowSignatoryRole').pipe(
+            tap((data: any) => {
+                if (!this.functions.empty(data.parameter)) {
+                    this.workflowSignatoryRole = data.parameter.param_value_string;
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     private _filter(value: string): string[] {

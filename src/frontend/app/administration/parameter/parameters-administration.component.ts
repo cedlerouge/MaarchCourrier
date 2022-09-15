@@ -30,7 +30,7 @@ export class ParametersAdministrationComponent implements OnInit {
     filterColumns = ['id', 'description', 'value'];
 
     hiddenParameters = ['homepage_message', 'loginpage_message', 'traffic_record_summary_sheet', 'bindingDocumentFinalAction',
-        'nonBindingDocumentFinalAction', 'minimumVisaRole', 'maximumSignRole', 'workflowEndBySignatory'];
+        'nonBindingDocumentFinalAction', 'minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole'];
 
     constructor(
         public translate: TranslateService,
