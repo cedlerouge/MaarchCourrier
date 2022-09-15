@@ -2658,5 +2658,9 @@
     "canGoToNextResDesc": "L'activation de cette option permet de sauvegarder ce choix dans votre session",
     "processDelayEnabled": "Délai de traitement activé",
     "processDelayDisabled": "Délai de traitement désactivé",
-    "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement"
+    "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement",
+    "quickSearchTargets": "Cible de la recherche rapide",
+    "defaultQuickSearch": "Objet, N° chrono...",
+    "searchBySender": "Rechercher par expéditeur",
+    "searchByRecipient": "Rechercher par destinataire"
 }

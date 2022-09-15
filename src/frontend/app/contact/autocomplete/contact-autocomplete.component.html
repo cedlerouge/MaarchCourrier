@@ -6,7 +6,7 @@
         <input [id]="id" type="text" #autoCompleteInput [placeholder]="'lang.searchContact' | translate" matInput [formControl]="myControl"
             [matAutocomplete]="auto" (click)="$event.stopPropagation();noResultFound = null;" maxlength="128">
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectOpt($event)">
-            <ng-container *ngIf="options.length > 0 && !loading">
+            <ng-container *ngIf="options?.length > 0 && !loading">
                 <mat-option [id]="id + '-' + option.id" *ngFor="let option of filteredOptions | async" [value]="option">
                     <mat-card>
                         <mat-card-header class="contact-header">
@@ -95,14 +95,14 @@
                     </mat-card>
                 </mat-option>
             </ng-container>
-            <mat-option class="autoCompleteInfoResult smallInputInfo" *ngIf="options.length === 0 && !loading" disabled
+            <mat-option class="autoCompleteInfoResult smallInputInfo" *ngIf="options?.length === 0 && !loading" disabled
                 [innerHTML]="listInfo">
             </mat-option>
             <mat-option *ngIf="loading" disabled style="text-align: center;display: block;padding: 10px;">
                 <mat-spinner diameter="20"></mat-spinner>
             </mat-option>
             <div class="autoCompleteInfoResult smallInputInfo create-contact"
-                *ngIf="canAdd && (noResultFound !== null || options.length > 0) && !loading && !fromExternalWorkflow" disabled>
+                *ngIf="canAdd && (noResultFound !== null || options?.length > 0) && !loading && !fromExternalWorkflow" disabled>
                 <a style="cursor: pointer;" (click)="$event.stopPropagation();openContact()">
                     <mat-icon matSuffix class="fas fa-plus-circle" style="padding-top: 5px"></mat-icon>
                     {{'lang.createContact' | translate}}

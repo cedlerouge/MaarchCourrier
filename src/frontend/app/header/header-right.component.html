@@ -1,11 +1,23 @@
 <div class="bg-head-title-tool">
-    <form *ngIf="hideSearchBar()" (ngSubmit)="goTo()" #criteriaFormUp="ngForm">
+    <form *ngIf="hideSearchBar()" (ngSubmit)="goTo()" #criteriaFormUp="ngForm" style="margin-right: 10px; width: 100%">
         <mat-form-field floatLabel="never" class="basket-search">
-            <input class="metaSearch" type="text" matInput
-                [placeholder]="'lang.searchMails' | translate" name="searchTarget" [(ngModel)]="searchTarget">
-            <button mat-icon-button type="submit" matPrefix [title]="'lang.quickSearchTarget' | translate">
+            <button mat-icon-button style="margin-right: 10px;" type="submit" matSuffix>
                 <mat-icon class="fas fa-search"></mat-icon>
             </button>
+            <input class="metaSearch" type="text" matInput
+                [placeholder]="(selectedQuickSearchTarget === 'searchTerm' ? 'lang.searchMails' : getTargetDesc()) | translate" name="searchTarget" [(ngModel)]="searchTarget">
+            <button type="button" color="primary" mat-icon-button matPrefix [matMenuTriggerFor]="target" *ngIf="!appService.getViewMode()" [title]="getTargetDesc()">
+                <mat-icon [class]="getTargetIcon()" style="font-size: 15px; margin-bottom: 2px;"></mat-icon>
+            </button>
+            <mat-menu #target="matMenu" class="headerMaarchShortcut">
+                <ng-container *ngFor="let target of quickSearchTargets">
+                    <button type="button" [title]="target.desc" (click)="selectedQuickSearchTarget = target.id" style="height: 100px;line-height:20px;"
+                        class="col-md-4 col-xs-6" [class.isSelected]="target.id === selectedQuickSearchTarget" mat-button color="primary">
+                        <mat-icon [class]="target.icon" style="margin-bottom: 5px;"></mat-icon>
+                        <br />{{target.label | translate}}
+                    </button>
+                </ng-container>
+            </mat-menu>
         </mat-form-field>
     </form>
 

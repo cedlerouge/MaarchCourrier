@@ -30,6 +30,29 @@ export class HeaderRightComponent implements OnInit {
 
     hideSearch: boolean = true;
 
+    quickSearchTargets: any[] = [
+        {
+            id: 'searchTerm',
+            label: this.translate.instant('lang.defaultQuickSearch'),
+            desc: this.translate.instant('lang.quickSearchTarget'),
+            icon: 'fas fa-inbox fa-2x',
+        },
+        {
+            id: 'recipients',
+            label: this.translate.instant('lang.recipient'),
+            desc: this.translate.instant('lang.searchByRecipient'),
+            icon: 'fas fa-user fa-2x',
+        },
+        {
+            id: 'senders',
+            label: this.translate.instant('lang.sender'),
+            desc: this.translate.instant('lang.searchBySender'),
+            icon: 'fas fa-address-book fa-2x',
+        }
+    ];
+
+    selectedQuickSearchTarget: string = 'searchTerm';
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -87,10 +110,18 @@ export class HeaderRightComponent implements OnInit {
     }
 
     goTo() {
-        this.router.navigate(['/search'], { queryParams: { value: this.searchTarget } });
+        this.router.navigate(['/search'], { queryParams: { target: this.selectedQuickSearchTarget, value: this.searchTarget } });
     }
 
     openAboutModal() {
         this.dialog.open(AboutUsComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: false });
+    }
+
+    getTargetDesc(): string {
+        return this.quickSearchTargets.find((item: any) => item.id === this.selectedQuickSearchTarget).desc;
+    }
+
+    getTargetIcon(): string {
+        return this.quickSearchTargets.find((item: any) => item.id === this.selectedQuickSearchTarget).icon;
     }
 }
