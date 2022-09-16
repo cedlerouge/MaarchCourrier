@@ -12,6 +12,7 @@ import { FunctionsService } from '@service/functions.service';
 import { AuthService } from '@service/auth.service';
 import { RegisteredMailImportComponent } from '@appRoot/registeredMail/import/registered-mail-import.component';
 import { AboutUsComponent } from '@appRoot/about-us.component';
+import { LocalStorageService } from '@service/local-storage.service';
 
 
 @Component({
@@ -62,10 +63,15 @@ export class HeaderRightComponent implements OnInit {
         public appService: AppService,
         public headerService: HeaderService,
         public functions: FunctionsService,
-        public privilegeService: PrivilegeService) { }
+        public privilegeService: PrivilegeService,
+        private localStorage: LocalStorageService
+    ) { }
 
     ngOnInit(): void {
         this.menus = this.privilegeService.getCurrentUserMenus();
+        if (!this.functions.empty(this.localStorage.get('quickSearchTarget'))) {
+            this.selectedQuickSearchTarget = this.localStorage.get('quickSearchTarget');
+        }
     }
 
     gotToMenu(shortcut: any) {
@@ -115,6 +121,11 @@ export class HeaderRightComponent implements OnInit {
 
     openAboutModal() {
         this.dialog.open(AboutUsComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: false });
+    }
+
+    setTarget(id: string) {
+        this.selectedQuickSearchTarget = id;
+        this.localStorage.save('quickSearchTarget', this.selectedQuickSearchTarget);
     }
 
     getTargetDesc(): string {
