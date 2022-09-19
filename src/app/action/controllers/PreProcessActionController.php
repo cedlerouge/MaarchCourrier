@@ -1595,7 +1595,7 @@ class PreProcessActionController
 
                 foreach ($fillRequiredFields as $fillRequiredField) {
                     $idCustom = explode("_", $fillRequiredField['id'])[1];
-                    if (in_array($fillRequiredField['id'], $modelFields) && array_key_exists($idCustom, $resourceCustomFields)) {
+                    if (in_array($fillRequiredField['id'], $modelFields)) {
                         $customIdList[] = $idCustom;
                     }
                 }

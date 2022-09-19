@@ -381,14 +381,21 @@ class ActionController
             $fillRequiredFieldMapping = [];
             $fillRequiredFields = $args['fillRequiredFields'];
 
-            $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['custom_fields']]);
+            $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['custom_fields', 'model_id']]);
+            $model = $resource['model_id'];
             $resourceCustomFields = json_decode($resource['custom_fields'], true);
+            $modelFields = IndexingModelFieldModel::get([
+                'select' => ['identifier'],
+                'where'  => ['model_id = ?', "identifier LIKE 'indexingCustomField_%'"],
+                'data'   => [$model]
+            ]);
+            $modelFields = array_column($modelFields, 'identifier');
 
             foreach($fillRequiredFields as $fillRequiredFieldItem) {
                 $idCustom = explode("_", $fillRequiredFieldItem['id'])[1];
                 $customFieldModel = CustomFieldModel::get(['select' => ['label'],'where' => ['id = ?'],'data' => [$idCustom]]);
 
-                if (!empty($customFieldModel) && array_key_exists($idCustom, $resourceCustomFields) && !empty($fillRequiredFieldItem['value'])) {
+                if (!empty($customFieldModel) && in_array($fillRequiredFieldItem['id'], $modelFields) && !empty($fillRequiredFieldItem['value'])) {
                     $resourceCustomFields[$idCustom] = $fillRequiredFieldItem['value'];
                     if ($fillRequiredFieldItem['value'] === '_TODAY') {
                         $resourceCustomFields[$idCustom] = date('Y-m-d');
