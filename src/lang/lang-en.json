@@ -2661,6 +2661,6 @@
     "canGoToNextRes": "Move to next mail when action is complete",
     "canGoToNextResDesc": "Activating this option saves this choice in your session",
     "fieldsToUpdate": "Custom fields to update after action execution",
-    "updateFieldsForMail": "In this mail the fields to be updated by this action will be modified",
-    "updateFieldsForMails": "The fields to be updated in these mails will be modified by this action"
+    "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.",
+    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action."
 }

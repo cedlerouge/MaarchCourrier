@@ -15,7 +15,7 @@
                     </ul>
                 </div>
                 <div *ngIf="data.resIds.length < 2" class="alert-message alert-message-info mailList" role="alert">
-                    <p>{{'lang.updateFieldsForMail' | translate}} : {{fillMandatoryFields[0].fields}}</p>
+                    <p [innerHTML]="'lang.updateFieldsForMail' | translate : {fields : fillMandatoryFields[0].fields}"></p>
                 </div>
             </div>
             <div class="col-md-12">

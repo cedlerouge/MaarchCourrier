@@ -2211,6 +2211,6 @@
     "docserverDocumentNotReadable": "Fichier illisible sur l’espace de stockage__TO_TRANSLATE",
     "soapClientCreationError": "Erreur de lancement de la communication SOAP__TO_TRANSLATE",
     "fieldsToUpdate": "Custom fields to update after action execution__TO_TRANSLATE",
-    "updateFieldsForMail": "In this mail the fields to be updated by this action will be modified__TO_TRANSLATE",
-    "updateFieldsForMails": "The fields to be updated in these mails will be modified by this action__TO_TRANSLATE"
+    "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.__TO_TRANSLATE",
+    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.__TO_TRANSLATE"
 }
