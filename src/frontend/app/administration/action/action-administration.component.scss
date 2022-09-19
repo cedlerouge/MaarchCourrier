@@ -1,4 +1,4 @@
-.input-form {
+.action-admin-input-form {
     font-size: 13px;
     color: #666;
     width: 400px;
@@ -10,10 +10,10 @@
         padding-left: 10px;
     }
 
-    // input {
-    //     padding-left: 20px;
-    //     padding-right: 20px;
-    // }
+    input {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 
     ::ng-deep.mat-select-value-text {
         padding-left: 20px;
@@ -22,7 +22,7 @@
 
     ::ng-deep.mat-form-field-label {
         top: 15px;
-        left: 20px;
+        left: 30px;
     }
 
     ::ng-deep.mat-form-field-infix {
@@ -66,20 +66,12 @@
         padding: 0px;
     }
 
-    /*textarea.cdk-textarea-autosize-measuring {
-        padding: 4px 0 !important;
-    }*/
-
     ::ng-deep.mat-datepicker-toggle-default-icon {
         height: auto;
     }
 }
 
-.input-form.input-select {
-
-}
-
-.input-form.input-date {
+.action-admin-input-form.input-date {
     ::ng-deep.mat-form-field-flex {
         align-items: center;
 
@@ -91,12 +83,9 @@
     ::ng-deep.mat-date-range-input-inner {
         color: var(--maarch-color-primary);
     }
-    /*::ng-deep.mat-form-field-infix {
-        padding-top: 5px;
-    }*/
 }
 
-.radio-form {
+.action-admin-radio-form {
     padding-left: 20px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -116,7 +105,7 @@
     }
 }
 
-.checkbox-form {
+.action-admin-checkbox-form {
     width: 100%;
     padding: 0px;
     border: solid 1px var(--maarch-color-primary);
@@ -124,10 +113,8 @@
     overflow: hidden;
 }
 
-.checkbox-selected-list {
+.action-admin-checkbox-selected-list {
     margin-top: 10px;
-    // display: flex;
-    // justify-content: center;
 
     ::ng-deep.mat-chip-list-wrapper {   
         justify-content: center;
@@ -144,8 +131,12 @@
     }
 }
 
-.contact-form {
+.action-admin-contact-form {
     width: 100%;
     padding: 0px;
     overflow: hidden;
+}
+
+.action-admin-banauto-form {
+    width: 100%;
 }

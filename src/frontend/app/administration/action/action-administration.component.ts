@@ -34,9 +34,13 @@ export class ActionAdministrationComponent implements OnInit {
     loading: boolean = false;
     availableCustomFields: Array<any> = [];
     customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
-
     selectedFieldsValue: Array<any> = [];
+    selectedFieldsId: Array<any> = [];
+
+    availableFillCustomFields: Array<any> = [];
+    fillcustomFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
     selectedFieldItems = {selectedFieldsId: [], selectedFieldsValue: []};
+
 
     selectedValue: any;
     arMode: any;
@@ -72,7 +76,7 @@ export class ActionAdministrationComponent implements OnInit {
                 this.creationMode = true;
 
                 this.http.get('../rest/initAction')
-                    .subscribe((data: any) => {
+                    .subscribe(async (data: any) => {
                         this.action = data.action;
                         this.action.actionPageId = 'confirm_status';
                         this.selectActionPageId.setValue('confirm_status');
@@ -93,6 +97,7 @@ export class ActionAdministrationComponent implements OnInit {
 
                         this.keywordsList = data.keywordsList;
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'));
+                        await this.getCustomFields();
                         this.loading = false;
                     });
             } else {
@@ -121,7 +126,35 @@ export class ActionAdministrationComponent implements OnInit {
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'), data.action.label_action);
                         await this.getCustomFields();
                         this.loading = false;
-                        if (this.action.actionPageId === 'close_mail') {
+                        if (this.action.actionPageId === 'confirm_status') {
+                            this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.fillRequiredFields, disabled: false });
+                            this.selectedFieldItems.selectedFieldsId = [];
+                            if (this.action.parameters.fillRequiredFields) {
+                                this.selectedFieldItems.selectedFieldsId = this.action.parameters.fillRequiredFields;
+                            }
+                            this.selectedFieldItems.selectedFieldsId.forEach((element: any) => {
+                                this.availableFillCustomFields.forEach((availableElement: any) => {
+                                    if (availableElement.id === element.id) {
+                                        availableElement.selectedValues = this.functions.empty(element.value) ? null : element.value;
+
+                                        if (availableElement.type === 'date' && !this.functions.empty(element.value)) {
+                                            if (element.value === '_TODAY') {
+                                                availableElement.today = true;
+                                                availableElement.selectedValues = new Date();
+                                            } else if (this.functions.formatDateObjectToDateString(new Date()) === this.functions.formatDateObjectToDateString(new Date(element.value))) {
+                                                availableElement.today = true;
+                                            } else{
+                                                availableElement.today = false;
+                                            }
+                                        } else if (['contact', 'banAutocomplete'].includes(availableElement.type)) {
+                                            availableElement.formControl = new UntypedFormControl({ value: element.value, disabled: false });
+                                        }
+
+                                        this.selectedFieldItems.selectedFieldsValue.push(availableElement);
+                                    }
+                                });
+                            });
+                        } else if (this.action.actionPageId === 'close_mail') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.requiredFields, disabled: false });
 
                             this.selectedFieldItems.selectedFieldsId = [];
@@ -135,7 +168,7 @@ export class ActionAdministrationComponent implements OnInit {
                                         availableElement.selectedValues = this.functions.empty(element.value) ? null : element.value;
 
                                         if (availableElement.type === 'date' && !this.functions.empty(element.value)) {
-                                            if (this.functions.formatDateObjectToDateString(new Date()) == this.functions.formatDateObjectToDateString(new Date(element.value))) {
+                                            if (this.functions.formatDateObjectToDateString(new Date()) === this.functions.formatDateObjectToDateString(new Date(element.value))) {
                                                 availableElement.today = true;
                                             } else{
                                                 availableElement.today = false;
@@ -176,13 +209,20 @@ export class ActionAdministrationComponent implements OnInit {
         }
 
         return new Promise((resolve) => {
-            if (this.action.actionPageId === 'close_mail' && this.functions.empty(this.availableCustomFields)) {
+            if (['confirm_status', 'close_mail'].includes(this.action.actionPageId)) {
                 this.http.get('../rest/customFields').pipe(
                     tap((data: any) => {
-                        this.availableCustomFields = data.customFields.map((info: any) => {
-                            info.id = 'indexingCustomField_' + info.id;
-                            return info;
-                        });
+                        if (this.action.actionPageId === 'confirm_status' && this.functions.empty(this.availableFillCustomFields)) {
+                            this.availableFillCustomFields = data.customFields.map((info: any) => {
+                                info.id = 'indexingCustomField_' + info.id;
+                                return info;
+                            });
+                        } else if (this.action.actionPageId === 'close_mail' && this.functions.empty(this.availableCustomFields)) {
+                            this.availableCustomFields = data.customFields.map((info: any) => {
+                                info.id = 'indexingCustomField_' + info.id;
+                                return info;
+                            });
+                        }
                         return resolve(true);
                     }),
                     catchError((err: any) => {
@@ -206,18 +246,35 @@ export class ActionAdministrationComponent implements OnInit {
                 this.selectedValue = element;
             }
         });
+        if (this.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
+            this.selectedFieldsValue.push(this.selectedValue.label);
+            this.selectedFieldsId.push(this.customFieldsFormControl.value);
+        }
+        this.customFieldsFormControl.reset();
+    }
 
-        if (this.selectedFieldItems.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
+    /**
+     * @description Add selected custom field to selectedFieldItems.selectedFieldsValue and selectedFieldItems.selectedFieldsId list
+     */
+    getSelectedFieldsToFill() {
+        this.availableFillCustomFields.forEach((element: any) => {
+            if (element.id === this.fillcustomFieldsFormControl.value) {
+                this.selectedValue = element;
+            }
+        });
+
+        const checkField = this.selectedFieldItems.selectedFieldsId.find((field: any) => field.id === this.fillcustomFieldsFormControl.value);
+        if (this.functions.empty(checkField) && this.selectedFieldItems.selectedFieldsId.indexOf(this.fillcustomFieldsFormControl.value) < 0 ) {
             this.selectedValue.selectedValues = null;
             if (this.selectedValue.type === 'date') {
                 this.selectedValue.today = false;
             } else if (['contact', 'banAutocomplete'].includes(this.selectedValue.type)) {
-                this.selectedValue.untypedFormControl = new UntypedFormControl({ value: this.selectedValue.selectedValues, disabled: false });
+                this.selectedValue.formControl = new UntypedFormControl({ value: this.selectedValue.selectedValues, disabled: false });
             }
             this.selectedFieldItems.selectedFieldsValue.push(this.selectedValue);
-            this.selectedFieldItems.selectedFieldsId.push(this.customFieldsFormControl);
+            this.selectedFieldItems.selectedFieldsId.push(this.fillcustomFieldsFormControl.value);
         }
-        this.customFieldsFormControl.reset();
+        this.fillcustomFieldsFormControl.reset();
     }
 
     /**
@@ -225,15 +282,26 @@ export class ActionAdministrationComponent implements OnInit {
      * @param index custom fields position in selectedFieldsValue
      */
     removeSelectedFields(index: number) {
-        this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
-        this.selectedFieldItems.selectedFieldsId.splice(index, 1);
+        this.selectedFieldsValue.splice(index, 1);
+        this.selectedFieldsId.splice(index, 1);
+    }
+
+    /**
+     * @description Remove custom fields
+     * @param index custom fields position in selectedFieldItems.selectedFieldsValue
+     */
+    removeSelectedFieldsToFill(index: number) {
+        if (this.action.actionPageId === 'confirm_status') {
+            this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
+            this.selectedFieldItems.selectedFieldsId.splice(index, 1);
+        }
     }
 
     /**
      * @description Set date for today or not
      * @param fieldItemValue Date field object
      */
-     toggleTodayDate(fieldItemValue: any) {
+    toggleTodayDate(fieldItemValue: any) {
         fieldItemValue.today = !fieldItemValue.today;
         if (fieldItemValue.today) {
             fieldItemValue.selectedValues = new Date();
@@ -243,14 +311,28 @@ export class ActionAdministrationComponent implements OnInit {
     }
 
     /**
+     * @description Change date event
+     * @param changedDate
+     * @param fieldItemValue
+     */
+    onDateChange(changedDate: any, fieldItemValue: any) {
+        const currentDate = fieldItemValue.selectedValues;
+        fieldItemValue.today = false;
+        fieldItemValue.selectedValues = changedDate.value;
+        if (this.functions.formatDateObjectToDateString(new Date(changedDate.value)) === this.functions.formatDateObjectToDateString(new Date(currentDate))) {
+            fieldItemValue.today = true;
+        }
+    }
+
+    /**
      * @description Rest selectedValues from selectedFieldsValue
      * @param fieldItemValue Field object
-     * @param position Position from selectedFieldsValue 
+     * @param position Position from selectedFieldsValue
      */
     resetFieldItemValue(fieldItemValue: any, position: any) {
         const field = this.selectedFieldItems.selectedFieldsValue[position];
         field.selectedValues = null;
-        if (fieldItemValue.type === "date" && field.today !== undefined) {
+        if (fieldItemValue.type === 'date' && field.today !== undefined) {
             field.today = false;
         }
     }
@@ -258,10 +340,10 @@ export class ActionAdministrationComponent implements OnInit {
     /**
      * @description Get label from an array
      * @param selectedLabel selected label
-     * @param fieldItemValues List of values 
+     * @param fieldItemValues List of values
      * @returns Labels
      */
-     getCheckboxListLabel(selectedLabel: any, fieldItemValues: any) {
+    getCheckboxListLabel(selectedLabel: any, fieldItemValues: any) {
         return fieldItemValues.filter((item: any) => item.label === selectedLabel)[0].label;
     }
 
@@ -270,7 +352,7 @@ export class ActionAdministrationComponent implements OnInit {
      * @param contact User or Entity object
      * @param fieldItemValue Contact field object
      */
-     selectedContact(contact: any, fieldItemValue: any) {
+    selectedContact(contact: any, fieldItemValue: any) {
         const arrInfo = [];
         arrInfo.push(contact.firstname);
         arrInfo.push(contact.lastname);
@@ -299,15 +381,6 @@ export class ActionAdministrationComponent implements OnInit {
     }
 
     /**
-     * @description Add selected Ban address
-     * @param addressBan Selected address
-     * @param fieldItemValue Address Auto Complete field
-     */
-    selectedAddressBan(addressBan: any, fieldItemValue: any) {
-        fieldItemValue.selectedValues = [addressBan];
-    }
-
-    /**
      * @description Remove Ban address
      * @param addressBanId Number
      * @param fieldItemValue Address Ban field object
@@ -321,17 +394,31 @@ export class ActionAdministrationComponent implements OnInit {
     }
 
     /**
-     * @description Map action object before API create/update call. 
+     * @description check if custom field values aren't empty
+     */
+    checkCurrentFieldValue() {
+        if (!this.functions.empty(this.selectedFieldItems.selectedFieldsValue)) {
+            const fieldsAreEmpty = this.selectedFieldItems.selectedFieldsValue.filter(item => this.functions.empty(item.selectedValues));
+            return this.functions.empty(fieldsAreEmpty);
+        }
+        return true;
+    }
+
+    /**
+     * @description Map action object before API create/update call.
      */
     onSubmit() {
-        if (this.action.actionPageId === 'close_mail') {
-            const requiredFieldList = [];
+        if (this.action.actionPageId === 'confirm_status') {
+            const fillRequiredFields = [];
             this.selectedFieldItems.selectedFieldsValue.forEach((item: any) => {
                 if (!this.functions.empty(item.selectedValues)) {
-                    requiredFieldList.push({id: item.id, value: item.selectedValues});
+                    item.selectedValues = (item.type === 'date' && item.today !== undefined && item.today) ? '_TODAY' : item.selectedValues;
+                    fillRequiredFields.push({id: item.id, value: item.selectedValues});
                 }
             });
-            this.action.parameters = { requiredFields: requiredFieldList };
+            this.action.parameters = { fillRequiredFields: fillRequiredFields };
+        } else if (this.action.actionPageId === 'close_mail') {
+            this.action.parameters = { requiredFields: this.selectedFieldsId };
         } else if (this.action.actionPageId === 'create_acknowledgement_receipt') {
             this.action.parameters = { mode: this.arMode, canAddCopies : this.canAddCopies };
         } else if (this.intermediateStatusActions.indexOf(this.action.actionPageId) !== -1) {
@@ -339,7 +426,7 @@ export class ActionAdministrationComponent implements OnInit {
         }
         this.action.action_page = this.action.actionPageId;
         this.action.component = this.actionPagesService.getAllActionPages(this.action.actionPageId).component;
-        
+
         if (this.creationMode) {
             this.http.post('../rest/actions', this.action)
                 .subscribe(() => {
