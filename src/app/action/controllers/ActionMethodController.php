@@ -50,7 +50,6 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use User\models\UserModel;
-use CustomField\models\CustomFieldModel;
 
 class ActionMethodController
 {
@@ -196,38 +195,7 @@ class ActionMethodController
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
-        $set   = ['closing_date' => 'CURRENT_TIMESTAMP'];
-        $where = ['res_id = ?', 'closing_date is null'];
-
-        $requiredFields = $args['action']['parameters']['requiredFields'];
-
-        if (!empty($requiredFields)) {
-            $requiredFieldMapping = [];
-            $customFieldModelLabels = [];
-            foreach($requiredFields as $requiredFieldItem) {
-                $idCustom = explode("_", $requiredFieldItem['id'])[1];
-                $requiredFieldMapping[$idCustom] = $requiredFieldItem['value'];
-                $customFieldModel = CustomFieldModel::get(['select' => ['label'],'where' => ['id = ?'],'data' => [$idCustom]]);
-
-                if (!empty($customFieldModel)) {
-                    $customFieldModelLabels[] = array_column($customFieldModel, 'label')[0];
-                }
-            }
-            $set['custom_fields'] = json_encode($requiredFieldMapping);
-
-            if (!empty($customFieldModelLabels)) {
-                HistoryController::add([
-                    'tableName' => 'res_letterbox',
-                    'recordId'  => $args['resId'],
-                    'eventType' => 'UP',
-                    'info'      => "Les champs " . implode(', ', $customFieldModelLabels) . " vont être mis à jour.",
-                    'moduleId'  => 'resource',
-                    'eventId'   => 'resourceModification'
-                ]);
-            }
-        }
-
-        ResModel::update(['set' => $set, 'where' => $where, 'data' => [$args['resId']]]);
+        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$args['resId']]]);
 
         return true;
     }
