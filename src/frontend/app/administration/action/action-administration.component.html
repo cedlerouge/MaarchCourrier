@@ -62,12 +62,12 @@
                         <div class="form-group"
                             *ngIf="!this.functions.empty(availableFillCustomFields) && action.actionPageId=='confirm_status'">
                             <div class="col-sm-12">
-                                <plugin-select-search [showLabel]="true" [class]="''"
+                                <app-plugin-select-search [showLabel]="true" [class]="''"
                                     [label]="'lang.fieldsToUpdate' | translate"
                                     [placeholderLabel]="'lang.fieldsToUpdate' | translate"
                                     [formControlSelect]="fillcustomFieldsFormControl" [datas]="availableFillCustomFields"
                                     (afterSelected)="getSelectedFieldsToFill()" style="width:100%;">
-                                </plugin-select-search>
+                                </app-plugin-select-search>
                                 <div class="checkbox-selected-list">
                                     <div *ngFor="let fieldItemValue of selectedFieldItems.selectedFieldsValue; let i = index">
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'string'">

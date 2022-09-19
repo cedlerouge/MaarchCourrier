@@ -156,28 +156,14 @@ export class ActionAdministrationComponent implements OnInit {
                             });
                         } else if (this.action.actionPageId === 'close_mail') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.requiredFields, disabled: false });
-
-                            this.selectedFieldItems.selectedFieldsId = [];
-
+                            this.selectedFieldsId = [];
                             if (this.action.parameters.requiredFields) {
-                                this.selectedFieldItems.selectedFieldsId = this.action.parameters.requiredFields;
+                                this.selectedFieldsId = this.action.parameters.requiredFields;
                             }
-                            this.selectedFieldItems.selectedFieldsId.forEach((element: any) => {
+                            this.selectedFieldsId.forEach((element: any) => {
                                 this.availableCustomFields.forEach((availableElement: any) => {
-                                    if (availableElement.id === element.id) {
-                                        availableElement.selectedValues = this.functions.empty(element.value) ? null : element.value;
-
-                                        if (availableElement.type === 'date' && !this.functions.empty(element.value)) {
-                                            if (this.functions.formatDateObjectToDateString(new Date()) === this.functions.formatDateObjectToDateString(new Date(element.value))) {
-                                                availableElement.today = true;
-                                            } else{
-                                                availableElement.today = false;
-                                            }
-                                        } else if (['contact', 'banAutocomplete'].includes(availableElement.type)) {
-                                            availableElement.untypedFormControl = new UntypedFormControl({ value: element.value, disabled: false });
-                                        }
-
-                                        this.selectedFieldItems.selectedFieldsValue.push(availableElement);
+                                    if (availableElement.id === element) {
+                                        this.selectedFieldsValue.push(availableElement.label);
                                     }
                                 });
                             });
