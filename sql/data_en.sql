@@ -835,6 +835,8 @@ INSERT INTO parameters (id, param_value_string) VALUES ('registeredMailDistribut
 INSERT INTO parameters (id, param_value_string) VALUES ('registeredMailImportedStatus', 'NEW');
 INSERT INTO parameters (id, description, param_value_int) VALUES ('keepDiffusionRoleInOutgoingIndexation', 'If enabled (1), takes into account the roles of the broadcast model of the entity.', 1);
 INSERT INTO parameters (id, description, param_value_int) VALUES ('suggest_links_n_days_ago', 'The number of days over which the letters to be linked are searched for', 0);
+INSERT INTO parameters (id, description, param_value_string) VALUES ('siret', 'SIRET company number', '45239273100025');
+INSERT INTO parameters (id, description, param_value_string) VALUES ('workflowSignatoryRole', 'Signatory role in visa circuit', 'mandatory');
 
 ------------
 --DIFFLIST_TYPES
@@ -1516,8 +1518,6 @@ INSERT INTO indexing_models_fields (model_id, identifier, mandatory, default_val
 INSERT INTO indexing_models_fields (model_id, identifier, mandatory, default_value, unit) VALUES (4, 'recipients', FALSE, '""', 'contact');
 INSERT INTO indexing_models_fields (model_id, identifier, mandatory, default_value, unit) VALUES (4, 'initiator', TRUE, '""', 'process');
 INSERT INTO indexing_models_fields (model_id, identifier, mandatory, default_value, unit) VALUES (4, 'destination', TRUE, '""', 'process');
-
-INSERT INTO parameters (id, description, param_value_string) VALUES ('siret', 'SIRET company number', '45239273100025');
 
 --Inscrire ici les clauses de conversion spécifiques en cas de reprise
 --Update res_letterbox set status='VAL' where res_id=108;

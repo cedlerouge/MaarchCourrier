@@ -58,6 +58,7 @@ use User\models\UserModel;
 use ExportSeda\controllers\PreProcessActionSEDATrait;
 use Multigest\controllers\MultigestController;
 use SrcCore\models\PasswordModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class PreProcessActionController
 {
@@ -1133,13 +1134,16 @@ class PreProcessActionController
 
         $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
         $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-        $workflowEndBySignatory = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'workflowEndBySignatory']);
+        $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
 
         $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
         $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
-        $workflowEndBySignatory = !empty($workflowEndBySignatory['param_value_int']);
+        $workflowSignatoryRole = $workflowSignatoryRole['param_value_string'];
+        if (!in_array($workflowSignatoryRole, SignatureBookController::SIGNATORY_ROLES)) {
+            $workflowSignatoryRole = SignatureBookController::SIGNATORY_ROLE_DEFAULT;
+        }
 
-        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowEndBySignatory' => $workflowEndBySignatory]);
+        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowSignatoryRole' => $workflowSignatoryRole]);
     }
 
     public function checkContinueVisaCircuit(Request $request, Response $response, array $args)
