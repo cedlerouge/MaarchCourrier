@@ -2658,5 +2658,8 @@
     "canGoToNextResDesc": "L'activation de cette option permet de sauvegarder ce choix dans votre session",
     "processDelayEnabled": "Délai de traitement activé",
     "processDelayDisabled": "Délai de traitement désactivé",
-    "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement"
+    "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement",
+    "fieldsToUpdate": "Champs personnalisés à mettre à jour après l'exécution de l'action",
+    "updateFieldsForMail": "Dans ce courrier les champs à mettre à jour par cette action seront modifié",
+    "updateFieldsForMails": "Les champs à mettre à jour de ces courriers seront modifié par cette action"
 }

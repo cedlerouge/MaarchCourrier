@@ -2659,5 +2659,8 @@
     "nextRes": "Next mail",
     "previousRes": "Previous mail",
     "canGoToNextRes": "Move to next mail when action is complete",
-    "canGoToNextResDesc": "Activating this option saves this choice in your session"
+    "canGoToNextResDesc": "Activating this option saves this choice in your session",
+    "fieldsToUpdate": "Custom fields to update after action execution",
+    "updateFieldsForMail": "In this mail the fields to be updated by this action will be modified",
+    "updateFieldsForMails": "The fields to be updated in these mails will be modified by this action"
 }
