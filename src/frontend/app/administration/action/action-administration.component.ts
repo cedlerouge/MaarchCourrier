@@ -41,7 +41,6 @@ export class ActionAdministrationComponent implements OnInit {
     fillcustomFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
     selectedFieldItems = {selectedFieldsId: [], selectedFieldsValue: []};
 
-
     selectedValue: any;
     arMode: any;
     canAddCopies: boolean;
@@ -263,6 +262,7 @@ export class ActionAdministrationComponent implements OnInit {
         this.fillcustomFieldsFormControl.reset();
     }
 
+
     /**
      * @description Remove custom fields
      * @param index custom fields position in selectedFieldsValue
@@ -277,10 +277,8 @@ export class ActionAdministrationComponent implements OnInit {
      * @param index custom fields position in selectedFieldItems.selectedFieldsValue
      */
     removeSelectedFieldsToFill(index: number) {
-        if (this.action.actionPageId === 'confirm_status') {
-            this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
-            this.selectedFieldItems.selectedFieldsId.splice(index, 1);
-        }
+        this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
+        this.selectedFieldItems.selectedFieldsId.splice(index, 1);
     }
 
     /**
@@ -364,6 +362,15 @@ export class ActionAdministrationComponent implements OnInit {
         } else {
             fieldItemValue.selectedValues = [];
         }
+    }
+
+    /**
+     * @description Add selected Ban address
+     * @param addressBan Selected address
+     * @param fieldItemValue Address Auto Complete field
+     */
+    selectedAddressBan(addressBan: any, fieldItemValue: any) {
+        fieldItemValue.selectedValues = [addressBan];
     }
 
     /**

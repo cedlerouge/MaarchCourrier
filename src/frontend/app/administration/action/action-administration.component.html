@@ -82,10 +82,11 @@
                                                 <mat-placeholder class="placeholder" style="margin-left: 15px;">
                                                     {{fieldItemValue.selectedValues ? '' : 'lang.typeValue' | translate}}
                                                 </mat-placeholder>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;bottom: 30px;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </mat-form-field>
                                         </div>
@@ -101,10 +102,11 @@
                                                 <mat-placeholder class="placeholder" style="margin-left: 15px;">
                                                     {{fieldItemValue.selectedValues ? '' : 'lang.defaultValue' | translate}}
                                                 </mat-placeholder>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;bottom: 30px;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </mat-form-field>
                                         </div>
@@ -123,10 +125,11 @@
                                                 <mat-placeholder class="placeholder" style="margin-left: 15px;">
                                                     {{fieldItemValue.selectedValues ? '' : 'lang.defaultValue' | translate}}
                                                 </mat-placeholder>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;bottom: 30px;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </mat-form-field>
                                         </div>
@@ -134,11 +137,11 @@
                                             <mat-label>{{fieldItemValue.label}}</mat-label>
                                             <mat-form-field class="action-admin-input-form input-date" (click)="picker.open()"
                                                 style="cursor:pointer;">
-                                                <button mat-button color="primary" matPreffix mat-icon-button type="button"
+                                                <button mat-button color="warn" matPreffix mat-icon-button type="button"
                                                     (click)="$event.stopPropagation();toggleTodayDate(fieldItemValue);"
                                                     [title]="'lang.todayDate' | translate"
                                                     style="margin-bottom: 5px;">
-                                                    <mat-icon color="primary" 
+                                                    <mat-icon color="warn"
                                                         class="{{fieldItemValue.today ? 'far fa-bell-slash' : 'far fa-bell'}}">
                                                     </mat-icon>
                                                 </button>
@@ -161,10 +164,11 @@
                                                     [title]="'lang.eraseValue' | translate">
                                                     <mat-icon color="warn" class="fa fa-calendar-times"></mat-icon>
                                                 </button>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;bottom: 35px;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </mat-form-field>
                                         </div>
@@ -180,20 +184,22 @@
                                                         {{value.label}}
                                                     </mat-radio-button>
                                                 </mat-radio-group>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;bottom: 30px;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </mat-form-field>
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'checkbox'">
                                             <mat-label>{{fieldItemValue.label}}</mat-label> 
                                             <div class="action-admin-input-form action-admin-checkbox-form" style="border-radius: 10px;">
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;top: -11px;right: 0;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                                 <mat-selection-list #shoes class="div-list"
                                                     [(ngModel)]="fieldItemValue.selectedValues"
@@ -222,10 +228,11 @@
                                                     (afterContactSelected)="selectedContact($event, fieldItemValue)"
                                                     (removeContactEvent)="removeContactEvent($event, fieldItemValue)">
                                                 </app-contact-autocomplete>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;top: -10px;right: 0;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </div>
                                         </div>
@@ -238,10 +245,11 @@
                                                     (afterAddressBanSelected)="selectedAddressBan($event, fieldItemValue)"
                                                     (removeAddressBanEvent)="removeAddressBanEvent($event, fieldItemValue)">
                                                 </app-address-ban-input>
-                                                <button mat-button color="primary" matSuffix mat-icon-button
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
                                                     style="position: absolute;top: -10px;right: 0;"
                                                     (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="primary" class="fa fa-times-circle"></mat-icon>
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
                                                 </button>
                                             </div>
                                         </div>

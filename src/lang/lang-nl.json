@@ -2212,5 +2212,7 @@
     "soapClientCreationError": "Erreur de lancement de la communication SOAP__TO_TRANSLATE",
     "fieldsToUpdate": "Custom fields to update after action execution__TO_TRANSLATE",
     "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.__TO_TRANSLATE",
-    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.__TO_TRANSLATE"
+    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.__TO_TRANSLATE",
+    "deleteField": "Delete field__TO_TRANSLATE"
+
 }

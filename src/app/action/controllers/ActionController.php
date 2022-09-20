@@ -367,6 +367,7 @@ class ActionController
     /**
      * @description Replace selected fields value
      * @param   array   $args
+     * @return  bool    true
      */
     public static function replaceFieldsData(array $args)
     {
@@ -378,16 +379,14 @@ class ActionController
         $where = ['res_id = ?'];
 
         if (!empty($args['fillRequiredFields'])) {
-            $fillRequiredFieldMapping = [];
             $fillRequiredFields = $args['fillRequiredFields'];
 
             $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['custom_fields', 'model_id']]);
-            $model = $resource['model_id'];
             $resourceCustomFields = json_decode($resource['custom_fields'], true);
             $modelFields = IndexingModelFieldModel::get([
                 'select' => ['identifier'],
                 'where'  => ['model_id = ?', "identifier LIKE 'indexingCustomField_%'"],
-                'data'   => [$model]
+                'data'   => [$resource['model_id']]
             ]);
             $modelFields = array_column($modelFields, 'identifier');
 
@@ -407,5 +406,6 @@ class ActionController
                 ResModel::update(['set' => $set, 'where' => $where, 'data' => [$args['resId']]]);
             }
         }
+        return true;
     }
 }
