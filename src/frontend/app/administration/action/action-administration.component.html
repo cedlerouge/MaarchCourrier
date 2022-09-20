@@ -135,42 +135,46 @@
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'date'">
                                             <mat-label>{{fieldItemValue.label}}</mat-label>
-                                            <mat-form-field class="action-admin-input-form input-date" (click)="picker.open()"
-                                                style="cursor:pointer;">
-                                                <button mat-button color="warn" matPreffix mat-icon-button type="button"
-                                                    (click)="$event.stopPropagation();toggleTodayDate(fieldItemValue);"
-                                                    [title]="'lang.todayDate' | translate"
-                                                    style="margin-bottom: 5px;">
-                                                    <mat-icon color="warn"
-                                                        class="{{fieldItemValue.today ? 'far fa-bell-slash' : 'far fa-bell'}}">
-                                                    </mat-icon>
-                                                </button>
-                                                <input [id]="fieldItemValue.id"
-                                                    matInput [matDatepicker]="picker"
-                                                    [min]="today"
-                                                    [ngModel]="fieldItemValue.selectedValues"
-                                                    [ngModelOptions]="{standalone: true}"
-                                                    (dateChange)="onDateChange($event, fieldItemValue)"
-                                                    readonly style="cursor:pointer;">
-                                                <mat-placeholder class="placeholder" style="position: relative;top: 10px;display: ruby-text;">
-                                                    {{fieldItemValue.selectedValues ? '' : 'lang.chooseDate' | translate}}
-                                                </mat-placeholder>
-                                                <mat-datepicker-toggle matSuffix [for]="picker"
-                                                    *ngIf="!fieldItemValue.selectedValues"></mat-datepicker-toggle>
-                                                <mat-datepicker [touchUi]="appService.getViewMode()" #picker></mat-datepicker>
-                                                <button mat-button color="warn" matSuffix mat-icon-button
-                                                    *ngIf="fieldItemValue.selectedValues"
-                                                    (click)="$event.stopPropagation();resetFieldItemValue(fieldItemValue, i);"
-                                                    [title]="'lang.eraseValue' | translate">
-                                                    <mat-icon color="warn" class="fa fa-calendar-times"></mat-icon>
-                                                </button>
-                                                <button mat-button color="warn" matSuffix mat-icon-button
-                                                    [title]="'lang.deleteField' | translate"
-                                                    style="position: absolute;bottom: 35px;"
-                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
-                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
-                                                </button>
-                                            </mat-form-field>
+                                            <div class="row" style="display: flex;">
+                                                <div class="col-md-1 col-sm-1" style="margin-top: 5px;">
+                                                    <button mat-button color="primary" matPreffix mat-icon-button type="button"
+                                                        (click)="$event.stopPropagation();toggleTodayDate(fieldItemValue);"
+                                                        [title]="'lang.todayDate' | translate"
+                                                        style="margin-bottom: 5px;">
+                                                        <mat-icon color="primary"
+                                                            class="{{fieldItemValue.today ? 'far fa-bell-slash' : 'far fa-bell'}}">
+                                                        </mat-icon>
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-11 col-sm-11">
+                                                    <mat-form-field class="action-admin-input-form input-date" (click)="picker.open()"
+                                                        style="cursor:pointer;">
+                                                        <input [id]="fieldItemValue.id"
+                                                            matInput [matDatepicker]="picker"
+                                                            placeholder="{{fieldItemValue.selectedValues ? '' : 'lang.chooseDate' | translate}}"
+                                                            [min]="today"
+                                                            [ngModel]="fieldItemValue.selectedValues"
+                                                            [ngModelOptions]="{standalone: true}"
+                                                            (dateChange)="onDateChange($event, fieldItemValue)"
+                                                            readonly style="cursor:pointer;">
+                                                        <mat-datepicker-toggle matSuffix [for]="picker"
+                                                            *ngIf="!fieldItemValue.selectedValues"></mat-datepicker-toggle>
+                                                        <mat-datepicker [touchUi]="appService.getViewMode()" #picker></mat-datepicker>
+                                                        <button mat-button color="warn" matSuffix mat-icon-button
+                                                            *ngIf="fieldItemValue.selectedValues"
+                                                            (click)="$event.stopPropagation();resetFieldItemValue(fieldItemValue, i);"
+                                                            [title]="'lang.eraseValue' | translate">
+                                                            <mat-icon color="warn" class="fa fa-calendar-times"></mat-icon>
+                                                        </button>
+                                                        <button mat-button color="warn" matSuffix mat-icon-button
+                                                            [title]="'lang.deleteField' | translate"
+                                                            style="position: absolute;bottom: 35px;"
+                                                            (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                            <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                        </button>
+                                                    </mat-form-field>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'radio'">
                                             <mat-label>{{fieldItemValue.label}}</mat-label>
