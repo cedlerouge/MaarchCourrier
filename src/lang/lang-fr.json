@@ -2660,6 +2660,7 @@
     "processDelayDisabled": "Délai de traitement désactivé",
     "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement",
     "fieldsToUpdate": "Champs personnalisés à mettre à jour après l'exécution de l'action",
+    "emptyListOfCustomFields": "La liste des champs personnalisés est vide",
     "updateFieldsForMail": "Les valeurs des champs <b>{{fields}}</b> seront mises à jour via cette action.",
     "updateFieldsForMails": "Les valeurs des champs ci-dessous seront mises à jour via cette action.",
     "deleteField": "Supprimer le champ"

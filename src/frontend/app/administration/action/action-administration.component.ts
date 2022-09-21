@@ -33,6 +33,7 @@ export class ActionAdministrationComponent implements OnInit {
 
     loading: boolean = false;
     availableCustomFields: Array<any> = [];
+    availableCustomFieldsClone: Array<any> = [];
     customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
     selectedFieldsValue: Array<any> = [];
     selectedFieldsId: Array<any> = [];
@@ -150,6 +151,7 @@ export class ActionAdministrationComponent implements OnInit {
                                         }
 
                                         this.selectedFieldItems.selectedFieldsValue.push(availableElement);
+                                        this.availableFillCustomFields = this.availableFillCustomFields.filter((item: any) => item.id !== availableElement.id);
                                     }
                                 });
                             });
@@ -163,6 +165,7 @@ export class ActionAdministrationComponent implements OnInit {
                                 this.availableCustomFields.forEach((availableElement: any) => {
                                     if (availableElement.id === element) {
                                         this.selectedFieldsValue.push(availableElement.label);
+                                        this.availableCustomFields = this.availableCustomFields.filter((item: any) => item.id !== availableElement.id);
                                     }
                                 });
                             });
@@ -207,6 +210,7 @@ export class ActionAdministrationComponent implements OnInit {
                                 info.id = 'indexingCustomField_' + info.id;
                                 return info;
                             });
+                            this.availableCustomFieldsClone = this.availableCustomFields;
                         }
                         return resolve(true);
                     }),
@@ -234,6 +238,7 @@ export class ActionAdministrationComponent implements OnInit {
         if (this.selectedFieldsId.indexOf(this.customFieldsFormControl.value) < 0) {
             this.selectedFieldsValue.push(this.selectedValue.label);
             this.selectedFieldsId.push(this.customFieldsFormControl.value);
+            this.availableCustomFields = this.availableCustomFields.filter((item: any) => item.id !== this.selectedValue.id);
         }
         this.customFieldsFormControl.reset();
     }
@@ -243,13 +248,15 @@ export class ActionAdministrationComponent implements OnInit {
      */
     getSelectedFieldsToFill() {
         this.availableFillCustomFields.forEach((element: any) => {
-            if (element.id === this.fillcustomFieldsFormControl.value) {
+            if (!this.functions.empty(element.id) && element.id === this.fillcustomFieldsFormControl.value) {
                 this.selectedValue = element;
             }
         });
 
         const checkField = this.selectedFieldItems.selectedFieldsId.find((field: any) => field.id === this.fillcustomFieldsFormControl.value);
-        if (this.functions.empty(checkField) && this.selectedFieldItems.selectedFieldsId.indexOf(this.fillcustomFieldsFormControl.value) < 0 ) {
+        if (!this.functions.empty(this.selectedValue) && this.functions.empty(checkField) &&
+            this.selectedFieldItems.selectedFieldsId.indexOf(this.fillcustomFieldsFormControl.value) < 0 ) {
+
             this.selectedValue.selectedValues = null;
             if (this.selectedValue.type === 'date') {
                 this.selectedValue.today = false;
@@ -258,18 +265,21 @@ export class ActionAdministrationComponent implements OnInit {
             }
             this.selectedFieldItems.selectedFieldsValue.push(this.selectedValue);
             this.selectedFieldItems.selectedFieldsId.push(this.fillcustomFieldsFormControl.value);
+            this.availableFillCustomFields = this.availableFillCustomFields.filter((item: any) => item.id !== this.selectedValue.id);
         }
         this.fillcustomFieldsFormControl.reset();
     }
-
 
     /**
      * @description Remove custom fields
      * @param index custom fields position in selectedFieldsValue
      */
     removeSelectedFields(index: number) {
+        const removedItem = this.availableCustomFieldsClone.find((item: any) => item.id === this.selectedFieldsId[index]);
         this.selectedFieldsValue.splice(index, 1);
         this.selectedFieldsId.splice(index, 1);
+        this.availableCustomFields.push(removedItem);
+        this.availableCustomFields.sort((a, b) => a.label.localeCompare(b.label));
     }
 
     /**
@@ -277,8 +287,11 @@ export class ActionAdministrationComponent implements OnInit {
      * @param index custom fields position in selectedFieldItems.selectedFieldsValue
      */
     removeSelectedFieldsToFill(index: number) {
+        const fieldItem = this.selectedFieldItems.selectedFieldsValue[index];
         this.selectedFieldItems.selectedFieldsValue.splice(index, 1);
         this.selectedFieldItems.selectedFieldsId.splice(index, 1);
+        this.availableFillCustomFields.push(fieldItem);
+        this.availableFillCustomFields.sort((a, b) => a.label.localeCompare(b.label));
     }
 
     /**
