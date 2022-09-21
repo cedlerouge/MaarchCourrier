@@ -70,6 +70,7 @@
                 <button mat-icon-button [matMenuTriggerFor]="menuOptions">
                     <mat-icon class="fas fa-chevron-down"></mat-icon>
                 </button>
+                <div class="divider"></div>
                 <mat-menu #menuOptions="matMenu" [class]="'optionsListMenu'">
                     <button mat-menu-item *ngIf="file.contentView !== undefined || base64 !== null" (click)="openPdfInTab()">
                         <mat-icon color="primary" class="fas fa-external-link-alt"></mat-icon>
@@ -103,13 +104,13 @@
                             <span>{{'lang.version' | translate}} {{version}}</span>
                         </button>
                     </mat-menu>
-                    <button *ngIf="file.subinfos.signedDocVersions" mat-button
+                    <button *ngIf="file.subinfos.signedDocVersions" mat-button class="originalVersion" [title]="'lang.unsignedVersionDesc' | translate"
                         (click)="openResourceVersion(file.subinfos.mainDocVersions[file.subinfos.mainDocVersions.length -1],'SIGN')">
-                        {{'lang.SIGN_version' | translate}}
+                        {{'lang.unsignedVersionDesc' | translate}}
                     </button>
-                    <button *ngIf="file.subinfos.commentedDocVersions > 0" mat-button
+                    <button *ngIf="file.subinfos.commentedDocVersions > 0" mat-button class="originalVersion" [title]="'lang.unannotatedVersionDesc' | translate"
                         (click)="openResourceVersion(file.subinfos.mainDocVersions[file.subinfos.mainDocVersions.length -1],'NOTE')">
-                        {{'lang.NOTE_version' | translate}}
+                        {{'lang.unannotatedVersionDesc' | translate}}
                     </button>
                 </ng-container>
             </div>
