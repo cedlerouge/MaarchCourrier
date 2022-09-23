@@ -2661,5 +2661,9 @@
     "canGoToNextRes": "Move to next mail when action is complete",
     "canGoToNextResDesc": "Activating this option saves this choice in your session",
     "unsignedVersionDesc": "See the unsigned version",
-    "unannotatedVersionDesc": "See the unannotated version"
+    "unannotatedVersionDesc": "See the unannotated version",
+    "quickSearchTargets": "Quick search target",
+    "defaultQuickSearch": "Subject, Chrono...",
+    "searchBySender": "Search by sender",
+    "searchByRecipient": "Search by recipient"
 }

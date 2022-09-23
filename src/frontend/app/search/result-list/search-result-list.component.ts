@@ -165,13 +165,15 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
         _activatedRoute.queryParams.subscribe(
             params => {
                 if (!this.functions.empty(params.value)) {
-                    this.searchTerm = params.value;
-                    this.initSearch = true;
-                    this.criteria = {
-                        meta: {
-                            values: this.searchTerm
-                        }
-                    };
+                    if (params.target === 'searchTerm') {
+                        this.searchTerm = params.value;
+                        this.initSearch = true;
+                        this.criteria = {
+                            meta: {
+                                values: this.searchTerm
+                            }
+                        };
+                    }
                 }
             }
         );

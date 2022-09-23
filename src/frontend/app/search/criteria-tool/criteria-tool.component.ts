@@ -32,7 +32,7 @@ import { HeaderService } from '@service/header.service';
 })
 export class CriteriaToolComponent implements OnInit {
 
-    @Input() searchTerm: string = 'Foo';
+    @Input() searchTerm: string = '';
     @Input() defaultCriteria: any = [];
     @Input() adminMode: boolean = false;
     @Input() openedPanel: boolean = true;
@@ -95,6 +95,8 @@ export class CriteriaToolComponent implements OnInit {
 
     listProperties: any = {};
 
+    currentParam: any = null;
+
     constructor(
         private _activatedRoute: ActivatedRoute,
         public translate: TranslateService,
@@ -112,7 +114,13 @@ export class CriteriaToolComponent implements OnInit {
     ) {
         _activatedRoute.queryParams.subscribe(
             params => {
-                this.searchTerm = params.value;
+                if (params.target === 'searchTerm') {
+                    this.searchTerm = params.value;
+                } else {
+                    this.currentParam = params;
+                    this.searchTerm = '';
+                    this.searchTermControl.setValue(this.searchTerm);
+                }
             }
         );
     }
@@ -128,6 +136,14 @@ export class CriteriaToolComponent implements OnInit {
                 this.addCriteria(element, false);
             }
         });
+
+        if (['senders', 'recipients'].indexOf(this.currentParam?.target) > -1 && !this.functions.empty(this.currentParam.value)) {
+            if (this.currentParam.target === 'senders') {
+                this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [this.currentParam.value]}});
+            } else {
+                this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [this.currentParam.value]}});
+            }
+        }
 
         this.loaded.emit(true);
 
@@ -252,6 +268,21 @@ export class CriteriaToolComponent implements OnInit {
                 }
             }
         });
+
+        if (!this.functions.empty(this.currentParam?.target) && !this.functions.empty(this.currentParam.value)) {
+            const contactArray: any = this.appContactAutocomplete.toArray().find((item: any) => item.id === this.currentParam.target);
+            if (!this.functions.empty(contactArray?.myControl) && !this.functions.empty(objCriteria[this.currentParam.target])) {
+                if (!this.functions.empty(contactArray.myControl.value) && this.appContactAutocomplete.toArray().find((item: any) => item.id === this.currentParam?.target).controlAutocomplete.value.length === 0) {
+                    objCriteria[this.currentParam.target]['values'] = contactArray.myControl.value;
+                    if (this.currentParam.target === 'senders') {
+                        this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                    } else {
+                        this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                    }
+                }
+            }
+        }
+
         this.searchUrlGenerated.emit(objCriteria);
     }
 
@@ -342,7 +373,7 @@ export class CriteriaToolComponent implements OnInit {
                 }
 
                 if ((['recipients', 'senders'].indexOf(criteria.identifier) > -1 || criteria.type === 'contact') && this.functions.empty(criteria.control.value)) {
-                    this.appContactAutocomplete.toArray().filter((component: any) => component.id === criteria.identifier)[0].resetInputValue();
+                    this.appContactAutocomplete.toArray().filter((component: any) => component.id === criteria.identifier)[0]?.resetInputValue();
                 }
             }
         } else {

@@ -22,7 +22,7 @@ export class SearchComponent implements OnInit {
 
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
     @ViewChild('appSearchResultList', { static: false }) appSearchResultList: SearchResultListComponent;
-    @ViewChild('appCriteriaTool', { static: true }) appCriteriaTool: CriteriaToolComponent;
+    @ViewChild('appCriteriaTool', { static: false }) appCriteriaTool: CriteriaToolComponent;
 
     searchTerm: string = '';
     searchTemplateId: string = null;
@@ -50,7 +50,9 @@ export class SearchComponent implements OnInit {
                     this.searchTemplateId = params.searchTemplateId;
                     window.history.replaceState({}, document.title, window.location.pathname + window.location.hash.split('?')[0]);
                 } else if (!this.functions.empty(params.value)) {
-                    this.searchTerm = params.value;
+                    if (params.target === 'searchTerm') {
+                        this.searchTerm = params.value;
+                    }
                 }
             }
         );

@@ -2660,5 +2660,9 @@
     "processDelayDisabled": "Délai de traitement désactivé",
     "disableProcessDelayDesc": "Ce type de document n'est plus pris en compte pour le calcul de la date limite de traitement",
     "unsignedVersionDesc": "Voir la version non signée",
-    "unannotatedVersionDesc": "Voir la version non annotée"
+    "unannotatedVersionDesc": "Voir la version non annotée",
+    "quickSearchTargets": "Cible de la recherche rapide",
+    "defaultQuickSearch": "Objet, N° chrono...",
+    "searchBySender": "Rechercher par expéditeur",
+    "searchByRecipient": "Rechercher par destinataire"
 }
