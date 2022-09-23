@@ -210,7 +210,7 @@ export class ActionAdministrationComponent implements OnInit {
                                 info.id = 'indexingCustomField_' + info.id;
                                 return info;
                             });
-                            this.availableCustomFieldsClone = this.availableCustomFields;
+                            this.availableCustomFieldsClone = JSON.parse(JSON.stringify(this.availableCustomFields));
                         }
                         return resolve(true);
                     }),
