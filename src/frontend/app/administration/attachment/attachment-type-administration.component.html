@@ -14,7 +14,7 @@
         </div>
         <div class="container" [class.fullContainer]="appService.getViewMode()">
             <div class="container-content">
-                <div *ngIf="attachmentType['typeId'].value === 'signed_response'" class="alert alert-danger" role="alert" style="margin: 10px;">
+                <div *ngIf="!creationMode && ['signed_response', 'summary_sheet', 'shipping_deposit_proof','shipping_acknowledgement_of_receipt'].indexOf(attachmentType['typeId'].value) > -1" class="alert alert-danger" role="alert" style="margin: 10px;">
                     <b>{{'lang.systemType' | translate}} !</b> {{'lang.doNotModifyUnlessExpert' | translate}}
                 </div>
                 <mat-card *ngIf="!loading" class="card-app-content">
