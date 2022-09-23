@@ -1131,7 +1131,7 @@ class AutoCompleteController
         ValidatorModel::arrayType($args, ['where', 'data']);
         ValidatorModel::intType($args, ['fieldsNumber']);
 
-        $searchItems = explode(' ', $args['search']);
+        $searchItems = preg_split('/\s+/', $args['search']);
 
         foreach ($searchItems as $keyItem => $item) {
             if (strlen($item) >= 2) {

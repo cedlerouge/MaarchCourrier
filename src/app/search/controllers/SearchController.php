@@ -652,7 +652,12 @@ class SearchController
             $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
             $searchableParameters = array_column($searchableParameters, 'identifier');
             $searchableParameters = array_map(function ($parameter) {
-                return ContactController::MAPPING_FIELDS[$parameter];
+                if (strpos($parameter, 'contactCustomField_') !== false) {
+                    $customFieldId = explode('_', $parameter)[1];
+                    return "custom_fields->>'{$customFieldId}'";
+                } else {
+                    return ContactController::MAPPING_FIELDS[$parameter];
+                }
             }, $searchableParameters);
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchableParameters]);
 
@@ -717,7 +722,12 @@ class SearchController
             $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
             $searchableParameters = array_column($searchableParameters, 'identifier');
             $searchableParameters = array_map(function ($parameter) {
-                return ContactController::MAPPING_FIELDS[$parameter];
+                if (strpos($parameter, 'contactCustomField_') !== false) {
+                    $customFieldId = explode('_', $parameter)[1];
+                    return "custom_fields->>'{$customFieldId}'";
+                } else {
+                    return ContactController::MAPPING_FIELDS[$parameter];
+                }
             }, $searchableParameters);
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchableParameters]);
 
