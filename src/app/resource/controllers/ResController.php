@@ -879,8 +879,8 @@ class ResController extends ResourceControlController
 
         $attachments = AttachmentModel::get([
             'select' => ['count(1)'],
-            'where'  => ['res_id_master = ?', 'attachment_type not in (?)'],
-            'data'   => [$args['resId'], AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES]
+            'where'  => ['res_id_master = ?', 'status in (?)', 'attachment_type not in (?)'],
+            'data'   => [$args['resId'], ['TRA', 'A_TRA', 'FRZ'], AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES]
         ]);
         $formattedData['attachments'] = $attachments[0]['count'];
 
