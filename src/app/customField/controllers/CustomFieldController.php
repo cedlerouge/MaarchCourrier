@@ -27,6 +27,7 @@ use Respect\Validation\Validator;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabaseModel;
 
 class CustomFieldController
 {
@@ -273,6 +274,28 @@ class CustomFieldController
             'where'   => ["parameters->'requiredFields' @> ?"],
             'data'    => ['"indexingCustomField_'.$args['id'].'"']
         ]);
+
+        $itemsPositionToRemove = DatabaseModel::select([
+            'select'    => ['a.id as action_id', 'position'],
+            'table'     => ["actions a, jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)"],
+            'where'     => ["a.parameters->'fillRequiredFields' IS NOT NULL AND elem->>'id' = ?"],
+            'data'      => ['indexingCustomField_'.$args['id']]
+        ]);
+        if (!empty($itemsPositionToRemove)) {
+            foreach ($itemsPositionToRemove as $key => $item) {
+                $item['position']--;
+                var_dump([
+                    'postSet' => ['parameters' => "jsonb_set(parameters, '{fillRequiredFields}', (parameters->'fillRequiredFields') - {$item['position']}) "],
+                    'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],
+                    'data'    => [$item['action_id']]
+                ]);
+                ActionModel::update([
+                    'postSet' => ['parameters' => "jsonb_set(parameters, '{fillRequiredFields}', (parameters->'fillRequiredFields') - {$item['position']}) "],
+                    'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],
+                    'data'    => [$item['action_id']]
+                ]);
+            }
+        }
 
         CustomFieldModel::delete([
             'where' => ['id = ?'],
