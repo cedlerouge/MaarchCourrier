@@ -34,6 +34,8 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         signedByDefault: new UntypedFormControl({ value: false, disabled: false})
     };
 
+    unlistedAttachmentTypes: string[] = ['signed_response', 'summary_sheet', 'shipping_deposit_proof', 'shipping_acknowledgement_of_receipt'];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
