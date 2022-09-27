@@ -1,4 +1,7 @@
--- core/sql/structure/core.postgresql.sql
+------------
+-- STRUCTURE 21.03.1
+-- (Launch the application to update structure to this current tag)
+------------
 
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
