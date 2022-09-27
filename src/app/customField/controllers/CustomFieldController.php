@@ -284,11 +284,6 @@ class CustomFieldController
         if (!empty($itemsPositionToRemove)) {
             foreach ($itemsPositionToRemove as $key => $item) {
                 $item['position']--;
-                var_dump([
-                    'postSet' => ['parameters' => "jsonb_set(parameters, '{fillRequiredFields}', (parameters->'fillRequiredFields') - {$item['position']}) "],
-                    'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],
-                    'data'    => [$item['action_id']]
-                ]);
                 ActionModel::update([
                     'postSet' => ['parameters' => "jsonb_set(parameters, '{fillRequiredFields}', (parameters->'fillRequiredFields') - {$item['position']}) "],
                     'where'   => ["parameters->'fillRequiredFields' IS NOT NULL AND id = ?"],
