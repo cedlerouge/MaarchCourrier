@@ -1,5 +1,5 @@
 ------------
--- Updated since 21.03.21
+-- Updated since 22.xx.0
 ------------
 
 SELECT setval('acknowledgement_receipts_id_seq', (SELECT max(id)+1 FROM acknowledgement_receipts), false);

@@ -1,5 +1,5 @@
 ------------
--- STRUCTURE 21.03.1
+-- STRUCTURE 22.xx.0
 -- (Launch the application to update structure to this current tag)
 ------------
 
@@ -908,7 +908,7 @@ CREATE TABLE res_letterbox
   subject text,
   type_id bigint NOT NULL,
   format character varying(50),
-  typist INTEGER NOT NULL,
+  typist INTEGER,
   creation_date timestamp without time zone NOT NULL,
   modification_date timestamp without time zone DEFAULT NOW(),
   doc_date timestamp without time zone,

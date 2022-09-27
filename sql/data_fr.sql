@@ -1,5 +1,5 @@
 ------------
--- DATA SAMPLE 21.03.1
+-- DATA SAMPLE 22.x.0
 -- (Launch the application to update data to the last tag)
 ------------
 
@@ -216,6 +216,7 @@ INSERT INTO configurations (id, privilege, value) VALUES (5, 'admin_parameters_w
 INSERT INTO configurations (id, privilege, value) VALUES (6, 'admin_shippings', '{"uri": "", "authUri": "", "enabled": false}');
 INSERT INTO configurations (id, privilege, value) VALUES (7, 'admin_addin_outlook', '{"typeId": 1203, "statusId": 42, "indexingModelId": 8, "attachmentTypeId": 5}');
 INSERT INTO configurations (id, privilege, value) VALUES (8, 'admin_organization_email_signatures', '{"signatures": [{"label": "Signature Organisation", "content": "<div><span><span><strong>[user.firstname] </strong></span></span><span>[user.lastname]</span></div>\\n<div><span><span><span><span><strong>[userPrimaryEntity.entity_label]</strong></span></span></span></span></div>\\n<div><span>[user.phone]</span></div>\\n<div><span><span>[userPrimaryEntity.address_number] [userPrimaryEntity.address_street], [userPrimaryEntity.address_postcode] [userPrimaryEntity.address_town]</span></span></div>\\n<div>&nbsp;</div>"}]}');
+INSERT INTO configurations (id, privilege, value) VALUES (9, 'admin_export_seda', '{}');
 
 INSERT INTO contacts (id, civility, firstname, lastname, company, department, function, address_number, address_street, address_additional1, address_additional2, address_postcode, address_town, address_country, email, phone, communication_means, notes, creator, creation_date, modification_date, enabled, custom_fields, external_id) VALUES (1, 1, 'Jean-Louis', 'ERCOLANI', 'MAARCH', '', 'Directeur Général', '11', 'Boulevard du Sud-Est', '', '', '99000', 'MAARCH LES BAINS', 'France', 'dev.maarch@maarch.org', '', NULL, 'Editeur du logiciel libre Maarch', 21, '2015-04-24 12:43:54.97424', '2016-07-25 16:28:38.498185', true, '{}', '{}');
 INSERT INTO contacts (id, civility, firstname, lastname, company, department, function, address_number, address_street, address_additional1, address_additional2, address_postcode, address_town, address_country, email, phone, communication_means, notes, creator, creation_date, modification_date, enabled, custom_fields, external_id) VALUES (4, 1, 'Nicolas', 'MARTIN', 'Préfecture de Maarch Les Bains', NULL, NULL, '13', 'RUE LA PREFECTURE', NULL, NULL, '99000', 'MAARCH LES BAINS', NULL, NULL, NULL, '{"url": "https://cchaplin:maarch@demo.maarchcourrier.com"}', NULL, 21, '2018-04-18 12:43:54.97424', '2020-03-24 15:06:58.16582', true, NULL, '{"m2m": "45239273100025/COU"}');
@@ -689,7 +690,7 @@ INSERT INTO notifications (notification_sid, notification_id, description, is_en
 INSERT INTO notifications (notification_sid, notification_id, description, is_enabled, event_id, notification_mode, template_id, diffusion_type, diffusion_properties, attachfor_type, attachfor_properties) VALUES (100, 'QUOTA', 'Alerte lorsque le quota est dépassé', 'Y', 'user_quota', 'EMAIL', 110, 'user', 'superadmin', NULL, NULL);
 
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('work_batch_autoimport_id', NULL, NULL, 1, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '21.03.1', NULL, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '22.12.1', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('user_quota', NULL, '', 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Département par défaut sélectionné dans les autocomplétions de la Base Adresse Nationale', '75', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('thumbnailsSize', 'Résolution des imagettes', '750x900', NULL, NULL);
@@ -2050,12 +2051,15 @@ SELECT folders.id, entities.id, false
 FROM folders, entities
 WHERE 1=1; 
 
+
 SELECT setval('acknowledgement_receipts_id_seq', (SELECT max(id)+1 FROM acknowledgement_receipts), false);
 SELECT setval('actions_id_seq', (SELECT max(id)+1 FROM actions), false);
+SELECT setval('address_sectors_id_seq', (SELECT max(id)+1 FROM address_sectors), false);
 SELECT setval('adr_attachments_id_seq', (SELECT max(id)+1 FROM adr_attachments), false);
 SELECT setval('adr_letterbox_id_seq', (SELECT max(id)+1 FROM adr_letterbox), false);
 SELECT setval('attachment_types_id_seq', (SELECT max(id)+1 FROM attachment_types), false);
 SELECT setval('baskets_id_seq', (SELECT max(id)+1 FROM baskets), false);
+SELECT setval('blacklist_id_seq', (SELECT max(id)+1 FROM blacklist), false);
 SELECT setval('configurations_id_seq', (SELECT max(id)+1 FROM configurations), false);
 SELECT setval('contacts_civilities_id_seq', (SELECT max(id)+1 FROM contacts_civilities), false);
 SELECT setval('contacts_custom_fields_list_id_seq', (SELECT max(id)+1 FROM contacts_custom_fields_list), false);
