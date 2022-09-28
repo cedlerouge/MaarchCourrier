@@ -93,7 +93,7 @@ export class ExportComponent implements OnInit {
         },
         {
             value: 'admission_date',
-            label: this.translate.instant('lang.admissionDate'),
+            label: this.translate.instant('lang.arrivalDate'),
             isFunction: false
         },
         {
