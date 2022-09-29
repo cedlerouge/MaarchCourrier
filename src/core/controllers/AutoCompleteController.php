@@ -730,17 +730,18 @@ class AutoCompleteController
                 'fields' => $addressFieldNames
             ]);
             $requestData = AutoCompleteController::getDataForRequest([
-                'search'       => $data['address'],
-                'fields'       => $fields,
-                'fieldsNumber' => count($addressFieldNames),
-                'where'        => [],
-                'data'         => []
+                'search'        => $data['address'],
+                'fields'        => $fields,
+                'fieldsNumber'  => count($addressFieldNames),
+                'where'         => [],
+                'data'          => [],
+                'itemMinLength' => 1
             ]);
             $hits = ContactAddressSectorModel::get([
                 'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
                 'where'   => $requestData['where'],
                 'data'    => $requestData['data'],
-                'orderBy' => ['id desc'],
+                'orderBy' => ['substring(address_number from \'^\d+\')::integer asc', 'length(replace(address_number, \' \', \'\')) asc', 'address_street asc'],
                 'limit'   => 100
             ]);
             $addresses = [];
@@ -1129,12 +1130,14 @@ class AutoCompleteController
         ValidatorModel::notEmpty($args, ['search', 'fields', 'fieldsNumber']);
         ValidatorModel::stringType($args, ['search', 'fields']);
         ValidatorModel::arrayType($args, ['where', 'data']);
-        ValidatorModel::intType($args, ['fieldsNumber']);
+        ValidatorModel::intType($args, ['fieldsNumber', 'itemMinLength']);
+        ValidatorModel::boolType($args, ['longField']);
 
-        $searchItems = preg_split('/\s+/', $args['search']);
+        $searchItems   = preg_split('/\s+/', $args['search']);
+        $itemMinLength = $args['itemMinLength'] ?? 2;
 
         foreach ($searchItems as $keyItem => $item) {
-            if (strlen($item) >= 2) {
+            if (mb_strlen($item) >= $itemMinLength) {
                 $args['where'][] = $args['fields'];
 
                 $isIncluded = false;
