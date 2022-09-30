@@ -8,8 +8,8 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
-    templateUrl: '../confirm-action/confirm-action.component.html',
-    styleUrls: ['../confirm-action/confirm-action.component.scss'],
+    templateUrl: './disabled-basket-persistence-action.component.html',
+    styleUrls: ['./disabled-basket-persistence-action.component.scss'],
 })
 export class DisabledBasketPersistenceActionComponent implements OnInit {
 
