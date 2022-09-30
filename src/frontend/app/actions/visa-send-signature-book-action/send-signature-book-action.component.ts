@@ -305,6 +305,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         });
 
         if (['optional', 'mandatory_final'].indexOf(this.workflowSignatoryRole) > -1) {
+            this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
             this.atLeastOneSign = true;
         } else {
             this.atLeastOneSign = nbSignRole >= 1;
@@ -332,11 +333,14 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.maximumSignRole = data.parameter.param_value_int;
                     resolve(true);
                 }),
-                exhaustMap(() => this.http.get('../rest/parameters/workflowEndBySignatory')),
+                exhaustMap(() => this.http.get('../rest/parameters/workflowSignatoryRole')),
                 tap((data: any) => {
-                    this.lastOneMustBeSignatory = data.parameter.param_value_int !== 0;
+                    if (!this.functions.empty(data.parameter)) {
+                        this.workflowSignatoryRole = data.parameter.param_value_string;
+                    }
                     resolve(true);
                 }),
+                finalize(() => this.checkWorkflowParameters(this.appVisaWorkflow.getWorkflow())),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     resolve(false);
