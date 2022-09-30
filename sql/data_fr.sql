@@ -713,7 +713,8 @@ INSERT INTO parameters (id, description, param_value_string, param_value_int, pa
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('traffic_record_summary_sheet', '', '', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_outgoing_2021', '', NULL, 3, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_incoming_2021', '', NULL, 4, NULL);
-INSERT INTO parameters (id, description, param_value_int) VALUES ('suggest_links_n_days_ago', 'Le nombre de jours sur lequel sont cherchés les courriers à lier', 0);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('suggest_links_n_days_ago', 'Le nombre de jours sur lequel sont cherchés les courriers à lier', NULL, 0, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('useSectorsForAddresses', 'Utilisation de la table address_sectors pour autocomplétion des adresses ; la BAN est ignorée (valeur = 1)', NULL, 0, NULL);
 
 INSERT INTO password_rules (id, label, value, enabled) VALUES (1, 'minLength', 6, true);
 INSERT INTO password_rules (id, label, value, enabled) VALUES (2, 'complexityUpper', 0, false);
