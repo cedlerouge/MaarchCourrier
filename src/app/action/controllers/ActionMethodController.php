@@ -190,12 +190,12 @@ class ActionMethodController
         return true;
     }
 
-    public static function closeMailAction(array $aArgs)
+    public static function closeMailAction(array $args)
     {
-        ValidatorModel::notEmpty($aArgs, ['resId']);
-        ValidatorModel::intVal($aArgs, ['resId']);
+        ValidatorModel::notEmpty($args, ['resId']);
+        ValidatorModel::intVal($args, ['resId']);
 
-        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$aArgs['resId']]]);
+        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$args['resId']]]);
 
         return true;
     }

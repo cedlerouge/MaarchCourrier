@@ -452,8 +452,9 @@ class ResourceListController
         if (!array_key_exists($action['component'], ActionMethodController::COMPONENTS_ACTIONS)) {
             return $response->withStatus(400)->withJson(['errors' => 'Action method does not exist']);
         }
-        $action['parameters'] = json_decode($action['parameters'], true);
-        $actionRequiredFields = $action['parameters']['requiredFields'] ?? [];
+        $action['parameters']   = json_decode($action['parameters'], true);
+        $actionRequiredFields   = $action['parameters']['requiredFields'] ?? [];
+        $fillRequiredFields     = $action['parameters']['fillRequiredFields'] ?? [];
 
         $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
         $resources = ResModel::getOnView([
@@ -500,6 +501,16 @@ class ResourceListController
                         $methodResponses['errors'] = [];
                     }
                     $methodResponses['errors'] = array_merge($methodResponses['errors'], [$requiredFieldsValid['errors']]);
+                    continue;
+                }
+            }
+            if (!empty($fillRequiredFields)) {
+                $replaceFieldsData = ActionController::replaceFieldsData(['resId' => $resId, 'fillRequiredFields' => $fillRequiredFields]);
+                if (!empty($replaceFieldsData['errors'])) {
+                    if (empty($methodResponses['errors'])) {
+                        $methodResponses['errors'] = [];
+                    }
+                    $methodResponses['errors'] = array_merge($methodResponses['errors'], [$replaceFieldsData['errors']]);
                     continue;
                 }
             }

@@ -108,8 +108,7 @@ class ActionController
                 $customFields = array_column($customFields, 'id');
                 foreach ($parameters['requiredFields'] as $requiredField) {
                     if (strpos($requiredField, 'indexingCustomField_') !== false) {
-                        $idCustom = explode("_", $requiredField);
-                        $idCustom = $idCustom[1];
+                        $idCustom = explode("_", $requiredField)[1];
                         if (!in_array($idCustom, $customFields)) {
                             return $response->withStatus(400)->withJson(['errors' => 'Data custom field does not exist']);
                         }
@@ -184,8 +183,7 @@ class ActionController
                 $customFields = array_column($customFields, 'id');
                 foreach ($parameters['requiredFields'] as $requiredField) {
                     if (strpos($requiredField, 'indexingCustomField_') !== false) {
-                        $idCustom = explode("_", $requiredField);
-                        $idCustom = $idCustom[1];
+                        $idCustom = explode("_", $requiredField)[1];
                         if (!in_array($idCustom, $customFields)) {
                             return $response->withStatus(400)->withJson(['errors' => 'Data custom field does not exist']);
                         }
@@ -364,5 +362,50 @@ class ActionController
             }
         }
         return ['success' => true];
+    }
+
+    /**
+     * @description Replace selected fields value
+     * @param   array   $args
+     * @return  bool    true
+     */
+    public static function replaceFieldsData(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['resId']);
+        ValidatorModel::intVal($args, ['resId']);
+        ValidatorModel::arrayType($args, ['fillRequiredFields']);
+
+        $set   = ['modification_date' => 'CURRENT_TIMESTAMP'];
+        $where = ['res_id = ?'];
+
+        if (!empty($args['fillRequiredFields'])) {
+            $fillRequiredFields = $args['fillRequiredFields'];
+
+            $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['custom_fields', 'model_id']]);
+            $resourceCustomFields = json_decode($resource['custom_fields'], true);
+            $modelFields = IndexingModelFieldModel::get([
+                'select' => ['identifier'],
+                'where'  => ['model_id = ?', "identifier LIKE 'indexingCustomField_%'"],
+                'data'   => [$resource['model_id']]
+            ]);
+            $modelFields = array_column($modelFields, 'identifier');
+
+            foreach($fillRequiredFields as $fillRequiredFieldItem) {
+                $idCustom = explode("_", $fillRequiredFieldItem['id'])[1];
+                $customFieldModel = CustomFieldModel::get(['select' => ['label'],'where' => ['id = ?'],'data' => [$idCustom]]);
+
+                if (!empty($customFieldModel) && in_array($fillRequiredFieldItem['id'], $modelFields) && !empty($fillRequiredFieldItem['value'])) {
+                    $resourceCustomFields[$idCustom] = $fillRequiredFieldItem['value'];
+                    if ($fillRequiredFieldItem['value'] === '_TODAY') {
+                        $resourceCustomFields[$idCustom] = date('Y-m-d');
+                    }
+                }
+            }
+            if (!empty($resourceCustomFields)) {
+                $set['custom_fields'] = json_encode($resourceCustomFields);
+                ResModel::update(['set' => $set, 'where' => $where, 'data' => [$args['resId']]]);
+            }
+        }
+        return true;
     }
 }

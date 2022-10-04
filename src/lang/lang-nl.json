@@ -2209,5 +2209,11 @@
     "documentHasNoChrono": "Ce courrier n’a pas de numéro chrono__TO_TRANSLATE",
     "documentNotFoundOnDocserver": "Fichier introuvable dans l’espace de stockage__TO_TRANSLATE",
     "docserverDocumentNotReadable": "Fichier illisible sur l’espace de stockage__TO_TRANSLATE",
-    "soapClientCreationError": "Erreur de lancement de la communication SOAP__TO_TRANSLATE"
+    "soapClientCreationError": "Erreur de lancement de la communication SOAP__TO_TRANSLATE",
+    "fieldsToUpdate": "Custom fields to update after action execution__TO_TRANSLATE",
+    "emptyListOfCustomFields": "The list of custom fields is empty__TO_TRANSLATE",
+    "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.__TO_TRANSLATE",
+    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.__TO_TRANSLATE",
+    "deleteField": "Delete field__TO_TRANSLATE"
+
 }

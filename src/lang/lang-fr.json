@@ -2664,5 +2664,10 @@
     "quickSearchTargets": "Cible de la recherche rapide",
     "defaultQuickSearch": "Objet, N° chrono...",
     "searchBySender": "Rechercher par expéditeur",
-    "searchByRecipient": "Rechercher par destinataire"
+    "searchByRecipient": "Rechercher par destinataire",
+    "fieldsToUpdate": "Champs personnalisés à mettre à jour après l'exécution de l'action",
+    "emptyListOfCustomFields": "La liste des champs personnalisés est vide",
+    "updateFieldsForMail": "Les valeurs des champs <b>{{fields}}</b> seront mises à jour via cette action.",
+    "updateFieldsForMails": "Les valeurs des champs ci-dessous seront mises à jour via cette action.",
+    "deleteField": "Supprimer le champ"
 }

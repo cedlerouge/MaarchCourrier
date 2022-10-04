@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -24,6 +24,9 @@ export class AddressBanAutocompleteComponent implements OnInit {
      */
     @Input('control') controlAutocomplete: UntypedFormControl;
     @Input('admin') adminMode: boolean;
+
+    @Output() afterAddressBanSelected = new EventEmitter<any>();
+    @Output() removeAddressBanEvent = new EventEmitter<any>();
 
     @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
 
@@ -119,6 +122,7 @@ export class AddressBanAutocompleteComponent implements OnInit {
         this.setFormValue(objAddress);
 
         this.myControl.setValue('');
+        this.afterAddressBanSelected.emit(objAddress);
     }
 
     initFormValue() {
@@ -144,6 +148,7 @@ export class AddressBanAutocompleteComponent implements OnInit {
     }
 
     removeItem(index: number) {
+        this.removeAddressBanEvent.emit(this.controlAutocomplete.value[index].id);
         const arrValue = this.controlAutocomplete.value;
         this.controlAutocomplete.value.splice(index, 1);
         this.controlAutocomplete.setValue(arrValue);

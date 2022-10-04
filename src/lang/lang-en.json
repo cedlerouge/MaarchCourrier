@@ -2665,5 +2665,10 @@
     "quickSearchTargets": "Quick search target",
     "defaultQuickSearch": "Subject, Chrono...",
     "searchBySender": "Search by sender",
-    "searchByRecipient": "Search by recipient"
+    "searchByRecipient": "Search by recipient",
+    "fieldsToUpdate": "Custom fields to update after action execution",
+    "emptyListOfCustomFields": "The list of custom fields is empty",
+    "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.",
+    "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.",
+    "deleteField": "Delete field"
 }
