@@ -11,3 +11,5 @@ dist/
 dist-addin/
 node_modules/
 package-lock.json
+/custom/*
+/tmp/*

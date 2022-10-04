@@ -1,4 +1,7 @@
--- core/sql/structure/core.postgresql.sql
+------------
+-- STRUCTURE 22.xx.0
+-- (Launch the application to update structure to this current tag)
+------------
 
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
@@ -905,7 +908,7 @@ CREATE TABLE res_letterbox
   subject text,
   type_id bigint NOT NULL,
   format character varying(50),
-  typist INTEGER NOT NULL,
+  typist INTEGER,
   creation_date timestamp without time zone NOT NULL,
   modification_date timestamp without time zone DEFAULT NOW(),
   doc_date timestamp without time zone,

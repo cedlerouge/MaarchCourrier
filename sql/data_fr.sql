@@ -1,3 +1,8 @@
+------------
+-- DATA SAMPLE 22.x.0
+-- (Launch the application to update data to the last tag)
+------------
+
 INSERT INTO actions (id, keyword, label_action, id_status, is_system, action_page, component, history, parameters) VALUES (1, 'redirect', 'Rediriger', 'NEW', 'Y', 'redirect', 'redirectAction', 'Y', '{}');
 INSERT INTO actions (id, keyword, label_action, id_status, is_system, action_page, component, history, parameters) VALUES (3, '', 'Retourner au service Courrier', 'RET', 'N', 'confirm_status', 'confirmAction', 'Y', '{}');
 INSERT INTO actions (id, keyword, label_action, id_status, is_system, action_page, component, history, parameters) VALUES (5, '', 'Remettre en traitement', 'COU', 'N', 'confirm_status', 'confirmAction', 'Y', '{}');
@@ -211,6 +216,7 @@ INSERT INTO configurations (id, privilege, value) VALUES (5, 'admin_parameters_w
 INSERT INTO configurations (id, privilege, value) VALUES (6, 'admin_shippings', '{"uri": "", "authUri": "", "enabled": false}');
 INSERT INTO configurations (id, privilege, value) VALUES (7, 'admin_addin_outlook', '{"typeId": 1203, "statusId": 42, "indexingModelId": 8, "attachmentTypeId": 5}');
 INSERT INTO configurations (id, privilege, value) VALUES (8, 'admin_organization_email_signatures', '{"signatures": [{"label": "Signature Organisation", "content": "<div><span><span><strong>[user.firstname] </strong></span></span><span>[user.lastname]</span></div>\\n<div><span><span><span><span><strong>[userPrimaryEntity.entity_label]</strong></span></span></span></span></div>\\n<div><span>[user.phone]</span></div>\\n<div><span><span>[userPrimaryEntity.address_number] [userPrimaryEntity.address_street], [userPrimaryEntity.address_postcode] [userPrimaryEntity.address_town]</span></span></div>\\n<div>&nbsp;</div>"}]}');
+INSERT INTO configurations (id, privilege, value) VALUES (9, 'admin_export_seda', '{}');
 
 INSERT INTO contacts (id, civility, firstname, lastname, company, department, function, address_number, address_street, address_additional1, address_additional2, address_postcode, address_town, address_country, email, phone, communication_means, notes, creator, creation_date, modification_date, enabled, custom_fields, external_id) VALUES (1, 1, 'Jean-Louis', 'ERCOLANI', 'MAARCH', '', 'Directeur Général', '11', 'Boulevard du Sud-Est', '', '', '99000', 'MAARCH LES BAINS', 'France', 'dev.maarch@maarch.org', '', NULL, 'Editeur du logiciel libre Maarch', 21, '2015-04-24 12:43:54.97424', '2016-07-25 16:28:38.498185', true, '{}', '{}');
 INSERT INTO contacts (id, civility, firstname, lastname, company, department, function, address_number, address_street, address_additional1, address_additional2, address_postcode, address_town, address_country, email, phone, communication_means, notes, creator, creation_date, modification_date, enabled, custom_fields, external_id) VALUES (4, 1, 'Nicolas', 'MARTIN', 'Préfecture de Maarch Les Bains', NULL, NULL, '13', 'RUE LA PREFECTURE', NULL, NULL, '99000', 'MAARCH LES BAINS', NULL, NULL, NULL, '{"url": "https://cchaplin:maarch@demo.maarchcourrier.com"}', NULL, 21, '2018-04-18 12:43:54.97424', '2020-03-24 15:06:58.16582', true, NULL, '{"m2m": "45239273100025/COU"}');
@@ -684,7 +690,7 @@ INSERT INTO notifications (notification_sid, notification_id, description, is_en
 INSERT INTO notifications (notification_sid, notification_id, description, is_enabled, event_id, notification_mode, template_id, diffusion_type, diffusion_properties, attachfor_type, attachfor_properties) VALUES (100, 'QUOTA', 'Alerte lorsque le quota est dépassé', 'Y', 'user_quota', 'EMAIL', 110, 'user', 'superadmin', NULL, NULL);
 
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('work_batch_autoimport_id', NULL, NULL, 1, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '21.03.1', NULL, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '22.12.1', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('user_quota', NULL, '', 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Département par défaut sélectionné dans les autocomplétions de la Base Adresse Nationale', '75', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('thumbnailsSize', 'Résolution des imagettes', '750x900', NULL, NULL);
@@ -707,7 +713,8 @@ INSERT INTO parameters (id, description, param_value_string, param_value_int, pa
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('traffic_record_summary_sheet', '', '', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_outgoing_2021', '', NULL, 3, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_incoming_2021', '', NULL, 4, NULL);
-INSERT INTO parameters (id, description, param_value_int) VALUES ('suggest_links_n_days_ago', 'Le nombre de jours sur lequel sont cherchés les courriers à lier', 0);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('suggest_links_n_days_ago', 'Le nombre de jours sur lequel sont cherchés les courriers à lier', NULL, 0, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('useSectorsForAddresses', 'Utilisation de la table address_sectors pour autocomplétion des adresses ; la BAN est ignorée (valeur = 1)', NULL, 0, NULL);
 
 INSERT INTO password_rules (id, label, value, enabled) VALUES (1, 'minLength', 6, true);
 INSERT INTO password_rules (id, label, value, enabled) VALUES (2, 'complexityUpper', 0, false);
@@ -2037,7 +2044,7 @@ INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUE
 INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUES (4, 'PSO', 'Responsable Pole Social', 'Y');
 
 ------------
---ENTITIES_FOLDERS
+-- ENTITIES_FOLDERS
 ------------
 TRUNCATE TABLE entities_folders;
 INSERT INTO entities_folders (folder_id, entity_id, edition)
@@ -2045,49 +2052,75 @@ SELECT folders.id, entities.id, false
 FROM folders, entities
 WHERE 1=1; 
 
-SELECT pg_catalog.setval('public.actions_id_seq', 537, true);
-SELECT pg_catalog.setval('public.attachment_types_id_seq', 10, false);
-SELECT pg_catalog.setval('public.baskets_id_seq', 25, true);
-SELECT pg_catalog.setval('public.configurations_id_seq', 8, true);
-SELECT pg_catalog.setval('public.contacts_civilities_id_seq', 6, true);
-SELECT pg_catalog.setval('public.contacts_custom_fields_list_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contacts_filling_id_seq', 1, true);
-SELECT pg_catalog.setval('public.contacts_groups_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contacts_groups_lists_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contacts_id_seq', 12, false);
-SELECT pg_catalog.setval('public.contacts_parameters_id_seq', 18, false);
-SELECT pg_catalog.setval('public.custom_fields_id_seq', 6, false);
-SELECT pg_catalog.setval('public.docservers_id_seq', 12, true);
-SELECT pg_catalog.setval('public.doctypes_first_level_id_seq', 2, false);
-SELECT pg_catalog.setval('public.doctypes_second_level_id_seq', 13, false);
-SELECT pg_catalog.setval('public.doctypes_type_id_seq', 1204, false);
-SELECT pg_catalog.setval('public.emails_id_seq', 8, true);
-SELECT pg_catalog.setval('public.entities_folders_id_seq', 760, true);
-SELECT pg_catalog.setval('public.entities_id_seq', 20, true);
-SELECT pg_catalog.setval('public.exports_templates_id_seq', 2, true);
-SELECT pg_catalog.setval('public.folders_id_seq', 38, true);
-SELECT pg_catalog.setval('public.groupbasket_id_seq', 38, true);
-SELECT pg_catalog.setval('public.groupbasket_redirect_system_id_seq', 734, true);
-SELECT pg_catalog.setval('public.indexing_models_fields_id_seq', 92, true);
-SELECT pg_catalog.setval('public.indexing_models_id_seq', 8, true);
-SELECT pg_catalog.setval('public.list_templates_id_seq', 1011, false);
-SELECT pg_catalog.setval('public.list_templates_items_id_seq', 44, true);
-SELECT pg_catalog.setval('public.notifications_seq', 101, false);
-SELECT pg_catalog.setval('public.password_rules_id_seq', 8, true);
-SELECT pg_catalog.setval('public.registered_mail_issuing_sites_entities_id_seq', 2, true);
-SELECT pg_catalog.setval('public.registered_mail_issuing_sites_id_seq', 2, false);
-SELECT pg_catalog.setval('public.registered_mail_number_range_id_seq', 3, true);
-SELECT pg_catalog.setval('public.search_templates_id_seq', 2, true);
-SELECT pg_catalog.setval('public.security_security_id_seq', 612, true);
-SELECT pg_catalog.setval('public.shipping_templates_id_seq', 2, false);
-SELECT pg_catalog.setval('public.shippings_id_seq', 1, false);
-SELECT pg_catalog.setval('public.status_identifier_seq', 42, true);
-SELECT pg_catalog.setval('public.status_images_id_seq', 30, true);
-SELECT pg_catalog.setval('public.tags_id_seq', 13, true);
-SELECT pg_catalog.setval('public.templates_association_id_seq', 626, true);
-SELECT pg_catalog.setval('public.templates_seq', 1048, true);
-SELECT pg_catalog.setval('public.tiles_id_seq', 19, true);
-SELECT pg_catalog.setval('public.user_signatures_id_seq', 2, true);
-SELECT pg_catalog.setval('public.usergroups_id_seq', 14, false);
-SELECT pg_catalog.setval('public.users_baskets_preferences_id_seq', 273, true);
-SELECT pg_catalog.setval('public.users_id_seq', 25, true);
+
+SELECT setval('acknowledgement_receipts_id_seq', (SELECT max(id)+1 FROM acknowledgement_receipts), false);
+SELECT setval('actions_id_seq', (SELECT max(id)+1 FROM actions), false);
+SELECT setval('address_sectors_id_seq', (SELECT max(id)+1 FROM address_sectors), false);
+SELECT setval('adr_attachments_id_seq', (SELECT max(id)+1 FROM adr_attachments), false);
+SELECT setval('adr_letterbox_id_seq', (SELECT max(id)+1 FROM adr_letterbox), false);
+SELECT setval('attachment_types_id_seq', (SELECT max(id)+1 FROM attachment_types), false);
+SELECT setval('baskets_id_seq', (SELECT max(id)+1 FROM baskets), false);
+SELECT setval('blacklist_id_seq', (SELECT max(id)+1 FROM blacklist), false);
+SELECT setval('configurations_id_seq', (SELECT max(id)+1 FROM configurations), false);
+SELECT setval('contacts_civilities_id_seq', (SELECT max(id)+1 FROM contacts_civilities), false);
+SELECT setval('contacts_custom_fields_list_id_seq', (SELECT max(id)+1 FROM contacts_custom_fields_list), false);
+SELECT setval('contacts_filling_id_seq', (SELECT max(id)+1 FROM contacts_filling), false);
+SELECT setval('contacts_groups_id_seq', (SELECT max(id)+1 FROM contacts_groups), false);
+SELECT setval('contacts_groups_lists_id_seq', (SELECT max(id)+1 FROM contacts_groups_lists), false);
+SELECT setval('contacts_id_seq', (SELECT max(id)+1 FROM contacts), false);
+SELECT setval('contacts_parameters_id_seq', (SELECT max(id)+1 FROM contacts_parameters), false);
+SELECT setval('custom_fields_id_seq', (SELECT max(id)+1 FROM custom_fields), false);
+SELECT setval('docservers_id_seq', (SELECT max(id)+1 FROM docservers), false);
+SELECT setval('doctypes_first_level_id_seq', (SELECT max(doctypes_first_level_id)+1 FROM doctypes_first_level), false);
+SELECT setval('doctypes_second_level_id_seq', (SELECT max(doctypes_second_level_id)+1 FROM doctypes_second_level), false);
+SELECT setval('doctypes_type_id_seq', (SELECT max(type_id)+1 FROM doctypes), false);
+SELECT setval('emails_id_seq', (SELECT max(id)+1 FROM emails), false);
+SELECT setval('entities_folders_id_seq', (SELECT max(id)+1 FROM entities_folders), false);
+SELECT setval('entities_id_seq', (SELECT max(id)+1 FROM entities), false);
+SELECT setval('exports_templates_id_seq', (SELECT max(id)+1 FROM exports_templates), false);
+SELECT setval('folders_id_seq', (SELECT max(id)+1 FROM folders), false);
+SELECT setval('groupbasket_id_seq', (SELECT max(id)+1 FROM groupbasket), false);
+SELECT setval('groupbasket_redirect_system_id_seq', (SELECT max(system_id)+1 FROM groupbasket_redirect), false);
+SELECT setval('history_batch_id_seq', (SELECT max(batch_id)+1 FROM history_batch), false);
+SELECT setval('history_id_seq', (SELECT max(id)+1 FROM history), false);
+SELECT setval('indexing_models_fields_id_seq', (SELECT max(id)+1 FROM indexing_models_fields), false);
+SELECT setval('indexing_models_id_seq', (SELECT max(id)+1 FROM indexing_models), false);
+SELECT setval('list_templates_id_seq', (SELECT max(id)+1 FROM list_templates), false);
+SELECT setval('list_templates_items_id_seq', (SELECT max(id)+1 FROM list_templates_items), false);
+SELECT setval('listinstance_history_details_id_seq', (SELECT max(listinstance_history_details_id)+1 FROM listinstance_history_details), false);
+SELECT setval('listinstance_history_id_seq', (SELECT max(listinstance_history_id)+1 FROM listinstance_history), false);
+SELECT setval('listinstance_id_seq', (SELECT max(listinstance_id)+1 FROM listinstance), false);
+SELECT setval('notes_entities_id_seq', (SELECT max(id)+1 FROM note_entities), false);
+SELECT setval('notes_id_seq', (SELECT max(id)+1 FROM notes), false);
+SELECT setval('notif_email_stack_seq', (SELECT max(email_stack_sid)+1 FROM notif_email_stack), false);
+SELECT setval('notif_event_stack_seq', (SELECT max(event_stack_sid)+1 FROM notif_event_stack), false);
+SELECT setval('notifications_seq', (SELECT max(notification_sid)+1 FROM notifications), false);
+SELECT setval('password_history_id_seq', (SELECT max(id)+1 FROM password_history), false);
+SELECT setval('password_rules_id_seq', (SELECT max(id)+1 FROM password_rules), false);
+SELECT setval('redirected_baskets_id_seq', (SELECT max(id)+1 FROM redirected_baskets), false);
+SELECT setval('registered_mail_issuing_sites_entities_id_seq', (SELECT max(id)+1 FROM registered_mail_issuing_sites_entities), false);
+SELECT setval('registered_mail_issuing_sites_id_seq', (SELECT max(id)+1 FROM registered_mail_issuing_sites), false);
+SELECT setval('registered_mail_number_range_id_seq', (SELECT max(id)+1 FROM registered_mail_number_range), false);
+SELECT setval('registered_mail_resources_id_seq', (SELECT max(id)+1 FROM registered_mail_resources), false);
+SELECT setval('res_attachment_res_id_seq', (SELECT max(res_id)+1 FROM res_attachments), false);
+SELECT setval('res_id_mlb_seq', (SELECT max(res_id)+1 FROM res_letterbox), false);
+SELECT setval('resource_contacts_id_seq', (SELECT max(id)+1 FROM resource_contacts), false);
+SELECT setval('resources_folders_id_seq', (SELECT max(id)+1 FROM resources_folders), false);
+SELECT setval('resources_tags_id_seq', (SELECT max(id)+1 FROM resources_tags), false);
+SELECT setval('search_templates_id_seq', (SELECT max(id)+1 FROM search_templates), false);
+SELECT setval('security_security_id_seq', (SELECT max(security_id)+1 FROM security), false);
+SELECT setval('shipping_templates_id_seq', (SELECT max(id)+1 FROM shipping_templates), false);
+SELECT setval('shippings_id_seq', (SELECT max(id)+1 FROM shippings), false);
+SELECT setval('status_identifier_seq', (SELECT max(identifier)+1 FROM status), false);
+SELECT setval('status_images_id_seq', (SELECT max(id)+1 FROM status_images), false);
+SELECT setval('tags_id_seq', (SELECT max(id)+1 FROM tags), false);
+SELECT setval('templates_association_id_seq', (SELECT max(id)+1 FROM templates_association), false);
+SELECT setval('templates_seq', (SELECT max(template_id)+1 FROM templates), false);
+SELECT setval('tiles_id_seq', (SELECT max(id)+1 FROM tiles), false);
+SELECT setval('user_signatures_id_seq', (SELECT max(id)+1 FROM user_signatures), false);
+SELECT setval('usergroups_id_seq', (SELECT max(id)+1 FROM usergroups), false);
+SELECT setval('users_baskets_preferences_id_seq', (SELECT max(id)+1 FROM users_baskets_preferences), false);
+SELECT setval('users_email_signatures_id_seq', (SELECT max(id)+1 FROM users_email_signatures), false);
+SELECT setval('users_followed_resources_id_seq', (SELECT max(id)+1 FROM users_followed_resources), false);
+SELECT setval('users_id_seq', (SELECT max(id)+1 FROM users), false);
+SELECT setval('users_pinned_folders_id_seq', (SELECT max(id)+1 FROM users_pinned_folders), false);
