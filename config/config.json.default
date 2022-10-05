@@ -65,9 +65,8 @@
     },
     "log": {
         "enable": true,
-        "businessCode": "MAARCH",
         "dateTimeFormate" : "d/m/Y H:i:s",
-        "lineFormat": "[%datetime%][%channel%][%level_name%][%message%][%context%][%extra%]\n",
+        "lineFormat": "[%datetime%][%extra.process_id%][%channel%][%level_name%][%message%][%extra%]\n",
         "logFonctionnel": {
             "level": "ERROR",
             "file": "./fonctionnel.log",

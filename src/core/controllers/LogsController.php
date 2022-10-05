@@ -24,6 +24,8 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\FilterHandler;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Processor\ProcessIdProcessor;
+use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
@@ -101,8 +103,6 @@ class LogsController
     {
         $logLine = str_replace(
             [
-                '%RESULT%',
-                '%CODE_METIER%',
                 '%WHERE%',
                 '%ID%',
                 '%HOW%',
@@ -112,8 +112,6 @@ class LogsController
                 '%REMOTE_IP%'
             ],
             [
-                'OK',
-                'MAARCH',
                 $args['lineData']['tableName'] ?? '',
                 $args['lineData']['recordId'] ?? '',
                 $args['lineData']['eventType'] ?? '',
@@ -122,7 +120,7 @@ class LogsController
                 $args['lineData']['moduleId'] ?? '',
                 $_SERVER['REMOTE_ADDR'] ?? ''
             ],
-            "[%RESULT%][%CODE_METIER%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
+            "[%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
         );
         if (!empty($args['lineData']['isSql'])) {
             $logLine  = empty($args['lineData']['sqlQuery']) ? '[]' : "[" . $args['lineData']['sqlQuery'] . "]";
@@ -170,6 +168,9 @@ class LogsController
         $logger = new Logger($log['name']);
         $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($log['level']));
         $logger->pushHandler($filterHandler);
+
+        $logger->pushProcessor(new ProcessIdProcessor());
+        $logger->pushProcessor(new MemoryUsageProcessor());
 
         switch ($log['level']) {
             case 'DEBUG':
