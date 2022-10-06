@@ -18,6 +18,7 @@ namespace SrcCore\controllers;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
+use SrcCore\processors\LogProcessor;
 
 // using Monolog version 2.6.0
 use Monolog\Logger;
@@ -76,7 +77,8 @@ class LogsController
                 'level'             => $args['level'],
                 'maxSize'           => LogsController::setMaxFileSize( $logConfig['queries']['maxFileSize']),
                 'maxFiles'          => $logConfig['queries']['maxBackupFiles'],
-                'line'              => $logLine
+                'line'              => $logLine,
+                'extraData'         => $args['extraData'] ?? []
             ]);
             return;
         }
@@ -90,7 +92,8 @@ class LogsController
             'level'             => $args['level'],
             'maxSize'           => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
             'maxFiles'          => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
-            'line'              => $logLine
+            'line'              => $logLine,
+            'extraData'         => $args['extraData'] ?? []
         ]);
     }
 
@@ -171,6 +174,7 @@ class LogsController
 
         $logger->pushProcessor(new ProcessIdProcessor());
         $logger->pushProcessor(new MemoryUsageProcessor());
+        $logger->pushProcessor(new LogProcessor($log['extraData']));
 
         switch ($log['level']) {
             case 'DEBUG':
