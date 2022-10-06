@@ -274,7 +274,6 @@ export class ProcessComponent implements OnInit, OnDestroy {
 
         await this.checkAccesDocument(this.currentResourceInformations.resId);
         this.loadAllResources();
-        
 
         this.actionService.lockResource(this.currentUserId, this.currentGroupId, this.currentBasketId, [this.currentResourceInformations.resId]);
 

@@ -24,6 +24,9 @@
       ],
       "@plugins/*": [
         "./plugins/*"
+      ],
+      "@models/*":  [
+        "./models/*"
       ]
     }
   },
