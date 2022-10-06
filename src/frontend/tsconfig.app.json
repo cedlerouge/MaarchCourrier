@@ -12,6 +12,9 @@
       ],
       "@plugins/*": [
         "../../src/frontend/plugins/*"
+      ],
+      "@models/*":  [
+        "../../src/frontend/models/*"
       ]
     }
   },
