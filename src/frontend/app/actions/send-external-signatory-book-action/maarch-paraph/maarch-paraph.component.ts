@@ -23,6 +23,7 @@ export class MaarchParaphComponent implements OnInit {
     @Input() resourcesToSign: any[] = [];
     @Input() additionalsInfos: any;
     @Input() externalSignatoryBookDatas: any;
+    @Input() signatoryBookEnabled: 'maarchParapheur' | 'fastParapheur' = 'maarchParapheur';
 
     loading: boolean = false;
 
