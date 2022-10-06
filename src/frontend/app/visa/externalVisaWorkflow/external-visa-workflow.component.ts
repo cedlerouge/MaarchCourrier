@@ -25,6 +25,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     @Input() injectDatas: any;
     @Input() adminMode: boolean;
     @Input() resId: number = null;
+    @Input() signatoryBookEnabled: 'maarchParapheur' | 'fastParapheur' = 'maarchParapheur';
 
     @Output() workflowUpdated = new EventEmitter<any>();
 
