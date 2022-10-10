@@ -153,13 +153,18 @@ class ActionsControllerTest extends TestCase
         $response     = $actionController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
-        $this->assertSame("Action does not exist", $responseBody->errors);
+        $this->assertSame(400, $response->getStatusCode());
+        $this->assertSame('Action does not exist', $responseBody->errors);
 
         // FAIL DELETE
+        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
+        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+
         $actionController = new \Action\controllers\ActionController();
         $response         = $actionController->delete($request, new \Slim\Http\Response(), ['id' => 'gaz']);
         $responseBody     = json_decode((string)$response->getBody());
 
+        $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Route id is not an integer', $responseBody->errors);
     }
 

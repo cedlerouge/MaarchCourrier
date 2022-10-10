@@ -58,6 +58,7 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {
@@ -876,7 +877,11 @@ class ResController extends ResourceControlController
         }
         $formattedData['linkedResources'] = count($linkedResources);
 
-        $attachments = AttachmentModel::get(['select' => ['count(1)'], 'where' => ['res_id_master = ?', 'status in (?)', 'attachment_type <> ?'], 'data' => [$args['resId'], ['TRA', 'A_TRA', 'FRZ'], 'summary_sheet']]);
+        $attachments = AttachmentModel::get([
+            'select' => ['count(1)'],
+            'where'  => ['res_id_master = ?', 'status in (?)', 'attachment_type not in (?)'],
+            'data'   => [$args['resId'], ['TRA', 'A_TRA', 'FRZ'], AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES]
+        ]);
         $formattedData['attachments'] = $attachments[0]['count'];
 
         $formattedData['diffusionList'] = 0;

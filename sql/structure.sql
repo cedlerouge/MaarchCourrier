@@ -1533,6 +1533,7 @@ CREATE TABLE attachment_types
     visible BOOLEAN NOT NULL,
     email_link BOOLEAN NOT NULL,
     signable BOOLEAN NOT NULL,
+    signed_by_default BOOLEAN NOT NULL,
     icon text,
     chrono BOOLEAN NOT NULL,
     version_enabled BOOLEAN NOT NULL,

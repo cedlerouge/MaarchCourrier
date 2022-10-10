@@ -31,7 +31,10 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         icon: new UntypedFormControl({ value: '', disabled: false }),
         versionEnabled: new UntypedFormControl({ value: false, disabled: false }),
         newVersionDefault: new UntypedFormControl({ value: false, disabled: false }),
+        signedByDefault: new UntypedFormControl({ value: false, disabled: false})
     };
+
+    unlistedAttachmentTypes: string[] = ['signed_response', 'summary_sheet', 'shipping_deposit_proof', 'shipping_acknowledgement_of_receipt'];
 
     constructor(
         public translate: TranslateService,
@@ -51,8 +54,6 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
 
         this.adminFormGroup = this._formBuilder.group(this.attachmentType);
         this.loading = true;
-        console.log(typeof this.attachmentType['signable'].value);
-
         this.route.params.subscribe(async (params) => {
             this.id = params['id'];
             if (typeof params['id'] === 'undefined') {
@@ -64,8 +65,12 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
                 this.http.get(`../rest/attachmentsTypes/${this.id}`).pipe(
                     tap((data: any) => {
                         Object.keys(this.attachmentType).forEach(key => {
-                            this.attachmentType[key].setValue(data[key]);
+                            this.attachmentType[key].setValue(data[key] === null ? false : data[key]);
                             if (key === 'typeId') {
+                                this.attachmentType[key].disable();
+                            }
+                            if (key === 'visible' && this.attachmentType['typeId'].value === 'signed_response') {
+                                this.attachmentType[key].setValue(false);
                                 this.attachmentType[key].disable();
                             }
                         });
