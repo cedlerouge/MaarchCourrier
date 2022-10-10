@@ -419,4 +419,32 @@ class FastParapheurController
         }
         return $response;
     }
+
+    public static function getUsers(array $args)
+    {
+        $businessId = $args['businessId'] ?? $args['config']['data']['subscriberId'];
+        $curlReturn = CurlModel::exec([
+            'url'           => $args['config']['data']['url'] . '/v1/exportUsersData?siren=' . $businessId,
+            'method'        => 'GET',
+            'options'       => [
+                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+            ]
+        ]);
+
+        if (empty($curlReturn['users'])) {
+            return [];
+        }
+
+        $users = [];
+        foreach ($curlReturn['users'] as $user) {
+            $users[] = [
+                'name'  => trim($user['prenom'] . ' ' . $user['nom']),
+                'email' => trim($user['email'])
+            ];
+        }
+
+        return $users;
+    }
 }
