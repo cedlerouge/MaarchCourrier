@@ -21,7 +21,7 @@ import { CollaboraOnlineViewerComponent } from '@plugins/collabora-online/collab
 import { AuthService } from '@service/auth.service';
 import { LocalStorageService } from '@service/local-storage.service';
 import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoint/office365-sharepoint-viewer.component';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-document-viewer',
@@ -30,7 +30,7 @@ import { ExternalSignatoryBookGeneratorService } from '@service/externalSignator
         'document-viewer.component.scss',
         '../indexation/indexing-form/indexing-form.component.scss',
     ],
-    providers: [SortPipe, ExternalSignatoryBookGeneratorService]
+    providers: [SortPipe, ExternalSignatoryBookManagerService]
 })
 
 export class DocumentViewerComponent implements OnInit, OnDestroy {
@@ -184,7 +184,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         public appService: AppService,
         public functions: FunctionsService,
         public privilegeService: PrivilegeService,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         private notify: NotificationService,
         private dialog: MatDialog,
         private sortPipe: SortPipe,
@@ -1419,7 +1419,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             data: {
                 id: this.resId,
                 type: 'resource',
-                title: this.translate.instant(`lang.${this.externalSignatoryBook.enabledSignatoryBook}Workflow`),
+                title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
                 linkedToMaarchParapheur: true
             }
         });
