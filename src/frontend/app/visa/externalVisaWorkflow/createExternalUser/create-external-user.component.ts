@@ -7,11 +7,12 @@ import { tap, catchError } from 'rxjs/operators';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ContactService } from '@service/contact.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 @Component({
     templateUrl: 'create-external-user.component.html',
     styleUrls: ['create-external-user.component.scss'],
-    providers: [ContactService]
+    providers: [ContactService, ExternalSignatoryBookGeneratorService]
 })
 
 export class CreateExternalUserComponent implements OnInit {
@@ -64,10 +65,11 @@ export class CreateExternalUserComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         public functions: FunctionsService,
-        private dialogRef: MatDialogRef<CreateExternalUserComponent>,
         public notify: NotificationService,
+        public externalSignatoryBokkGenerator: ExternalSignatoryBookGeneratorService,
+        @Inject(MAT_DIALOG_DATA) public data: any,
         private contactService: ContactService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: MatDialogRef<CreateExternalUserComponent>
 
     ) { }
 
@@ -80,29 +82,18 @@ export class CreateExternalUserComponent implements OnInit {
         }
     }
 
-    getConfig() {
-        return new Promise((resolve) => {
-            this.http.get('../rest/maarchParapheurOtp').pipe(
-                tap((data: any) => {
-                    if (data) {
-                        this.sources = data.otp;
-                        this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
-                        if (this.data.otpInfo === null) {
-                            this.userOTP.sourceId = this.sources[0].id;
-                            this.userOTP.type = this.sources[0].type;
-                        } else {
-                            this.userOTP = this.data.otpInfo;
-                        }
-                    }
-                    this.loading = false;
-                    resolve(true);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
+    async getConfig() {
+        const data: any = await this.externalSignatoryBokkGenerator.getOtpConfig();
+        if (!this.functions.empty(data)) {
+            this.sources = data.otp;
+            this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
+            if (this.data.otpInfo === null) {
+                this.userOTP.sourceId = this.sources[0].id;
+                this.userOTP.type = this.sources[0].type;
+            } else {
+                this.userOTP = this.data.otpInfo;
+            }
+        } this.loading = false;
     }
 
     addOtpUser() {
@@ -256,6 +247,5 @@ export class CreateExternalUserComponent implements OnInit {
             return phoneFormats;
         }, []).join('|');
         return new RegExp(`^(${regex})$`);
-    };
-
+    }
 }

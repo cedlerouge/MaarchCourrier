@@ -61,7 +61,10 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<any> {
-        this.otpConfig = await this.externalSignatoryBokkGenerator?.getOtpConfig() as number;
+        const data: any = await this.externalSignatoryBokkGenerator?.getOtpConfig();
+        if (!this.functions.empty(data)) {
+            this.otpConfig = data.otp.length;
+        }
     }
 
     drop(event: CdkDragDrop<string[]>) {
@@ -473,5 +476,9 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             }
         });
         return state;
+    }
+
+    getRouteDatas(): string[] {
+        return [this.externalSignatoryBokkGenerator.getAutocompleteUsersRoute()];
     }
 }

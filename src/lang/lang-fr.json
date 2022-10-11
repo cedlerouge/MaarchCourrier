@@ -2675,5 +2675,7 @@
     "deleteField": "Supprimer le champ",
     "workflowSignatoryRole": "Rôle signataire",
     "mandatory_final": "Obligatoire en fin de circuit",
-    "externalSignoryBookNotEnabled": "Aucun parapheur externe activé"
+    "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur"
 }

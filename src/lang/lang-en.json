@@ -2676,5 +2676,7 @@
     "deleteField": "Delete field",
     "workflowSignatoryRole": "Signatory role",
     "mandatory_final": "Mandatory at the end of the workflow",
-    "externalSignoryBookNotEnabled": "No external signatory book enabled"
+    "externalSignoryBookNotEnabled": "No external signatory book enabled",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur"
 }
