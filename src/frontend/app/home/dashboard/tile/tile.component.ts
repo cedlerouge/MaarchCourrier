@@ -7,11 +7,13 @@ import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { FunctionsService } from '@service/functions.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 @Component({
     selector: 'app-tile',
     templateUrl: 'tile.component.html',
-    styleUrls: ['tile.component.scss']
+    styleUrls: ['tile.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService]
 })
 export class TileDashboardComponent implements OnInit, AfterViewInit {
 
@@ -33,8 +35,9 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public appService: AppService,
+        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        private notify: NotificationService,
         public dashboardService: DashboardService,
         private functionsService: FunctionsService
     ) { }
@@ -133,5 +136,9 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
                 })
             ).subscribe();
         });
+    }
+
+    getTileLabel(tile: any) {
+        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.externalSignatoryBook.enabledSignatoryBook)})` : tile.label;
     }
 }

@@ -152,6 +152,7 @@ export class DashboardService {
                 'delete'
             ],
             views: [
+                // Maarch Parapheur views
                 {
                     id: 'list',
                     route: ':maarchParapheurUrl/dist/documents/:resId',
@@ -160,6 +161,16 @@ export class DashboardService {
                 {
                     id: 'summary',
                     route: ':maarchParapheurUrl/dist/home'
+                },
+                // Fast Parapheur views
+                {
+                    id: 'list',
+                    route: '',
+                    viewDocRoute: null
+                },
+                {
+                    id: 'summary',
+                    route: ''
                 }
             ]
         },

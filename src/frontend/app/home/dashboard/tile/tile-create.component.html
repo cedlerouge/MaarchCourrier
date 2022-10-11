@@ -55,6 +55,11 @@
             [class]="''" [label]="'lang.model' | translate" [datas]="searchTemplates" [formControlSelect]="searchTemplatesControl"  [returnValue]="'object'" [dataKey]="'id'"
             (afterSelected)="setSearchTemplate($event)">
         </app-plugin-select-search>
+        <mat-form-field appearance="outline" *ngIf="views.length > 0 && selectedTileType === 'externalSignatoryBook'">
+            <mat-label>{{ 'lang.externalSignatoryBook' | translate }}</mat-label>
+            <input matInput [(ngModel)]="enabledSignatoryBook" readonly
+                [title]="'lang.' + externalSignatoryBook.enabledSignatoryBook | translate">
+        </mat-form-field>
         <mat-form-field appearance="outline" *ngIf="views.length > 0">
             <mat-label>{{'lang.chartView' | translate}}</mat-label>
             <mat-select [(ngModel)]="selectedView" (selectionChange)="resetExtraParams()">
