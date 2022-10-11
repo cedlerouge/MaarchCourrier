@@ -211,6 +211,7 @@ class AutoCompleteController
         $users = array_filter($users, function ($user) use ($search) {
             return stripos($user['email'], $search) > -1 || stripos($user['name'], $search) > -1;
         });
+        $users = array_values($users);
 
         return $response->withJson($users);
     }
