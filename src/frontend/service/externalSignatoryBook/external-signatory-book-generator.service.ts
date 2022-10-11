@@ -58,6 +58,22 @@ export class ExternalSignatoryBookGeneratorService {
         });
     }
 
+    checkExternalSignatureBook(data: any) {
+        return new Promise((resolve) => {
+            this.http.post(`../rest/resourcesList/users/${data.userId}/groups/${data.groupId}/baskets/${data.basketId}/checkExternalSignatoryBook`, { resources: data.resIds }).pipe(
+                tap((result: any) => {
+                    resolve(result);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+
+        });
+    }
+
     loadListModel(entityId: number) {
         return this.serviceInjected.loadListModel(entityId);
     }
