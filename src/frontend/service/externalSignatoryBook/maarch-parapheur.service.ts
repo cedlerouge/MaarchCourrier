@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FunctionsService } from '@service/functions.service';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
     providedIn: 'root'
@@ -14,6 +15,7 @@ export class MaarchParapheurService {
 
     constructor(
         public functions: FunctionsService,
+        public translate: TranslateService,
         private http: HttpClient,
         private notify: NotificationService
 
@@ -69,6 +71,22 @@ export class MaarchParapheurService {
             this.http.get('../rest/maarchParapheurOtp').pipe(
                 tap((data: any) => {
                     resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    synchronizeSignatures(data: any) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${data.id}/externalSignatures`, {}).pipe(
+                tap((result: any) => {
+                    this.notify.success(this.translate.instant('lang.signsSynchronized'));
+                    resolve(result);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);

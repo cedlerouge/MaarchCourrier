@@ -21,12 +21,14 @@ import { AuthService } from '@service/auth.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 declare let $: any;
 
 @Component({
     templateUrl: 'user-administration.component.html',
-    styleUrls: ['user-administration.component.scss']
+    styleUrls: ['user-administration.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService]
 })
 export class UserAdministrationComponent implements OnInit {
 
@@ -127,17 +129,18 @@ export class UserAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public dialog: MatDialog,
+        public headerService: HeaderService,
+        public appService: AppService,
+        public authService: AuthService,
+        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        private privilegeService: PrivilegeService,
+        private viewContainerRef: ViewContainerRef,
         private route: ActivatedRoute,
         private router: Router,
         private zone: NgZone,
         private notify: NotificationService,
-        public dialog: MatDialog,
-        public headerService: HeaderService,
         private _formBuilder: UntypedFormBuilder,
-        public appService: AppService,
-        public authService: AuthService,
-        private privilegeService: PrivilegeService,
-        private viewContainerRef: ViewContainerRef
     ) {
         window['angularUserAdministrationComponent'] = {
             componentAfterUpload: (base64Content: any) => this.processAfterUpload(base64Content),
@@ -1008,17 +1011,9 @@ export class UserAdministrationComponent implements OnInit {
         this.user.userId = this.user.userId.toLowerCase();
     }
 
-    syncMP() {
+    async synchronizeSignatures() {
         this.loadingSign = true;
-
-        this.http.put('../rest/users/' + this.user.id + '/externalSignatures', {})
-            .subscribe((data: any) => {
-                this.loadingSign = false;
-                this.notify.success(this.translate.instant('lang.signsSynchronized'));
-            }, (err) => {
-                this.loadingSign = false;
-                this.notify.error(err.error.errors);
-            });
+        await this.externalSignatoryBook.synchronizeSignatures(this.user).finally(() => this.loadingSign = false);
     }
 }
 
