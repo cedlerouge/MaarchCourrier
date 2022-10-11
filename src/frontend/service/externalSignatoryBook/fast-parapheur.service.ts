@@ -16,7 +16,7 @@ export class FastParapheurService {
         private notify: NotificationService
     ) { }
 
-    getUserAvatar() {
+    getUserAvatar(externalId: number = null) {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(
                 tap((response: any) => {
@@ -58,6 +58,36 @@ export class FastParapheurService {
     loadWorkflow() {
         /**
          * Load worfklow from Fast Parapheur API
+         */
+    }
+
+    getAutocompleteDatas() {
+        /**
+         * Get datas from autocomplete users url
+         */
+    }
+
+    linkAccountToSignatoryBook() {
+        /**
+         * Link account to Fast Parapheur
+         */
+    }
+
+    unlinkSignatoryBookAccount() {
+        /**
+         * Unlink Fast Parapheur account
+         */
+    }
+
+    createExternalSignatoryBookAccount() {
+        /**
+         * Create Fast Parapheur account
+         */
+    }
+
+    checkInfoExternalSignatoryBookAccount() {
+        /**
+         * Check Fast Parapheur account status
          */
     }
 }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FunctionsService } from '@service/functions.service';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
     providedIn: 'root'
@@ -15,8 +16,8 @@ export class MaarchParapheurService {
     constructor(
         public functions: FunctionsService,
         private http: HttpClient,
+        public translate: TranslateService,
         private notify: NotificationService
-
     ) { }
 
     loadListModel(entityId: number) {
@@ -49,7 +50,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getUserAvatar(externalId: string) {
+    getUserAvatar(externalId: number) {
         return new Promise((resolve) => {
             this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
                 tap((data: any) => {
@@ -67,6 +68,88 @@ export class MaarchParapheurService {
     getOtpConfig() {
         return new Promise((resolve) => {
             this.http.get('../rest/maarchParapheurOtp').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    getAutocompleteDatas(data: any) {
+        return new Promise((resolve) => {
+            this.http.get(`..${this.autocompleteUsersRoute}`, { params: { 'search': data.user.mail, 'exludeAlreadyConnected': 'true' } })
+                .pipe(
+                    tap((result: any) => {
+                        resolve(result);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        resolve(null);
+                        return of(false);
+                    })
+                ).subscribe();
+        });
+    }
+
+    linkAccountToSignatoryBook(externalId: number, serialId: number) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${serialId}/linkToMaarchParapheur`, { maarchParapheurUserId: externalId }).pipe(
+                tap(() => {
+                    this.notify.success(this.translate.instant('lang.accountLinked'));
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(false);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    unlinkSignatoryBookAccount(serialId: number) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${serialId}/unlinkToMaarchParapheur`, {}).pipe(
+                tap(() => {
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(false);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${id}/createInMaarchParapheur`, { login: login }).pipe(
+                tap((data: any) => {
+                    this.notify.success(this.translate.instant('lang.accountAdded'));
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    if (err.error.errors === 'Login already exists') {
+                        this.translate.instant('lang.loginAlreadyExistsInMaarchParapheur');
+                    } else {
+                        this.notify.handleSoftErrors(err);
+                    }
+                    resolve(false);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    checkInfoExternalSignatoryBookAccount(serialId: number) {
+        return new Promise((resolve) => {
+            this.http.get('../rest/users/' + serialId + '/statusInMaarchParapheur').pipe(
                 tap((data: any) => {
                     resolve(data);
                 }),

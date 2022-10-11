@@ -29,7 +29,7 @@
                 </p>
             </a>
             <a mat-list-item *ngIf="user.canCreateMaarchParapheurUser || maarchParapheurLink.login === ''"
-                (click)="linkMaarchParapheurAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
+                (click)="linkExternalSignatoryBookAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
                 <mat-icon color="primary" mat-list-icon class="fa fa-link"></mat-icon>
                 <p mat-line>
                     {{'lang.linkAccount' | translate}}
@@ -49,7 +49,7 @@
                     <span>
                         {{maarchParapheurLink.login}}
                     </span>
-                    <button mat-icon-button color="warn" (click)="unlinkMaarchParapheurAccount()"
+                    <button mat-icon-button color="warn" (click)="unlinkSignatoryBookAccount()"
                         title="{{'lang.unlinkAccount' | translate}}">
                         <mat-icon class="fas fa-unlink"></mat-icon>
                     </button>

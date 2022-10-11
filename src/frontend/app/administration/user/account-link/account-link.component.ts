@@ -3,15 +3,19 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'account-link.component.html',
     styleUrls: ['account-link.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService]
 })
 export class AccountLinkComponent implements OnInit {
 
     externalUser: any = {
         inMaarchParapheur: false,
+        inFastParapheur: false,
         login: '',
         firstname: '',
         lastname: '',
@@ -22,44 +26,34 @@ export class AccountLinkComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public externalSignatoryBokkGenerator: ExternalSignatoryBookGeneratorService,
+        public functions: FunctionsService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public dialogRef: MatDialogRef<AccountLinkComponent>,
-        private notify: NotificationService) {
+        private notify: NotificationService
+    ) {
     }
 
-    ngOnInit(): void {
-        this.http.get('../rest/autocomplete/maarchParapheurUsers', { params: { 'search': this.data.user.mail, 'exludeAlreadyConnected': 'true' } })
-            .subscribe((dataUsers: any) => {
-                if (dataUsers.length > 0) {
-                    this.externalUser = dataUsers[0];
-                    this.externalUser.inMaarchParapheur = true;
-                    this.http.get('../rest/maarchParapheur/user/' + this.externalUser.id + '/picture')
-                        .subscribe((data: any) => {
-                            this.externalUser.picture = data.picture;
-                        }, (err) => {
-                            this.notify.handleErrors(err);
-                        });
-                } else {
-                    this.externalUser.inMaarchParapheur = false;
-                    this.externalUser = this.data.user;
-                    this.externalUser.login = this.data.user.user_id;
-                    this.externalUser.email = this.data.user.mail;
-                }
-            }, (err: any) => {
-                this.notify.handleErrors(err);
-            });
-
+    async ngOnInit(): Promise<void> {
+        const dataUsers: any = await this.externalSignatoryBokkGenerator.getAutocompleteUsersDatas(this.data);
+        if (!this.functions.empty(dataUsers)) {
+            if (dataUsers.length > 0) {
+                this.externalUser = dataUsers[0];
+                this.externalUser.inMaarchParapheur = true;
+                this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
+            } else {
+                this.externalUser.inMaarchParapheur = false;
+                this.externalUser = this.data.user;
+                this.externalUser.login = this.data.user.user_id;
+                this.externalUser.email = this.data.user.mail;
+            }
+        }
     }
 
-    selectUser(user: any) {
+    async selectUser(user: any) {
         this.externalUser = user;
         this.externalUser.inMaarchParapheur = true;
-        this.http.get('../rest/maarchParapheur/user/' + this.externalUser.id + '/picture')
-            .subscribe((data: any) => {
-                this.externalUser.picture = data.picture;
-            }, (err) => {
-                this.notify.handleErrors(err);
-            });
+        this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
     }
 
     unlinkMaarchParapheurAccount() {
@@ -67,5 +61,9 @@ export class AccountLinkComponent implements OnInit {
         this.externalUser = this.data.user;
         this.externalUser.login = this.data.user.user_id;
         this.externalUser.email = this.data.user.mail;
+    }
+
+    getRouteDatas(): string[] {
+        return [`${this.externalSignatoryBokkGenerator.getAutocompleteUsersRoute()}?exludeAlreadyConnected=true`];
     }
 }
