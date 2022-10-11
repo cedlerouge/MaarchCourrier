@@ -5,8 +5,6 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MaarchParapheurService } from './maarch-parapheur.service';
 import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
-import { E } from '@angular/cdk/keycodes';
-
 @Injectable()
 
 export class ExternalSignatoryBookGeneratorService {
@@ -34,19 +32,15 @@ export class ExternalSignatoryBookGeneratorService {
     }
 
     getEnabledSignatoryBook() {
-        return new Promise((resolve) => {
-            this.http.get('../rest/externalSignatureBooks/enabled').pipe(
-                tap((data: any) => {
-                    this.enabledSignatoryBook = data.enabledSignatureBook;
-                    resolve(this.enabledSignatoryBook);
-                }),
-                catchError((err: any) => {
-                    this.notifications.handleSoftErrors(err);
-                    resolve(null);
-                    return of(false);
-                })
-            ).subscribe();
-        });
+        this.http.get('../rest/externalSignatureBooks/enabled').pipe(
+            tap((data: any) => {
+                this.enabledSignatoryBook = data.enabledSignatureBook;
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     checkExternalSignatureBook(data: any) {
