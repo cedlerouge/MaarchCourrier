@@ -29,12 +29,59 @@ use SrcCore\models\DatabaseModel;
 use User\models\UserModel;
 use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
+use User\controllers\UserController;
+use History\controllers\HistoryController;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 /**
     * @codeCoverageIgnore
 */
 class FastParapheurController
 {
+    public function linkUserToFastParapheur(Request $request, Response $response, array $args)
+    {
+        $body = $request->getParsedBody();
+        if (!Validator::notEmpty()->email()->validate($body['fastParapheurUserEmail'] ?? null)) {
+            return $response->withStatus(400)->withJson(['errors' => 'body fastParapheurUserEmail is not a valid email address']);
+        }
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'args id is not an integer']);
+        }
+
+        $userController = new UserController();
+        $error = $userController->hasUsersRights(['id' => $args['id']]);
+        if (!empty($error['error'])) {
+            return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
+        }
+
+        $alreadyLinked = UserModel::get([
+            'select' => [1],
+            'where'  => ['external_id->>\'fastParapheur\' = ?'],
+            'data'   => [$body['fastParapheurUserEmail']]
+        ]);
+        if (!empty($alreadyLinked)) {
+            return $response->withStatus(403)->withJson(['errors' => 'FastParapheur user email can only be linked to a single MaarchCourrier user', 'lang' => 'fastParapheurUserAlreadyLinked']);
+        }
+
+        $userInfo = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $args['id']]);
+
+        $externalId = json_decode($userInfo['external_id'], true);
+        $externalId['fastParapheur'] = $body['fastParapheurUserEmail'];
+
+        UserModel::updateExternalId(['id' => $args['id'], 'externalId' => json_encode($externalId)]);
+
+        HistoryController::add([
+            'tableName'    => 'users',
+            'recordId'     => $GLOBALS['id'],
+            'eventType'    => 'ADD',
+            'eventId'      => 'userCreation',
+            'info'         => _USER_LINKED_TO_FASTPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+        ]);
+
+        return $response->withJson(['success' => 'success']);
+    }
+
     public static function retrieveSignedMails(array $args)
     {
         $version = $args['version'];

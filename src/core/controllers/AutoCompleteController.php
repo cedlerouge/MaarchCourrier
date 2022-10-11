@@ -171,11 +171,11 @@ class AutoCompleteController
         }
     }
 
-    public static function getFastParapheurUsers(Request $request, Response $response)
+    public function getFastParapheurUsers(Request $request, Response $response)
     {
         $queryParams = $request->getQueryParams();
-        if (!Validator::notEmpty()->stringType()->validate($queryParams['search'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'search is empty']);
+        if (!Validator::notEmpty()->stringType()->length(2)->validate($queryParams['search'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'search is empty or too short']);
         }
         $search = $queryParams['search'];
 

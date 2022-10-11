@@ -280,6 +280,8 @@ define('_USER_LINKED_TO_MAARCHPARAPHEUR', 'User linked to a Maarch Parapheur acc
 define('_USER_UNLINKED_TO_MAARCHPARAPHEUR', 'User unlinked from Maarch Parapheur');
 define('_SIGNATURES_SEND_TO_MAARCHPARAPHEUR', 'Signatures sent to Maarch Parapheur');
 
+define('_USER_LINKED_TO_FASTPARAPHEUR', 'User linked to a Fast Parapheur account');
+
 define('_CREATE_ACKNOWLEDGEMENT_RECEIPT', 'Generate and send acknowledgement receipt');
 define('_UPDATE_ACKNOWLEDGEMENT_SEND_DATE', 'Fill the acknowledgement of receipts send date');
 
