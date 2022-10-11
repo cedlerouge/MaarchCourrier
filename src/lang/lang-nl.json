@@ -1427,7 +1427,7 @@
     "onlyOfficeNotEnabled": "The onlyoffice server is not enabled__TO_TRANSLATE",
     "uriIsEmpty": "URI of onlyoffice server is empty__TO_TRANSLATE",
     "portIsEmpty": "Port of onlyoffice server is empty__TO_TRANSLATE",
-    "externalVisaWorkflow": "Visa workflow Maarch Parapheur__TO_TRANSLATE",
+    "maarchParapheurWorkflow": "Visa workflow Maarch Parapheur__TO_TRANSLATE",
     "IdMaarch2Maarch": "MAARCH2MAARCH identifier__TO_TRANSLATE",
     "indexingFile": "Indexation__TO_TRANSLATE",
     "signUserRequired": "A signatory is required__TO_TRANSLATE",

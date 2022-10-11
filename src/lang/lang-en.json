@@ -661,7 +661,7 @@
     "exportDatas": "Export data",
     "export_seda": "Seda export",
     "externalComponents": "External components",
-    "externalVisaWorkflow": "Maarch Parapheur visa workflow",
+    "maarchParapheurWorkflow": "Maarch Parapheur visa workflow",
     "february": "February",
     "februaryShort": "Feb.",
     "fewSeconds": "few seconds",
@@ -2679,5 +2679,6 @@
     "externalSignoryBookNotEnabled": "No external signatory book enabled",
     "maarchParapheur": "Maarch Parapheur",
     "fastParapheur": "Fast Parapheur",
-    "noOtpConfigurationFound": "No OTP configuration found"
+    "noOtpConfigurationFound": "No OTP configuration found",
+    "fastParapheurWorkflow": "Fast Parapheur workflow"
 }
