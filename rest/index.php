@@ -108,6 +108,7 @@ $app->delete('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeCon
 //AutoComplete
 $app->get('/autocomplete/users', \SrcCore\controllers\AutoCompleteController::class . ':getUsers');
 $app->get('/autocomplete/maarchParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getMaarchParapheurUsers');
+$app->get('/autocomplete/fastParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getFastParapheurUsers');
 $app->get('/autocomplete/correspondents', \SrcCore\controllers\AutoCompleteController::class . ':getCorrespondents');
 $app->get('/autocomplete/contacts', \SrcCore\controllers\AutoCompleteController::class . ':getContacts');
 $app->get('/autocomplete/contacts/company', \SrcCore\controllers\AutoCompleteController::class . ':getContactsCompany');

@@ -41,6 +41,7 @@ use Folder\controllers\FolderController;
 use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Contact\models\ContactAddressSectorModel;
+use ExternalSignatoryBook\controllers\FastParapheurController;
 
 class AutoCompleteController
 {
@@ -168,6 +169,50 @@ class AutoCompleteController
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
         }
+    }
+
+    public static function getFastParapheurUsers(Request $request, Response $response)
+    {
+        $queryParams = $request->getQueryParams();
+        if (!Validator::notEmpty()->stringType()->validate($queryParams['search'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'search is empty']);
+        }
+        $search = $queryParams['search'];
+
+        if (!empty($queryParams['excludeAlreadyConnected'])) {
+            $usersAlreadyConnected = UserModel::get([
+                'select' => ['external_id->>\'fastParapheur\' as external_id'],
+                'where'  => ['external_id->>\'fastParapheur\' is not null']
+            ]);
+            $excludedUsers = array_column($usersAlreadyConnected, 'external_id');
+        }
+
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
+            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        }
+
+        $config = [];
+        foreach ($loadedXml->signatoryBook as $signatoryBookConfig) {
+            if ($signatoryBookConfig->id == 'fastParapheur') {
+                $config = (array)$signatoryBookConfig;
+                break;
+            }
+        }
+        if (empty($config)) {
+            return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
+        }
+
+        // TODO gérer subscriberId par entité (businessId de l’entité)
+        $users = FastParapheurController::getUsers(['config' => $config]);
+        $users = array_filter($users, function ($user) use ($excludedUsers) {
+            return !in_array($user['email'], $excludedUsers);
+        });
+        $users = array_filter($users, function ($user) use ($search) {
+            return stripos($user['email'], $search) > -1 || stripos($user['name'], $search) > -1;
+        });
+
+        return $response->withJson($users);
     }
 
     public static function getCorrespondents(Request $request, Response $response)

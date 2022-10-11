@@ -45,7 +45,7 @@ class FastParapheurController
             }
 
             $curlReturn = CurlModel::exec([
-                'url'           => $args['config']['data']['url'] . '/v2/' . $value['external_id'] . '/history',
+                'url'           => $args['config']['data']['url'] . '/documents/v2/' . $value['external_id'] . '/history',
                 'method'        => 'GET',
                 'options'       => [
                     CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -280,7 +280,7 @@ class FastParapheurController
         $circuitId     = str_replace('.', '-', $args['circuitId']);
         
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/v2/' . $args['subscriberId'] . '/' . $circuitId . '/upload',
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['subscriberId'] . '/' . $circuitId . '/upload',
             'method'        => 'POST',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -310,7 +310,7 @@ class FastParapheurController
     public static function download(array $args)
     {
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/v2/' . $args['documentId'] . '/download',
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/download',
             'method'        => 'GET',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -389,7 +389,7 @@ class FastParapheurController
     public static function getRefusalMessage(array $args)
     {
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/v2/' . $args['documentId'] . '/comments/refusal',
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/comments/refusal',
             'method'        => 'GET',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -422,23 +422,23 @@ class FastParapheurController
 
     public static function getUsers(array $args)
     {
-        $businessId = $args['businessId'] ?? $args['config']['data']['subscriberId'];
+        $businessId = $args['businessId'] ?? $args['config']['subscriberId'];
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/v1/exportUsersData?siren=' . $businessId,
+            'url'           => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($businessId),
             'method'        => 'GET',
             'options'       => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
-                CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                CURLOPT_SSLCERT       => $args['config']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
             ]
         ]);
 
-        if (empty($curlReturn['users'])) {
+        if (empty($curlReturn['response']['users'])) {
             return [];
         }
 
         $users = [];
-        foreach ($curlReturn['users'] as $user) {
+        foreach ($curlReturn['response']['users'] as $user) {
             $users[] = [
                 'name'  => trim($user['prenom'] . ' ' . $user['nom']),
                 'email' => trim($user['email'])
