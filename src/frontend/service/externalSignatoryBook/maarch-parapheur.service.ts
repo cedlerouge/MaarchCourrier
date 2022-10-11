@@ -49,7 +49,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getUserAvatar(externalId: string) {
+    getUserAvatar(externalId: number) {
         return new Promise((resolve) => {
             this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
                 tap((data: any) => {
