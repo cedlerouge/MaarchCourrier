@@ -190,4 +190,10 @@ export class FastParapheurService {
          * Synchronize signatures
          */
     }
+
+    synchronizeSignatures(data: any) {
+        /**
+         * Synchronize signatures
+         */
+    }
 }
