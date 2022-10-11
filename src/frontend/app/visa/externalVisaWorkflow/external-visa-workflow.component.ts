@@ -311,7 +311,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         }
     }
 
-    async getUserAvatar(externalId: string, key: number) {
+    async getUserAvatar(externalId: number, key: number) {
         if (!this.functions.empty(externalId)) {
             this.visaWorkflow.items[key].picture = await this.externalSignatoryBokkGenerator?.getUserAvatar(externalId);
         }
