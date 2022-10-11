@@ -73,7 +73,7 @@ export class ExternalSignatoryBookGeneratorService {
         return this.serviceInjected.loadWorkflow(attachmentId, type);
     }
 
-    getUserAvatar(externalId: string) {
+    getUserAvatar(externalId: number) {
         return this.serviceInjected.getUserAvatar(externalId);
     }
 
@@ -83,5 +83,25 @@ export class ExternalSignatoryBookGeneratorService {
 
     getAutocompleteUsersRoute(): string {
         return this.serviceInjected.autocompleteUsersRoute;
+    }
+
+    getAutocompleteUsersDatas(data: any) {
+        return this.serviceInjected.getAutocompleteDatas(data);
+    }
+
+    linkAccountToSignatoryBook(externalId: number, serialId: number) {
+        return this.serviceInjected.linkAccountToSignatoryBook(externalId, serialId);
+    }
+
+    unlinkSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected.unlinkSignatoryBookAccount(serialId);
+    }
+
+    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+        return this.serviceInjected.createExternalSignatoryBookAccount(id, login, serialId);
+    }
+
+    checkInfoExternalSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected.checkInfoExternalSignatoryBookAccount(serialId);
     }
 }
