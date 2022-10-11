@@ -661,7 +661,7 @@
     "exportDatas": "Export data",
     "export_seda": "Seda export",
     "externalComponents": "External components",
-    "externalVisaWorkflow": "Maarch Parapheur visa workflow",
+    "maarchParapheurWorkflow": "Maarch Parapheur visa workflow",
     "february": "February",
     "februaryShort": "Feb.",
     "fewSeconds": "few seconds",
@@ -2684,5 +2684,6 @@
     "checkExternalSignatoryBookConfig": "Check the <b>external signatory book</b> configuration in the <b>remoteSignatoryBooks.xml</b> file of your custom",
     "ixbus": "Ixbus",
     "iParapheur": "IParapheur",
-    "xParaph": "XParaph"
+    "xParaph": "XParaph",
+    "fastParapheurWorkflow": "Fast Parapheur workflow"
 }

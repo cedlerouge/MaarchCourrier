@@ -44,8 +44,8 @@
                     </button>
                     <ng-container *ngIf="maarchParapheurEnabled && attachment.status === 'FRZ'">
                         <mat-divider></mat-divider>
-                        <button mat-menu-item (click)="openMaarchParapheurWorkflow(attachment)">
-                            {{'lang.externalVisaWorkflow' | translate}}
+                        <button mat-menu-item (click)="openExternalSignatoryBookWorkflow(attachment)">
+                            {{'lang.maarchParapheurWorkflow' | translate}}
                         </button>
                     </ng-container>
                 </mat-menu>
