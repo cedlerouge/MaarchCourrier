@@ -2672,5 +2672,6 @@
     "emptyListOfCustomFields": "La liste des champs personnalisés est vide",
     "updateFieldsForMail": "Les valeurs des champs <b>{{fields}}</b> seront mises à jour via cette action.",
     "updateFieldsForMails": "Les valeurs des champs ci-dessous seront mises à jour via cette action.",
-    "deleteField": "Supprimer le champ"
+    "deleteField": "Supprimer le champ",
+    "externalSignoryBookNotEnabled": "Aucun parapheur externe activé"
 }
