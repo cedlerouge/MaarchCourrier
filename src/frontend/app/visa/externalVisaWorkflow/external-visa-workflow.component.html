@@ -1,6 +1,6 @@
 <mat-list *ngIf="!loading">
     <app-plugin-autocomplete *ngIf="adminMode" [labelPlaceholder]="'lang.addPerson' | translate"
-        [routeDatas]="['/rest/autocomplete/maarchParapheurUsers']" [targetSearchKey]="'idToDisplay'"
+        [routeDatas]="getRouteDatas()" [targetSearchKey]="'idToDisplay'"
         [subInfoKey]="'email'" (triggerEvent)="addItemToWorkflow($event)" appearance="outline"
         [fromExternalWorkflow]="true" [connectorLength]="otpConfig" [resId]="resId" (updateVisaWorkflow)="updateVisaWorkflow($event)">
     </app-plugin-autocomplete>
