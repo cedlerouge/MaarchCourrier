@@ -9,6 +9,8 @@ import { NotificationService } from '@service/notification/notification.service'
 
 export class FastParapheurService {
 
+    autocompleteUsersRoute: string = '';
+
     constructor(
         private http: HttpClient,
         private notify: NotificationService

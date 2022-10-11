@@ -2674,5 +2674,7 @@
     "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.",
     "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.",
     "deleteField": "Delete field",
-    "externalSignoryBookNotEnabled": "No external signatory book enabled"
+    "externalSignoryBookNotEnabled": "No external signatory book enabled",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur"
 }

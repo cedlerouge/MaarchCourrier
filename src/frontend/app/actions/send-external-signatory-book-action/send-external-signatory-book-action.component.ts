@@ -12,10 +12,13 @@ import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
     styleUrls: ['send-external-signatory-book-action.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService]
 })
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
@@ -61,9 +64,11 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<SendExternalSignatoryBookActionComponent>,
+        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public functions: FunctionsService,
         @Inject(MAT_DIALOG_DATA) public data: any,
+        private notify: NotificationService,
         private changeDetectorRef: ChangeDetectorRef,
         private sessionStorage: SessionStorageService
     ) { }
@@ -102,31 +107,23 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         }
     }
 
-    checkExternalSignatureBook() {
+    async checkExternalSignatureBook() {
         this.loading = true;
-
-        return new Promise((resolve) => {
-            this.http.post(`../rest/resourcesList/users/${this.data.userId}/groups/${this.data.groupId}/baskets/${this.data.basketId}/checkExternalSignatoryBook`, { resources: this.data.resIds }).pipe(
-                tap((data: any) => {
-                    this.additionalsInfos = data.additionalsInfos;
-                    if (this.additionalsInfos.attachments.length > 0) {
-                        this.signatoryBookEnabled = data.signatureBookEnabled;
-                        this.resourcesMailing = data.additionalsInfos.attachments.filter((element: any) => element.mailing);
-                        data.availableResources.filter((element: any) => !element.mainDocument).forEach((element: any) => {
-                            this.toggleDocToSign(true, element, false);
-                        });
-                    }
-                    this.errors = data.errors;
-                    resolve(true);
-                }),
-                finalize(() => this.loading = false),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    this.dialogRef.close();
-                    return of(false);
-                })
-            ).subscribe();
-        });
+        const data: any = await this.externalSignatoryBook.checkExternalSignatureBook(this.data);
+        if (!this.functions.empty(data)) {
+            this.additionalsInfos = data.additionalsInfos;
+            if (this.additionalsInfos.attachments.length > 0) {
+                this.signatoryBookEnabled = data.signatureBookEnabled;
+                this.resourcesMailing = data.additionalsInfos.attachments.filter((element: any) => element.mailing);
+                data.availableResources.filter((element: any) => !element.mainDocument).forEach((element: any) => {
+                    this.toggleDocToSign(true, element, false);
+                });
+            }
+            this.errors = data.errors;
+        } else {
+            this.dialogRef.close();
+        }
+        this.loading = false;
     }
 
     executeAction() {
@@ -193,7 +190,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition() {
-        if (this.signatoryBookEnabled === 'maarchParapheur') {
+        if (this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
