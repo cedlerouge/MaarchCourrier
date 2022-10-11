@@ -76,7 +76,36 @@ class FastParapheurController
             'recordId'     => $GLOBALS['id'],
             'eventType'    => 'ADD',
             'eventId'      => 'userCreation',
-            'info'         => _USER_LINKED_TO_FASTPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'info'         => _USER_LINKED_TO_FASTPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
+        ]);
+
+        return $response->withJson(['success' => 'success']);
+    }
+
+    public function unlinkUserToFastParapheur(Request $request, Response $response, array $args)
+    {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'args id is not an integer']);
+        }
+
+        $userController = new UserController();
+        $error = $userController->hasUsersRights(['id' => $args['id']]);
+        if (!empty($error['error'])) {
+            return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
+        }
+
+        $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'external_id']]);
+        $externalId = json_decode($user['external_id']);
+        unset($externalId->fastParapheur);
+
+        UserModel::updateExternalId(['id' => $args['id'], 'externalId' => json_encode($externalId)]);
+
+        HistoryController::add([
+            'tableName'    => 'users',
+            'recordId'     => $GLOBALS['id'],
+            'eventType'    => 'ADD',
+            'eventId'      => 'userCreation',
+            'info'         => _USER_UNLINKED_TO_FASTPARAPHEUR . " : {$user['firstname']} {$user['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);

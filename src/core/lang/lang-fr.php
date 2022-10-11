@@ -281,6 +281,7 @@ define('_USER_UNLINKED_TO_MAARCHPARAPHEUR', 'Utilisateur dissocié d\'un Maarch 
 define('_SIGNATURES_SEND_TO_MAARCHPARAPHEUR', 'Signature(s) envoyée(s) à Maarch Parapheur');
 
 define('_USER_LINKED_TO_FASTPARAPHEUR', 'Utilisateur associé à un compte Fast Parapheur');
+define('_USER_UNLINKED_TO_FASTPARAPHEUR', 'Utilisateur dissocié d\'un compte Fast Parapheur');
 
 define('_CREATE_ACKNOWLEDGEMENT_RECEIPT', 'Générer et envoyer les accusés de réception');
 define('_UPDATE_ACKNOWLEDGEMENT_SEND_DATE', 'Renseigner la date d\'envoi des accusés de réception pdf');
