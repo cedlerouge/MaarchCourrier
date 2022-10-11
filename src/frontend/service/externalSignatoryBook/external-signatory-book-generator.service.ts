@@ -55,7 +55,6 @@ export class ExternalSignatoryBookGeneratorService {
                     return of(false);
                 })
             ).subscribe();
-
         });
     }
 
