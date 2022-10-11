@@ -78,4 +78,19 @@ export class ExternalSignatoryBookGeneratorService {
     getAutocompleteUsersRoute(): string {
         return this.serviceInjected.autocompleteUsersRoute;
     }
+
+    isLinkedToExternalSignatoryBook() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/home').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
 }
