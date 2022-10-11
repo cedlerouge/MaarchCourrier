@@ -87,4 +87,24 @@ export class ExternalSignatoryBookManagerService {
         });
         return res;
     }
+
+    getAutocompleteUsersDatas(data: any) {
+        return this.serviceInjected.getAutocompleteDatas(data);
+    }
+
+    linkAccountToSignatoryBook(externalId: number, serialId: number) {
+        return this.serviceInjected.linkAccountToSignatoryBook(externalId, serialId);
+    }
+
+    unlinkSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected.unlinkSignatoryBookAccount(serialId);
+    }
+
+    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+        return this.serviceInjected.createExternalSignatoryBookAccount(id, login, serialId);
+    }
+
+    checkInfoExternalSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected.checkInfoExternalSignatoryBookAccount(serialId);
+    }
 }

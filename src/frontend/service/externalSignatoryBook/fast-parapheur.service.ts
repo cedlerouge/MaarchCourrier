@@ -61,4 +61,34 @@ export class FastParapheurService {
          * Load worfklow from Fast Parapheur API
          */
     }
+
+    getAutocompleteDatas() {
+        /**
+         * Get datas from autocomplete users url
+         */
+    }
+
+    linkAccountToSignatoryBook() {
+        /**
+         * Link account to Fast Parapheur
+         */
+    }
+
+    unlinkSignatoryBookAccount() {
+        /**
+         * Unlink Fast Parapheur account
+         */
+    }
+
+    createExternalSignatoryBookAccount() {
+        /**
+         * Create Fast Parapheur account
+         */
+    }
+
+    checkInfoExternalSignatoryBookAccount() {
+        /**
+         * Check Fast Parapheur account status
+         */
+    }
 }
