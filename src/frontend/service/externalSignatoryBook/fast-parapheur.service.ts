@@ -172,4 +172,10 @@ export class FastParapheurService {
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
         return additionalsInfos.attachments.length > 0 && workflow.length > 0;
     }
+
+    synchronizeSignatures(data: any) {
+        /**
+         * Synchronize signatures
+         */
+    }
 }

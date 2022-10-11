@@ -17,8 +17,8 @@ export class MaarchParapheurService {
 
     constructor(
         public functions: FunctionsService,
-        private http: HttpClient,
         public translate: TranslateService,
+        private http: HttpClient,
         private notify: NotificationService
     ) { }
 
