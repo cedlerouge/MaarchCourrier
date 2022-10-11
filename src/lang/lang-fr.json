@@ -672,7 +672,7 @@
     "exportDatas": "Exporter les données",
     "export_seda": "Export seda",
     "externalComponents": "Composants externes",
-    "externalVisaWorkflow": "Circuit de visa Maarch Parapheur",
+    "maarchParapheurWorkflow": "Circuit de visa Maarch Parapheur",
     "february": "Février",
     "februaryShort": "Fév.",
     "fewSeconds": "quelques secondes",
@@ -2675,5 +2675,6 @@
     "deleteField": "Supprimer le champ",
     "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
     "maarchParapheur": "Maarch Parapheur",
-    "fastParapheur": "Fast Parapheur"
+    "fastParapheur": "Fast Parapheur",
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
 }

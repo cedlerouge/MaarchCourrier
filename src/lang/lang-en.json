@@ -661,7 +661,7 @@
     "exportDatas": "Export data",
     "export_seda": "Seda export",
     "externalComponents": "External components",
-    "externalVisaWorkflow": "Maarch Parapheur visa workflow",
+    "maarchParapheurWorkflow": "Maarch Parapheur visa workflow",
     "february": "February",
     "februaryShort": "Feb.",
     "fewSeconds": "few seconds",
@@ -2676,5 +2676,6 @@
     "deleteField": "Delete field",
     "externalSignoryBookNotEnabled": "No external signatory book enabled",
     "maarchParapheur": "Maarch Parapheur",
-    "fastParapheur": "Fast Parapheur"
+    "fastParapheur": "Fast Parapheur",
+    "fastParapheurWorkflow": "Fast Parapheur workflow"
 }

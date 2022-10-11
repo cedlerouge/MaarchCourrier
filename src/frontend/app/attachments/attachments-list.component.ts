@@ -13,11 +13,13 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { VisaWorkflowModalComponent } from '../visa/modal/visa-workflow-modal.component';
 import { AppService } from '@service/app.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 @Component({
     selector: 'app-attachments-list',
     templateUrl: 'attachments-list.component.html',
     styleUrls: ['attachments-list.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService],
     animations: [
         trigger(
             'myAnimation',
@@ -40,6 +42,15 @@ import { AppService } from '@service/app.service';
 export class AttachmentsListComponent implements OnInit {
 
 
+    @Input() injectDatas: any;
+    @Input() resId: number = null;
+    @Input() target: string = 'panel';
+    @Input() autoOpenCreation: boolean = false;
+    @Input() canModify: boolean = null;
+    @Output() reloadBadgeAttachments = new EventEmitter<string>();
+
+    @Output() afterActionAttachment = new EventEmitter<string>();
+
     attachments: any;
     loading: boolean = true;
     pos = 0;
@@ -53,29 +64,25 @@ export class AttachmentsListComponent implements OnInit {
 
     dialogRef: MatDialogRef<any>;
 
-    @Input() injectDatas: any;
-    @Input() resId: number = null;
-    @Input() target: string = 'panel';
-    @Input() autoOpenCreation: boolean = false;
-    @Input() canModify: boolean = null;
-    @Output() reloadBadgeAttachments = new EventEmitter<string>();
-
-    @Output() afterActionAttachment = new EventEmitter<string>();
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialog: MatDialog,
         public appService: AppService,
+        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        private notify: NotificationService,
         private headerService: HeaderService,
-        private privilegeService: PrivilegeService) { }
+        private privilegeService: PrivilegeService
+    ) { }
 
     ngOnInit(): void {
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-        this.checkMaarchParapheurEnabled();
+        if (this.externalSignatoryBook.enabledSignatoryBook === 'maarchParapheur') {
+            this.maarchParapheurEnabled = true;
+        }
         if (this.resId !== null) {
             this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
                 tap((data: any) => {
@@ -99,17 +106,6 @@ export class AttachmentsListComponent implements OnInit {
                 })
             ).subscribe();
         }
-    }
-
-    checkMaarchParapheurEnabled() {
-        this.http.get('../rest/externalSignatureBooks/enabled')
-            .subscribe((data: any) => {
-                if (data.enabledSignatureBook === 'maarchParapheur') {
-                    this.maarchParapheurEnabled = true;
-                }
-            }, (err: any) => {
-                this.notify.error(err.error.errors);
-            });
     }
 
     loadAttachments(resId: number) {
@@ -229,7 +225,15 @@ export class AttachmentsListComponent implements OnInit {
         this.currentFilter = ev.value;
     }
 
-    openMaarchParapheurWorkflow(attachment: any) {
-        this.dialog.open(VisaWorkflowModalComponent, { panelClass: 'maarch-modal', data: { id: attachment.resId, type: 'attachment', linkedToMaarchParapheur: true } });
+    openExternalSignatoryBookWorkflow(attachment: any) {
+        this.dialog.open(VisaWorkflowModalComponent, {
+            panelClass: 'maarch-modal',
+            data: {
+                id: attachment.resId,
+                type: 'attachment',
+                title: this.translate.instant(`lang.${this.externalSignatoryBook.enabledSignatoryBook}Workflow`),
+                linkedToMaarchParapheur: true
+            }
+        });
     }
 }
