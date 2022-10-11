@@ -8,10 +8,12 @@ import { FunctionsService } from '@service/functions.service';
 import { tap } from 'rxjs/operators';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PrivilegeService } from '@service/privileges.service';
+import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 @Component({
     templateUrl: 'summary-sheet.component.html',
-    styleUrls: ['summary-sheet.component.scss']
+    styleUrls: ['summary-sheet.component.scss'],
+    providers: [ExternalSignatoryBookGeneratorService]
 })
 export class SummarySheetComponent implements OnInit {
 
@@ -135,6 +137,18 @@ export class SummarySheetComponent implements OnInit {
             enabled: true
         },
         {
+            id: 'visaWorkflowFastParapheur',
+            unit: 'visaWorkflowFastParapheur',
+            label: this.translate.instant('lang.fastParapheurWorkflow'),
+            css: 'col-md-4 text-center',
+            desc: [
+                this.translate.instant('lang.firstname') + ' ' + this.translate.instant('lang.lastname'),
+                this.translate.instant('lang.role'),
+                this.translate.instant('lang.processDate')
+            ],
+            enabled: true
+        },
+        {
             id: 'notes',
             unit: 'notes',
             label: this.translate.instant('lang.notes'),
@@ -167,12 +181,14 @@ export class SummarySheetComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<SummarySheetComponent>,
+        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
         private privilegeService: PrivilegeService,
-        private sanitizer: DomSanitizer) { }
+        private notify: NotificationService,
+        private sanitizer: DomSanitizer
+    ) { }
 
     ngOnInit(): void {
         this.paramMode = !this.functions.empty(this.data.paramMode);
@@ -192,13 +208,13 @@ export class SummarySheetComponent implements OnInit {
             })
         ).subscribe();
 
-        this.http.get('../rest/externalSignatureBooks/enabled').pipe(
-            tap((data: any) => {
-                if (data.enabledSignatureBook !== 'maarchParapheur') {
-                    this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
-                }
-            })
-        ).subscribe();
+        if (this.externalSignatoryBook.enabledSignatoryBook === 'maarchParapheur') {
+            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur');
+        } else if (this.externalSignatoryBook.enabledSignatoryBook === 'fastParapheur') {
+            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
+        } else {
+            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur' && item.id !== 'visaWorkflowMaarchParapheur');
+        }
 
         if (!this.privilegeService.hasCurrentUserPrivilege('view_doc_history') && !this.privilegeService.hasCurrentUserPrivilege('view_full_history')) {
             this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'workflowHistory');
