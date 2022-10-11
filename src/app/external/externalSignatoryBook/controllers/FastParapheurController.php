@@ -15,6 +15,7 @@
 
 namespace ExternalSignatoryBook\controllers;
 
+use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
@@ -381,6 +382,64 @@ class FastParapheurController
         FastParapheurController::processVisaWorkflow(['res_id_master' => $args['resIdMaster'], 'processSignatory' => false]);
         $documentId = $curlReturn['response'];
         return ['success' => (string)$documentId];
+    }
+
+    public static function uploadWithCircuit(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'circuit', 'businessId']);
+        ValidatorModel::intType($args, ['resIdMaster']);
+        ValidatorModel::arrayType($args, ['circuit']);
+        ValidatorModel::stringType($args, ['businessId']);
+
+        $resource = ResModel::getById([
+            'resId'  => $args['resIdMaster'],
+            'select' => ['res_id', 'subject', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
+        ]);
+
+        if (empty($resource)) {
+            return ['errors' => 'resource does not exist'];
+        }
+
+        if (!empty($resource['external_id']['fastParapheur'])) {
+            return ['errors' => 'resource is already in fastParapheur'];
+        }
+
+        $upload = [];
+        $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
+        $docservers = array_column($docservers, 'path_template', 'docserver_id');
+        if ($resource['category_id'] == 'outgoing') {
+            if (empty($docservers[$resource['docserver_id']]['path_template'])) {
+                return ['errors' => 'resource docserver does not exist'];
+            }
+            $resource['integrations'] = json_decode($resource['integrations'], true);
+            if (!$resource['integrations']['inSignatureBook']) {
+                return ['errors' => 'main document must be in signature book for outgoing resource'];
+            }
+            $upload = [
+                'path'       => $docservers[$resource['docserver_id']]['path_template'] . $resource['path'] . $resource['filename'],
+                'comments'   => $resource['subject'],
+                'appendices' => []
+            ];
+            $attachments = AttachmentModel::get([
+                'select'    => [
+                    'res_id', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
+                ],
+                'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')", 'in_signature_book is true'],
+                'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
+            ]);
+            foreach ($attachments as $attachment) {
+                if (empty($docservers[$attachment['docserver_id']])) {
+                    continue;
+                }
+                $upload['appendices'][] = [
+                    'path' => $docservers[$attachment['docserver_id']]['path_template'] . $attachment['path'] . $attachment['filename']
+                ];
+            }
+        } elseif ($resource['category_id'] == 'incoming') {
+            // TODO populate $upload
+        } else {
+            return ['errors' => 'resource category_id must be either incoming or outgoing'];
+        }
     }
 
     public static function download(array $args)
