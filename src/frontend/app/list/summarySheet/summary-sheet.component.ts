@@ -125,7 +125,7 @@ export class SummarySheetComponent implements OnInit {
         {
             id: 'visaWorkflowMaarchParapheur',
             unit: 'visaWorkflowMaarchParapheur',
-            label: this.translate.instant('lang.externalVisaWorkflow'),
+            label: this.translate.instant('lang.maarchParapheurWorkflow'),
             css: 'col-md-4 text-center',
             desc: [
                 this.translate.instant('lang.firstname') + ' ' + this.translate.instant('lang.lastname'),
