@@ -2,7 +2,7 @@
   <h1 mat-dialog-title>{{'lang.linkAccount' | translate}}</h1>
   <mat-dialog-content>
     <app-plugin-autocomplete [labelPlaceholder]="'lang.searchUserInMaarchParapheur' | translate"
-      [routeDatas]="['/rest/autocomplete/maarchParapheurUsers?exludeAlreadyConnected=true']"
+      [routeDatas]="getRouteDatas()"
       [targetSearchKey]="'idToDisplay'" [subInfoKey]="'email'" (triggerEvent)="selectUser($event)" appearance="outline">
     </app-plugin-autocomplete>
     <mat-list *ngIf="externalUser.inMaarchParapheur">
