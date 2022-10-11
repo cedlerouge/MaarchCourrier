@@ -179,4 +179,20 @@ export class MaarchParapheurService {
             return true;
         }
     }
+
+    synchronizeSignatures(data: any) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${data.id}/externalSignatures`, {}).pipe(
+                tap((result: any) => {
+                    this.notify.success(this.translate.instant('lang.signsSynchronized'));
+                    resolve(result);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
 }
