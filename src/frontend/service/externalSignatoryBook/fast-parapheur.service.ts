@@ -1,7 +1,4 @@
 import { Injectable } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { LatinisePipe } from 'ngx-pipes';
-import { DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
@@ -33,5 +30,32 @@ export class FastParapheurService {
                 })
             ).subscribe();
         });
+    }
+
+    getOtpConfig() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/maarchParapheurOtp').pipe(
+                tap((data: any) => {
+                    resolve(data.otp.length ?? null);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    loadListModel() {
+        /**
+         * Load list model from Fast Parapheur API
+         */
+    }
+
+    loadWorkflow() {
+        /**
+         * Load worfklow from Fast Parapheur API
+         */
     }
 }
