@@ -145,7 +145,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . $GLOBALS['maarchDirectory
 //log4php params
 $log4phpParams = $xmlconfig->LOG4PHP;
 if ((string) $log4phpParams->enabled == 'true') {
-    $GLOBALS['logger']->set_log4PhpLibrary($GLOBALS['maarchDirectory'] . 'apps/maarch_entreprise/tools/log4php/Logger.php');
+    $GLOBALS['logger']->set_log4PhpLibrary($GLOBALS['maarchDirectory'] . 'modules/life_cycle/tools/log4php/Logger.php');
     $GLOBALS['logger']->set_log4PhpLogger((string) $log4phpParams->Log4PhpLogger);
     $GLOBALS['logger']->set_log4PhpBusinessCode((string) $log4phpParams->Log4PhpBusinessCode);
     $GLOBALS['logger']->set_log4PhpConfigPath((string) $log4phpParams->Log4PhpConfigPath);
