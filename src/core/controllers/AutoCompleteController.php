@@ -209,7 +209,7 @@ class AutoCompleteController
             return !in_array($user['email'], $excludedUsers);
         });
         $users = array_filter($users, function ($user) use ($search) {
-            return stripos($user['email'], $search) > -1 || stripos($user['name'], $search) > -1;
+            return mb_stripos($user['email'], $search) > -1 || mb_stripos($user['name'], $search) > -1;
         });
         $users = array_values($users);
 
