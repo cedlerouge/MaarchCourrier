@@ -61,4 +61,10 @@ export class FastParapheurService {
          * Load worfklow from Fast Parapheur API
          */
     }
+
+    synchronizeSignatures(data: any) {
+        /**
+         * Synchronize signatures
+         */
+    }
 }

@@ -69,7 +69,7 @@
     </div>
     <div>
         <button *ngIf="userSignatures.length > 0" mat-icon-button color="primary"
-            (click)="syncMP()"
+            (click)="synchronizeSignatures()"
             matTooltip="{{'lang.syncSignsToMaarchParapheur' | translate}}"
             [disabled]="!externalIdMaarchParapheur || loadingSign">
             <mat-icon class="fa fa-sync-alt fa-2x" [class.fa-spin]="loadingSign">
