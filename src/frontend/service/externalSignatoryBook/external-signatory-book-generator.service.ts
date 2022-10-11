@@ -5,12 +5,14 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MaarchParapheurService } from './maarch-parapheur.service';
 import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
+import { E } from '@angular/cdk/keycodes';
 
 @Injectable()
 
 export class ExternalSignatoryBookGeneratorService {
 
-    enabledSignatoryBook: 'maarchParapheur' | 'fastParapheur' = 'maarchParapheur';
+    allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
+    enabledSignatoryBook: string = 'maarchParapheur';
     serviceInjected: MaarchParapheurService | FastParapheurService;
 
     constructor(
@@ -20,10 +22,12 @@ export class ExternalSignatoryBookGeneratorService {
         private translate: TranslateService
     ) {
         this.getEnabledSignatoryBook();
-        if (this.enabledSignatoryBook === 'maarchParapheur') {
-            this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-        } else if (this.enabledSignatoryBook === 'fastParapheur') {
-            this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
+        if (this.allowedSignatoryBook.indexOf(this.enabledSignatoryBook) > -1) {
+            if (this.enabledSignatoryBook === 'maarchParapheur') {
+                this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
+            } else if (this.enabledSignatoryBook === 'fastParapheur') {
+                this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
+            }
         } else {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
@@ -45,6 +49,22 @@ export class ExternalSignatoryBookGeneratorService {
         });
     }
 
+    checkExternalSignatureBook(data: any) {
+        return new Promise((resolve) => {
+            this.http.post(`../rest/resourcesList/users/${data.userId}/groups/${data.groupId}/baskets/${data.basketId}/checkExternalSignatoryBook`, { resources: data.resIds }).pipe(
+                tap((result: any) => {
+                    resolve(result);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+
+        });
+    }
+
     loadListModel(entityId: number) {
         return this.serviceInjected.loadListModel(entityId);
     }
@@ -59,5 +79,9 @@ export class ExternalSignatoryBookGeneratorService {
 
     getOtpConfig() {
         return this.serviceInjected.getOtpConfig();
+    }
+
+    getAutocompleteUsersRoute(): string {
+        return this.serviceInjected.autocompleteUsersRoute;
     }
 }

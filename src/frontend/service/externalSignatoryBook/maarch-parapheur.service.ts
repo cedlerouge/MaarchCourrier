@@ -10,6 +10,8 @@ import { NotificationService } from '@service/notification/notification.service'
 
 export class MaarchParapheurService {
 
+    autocompleteUsersRoute: string = '/rest/autocomplete/maarchParapheurUsers';
+
     constructor(
         public functions: FunctionsService,
         private http: HttpClient,
@@ -66,7 +68,7 @@ export class MaarchParapheurService {
         return new Promise((resolve) => {
             this.http.get('../rest/maarchParapheurOtp').pipe(
                 tap((data: any) => {
-                    resolve(data.otp.length ?? null);
+                    resolve(data);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
