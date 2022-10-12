@@ -20,21 +20,21 @@ export class ExternalSignatoryBookGeneratorService {
         private translate: TranslateService
     ) {
         this.getEnabledSignatoryBook();
-        if (this.allowedSignatoryBook.indexOf(this.enabledSignatoryBook) > -1) {
-            if (this.enabledSignatoryBook === 'maarchParapheur') {
-                this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.enabledSignatoryBook === 'fastParapheur') {
-                this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
-            }
-        } else {
-            this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
-        }
     }
 
     getEnabledSignatoryBook() {
         this.http.get('../rest/externalSignatureBooks/enabled').pipe(
             tap((data: any) => {
                 this.enabledSignatoryBook = data.enabledSignatureBook;
+                if (this.allowedSignatoryBook.indexOf(this.enabledSignatoryBook) > -1) {
+                    if (this.enabledSignatoryBook === 'maarchParapheur') {
+                        this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
+                    } else if (this.enabledSignatoryBook === 'fastParapheur') {
+                        this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
+                    }
+                } else {
+                    this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
+                }
             }),
             catchError((err: any) => {
                 this.notifications.handleSoftErrors(err);
@@ -60,22 +60,22 @@ export class ExternalSignatoryBookGeneratorService {
     }
 
     loadListModel(entityId: number) {
-        return this.serviceInjected.loadListModel(entityId);
+        return this.serviceInjected?.loadListModel(entityId);
     }
 
     loadWorkflow(attachmentId: number, type: string) {
-        return this.serviceInjected.loadWorkflow(attachmentId, type);
+        return this.serviceInjected?.loadWorkflow(attachmentId, type);
     }
 
     getUserAvatar(externalId: number) {
-        return this.serviceInjected.getUserAvatar(externalId);
+        return this.serviceInjected?.getUserAvatar(externalId);
     }
 
     getOtpConfig() {
-        return this.serviceInjected.getOtpConfig();
+        return this.serviceInjected?.getOtpConfig();
     }
 
     getAutocompleteUsersRoute(): string {
-        return this.serviceInjected.autocompleteUsersRoute;
+        return this.serviceInjected?.autocompleteUsersRoute;
     }
 }
