@@ -64,7 +64,7 @@ export class UserAdministrationComponent implements OnInit {
     };
     userAbsenceModel: any[] = [];
     userList: any[] = [];
-    maarchParapheurLink: any = {
+    externalSignatoryBookLink: any = {
         login: '',
         picture: ''
     };
@@ -72,7 +72,7 @@ export class UserAdministrationComponent implements OnInit {
     selectedSignatureLabel: string = '';
     loadingSign: boolean = false;
     data: any[] = [];
-    CurrentYear: number = new Date().getFullYear();
+    currentYear: number = new Date().getFullYear();
     currentMonth: number = new Date().getMonth() + 1;
     minDate: Date = new Date();
     firstFormGroup: UntypedFormGroup;
@@ -98,7 +98,7 @@ export class UserAdministrationComponent implements OnInit {
     displayedColumns = ['event_date', 'record_id', 'info', 'remote_ip'];
     dataSource = new MatTableDataSource(this.data);
     selectedTabIndex: number = 0;
-    maarchParapheurConnectionStatus = true;
+    externalSignatoryBookConnectionStatus = true;
 
     canViewPersonalDatas: boolean = false;
     canManagePersonalDatas: boolean = false;
@@ -209,7 +209,7 @@ export class UserAdministrationComponent implements OnInit {
                         }
                         this.data = data.history;
                         this.userId = data.user_id;
-                        this.minDate = new Date(this.CurrentYear + '-' + this.currentMonth + '-01');
+                        this.minDate = new Date(this.currentYear + '-' + this.currentMonth + '-01');
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
                         if (this.user.external_id.maarchParapheur !== undefined) {
@@ -232,12 +232,12 @@ export class UserAdministrationComponent implements OnInit {
     async checkInfoExternalSignatoryBookAccount() {
         const data: any = await this.externSignatoryBook.checkInfoExternalSignatoryBookAccount(this.serialId);
         if (!this.functions.empty(data)) {
-            this.maarchParapheurLink.login = data.link;
+            this.externalSignatoryBookLink.login = data.link;
             this.loading = false;
-            if (this.maarchParapheurLink.login !== '') {
+            if (this.externalSignatoryBookLink.login !== '') {
                 this.getUserAvatar(this.user.external_id.maarchParapheur);
             } else {
-                this.maarchParapheurConnectionStatus = false;
+                this.externalSignatoryBookConnectionStatus = false;
             }
         }
     }
@@ -282,7 +282,7 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     async getUserAvatar(externalId: number) {
-        this.maarchParapheurLink.picture = await this.externSignatoryBook.getUserAvatar(externalId);
+        this.externalSignatoryBookLink.picture = await this.externSignatoryBook.getUserAvatar(externalId);
     }
 
     unlinkSignatoryBookAccount() {
@@ -301,10 +301,10 @@ export class UserAdministrationComponent implements OnInit {
             exhaustMap(async () => await this.externSignatoryBook.unlinkSignatoryBookAccount(this.serialId)),
             tap(() => {
                 this.user.canCreateMaarchParapheurUser = true;
-                this.maarchParapheurLink.login = '';
-                this.maarchParapheurLink.picture = '';
+                this.externalSignatoryBookLink.login = '';
+                this.externalSignatoryBookLink.picture = '';
                 this.notify.success(this.translate.instant('lang.accountUnlinked'));
-                this.maarchParapheurConnectionStatus = true;
+                this.externalSignatoryBookConnectionStatus = true;
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -992,24 +992,6 @@ export class UserAdministrationComponent implements OnInit {
             this.user.mode = 'standard';
         }
     }
-
-    /*
-    sendToMaarchParapheur() {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.createUserInMaarchParapheur')}`, msg: this.translate.instant('lang.confirmAction') } });
-        dialogRef.afterClosed().pipe(
-            filter((data: string) => data === 'ok'),
-            exhaustMap(() => this.http.put('../rest/users/' + this.serialId + '/maarchParapheur', '')),
-            tap((data: any) => {
-                this.notify.success(this.translate.instant('lang.userCreatedInMaarchParapheur'));
-                this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = data.externalId;
-                this.user.canCreateMaarchParapheurUser = false;
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
-    } */
 
     setLowerUserId() {
         this.user.userId = this.user.userId.toLowerCase();
