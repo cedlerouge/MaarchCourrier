@@ -404,41 +404,60 @@ class FastParapheurController
             return ['errors' => 'resource is already in fastParapheur'];
         }
 
-        $upload = [];
+        $sentAttachments = [];
+        $sentMainDocument = [];
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
         $docservers = array_column($docservers, 'path_template', 'docserver_id');
-        if ($resource['category_id'] == 'outgoing') {
-            if (empty($docservers[$resource['docserver_id']]['path_template'])) {
-                return ['errors' => 'resource docserver does not exist'];
-            }
-            $resource['integrations'] = json_decode($resource['integrations'], true);
-            if (!$resource['integrations']['inSignatureBook']) {
-                return ['errors' => 'main document must be in signature book for outgoing resource'];
-            }
-            $upload = [
-                'path'       => $docservers[$resource['docserver_id']]['path_template'] . $resource['path'] . $resource['filename'],
-                'comments'   => $resource['subject'],
-                'appendices' => []
+        $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
+        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
+
+        $attachments = AttachmentModel::get([
+            'select'    => [
+                'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
+            ],
+            'where'     => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (\'DEL\', \'OBS\', \'FRZ\', \'TMP\', \'SEND_MASS\')', 'in_signature_book is true'],
+            'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
+        ]);
+
+        if (empty($docservers[$resource['docserver_id']]['path_template'])) {
+            return ['errors' => 'resource docserver does not exist'];
+        }
+        $resource['integrations'] = json_decode($resource['integrations'], true);
+        if ($resource['integrations']['inSignatureBook']) {
+            $sentMainDocument = [
+                'comment'  => $resource['subject'],
+                'signable' => $resource['category_id'] == 'outgoing',
+                'path'     => $docservers[$resource['docserver_id']]['path_template'] . $resource['path'] . $resource['filename']
             ];
-            $attachments = AttachmentModel::get([
-                'select'    => [
-                    'res_id', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
-                ],
-                'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')", 'in_signature_book is true'],
-                'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
-            ]);
-            foreach ($attachments as $attachment) {
-                if (empty($docservers[$attachment['docserver_id']])) {
-                    continue;
-                }
-                $upload['appendices'][] = [
-                    'path' => $docservers[$attachment['docserver_id']]['path_template'] . $attachment['path'] . $attachment['filename']
-                ];
+        }
+        foreach ($attachments as $attachment) {
+            $sentAttachments[] = [
+                'comment'  => $attachment['title'],
+                'signable' => $attachmentTypes[$attachment['attachment_type']],
+                'path'     => $docservers[$attachment['docserver_id']]['path_template'] . $attachment['path'] . $attachment['filename']
+            ];
+        }
+
+        $upload = [
+            'doc'         => null,
+            'comments'    => null,
+            'appendices' => []
+        ];
+        if (!empty($sentMainDocument)) {
+            if ($sentMainDocument['signable']) {
+                $upload['doc'] = $sentMainDocument['path'];
+                $upload['comments'] = $sentMainDocument['comments'];
+            } else {
+                $upload['appendices'][] = $sentMainDocument['path'];
             }
-        } elseif ($resource['category_id'] == 'incoming') {
-            // TODO populate $upload
-        } else {
-            return ['errors' => 'resource category_id must be either incoming or outgoing'];
+        }
+        foreach ($sentAttachments as $sentAttachment) {
+            if ($sentAttachment['signable']) {
+                $upload['doc'] = $sentAttachment['path'];
+                $upload['comments'] = $sentAttachment['comments'];
+            } else {
+                $upload['appendices'][] = $sentAttachment['path'];
+            }
         }
     }
 
