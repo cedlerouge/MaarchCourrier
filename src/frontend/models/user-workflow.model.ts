@@ -59,43 +59,39 @@ export interface UserWorkflow {
     status?: string;
 
     /**
-     *
+     * Diffusion list type: 'VISA_CIRCUIT', 'AVIS_CIRCUIT', ...
      */
     difflist_type?: string;
 
     /**
-     * Diffusion list type: 'VISA_CIRCUIT', 'AVIS_CIRCUIT', ...
+     * External identifier
      */
     externalId?: {};
 
     /**
-     * External identifier
+     * other external information
      */
     externalInformations?: {};
 
     /**
-     * other external information
+     * Available roles: 'visa', 'sign', 'inca_card', 'rgs_2stars', .
      */
     availableRoles?: string[];
 
     /**
-     * Available roles: 'visa', 'sign', 'inca_card', 'rgs_2stars', ...
+     * Indicates whether the user must sign a mail or not
      */
     requested_signature?: boolean;
 
     /**
-     * Indicates whether the user must sign a mail or not
+     * Indicates whether the user has signed or not
      */
     signatory?: boolean;
 
     /**
-     * Indicates whether the user has signed or not
-     */
-    hasPrivilege: boolean;
-
-    /**
      * Indicates whether the user has the privilege
      */
+    hasPrivilege: boolean;
 
     /**
      * Indicates if the user is valid
