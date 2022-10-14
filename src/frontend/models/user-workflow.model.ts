@@ -97,6 +97,16 @@ export interface UserWorkflow {
      * Indicates if the user is valid
      */
     isValid: boolean;
+
+    /**
+     * Signature positions
+     */
+    signaturePositions?: any[];
+
+    /**
+     * Date positions
+     */
+    datePositions?: any[];
 }
 
 export class UserWorkflow implements UserWorkflow {
@@ -120,5 +130,7 @@ export class UserWorkflow implements UserWorkflow {
         this.externalId = {};
         this.externalInformations = {};
         this.availableRoles = [];
+        this.signaturePositions = [];
+        this.datePositions = [];
     }
 }
