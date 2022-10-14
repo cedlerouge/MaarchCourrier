@@ -7,12 +7,12 @@ import { tap, catchError } from 'rxjs/operators';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ContactService } from '@service/contact.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 
 @Component({
     templateUrl: 'create-external-user.component.html',
     styleUrls: ['create-external-user.component.scss'],
-    providers: [ContactService, ExternalSignatoryBookGeneratorService]
+    providers: [ContactService, ExternalSignatoryBookManagerService]
 })
 
 export class CreateExternalUserComponent implements OnInit {
@@ -66,7 +66,7 @@ export class CreateExternalUserComponent implements OnInit {
         public http: HttpClient,
         public functions: FunctionsService,
         public notify: NotificationService,
-        public externalSignatoryBookGenerator: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private contactService: ContactService,
         private dialogRef: MatDialogRef<CreateExternalUserComponent>
@@ -83,7 +83,7 @@ export class CreateExternalUserComponent implements OnInit {
     }
 
     async getConfig() {
-        const data: any = await this.externalSignatoryBookGenerator.getOtpConfig();
+        const data: any = await this.externalSignatoryBookManagerService.getOtpConfig();
         if (!this.functions.empty(data)) {
             this.sources = data.otp;
             this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
