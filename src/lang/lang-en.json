@@ -2678,5 +2678,6 @@
     "mandatory_final": "Mandatory at the end of the workflow",
     "externalSignoryBookNotEnabled": "No external signatory book enabled",
     "maarchParapheur": "Maarch Parapheur",
-    "fastParapheur": "Fast Parapheur"
+    "fastParapheur": "Fast Parapheur",
+    "noOtpConfigurationFound": "No OTP configuration found"
 }

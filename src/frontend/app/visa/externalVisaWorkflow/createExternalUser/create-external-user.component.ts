@@ -66,7 +66,7 @@ export class CreateExternalUserComponent implements OnInit {
         public http: HttpClient,
         public functions: FunctionsService,
         public notify: NotificationService,
-        public externalSignatoryBokkGenerator: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBookGenerator: ExternalSignatoryBookGeneratorService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private contactService: ContactService,
         private dialogRef: MatDialogRef<CreateExternalUserComponent>
@@ -83,7 +83,7 @@ export class CreateExternalUserComponent implements OnInit {
     }
 
     async getConfig() {
-        const data: any = await this.externalSignatoryBokkGenerator.getOtpConfig();
+        const data: any = await this.externalSignatoryBookGenerator.getOtpConfig();
         if (!this.functions.empty(data)) {
             this.sources = data.otp;
             this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
@@ -93,7 +93,11 @@ export class CreateExternalUserComponent implements OnInit {
             } else {
                 this.userOTP = this.data.otpInfo;
             }
-        } this.loading = false;
+        } else {
+            this.notify.handleSoftErrors(this.translate.instant('lang.noOtpConfigurationFound'));
+            this.dialogRef.close();
+        }
+        this.loading = false;
     }
 
     addOtpUser() {

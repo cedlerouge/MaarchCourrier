@@ -2677,5 +2677,6 @@
     "mandatory_final": "Obligatoire en fin de circuit",
     "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
     "maarchParapheur": "Maarch Parapheur",
-    "fastParapheur": "Fast Parapheur"
+    "fastParapheur": "Fast Parapheur",
+    "noOtpConfigurationFound": "Aucune configuration OTP trouvée"
 }
