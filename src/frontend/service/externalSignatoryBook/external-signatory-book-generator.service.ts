@@ -7,7 +7,7 @@ import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
 @Injectable()
 
-export class ExternalSignatoryBookGeneratorService {
+export class ExternalSignatoryBookManagerService {
 
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
     enabledSignatoryBook: string = 'maarchParapheur';

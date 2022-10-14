@@ -12,13 +12,13 @@ import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
 import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
     styleUrls: ['send-external-signatory-book-action.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
@@ -65,7 +65,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         public dialogRef: MatDialogRef<SendExternalSignatoryBookActionComponent>,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private notify: NotificationService,
