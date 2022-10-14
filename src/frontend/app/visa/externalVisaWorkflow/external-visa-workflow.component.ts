@@ -56,12 +56,12 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         public functions: FunctionsService,
         public dialog: MatDialog,
         public actionService: ActionsService,
-        public externalSignatoryBokkGenerator: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBookGenerator: ExternalSignatoryBookGeneratorService,
         private notify: NotificationService
     ) { }
 
     async ngOnInit(): Promise<any> {
-        const data: any = await this.externalSignatoryBokkGenerator?.getOtpConfig();
+        const data: any = await this.externalSignatoryBookGenerator?.getOtpConfig();
         if (!this.functions.empty(data)) {
             this.otpConfig = data.otp.length;
         }
@@ -109,7 +109,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     async loadListModel(entityId: number) {
         this.loading = true;
         this.visaWorkflow.items = [];
-        const listModel: any = await this.externalSignatoryBokkGenerator?.loadListModel(entityId);
+        const listModel: any = await this.externalSignatoryBookGenerator?.loadListModel(entityId);
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
                 this.visaWorkflow.items = listModel.listTemplates[0].items.map((item: any) => ({
@@ -132,7 +132,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     async loadExternalWorkflow(attachmentId: number, type: string) {
         this.loading = true;
         this.visaWorkflow.items = [];
-        const data: any = await this.externalSignatoryBokkGenerator?.loadWorkflow(attachmentId, type);
+        const data: any = await this.externalSignatoryBookGenerator?.loadWorkflow(attachmentId, type);
         if (!this.functions.empty(data.workflow)) {
             data.workflow.forEach((element: any, key: any) => {
                 const user: UserWorkflow = {
@@ -313,7 +313,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     async getUserAvatar(externalId: number, key: number) {
         if (!this.functions.empty(externalId)) {
-            this.visaWorkflow.items[key].picture = await this.externalSignatoryBokkGenerator?.getUserAvatar(externalId);
+            this.visaWorkflow.items[key].picture = await this.externalSignatoryBookGenerator?.getUserAvatar(externalId);
         }
     }
 
@@ -479,6 +479,6 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     getRouteDatas(): string[] {
-        return [this.externalSignatoryBokkGenerator.getAutocompleteUsersRoute()];
+        return [this.externalSignatoryBookGenerator.getAutocompleteUsersRoute()];
     }
 }
