@@ -30,7 +30,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     visaWorkflow: any = {
         roles: ['sign', 'visa'],
-        items: []
+        items: [] as UserWorkflow[]
     };
     visaWorkflowClone: any = [];
     visaTemplates: any = {
