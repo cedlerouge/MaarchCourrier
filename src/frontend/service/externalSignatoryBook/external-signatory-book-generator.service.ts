@@ -43,7 +43,7 @@ export class ExternalSignatoryBookManagerService {
         ).subscribe();
     }
 
-    checkExternalSignatureBook(data: any) {
+    checkExternalSignatureBook(data: any): Promise<any> {
         return new Promise((resolve) => {
             this.http.post(`../rest/resourcesList/users/${data.userId}/groups/${data.groupId}/baskets/${data.basketId}/checkExternalSignatoryBook`, { resources: data.resIds }).pipe(
                 tap((result: any) => {
