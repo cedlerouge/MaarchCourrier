@@ -95,15 +95,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     isValidExtWorkflow(workflow: any = this.visaWorkflow) {
-        let res: boolean = true;
-        workflow.forEach((item: any, indexUserRgs: number) => {
-            if (['visa', 'stamp'].indexOf(item.role) === -1) {
-                if (workflow.filter((itemUserStamp: any, indexUserStamp: number) => indexUserStamp > indexUserRgs && itemUserStamp.role === 'stamp').length > 0) {
-                    res = false;
-                }
-            }
-        });
-        return res;
+        return this.externalSignatoryBookGenerator.isValidExtWorkflow(workflow);
     }
 
     async loadListModel(entityId: number) {
