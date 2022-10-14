@@ -19,7 +19,7 @@ export class MaarchParapheurService {
 
     ) { }
 
-    loadListModel(entityId: number) {
+    loadListModel(entityId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`../rest/listTemplates/entities/${entityId}?type=visaCircuit&maarchParapheur=true`).pipe(
                 tap((data: any) => {
@@ -34,7 +34,7 @@ export class MaarchParapheurService {
         });
     }
 
-    loadWorkflow(attachmentId: number, type: string) {
+    loadWorkflow(attachmentId: number, type: string): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`../rest/documents/${attachmentId}/maarchParapheurWorkflow?type=${type}`).pipe(
                 tap((data: any) => {
@@ -49,7 +49,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getUserAvatar(externalId: number) {
+    getUserAvatar(externalId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
                 tap((data: any) => {
@@ -64,7 +64,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getOtpConfig() {
+    getOtpConfig(): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('../rest/maarchParapheurOtp').pipe(
                 tap((data: any) => {

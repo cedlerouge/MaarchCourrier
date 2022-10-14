@@ -16,7 +16,7 @@ export class FastParapheurService {
         private notify: NotificationService
     ) { }
 
-    getUserAvatar() {
+    getUserAvatar(): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(
                 tap((response: any) => {
@@ -34,9 +34,10 @@ export class FastParapheurService {
         });
     }
 
-    getOtpConfig() {
+    getOtpConfig(): Promise<any> {
+        const otpConfigUrl: string = ''; // To do : set get OTP config URL
         return new Promise((resolve) => {
-            this.http.get('../rest/maarchParapheurOtp').pipe(
+            this.http.get(`../rest/${otpConfigUrl}`).pipe(
                 tap((data: any) => {
                     resolve(data.otp.length ?? null);
                 }),
