@@ -7,7 +7,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { ContactService } from '@service/contact.service';
-import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     templateUrl: 'create-external-user.component.html',
