@@ -52,7 +52,7 @@ export class MaarchParaphComponent implements OnInit {
     }
 
     isValidParaph() {
-        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.checkExternalSignatoryBook().length > 0 || this.resourcesToSign.length === 0) {
+        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0 || this.resourcesToSign.length === 0) {
             return false;
         } else {
             return true;

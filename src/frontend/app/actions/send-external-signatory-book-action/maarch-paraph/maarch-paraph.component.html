@@ -7,9 +7,9 @@
                 [resId]="resIds.length === 1 ? resIds[0] : null"
                 [injectDatas]="injectDatasParam">
             </app-external-visa-workflow >
-            <div *ngIf="appExternalVisaWorkflow.checkExternalSignatoryBook().length > 0"
+            <div *ngIf="appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0"
                 class="alert-message alert-message-danger" role="alert">
-                <b>{{appExternalVisaWorkflow.checkExternalSignatoryBook().join(', ')}}</b>
+                <b>{{appExternalVisaWorkflow.getUserOtpsWorkflow().join(', ')}}</b>
                 {{'lang.usersMissingInSignatureBook' | translate}} !
             </div>
         </div>
