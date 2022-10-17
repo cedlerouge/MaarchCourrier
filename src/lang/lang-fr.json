@@ -1059,6 +1059,7 @@
     "noAttachmentContact": "Aucun contact (externe) attaché pour cette pièce jointe",
     "noAttachmentConversion": "La pièce jointe n'a pas de conversion PDF",
     "noAttachmentInSignatoryBook": "Aucun élément éligible : non intégré au parapheur, gelée, ou déjà signée",
+    "noSignableItemInSignatoryBook": "Aucun élément éligible : non intégré au parapheur, gelée, ou déjà signée",
     "noAttachmentToSend": "Aucune pièce jointe à envoyer",
     "noAvailableAction": "<b>Aucune action disponible</b>, veuillez paramétrer une action dans <b>Administration > Groupes d'utilisateurs > Enregistrement de courrier</b>.",
     "noAvailableActionProcess": "<b>Aucune action disponible</b>, veuillez paramétrer une action dans <b>Administration > Bannettes > Bannette actuelle</b>.",

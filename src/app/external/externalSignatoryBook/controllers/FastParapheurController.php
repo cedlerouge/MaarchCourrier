@@ -384,11 +384,11 @@ class FastParapheurController
         return ['success' => (string)$documentId];
     }
 
-    public static function uploadWithCircuit(array $args)
+    public static function uploadWithSteps(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resIdMaster', 'circuit', 'businessId']);
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'businessId']);
         ValidatorModel::intType($args, ['resIdMaster']);
-        ValidatorModel::arrayType($args, ['circuit']);
+        ValidatorModel::arrayType($args, ['steps']);
         ValidatorModel::stringType($args, ['businessId']);
 
         $resource = ResModel::getById([
@@ -408,8 +408,8 @@ class FastParapheurController
         $sentMainDocument = [];
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
         $docservers = array_column($docservers, 'path_template', 'docserver_id');
-        $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
-        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
+        $attachmentTypeSignable = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
+        $attachmentTypeSignable = array_column($attachmentTypeSignable, 'signable', 'type_id');
 
         $attachments = AttachmentModel::get([
             'select'    => [
@@ -419,7 +419,7 @@ class FastParapheurController
             'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
         ]);
 
-        if (empty($docservers[$resource['docserver_id']]['path_template'])) {
+        if (empty($docservers[$resource['docserver_id']])) {
             return ['errors' => 'resource docserver does not exist'];
         }
         $resource['integrations'] = json_decode($resource['integrations'], true);
@@ -427,21 +427,21 @@ class FastParapheurController
             $sentMainDocument = [
                 'comment'  => $resource['subject'],
                 'signable' => $resource['category_id'] == 'outgoing',
-                'path'     => $docservers[$resource['docserver_id']]['path_template'] . $resource['path'] . $resource['filename']
+                'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
             ];
         }
         foreach ($attachments as $attachment) {
             $sentAttachments[] = [
                 'comment'  => $attachment['title'],
-                'signable' => $attachmentTypes[$attachment['attachment_type']],
-                'path'     => $docservers[$attachment['docserver_id']]['path_template'] . $attachment['path'] . $attachment['filename']
+                'signable' => $attachmentTypeSignable[$attachment['attachment_type']],
+                'path'     => $docservers[$attachment['docserver_id']] . $attachment['path'] . $attachment['filename']
             ];
         }
 
         $upload = [
             'doc'         => null,
             'comments'    => null,
-            'appendices' => []
+            'appendices'  => []
         ];
         if (!empty($sentMainDocument)) {
             if ($sentMainDocument['signable']) {
@@ -458,6 +458,30 @@ class FastParapheurController
             } else {
                 $upload['appendices'][] = $sentAttachment['path'];
             }
+        }
+        if (empty($upload['doc'])) {
+            return ['errors' => 'nothing to sign', 'lang' => 'noSignableItemInSignatoryBook'];
+        }
+
+        $steps = [];
+        foreach ($args['steps'] as $step) {
+            if ($step['type'] == 'user' && !empty($step['id'])) {
+                $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+                if (empty($user['fastParapheurEmail'])) {
+                    return ['errors' => 'no FastParapheurEmail for user ' . $step['id']];
+                }
+                $step['email'] = $user['fastParapheurEmail'];
+                $steps[] = $step;
+            } elseif ($step['type'] == 'externalOTP'
+                      && Validator::notEmpty()->phone()->validate($step['phone'])
+                      && Validator::notEmpty()->email()->validate($step['email'])
+                      && Validator::notEmpty()->stringType()->validate($step['firstname'])
+                      && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+                $steps[] = $step;
+            }
+        }
+        if (empty($step)) {
+            return ['errors' => 'steps are empty or invalid'];
         }
     }
 
@@ -594,8 +618,8 @@ class FastParapheurController
         $users = [];
         foreach ($curlReturn['response']['users'] as $user) {
             $users[] = [
-                'name'  => trim($user['prenom'] . ' ' . $user['nom']),
-                'email' => trim($user['email'])
+                'idToDisplay' => trim($user['prenom'] . ' ' . $user['nom']),
+                'email'       => trim($user['email'])
             ];
         }
 
