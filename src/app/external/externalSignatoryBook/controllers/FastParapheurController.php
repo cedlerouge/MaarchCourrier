@@ -32,6 +32,7 @@ use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
 use User\controllers\UserController;
 use History\controllers\HistoryController;
+use SimpleXMLElement;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -386,10 +387,9 @@ class FastParapheurController
 
     public static function uploadWithSteps(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'businessId']);
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config']);
         ValidatorModel::intType($args, ['resIdMaster']);
-        ValidatorModel::arrayType($args, ['steps']);
-        ValidatorModel::stringType($args, ['businessId']);
+        ValidatorModel::arrayType($args, ['steps', 'config']);
 
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
@@ -397,11 +397,11 @@ class FastParapheurController
         ]);
 
         if (empty($resource)) {
-            return ['errors' => 'resource does not exist'];
+            return ['error' => 'resource does not exist', 'code' => 400];
         }
 
         if (!empty($resource['external_id']['fastParapheur'])) {
-            return ['errors' => 'resource is already in fastParapheur'];
+            return ['error' => 'resource is already in fastParapheur', 'code' => 400];
         }
 
         $sentAttachments = [];
@@ -420,7 +420,7 @@ class FastParapheurController
         ]);
 
         if (empty($docservers[$resource['docserver_id']])) {
-            return ['errors' => 'resource docserver does not exist'];
+            return ['error' => 'resource docserver does not exist', 'code' => 500];
         }
         $resource['integrations'] = json_decode($resource['integrations'], true);
         if ($resource['integrations']['inSignatureBook']) {
@@ -439,50 +439,125 @@ class FastParapheurController
         }
 
         $upload = [
-            'doc'         => null,
-            'comments'    => null,
-            'appendices'  => []
+            'doc'        => null,
+            'comment'    => '',
+            'appendices' => []
         ];
-        if (!empty($sentMainDocument)) {
+        if (!empty($sentMainDocument) && is_file($sentMainDocument['path'])) {
             if ($sentMainDocument['signable']) {
                 $upload['doc'] = $sentMainDocument['path'];
-                $upload['comments'] = $sentMainDocument['comments'];
+                $upload['comment'] = $sentMainDocument['comment'];
             } else {
                 $upload['appendices'][] = $sentMainDocument['path'];
             }
         }
         foreach ($sentAttachments as $sentAttachment) {
+            if (!is_file($sentAttachment['path'])) {
+                continue;
+            }
             if ($sentAttachment['signable']) {
                 $upload['doc'] = $sentAttachment['path'];
-                $upload['comments'] = $sentAttachment['comments'];
+                $upload['comment'] = $sentAttachment['comment'];
             } else {
                 $upload['appendices'][] = $sentAttachment['path'];
             }
         }
         if (empty($upload['doc'])) {
-            return ['errors' => 'nothing to sign', 'lang' => 'noSignableItemInSignatoryBook'];
+            return ['error' => 'resource has nothing to sign', 'code' => 400];
         }
 
-        $steps = [];
-        foreach ($args['steps'] as $step) {
+        $circuit = [
+            'type'  => 'BUREAUTIQUE_PDF',
+            'steps' => []
+        ];
+        $otpInfo = [];
+        foreach ($args['steps'] as $index => $step) {
             if ($step['type'] == 'user' && !empty($step['id'])) {
                 $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
                 if (empty($user['fastParapheurEmail'])) {
-                    return ['errors' => 'no FastParapheurEmail for user ' . $step['id']];
+                    return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
                 }
-                $step['email'] = $user['fastParapheurEmail'];
-                $steps[] = $step;
+                $circuit['steps'][] = [
+                    'step'    => 'signature',
+                    'members' => [$user['fastParapheurEmail']]
+                ];
             } elseif ($step['type'] == 'externalOTP'
                       && Validator::notEmpty()->phone()->validate($step['phone'])
                       && Validator::notEmpty()->email()->validate($step['email'])
                       && Validator::notEmpty()->stringType()->validate($step['firstname'])
                       && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
-                $steps[] = $step;
+                $circuit['steps'][] = [
+                    'step'    => 'OTPSignature',
+                    'members' => [$step['email']]
+                ];
+                $otpInfo['OTP_firstname_' . $index]   = $step['firstname'];
+                $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
+                $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
+                $otpInfo['OTP_email_' . $index]       = $step['email'];
+            } else {
+                return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
         }
         if (empty($step)) {
-            return ['errors' => 'steps are empty or invalid'];
+            return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
+
+        $otpInfoXML = null;
+        if (!empty($otpInfo)) {
+            $otpInfoXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            foreach ($otpInfo as $name => $value) {
+                $metadataElement = $otpInfoXML->addChild('meta-data');
+                $metadataElement->addAttribute($name, $value);
+            }
+        }
+
+        $curlReturn = CurlModel::exec([
+            'method'  => 'POST',
+            'url'     => $args['config']['url'] . '/documents/ondemand/' . $args['businessId'] . '/upload',
+            'options' => [
+                CURLOPT_SSLCERT       => $args['config']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+            ],
+            'multipartBody' => [
+                'comment' => $upload['comment'],
+                'doc'     => ['isFile' => true, 'filename' => basename($upload['doc']), 'content' => file_get_contents($upload['doc'])],
+                // TODO: annexes -> zip from $upload['appendices']
+                'circuit' => json_encode($circuit)
+            ]
+        ]);
+        if ($curlReturn['code'] != 200) {
+            return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+        }
+        $fastParapheurDocId = (string)$curlReturn['response'];
+
+        if (!empty($otpInfoXML)) {
+            $curlReturn = CurlModel::exec([
+                'method'  => 'PUT',
+                'url'     => $args['config']['url'] . '/documents/v2/otp/' . $fastParapheurDocId . '/metadata/define',
+                'options' => [
+                    CURLOPT_SSLCERT       => $args['config']['certPath'],
+                    CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
+                    CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+                ],
+                'multipartBody' => [
+                    'otpinformation' => ['isFile' => true, 'filename' => 'otpinfo.xml', 'content' => $otpInfoXML->asXML()]
+                ]
+            ]);
+            if ($curlReturn['code'] != 200) {
+                return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+            }
+        }
+
+        return [
+            'sended' => [
+                'letterbox_coll' => [
+                    'resIdMaster' => [
+                        $args['resIdMaster'] => $fastParapheurDocId
+                    ]
+                ]
+            ]
+        ];
     }
 
     public static function download(array $args)
