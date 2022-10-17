@@ -96,9 +96,9 @@ export class MaarchParapheurService {
         });
     }
 
-    linkAccountToSignatoryBook(externalId: number, serialId: number) {
+    linkAccountToSignatoryBook(data: any, serialId: number) {
         return new Promise((resolve) => {
-            this.http.put(`../rest/users/${serialId}/linkToMaarchParapheur`, { maarchParapheurUserId: externalId }).pipe(
+            this.http.put(`../rest/users/${serialId}/linkToMaarchParapheur`, { maarchParapheurUserId: data.id }).pipe(
                 tap(() => {
                     this.notify.success(this.translate.instant('lang.accountLinked'));
                     resolve(true);
