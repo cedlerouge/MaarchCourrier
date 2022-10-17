@@ -5,42 +5,30 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MaarchParapheurService } from './maarch-parapheur.service';
 import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
+import { AuthService } from '@service/auth.service';
 @Injectable()
 
 export class ExternalSignatoryBookManagerService {
 
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
-    enabledSignatoryBook: string = 'maarchParapheur';
     serviceInjected: MaarchParapheurService | FastParapheurService;
 
     constructor(
         private injector: Injector,
         private http: HttpClient,
         private notifications: NotificationService,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private authService: AuthService
     ) {
-        this.getEnabledSignatoryBook();
-        if (this.allowedSignatoryBook.indexOf(this.enabledSignatoryBook) > -1) {
-            if (this.enabledSignatoryBook === 'maarchParapheur') {
+        if (this.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
+            if (this.authService.enabledSignatureBook === 'maarchParapheur') {
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.enabledSignatoryBook === 'fastParapheur') {
+            } else if (this.authService.enabledSignatureBook === 'fastParapheur') {
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
         } else {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
-    }
-
-    getEnabledSignatoryBook() {
-        this.http.get('../rest/externalSignatureBooks/enabled').pipe(
-            tap((data: any) => {
-                this.enabledSignatoryBook = data.enabledSignatureBook;
-            }),
-            catchError((err: any) => {
-                this.notifications.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
     }
 
     checkExternalSignatureBook(data: any): Promise<any> {
