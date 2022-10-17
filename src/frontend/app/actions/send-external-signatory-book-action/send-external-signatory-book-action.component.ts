@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { XParaphComponent } from './x-paraph/x-paraph.component';
 import { MaarchParaphComponent } from './maarch-paraph/maarch-paraph.component';
-import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { IParaphComponent } from './i-paraph/i-paraph.component';
 import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
@@ -146,7 +145,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         ).subscribe();
     }
 
-    isValidAction() {
+    isValidAction(): boolean {
         if (this[this.signatoryBookEnabled] !== undefined) {
             return this[this.signatoryBookEnabled].isValidParaph();
         } else {
@@ -188,7 +187,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         }
     }
 
-    hasEmptyOtpSignaturePosition() {
+    hasEmptyOtpSignaturePosition(): boolean {
         if (this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {

@@ -92,7 +92,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         return arr;
     }
 
-    isValidExtWorkflow(workflow: any = this.visaWorkflow) {
+    isValidExtWorkflow(workflow: any = this.visaWorkflow): boolean {
         return this.externalSignatoryBookManagerService.isValidExtWorkflow(workflow);
     }
 
@@ -187,7 +187,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : null;
     }
 
-    getRealIndex(index: number) {
+    getRealIndex(index: number): number {
         while (index < this.visaWorkflow.items.length && !this.visaWorkflow.items[index].isValid) {
             index++;
         }
@@ -266,7 +266,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         this.visaWorkflow.items = [];
     }
 
-    isValidWorkflow() {
+    isValidWorkflow(): boolean {
         if ((this.visaWorkflow.items.filter((item: any) => item.requested_signature).length > 0 && this.visaWorkflow.items.filter((item: any) => (!item.hasPrivilege || !item.isValid) && (item.process_date === null || this.functions.empty(item.process_date))).length === 0) && this.visaWorkflow.items.length > 0) {
             return true;
         } else {
@@ -284,11 +284,11 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         }
     }
 
-    emptyWorkflow() {
+    emptyWorkflow(): boolean {
         return this.visaWorkflow.items.length === 0;
     }
 
-    workflowEnd() {
+    workflowEnd(): boolean {
         if (this.visaWorkflow.items.filter((item: any) => !this.functions.empty(item.process_date)).length === this.visaWorkflow.items.length) {
             return true;
         } else {
@@ -302,19 +302,15 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         }
     }
 
-    isModified() {
+    isModified(): boolean {
         return !(this.loading || JSON.stringify(this.visaWorkflow.items) === JSON.stringify(this.visaWorkflowClone));
     }
 
-    canManageUser() {
-        if (this.adminMode) {
-            return true;
-        } else {
-            return false;
-        }
+    canManageUser(): boolean {
+        return this.adminMode;
     }
 
-    isValidRole(indexWorkflow: any, role: string, currentRole: string) {
+    isValidRole(indexWorkflow: any, role: string, currentRole: string): boolean {
         if (this.visaWorkflow.items.filter((item: any, index: any) => index > indexWorkflow && ['stamp'].indexOf(item.role) > -1).length > 0 && ['visa', 'stamp'].indexOf(currentRole) > -1 && ['visa', 'stamp'].indexOf(role) === -1) {
             return false;
         } else if (this.visaWorkflow.items.filter((item: any, index: any) => index < indexWorkflow && ['visa', 'stamp'].indexOf(item.role) === -1).length > 0 && role === 'stamp') {
@@ -453,7 +449,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         return documents;
     }
 
-    hasOtpNoSignaturePositionFromResource(resource: any) {
+    hasOtpNoSignaturePositionFromResource(resource: any): boolean {
         let state: boolean = true;
         this.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign').forEach((user: any) => {
             if (user.signaturePositions?.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument).length > 0) {
