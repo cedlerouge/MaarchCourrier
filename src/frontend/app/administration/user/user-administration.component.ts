@@ -254,26 +254,26 @@ export class UserAdministrationComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 if (result.inMaarchParapheur) {
-                    this.linkAccountToSignatoryBook(result.id);
+                    this.linkAccountToSignatoryBook(result);
                 } else {
-                    this.createExternalSignatoryBookAccount(result.id, result.login);
+                    this.createExternalSignatoryBookAccount(result, result.login);
                 }
 
             }
         });
     }
 
-    async linkAccountToSignatoryBook(externalId: number) {
-        const data: any = await this.externSignatoryBook.linkAccountToSignatoryBook(externalId, this.serialId);
+    async linkAccountToSignatoryBook(result: any) {
+        const data: any = await this.externSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
         if (!this.functions.empty(data)) {
             this.user.canCreateMaarchParapheurUser = false;
-            this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = externalId;
+            this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
         }
     }
 
-    async createExternalSignatoryBookAccount(id: number, login: string) {
-        const data: any = await this.externSignatoryBook.createExternalSignatoryBookAccount(id, login, this.serialId);
+    async createExternalSignatoryBookAccount(result: any, login: string) {
+        const data: any = await this.externSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
         if (!this.functions.empty(data)) {
             this.user.canCreateMaarchParapheurUser = false;
             this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = data.externalId;
