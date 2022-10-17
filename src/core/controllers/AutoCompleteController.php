@@ -179,6 +179,7 @@ class AutoCompleteController
         }
         $search = $queryParams['search'];
 
+        $excludedUsers = [];
         if (!empty($queryParams['excludeAlreadyConnected'])) {
             $usersAlreadyConnected = UserModel::get([
                 'select' => ['external_id->>\'fastParapheur\' as external_id'],
