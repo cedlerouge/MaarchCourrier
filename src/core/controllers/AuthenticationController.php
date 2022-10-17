@@ -81,6 +81,9 @@ class AuthenticationController
         $emailConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
         $emailConfiguration = !empty($emailConfiguration['value']) ? json_decode($emailConfiguration['value'], true) : null;
 
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $enabledSignatureBook = !empty($loadedXml) ? (string)$loadedXml->signatoryBookEnabled : null;
+        
         $return = [
             'instanceId'        => $hashedPath,
             'applicationName'   => $appName,
@@ -90,7 +93,8 @@ class AuthenticationController
             'authUri'           => $authUri,
             'lang'              => CoreConfigModel::getLanguage(),
             'mailServerOnline'  => $emailConfiguration['online'],
-            'maarchUrl'         => $maarchUrl
+            'maarchUrl'         => $maarchUrl,
+            'enabledSignatureBook' => $enabledSignatureBook
         ];
 
         if (!empty($keycloakState)) {
