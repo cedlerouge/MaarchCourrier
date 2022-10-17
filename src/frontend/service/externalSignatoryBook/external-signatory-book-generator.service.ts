@@ -83,8 +83,8 @@ export class ExternalSignatoryBookGeneratorService {
         return this.serviceInjected?.getAutocompleteDatas(data);
     }
 
-    linkAccountToSignatoryBook(externalId: number, serialId: number) {
-        return this.serviceInjected?.linkAccountToSignatoryBook(externalId, serialId);
+    linkAccountToSignatoryBook(data: any, serialId: number) {
+        return this.serviceInjected?.linkAccountToSignatoryBook(data, serialId);
     }
 
     unlinkSignatoryBookAccount(serialId: number) {
