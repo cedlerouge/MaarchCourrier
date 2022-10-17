@@ -36,13 +36,14 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     };
 
-    minimumVisaRole: any = 0;
-    maximumSignRole: any = 0;
-    visaNumberCorrect: any = true;
-    signNumberCorrect: any = true;
-    atLeastOneSign: any = true;
-    lastOneIsSign: any = true;
-    lastOneMustBeSignatory: any = false;
+    minimumVisaRole: number = 0;
+    maximumSignRole: number = 0;
+    visaNumberCorrect: boolean = true;
+    signNumberCorrect: boolean = true;
+    atLeastOneSign: boolean = true;
+    lastOneIsSign: boolean = true;
+    lastOneMustBeSignatory: boolean = false;
+    workflowSignatoryRole: string = '';
 
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
@@ -243,6 +244,8 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.minimumVisaRole = data.minimumVisaRole;
                     this.maximumSignRole = data.maximumSignRole;
                     this.lastOneMustBeSignatory = data.workflowEndBySignatory;
+                    this.workflowSignatoryRole = data.workflowSignatoryRole;
+                    this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
                     resolve(true);
                 }, (err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -301,7 +304,12 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             }
         });
 
-        this.atLeastOneSign = nbSignRole >= 1;
+        if (['optional', 'mandatory_final'].indexOf(this.workflowSignatoryRole) > -1) {
+            this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
+            this.atLeastOneSign = true;
+        } else {
+            this.atLeastOneSign = nbSignRole >= 1;
+        }
 
         if (this.maximumSignRole !== 0 || this.minimumVisaRole !== 0) {
             this.visaNumberCorrect = this.minimumVisaRole === 0 || nbVisaRole >= this.minimumVisaRole;
@@ -325,11 +333,14 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.maximumSignRole = data.parameter.param_value_int;
                     resolve(true);
                 }),
-                exhaustMap(() => this.http.get('../rest/parameters/workflowEndBySignatory')),
+                exhaustMap(() => this.http.get('../rest/parameters/workflowSignatoryRole')),
                 tap((data: any) => {
-                    this.lastOneMustBeSignatory = data.parameter.param_value_int !== 0;
+                    if (!this.functions.empty(data.parameter)) {
+                        this.workflowSignatoryRole = data.parameter.param_value_string;
+                    }
                     resolve(true);
                 }),
+                finalize(() => this.checkWorkflowParameters(this.appVisaWorkflow.getWorkflow())),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     resolve(false);

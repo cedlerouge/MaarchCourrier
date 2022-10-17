@@ -2673,5 +2673,7 @@
     "emptyListOfCustomFields": "The list of custom fields is empty",
     "updateFieldsForMail": "The values ​​of the fields <b>{{fields}}</b> will be updated via this action.",
     "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.",
-    "deleteField": "Delete field"
+    "deleteField": "Delete field",
+    "workflowSignatoryRole": "Signatory role",
+    "mandatory_final": "Mandatory at the end of the workflow"
 }

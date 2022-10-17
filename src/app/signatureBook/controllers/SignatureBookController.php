@@ -49,6 +49,16 @@ use User\models\UserSignatureModel;
 
 class SignatureBookController
 {
+    public const SIGNATORY_ROLE_MANDATORY       = 'mandatory';
+    public const SIGNATORY_ROLE_MANDATORY_FINAL = 'mandatory_final';
+    public const SIGNATORY_ROLE_OPTIONAL        = 'optional';
+    public const SIGNATORY_ROLES = [
+        SignatureBookController::SIGNATORY_ROLE_MANDATORY,
+        SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL,
+        SignatureBookController::SIGNATORY_ROLE_OPTIONAL
+    ];
+    public const SIGNATORY_ROLE_DEFAULT = SignatureBookController::SIGNATORY_ROLE_MANDATORY;
+
     public function getSignatureBook(Request $request, Response $response, array $aArgs)
     {
         $resId = $aArgs['resId'];
