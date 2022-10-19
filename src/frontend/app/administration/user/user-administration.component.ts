@@ -212,7 +212,7 @@ export class UserAdministrationComponent implements OnInit {
                         this.minDate = new Date(this.currentYear + '-' + this.currentMonth + '-01');
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
-                        if (this.user.external_id.maarchParapheur !== undefined) {
+                        if (this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] !== undefined) {
                             this.checkInfoExternalSignatoryBookAccount();
                         }
 
@@ -247,6 +247,7 @@ export class UserAdministrationComponent implements OnInit {
             {
                 panelClass: 'maarch-modal',
                 autoFocus: false,
+                disableClose: true,
                 data: {
                     user: this.user
                 }
@@ -265,7 +266,7 @@ export class UserAdministrationComponent implements OnInit {
 
     async linkAccountToSignatoryBook(result: any) {
         const data: any = await this.externSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
-        if (!this.functions.empty(data)) {
+        if (data) {
             this.user.canCreateMaarchParapheurUser = false;
             this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
