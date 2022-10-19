@@ -66,4 +66,8 @@ export class AccountLinkComponent implements OnInit {
     getRouteDatas(): string[] {
         return [`${this.externalSignatoryBokkGenerator.getAutocompleteUsersRoute()}?exludeAlreadyConnected=true`];
     }
+
+    getUserFullName(externalUser: any): string {
+        return !this.functions.empty(externalUser.idToDisplay) ? externalUser.idToDisplay : `${externalUser.firstname} ${externalUser.lastname}`;
+    }
 }
