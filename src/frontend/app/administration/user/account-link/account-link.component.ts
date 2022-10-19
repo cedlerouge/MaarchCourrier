@@ -14,8 +14,7 @@ import { FunctionsService } from '@service/functions.service';
 export class AccountLinkComponent implements OnInit {
 
     externalUser: any = {
-        inMaarchParapheur: false,
-        inFastParapheur: false,
+        inExternalSignatoryBook: false,
         login: '',
         firstname: '',
         lastname: '',
@@ -37,12 +36,13 @@ export class AccountLinkComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         const dataUsers: any = await this.externalSignatoryBokkGenerator.getAutocompleteUsersDatas(this.data);
         if (!this.functions.empty(dataUsers)) {
+            const enabled: string = this.externalSignatoryBokkGenerator.enabledSignatoryBook.charAt(0).toUpperCase() + this.externalSignatoryBokkGenerator.enabledSignatoryBook.slice(1);
             if (dataUsers.length > 0) {
                 this.externalUser = dataUsers[0];
-                this.externalUser.inMaarchParapheur = true;
+                this.externalUser.inExternalSignatoryBook = true;
                 this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
             } else {
-                this.externalUser.inMaarchParapheur = false;
+                this.externalUser.inExternalSignatoryBook = false;
                 this.externalUser = this.data.user;
                 this.externalUser.login = this.data.user.user_id;
                 this.externalUser.email = this.data.user.mail;
@@ -52,12 +52,12 @@ export class AccountLinkComponent implements OnInit {
 
     async selectUser(user: any) {
         this.externalUser = user;
-        this.externalUser.inMaarchParapheur = true;
         this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
+        this.externalUser.inExternalSignatoryBook = true;
     }
 
     unlinkMaarchParapheurAccount() {
-        this.externalUser.inMaarchParapheur = false;
+        this.externalUser.inExternalSignatoryBook = false;
         this.externalUser = this.data.user;
         this.externalUser.login = this.data.user.user_id;
         this.externalUser.email = this.data.user.mail;

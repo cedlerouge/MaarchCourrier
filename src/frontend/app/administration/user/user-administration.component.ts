@@ -254,7 +254,7 @@ export class UserAdministrationComponent implements OnInit {
             });
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                if (result.inMaarchParapheur) {
+                if (result.inExternalSignatoryBook) {
                     this.linkAccountToSignatoryBook(result);
                 } else {
                     this.createExternalSignatoryBookAccount(result, result.login);
