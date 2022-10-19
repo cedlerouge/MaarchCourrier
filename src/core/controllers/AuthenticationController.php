@@ -98,17 +98,17 @@ class AuthenticationController
         }
         
         $return = [
-            'instanceId'        => $hashedPath,
-            'applicationName'   => $appName,
-            'loginMessage'      => $parameter['param_value_string'] ?? null,
-            'changeKey'         => $encryptKey == 'Security Key Maarch Courrier #2008',
-            'authMode'          => $loggingMethod['id'],
-            'authUri'           => $authUri,
-            'lang'              => CoreConfigModel::getLanguage(),
-            'mailServerOnline'  => $emailConfiguration['online'],
-            'maarchUrl'         => $maarchUrl,
-            'enabledSignatureBook' => $enabledSignatureBook,
-            'workflowMode'      => $workflowMode,
+            'instanceId'            => $hashedPath,
+            'applicationName'       => $appName,
+            'loginMessage'          => $parameter['param_value_string'] ?? null,
+            'changeKey'             => $encryptKey == 'Security Key Maarch Courrier #2008',
+            'authMode'              => $loggingMethod['id'],
+            'authUri'               => $authUri,
+            'lang'                  => CoreConfigModel::getLanguage(),
+            'mailServerOnline'      => $emailConfiguration['online'],
+            'maarchUrl'             => $maarchUrl,
+            'enabledSignatureBook'  => $enabledSignatureBook,
+            'workflowMode'          => $workflowMode,
         ];
 
         if (!empty($keycloakState)) {
