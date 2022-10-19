@@ -5,7 +5,7 @@
       [routeDatas]="getRouteDatas()"
       [targetSearchKey]="'idToDisplay'" [subInfoKey]="'email'" (triggerEvent)="selectUser($event)" appearance="outline">
     </app-plugin-autocomplete>
-    <mat-list *ngIf="externalUser.inMaarchParapheur">
+    <mat-list *ngIf="externalUser.inExternalSignatoryBook">
       <mat-list-item>
         <mat-icon class="avatarAccount" color="primary" mat-list-icon
           [style.background-image]="'url('+externalUser.picture+')'"></mat-icon>
@@ -17,10 +17,10 @@
       </mat-list-item>
     </mat-list>
     <ng-container *ngIf="externalSignatoryBokkGenerator.enabledSignatoryBook !== 'fastParapheur'">
-      <mat-form-field *ngIf="!externalUser.inMaarchParapheur">
+      <mat-form-field *ngIf="!externalUser.inExternalSignatoryBook">
         <input type="text" matInput placeholder="{{'lang.newLoginInMaarchParapheur' | translate}}" [(ngModel)]="externalUser.login">
       </mat-form-field>
-      <div *ngIf="!externalUser.inMaarchParapheur" class="alert-message alert-message-danger" role="alert"
+      <div *ngIf="!externalUser.inExternalSignatoryBook" class="alert-message alert-message-danger" role="alert"
         style="margin-top: 30px;"
         [innerHTML]="('lang.maarchParapheurAccountMsg' | translate) + ' <b>' + externalUser.login + '</b> ' + ('lang.maarchParapheurAccountMsg2' | translate)">
       </div>
