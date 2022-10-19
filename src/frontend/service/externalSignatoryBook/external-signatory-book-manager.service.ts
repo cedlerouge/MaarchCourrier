@@ -23,8 +23,10 @@ export class ExternalSignatoryBookManagerService {
         if (this.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
             if (this.authService.enabledSignatureBook === 'maarchParapheur') {
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.authService.enabledSignatureBook === 'fastParapheur') {
+            } else if (this.authService.enabledSignatureBook === 'fastParapheur' && this.authService.workflowMode === 'linkedAccounts') {
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
+            } else {
+                this.notifications.handleSoftErrors(this.translate.instant('lang.wrongConfiguration'));
             }
         } else {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));

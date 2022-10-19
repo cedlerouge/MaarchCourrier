@@ -16,7 +16,7 @@ export class FastParapheurService {
         private notify: NotificationService
     ) { }
 
-    getUserAvatar(): Promise<any> {
+    getUserAvatar(externalId: number = null): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(
                 tap((response: any) => {

@@ -14,6 +14,7 @@ import { SessionStorageService } from '@service/session-storage.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -61,17 +62,13 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     showToggle: boolean = false;
     inLocalStorage: boolean = false;
 
-    /**
-     * allows when FAST PARAPHEUR is activated to know which method to use: 'userId' or 'linkedAccounts'
-     */
-    workflowMode: string = 'linkedAccounts';
-
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         public dialogRef: MatDialogRef<SendExternalSignatoryBookActionComponent>,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
+        public authService: AuthService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private notify: NotificationService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -116,7 +113,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         this.loading = true;
         const data: any = await this.externalSignatoryBook.checkExternalSignatureBook(this.data);
         if (!this.functions.empty(data)) {
-            this.workflowMode = data.workflowMode ?? this.workflowMode;
             this.additionalsInfos = data.additionalsInfos;
             if (this.additionalsInfos.attachments.length > 0) {
                 this.signatoryBookEnabled = data.signatureBookEnabled;
@@ -196,7 +192,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
+        if (this.authService.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
@@ -210,5 +206,9 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         } else {
             return false;
         }
+    }
+
+    canShowComponent(): boolean {
+        return this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1 && (this.authService.workflowMode === null || (this.signatoryBookEnabled === 'fastParapheur' && this.authService.workflowMode === 'linkedAccounts'));
     }
 }

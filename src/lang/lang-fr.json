@@ -2678,5 +2678,6 @@
     "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
     "maarchParapheur": "Maarch Parapheur",
     "fastParapheur": "Fast Parapheur",
-    "noOtpConfigurationFound": "Aucune configuration OTP trouvée"
+    "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
+    "wrongConfiguration": "Veuillez vérifier la configuration du Parapheur externe"
 }

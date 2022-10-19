@@ -82,7 +82,20 @@ class AuthenticationController
         $emailConfiguration = !empty($emailConfiguration['value']) ? json_decode($emailConfiguration['value'], true) : null;
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        $enabledSignatureBook = !empty($loadedXml) ? (string)$loadedXml->signatoryBookEnabled : null;
+        $enabledSignatureBook = null;
+        $workflowMode = null;
+
+        if (!empty($loadedXml)) {
+            $enabledSignatureBook = (string)$loadedXml->signatoryBookEnabled;
+            if ($enabledSignatureBook === 'fastParapheur') {
+                foreach ($loadedXml->signatoryBook as $value) {
+                    if ((string)$value->id === $enabledSignatureBook) {
+                        $workflowMode = (string)$value->workflowMode ?? null;
+                        break;
+                    }
+                }
+            }
+        }
         
         $return = [
             'instanceId'        => $hashedPath,
@@ -94,7 +107,8 @@ class AuthenticationController
             'lang'              => CoreConfigModel::getLanguage(),
             'mailServerOnline'  => $emailConfiguration['online'],
             'maarchUrl'         => $maarchUrl,
-            'enabledSignatureBook' => $enabledSignatureBook
+            'enabledSignatureBook' => $enabledSignatureBook,
+            'workflowMode'      => $workflowMode,
         ];
 
         if (!empty($keycloakState)) {
