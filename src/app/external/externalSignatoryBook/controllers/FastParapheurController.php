@@ -411,6 +411,11 @@ class FastParapheurController
         ValidatorModel::intType($args, ['resIdMaster']);
         ValidatorModel::arrayType($args, ['steps', 'config']);
 
+        $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
+        if (empty($subscriberId)) {
+            return ['error' => 'no subscriberId provided'];
+        }
+
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
             'select' => ['res_id', 'subject', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
@@ -533,7 +538,7 @@ class FastParapheurController
 
         $curlReturn = CurlModel::exec([
             'method'  => 'POST',
-            'url'     => $args['config']['url'] . '/documents/ondemand/' . $args['businessId'] . '/upload',
+            'url'     => $args['config']['url'] . '/documents/ondemand/' . $subscriberId . '/upload',
             'options' => [
                 CURLOPT_SSLCERT       => $args['config']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
