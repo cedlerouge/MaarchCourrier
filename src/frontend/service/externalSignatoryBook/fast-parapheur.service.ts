@@ -78,7 +78,7 @@ export class FastParapheurService {
                     resolve(true);
                 }),
                 catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
+                    this.notify.handleErrors(this.translate.instant('lang.' + err.error.lang));
                     resolve(false);
                     return of(false);
                 })
@@ -102,23 +102,7 @@ export class FastParapheurService {
     }
 
     createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
-        return new Promise((resolve) => {
-            this.http.put(`../rest/users/${id}/createInMaarchParapheur`, { login: login }).pipe(
-                tap((data: any) => {
-                    this.notify.success(this.translate.instant('lang.accountAdded'));
-                    resolve(data);
-                }),
-                catchError((err: any) => {
-                    if (err.error.errors === 'Login already exists') {
-                        this.translate.instant('lang.loginAlreadyExistsInMaarchParapheur');
-                    } else {
-                        this.notify.handleSoftErrors(err);
-                    }
-                    resolve(false);
-                    return of(false);
-                })
-            ).subscribe();
-        });
+        // STAND BY: the creation of a user in FAST PARAPHEUR is not possible
     }
 
     checkInfoExternalSignatoryBookAccount(serialId: number) {
