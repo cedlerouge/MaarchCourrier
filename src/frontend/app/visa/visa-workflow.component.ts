@@ -324,11 +324,11 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     getCurrentVisaUserIndex() {
-        if (this.getLastVisaUser().listinstance_id === undefined) {
+        if (this.functions.empty(this.getLastVisaUser()?.listinstance_id)) {
             const index = 0;
             return this.getRealIndex(index);
         } else {
-            let index = this.visaWorkflow.items.map((item: any) => item.listinstance_id).indexOf(this.getLastVisaUser().listinstance_id);
+            let index = this.visaWorkflow.items.map((item: any) => item.listinstance_id).indexOf(this.getLastVisaUser()?.listinstance_id);
             index++;
             return this.getRealIndex(index);
         }
@@ -356,7 +356,7 @@ export class VisaWorkflowComponent implements OnInit {
     getLastVisaUser() {
         const arrOnlyProcess = this.visaWorkflow.items.filter((item: any) => !this.functions.empty(item.process_date) && item.isValid);
 
-        return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : '';
+        return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : null;
     }
 
     getRealIndex(index: number) {
