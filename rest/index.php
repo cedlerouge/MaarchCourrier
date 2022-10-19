@@ -578,6 +578,7 @@ $app->get('/users/{id}/statusInMaarchParapheur', \ExternalSignatoryBook\controll
 $app->put('/users/{id}/externalSignatures', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':sendSignaturesToMaarchParapheur');
 $app->put('/users/{id}/linkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':linkUserToFastParapheur');
 $app->put('/users/{id}/unlinkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':unlinkUserToFastParapheur');
+$app->get('/users/{id}/statusInFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':userStatusInFastParapheur');
 $app->post('/users/{id}/groups', \User\controllers\UserController::class . ':addGroup');
 $app->put('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':updateGroup');
 $app->delete('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':deleteGroup');

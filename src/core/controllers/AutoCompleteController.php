@@ -204,8 +204,29 @@ class AutoCompleteController
             return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
         }
 
-        // TODO gérer subscriberId par entité (businessId de l’entité)
-        $users = FastParapheurController::getUsers(['config' => $config]);
+        $subscriberIds = EntityModel::getWithUserEntities([
+            'select' => ['entities.external_id->>\'fastParapheurSubscriberId\' as "fastParapheurSubscriberId"'],
+            'where'  => ['users_entities.user_id = ?'],
+            'data'   => [$GLOBALS['id']]
+        ]);
+        $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
+
+        if (empty($subscriberIds)) {
+            $users = FastParapheurController::getUsers(['config' => $config]);
+            if (!empty($users['errors'])) {
+                return $response->withStatus(400)->withJson(['errors' => $users['errors']]);
+            }
+        } else {
+            $users = [];
+            foreach ($subscriberIds as $subscriberId) {
+                $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
+                if (!empty($users['errors'])) {
+                    return $response->withStatus(400)->withJson(['errors' => $users['errors']]);
+                }
+                $users = array_merge($users, $subscriberUsers);
+            }
+            $users = array_values(array_unique($users));
+        }
         $users = array_filter($users, function ($user) use ($excludedUsers) {
             return !in_array($user['email'], $excludedUsers);
         });

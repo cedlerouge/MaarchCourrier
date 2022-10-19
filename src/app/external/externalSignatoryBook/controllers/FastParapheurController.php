@@ -32,7 +32,6 @@ use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
 use User\controllers\UserController;
 use History\controllers\HistoryController;
-use SimpleXMLElement;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -111,6 +110,27 @@ class FastParapheurController
         ]);
 
         return $response->withJson(['success' => 'success']);
+    }
+
+    public function userStatusInFastParapheur(Request $request, Response $response, array $args)
+    {
+        $userController = new UserController();
+        $error = $userController->hasUsersRights(['id' => $args['id']]);
+        if (!empty($error['error'])) {
+            return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
+        }
+
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
+            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        }
+
+        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+        if (empty($user['fastParapheurEmail'])) {
+            return $response->withStatus(403)->withJson(['errors' => 'user does not have Fast Parapheur email']);
+        }
+
+        return $response->withJson(['link' => $user['fastParapheurEmail'], 'errors' => '']);
     }
 
     public static function retrieveSignedMails(array $args)
@@ -504,7 +524,7 @@ class FastParapheurController
 
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
-            $otpInfoXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
             foreach ($otpInfo as $name => $value) {
                 $metadataElement = $otpInfoXML->addChild('meta-data');
                 $metadataElement->addAttribute($name, $value);
@@ -675,9 +695,12 @@ class FastParapheurController
 
     public static function getUsers(array $args)
     {
-        $businessId = $args['businessId'] ?? $args['config']['subscriberId'];
+        $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
+        if (empty($subscriberId)) {
+            return ['errors' => 'no subscriber id provided'];
+        }
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($businessId),
+            'url'           => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($subscriberId),
             'method'        => 'GET',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['certPath'],
