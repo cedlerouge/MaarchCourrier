@@ -64,7 +64,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     /**
      * allows when FAST PARAPHEUR is activated to know which method to use: 'userId' or 'linkedAccounts'
      */
-    circuitMode: string = 'linkedAccounts';
+    workflowMode: string = 'linkedAccounts';
 
     constructor(
         public translate: TranslateService,
@@ -116,7 +116,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         this.loading = true;
         const data: any = await this.externalSignatoryBook.checkExternalSignatureBook(this.data);
         if (!this.functions.empty(data)) {
-            this.circuitMode = data.circuitMode ?? this.circuitMode;
+            this.workflowMode = data.workflowMode ?? this.workflowMode;
             this.additionalsInfos = data.additionalsInfos;
             if (this.additionalsInfos.attachments.length > 0) {
                 this.signatoryBookEnabled = data.signatureBookEnabled;
@@ -196,7 +196,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.circuitMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
+        if (this.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
