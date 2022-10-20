@@ -50,7 +50,7 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-maarch-paraph>
-                        <app-x-paraph #xParaph *ngIf="authService.enabledSignatureBook"
+                        <app-x-paraph #xParaph *ngIf="authService.enabledSignatureBook === 'xParaph'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"
