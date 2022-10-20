@@ -117,3 +117,16 @@
         margin: 10px;
     }
 }
+
+.badge {
+    position: absolute;
+    right: 10px;
+    font-size: 10px;
+    background: white;
+    color: var(--maarch-color-primary);
+    line-height: initial;
+    padding: 2px 4px;
+    font-weight: bold;
+    border-radius: 2px;
+    cursor: help;
+}

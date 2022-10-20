@@ -92,7 +92,7 @@ class AuthenticationController
                 } else {
                     foreach ($loadedXml->signatoryBook as $value) {
                         if ((string)$value->id === $externalSignatoryBook['id']) {
-                            $externalSignatoryBook['integratedWorkflow'] = (boolean)$value->integratedWorkflow ?? false;
+                            $externalSignatoryBook['integratedWorkflow'] = filter_var((string)$value->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
                             break;
                         }
                     }
