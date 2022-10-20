@@ -81,7 +81,7 @@ export class MaarchParapheurService {
         });
     }
 
-    synchronizeSignatures(data: any) {
+    synchronizeSignatures(data: any): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${data.id}/externalSignatures`, {}).pipe(
                 tap((result: any) => {

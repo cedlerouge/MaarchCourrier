@@ -8,13 +8,13 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-signature-book',
     templateUrl: './signature-book.component.html',
     styleUrls: ['./signature-book.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 
 export class MySignatureBookComponent implements OnInit {
@@ -32,7 +32,7 @@ export class MySignatureBookComponent implements OnInit {
         public functionsService: FunctionsService,
         public headerService: HeaderService,
         public dialog: MatDialog,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         private zone: NgZone,
         private notify: NotificationService
     ){

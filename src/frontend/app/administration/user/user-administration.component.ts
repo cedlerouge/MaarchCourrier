@@ -21,14 +21,14 @@ import { AuthService } from '@service/auth.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 declare let $: any;
 
 @Component({
     templateUrl: 'user-administration.component.html',
     styleUrls: ['user-administration.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class UserAdministrationComponent implements OnInit {
 
@@ -133,7 +133,7 @@ export class UserAdministrationComponent implements OnInit {
         public headerService: HeaderService,
         public appService: AppService,
         public authService: AuthService,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         private privilegeService: PrivilegeService,
         private viewContainerRef: ViewContainerRef,
         private route: ActivatedRoute,
