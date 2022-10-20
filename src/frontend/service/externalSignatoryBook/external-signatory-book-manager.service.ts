@@ -14,7 +14,7 @@ export class ExternalSignatoryBookManagerService {
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
     serviceInjected: MaarchParapheurService | FastParapheurService;
     signatoryBookEnabled: string = '';
-    workflowMode: string = '';
+    integratedWorkflow: boolean = false; // allows when FAST PARAPHEUR is activated to know which method to use
 
     constructor(
         private injector: Injector,
@@ -24,16 +24,16 @@ export class ExternalSignatoryBookManagerService {
         private authService: AuthService,
         private functions: FunctionsService
     ) {
-        this.workflowMode = this.authService.workflowMode;
-        if (this.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
-            if (this.authService.enabledSignatureBook === 'maarchParapheur') {
-                this.signatoryBookEnabled = this.authService.enabledSignatureBook;
+        this.integratedWorkflow = this.authService.externalSignatoryBook.integratedWorkflow;
+        if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook.id) > -1) {
+            if (this.authService.externalSignatoryBook.id === 'maarchParapheur') {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.authService.enabledSignatureBook === 'fastParapheur' && this.workflowMode === 'linkedAccounts') {
-                this.signatoryBookEnabled = this.authService.enabledSignatureBook;
+            } else if (this.authService.externalSignatoryBook.id === 'fastParapheur' && this.integratedWorkflow) {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
-        } else if (this.functions.empty(this.authService.enabledSignatureBook)) {
+        } else if (this.functions.empty(this.authService.externalSignatoryBook.id)) {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
     }

@@ -31,15 +31,15 @@
                         </ul>
                     </div>
                     <div>
-                        <app-i-paraph #iParapheur *ngIf="authService.enabledSignatureBook =='iParapheur'"
+                        <app-i-paraph #iParapheur *ngIf="authService.externalSignatoryBook.id =='iParapheur'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-i-paraph>
-                        <app-ixbus-paraph #ixbus *ngIf="authService.enabledSignatureBook =='ixbus'"
+                        <app-ixbus-paraph #ixbus *ngIf="authService.externalSignatoryBook.id =='ixbus'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-ixbus-paraph>
-                        <app-fast-paraph #fastParapheur *ngIf="authService.enabledSignatureBook === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
+                        <app-fast-paraph #fastParapheur *ngIf="authService.externalSignatoryBook.id === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-fast-paraph>
@@ -50,7 +50,7 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-maarch-paraph>
-                        <app-x-paraph #xParaph *ngIf="authService.enabledSignatureBook === 'xParaph'"
+                        <app-x-paraph #xParaph *ngIf="authService.externalSignatoryBook.id === 'xParaph'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"

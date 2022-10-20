@@ -27,12 +27,7 @@ export class AuthService {
     user: any = {};
     maarchUrl: string = '';
     noInstall: boolean = false;
-    enabledSignatureBook: string = '';
-
-    /**
-     * allows when FAST PARAPHEUR is activated to know which method to use: 'userId' or 'linkedAccounts'
-     */
-    workflowMode: string = '';
+    externalSignatoryBook: any = null;
 
     private eventAction = new Subject<any>();
 
@@ -260,8 +255,7 @@ export class AuthService {
                         this.changeKey = data.changeKey;
                         this.applicationName = data.applicationName;
                         this.loginMessage = data.loginMessage;
-                        this.enabledSignatureBook = data.enabledSignatureBook;
-                        this.workflowMode = data.workflowMode;
+                        this.externalSignatoryBook = data.externalSignatoryBook;
                         this.setEvent('authenticationInformations');
                         this.authMode = data.authMode;
                         this.authUri = data.authUri;

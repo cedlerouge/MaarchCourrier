@@ -127,8 +127,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     executeAction() {
-        const realResSelected: string[] = this[this.authService.enabledSignatureBook].getRessources();
-        const datas: any = this[this.authService.enabledSignatureBook].getDatas();
+        const realResSelected: string[] = this[this.authService.externalSignatoryBook.id].getRessources();
+        const datas: any = this[this.authService.externalSignatoryBook.id].getDatas();
 
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(
             tap((data: any) => {
@@ -148,8 +148,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     isValidAction(): boolean {
-        if (this[this.authService.enabledSignatureBook] !== undefined) {
-            return this[this.authService.enabledSignatureBook].isValidParaph();
+        if (this[this.authService.externalSignatoryBook.id] !== undefined) {
+            return this[this.authService.externalSignatoryBook.id].isValidParaph();
         } else {
             return false;
         }
@@ -190,7 +190,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.externalSignatoryBook.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
+        if (this.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook.id) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
