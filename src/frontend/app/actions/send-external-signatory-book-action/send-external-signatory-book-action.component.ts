@@ -192,7 +192,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.authService.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
+        if (this.externalSignatoryBook.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
@@ -209,6 +209,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     canShowComponent(): boolean {
-        return this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1 && (this.authService.workflowMode === null || (this.signatoryBookEnabled === 'fastParapheur' && this.authService.workflowMode === 'linkedAccounts'));
+        return this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.externalSignatoryBook.signatoryBookEnabled) > -1 && (this.externalSignatoryBook.workflowMode === null || (this.externalSignatoryBook.signatoryBookEnabled === 'fastParapheur' && this.externalSignatoryBook.workflowMode === 'linkedAccounts'));
     }
 }

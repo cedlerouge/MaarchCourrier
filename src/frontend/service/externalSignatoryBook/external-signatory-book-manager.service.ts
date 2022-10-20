@@ -12,6 +12,8 @@ export class ExternalSignatoryBookManagerService {
 
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
     serviceInjected: MaarchParapheurService | FastParapheurService;
+    signatoryBookEnabled: string = '';
+    workflowMode: string = '';
 
     constructor(
         private injector: Injector,
@@ -20,10 +22,12 @@ export class ExternalSignatoryBookManagerService {
         private translate: TranslateService,
         private authService: AuthService
     ) {
-        if (this.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
-            if (this.authService.enabledSignatureBook === 'maarchParapheur') {
+        this.signatoryBookEnabled = this.authService.enabledSignatureBook;
+        this.workflowMode = this.authService.workflowMode;
+        if (this.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
+            if (this.signatoryBookEnabled === 'maarchParapheur') {
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.authService.enabledSignatureBook === 'fastParapheur' && this.authService.workflowMode === 'linkedAccounts') {
+            } else if (this.signatoryBookEnabled === 'fastParapheur' && this.workflowMode === 'linkedAccounts') {
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             } else {
                 this.notifications.handleSoftErrors(this.translate.instant('lang.wrongConfiguration'));
