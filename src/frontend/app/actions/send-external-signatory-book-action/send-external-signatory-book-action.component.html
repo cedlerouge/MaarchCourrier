@@ -39,12 +39,12 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-ixbus-paraph>
-                        <app-fast-paraph #fastParapheur *ngIf="externalSignatoryBook.signatoryBookEnabled === 'fastParapheur' && externalSignatoryBook.workflowMode === 'userId'"
+                        <app-fast-paraph #fastParapheur *ngIf="authService.enabledSignatureBook === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-fast-paraph>
                         <app-maarch-paraph #maarchParapheur
-                            *ngIf="canShowComponent() && !loading"
+                            *ngIf="!functions.empty(externalSignatoryBook.signatoryBookEnabled) && !loading"
                             [resIds]="data.resIds"
                             [resourcesToSign]="resourcesToSign"
                             [additionalsInfos]="additionalsInfos"

@@ -207,8 +207,4 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             return false;
         }
     }
-
-    canShowComponent(): boolean {
-        return this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.externalSignatoryBook.signatoryBookEnabled) > -1 && (this.externalSignatoryBook.workflowMode === null || (this.externalSignatoryBook.signatoryBookEnabled === 'fastParapheur' && this.externalSignatoryBook.workflowMode === 'linkedAccounts'));
-    }
 }
