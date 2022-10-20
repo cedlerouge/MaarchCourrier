@@ -82,16 +82,19 @@ class AuthenticationController
         $emailConfiguration = !empty($emailConfiguration['value']) ? json_decode($emailConfiguration['value'], true) : null;
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        $enabledSignatureBook = null;
-        $workflowMode = null;
+        $externalSignatoryBook = null;
 
         if (!empty($loadedXml)) {
-            $enabledSignatureBook = (string)$loadedXml->signatoryBookEnabled;
-            if ($enabledSignatureBook === 'fastParapheur') {
-                foreach ($loadedXml->signatoryBook as $value) {
-                    if ((string)$value->id === $enabledSignatureBook) {
-                        $workflowMode = (string)$value->workflowMode ?? null;
-                        break;
+            if (!empty((string)$loadedXml->signatoryBookEnabled)) {
+                $externalSignatoryBook['id'] = (string)$loadedXml->signatoryBookEnabled;
+                if ($externalSignatoryBook['id'] == 'maarchParapheur') {
+                    $externalSignatoryBook['integratedWorkflow'] = true;
+                } else {
+                    foreach ($loadedXml->signatoryBook as $value) {
+                        if ((string)$value->id === $externalSignatoryBook['id']) {
+                            $externalSignatoryBook['integratedWorkflow'] = (boolean)$value->integratedWorkflow ?? false;
+                            break;
+                        }
                     }
                 }
             }
@@ -107,8 +110,7 @@ class AuthenticationController
             'lang'                  => CoreConfigModel::getLanguage(),
             'mailServerOnline'      => $emailConfiguration['online'],
             'maarchUrl'             => $maarchUrl,
-            'enabledSignatureBook'  => $enabledSignatureBook,
-            'workflowMode'          => $workflowMode,
+            'externalSignatoryBook'  => $externalSignatoryBook,
         ];
 
         if (!empty($keycloakState)) {
