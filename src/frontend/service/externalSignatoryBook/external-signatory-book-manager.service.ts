@@ -6,6 +6,7 @@ import { MaarchParapheurService } from './maarch-parapheur.service';
 import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@service/auth.service';
+import { FunctionsService } from '@service/functions.service';
 @Injectable()
 
 export class ExternalSignatoryBookManagerService {
@@ -20,7 +21,8 @@ export class ExternalSignatoryBookManagerService {
         private http: HttpClient,
         private notifications: NotificationService,
         private translate: TranslateService,
-        private authService: AuthService
+        private authService: AuthService,
+        private functions: FunctionsService
     ) {
         this.workflowMode = this.authService.workflowMode;
         if (this.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
@@ -31,7 +33,7 @@ export class ExternalSignatoryBookManagerService {
                 this.signatoryBookEnabled = this.authService.enabledSignatureBook;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
-        } else {
+        } else if (this.functions.empty(this.authService.enabledSignatureBook)) {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
     }

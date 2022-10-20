@@ -41,7 +41,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     };
     resourcesToSign: any[] = [];
     resourcesMailing: any[] = [];
-    signatoryBookEnabled: string = '';
 
     externalSignatoryBookDatas: any = {
         steps: [],
@@ -115,7 +114,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         if (!this.functions.empty(data)) {
             this.additionalsInfos = data.additionalsInfos;
             if (this.additionalsInfos.attachments.length > 0) {
-                this.signatoryBookEnabled = data.signatureBookEnabled;
                 this.resourcesMailing = data.additionalsInfos.attachments.filter((element: any) => element.mailing);
                 data.availableResources.filter((element: any) => !element.mainDocument).forEach((element: any) => {
                     this.toggleDocToSign(true, element, false);
@@ -129,8 +127,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     executeAction() {
-        const realResSelected: string[] = this[this.signatoryBookEnabled].getRessources();
-        const datas: any = this[this.signatoryBookEnabled].getDatas();
+        const realResSelected: string[] = this[this.authService.enabledSignatureBook].getRessources();
+        const datas: any = this[this.authService.enabledSignatureBook].getDatas();
 
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(
             tap((data: any) => {
@@ -150,8 +148,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     isValidAction(): boolean {
-        if (this[this.signatoryBookEnabled] !== undefined) {
-            return this[this.signatoryBookEnabled].isValidParaph();
+        if (this[this.authService.enabledSignatureBook] !== undefined) {
+            return this[this.authService.enabledSignatureBook].isValidParaph();
         } else {
             return false;
         }
@@ -192,7 +190,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.externalSignatoryBook.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.signatoryBookEnabled) > -1) {
+        if (this.externalSignatoryBook.workflowMode === 'linkedAccounts' && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.enabledSignatureBook) > -1) {
             const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;

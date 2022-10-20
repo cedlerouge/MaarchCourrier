@@ -31,11 +31,11 @@
                         </ul>
                     </div>
                     <div>
-                        <app-i-paraph #iParapheur *ngIf="signatoryBookEnabled=='iParapheur'"
+                        <app-i-paraph #iParapheur *ngIf="authService.enabledSignatureBook =='iParapheur'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-i-paraph>
-                        <app-ixbus-paraph #ixbus *ngIf="signatoryBookEnabled=='ixbus'"
+                        <app-ixbus-paraph #ixbus *ngIf="authService.enabledSignatureBook =='ixbus'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-ixbus-paraph>
@@ -50,7 +50,7 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-maarch-paraph>
-                        <app-x-paraph #xParaph *ngIf="signatoryBookEnabled=='xParaph'"
+                        <app-x-paraph #xParaph *ngIf="authService.enabledSignatureBook"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"
