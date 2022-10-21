@@ -21,7 +21,7 @@ import { AuthService } from '@service/auth.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
@@ -29,7 +29,7 @@ declare let $: any;
 @Component({
     templateUrl: 'user-administration.component.html',
     styleUrls: ['user-administration.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class UserAdministrationComponent implements OnInit {
 
@@ -135,7 +135,7 @@ export class UserAdministrationComponent implements OnInit {
         public appService: AppService,
         public authService: AuthService,
         public functions: FunctionsService,
-        public externSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externSignatoryBook: ExternalSignatoryBookManagerService,
         private privilegeService: PrivilegeService,
         private viewContainerRef: ViewContainerRef,
         private route: ActivatedRoute,
@@ -212,7 +212,7 @@ export class UserAdministrationComponent implements OnInit {
                         this.minDate = new Date(this.currentYear + '-' + this.currentMonth + '-01');
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
-                        if (this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] !== undefined) {
+                        if (this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] !== undefined) {
                             this.checkInfoExternalSignatoryBookAccount();
                         }
 
@@ -268,7 +268,7 @@ export class UserAdministrationComponent implements OnInit {
         const data: any = await this.externSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
         if (data) {
             this.user.canCreateMaarchParapheurUser = false;
-            this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = result.id;
+            this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
         }
     }
@@ -277,7 +277,7 @@ export class UserAdministrationComponent implements OnInit {
         const data: any = await this.externSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
         if (!this.functions.empty(data)) {
             this.user.canCreateMaarchParapheurUser = false;
-            this.user.external_id[this.externSignatoryBook.enabledSignatoryBook] = data.externalId;
+            this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] = data.externalId;
             this.checkInfoExternalSignatoryBookAccount();
         }
     }
