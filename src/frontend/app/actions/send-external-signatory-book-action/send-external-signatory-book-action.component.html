@@ -1,7 +1,6 @@
 <div class="mat-dialog-content-container">
-    <h1 mat-dialog-title style="position: relative;">
-        {{data.action.label}}
-        <div class="badge" [title]="'lang.enabledSignatoryBook' | translate">
+    <h1 mat-dialog-title style="padding-left: 0px; padding-right: 0px">
+        {{data.action.label}} &nbsp; <div class="badge" [title]="'lang.enabledSignatoryBook' | translate">
             {{'lang.'+ authService.externalSignatoryBook.id | translate}}
          </div>
     </h1>
