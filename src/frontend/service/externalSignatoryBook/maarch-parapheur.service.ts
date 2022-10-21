@@ -4,6 +4,7 @@ import { FunctionsService } from '@service/functions.service';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Injectable({
     providedIn: 'root'
@@ -80,7 +81,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getAutocompleteDatas(data: any) {
+    getAutocompleteDatas(data: any): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`..${this.autocompleteUsersRoute}`, { params: { 'search': data.user.mail, 'exludeAlreadyConnected': 'true' } })
                 .pipe(
@@ -96,7 +97,7 @@ export class MaarchParapheurService {
         });
     }
 
-    linkAccountToSignatoryBook(data: any, serialId: number) {
+    linkAccountToSignatoryBook(data: any, serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${serialId}/linkToMaarchParapheur`, { maarchParapheurUserId: data.id }).pipe(
                 tap(() => {
@@ -112,7 +113,7 @@ export class MaarchParapheurService {
         });
     }
 
-    unlinkSignatoryBookAccount(serialId: number) {
+    unlinkSignatoryBookAccount(serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${serialId}/unlinkToMaarchParapheur`, {}).pipe(
                 tap(() => {
@@ -127,7 +128,7 @@ export class MaarchParapheurService {
         });
     }
 
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+    createExternalSignatoryBookAccount(id: number, login: string, serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${id}/createInMaarchParapheur`, { login: login }).pipe(
                 tap((data: any) => {
@@ -147,7 +148,7 @@ export class MaarchParapheurService {
         });
     }
 
-    checkInfoExternalSignatoryBookAccount(serialId: number) {
+    checkInfoExternalSignatoryBookAccount(serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('../rest/users/' + serialId + '/statusInMaarchParapheur').pipe(
                 tap((data: any) => {
@@ -162,7 +163,7 @@ export class MaarchParapheurService {
         });
     }
 
-    setExternalInformation(item: any) {
+    setExternalInformation(item: any): UserWorkflow {
         return {
             ... item,
             externalId: {

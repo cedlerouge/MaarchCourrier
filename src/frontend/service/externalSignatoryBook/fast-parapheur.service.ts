@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
-import { UserWorkflow } from '../../models/user-workflow.model';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Injectable({
     providedIn: 'root'
@@ -73,7 +73,7 @@ export class FastParapheurService {
          */
     }
 
-    linkAccountToSignatoryBook(externalId: any, serialId: number) {
+    linkAccountToSignatoryBook(externalId: any, serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${serialId}/linkToFastParapheur`, { fastParapheurUserEmail: externalId.email }).pipe(
                 tap(() => {
@@ -89,7 +89,7 @@ export class FastParapheurService {
         });
     }
 
-    unlinkSignatoryBookAccount(serialId: number) {
+    unlinkSignatoryBookAccount(serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${serialId}/unlinkToFastParapheur`, {}).pipe(
                 tap(() => {
@@ -108,7 +108,7 @@ export class FastParapheurService {
         // STAND BY: the creation of a user in FAST PARAPHEUR is not possible
     }
 
-    checkInfoExternalSignatoryBookAccount(serialId: number) {
+    checkInfoExternalSignatoryBookAccount(serialId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('../rest/users/' + serialId + '/statusInFastParapheur').pipe(
                 tap((data: any) => {
@@ -123,7 +123,7 @@ export class FastParapheurService {
         });
     }
 
-    setExternalInformation(item: any) {
+    setExternalInformation(item: any): UserWorkflow {
         return {
             ... item,
             signatureModes: this.userWorkflow.signatureModes,
