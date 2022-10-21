@@ -12,12 +12,13 @@ import { ColorEvent } from 'ngx-color';
 import { PrivilegeService } from '@service/privileges.service';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { UntypedFormControl } from '@angular/forms';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'tile-create.component.html',
     styleUrls: ['tile-create.component.scss'],
-    providers: [DashboardService, SortPipe, ExternalSignatoryBookGeneratorService]
+    providers: [DashboardService, SortPipe, ExternalSignatoryBookManagerService]
 })
 export class TileCreateComponent implements OnInit {
 
@@ -53,7 +54,8 @@ export class TileCreateComponent implements OnInit {
         public functionsService: FunctionsService,
         public headerService: HeaderService,
         public privilegeService: PrivilegeService,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        public authService: AuthService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private notify: NotificationService,
         private sortPipe: SortPipe,
@@ -129,7 +131,7 @@ export class TileCreateComponent implements OnInit {
     }
 
     getEnabledExternalSignatoryBook() {
-        if (this.externalSignatoryBook.enabledSignatoryBook === 'maarchParapheur') {
+        if (this.authService.externalSignatoryBook.id === 'maarchParapheur') {
             this.checkLink();
         }
     }
@@ -349,8 +351,8 @@ export class TileCreateComponent implements OnInit {
         }));
         if (this.selectedTileType === 'externalSignatoryBook') {
             // Get the views linked to the enabled external signatory book
-            this.views = this.views.filter((item: any) => item.route.includes(this.externalSignatoryBook.enabledSignatoryBook));
-            this.enabledSignatoryBook = this.translate.instant(`lang.${this.externalSignatoryBook.enabledSignatoryBook}`);
+            this.views = this.views.filter((item: any) => item.route.includes(this.authService.externalSignatoryBook.id));
+            this.enabledSignatoryBook = this.translate.instant(`lang.${this.authService.externalSignatoryBook.id}`);
         }
     }
 }
