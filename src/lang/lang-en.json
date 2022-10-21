@@ -2675,5 +2675,9 @@
     "updateFieldsForMails": "The values ​​of the fields below will be updated via this action.",
     "deleteField": "Delete field",
     "workflowSignatoryRole": "Signatory role",
-    "mandatory_final": "Mandatory at the end of the workflow"
+    "mandatory_final": "Mandatory at the end of the workflow",
+    "externalSignoryBookNotEnabled": "No external signatory book enabled",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur",
+    "noOtpConfigurationFound": "No OTP configuration found"
 }

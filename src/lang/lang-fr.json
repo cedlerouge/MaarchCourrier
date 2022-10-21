@@ -2674,5 +2674,10 @@
     "updateFieldsForMails": "Les valeurs des champs ci-dessous seront mises à jour via cette action.",
     "deleteField": "Supprimer le champ",
     "workflowSignatoryRole": "Rôle signataire",
-    "mandatory_final": "Obligatoire en fin de circuit"
+    "mandatory_final": "Obligatoire en fin de circuit",
+    "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur",
+    "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
+    "enabledSignatoryBook": "Parapheur actif"
 }

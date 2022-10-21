@@ -16,7 +16,7 @@ export class VisaWorkflowModalComponent implements OnInit {
     constructor(public translate: TranslateService, public http: HttpClient, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<VisaWorkflowModalComponent>) { }
 
     ngOnInit(): void {
-        this.appExternalVisaWorkflow.loadWorkflowMaarchParapheur(this.data.id, this.data.type);
+        this.appExternalVisaWorkflow.loadExternalWorkflow(this.data.id, this.data.type);
     }
 
 }

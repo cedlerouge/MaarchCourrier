@@ -1,5 +1,9 @@
 <div class="mat-dialog-content-container">
-    <h1 mat-dialog-title>{{data.action.label}}</h1>
+    <h1 mat-dialog-title style="padding-left: 0px; padding-right: 0px">
+        {{data.action.label}} &nbsp; <div class="badge" [title]="'lang.enabledSignatoryBook' | translate">
+            {{'lang.'+ authService.externalSignatoryBook.id | translate}}
+         </div>
+    </h1>
     <div mat-dialog-content>
         <div *ngIf="loading" class="loading" style="display:flex;height:100%;">
             <mat-spinner style="margin:auto;"></mat-spinner>
@@ -31,25 +35,26 @@
                         </ul>
                     </div>
                     <div>
-                        <app-i-paraph #iParapheur *ngIf="signatoryBookEnabled=='iParapheur'"
+                        <app-i-paraph #iParapheur *ngIf="authService.externalSignatoryBook.id =='iParapheur'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-i-paraph>
-                        <app-ixbus-paraph #ixbus *ngIf="signatoryBookEnabled=='ixbus'"
+                        <app-ixbus-paraph #ixbus *ngIf="authService.externalSignatoryBook.id =='ixbus'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-ixbus-paraph>
-                        <app-fast-paraph #fastParapheur *ngIf="signatoryBookEnabled=='fastParapheur'"
+                        <app-fast-paraph #fastParapheur *ngIf="authService.externalSignatoryBook.id === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-fast-paraph>
-                        <app-maarch-paraph #maarchParapheur *ngIf="signatoryBookEnabled=='maarchParapheur'"
+                        <app-maarch-paraph #maarchParapheur
+                            *ngIf="!functions.empty(externalSignatoryBook.signatoryBookEnabled) && !loading"
                             [resIds]="data.resIds"
                             [resourcesToSign]="resourcesToSign"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-maarch-paraph>
-                        <app-x-paraph #xParaph *ngIf="signatoryBookEnabled=='xParaph'"
+                        <app-x-paraph #xParaph *ngIf="authService.externalSignatoryBook.id === 'xParaph'"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"
