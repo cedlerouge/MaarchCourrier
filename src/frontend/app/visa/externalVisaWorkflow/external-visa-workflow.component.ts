@@ -12,7 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CreateExternalUserComponent } from './createExternalUser/create-external-user.component';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import { UserWorkflow } from '@models/user-workflow.model';
+import { UserWorkflow } from '../../../models/user-workflow.model';
 
 @Component({
     selector: 'app-external-visa-workflow',
