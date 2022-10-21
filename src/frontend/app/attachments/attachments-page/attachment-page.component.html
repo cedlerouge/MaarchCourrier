@@ -47,7 +47,7 @@
                         </div>
                         <div class="attachment-form-item">
                             <mat-form-field class="input-form">
-                                <input matInput placeholder="{{'lang.subject' | translate}}" [formControl]="attachment['title']">
+                                <input matInput placeholder="{{'lang.subject' | translate}}" maxlength="255" [formControl]="attachment['title']">
                             </mat-form-field>
                             <div class="fieldState">
                                 <i class="fas fa-asterisk fieldRequired"
@@ -180,7 +180,7 @@
                                 <span style="color:green">{{'lang.signedAttachment' | translate}}</span>
                             </ng-template>
                             <app-document-viewer #appDocumentViewer style="display:block;height:100%;width:100%;overflow: auto;text-align: left;" [editMode]="false"
-                                [resId]="attachment.signedResponse.value" [mode]="'attachment'"
+                                [resId]="attachment.signedResponse.value" [mode]="'attachment'" [newPjVersion] = "newVersion"
                                 [title]="attachment.chrono.value + ' - ' + attachment.title.value + ' (' + this.translate.instant('lang.signed') + ')'">
                             </app-document-viewer>
                         </mat-tab>
@@ -191,7 +191,7 @@
                             <app-document-viewer #appAttachmentViewer style="display:block;height:100%;width:100%;overflow: auto;" [editMode]="editMode"
                                 [resId]="data.resId" [resIdMaster]="attachment['resIdMaster'].value" [mode]="'attachment'"
                                 [format]="attachment['format'].value" [attachType]="attachment['type'].value"
-                                (triggerEvent)="setDatasViewer($event)"
+                                (triggerEvent)="setDatasViewer($event)" [newPjVersion] = "newVersion"
                                 [title]="attachment.chrono.value + ' - ' + attachment.title.value">
                             </app-document-viewer>
                             <div style="position: absolute;right: 20px;top: -55px;width:40px;height:40px;">
@@ -202,7 +202,7 @@
                             *ngFor="let version of versions">
                             <ng-template matTabContent>
                                 <app-document-viewer #appDocumentViewer style="display:block;height:100%;width:100%;overflow: auto;" [editMode]="false"
-                                    [resId]="version.resId" [mode]="'attachment'" [format]="attachment['format'].value"
+                                    [resId]="version.resId" [mode]="'attachment'" [format]="attachment['format'].value" [newPjVersion] = "newVersion"
                                     [title]="attachment.chrono.value + ' - ' + attachment.title.value + ' (' + version.relation + ')'">
                                 </app-document-viewer>
                             </ng-template>
@@ -219,7 +219,7 @@
             [disabled]="!editMode || !isEditing()">{{'lang.createNewVersion' | translate}}</button>
         <button mat-raised-button color="primary" *ngIf="newVersion && sendMassMode && !loading" (click)="createNewVersion('mailing')"
             [disabled]="!editMode || !isEditing()">{{'lang.mailing' | translate}}</button>
-        <button mat-raised-button color="warn" *ngIf="!loading && attachment.status.value === 'SIGN' && this.headerService.user.id == attachment.signatoryId.value"
+        <button mat-raised-button color="warn" *ngIf="!loading && attachment.status.value === 'SIGN' && this.headerService.user.id == attachment.signatoryId.value && !signedByDefault"
             (click)="deleteSignedVersion()">{{'lang.deleteSignedVersion' | translate}}</button>
         <button mat-raised-button mat-button [disabled]="loading" (click)="closeModal()">{{'lang.close' | translate}}</button>
     </div>

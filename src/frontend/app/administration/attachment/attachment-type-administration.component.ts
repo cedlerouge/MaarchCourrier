@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { finalize, tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -19,19 +19,22 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
     creationMode: boolean;
     loading: boolean = false;
 
-    adminFormGroup: FormGroup;
+    adminFormGroup: UntypedFormGroup;
 
     attachmentType: any = {
-        typeId: new FormControl({ value: '', disabled: false }, [Validators.required]),
-        label: new FormControl({ value: '', disabled: false }, [Validators.required]),
-        visible: new FormControl({ value: true, disabled: false }),
-        chrono: new FormControl({ value: true, disabled: false }),
-        emailLink: new FormControl({ value: false, disabled: false }),
-        signable: new FormControl({ value: false, disabled: false }),
-        icon: new FormControl({ value: '', disabled: false }),
-        versionEnabled: new FormControl({ value: false, disabled: false }),
-        newVersionDefault: new FormControl({ value: false, disabled: false }),
+        typeId: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+        label: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+        visible: new UntypedFormControl({ value: true, disabled: false }),
+        chrono: new UntypedFormControl({ value: true, disabled: false }),
+        emailLink: new UntypedFormControl({ value: false, disabled: false }),
+        signable: new UntypedFormControl({ value: false, disabled: false }),
+        icon: new UntypedFormControl({ value: '', disabled: false }),
+        versionEnabled: new UntypedFormControl({ value: false, disabled: false }),
+        newVersionDefault: new UntypedFormControl({ value: false, disabled: false }),
+        signedByDefault: new UntypedFormControl({ value: false, disabled: false})
     };
+
+    unlistedAttachmentTypes: string[] = ['signed_response', 'summary_sheet', 'shipping_deposit_proof', 'shipping_acknowledgement_of_receipt'];
 
     constructor(
         public translate: TranslateService,
@@ -43,7 +46,7 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         public appService: AppService,
         public functions: FunctionsService,
         public dialog: MatDialog,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
     ) {
     }
 
@@ -51,8 +54,6 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
 
         this.adminFormGroup = this._formBuilder.group(this.attachmentType);
         this.loading = true;
-        console.log(typeof this.attachmentType['signable'].value);
-
         this.route.params.subscribe(async (params) => {
             this.id = params['id'];
             if (typeof params['id'] === 'undefined') {
@@ -64,8 +65,12 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
                 this.http.get(`../rest/attachmentsTypes/${this.id}`).pipe(
                     tap((data: any) => {
                         Object.keys(this.attachmentType).forEach(key => {
-                            this.attachmentType[key].setValue(data[key]);
+                            this.attachmentType[key].setValue(data[key] === null ? false : data[key]);
                             if (key === 'typeId') {
+                                this.attachmentType[key].disable();
+                            }
+                            if (key === 'visible' && this.attachmentType['typeId'].value === 'signed_response') {
+                                this.attachmentType[key].setValue(false);
                                 this.attachmentType[key].disable();
                             }
                         });

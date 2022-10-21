@@ -7,6 +7,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
+import { SessionStorageService } from '@service/session-storage.service';
 import { of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 
@@ -49,16 +50,24 @@ export class SendToRecordManagementComponent implements OnInit {
     folders: any = [];
     linkedResources: any = [];
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendToRecordManagementComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) {  }
 
     ngOnInit(): void {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage
         this.getData();
     }
 
@@ -112,6 +121,7 @@ export class SendToRecordManagementComponent implements OnInit {
     onSubmit(mode: string) {
         this.loading = true;
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction(mode);
         }
     }

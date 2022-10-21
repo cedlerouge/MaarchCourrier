@@ -1,8 +1,8 @@
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 import { COMMA, FF_SEMICOLON, SEMICOLON } from '@angular/cdk/keycodes';
 import { HttpClient } from '@angular/common/http';
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { SummarySheetComponent } from '@appRoot/list/summarySheet/summary-sheet.component';
@@ -26,6 +26,10 @@ declare let tinymce: any;
 })
 export class MailEditorComponent implements OnInit, OnDestroy {
 
+    @ViewChild('recipientsField', {static: false}) recipientsField: ElementRef;
+    @ViewChild('copiesField', {static: false}) copiesField: ElementRef;
+    @ViewChild('invisibleCopiesField', {static: false}) invisibleCopiesField: ElementRef;
+
     @Input() resId: number = null;
     @Input() emailId: any = null;
     @Input() emailType: 'email' | 'acknowledgementReceipt' = 'email';
@@ -34,6 +38,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     @Input() recipientDisabled: boolean = false;
 
     @Input() recipientHide: boolean = false;
+    @Input() senderHide: boolean = false;
     @Input() attachmentsHide: boolean = false;
     @Input() bodyHide: boolean = false;
     @Input() subjectHide: boolean = false;
@@ -69,11 +74,11 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     emailSubject: string = '';
     emailStatus: string = 'WAITING';
 
-    recipientsInput: FormControl = new FormControl({disabled: this.recipientDisabled});
+    recipientsInput: UntypedFormControl = new UntypedFormControl({disabled: this.recipientDisabled});
     filteredEmails: Observable<string[]>;
 
-    emailSignListForm = new FormControl();
-    templateEmailListForm = new FormControl();
+    emailSignListForm = new UntypedFormControl();
+    templateEmailListForm = new UntypedFormControl();
     availableEmailModels: any[] = [];
     availableSignEmailModels: any[] = [];
 
@@ -103,6 +108,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     emailAttach: any = {};
 
     summarySheetUnits: any = [];
+
+    correspondents: any[] = [];
+
+    msgToDisplay: string = '';
 
     constructor(
         public http: HttpClient,
@@ -439,10 +448,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getCopies() {
-        return this.copies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showCopies) {
+            return this.copies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     setInvisibleCopies(invisibleCopies: any) {
@@ -451,10 +464,14 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     getInvisibleCopies() {
-        return this.invisibleCopies.map((item: any) => {
-            delete item.badFormat;
-            return item;
-        });
+        if (this.showInvisibleCopies) {
+            return this.invisibleCopies.map((item: any) => {
+                delete item.badFormat;
+                return item;
+            });
+        } else {
+            return [];
+        }
     }
 
     isSelectedAttachMail(item: any, type: string) {
@@ -565,7 +582,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
             },
             toolbar_sticky: true,
-            toolbar_drawer: 'floating',
+            toolbar_mode: 'floating',
             toolbar: !this.readonly ?
                 'undo redo | fontselect fontsizeselect | bold italic underline strikethrough forecolor | maarch_b64image | \
             alignleft aligncenter alignright alignjustify \
@@ -608,6 +625,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         if (index >= 0) {
             this[type].splice(index, 1);
         }
+
+        if (this.recipients.length === 0) {
+            this.msgToDisplay = '';
+        }
     }
 
     initEmailsList() {
@@ -626,8 +647,12 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 data = data.filter((contact: any) => !this.functions.empty(contact.email) || contact.type === 'contactGroup').map((contact: any) => {
                     let label: string;
                     if (contact.type === 'user' || contact.type === 'contact') {
-                        if (!this.functions.empty(contact.firstname) || !this.functions.empty(contact.lastname)) {
-                            label = contact.firstname + ' ' + contact.lastname;
+                        if (!this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = `${contact.firstname} ${contact.lastname}`;
+                        } else if (this.functions.empty(contact.firstname) && !this.functions.empty(contact.lastname)) {
+                            label = contact.lastname;
+                        } else if (!this.functions.empty(contact.firstname) && this.functions.empty(contact.lastname)) {
+                            label = contact.firstname;
                         } else {
                             label = contact.company;
                         }
@@ -696,10 +721,8 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         const arrRawAdd: string[] = rawAddresses.split(/[,;]+/);
 
         if (!this.functions.empty(arrRawAdd)) {
-
             setTimeout(() => {
                 this.recipientsInput.setValue(null);
-
                 this[type + 'Field'].nativeElement.value = '';
             }, 0);
 
@@ -717,16 +740,27 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         this[type].splice(this[type].length - 1, 1);
 
         if (item.type === 'contactGroup') {
-            this.http.get(`../rest/contactsGroups/${item.id}`).pipe(
+            this.http.get(`../rest/contactsGroups/${item.id}/correspondents?limit=none`).pipe(
                 map((data: any) => {
-                    data = data.contactsGroup.contacts.filter((contact: any) => !this.functions.empty(contact.email)).map((contact: any) => ({
-                        label: contact.contact,
+                    this.correspondents = data.correspondents;
+                    data = data.correspondents.filter((contact: any) => !this.functions.empty(contact.email)).map((contact: any) => ({
+                        label: contact.name,
                         email: contact.email
                     }));
                     return data;
                 }),
                 tap((data: any) => {
-                    this[type] = this[type].concat(data);
+                    if (this.functions.empty(data)) {
+                        this.notify.error(this.translate.instant('lang.emptyEmails'));
+                    } else {
+                        const emptyMails: number = this.correspondents.filter((contact: any) => this.functions.empty(contact.email)).length;
+                        if (emptyMails > 0) {
+                            this.msgToDisplay = this.translate.instant('lang.correspondentEmptyEmails', {nbr: emptyMails});
+                        } else {
+                            this.msgToDisplay = '';
+                        }
+                        this[type] = this[type].concat(data);
+                    }
                 }),
                 catchError((err) => {
                     this.notify.handleSoftErrors(err);
@@ -982,10 +1016,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
             }
         });
 
-        const formatSender = {
+        const formatSender = !this.functions.empty(this.currentSender) ? {
             email: this.currentSender.email,
             entityId: !this.functions.empty(this.currentSender.entityId) ? this.currentSender.entityId : null
-        };
+        } : null;
 
         return {
             document: objAttach,
@@ -1018,6 +1052,9 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         if (type === 'document') {
             this.emailAttach.document.isLinked = false;
             this.emailAttach.document.original = false;
+        } else if (type === 'summarySheet') {
+            this.emailAttach.summarySheet = [];
+            this.summarySheetUnits = [];
         } else {
             this.emailAttach[type].splice(index, 1);
         }

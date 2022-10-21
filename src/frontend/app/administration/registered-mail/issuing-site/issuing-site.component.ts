@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder, Validators, UntypedFormControl } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,7 +23,7 @@ export class IssuingSiteComponent implements OnInit {
     creationMode: boolean;
     loading: boolean = true;
 
-    adminFormGroup: FormGroup;
+    adminFormGroup: UntypedFormGroup;
     entities: any = [];
 
     countries: any = [];
@@ -33,7 +33,7 @@ export class IssuingSiteComponent implements OnInit {
 
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
-    addressBANControl = new FormControl();
+    addressBANControl = new UntypedFormControl();
     addressBANLoading: boolean = false;
     addressBANResult: any[] = [];
     addressBANFilteredResult: Observable<string[]>;
@@ -48,7 +48,7 @@ export class IssuingSiteComponent implements OnInit {
         private notify: NotificationService,
         private headerService: HeaderService,
         public appService: AppService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private latinisePipe: LatinisePipe,
     ) { }
 

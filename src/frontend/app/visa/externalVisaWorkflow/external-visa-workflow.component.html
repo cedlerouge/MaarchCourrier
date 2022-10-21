@@ -1,6 +1,6 @@
 <mat-list *ngIf="!loading">
     <app-plugin-autocomplete *ngIf="adminMode" [labelPlaceholder]="'lang.addPerson' | translate"
-        [routeDatas]="['/rest/autocomplete/maarchParapheurUsers']" [targetSearchKey]="'idToDisplay'"
+        [routeDatas]="getRouteDatas()" [targetSearchKey]="'idToDisplay'"
         [subInfoKey]="'email'" (triggerEvent)="addItemToWorkflow($event)" appearance="outline"
         [fromExternalWorkflow]="true" [connectorLength]="otpConfig" [resId]="resId" (updateVisaWorkflow)="updateVisaWorkflow($event)">
     </app-plugin-autocomplete>
@@ -59,9 +59,9 @@
                         class="workflowLineProcessDate" title='{{diffusion.process_date | fullDate}}' color="warn">
                         {{ diffusion.status === 'STOP' ? ('lang.interrupted' | translate) : ('lang.refused' | translate) }} {{diffusion.process_date | timeAgo : 'full'}}
                     </div>
-                    <div *ngIf="diffusion.process_date == null && this.getLastVisaUser().status === 'REF'"
-                        class="workflowLineProcessDate" title='{{this.getLastVisaUser().process_date | fullDate}}' color="warn">
-                        {{ 'lang.interrupted' | translate }} {{ this.getLastVisaUser().process_date | timeAgo : 'full' }}
+                    <div *ngIf="diffusion.process_date == null && this.getLastVisaUser()?.status === 'REF'"
+                        class="workflowLineProcessDate" title='{{this.getLastVisaUser()?.process_date | fullDate}}' color="warn">
+                        {{ 'lang.interrupted' | translate }} {{ this.getLastVisaUser()?.process_date | timeAgo : 'full' }}
                     </div>
                 </div>
                 <div *ngIf="diffusion.hasPrivilege && diffusion.isValid">

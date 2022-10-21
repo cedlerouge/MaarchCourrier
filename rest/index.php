@@ -490,6 +490,7 @@ $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/ac
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkRejectVisa', \Action\controllers\PreProcessActionController::class . ':checkRejectVisa');
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkInterruptResetVisa', \Action\controllers\PreProcessActionController::class . ':checkInterruptResetVisa');
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkCloseWithFieldsAction', \Action\controllers\PreProcessActionController::class . ':checkCloseWithFieldsAction');
+$app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkConfirmWithFieldsAction', \Action\controllers\PreProcessActionController::class . ':checkConfirmWithFieldsAction');
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkReconcile', \Action\controllers\PreProcessActionController::class . ':checkReconcile');
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkSendAlfresco', \Action\controllers\PreProcessActionController::class . ':checkSendAlfresco');
 $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/actions/{actionId}/checkSendMultigest', \Action\controllers\PreProcessActionController::class . ':checkSendMultigest');
@@ -501,7 +502,6 @@ $app->post('/resourcesList/users/{userId}/groups/{groupId}/baskets/{basketId}/ac
 //Search
 $app->post('/search', \Search\controllers\SearchController::class . ':get');
 $app->get('/search/configuration', \Search\controllers\SearchController::class . ':getConfiguration');
-
 $app->get('/searchTemplates', \Search\controllers\SearchTemplateController::class . ':get');
 $app->post('/searchTemplates', \Search\controllers\SearchTemplateController::class . ':create');
 $app->delete('/searchTemplates/{id}', \Search\controllers\SearchTemplateController::class . ':delete');
@@ -651,6 +651,7 @@ $app->get('/maarchParapheurOtp', \ExternalSignatoryBook\controllers\MaarchParaph
 $app->get('/maarchParapheur/user/{id}/picture', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getUserPicture');
 $app->get('/externalSignatureBooks/enabled', \ExternalSignatoryBook\controllers\ExternalSignatureBookController::class . ':getEnabledSignatureBook');
 $app->get('/externalSummary/{resId}', \ExternalSummary\controllers\SummaryController::class . ':getByResId');
+$app->get('/ixbus/natureDetails/{natureId}', \ExternalSignatoryBook\controllers\IxbusController::class . ':getNatureDetails');
 
 $app->get('/externalConnectionsEnabled', \SrcCore\controllers\CoreController::class . ':externalConnectionsEnabled');
 

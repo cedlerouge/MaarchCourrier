@@ -13,32 +13,6 @@ use PHPUnit\Framework\TestCase;
 
 class CoreControllerTest extends TestCase
 {
-    // scandir(dist): failed to open dir: No such file or directory
-    // public function testInitialize()
-    // {
-    //     $CoreController = new \SrcCore\controllers\CoreController();
-
-    //     $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-    //     $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-    //     $response     = $CoreController->initialize($request, new \Slim\Http\Response());
-    //     $responseBody = json_decode((string)$response->getBody());
-
-    //     $this->assertNotEmpty($responseBody->coreUrl);
-    //     $this->assertNotEmpty($responseBody->applicationName);
-    //     $this->assertNotEmpty($responseBody->applicationMinorVersion);
-    //     $version = explode(".", $responseBody->applicationMinorVersion);
-    //     $this->assertSame('18', $version[0]);
-    //     $this->assertSame('10', $version[1]);
-    //     $this->assertIsInt((int)$version[2]);
-    //     $this->assertSame('fr', $responseBody->lang);
-    //     $this->assertNotEmpty($responseBody->user);
-    //     $this->assertIsInt($responseBody->user->id);
-    //     $this->assertSame('superadmin', $responseBody->user->user_id);
-    //     $this->assertSame('Super', $responseBody->user->firstname);
-    //     $this->assertNotEmpty($responseBody->scriptsToinject);
-    // }
-
     public function testGetHeader()
     {
         $coreController = new \SrcCore\controllers\CoreController();
@@ -59,17 +33,15 @@ class CoreControllerTest extends TestCase
 
     public function testGetLanguage()
     {
-        $this->assertFileExists("src/core/lang/lang-en.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-en.php", '');
-        include("src/core/lang/lang-en.php");
-        $this->assertFileExists("src/core/lang/lang-nl.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-nl.php", '');
-        include("src/core/lang/lang-nl.php");
+        // availableLanguages from CoreConfigModel::getLanguage();
+        $availableLanguages = ['en', 'fr', 'nl'];
 
+        foreach ($availableLanguages as $value) {
+            $this->assertFileExists("src/core/lang/lang-{$value}.php");
+            $this->assertStringNotEqualsFile("src/core/lang/lang-{$value}.php", '');
+        }
         $language = \SrcCore\models\CoreConfigModel::getLanguage();
-        $this->assertFileExists("src/core/lang/lang-{$language}.php");
-        $this->assertStringNotEqualsFile("src/core/lang/lang-{$language}.php", '');
-        include("src/core/lang/lang-{$language}.php");
+        require_once("src/core/lang/lang-{$language}.php");
         
         $this->assertFileDoesNotExist("src/core/lang/lang-zh.php");
     }

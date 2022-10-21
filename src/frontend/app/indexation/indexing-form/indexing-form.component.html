@@ -43,11 +43,14 @@
                                         <span *ngIf="field.mandatory">{{'lang.optionalField' | translate}}</span>
                                     </button>
                                     <mat-divider *ngIf="!field.system"></mat-divider>
-                                    <button mat-menu-item *ngIf="!field.enabled" (click)="enableField(field, true)">
+                                    <button mat-menu-item *ngIf="!field.enabled && field.identifier != 'processLimitDate'" (click)="enableField(field, true)">
                                         <span>{{'lang.enableField' | translate}}</span>
                                     </button>
                                     <button mat-menu-item *ngIf="field.enabled" (click)="enableField(field, false)">
                                         <span>{{'lang.disableField' | translate}}</span>
+                                    </button>
+                                    <button mat-menu-item *ngIf="!field.SQLMode && field.identifier === 'doctype'" (click)="openValuesSelector(field)">
+                                        <span>{{'lang.chooseValues' | translate}}</span>
                                     </button>
                                     <mat-divider *ngIf="!field.system"></mat-divider>
                                     <button mat-menu-item (click)="removeItem('indexingModels_'+category,field,i)"
@@ -70,7 +73,7 @@
                                     <mat-form-field class="input-form"
                                         [floatLabel]="appService.getViewMode() ? '' : 'never'">
                                         <mat-label *ngIf="appService.getViewMode()">{{field.label}}</mat-label>
-                                        <textarea [id]="field.identifier" matInput matTextareaAutosize
+                                        <textarea [id]="field.identifier" matInput cdkTextareaAutosize
                                             [formControl]="arrFormControl[field.identifier]"
                                             [placeholder]="!adminMode ? ('lang.typeValue' | translate) : ('lang.defaultValue' | translate)"
                                             class="subject"></textarea>
@@ -113,7 +116,7 @@
                                         <mat-icon color="primary" class="fas fa-database">
                                         </mat-icon>
                                     </button>
-                                    <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode" matPrefix
+                                    <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode && !arrFormControl[field.identifier].disabled" matPrefix
                                         mat-icon-button (click)="$event.stopPropagation();toggleTodayDate(field);"
                                         [matTooltip]="'lang.todayDate' | translate"
                                         style="position: absolute;left: -40px;">
@@ -196,7 +199,8 @@
                                 <ng-container *ngIf="['senders','recipients'].indexOf(field.identifier) > -1">
                                     <app-contact-autocomplete [id]="field.identifier"
                                         [control]="arrFormControl[field.identifier]" style="width:100%;"
-                                        (retrieveDocumentEvent)="retrieveDocumentEvent.emit()">
+                                        (retrieveDocumentEvent)="retrieveDocumentEvent.emit()"
+                                        (afterContactSelected)="selectedContact($event, field.identifier)" (removeContactEvent)="checkRemovedItem($event)">
                                     </app-contact-autocomplete>
                                 </ng-container>
                                 <ng-container *ngIf="field.identifier === 'folders'">
@@ -250,6 +254,9 @@
                                 <i class="fas fa-check fieldFull"
                                     *ngIf="!adminMode && arrFormControl[field.identifier].valid && !isEmptyField(field)"></i>
                             </div>
+                        </div>
+                        <div class="linkRes" *ngIf="hasLinkedRes && field.identifier === 'senders'">
+                            {{msgToDisplay}} <ng-container><a style="cursor: pointer; display: contents; font-weight: bold; font-size: 14px;" (click)="openSearchResourceModal()">{{'lang.seeMore' | translate}}</a></ng-container>
                         </div>
                         <div
                             *ngIf="field.identifier === 'destination' && !adminMode && arrFormControl['destination'].value > 0 && !hideDiffusionList">

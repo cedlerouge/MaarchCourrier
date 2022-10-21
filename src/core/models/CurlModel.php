@@ -112,7 +112,7 @@ class CurlModel
     {
         ValidatorModel::notEmpty($args, ['url', 'method']);
         ValidatorModel::stringType($args, ['url', 'method', 'cookie']);
-        ValidatorModel::arrayType($args, ['headers', 'queryParams', 'basicAuth', 'bearerAuth']);
+        ValidatorModel::arrayType($args, ['headers', 'queryParams', 'basicAuth', 'bearerAuth', 'options']);
         ValidatorModel::boolType($args, ['isXml', 'followRedirect']);
 
         $args['isXml'] = $args['isXml'] ?? false;
@@ -140,6 +140,12 @@ class CurlModel
         if (!empty($args['cookie'])) {
             $opts[CURLOPT_COOKIE] = $args['cookie'];
         }
+        //Options
+        if (!empty($args['options'])) {
+            foreach ($args['options'] as $key => $option) {
+                $opts[$key] = $option;
+            }
+        }          
 
         //QueryParams
         if (!empty($args['queryParams'])) {
@@ -216,7 +222,7 @@ class CurlModel
             $response = json_decode($response, true);
         }
 
-        return ['code' => $code, 'headers' => $headers, 'response' => $response, 'errors' => $errors];
+        return ['raw' => $rawResponse, 'code' => $code, 'headers' => $headers, 'response' => $response, 'errors' => $errors];
     }
 
     private static function createMultipartFormData(array $args)

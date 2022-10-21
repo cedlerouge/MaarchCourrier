@@ -8,7 +8,7 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dial
 import { AppService } from '@service/app.service';
 import { DocumentViewerComponent } from '../../viewer/document-viewer.component';
 import { SortPipe } from '../../../plugins/sorting.pipe';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { FunctionsService } from '@service/functions.service';
 import { ContactService } from '@service/contact.service';
@@ -40,7 +40,7 @@ export class AttachmentCreateComponent implements OnInit {
 
     creationMode: boolean = true;
 
-    attachFormGroup: FormGroup[] = [];
+    attachFormGroup: UntypedFormGroup[] = [];
 
     attachments: any[] = [];
 
@@ -54,7 +54,7 @@ export class AttachmentCreateComponent implements OnInit {
     resourceSubject: string = '';
     resourceContacts: any[] = [];
 
-    selectedContact = new FormControl();
+    selectedContact = new UntypedFormControl();
 
     loadingContact: boolean = false;
 
@@ -136,18 +136,18 @@ export class AttachmentCreateComponent implements OnInit {
 
                     this.resourceSubject = data.subject;
                     this.attachments.push({
-                        title: new FormControl({ value: data.subject, disabled: false }, [Validators.required]),
-                        recipient: new FormControl({ value: contact, disabled: false }),
-                        type: new FormControl({ value: this.defaultType, disabled: false }, [Validators.required]),
-                        validationDate: new FormControl({ value: '', disabled: false }),
-                        format: new FormControl({ value: '', disabled: false }, [Validators.required]),
-                        encodedFile: new FormControl({ value: '', disabled: false }, [Validators.required])
+                        title: new UntypedFormControl({ value: data.subject, disabled: false }, [Validators.required]),
+                        recipient: new UntypedFormControl({ value: contact, disabled: false }),
+                        type: new UntypedFormControl({ value: this.defaultType, disabled: false }, [Validators.required]),
+                        validationDate: new UntypedFormControl({ value: '', disabled: false }),
+                        format: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+                        encodedFile: new UntypedFormControl({ value: '', disabled: false }, [Validators.required])
                     });
                     setTimeout(() => {
                         this.getAttachType(this.defaultType, 0);
                     }, 800);
 
-                    this.attachFormGroup.push(new FormGroup(this.attachments[0]));
+                    this.attachFormGroup.push(new UntypedFormGroup(this.attachments[0]));
 
                     if (this.canSendMass()) {
                         this.toggleSendMass();
@@ -432,14 +432,14 @@ export class AttachmentCreateComponent implements OnInit {
 
     newPj() {
         this.attachments.push({
-            title: new FormControl({ value: this.resourceSubject, disabled: false }, [Validators.required]),
-            recipient: new FormControl({ value: !this.functions.empty(this.resourceContacts[this.attachments.length]) ? [{ id: this.resourceContacts[this.attachments.length].id, type: this.resourceContacts[this.attachments.length].type }] : null, disabled: false }),
-            type: new FormControl({ value: 'response_project', disabled: false }, [Validators.required]),
-            validationDate: new FormControl({ value: null, disabled: false }),
-            encodedFile: new FormControl({ value: '', disabled: false }, [Validators.required]),
-            format: new FormControl({ value: '', disabled: false }, [Validators.required])
+            title: new UntypedFormControl({ value: this.resourceSubject, disabled: false }, [Validators.required]),
+            recipient: new UntypedFormControl({ value: !this.functions.empty(this.resourceContacts[this.attachments.length]) ? [{ id: this.resourceContacts[this.attachments.length].id, type: this.resourceContacts[this.attachments.length].type }] : null, disabled: false }),
+            type: new UntypedFormControl({ value: 'response_project', disabled: false }, [Validators.required]),
+            validationDate: new UntypedFormControl({ value: null, disabled: false }),
+            encodedFile: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+            format: new UntypedFormControl({ value: '', disabled: false }, [Validators.required])
         });
-        this.attachFormGroup.push(new FormGroup(this.attachments[this.attachments.length - 1]));
+        this.attachFormGroup.push(new UntypedFormGroup(this.attachments[this.attachments.length - 1]));
         setTimeout(() => {
             this.getAttachType(this.defaultType, this.attachments.length - 1);
         }, 250);

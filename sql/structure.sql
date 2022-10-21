@@ -1,4 +1,7 @@
--- core/sql/structure/core.postgresql.sql
+------------
+-- STRUCTURE 22.xx.0
+-- (Launch the application to update structure to this current tag)
+------------
 
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = off;
@@ -603,6 +606,17 @@ CREATE TABLE notes
 )
 WITH (OIDS=FALSE);
 
+CREATE TABLE blacklist
+(
+  id SERIAL PRIMARY KEY,
+  term CHARACTER VARYING(128) UNIQUE NOT NULL
+)
+WITH (OIDS=FALSE);
+
+CREATE VIEW bad_notes AS
+  SELECT *
+  FROM notes
+  WHERE unaccent(note_text) ~* concat('\m(', array_to_string(array((select unaccent(term) from blacklist)), '|', ''), ')\M');
 
 CREATE SEQUENCE notes_entities_id_seq
   INCREMENT 1
@@ -894,7 +908,7 @@ CREATE TABLE res_letterbox
   subject text,
   type_id bigint NOT NULL,
   format character varying(50),
-  typist INTEGER NOT NULL,
+  typist INTEGER,
   creation_date timestamp without time zone NOT NULL,
   modification_date timestamp without time zone DEFAULT NOW(),
   doc_date timestamp without time zone,
@@ -1406,6 +1420,7 @@ CREATE TABLE indexing_models_fields
     enabled BOOLEAN DEFAULT TRUE NOT NULL,
     default_value json,
     unit text NOT NULL,
+    allowed_values jsonb,
     CONSTRAINT indexing_models_fields_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
@@ -1518,6 +1533,7 @@ CREATE TABLE attachment_types
     visible BOOLEAN NOT NULL,
     email_link BOOLEAN NOT NULL,
     signable BOOLEAN NOT NULL,
+    signed_by_default BOOLEAN NOT NULL,
     icon text,
     chrono BOOLEAN NOT NULL,
     version_enabled BOOLEAN NOT NULL,
@@ -1553,3 +1569,38 @@ CREATE TABLE address_sectors
     CONSTRAINT address_sectors_pkey PRIMARY KEY (id)
 )
     WITH (OIDS=FALSE);
+
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.increase_chrono(chrono_seq_name text, chrono_id_name text) returns table (chrono_id bigint) as $$
+DECLARE
+    retval bigint;
+BEGIN
+    -- Check if sequence exist, if not create
+    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
+      EXECUTE 'CREATE SEQUENCE ' || chrono_seq_name || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;';
+    END IF;
+    -- Check if chrono exist in parameters table, if not create
+    IF NOT EXISTS (SELECT 0 FROM parameters where id = chrono_id_name ) THEN
+      EXECUTE 'INSERT INTO parameters (id, param_value_int) VALUES ( ''' || chrono_id_name || ''', 1)';
+    END IF;
+    -- Get next value of sequence, update the value in parameters table before returning the value
+    SELECT nextval(chrono_seq_name) INTO retval;
+	  UPDATE parameters set param_value_int = retval WHERE id =  chrono_id_name;
+	  RETURN QUERY SELECT retval;
+END;
+$$ LANGUAGE plpgsql;
+
+-- reset les chronos
+DROP FUNCTION IF EXISTS reset_chronos;
+-- Create a sequence for chronos and update value in parameters table
+CREATE OR REPLACE FUNCTION public.reset_chronos() returns void as $$
+DECLARE
+  chrono record;
+BEGIN
+  -- Loop through each chrono found in parameters table
+	FOR chrono IN (SELECT * FROM parameters WHERE id LIKE '%_' || extract(YEAR FROM current_date)) LOOP
+    EXECUTE 'SELECT setVal(''' || CONCAT(chrono.id, '_seq') || ''', 1)';
+    UPDATE parameters SET param_value_int = '1' WHERE id = chrono.id;
+  END LOOP;
+END
+$$ LANGUAGE plpgsql;

@@ -103,7 +103,7 @@ class StoreController
             }
 
             if (!empty($args['encodedFile'])) {
-                $fileContent    = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
+                $fileContent = base64_decode(str_replace(['-', '_'], ['+', '/'], $args['encodedFile']));
 
                 if (empty($args['id']) && in_array($args['format'], MergeController::OFFICE_EXTENSIONS) && $data['status'] != 'SEND_MASS') {
                     $tmpPath = CoreConfigModel::getTmpPath();
@@ -134,7 +134,20 @@ class StoreController
             }
 
             if (empty($args['id'])) {
+                $signedByDefault = AttachmentTypeModel::getByTypeId(['typeId' => $data['attachment_type'], 'select' => ['signed_by_default']]);
+                $signedByDefault = $signedByDefault['signed_by_default'] ?? false;
+                if ($signedByDefault) {
+                    $data['status'] = 'SIGN';
+                }
                 $id = AttachmentModel::create($data);
+                if ($signedByDefault) {
+                    $versionData = $data;
+                    $versionData['res_id']          = DatabaseModel::getNextSequenceValue(['sequenceId' => 'res_attachment_res_id_seq']);
+                    $versionData['status']          = 'TRA';
+                    $versionData['attachment_type'] = 'signed_response';
+                    $versionData['origin']          = "{$id},res_attachments";
+                    AttachmentModel::create($versionData);
+                }
             } else {
                 AttachmentModel::update(['set' => $data, 'where' => ['res_id = ?'], 'data' => [$args['id']]]);
                 $id = $args['id'];
@@ -220,7 +233,7 @@ class StoreController
                     $date = new \DateTime($value);
                     $value = $date->format('Y-m-d');
                     $args['customFields'][$key] = $value;
-                } elseif (in_array($customField['type'], ['banAutocomplete', 'contact'])) {
+                } elseif (in_array($customField['type'], ['banAutocomplete', 'contact', 'date'])) {
                     $args['customFields'][$key] = $value;
                 } elseif ($customField['type'] != 'integer' && !is_array($value)) {
                     $args['customFields'][$key] = (string)$value;
@@ -354,7 +367,7 @@ class StoreController
                     $date = new \DateTime($value);
                     $value = $date->format('Y-m-d');
                     $args['customFields'][$key] = $value;
-                } elseif (in_array($customField['type'], ['banAutocomplete', 'contact'])) {
+                } elseif (in_array($customField['type'], ['banAutocomplete', 'contact', 'date'])) {
                     $args['customFields'][$key] = $value;
                 } elseif ($customField['type'] != 'integer' && !is_array($value)) {
                     $args['customFields'][$key] = (string)$value;

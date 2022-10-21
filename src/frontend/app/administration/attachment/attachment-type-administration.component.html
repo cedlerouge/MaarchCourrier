@@ -14,6 +14,9 @@
         </div>
         <div class="container" [class.fullContainer]="appService.getViewMode()">
             <div class="container-content">
+                <div *ngIf="!creationMode && unlistedAttachmentTypes.indexOf(attachmentType['typeId'].value) > -1" class="alert alert-danger" role="alert" style="margin: 10px;">
+                    <b>{{'lang.systemType' | translate}} !</b> {{'lang.doNotModifyUnlessExpert' | translate}}
+                </div>
                 <mat-card *ngIf="!loading" class="card-app-content">
                     <form class="form-horizontal" (ngSubmit)="onSubmit()" [formGroup]="adminFormGroup">
                         <mat-form-field>

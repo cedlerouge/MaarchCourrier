@@ -5,7 +5,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FunctionsService } from '@service/functions.service';
 import { tap, exhaustMap, map, startWith, catchError, finalize, filter } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { LatinisePipe, ScanPipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
@@ -54,9 +54,11 @@ export class VisaWorkflowComponent implements OnInit {
     visaModelListNotLoaded: boolean = true;
     data: any;
 
-    searchVisaSignUser = new FormControl();
+    searchVisaSignUser = new UntypedFormControl();
 
     loadedInConstructor: boolean = false;
+
+    workflowSignatoryRole: string;
 
     constructor(
         public translate: TranslateService,
@@ -89,6 +91,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.checkWorkflowSignatoryRole();
         if (!this.functions.empty(this.resId) && !this.loadedInConstructor) {
             // this.initFilterVisaModelList();
             this.loadWorkflow(this.resId);
@@ -324,11 +327,11 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     getCurrentVisaUserIndex() {
-        if (this.getLastVisaUser().listinstance_id === undefined) {
+        if (this.functions.empty(this.getLastVisaUser()?.listinstance_id)) {
             const index = 0;
             return this.getRealIndex(index);
         } else {
-            let index = this.visaWorkflow.items.map((item: any) => item.listinstance_id).indexOf(this.getLastVisaUser().listinstance_id);
+            let index = this.visaWorkflow.items.map((item: any) => item.listinstance_id).indexOf(this.getLastVisaUser()?.listinstance_id);
             index++;
             return this.getRealIndex(index);
         }
@@ -356,7 +359,7 @@ export class VisaWorkflowComponent implements OnInit {
     getLastVisaUser() {
         const arrOnlyProcess = this.visaWorkflow.items.filter((item: any) => !this.functions.empty(item.process_date) && item.isValid);
 
-        return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : '';
+        return !this.functions.empty(arrOnlyProcess[arrOnlyProcess.length - 1]) ? arrOnlyProcess[arrOnlyProcess.length - 1] : null;
     }
 
     getRealIndex(index: number) {
@@ -463,8 +466,12 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     isValidWorkflow() {
-        if ((this.visaWorkflow.items.filter((item: any) => item.requested_signature).length > 0 && this.visaWorkflow.items.filter((item: any) => (!item.hasPrivilege || !item.isValid) && (item.process_date === null || this.functions.empty(item.process_date))).length === 0) && this.visaWorkflow.items.length > 0) {
-            return true;
+        if ((this.visaWorkflow.items.filter((item: any) => (!item.hasPrivilege || !item.isValid) && (item.process_date === null || this.functions.empty(item.process_date))).length === 0) && this.visaWorkflow.items.length > 0) {
+            if (this.workflowSignatoryRole === 'optional') {
+                return true;
+            } else {
+                return this.visaWorkflow.items.filter((item: any) => item.requested_signature).length > 0;
+            }
         } else {
             return false;
         }
@@ -568,6 +575,20 @@ export class VisaWorkflowComponent implements OnInit {
         }
 
         return source.includes(search);
+    }
+
+    checkWorkflowSignatoryRole() {
+        this.http.get('../rest/parameters/workflowSignatoryRole').pipe(
+            tap((data: any) => {
+                if (!this.functions.empty(data.parameter)) {
+                    this.workflowSignatoryRole = data.parameter.param_value_string;
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     private _filter(value: string): string[] {

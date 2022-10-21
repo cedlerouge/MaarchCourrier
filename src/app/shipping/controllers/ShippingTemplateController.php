@@ -123,11 +123,10 @@ class ShippingTemplateController
             }
             $allEntities[$key]['state']['opened'] = false;
             $allEntities[$key]['allowed']         = true;
-            if (in_array($value['id'], $shippingInfo['entities'])) {
+            if (!empty($shippingInfo['entities']) && in_array($value['id'], $shippingInfo['entities'])) {
                 $allEntities[$key]['state']['opened']   = true;
                 $allEntities[$key]['state']['selected'] = true;
             }
-
             $allEntities[$key]['text'] = $value['entity_label'];
         }
 

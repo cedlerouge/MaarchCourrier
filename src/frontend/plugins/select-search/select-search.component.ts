@@ -6,7 +6,7 @@ import {
     Output,
     DoCheck
 } from '@angular/core';
-import { ControlValueAccessor, FormControl } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl } from '@angular/forms';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
 import { take, takeUntil, startWith, map, tap } from 'rxjs/operators';
@@ -27,7 +27,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
     /** Label of the search placeholder */
     @Input() placeholderLabel = this.translate.instant('lang.chooseValue');
 
-    @Input() formControlSelect: FormControl = new FormControl();
+    @Input() formControlSelect: UntypedFormControl = new UntypedFormControl();
 
     @Input() datas: any = [];
     @Input() dataKey: string = null;
@@ -49,6 +49,8 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
     @Input() multiple: boolean = false;
 
     @Input() optGroupTarget: string = null;
+
+    @Input() disabled: boolean = false;
 
     /**
      * ex : [ { id : 'group1' , label: 'Group 1'} ]
@@ -82,7 +84,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
     datasClone: any = [];
     isModelModified: boolean = false;
 
-    formControlSearch = new FormControl();
+    formControlSearch = new UntypedFormControl();
 
     selected: any[] = [];
 
@@ -372,6 +374,15 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
         return this.returnValue === 'id' ? null : { id: null, label: this.translate.instant('lang.emptyValue') };
     }
 
+    getLabel(value: any) {
+        if (Array.isArray(value)) {
+            const ids: any = value.map((item: any) => item.id);
+            return this.datas.filter((item: any) => ids.indexOf(item.id) > -1).map((item: any) => item.label.replace(/&nbsp;/g, '')).filter(Boolean).join(', ');
+        } else {
+            return this.datas?.find((item: any) => item.id === value)?.label?.replaceAll(/&nbsp;/g, '');
+        }
+    }
+
     /**
      * Sets the overlay class  to correct offsetY
      * so that the selected option is at the position of the select box when opening
@@ -382,7 +393,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
         }
         const overlayClass = 'cdk-overlay-pane-select-search';
 
-        this.matSelect.overlayDir.attach
+        this.matSelect.stateChanges
             .pipe(takeUntil(this._onDestroy))
             .subscribe(() => {
                 // note: this is hacky, but currently there is no better way to do this

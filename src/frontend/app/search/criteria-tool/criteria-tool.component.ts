@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { Observable, of } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { startWith, map, tap, filter, exhaustMap, catchError } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { MatExpansionPanel } from '@angular/material/expansion';
@@ -21,6 +21,8 @@ import { FolderInputComponent } from '@appRoot/folder/indexing/folder-input.comp
 import { TagInputComponent } from '@appRoot/tag/indexing/tag-input.component';
 import { IssuingSiteInputComponent } from '@appRoot/administration/registered-mail/issuing-site/indexing/issuing-site-input.component';
 import { SortPipe } from '@plugins/sorting.pipe';
+import { CriteriaSearchService } from '@service/criteriaSearch.service';
+import { HeaderService } from '@service/header.service';
 
 @Component({
     selector: 'app-criteria-tool',
@@ -30,16 +32,18 @@ import { SortPipe } from '@plugins/sorting.pipe';
 })
 export class CriteriaToolComponent implements OnInit {
 
-    @Input() searchTerm: string = 'Foo';
+    @Input() searchTerm: string = '';
     @Input() defaultCriteria: any = [];
     @Input() adminMode: boolean = false;
     @Input() openedPanel: boolean = true;
     @Input() isLoadingResult: boolean = false;
     @Input() class: 'main' | 'secondary' = 'main';
+    @Input() data: any = [];
 
     @Output() searchUrlGenerated = new EventEmitter<any>();
     @Output() loaded = new EventEmitter<any>();
     @Output() afterGetSearchTemplates = new EventEmitter<any>();
+    @Output() refreshDaoResult = new EventEmitter<any>();
 
     @ViewChild('criteriaTool', { static: false }) criteriaTool: MatExpansionPanel;
     @ViewChild('searchCriteriaInput', { static: false }) searchCriteriaInput: ElementRef;
@@ -58,8 +62,8 @@ export class CriteriaToolComponent implements OnInit {
 
     filteredCriteria: Observable<string[]>;
 
-    searchTermControl = new FormControl();
-    searchCriteria = new FormControl();
+    searchTermControl = new UntypedFormControl();
+    searchCriteria = new UntypedFormControl();
 
     infoFields: any = [
         {
@@ -76,6 +80,22 @@ export class CriteriaToolComponent implements OnInit {
         },
     ];
 
+    displayColsOrder = [
+        { 'id': 'destUser' },
+        { 'id': 'categoryId' },
+        { 'id': 'creationDate' },
+        { 'id': 'processLimitDate' },
+        { 'id': 'entityLabel' },
+        { 'id': 'subject' },
+        { 'id': 'chrono' },
+        { 'id': 'priority' },
+        { 'id': 'status' },
+        { 'id': 'typeLabel' }
+    ];
+
+    listProperties: any = {};
+
+    currentParam: any = null;
 
     constructor(
         private _activatedRoute: ActivatedRoute,
@@ -84,6 +104,8 @@ export class CriteriaToolComponent implements OnInit {
         public appService: AppService,
         public functions: FunctionsService,
         public indexingFields: IndexingFieldsService,
+        public criteriaSearchService: CriteriaSearchService,
+        public headerService: HeaderService,
         private dialog: MatDialog,
         private notify: NotificationService,
         private datePipe: DatePipe,
@@ -92,22 +114,36 @@ export class CriteriaToolComponent implements OnInit {
     ) {
         _activatedRoute.queryParams.subscribe(
             params => {
-                this.searchTerm = params.value;
+                if (params.target === 'searchTerm') {
+                    this.searchTerm = params.value;
+                } else {
+                    this.currentParam = params;
+                    this.searchTerm = '';
+                    this.searchTermControl.setValue(this.searchTerm);
+                }
             }
         );
     }
 
     async ngOnInit(): Promise<void> {
         this.searchTermControl.setValue(this.searchTerm);
-
+        this.listProperties = this.criteriaSearchService.initListsProperties(this.headerService.user.id);
         this.criteria = await this.indexingFields.getAllSearchFields();
 
         this.criteria.forEach((element: any) => {
             if (this.defaultCriteria.indexOf(element.identifier) > -1) {
-                element.control = new FormControl('');
+                element.control = new UntypedFormControl('');
                 this.addCriteria(element, false);
             }
         });
+
+        if (['senders', 'recipients'].indexOf(this.currentParam?.target) > -1 && !this.functions.empty(this.currentParam.value)) {
+            if (this.currentParam.target === 'senders') {
+                this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [this.currentParam.value]}});
+            } else {
+                this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [this.currentParam.value]}});
+            }
+        }
 
         this.loaded.emit(true);
 
@@ -145,7 +181,7 @@ export class CriteriaToolComponent implements OnInit {
 
     async addCriteria(criteria: any, openPanel: boolean = true) {
         if (this.functions.empty(criteria.control) || this.functions.empty(criteria.control.value)) {
-            criteria.control = criteria.type === 'date' || criteria.type === 'integer' ? new FormControl({}) : new FormControl('');
+            criteria.control = criteria.type === 'date' || criteria.type === 'integer' ? new UntypedFormControl({}) : new UntypedFormControl('');
         }
         this.initField(criteria);
         this.currentCriteria.push(criteria);
@@ -232,6 +268,21 @@ export class CriteriaToolComponent implements OnInit {
                 }
             }
         });
+
+        if (!this.functions.empty(this.currentParam?.target) && !this.functions.empty(this.currentParam.value)) {
+            const contactArray: any = this.appContactAutocomplete.toArray().find((item: any) => item.id === this.currentParam.target);
+            if (!this.functions.empty(contactArray?.myControl) && !this.functions.empty(objCriteria[this.currentParam.target])) {
+                if (!this.functions.empty(contactArray.myControl.value) && this.appContactAutocomplete.toArray().find((item: any) => item.id === this.currentParam?.target).controlAutocomplete.value.length === 0) {
+                    objCriteria[this.currentParam.target]['values'] = contactArray.myControl.value;
+                    if (this.currentParam.target === 'senders') {
+                        this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                    } else {
+                        this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                    }
+                }
+            }
+        }
+
         this.searchUrlGenerated.emit(objCriteria);
     }
 
@@ -322,7 +373,7 @@ export class CriteriaToolComponent implements OnInit {
                 }
 
                 if ((['recipients', 'senders'].indexOf(criteria.identifier) > -1 || criteria.type === 'contact') && this.functions.empty(criteria.control.value)) {
-                    this.appContactAutocomplete.toArray().filter((component: any) => component.id === criteria.identifier)[0].resetInputValue();
+                    this.appContactAutocomplete.toArray().filter((component: any) => component.id === criteria.identifier)[0]?.resetInputValue();
                 }
             }
         } else {
@@ -690,7 +741,7 @@ export class CriteriaToolComponent implements OnInit {
             index = searchTemplate.query.map((field: any) => field.identifier).indexOf(element.identifier);
             if (index > -1) {
                 if (element.control === undefined) {
-                    element.control = new FormControl({ value: searchTemplate.query[index].values, disabled: false });
+                    element.control = new UntypedFormControl({ value: searchTemplate.query[index].values, disabled: false });
                 }
                 element.control.setValue(searchTemplate.query[index].values);
 
@@ -716,6 +767,21 @@ export class CriteriaToolComponent implements OnInit {
         if (index > -1) {
             this.searchTermControl.setValue(searchTemplate.query[index].values);
         }
+    }
+
+    updateFilters() {
+        this.listProperties.page = 0;
+        this.criteriaSearchService.updateListsProperties(this.listProperties);
+        this.refreshDaoResult.emit(this.listProperties);
+    }
+
+    changeOrderDir() {
+        if (this.listProperties.orderDir === 'ASC') {
+            this.listProperties.orderDir = 'DESC';
+        } else {
+            this.listProperties.orderDir = 'ASC';
+        }
+        this.updateFilters();
     }
 
     private _filter(value: string): string[] {

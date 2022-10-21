@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Validators, FormGroup, FormBuilder } from '@angular/forms';
+import { Validators, UntypedFormGroup, UntypedFormBuilder } from '@angular/forms';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '@service/auth.service';
 import { NotificationService } from '@service/notification/notification.service';
@@ -20,7 +20,7 @@ import { LocalStorageService } from '@service/local-storage.service';
     providers: [TimeLimitPipe]
 })
 export class LoginComponent implements OnInit {
-    loginForm: FormGroup;
+    loginForm: UntypedFormGroup;
 
     loading: boolean = false;
     showForm: boolean = true;
@@ -28,6 +28,7 @@ export class LoginComponent implements OnInit {
     applicationName: string = '';
     loginMessage: string = '';
     applicationVersion: string = '';
+    hidePassword: boolean = true;
 
     constructor(
         public translate: TranslateService,
@@ -39,7 +40,7 @@ export class LoginComponent implements OnInit {
         private functionsService: FunctionsService,
         private notify: NotificationService,
         public dialog: MatDialog,
-        private formBuilder: FormBuilder,
+        private formBuilder: UntypedFormBuilder,
         private timeLimit: TimeLimitPipe
     ) { }
 

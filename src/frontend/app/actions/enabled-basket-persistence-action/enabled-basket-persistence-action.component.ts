@@ -8,15 +8,14 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
-    templateUrl: '../confirm-action/confirm-action.component.html',
-    styleUrls: ['../confirm-action/confirm-action.component.scss'],
+    templateUrl: './enabled-basket-persistence-action.component.html',
+    styleUrls: ['./enabled-basket-persistence-action.component.scss'],
 })
 export class EnabledBasketPersistenceActionComponent implements OnInit {
 
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
 
     loading: boolean = false;
-
 
     constructor(
         public translate: TranslateService,

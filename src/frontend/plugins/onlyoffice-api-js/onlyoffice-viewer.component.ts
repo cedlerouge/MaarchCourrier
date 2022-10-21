@@ -6,9 +6,9 @@ import {
     EventEmitter,
     Output,
     HostListener,
-    OnDestroy
+    OnDestroy,
+    Renderer2
 } from '@angular/core';
-import './onlyoffice-api.js';
 import { HttpClient } from '@angular/common/http';
 import { catchError, tap, filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -17,6 +17,7 @@ import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { HeaderService } from '@service/header.service';
 import { of, Subject } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
+import { ScriptInjectorService } from '@service/script-injector.service';
 
 declare let $: any;
 declare let DocsAPI: any;
@@ -76,9 +77,11 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        private renderer: Renderer2,
         public dialog: MatDialog,
         private notify: NotificationService,
-        public headerService: HeaderService
+        public headerService: HeaderService,
+        private scriptInjectorService: ScriptInjectorService,
     ) { }
 
     @HostListener('window:message', ['$event'])
@@ -120,7 +123,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     }
 
     getEncodedDocument(data: any) {
-        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: data } }).pipe(
+        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: data.url } }).pipe(
             tap((result: any) => {
                 this.file.content = result.encodedFile;
                 this.isSaving = false;
@@ -146,7 +149,16 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
         if (this.canLaunchOnlyOffice()) {
             await this.getServerConfiguration();
+            this.loadApi();
+        }
+    }
 
+    loadApi() {
+        const scriptElement = this.scriptInjectorService.loadJsScript(
+            this.renderer,
+            this.onlyOfficeUrl + '/web-apps/apps/api/documents/api.js'
+        );
+        scriptElement.onload = async () => {
             await this.checkServerStatus();
 
             await this.getMergedFileTemplate();
@@ -158,7 +170,11 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
             this.initOfficeEditor();
 
             this.loading = false;
-        }
+        };
+        scriptElement.onerror = () => {
+            console.log('Could not load the onlyoffice API Script!');
+            this.triggerCloseEditor.emit();
+        };
     }
 
     canLaunchOnlyOffice() {
@@ -299,11 +315,18 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                 title: 'Edition',
                 url: `${this.appUrl}${this.params.docUrl}?filename=${this.tmpFilename}`,
                 permissions: {
-                    comment: false,
+                    comment: true,
                     download: true,
                     edit: this.editMode,
                     print: true,
-                    review: false
+                    deleteCommentAuthorOnly: true,
+                    editCommentAuthorOnly: true,
+                    review: false,
+                    commentGroups: {
+                        edit: ['owner'],
+                        remove: ['owner'],
+                        view: ''
+                    },
                 }
             },
             editorConfig: {
@@ -313,7 +336,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                 mode: 'edit',
                 customization: {
                     chat: false,
-                    comments: false,
+                    comments: true,
                     compactToolbar: false,
                     feedback: false,
                     forcesave: false,
@@ -323,8 +346,9 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
                     zoom: -2,
                 },
                 user: {
-                    id: '1',
-                    name: ' '
+                    id: this.headerService.user.id.toString(),
+                    name: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
+                    group: 'owner'
                 },
             },
         };

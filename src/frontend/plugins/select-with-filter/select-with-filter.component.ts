@@ -8,7 +8,7 @@ import {
     Self,
     ViewChild
 } from '@angular/core';
-import { AbstractControl, ControlValueAccessor, FormControl, NgControl } from '@angular/forms';
+import { AbstractControl, ControlValueAccessor, UntypedFormControl, NgControl } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
 import { TranslateService } from '@ngx-translate/core';
 import { FilterComponent } from './filter/filter.component';
@@ -63,7 +63,7 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
     public showMsgErrors: boolean = false;
 
     @Input()
-    public formCtrl: FormControl;
+    public formCtrl: UntypedFormControl;
 
     @Output()
     returnSelectedObjects = new EventEmitter<any>();
@@ -90,7 +90,7 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
 
     ngOnInit() {
         if (this.formCtrl) {
-            (this.control as unknown as FormControl) = this.formCtrl;
+            (this.control as unknown as UntypedFormControl) = this.formCtrl;
         }
         this.filteredList = this.array.slice();
         setTimeout(() => {
@@ -169,8 +169,8 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
                 );
             }
             if (this.formCtrl) {
-                (this.control as unknown as FormControl).markAsTouched();
-                (this.control as unknown as FormControl).setValue(this.data);
+                (this.control as unknown as UntypedFormControl).markAsTouched();
+                (this.control as unknown as UntypedFormControl).setValue(this.data);
             }
             this.selectionChange.emit(this.data);
         }
@@ -206,7 +206,7 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
     }
 
     isRequired() {
-        return this.formCtrl ? hasRequiredField(this.control as unknown as FormControl) : this.required;
+        return this.formCtrl ? hasRequiredField(this.control as unknown as UntypedFormControl) : this.required;
     }
 
     isDisabled() {

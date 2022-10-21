@@ -5,16 +5,20 @@ import { NotificationService } from '@service/notification/notification.service'
 import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
-import { tap, catchError, exhaustMap, filter } from 'rxjs/operators';
+import { tap, catchError, exhaustMap, filter, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SortPipe } from '../../../plugins/sorting.pipe';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { FormControl, Validators, FormGroup, ValidationErrors, ValidatorFn, AbstractControl } from '@angular/forms';
+import { UntypedFormControl, Validators, UntypedFormGroup, ValidationErrors, ValidatorFn, AbstractControl } from '@angular/forms';
 import { DiffusionsListComponent } from '../../diffusions/diffusions-list.component';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { IssuingSiteInputComponent } from '../../administration/registered-mail/issuing-site/indexing/issuing-site-input.component';
 import { RegisteredMailRecipientInputComponent } from '../../administration/registered-mail/indexing/recipient-input.component';
+import { Router } from '@angular/router';
+import { LinkResourceModalComponent } from '@appRoot/linkedResource/linkResourceModal/link-resource-modal.component';
+import { IndexingModelValuesSelectorComponent } from '@appRoot/administration/indexingModel/valuesSelector/values-selector.component';
+
 
 @Component({
     selector: 'app-indexing-form',
@@ -37,6 +41,8 @@ export class IndexingFormComponent implements OnInit {
     @Output() retrieveDocumentEvent = new EventEmitter<string>();
     @Output() loadingFormEndEvent = new EventEmitter<string>();
     @Output() afterSaveEvent = new EventEmitter<string>();
+    @Output() reloadBadge = new EventEmitter<any>();
+    @Output() resourceToLinkEvent = new EventEmitter<any>();
 
     @ViewChild('appDiffusionsList', { static: false }) appDiffusionsList: DiffusionsListComponent;
     @ViewChild('appIssuingSiteInput', { static: false }) appIssuingSiteInput: IssuingSiteInputComponent;
@@ -83,6 +89,8 @@ export class IndexingFormComponent implements OnInit {
     indexingModels_classementClone: any[] = [];
 
     indexingModelsCustomFields: any[] = [];
+
+    allowedValues: number[] = [];
 
     availableFields: any[] = [
         {
@@ -131,7 +139,7 @@ export class IndexingFormComponent implements OnInit {
             type: 'date',
             default_value: null,
             values: [],
-            enabled: true,
+            enabled: false,
         },
         {
             identifier: 'tags',
@@ -245,7 +253,7 @@ export class IndexingFormComponent implements OnInit {
     availableCustomFields: any[] = [];
     availableCustomFieldsClone: any[] = null;
 
-    indexingFormGroup: FormGroup;
+    indexingFormGroup: UntypedFormGroup;
 
     arrFormControl: any = {};
 
@@ -263,6 +271,19 @@ export class IndexingFormComponent implements OnInit {
     mustFixErrors: boolean = false;
 
     isPrivate: boolean = false;
+    allDoctypes: boolean = true;
+
+    hasLinkedRes: boolean = false;
+    linkedResources: any[] = [];
+    selectedContactClone: any = null;
+    suggestLinksNdaysAgo: number;
+    creationDateClone: Date;
+    msgToDisplay: string = '';
+
+    indexingModelClone: any;
+    resDataClone: any;
+
+    entitiesArray: any[] = [];
 
     constructor(
         public translate: TranslateService,
@@ -271,7 +292,9 @@ export class IndexingFormComponent implements OnInit {
         public dialog: MatDialog,
         private headerService: HeaderService,
         public appService: AppService,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sortPipe: SortPipe,
+        private route: Router
     ) {
 
     }
@@ -283,6 +306,10 @@ export class IndexingFormComponent implements OnInit {
         this.fieldCategories.forEach(category => {
             this['indexingModels_' + category] = [];
         });
+
+        if (!this.adminMode) {
+            await this.getParameter();
+        }
 
         if (this.indexingFormId <= 0 || this.indexingFormId === undefined) {
 
@@ -381,7 +408,9 @@ export class IndexingFormComponent implements OnInit {
             filter((data: string) => data === 'ok'),
             tap(() => {
                 item.mandatory = false;
-                item.enabled = true;
+                if (item.identifier !== 'processLimitDate') {
+                    item.enabled = true;
+                }
                 if (item.identifier.indexOf('indexingCustomField') > -1) {
                     this.availableCustomFields.push(item);
                     this[arrTarget].splice(index, 1);
@@ -476,6 +505,9 @@ export class IndexingFormComponent implements OnInit {
                         }
                     }),
                     tap(() => {
+                        if (this.currentResourceValues.find((item: any) => item.identifier === 'doctype').default_value !== this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').default_value) {
+                            this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'), true);
+                        }
                         this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
                         this.notify.success(this.translate.instant('lang.dataUpdated'));
                         resolve(true);
@@ -584,8 +616,33 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(route).pipe(
                 tap((data: any) => {
+                    this.entitiesArray = [];
+                    const myEntities: any[] = data.entities.map((entity: any) => ({
+                        id: entity.id,
+                        entityId: entity.entity_id,
+                        title: entity.entity_label,
+                        label: entity.entity_label,
+                        parentId: entity.parent_entity_id ?? null,
+                        level: entity.level,
+                        enabled: entity.enabled
+                    }));
+
+                    const parents: any[] = this.sortPipe.transform(myEntities.filter((item: any) => this.functions.empty(item.parentId)), 'title');
+                    parents.forEach((entity: any, index: number) => {
+                        this.entitiesArray.push(entity);
+                        const soretdArray: any[] = this.sortPipe.transform(myEntities.filter((item: any) => item.parentId === entity.entityId), 'title');
+                        soretdArray.forEach((element: any) => {
+                            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+                            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+                            this.entitiesArray.push(element);
+                            this.getEntity(myEntities, element);
+                        });
+                    });
+
+                    this.entitiesArray = [... new Set(this.entitiesArray)];
+
                     if (this.adminMode) {
-                        let title = '';
+                        const title = '';
                         elem.values = [
                             {
                                 id: '#myPrimaryEntity',
@@ -594,21 +651,14 @@ export class IndexingFormComponent implements OnInit {
                                 disabled: false
                             }
                         ];
-                        elem.values = elem.values.concat(data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
-                            return {
-                                id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
-                                disabled: false
-                            };
-                        }));
+                        elem.values = elem.values.concat(this.entitiesArray.map((entity: any) => ({
+                            id: entity.id,
+                            title: entity.title,
+                            label: entity.label,
+                            disabled: false
+                        })));
                     } else {
-                        let title = '';
+                        const title = '';
                         if (elem.default_value === '#myPrimaryEntity') {
                             this.selfDest = this.currentCategory === 'outgoing';
                             elem.default_value = this.headerService.user.entities[0]?.id;
@@ -619,19 +669,13 @@ export class IndexingFormComponent implements OnInit {
                             elem.default_value = defaultVal.length > 0 ? defaultVal[0].id : null;
                             this.arrFormControl[elem.identifier].setValue(defaultVal.length > 0 ? defaultVal[0].id : '');
                         }
-                        elem.values = data.entities.map((entity: any) => {
-                            title = entity.entity_label;
-
-                            for (let index = 0; index < entity.level; index++) {
-                                entity.entity_label = '&nbsp;&nbsp;&nbsp;&nbsp;' + entity.entity_label;
-                            }
-                            return {
-                                id: entity.id,
-                                title: title,
-                                label: entity.entity_label,
-                                disabled: !entity.enabled
-                            };
-                        });
+                        elem.values = this.entitiesArray.map((entity: any) => ({
+                            id: entity.id,
+                            title: entity.title,
+                            label: entity.label,
+                            disabled: !entity.enabled
+                        }));
+                        elem.values = [... new Set(elem.values)];
                         elem.event = 'loadDiffusionList';
                         elem.allowedEntities = elem.values.filter((val: any) => val.disabled === false).map((entities: any) => entities.id);
                     }
@@ -640,6 +684,16 @@ export class IndexingFormComponent implements OnInit {
             ).subscribe();
         });
 
+    }
+
+    getEntity(all: any[], entity: any) {
+        const soretdArray: any[] = this.sortPipe.transform(all.filter((item: any) => item.parentId === entity.entityId), 'title');
+        soretdArray.forEach((element: any) => {
+            const nonBreakingSpace: string = '&nbsp;&nbsp;&nbsp;&nbsp;';
+            element.label = nonBreakingSpace.repeat(element.level) + element.label;
+            this.entitiesArray.push(element);
+            this.getEntity(all, element);
+        });
     }
 
     setInitiatorField(elem: any) {
@@ -697,10 +751,12 @@ export class IndexingFormComponent implements OnInit {
                                     title: secondDoctype.doctypes_second_level_label,
                                     disabled: true,
                                     isTitle: true,
-                                    color: secondDoctype.css_style
+                                    color: secondDoctype.css_style,
+                                    firstLevelId: doctype.doctypes_first_level_id
                                 });
                                 arrValues = arrValues.concat(data.structure.filter((infoDoctype: any) => infoDoctype.doctypes_second_level_id === secondDoctype.doctypes_second_level_id && infoDoctype.description !== undefined).map((infoType: any) => ({
                                     id: infoType.type_id,
+                                    secondLevelId: secondDoctype.doctypes_second_level_id,
                                     label: '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + infoType.description,
                                     title: infoType.description,
                                     disabled: false,
@@ -714,6 +770,7 @@ export class IndexingFormComponent implements OnInit {
                     if (!this.functions.empty(elem.default_value) && !this.adminMode) {
                         this.calcLimitDate(elem, elem.default_value);
                     }
+                    this.setAllowedValues(elem);
                     resolve(true);
                 })
             ).subscribe();
@@ -782,6 +839,8 @@ export class IndexingFormComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get(`../rest/resources/${this.resId}`).pipe(
                 tap(async (data: any) => {
+                    this.resDataClone = JSON.parse(JSON.stringify(data));
+                    this.creationDateClone = JSON.parse(JSON.stringify(data['creationDate']));
                     await Promise.all(this.fieldCategories.map(async (element: any) => {
 
                         // this.fieldCategories.forEach(async element => {
@@ -792,7 +851,14 @@ export class IndexingFormComponent implements OnInit {
                             if (Object.keys(data).indexOf(elem.identifier) > -1 || customId !== undefined) {
                                 let fieldValue: any = '';
                                 if (customId !== undefined) {
-                                    fieldValue = data.customFields[customId];
+                                    const myCustomField: any = this.availableCustomFieldsClone.find((custom: any) => custom.id.toString() === customId);
+                                    if (['select', 'radio'].indexOf(myCustomField?.type) > -1) {
+                                        fieldValue = !this.functions.empty(myCustomField.values.find((item: any) => item.id === data.customFields[customId])) ? data.customFields[customId] : '';
+                                    } else if (myCustomField?.type === 'checkbox') {
+                                        fieldValue = myCustomField.values.map((item: any) => item.id).filter((el: any) => data.customFields[customId].includes(el));
+                                    } else {
+                                        fieldValue = data.customFields[customId];
+                                    }
                                 } else {
                                     fieldValue = data[elem.identifier];
                                 }
@@ -840,6 +906,22 @@ export class IndexingFormComponent implements OnInit {
                     if (saveResourceState) {
                         this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
                     }
+                    if (this.indexingModelClone.master === null) {
+                        const mandatoryFields: any[] = this.indexingModelClone.fields.filter((item: any) => !item.mandatory && !this.functions.empty(item.default_value) && item.identifier !== 'documentDate');
+                        mandatoryFields.forEach((element: any) => {
+                            if (this.functions.empty(this.resDataClone[element.identifier]) && !element.identifier.includes('CustomField')) {
+                                this.arrFormControl[element.identifier].setValue(this.resDataClone[element.identifier]);
+                            } else if (element.identifier.includes('CustomField')) {
+                                const customFieldId: number = +element.identifier.substr(element.identifier.indexOf('_') + 1);
+                                if (this.functions.empty(this.resDataClone.customFields[customFieldId])) {
+                                    this.arrFormControl[element.identifier].setValue('');
+                                }
+                            }
+                        });
+                        this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
+                    }
+                    const priorityField: any = this.currentResourceValues.find((field: any) => field.identifier === 'priority')?.default_value;
+                    this.setPriorityColor(null, !this.functions.empty(priorityField) ? priorityField : '');
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -865,7 +947,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     createForm() {
-        this.indexingFormGroup = new FormGroup(this.arrFormControl);
+        this.indexingFormGroup = new UntypedFormGroup(this.arrFormControl);
         this.loadingFormEndEvent.emit();
     }
 
@@ -888,14 +970,16 @@ export class IndexingFormComponent implements OnInit {
 
     async loadForm(indexModelId: number, saveResourceState: boolean = true) {
         this.loading = true;
-
+        this.hasLinkedRes = false;
+        this.linkedResources = [];
         this.customDiffusion = [];
         this.indexingFormId = indexModelId;
+        this.resourceToLinkEvent.emit([]);
 
         await this.resetForm();
 
         if (!this.adminMode) {
-            this.arrFormControl['mail­tracking'] = new FormControl({ value: '', disabled: this.adminMode ? true : false });
+            this.arrFormControl['mail­tracking'] = new UntypedFormControl({ value: '', disabled: this.adminMode ? true : false });
         }
 
         this.http.get(`../rest/indexingModels/${indexModelId}`).pipe(
@@ -904,6 +988,10 @@ export class IndexingFormComponent implements OnInit {
                 this.indexingFormId = data.indexingModel.master !== null ? data.indexingModel.master : data.indexingModel.id;
                 this.currentCategory = data.indexingModel.category;
                 this.mandatoryFile = data.indexingModel.mandatoryFile;
+                this.allDoctypes = data.indexingModel.allDoctypes;
+                if (data.indexingModel.master !== null) {
+                    this.getAllowedValues(data.indexingModel.master);
+                }
                 let fieldExist: boolean;
                 if (data.indexingModel.fields.length === 0) {
                     this.initFields();
@@ -928,11 +1016,22 @@ export class IndexingFormComponent implements OnInit {
                         indexFound = this.availableCustomFields.map(avField => avField.identifier).indexOf(field.identifier);
 
                         if (indexFound > -1) {
+                            field.type = this.availableCustomFields[indexFound].type;
                             field.label = this.availableCustomFields[indexFound].label;
-                            field.default_value = !this.functions.empty(field.default_value) ? field.default_value : this.availableCustomFields[indexFound].default_value;
                             field.values = this.availableCustomFields[indexFound].values;
                             field.type = this.availableCustomFields[indexFound].type;
                             field.SQLMode = this.availableCustomFields[indexFound].SQLMode;
+                            if (['select', 'radio', 'checkbox'].indexOf(field.type) > -1) {
+                                if (!this.functions.empty(field.default_value)) {
+                                    if (['select', 'radio'].indexOf(field.type) > -1) {
+                                        field.default_value = field.values.map((item: any) => item.id).find((elem: any) => elem.indexOf(field.default_value) > -1) ? field.default_value : null;
+                                    } else if (field.type === 'checkbox') {
+                                        field.default_value = field.values.map((item: any) => item.id).filter((element: any) => field.default_value.incoming(element));
+                                    }
+                                }
+                            } else {
+                                field.default_value = !this.functions.empty(field.default_value) ? field.default_value : this.availableCustomFields[indexFound].default_value;
+                            }
                             this.availableCustomFields.splice(indexFound, 1);
                             fieldExist = true;
                         }
@@ -971,14 +1070,41 @@ export class IndexingFormComponent implements OnInit {
                         }
 
                     });
+                    this.indexingModelClone = JSON.parse(JSON.stringify(data.indexingModel));
                 }
 
-                await this.initElemForm(saveResourceState);
+                await this.initElemForm(saveResourceState).then(() => {
+                    if (!this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+                        this.arrFormControl['processLimitDate'].enable();
+                        this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = true;
+                    } else if (this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+                        this.arrFormControl['processLimitDate'].disable();
+                        this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = false;
+                    }
+                });
                 this.createForm();
 
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    getAllowedValues(id: number) {
+        this.http.get(`../rest/indexingModels/${id}`).pipe(
+            tap((data: any) => {
+                this.allowedValues = data.indexingModel.fields.find((item: any) => item.identifier === 'doctype').allowedValues;
+                if (this.functions.empty(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues)) {
+                    this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues = this.allowedValues;
+                    if (this.allowedValues?.length > 0) {
+                        this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'));
+                    }
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
                 return of(false);
             })
         ).subscribe();
@@ -1011,11 +1137,11 @@ export class IndexingFormComponent implements OnInit {
         const valArr: ValidatorFn[] = [];
 
         const disabledState = !field.enabled || this.isAlwaysDisabledField(field);
-        if (!disabledState) {
+        if (!disabledState && field.identifier !== 'processLimitDate') {
             field.enabled = true;
         }
 
-        this.arrFormControl[field.identifier] = new FormControl({ value: field.default_value, disabled: disabledState });
+        this.arrFormControl[field.identifier] = new UntypedFormControl({ value: field.default_value, disabled: disabledState });
 
         if (field.type === 'integer') {
             valArr.push(this.regexValidator(new RegExp('[+-]?([0-9]*[.])?[0-9]+'), { 'floatNumber': '' }));
@@ -1038,7 +1164,7 @@ export class IndexingFormComponent implements OnInit {
                 valArrDest.push(this.requireDestValidatorOrEmpty({ 'isDest': '' }));
             }
 
-            this.arrFormControl['diffusionList'] = new FormControl({ value: null, disabled: false });
+            this.arrFormControl['diffusionList'] = new UntypedFormControl({ value: null, disabled: false });
 
             this.arrFormControl['diffusionList'].setValidators(valArrDest);
 
@@ -1089,10 +1215,8 @@ export class IndexingFormComponent implements OnInit {
     }
 
     isEmptyField(field: any) {
-
         if (this.arrFormControl[field.identifier].value === null) {
             return true;
-
         } else if (Array.isArray(this.arrFormControl[field.identifier].value)) {
             if (this.arrFormControl[field.identifier].value.length > 0) {
                 return false;
@@ -1154,15 +1278,24 @@ export class IndexingFormComponent implements OnInit {
     }
 
     launchEvent(value: any, field: any) {
-        if (field.event !== undefined && value !== null && !this.adminMode) {
+        if (field.event !== undefined && field.identifier === 'priority' && value === null) {
+            this[field.event](field, value);
+        } else if (field.event !== undefined && value !== null && !this.adminMode) {
             this[field.event](field, value);
         }
     }
 
     calcLimitDate(field: any, value: any) {
         let limitDate: any = null;
-        if (this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: { 'doctype': value } }).pipe(
+        const objToSend: any = {
+            doctype: value,
+            priority: this.arrFormControl['priority']?.value
+        };
+        if (this.functions.empty(this.arrFormControl['priority']?.value)) {
+            delete objToSend.priority;
+        }
+        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
+            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
                     this.arrFormControl['processLimitDate'].setValue(limitDate);
@@ -1170,9 +1303,10 @@ export class IndexingFormComponent implements OnInit {
                 filter((data) => this.arrFormControl['priority'] !== undefined && data.processLimitDate !== null),
                 exhaustMap(() => this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } })),
                 tap((data: any) => {
-                    this.arrFormControl['priority'].setValue(data.priority);
+                    if (!this.functions.empty(this.arrFormControl['priority'])) {
+                        this.arrFormControl['priority'].setValue(data.priority);
+                    }
                     this.setPriorityColor(null, data.priority);
-
                 }),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
@@ -1183,10 +1317,22 @@ export class IndexingFormComponent implements OnInit {
     }
 
     calcLimitDateByPriority(field: any, value: any) {
+        if (this.functions.empty(value) && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+            this.arrFormControl['processLimitDate'].setValue(null);
+            return;
+        }
         let limitDate: any = null;
-
-        if (this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: { 'priority': value } }).pipe(
+        const objToSend: any = {
+            priority: value,
+            doctype: this.arrFormControl['doctype']?.value
+        };
+        if (!this.functions.empty(objToSend.priority) && this.functions.empty(this.arrFormControl['doctype']?.value)) {
+            delete objToSend.doctype;
+        } else if (this.functions.empty(objToSend.priority) && !this.functions.empty(this.arrFormControl['doctype']?.value)) {
+            delete objToSend.priority;
+        }
+        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
+            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                 tap((data: any) => {
                     limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
                     this.arrFormControl['processLimitDate'].setValue(limitDate);
@@ -1212,13 +1358,10 @@ export class IndexingFormComponent implements OnInit {
                 }
             });
         }
-
     }
 
     setPriorityColorByLimitDate(field: any, value: any) {
-
         const limitDate = new Date(value.value);
-
         this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } }).pipe(
             tap((data: any) => {
                 if (!this.functions.empty(this.arrFormControl['priority'])) {
@@ -1242,6 +1385,82 @@ export class IndexingFormComponent implements OnInit {
 
     getCheckboxListLabel(selectedItemId: any, items: any) {
         return items.filter((item: any) => item.id === selectedItemId)[0].label;
+    }
+
+    setAllowedValues(field: any, afterSaveEvent: boolean = false) {
+        if (!this.functions.empty(field.allowedValues)) {
+            field.values.filter((val: any) => !val.isTitle).forEach((item: any) => {
+                item.disabled = field.allowedValues.indexOf(item.id) === -1;
+            });
+        }
+        if (!this.adminMode && field.identifier === 'doctype') {
+            this.checkDisabledValues(field, afterSaveEvent);
+        }
+    }
+
+    checkDisabledValues(field: any, afterSaveEvent: boolean = false) {
+        if (!this.functions.empty(this.resId) && !afterSaveEvent) {
+            this.http.get(`../rest/resources/${this.resId}`).pipe(
+                tap ((data: any) => {
+                    if (!this.functions.empty(data['doctype']) && field.allowedValues?.indexOf(data['doctype']) === -1) {
+                        field.values.find((item: any) => item.id === data['doctype']).disabled = false;
+                    }
+                }),
+                finalize(() => {
+                    this.formatData(field);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        } else {
+            this.formatData(field);
+        }
+    }
+
+    formatData(field: any) {
+        let disabledItems: number[] = [];
+        // CHECK SECOND LEVEL
+        disabledItems = field.values.filter((element: any) => element.disabled && !element.isTitle).map((item: any) => item.id);
+        field.values = field.values.filter((element: any) => disabledItems.indexOf(element.id) === -1 || (element.firstLevelId === undefined && element.secondLevelId === undefined));
+
+        // CHECK FIRST LEVEL
+        field.values.filter((element: any) => element.firstLevelId !== undefined).forEach((item: any) => {
+            if (field.values.filter((element: any) => element.secondLevelId !== undefined && element.secondLevelId === item.id).length === 0) {
+                disabledItems.push(item.id);
+            }
+        });
+        field.values = field.values.filter((element: any) => disabledItems.indexOf(element.id) === -1 || (element.firstLevelId === undefined && element.secondLevelId === undefined));
+    }
+
+
+    openValuesSelector(field: any) {
+        const dialogRef = this.dialog.open(IndexingModelValuesSelectorComponent, {
+            panelClass: 'maarch-modal',
+            disableClose: true,
+            data: {...field, allDoctypes: this.allDoctypes}
+        });
+        dialogRef.afterClosed().pipe(
+            filter((data: any) => !this.functions.empty(data)),
+            tap((result: any) => {
+                this.allDoctypes = result.allDoctypes;
+                field.values = result.values;
+                field.allowedValues = result.values.filter((item: any) => !item.isTitle && !item.disabled).map((el: any) => el.id);
+                // WORK AROUND UPDATING DATA
+                field.type = null;
+                setTimeout(() => {
+                    field.type = 'select';
+                }, 0);
+                if (field.allowedValues.indexOf(this.arrFormControl[field.identifier].value) === -1) {
+                    this.arrFormControl[field.identifier].reset();
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     /**
@@ -1315,6 +1534,122 @@ export class IndexingFormComponent implements OnInit {
                 }
             });
             this.availableFields = this.availableFields.filter((item: any) => item.identifier.indexOf('registeredMail_') === -1 && item.identifier !== 'departureDate');
+        }
+    }
+
+    selectedContact(contact: any, identifier: string, removeEvent: boolean = false) {
+        if (this.getCategory() === 'incoming' && identifier === 'senders' && (this.arrFormControl['senders'].value.length === 1 || removeEvent) && this.suggestLinksNdaysAgo > 0) {
+            const documentDate: Date = this.functions.empty(this.creationDateClone) ? new Date() : new Date(this.creationDateClone);
+            const resourceNotBefore = new Date(documentDate.setDate(documentDate.getDate() - this.suggestLinksNdaysAgo)).toISOString().split('T')[0];
+            const objToSend: any = {
+                creationDate : {
+                    values : {
+                        start: resourceNotBefore,
+                        end: null,
+                    }
+                },
+                senders: {
+                    values: [contact]
+                }
+            };
+            this.http.post('../rest/search?limit=10&offset=0&order=asc&orderBy=creationDate', objToSend).pipe(
+                tap((data: any) => {
+                    if (!this.functions.empty(data.resources)) {
+                        if (data.allResources.length === 1 && data.allResources.indexOf(this.resId) > -1) {
+                            this.hasLinkedRes = false;
+                            this.linkedResources = [];
+                            this.resourceToLinkEvent.emit([]);
+                        } else {
+                            if (!this.functions.empty(this.resId)) {
+                                data.resources = data.resources.filter((item: any) => item.resId !== this.resId);
+                            }
+                            data.resources = data.resources.map((element: any) => ({
+                                ...element,
+                                checked: false
+                            }));
+                            this.linkedResources = data;
+                            this.selectedContactClone = JSON.parse(JSON.stringify(contact));
+                            this.msgToDisplay = this.translate.instant('lang.hasLinkedRes', {'nbDays': this.suggestLinksNdaysAgo});
+                            this.hasLinkedRes = true;
+                        }
+                    } else {
+                        this.hasLinkedRes = false;
+                        this.linkedResources = [];
+                        this.resourceToLinkEvent.emit([]);
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.error(err);
+                    return of(false);
+                })
+            ).subscribe();
+        } else {
+            this.hasLinkedRes = false;
+            this.linkedResources = [];
+            this.resourceToLinkEvent.emit([]);
+        }
+    }
+
+    getParameter() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/parameters/suggest_links_n_days_ago').pipe(
+                tap((data: any) => {
+                    this.suggestLinksNdaysAgo = data.parameter.param_value_int;
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    openSearchResourceModal() {
+        const dialogRef = this.dialog.open(LinkResourceModalComponent,
+            {
+                panelClass: 'maarch-full-height-modal', minWidth: '80%',
+                data: {
+                    resId: this.resId,
+                    linkedRes: this.linkedResources,
+                    fromContact: true,
+                    selectedContact: this.selectedContactClone
+                }
+            });
+        dialogRef.afterClosed().pipe(
+            tap((data: any) => {
+                if (Array.isArray(data)) {
+                    this.linkedResources['resources'].forEach((element: any) => {
+                        element.checked = data.indexOf(element.resId) > -1 ? true : false;
+                    });
+                    const resToLink: any[] = this.linkedResources['resources'].filter((item: any) => item.checked);
+                    if (resToLink.length > 0) {
+                        this.resourceToLinkEvent.emit(resToLink.map((res: any) => res.resId));
+                    }
+                } else if (data === 'success') {
+                    this.reloadBadge.emit();
+                    this.notify.success(this.translate.instant('lang.resourcesLinked'));
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    checkRemovedItem(value: any) {
+        if (typeof value === 'boolean') {
+            this.hasLinkedRes = false;
+            this.resourceToLinkEvent.emit([]);
+        }
+
+        const senders: any[] = this.arrFormControl['senders'].value.filter((item: any) => item.id !== value);
+        if (senders.length === 1) {
+            this.selectedContact(senders[0], 'senders', true);
+        } else {
+            this.hasLinkedRes = false;
+            this.resourceToLinkEvent.emit([]);
         }
     }
 }

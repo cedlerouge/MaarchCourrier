@@ -49,6 +49,16 @@ use User\models\UserSignatureModel;
 
 class SignatureBookController
 {
+    public const SIGNATORY_ROLE_MANDATORY       = 'mandatory';
+    public const SIGNATORY_ROLE_MANDATORY_FINAL = 'mandatory_final';
+    public const SIGNATORY_ROLE_OPTIONAL        = 'optional';
+    public const SIGNATORY_ROLES = [
+        SignatureBookController::SIGNATORY_ROLE_MANDATORY,
+        SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL,
+        SignatureBookController::SIGNATORY_ROLE_OPTIONAL
+    ];
+    public const SIGNATORY_ROLE_DEFAULT = SignatureBookController::SIGNATORY_ROLE_MANDATORY;
+
     public function getSignatureBook(Request $request, Response $response, array $aArgs)
     {
         $resId = $aArgs['resId'];
@@ -442,15 +452,18 @@ class SignatureBookController
         $convertedDocument = $convertedDocument[0];
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
+            SignatureBookController::deleteTMPFile($document['format'], '', $args['resId']);
             return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
         }
         $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
         if (!file_exists($pathToDocument)) {
+            SignatureBookController::deleteTMPFile($document['format'], '', $args['resId']);
             return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
         }
         $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
         $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
         if ($convertedDocument['fingerprint'] != $fingerprint) {
+            SignatureBookController::deleteTMPFile($document['format'], $pathToDocument, $args['resId']);
             return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
         }
 
@@ -464,6 +477,7 @@ class SignatureBookController
 
         $signedDocument = @file_get_contents($tmpPath.$convertedDocument['filename']);
         if ($signedDocument === false) {
+            SignatureBookController::deleteTMPFile($document['format'], $pathToDocument, $args['resId']);
             return $response->withStatus(400)->withJson(['errors' => 'Signature failed : ' . implode($output)]);
         }
         unlink($tmpPath.$convertedDocument['filename']);
@@ -623,16 +637,19 @@ class SignatureBookController
         $convertedDocument = $convertedDocument[0];
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
+            SignatureBookController::deleteTMPAttachment($attachment['format'], '', $args['id']);
             return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
         }
         $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
         if (!file_exists($pathToDocument)) {
+            SignatureBookController::deleteTMPAttachment($attachment['format'], '', $args['id']);
             return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
         }
 
         $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
         $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
         if ($convertedDocument['fingerprint'] != $fingerprint) {
+            SignatureBookController::deleteTMPAttachment($attachment['format'], $pathToDocument, $args['id']);
             return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
         }
 
@@ -646,6 +663,7 @@ class SignatureBookController
 
         $signedDocument = @file_get_contents($tmpPath.$convertedDocument['filename']);
         if ($signedDocument === false) {
+            SignatureBookController::deleteTMPAttachment($attachment['format'], $pathToDocument, $args['id']);
             return $response->withStatus(400)->withJson(['errors' => 'Signature failed : ' . implode($output)]);
         }
         unlink($tmpPath.$convertedDocument['filename']);
@@ -711,7 +729,7 @@ class SignatureBookController
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
-        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master']]);
+        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'attachment_type']]);
 
         $signedDocument = AttachmentModel::get([
             'select' => ['signatory_user_serial_id', 'typist'],
@@ -723,6 +741,11 @@ class SignatureBookController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         } elseif ($signedDocument[0]['signatory_user_serial_id'] != $GLOBALS['id'] && $signedDocument[0]['typist'] != $GLOBALS['id']) {
             return $response->withStatus(403)->withJson(['errors' => 'Privilege forbidden']);
+        }
+
+        $attachmentType = AttachmentTypeModel::getByTypeId(['typeId' => $attachment['attachment_type'], 'select' => ['signed_by_default']]);
+        if (!$attachmentType || $attachmentType['signed_by_default']) {
+            return $response->withStatus(403)->withJson(['errors' => 'This attachment type cannot be unsigned']);
         }
 
         AttachmentModel::update([
@@ -829,4 +852,25 @@ class SignatureBookController
 
         return true;
     }
+
+    private static function deleteTMPFile(string $format, string $path, int $resId)
+    {
+        if (in_array($format, MergeController::OFFICE_EXTENSIONS)) {
+            if (!empty($path)) {
+                unlink($path);
+            }
+            AdrModel::deleteDocumentAdr(['where' => ['res_id = ?', 'type = ?'], 'data' => [$resId, 'TMP']]);
+        }
+    }
+
+    private static function deleteTMPAttachment(string $format, string $path, int $id)
+    {
+        if (in_array($format, MergeController::OFFICE_EXTENSIONS)) {
+            if (!empty($path)) {
+                unlink($path);
+            }
+            AdrModel::deleteAttachmentAdr(['where' => ['res_id = ?', 'type = ?'], 'data' => [$id, 'TMP']]);
+        }
+    }
+
 }

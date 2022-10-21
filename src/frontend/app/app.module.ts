@@ -102,6 +102,7 @@ import { ThesaurusModalComponent } from './tag/indexing/thesaurus/thesaurus-moda
 import { SelectIndexingModelComponent } from './indexation/select-indexing-model/select-indexing-model.component';
 import { FilterToolComponent } from './search/filter-tool/filter-tool.component';
 import { TechnicalInformationComponent } from './indexation/technical-information/technical-information.component';
+import { IndexingModelValuesSelectorComponent } from './administration/indexingModel/valuesSelector/values-selector.component';
 
 import { SearchComponent } from './search/search.component';
 import { SearchResultListComponent } from './search/result-list/search-result-list.component';
@@ -303,72 +304,11 @@ export class MyHammerConfig extends HammerGestureConfig {
         CreateExternalUserComponent,
         CheckSaeInterconnectionComponent,
         ContactSearchModalComponentComponent,
-        ShippingModalComponent
+        ShippingModalComponent,
+        IndexingModelValuesSelectorComponent
     ],
-    exports : [
+    exports: [
         SharedModule
-    ],
-    entryComponents: [
-        LinkResourceModalComponent,
-        SentResourcePageComponent,
-        SentNumericPackagePageComponent,
-        ThesaurusModalComponent,
-        AddAvisModelModalComponent,
-        AddPrivateIndexingModelModalComponent,
-        AddSearchTemplateModalComponent,
-        AddVisaModelModalComponent,
-        AttachmentCreateComponent,
-        AttachmentPageComponent,
-        ContactModalComponent,
-        ContactResourceModalComponent,
-        FolderCreateModalComponent,
-        FolderUpdateComponent,
-        InfoChangePasswordModalComponent,
-        RedirectIndexingModelComponent,
-        VisaWorkflowModalComponent,
-        DevLangComponent,
-        ConfirmActionComponent,
-        ResMarkAsReadActionComponent,
-        EnabledBasketPersistenceActionComponent,
-        DisabledBasketPersistenceActionComponent,
-        CloseAndIndexActionComponent,
-        UpdateAcknowledgementSendDateActionComponent,
-        CreateAcknowledgementReceiptActionComponent,
-        CloseMailActionComponent,
-        RejectVisaBackToPrevousActionComponent,
-        ResetVisaActionComponent,
-        InterruptVisaActionComponent,
-        SendAvisWorkflowComponent,
-        SendAvisParallelComponent,
-        UpdateDepartureDateActionComponent,
-        SendExternalSignatoryBookActionComponent,
-        SignaturePositionComponent,
-        DateOptionModalComponent,
-        SendExternalNoteBookActionComponent,
-        ContinueVisaCircuitActionComponent,
-        ContinueAvisCircuitActionComponent,
-        GiveAvisParallelActionComponent,
-        ValidateAvisParallelComponent,
-        RedirectActionComponent,
-        SendShippingActionComponent,
-        RedirectInitiatorEntityActionComponent,
-        closeMailWithAttachmentsOrNotesActionComponent,
-        SendSignatureBookActionComponent,
-        SendAlfrescoActionComponent,
-        SendMultigestActionComponent,
-        SaveRegisteredMailActionComponent,
-        SaveAndPrintRegisteredMailActionComponent,
-        SaveAndIndexRegisteredMailActionComponent,
-        PrintRegisteredMailActionComponent,
-        PrintDepositListActionComponent,
-        ViewDocActionComponent,
-        ReconcileActionComponent,
-        TechnicalInformationComponent,
-        AbsModalComponent,
-        TileCreateComponent,
-        AddinOutlookConfigurationModalComponent,
-        ContactSearchModalComponentComponent,
-        ShippingModalComponent
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },

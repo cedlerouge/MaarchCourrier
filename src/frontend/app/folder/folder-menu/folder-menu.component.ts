@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FoldersService } from '../folders.service';
 import { FolderCreateModalComponent } from '../folder-create-modal/folder-create-modal.component';
 import { FunctionsService } from '@service/functions.service';
@@ -29,7 +29,7 @@ export class FolderMenuComponent implements OnInit {
 
     loading: boolean = true;
 
-    searchTerm: FormControl = new FormControl();
+    searchTerm: UntypedFormControl = new UntypedFormControl();
 
     dialogRef: MatDialogRef<any>;
 

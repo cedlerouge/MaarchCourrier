@@ -8,8 +8,8 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
-    templateUrl: '../confirm-action/confirm-action.component.html',
-    styleUrls: ['../confirm-action/confirm-action.component.scss'],
+    templateUrl: './res-mark-as-read-action.component.html',
+    styleUrls: ['./res-mark-as-read-action.component.scss'],
 })
 export class ResMarkAsReadActionComponent implements OnInit {
 

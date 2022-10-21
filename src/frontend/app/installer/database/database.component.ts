@@ -1,5 +1,5 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ValidatorFn } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidatorFn } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
@@ -18,7 +18,7 @@ export class DatabaseComponent implements OnInit {
 
     @Output() nextStep = new EventEmitter<string>();
 
-    stepFormGroup: FormGroup;
+    stepFormGroup: UntypedFormGroup;
     hide: boolean = true;
 
     connectionState: boolean = false;
@@ -29,7 +29,7 @@ export class DatabaseComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private functionsService: FunctionsService,
         private installerService: InstallerService

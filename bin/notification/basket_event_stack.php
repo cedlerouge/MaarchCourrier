@@ -1,4 +1,6 @@
 <?php
+// WARNING: logs for this file are only enabled if the app root log4php.xml is set to INFO or DEBUG!
+// no logs will be written to technique.log if only the custom log4php.xml is modified.
 
 $options = getopt("c:n:", ["config:", "notif:"]);
 
@@ -77,16 +79,105 @@ foreach ($baskets as $basket) {
     $nbGroups = count($groups);
 
     foreach ($groups as $group) {
-        if ($notification['diffusion_type'] == 'group' && !in_array($group['group_id'], explode(",", $notification['diffusion_properties']))) {
+        $diffusionParams = empty($notification['diffusion_properties']) ? [] : explode(",", $notification['diffusion_properties']);
+
+        if ($notification['diffusion_type'] == 'group' && !in_array($group['group_id'], $diffusionParams)) {
             continue;
         }
         $groupInfo = \Group\models\GroupModel::getByGroupId(['groupId' => $group['group_id'], 'select' => ['id']]);
         $users = \Group\models\GroupModel::getUsersById(['select' => ['users.user_id', 'users.id'], 'id' => $groupInfo['id']]);
 
+        if ($notification['diffusion_type'] == 'entity' && !empty($diffusionParams)) {
+
+            $usersOfEntities = \Entity\models\EntityModel::getWithUserEntities([
+                'select'    => ['user_id as id'], 
+                'where'     => ['entities.entity_id in (?)'], 
+                'data'      => [$diffusionParams]
+            ]);
+            $users = array_filter(array_unique($usersOfEntities, SORT_REGULAR), function ($userOfEntities) use ($users) {
+                foreach ($users as $user) {
+                    if ($user['id'] == $userOfEntities['id']) {
+                        return $user;
+                    }
+                }
+                return false;
+            });
+        }
+
+        if ($notification['diffusion_type'] == 'dest_user') {
+
+            $tmpUsersOfInstance = \Entity\models\ListInstanceModel::get([
+                'select'    => ['distinct(item_id)', 'item_type'],
+                'where'     => ['difflist_type = ?', 'item_mode = ?'],
+                'data'      => ['entity_id', 'dest']
+            ]);
+            $usersTmp = $users;
+            $users = array_filter($usersTmp, function ($userTmp) use ($tmpUsersOfInstance) {
+                foreach($tmpUsersOfInstance as $usersOfInstance) {
+                    if ($usersOfInstance['item_id'] == $userTmp['id']) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        if ($notification['diffusion_type'] == 'copy_list') {
+            if ($basket['basket_id'] != "CopyMailBasket") {
+                continue;
+            } else {
+
+                $tmpUsersOrEntitiesOfInstance = \Entity\models\ListInstanceModel::get([
+                    'select'    => ['distinct(item_id)', 'item_type'],
+                    'where'     => ['difflist_type = ?', 'item_mode = ?'],
+                    'data'      => ['entity_id', 'cc']
+                ]);
+                $usersTmp = $users;
+                $users = [];
+                foreach ($usersTmp as $userTmp) {
+                    foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
+                        if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
+
+                            if(!in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
+                                $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
+                                continue;
+                            }
+                        } else if ($userOrentity['item_type'] == 'entity_id') {
+
+                            $usersOfEntity = \Entity\models\EntityModel::getWithUserEntities([
+                                'select'    => ['user_id as id'],
+                                'where'     => ['entities.id = ?'],
+                                'data'      => [$userOrentity['item_id']]
+                            ]);
+                            if(!empty($usersOfEntity)) {
+                                $usersFromEntity = \User\models\UserModel::get([
+                                    'select'    => ['id', 'user_id'],
+                                    'where'     => ['id IN (?)'],
+                                    'data'      => [array_column($usersOfEntity, 'id')]
+                                ]);
+                                foreach ($usersFromEntity as $userFromEntity) {
+    
+                                    if(!in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
+                                        $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         $countUsersToNotify = count($users);
         writeLog(['message' => "Group {$group['group_id']} : {$countUsersToNotify} user(s) to notify", 'level' => 'INFO']);
 
         foreach ($users as $userToNotify) {
+
+            if ($notification['diffusion_type'] == 'user' && !in_array($userToNotify['id'], $diffusionParams)) {
+                continue;
+            }
+
             $realUserId     = null;
             $userId         = $userToNotify['id'];
             $whereClause    = \SrcCore\controllers\PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $userToNotify['id']]);
@@ -100,11 +191,16 @@ foreach ($baskets as $basket) {
                 $userId     = $redirectedBasket[0]['actual_user_id'];
             }
 
+            $resourcesWhere = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$whereClause, 'status IN (?)'] : [$whereClause];
+            $resourcesData  = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$diffusionParams] : [];
             $resources = \Resource\models\ResModel::getOnView([
                 'select' => ['res_id'],
-                'where'  => [$whereClause]
+                'where'  => $resourcesWhere,
+                'data'   => $resourcesData
             ]);
+
             if (!empty($resources)) {
+
                 $resourcesNumber = count($resources);
                 writeLog(['message' => "{$resourcesNumber} document(s) to process for {$userToNotify['user_id']}", 'level' => 'INFO']);
 
@@ -130,6 +226,7 @@ foreach ($baskets as $basket) {
                     }
                 }
                 if (!empty($aValues)) {
+                    writeLog(['message' => $info, 'level' => 'DEBUG']);
                     \SrcCore\models\DatabaseModel::insertMultiple([
                         'table'   => 'notif_event_stack',
                         'columns' => ['table_name', 'notification_sid', 'record_id', 'user_id', 'event_info', 'event_date'],
@@ -138,7 +235,7 @@ foreach ($baskets as $basket) {
                 }
             }
         }
-    }
+    }        
 }
 
 writeLog(['message' => "Scanning events for notification {$notification['notification_sid']}", 'level' => 'INFO']);

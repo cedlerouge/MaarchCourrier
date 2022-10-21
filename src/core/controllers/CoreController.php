@@ -71,6 +71,7 @@ class CoreController
     {
         $connections = [];
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+
         if (!empty($loadedXml->signatoryBookEnabled)) {
             $connections[(string)$loadedXml->signatoryBookEnabled] = true;
         }

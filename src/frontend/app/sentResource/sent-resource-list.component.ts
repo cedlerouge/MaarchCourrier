@@ -25,6 +25,7 @@ export class SentResourceListComponent implements OnInit {
     @Input() currentUserId: number = null;
     @Input() currentGroupId: number = null;
     @Input() currentBasketId: number = null;
+    @Input() injectDatas: any;
 
     @Output() reloadBadgeSentResource = new EventEmitter<string>();
 
@@ -307,6 +308,25 @@ export class SentResourceListComponent implements OnInit {
                     shippingData: row
                 }
             });
+
+            dialogRef.afterClosed().pipe(
+                filter((data: any) => data.state === 'success' || data === 'success'),
+                tap(() => {
+                    this.refreshEmailList();
+                    this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
+                    setTimeout(() => {
+                        this.refreshWaitingElements(1);
+                        setTimeout(() => {
+                            this.dataSource = new MatTableDataSource(this.sentResources);
+                            this.dataSource.sort = this.sort;
+                        }, 0);
+                    }, 5000);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         }
     }
 
@@ -331,6 +351,7 @@ export class SentResourceListComponent implements OnInit {
                     return of(false);
                 })
             ).subscribe();
+            this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
         }
     }
 
@@ -388,6 +409,7 @@ export class SentResourceListComponent implements OnInit {
                 tap((data: any) => {
                     const sentResourcesNoEmails = this.sentResources.filter(elem => elem.type !== 'email');
                     this.sentResources = sentResourcesNoEmails.concat(data);
+                    this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
                     setTimeout(() => {
                         this.dataSource = new MatTableDataSource(this.sentResources);
                         this.dataSource.sort = this.sort;

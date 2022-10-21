@@ -62,6 +62,8 @@ export class IndexationComponent implements OnInit, OnDestroy {
 
     isMailing: boolean = false;
 
+    resourceToLink: number[];
+
     constructor(
         public translate: TranslateService,
         private route: ActivatedRoute,
@@ -88,6 +90,16 @@ export class IndexationComponent implements OnInit, OnDestroy {
         this.subscription = this.actionService.catchAction().subscribe(resIds => {
 
             this.appIndexationAttachmentsList.saveAttachments(resIds[0]);
+
+            if (this.resourceToLink.length > 0) {
+                this.http.post(`../rest/resources/${resIds[0]}/linkedResources`, { linkedResources: this.resourceToLink }).pipe(
+                    tap(() => {}),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            }
 
             if (['closeAndIndexAction', 'saveAndIndexRegisteredMailAction'].indexOf(this.selectedAction.component) > -1) {
                 this.appDocumentViewer.templateListForm.reset();
@@ -277,10 +289,10 @@ export class IndexationComponent implements OnInit, OnDestroy {
     }
 
     hasActions() {
-        if (this.indexingForm.loading) {
+        if (this.indexingForm?.loading) {
             return true;
         } else {
-            return this.actionsList.filter(action => action.categoryUse.indexOf(this.indexingForm.getCategory()) > -1).length > 0;
+            return this.actionsList.filter(action => action.categoryUse.indexOf(this.indexingForm?.getCategory()) > -1).length > 0;
         }
     }
 

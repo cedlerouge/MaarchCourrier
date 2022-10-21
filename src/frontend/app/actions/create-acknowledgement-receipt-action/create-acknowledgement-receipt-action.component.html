@@ -55,7 +55,8 @@
                     [availableSenders]="senders"
                     [currentSender]="senders[0]"
                     [recipientDisabled]="true"
-                    [recipientHide]="data.resIds.length > 1"
+                    [recipientHide]="data.resIds.length > 1 || !acknowledgement.sendEmail"
+                    [senderHide]="!acknowledgement.sendEmail"
                     [recipientDisabled]="true"
                     [senderDisabled]="senders.length === 1"
                     [cCDisabled]="!canAddCopies"
@@ -67,7 +68,7 @@
                 ></app-mail-editor>
 
                 <div *ngIf="arMode == 'both'">
-                    <mat-slide-toggle [(ngModel)]="manualAR" color="primary" (change)="toggleArManual($event.checked)">
+                    <mat-slide-toggle [(ngModel)]="manualAR" color="primary" (change)="toggleArManual($event.checked)" style="margin-top: 12px;">
                         {{'lang.editAcknowledgementReceipt' | translate}}</mat-slide-toggle>
                 </div>
                 <app-mail-editor #appMailEditor
@@ -75,7 +76,8 @@
                     [availableSenders]="senders"
                     [currentSender]="senders[0]"
                     [recipientDisabled]="true"
-                    [recipientHide]="data.resIds.length > 1"
+                    [recipientHide]="data.resIds.length > 1 || !acknowledgement.sendEmail"
+                    [senderHide]="!acknowledgement.sendEmail"
                     [senderDisabled]="senders.length === 1"
                     [cCDisabled]="!canAddCopies"
                     [cCIDisabled]="!canAddCopies"
@@ -88,6 +90,17 @@
                 <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
             </div>
         </div>
+        <ng-container *ngIf="showToggle">
+            <div class="row">
+                <div class="col-md-12" style="margin: 10px 0px 10px 0px;">
+                    <mat-slide-toggle name="history" color="primary"
+                        [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                        {{'lang.canGoToNextRes' | translate}}
+                    </mat-slide-toggle>
+                </div>
+            </div>
+            <mat-divider></mat-divider>
+        </ng-container>
     </div>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">

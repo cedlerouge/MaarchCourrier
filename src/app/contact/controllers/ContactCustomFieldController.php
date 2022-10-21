@@ -167,7 +167,7 @@ class ContactCustomFieldController
 
         $field = ContactCustomFieldListModel::getById(['select' => ['label'], 'id' => $args['id']]);
 
-        ContactModel::update(['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['1 = ?'], 'data' => [1]]);
+        ContactModel::update(['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['custom_fields != ?'], 'data' => [null]]);
         ContactParameterModel::delete(['where' => ['identifier = ?'], 'data' => ['contactCustomField_' . $args['id']]]);
 
         ContactCustomFieldListModel::delete([

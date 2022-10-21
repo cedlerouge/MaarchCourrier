@@ -4,12 +4,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { DiffusionsListComponent } from '../../diffusions/diffusions-list.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { map, tap, finalize, catchError, startWith } from 'rxjs/operators';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { FunctionsService } from '@service/functions.service';
 import { Observable, of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 declare let $: any;
 
@@ -41,11 +42,15 @@ export class RedirectActionComponent implements OnInit {
     };
     redirectMode = '';
     userListRedirect: any[] = [];
-    userRedirectCtrl = new FormControl();
+    userRedirectCtrl = new UntypedFormControl();
     filteredUserRedirect: Observable<any[]>;
     isDestinationChanging: boolean = false;
 
     actionKeyword: string = '';
+
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -54,12 +59,15 @@ export class RedirectActionComponent implements OnInit {
         public dialogRef: MatDialogRef<RedirectActionComponent>,
         public headerService: HeaderService,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        private functionsService: FunctionsService
+        private functionsService: FunctionsService,
+        private sessionStorage: SessionStorageService
     ) { }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
-
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         await this.getEntities();
         await this.getDefaultEntity();
 
@@ -272,6 +280,7 @@ export class RedirectActionComponent implements OnInit {
     onSubmit() {
         this.loading = true;
         if (this.data.resIds.length > 0) {
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction();
         }
     }

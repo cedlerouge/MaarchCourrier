@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { map, tap, catchError, finalize } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { SummarySheetComponent } from '../list/summarySheet/summary-sheet.component';
 import { of } from 'rxjs';
@@ -52,7 +52,7 @@ export class PrintedFolderModalComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         Object.keys(this.printedFolderElement).forEach(element => {
-            this.selectedPrintedFolderElement[element] = new FormControl({ value: [], disabled: false });
+            this.selectedPrintedFolderElement[element] = new UntypedFormControl({ value: [], disabled: false });
         });
 
         if (!this.data.multiple) {

@@ -561,6 +561,7 @@ class FolderPrintController
                 $documentPaths = array_merge($documentPaths, $linkedAttachmentPath);
             }
 
+
             if (!empty($documentPaths)) {
                 if (empty($resource['altIdentifier'] . $resource['subject'])) {
                     $document = ResModel::getById([
@@ -589,17 +590,28 @@ class FolderPrintController
                 if (file_exists($filePathOnTmp)) {
                     unlink($filePathOnTmp);
                 }
-                $command = "pdfunite '" . implode("' '", $documentPaths) . "' '" . $filePathOnTmp . "'";
 
+                $command = "pdfunite '" . implode("' '", $documentPaths) . "' '" . $filePathOnTmp . "'";
                 exec($command . ' 2>&1', $output, $return);
 
                 if (!file_exists($filePathOnTmp)) {
                     return $response->withStatus(500)->withJson(['errors' => 'Merge PDF file not created']);
                 }
+
+                // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf, convertedAr_*.pdf and listNotes_*.pdf after merged is complete
+                foreach ($documentPaths as $documentPath) {
+                    if (strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false 
+                        || strpos($documentPath, "convertedAr_") !== false  || strpos($documentPath, "listNotes_") !== false) {
+                        unlink($documentPath);
+                    }
+                }
+                
                 $folderPrintPaths[] = $filePathOnTmp;
             }
         }
-
+        if (count($folderPrintPaths) == 0) {
+            return $response->withStatus(400)->withJson(['errors' => 'No document to merge']);
+        }
         if (count($folderPrintPaths) == 1) {
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
 
@@ -610,42 +622,40 @@ class FolderPrintController
 
             $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.pdf");
             return $response->withHeader('Content-Type', $mimeType);
-        } else {
-            $filePathOnTmp = str_replace('//', '/', $tmpDir) . 'folderPrint.zip';
-            if (file_exists($filePathOnTmp)) {
-                unlink($filePathOnTmp);
-            }
-
-            $zip = new \ZipArchive;
-            if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== TRUE) {
-                return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
-            }
-            foreach ($folderPrintPaths as $folderPrintPath) {
-                $zip->addFile($folderPrintPath, basename($folderPrintPath));
-            }
-            $zip->close();
-
-            if (!file_exists($filePathOnTmp)) {
-                return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
-            }
-
-            $finfo = new \finfo(FILEINFO_MIME_TYPE);
-            $fileContent = file_get_contents($filePathOnTmp);
-            $mimeType = $finfo->buffer($fileContent);
-
-            $response->write($fileContent);
-
-            // delete tmp files, partly to avoid filling an existing ZIP and sending more than was requested
-            unlink($filePathOnTmp);
-            foreach ($folderPrintPaths as $folderPrintPath) {
-                unlink($folderPrintPath);
-            }
-
-            $response = $response->withAddedHeader('Content-Disposition', 'inline; filename=maarch.zip');
-            return $response->withHeader('Content-Type', $mimeType);
         }
 
-        return $response->withStatus(400)->withJson(['errors' => 'No document to merge']);
+        $filePathOnTmp = str_replace('//', '/', $tmpDir) . 'folderPrint.zip';
+        if (file_exists($filePathOnTmp)) {
+            unlink($filePathOnTmp);
+        }
+
+        $zip = new \ZipArchive;
+        if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== TRUE) {
+            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
+        }
+        foreach ($folderPrintPaths as $folderPrintPath) {
+            $zip->addFile($folderPrintPath, basename($folderPrintPath));
+        }
+        $zip->close();
+
+        if (!file_exists($filePathOnTmp)) {
+            return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $fileContent = file_get_contents($filePathOnTmp);
+        $mimeType = $finfo->buffer($fileContent);
+
+        $response->write($fileContent);
+
+        // delete tmp files, partly to avoid filling an existing ZIP and sending more than was requested
+        unlink($filePathOnTmp);
+        foreach ($folderPrintPaths as $folderPrintPath) {
+            unlink($folderPrintPath);
+        }
+
+        $response = $response->withAddedHeader('Content-Disposition', 'inline; filename=maarch.zip');
+        return $response->withHeader('Content-Type', $mimeType);
     }
 
     private static function getDocumentFilePath(array $args)
@@ -974,53 +984,59 @@ class FolderPrintController
             $status = _EMAIL_ERROR_SENT;
         }
 
-        $pdf = new Fpdi('P', 'pt');
-        $pdf->setPrintHeader(false);
-        $pdf->AddPage();
+        $widthTable_px = "100%";
+        $cellPaddingBottom_px = "30px";
 
-        $dimensions        = $pdf->getPageDimensions();
-        $widthNoMargins    = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
-        $width             = $widthNoMargins / 2;
-        $widthQuarter      = $widthNoMargins / 4;
-        $widthThreeQuarter = $widthQuarter * 3;
-
-        $pdf->SetFont('', 'B', 12);
-        $pdf->Cell($width, 15, _EMAIL, 0, 0, 'L', false);
-        $pdf->SetFont('', '', 11);
-        $pdf->Cell($width, 15, $sentDate, 0, 1, 'R', false);
-
-        $pdf->SetY($pdf->GetY() + 5);
-        $pdf->SetFont('', '', 10);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _SENDER.'</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $sender, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _RECIPIENTS . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $recipients, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _TO_CC . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $recipientsCopy, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _TO_CCI . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $recipientsCopyHidden, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _SUBJECT . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $subject, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->MultiCell($widthQuarter, 30, '<b>' . _STATUS . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($widthThreeQuarter, 30, $status, 1, 'L', false, 1, '', '', true, 0, true);
-
-        $pdf->SetY($pdf->GetY() + 5);
-
-        $pdf->writeHTML($email['body']);
+        $emailMeta = "<table style=\"width: $widthTable_px;\" cellspacing=\"0\" cellpadding=\"5\">
+        <tbody>
+        <tr style=\"border-syle: none;\">
+        <td style=\"\"><b>" . _EMAIL . "</b></td>
+        <td style=\"text-align: right; \">$sentDate</td>
+        </tr>
+        </tbody>
+        </table>
+        <table style=\"width: $widthTable_px; border-style: solid; border-color: #000000;\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">
+        <tbody>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _SENDER . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$sender</td>
+        </tr>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _RECIPIENTS . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$recipients</td>
+        </tr>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _TO_CC . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$recipientsCopy</td>
+        </tr>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _TO_CCI . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$recipientsCopyHidden</td>
+        </tr>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _SUBJECT . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$subject</td>
+        </tr>
+        <tr>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _STATUS . "</b></td>
+        <td style=\"padding-bottom: $cellPaddingBottom_px;\">$status</td>
+        </tr>
+        </tbody>
+        </table><br>";
+        $emailMeta_emailDataBody = $emailMeta.$email['body'];
 
         $tmpDir = CoreConfigModel::getTmpPath();
-        $filePathOnTmp = $tmpDir . 'email_' . $email['id'] . '_' . $GLOBALS['id'] . '.pdf';
-        $pdf->Output($filePathOnTmp, 'F');
+        $filePathInTmpNoExtension = $tmpDir . 'email_' . $email['id'] . '_' . $GLOBALS['id'];
+        file_put_contents($filePathInTmpNoExtension . '.html', mb_convert_encoding($emailMeta_emailDataBody, 'HTML', 'UTF-8'));
+        ConvertPdfController::convertInPdf(['fullFilename' => $filePathInTmpNoExtension . '.html']);
 
-        return $filePathOnTmp;
+        if (file_exists($filePathInTmpNoExtension . '.html')) {
+            unlink($filePathInTmpNoExtension . '.html');
+        }
+
+        return $filePathInTmpNoExtension . '.pdf';
     }
-
+    
     private static function getSummarySheet(array $args)
     {
         ValidatorModel::notEmpty($args, ['units', 'resId']);

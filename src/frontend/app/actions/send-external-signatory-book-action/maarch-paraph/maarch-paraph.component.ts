@@ -51,8 +51,8 @@ export class MaarchParaphComponent implements OnInit {
         }
     }
 
-    isValidParaph() {
-        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.checkExternalSignatoryBook().length > 0 || this.resourcesToSign.length === 0) {
+    isValidParaph(): boolean {
+        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0 || this.resourcesToSign.length === 0) {
             return false;
         } else {
             return true;
@@ -116,7 +116,7 @@ export class MaarchParaphComponent implements OnInit {
         ).subscribe();
     }
 
-    hasPositions(resource: any) {
+    hasPositions(resource: any): boolean {
         return this.appExternalVisaWorkflow?.getDocumentsFromPositions().filter((document: any) => document.resId === resource.resId && document.mainDocument === resource.mainDocument).length > 0;
     }
 }

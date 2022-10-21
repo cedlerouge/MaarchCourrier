@@ -207,7 +207,7 @@
                         <div style="color: rgba(0,0,0,0.54);">{{customField.label}} :</div>
                         <ng-container *ngIf="['string','banAutocomplete','contact'].indexOf(customField.type) > -1">
                             <mat-form-field class="input-form" floatLabel="never">
-                                <textarea matInput [placeholder]="'lang.' + customField.type + 'Input' | translate" matTextareaAutosize
+                                <textarea matInput [placeholder]="'lang.' + customField.type + 'Input' | translate" cdkTextareaAutosize
                                     matAutosizeMinRows="1" cdkAutosizeMaxRows="6" disabled></textarea>
                             </mat-form-field>
                         </ng-container>

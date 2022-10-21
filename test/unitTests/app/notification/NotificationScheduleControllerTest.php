@@ -41,8 +41,9 @@ class NotificationScheduleControllerTest extends TestCase
         $request = \Slim\Http\Request::createFromEnvironment($environment);
 
         $aArgs = [
-            'notification_sid' => 1,
-            'notification_id' => 'USERS',
+            'notification_sid'  => 1,
+            'notification_id'   => 'USERS',
+            'event_id'          => 'users'
         ];
         $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
 

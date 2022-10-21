@@ -58,6 +58,7 @@ use User\models\UserModel;
 use ExportSeda\controllers\PreProcessActionSEDATrait;
 use Multigest\controllers\MultigestController;
 use SrcCore\models\PasswordModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class PreProcessActionController
 {
@@ -1133,13 +1134,16 @@ class PreProcessActionController
 
         $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
         $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-        $workflowEndBySignatory = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'workflowEndBySignatory']);
+        $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
 
         $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
         $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
-        $workflowEndBySignatory = !empty($workflowEndBySignatory['param_value_int']);
+        $workflowSignatoryRole = $workflowSignatoryRole['param_value_string'];
+        if (!in_array($workflowSignatoryRole, SignatureBookController::SIGNATORY_ROLES)) {
+            $workflowSignatoryRole = SignatureBookController::SIGNATORY_ROLE_DEFAULT;
+        }
 
-        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowEndBySignatory' => $workflowEndBySignatory]);
+        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowSignatoryRole' => $workflowSignatoryRole]);
     }
 
     public function checkContinueVisaCircuit(Request $request, Response $response, array $args)
@@ -1549,6 +1553,74 @@ class PreProcessActionController
         }
 
         return $response->withJson(['isDestinationChanging' => $changeDestination]);
+    }
+
+    public static function checkConfirmWithFieldsAction(Request $request, Response $response, array $args)
+    {
+        $body = $request->getParsedBody();
+
+        if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Body resources is empty or not an array']);
+        }
+
+        $errors = ResourceListController::listControl(['groupId' => $args['groupId'], 'userId' => $args['userId'], 'basketId' => $args['basketId'], 'currentUserId' => $GLOBALS['id']]);
+        if (!empty($errors['errors'])) {
+            return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
+        }
+
+        $body['resources'] = array_slice($body['resources'], 0, 500);
+        if (!ResController::hasRightByResId(['resId' => $body['resources'], 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
+        }
+        $body['resources'] = PreProcessActionController::getNonLockedResources(['resources' => $body['resources'], 'userId' => $GLOBALS['id']]);
+
+        $action = ActionModel::getById(['id' => $args['actionId'], 'select' => ['parameters']]);
+        if (empty($action)) {
+            return $response->withStatus(400)->withJson(['errors' => 'Action does not exist']);
+        }
+        $parameters = json_decode($action['parameters'], true);
+        $fillRequiredFields = $parameters['fillRequiredFields'] ?? [];
+
+        $fillCustomFields = [];
+
+        foreach ($body['resources'] as $resId) {
+            if (!empty($fillRequiredFields)) {
+                $resource = ResModel::getById(['resId' => $resId, 'select' => ['model_id', 'custom_fields', 'alt_identifier']]);
+                $model = $resource['model_id'];
+                $resourceCustomFields = json_decode($resource['custom_fields'], true);
+                $modelFields = IndexingModelFieldModel::get([
+                    'select' => ['identifier'],
+                    'where'  => ['model_id = ?', "identifier LIKE 'indexingCustomField_%'"],
+                    'data'   => [$model]
+                ]);
+                $modelFields = array_column($modelFields, 'identifier');
+
+                $customIdList = [];
+
+                foreach ($fillRequiredFields as $fillRequiredField) {
+                    $idCustom = explode("_", $fillRequiredField['id'])[1];
+                    if (in_array($fillRequiredField['id'], $modelFields)) {
+                        $customIdList[] = $idCustom;
+                    }
+                }
+
+                if (!empty($customIdList)) {
+                    $customs = CustomFieldModel::get([
+                        'select' => ['label'],
+                        'where'  => ['id in (?)'],
+                        'data'   => [$customIdList]
+                    ]);
+                    $fieldsList = array_column($customs, 'label');
+
+                    $fillCustomFields[] = [
+                        'chrono' => $resource['alt_identifier'],
+                        'fields' => !empty($fieldsList) ? implode(", ", $fieldsList) : ''
+                    ];
+                }
+            }
+        }
+
+        return $response->withJson(['fillCustomFields' => $fillCustomFields]);
     }
 
     public static function checkCloseWithFieldsAction(Request $request, Response $response, array $args)

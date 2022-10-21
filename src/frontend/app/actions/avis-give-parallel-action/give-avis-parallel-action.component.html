@@ -51,7 +51,15 @@
                 </mat-form-field>
 
                 <app-note-editor #noteEditor [title]="'lang.addOpinion' | translate" [resIds]="data.resIds"
-                    [disableRestriction]="true"></app-note-editor>
+                    [disableRestriction]="true">
+                </app-note-editor>
+                <div *ngIf="showToggle" class="row" style="margin: 10px 0px 10px 0px;">
+                    <mat-slide-toggle name="history" color="primary" style="margin-bottom: 15px;"
+                        [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                        {{'lang.canGoToNextRes' | translate}}
+                    </mat-slide-toggle>
+                    <mat-divider></mat-divider>
+                </div>
             </mat-sidenav-content>
         </mat-sidenav-container>
     </div>

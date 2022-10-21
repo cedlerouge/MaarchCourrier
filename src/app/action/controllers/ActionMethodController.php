@@ -50,6 +50,7 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use User\models\UserModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class ActionMethodController
 {
@@ -190,12 +191,12 @@ class ActionMethodController
         return true;
     }
 
-    public static function closeMailAction(array $aArgs)
+    public static function closeMailAction(array $args)
     {
-        ValidatorModel::notEmpty($aArgs, ['resId']);
-        ValidatorModel::intVal($aArgs, ['resId']);
+        ValidatorModel::notEmpty($args, ['resId']);
+        ValidatorModel::intVal($args, ['resId']);
 
-        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$aArgs['resId']]]);
+        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$args['resId']]]);
 
         return true;
     }
@@ -384,8 +385,8 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $circuit = ListInstanceModel::get([
-            'select'    => ['requested_signature', 'item_mode'],
-            'where'     => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'select'    => ['requested_signature', 'signatory', 'process_date'],
+            'where'     => ['res_id = ?', 'difflist_type = ?'],
             'data'      => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy'   => ['listinstance_id']
         ]);
@@ -395,32 +396,36 @@ class ActionMethodController
 
         $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
         $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-        $workflowEndBySignatory = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'workflowEndBySignatory']);
+        $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
 
         $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
         $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
-        $workflowEndBySignatory = !empty($workflowEndBySignatory['param_value_int']);
+        $workflowSignatoryRole = $workflowSignatoryRole['param_value_string'];
+        if (!in_array($workflowSignatoryRole, SignatureBookController::SIGNATORY_ROLES)) {
+            $workflowSignatoryRole = SignatureBookController::SIGNATORY_ROLE_DEFAULT;
+        }
 
         $nbVisaRole = 0;
         $nbSignRole = 0;
         foreach ($circuit as $listInstance) {
-            if ($listInstance['item_mode'] == 'visa') {
-                $nbVisaRole++;
-            } elseif ($listInstance['item_mode'] == 'sign') {
+            $isSign = $listInstance['signatory'] || ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
+            if ($isSign) {
                 $nbSignRole++;
+            } else {
+                $nbVisaRole++;
             }
         }
         if ($minimumVisaRole != 0 && $nbVisaRole < $minimumVisaRole) {
             return ['errors' => ['Circuit does not have enough visa users']];
         }
         if ($maximumSignRole != 0 && $nbSignRole > $maximumSignRole) {
-            return ['errors' => ['Circuit have too many sign users']];
+            return ['errors' => ['Circuit has too many sign users']];
         }
 
-        if ($workflowEndBySignatory) {
+        if ($workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
             $last = count($circuit) - 1;
             if ($circuit[$last]['requested_signature'] == false) {
-                return ['errors' => 'Circuit last user is not a signatory'];
+                return ['errors' => ['Circuit last user is not a signatory']];
             }
         }
 

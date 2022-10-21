@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { AvisWorkflowComponent } from '../../avis/avis-workflow.component';
 import { HeaderService } from '@service/header.service';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-avis-parallel-action.component.html',
@@ -36,6 +37,10 @@ export class SendAvisParallelComponent implements AfterViewInit {
         userDelegated: null
     };
 
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -43,9 +48,14 @@ export class SendAvisParallelComponent implements AfterViewInit {
         public dialogRef: MatDialogRef<SendAvisParallelComponent>,
         public headerService: HeaderService,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService) { }
+        public functions: FunctionsService,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     async ngAfterViewInit(): Promise<void> {
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         if (this.data.resIds.length === 1) {
             await this.appAvisWorkflow.loadParallelWorkflow(this.data.resIds[0]);
             if (this.appAvisWorkflow.emptyWorkflow()) {
@@ -73,7 +83,7 @@ export class SendAvisParallelComponent implements AfterViewInit {
             }
         } else {
             const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesError.map(resErr => resErr.res_id).indexOf(resId) === -1);
-
+            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
             this.executeAction(realResSelected);
         }
         this.loading = false;

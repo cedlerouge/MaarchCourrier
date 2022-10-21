@@ -70,10 +70,16 @@
                 <button mat-icon-button [matMenuTriggerFor]="menuOptions">
                     <mat-icon class="fas fa-chevron-down"></mat-icon>
                 </button>
+                <div class="divider"></div>
                 <mat-menu #menuOptions="matMenu" [class]="'optionsListMenu'">
                     <button mat-menu-item *ngIf="file.contentView !== undefined || base64 !== null" (click)="openPdfInTab()">
                         <mat-icon color="primary" class="fas fa-external-link-alt"></mat-icon>
                         <span>{{'lang.openInExternalModal' | translate}}</span>
+                    </button>
+                    <button mat-menu-item *ngIf="canUploadNewVersion() && !loading"
+                        [title]="'lang.uploadNewVersion' | translate" (click)="isNewVersion = true; docToUpload.click()" >
+                        <mat-icon color="primary" class="fas fa-file-upload"></mat-icon>
+                        <span style="white-space: pre-wrap;">{{'lang.uploadNewVersion' | translate}}</span>
                     </button>
                     <button mat-menu-item *ngIf="(file.contentView !== undefined || base64 !== null) && resId != null && mode !== 'attachment' && externalId.signatureBookId" (click)="openMaarchParapheurWorkflow()">
                         <mat-icon color="primary" class="fas fa-list-ol"></mat-icon>
@@ -98,19 +104,19 @@
                             <span>{{'lang.version' | translate}} {{version}}</span>
                         </button>
                     </mat-menu>
-                    <button *ngIf="file.subinfos.signedDocVersions" mat-button
+                    <button *ngIf="file.subinfos.signedDocVersions" mat-button class="originalVersion" [title]="'lang.unsignedVersionDesc' | translate"
                         (click)="openResourceVersion(file.subinfos.mainDocVersions[file.subinfos.mainDocVersions.length -1],'SIGN')">
-                        {{'lang.SIGN_version' | translate}}
+                        {{'lang.unsignedVersionDesc' | translate}}
                     </button>
-                    <button *ngIf="file.subinfos.commentedDocVersions > 0" mat-button
+                    <button *ngIf="file.subinfos.commentedDocVersions > 0" mat-button class="originalVersion" [title]="'lang.unannotatedVersionDesc' | translate"
                         (click)="openResourceVersion(file.subinfos.mainDocVersions[file.subinfos.mainDocVersions.length -1],'NOTE')">
-                        {{'lang.NOTE_version' | translate}}
+                        {{'lang.unannotatedVersionDesc' | translate}}
                     </button>
                 </ng-container>
             </div>
             <div>
                 <pdf-viewer *ngIf="file.src!==null" [src]="file.src" [render-text]="true" [autoresize]="true"
-                    [original-size]="false" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;">
+                    [original-size]="false" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;display: contents;">
                 </pdf-viewer>
             </div>
 

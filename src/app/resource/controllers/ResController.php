@@ -58,6 +58,7 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {
@@ -673,6 +674,17 @@ class ResController extends ResourceControlController
         }
         $subject = $document['subject'];
 
+        $data = $request->getQueryParams();
+        if (!empty($data['signedVersion'])) {
+            $convertedDocument = AdrModel::getDocuments([
+                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
+                'where'  => ['res_id = ?', 'type = ?', 'version = ?'],
+                'data'   => [$args['resId'], 'SIGN', $document['version']],
+                'limit'  => 1
+            ]);
+            $document = $convertedDocument[0] ?? $document;
+        }
+
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
@@ -714,7 +726,6 @@ class ResController extends ResourceControlController
         }
         $mimeType = $mimeAndSize['mime'];
         $pathInfo = pathinfo($pathToDocument);
-        $data     = $request->getQueryParams();
         $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
         if ($data['mode'] == 'base64') {
@@ -866,7 +877,11 @@ class ResController extends ResourceControlController
         }
         $formattedData['linkedResources'] = count($linkedResources);
 
-        $attachments = AttachmentModel::get(['select' => ['count(1)'], 'where' => ['res_id_master = ?', 'status in (?)', 'attachment_type <> ?'], 'data' => [$args['resId'], ['TRA', 'A_TRA', 'FRZ'], 'summary_sheet']]);
+        $attachments = AttachmentModel::get([
+            'select' => ['count(1)'],
+            'where'  => ['res_id_master = ?', 'status in (?)', 'attachment_type not in (?)'],
+            'data'   => [$args['resId'], ['TRA', 'A_TRA', 'FRZ'], AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES]
+        ]);
         $formattedData['attachments'] = $attachments[0]['count'];
 
         $formattedData['diffusionList'] = 0;
@@ -1397,16 +1412,16 @@ class ResController extends ResourceControlController
 
     public function getProcessingData(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->validate($args['groupId'])) {
+        if (!Validator::intVal()->validate($args['groupId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'groupId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['userId'])) {
+        if (!Validator::intVal()->validate($args['userId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'userId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['basketId'])) {
+        if (!Validator::intVal()->validate($args['basketId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'basketId param is not an integer']);
         }
-        if (!Validator::intVal()->validate($args['resId'])) {
+        if (!Validator::intVal()->validate($args['resId'] ?? null)) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
 
@@ -1426,13 +1441,15 @@ class ResController extends ResourceControlController
 
         $listEventData = json_decode($groupBasket[0]['list_event_data'], true);
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['status']]);
-        if (empty($resource['status'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Status does not exist']);
+        if (!empty($listEventData['canUpdateData'])) {
+            $status = StatusModel::getByResId(['select' => ['can_be_modified'], 'resId' => $args['resId'], 'collId' => 'letterbox_coll']);
+            if (empty($status['can_be_modified']) || $status['can_be_modified'] != 'Y') {
+                $listEventData['canUpdateData'] = false;
+            }
         }
-        $status = StatusModel::getById(['id' => $resource['status'], 'select' => ['can_be_modified']]);
-        if ($status['can_be_modified'] != 'Y') {
-            $listEventData['canUpdate'] = false;
+
+        if (empty($listEventData['canUpdateData'])) {
+            $listEventData['canUpdateModel'] = false;
         }
 
         return $response->withJson(['listEventData' => $listEventData]);

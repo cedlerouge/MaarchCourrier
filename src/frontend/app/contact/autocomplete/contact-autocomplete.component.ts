@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AppService } from '@service/app.service';
 import { SortPipe } from '../../../plugins/sorting.pipe';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
 import { debounceTime, filter, tap, switchMap, catchError, finalize, map } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
@@ -14,6 +14,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { ContactModalComponent } from '../../administration/contact/modal/contact-modal.component';
 import { ContactService } from '@service/contact.service';
 import { FunctionsService } from '@service/functions.service';
+import { CriteriaSearchService } from '@service/criteriaSearch.service';
 
 interface DisplayContactList {
     'contact': any;
@@ -36,7 +37,7 @@ export class ContactAutocompleteComponent implements OnInit {
     /**
      * FormControl used when autocomplete is used in form and must be catched in a form control.
      */
-    @Input('control') controlAutocomplete: FormControl = new FormControl();
+    @Input('control') controlAutocomplete: UntypedFormControl = new UntypedFormControl();
 
     @Input() id: string = 'contact-autocomplete';
     @Input() exclusion: string = '';
@@ -47,6 +48,8 @@ export class ContactAutocompleteComponent implements OnInit {
 
     @Output() retrieveDocumentEvent = new EventEmitter<string>();
     @Output() afterSelected = new EventEmitter<any>();
+    @Output() removeContactEvent = new EventEmitter<any>();
+    @Output() afterContactSelected = new EventEmitter<any>();
 
     @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
 
@@ -61,7 +64,7 @@ export class ContactAutocompleteComponent implements OnInit {
     noResultFound: boolean = null;
 
     listInfo: string;
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
     options: any;
     valuesToDisplay: DisplayContactList = {
@@ -78,12 +81,13 @@ export class ContactAutocompleteComponent implements OnInit {
         public http: HttpClient,
         private notify: NotificationService,
         public dialog: MatDialog,
-        private headerService: HeaderService,
+        public functions: FunctionsService,
         public appService: AppService,
+        private headerService: HeaderService,
         private latinisePipe: LatinisePipe,
         private privilegeService: PrivilegeService,
         private contactService: ContactService,
-        public functions: FunctionsService
+        private criteriaSearchService: CriteriaSearchService
     ) {
 
     }
@@ -167,78 +171,82 @@ export class ContactAutocompleteComponent implements OnInit {
 
     selectOpt(ev: any) {
         this.setFormValue(ev.option.value);
-        this.afterSelected.emit(ev.option.value);
+        if (!this.functions.empty(this.controlAutocomplete.value.find((item: any) => this.functions.empty(item.id)))) {
+            this.controlAutocomplete.setValue(this.controlAutocomplete.value.filter((item: any) => !this.functions.empty(item.id)));
+        }
         this.myControl.setValue('');
-
+        this.afterContactSelected.emit(ev.option.value);
     }
 
     initFormValue() {
         this.controlAutocomplete.value.forEach((contact: any) => {
-            this.valuesToDisplay[contact.type][contact.id] = {
-                type: '',
-                firstname: '',
-                lastname: this.translate.instant('lang.undefined'),
-                company: '',
-                fillingRate: {
-                    color: ''
-                }
-            };
+            if (!this.functions.empty(contact) && typeof contact === 'object'){
+                this.valuesToDisplay[contact.type][contact.id] = {
+                    type: '',
+                    firstname: '',
+                    lastname: this.translate.instant('lang.undefined'),
+                    company: '',
+                    fillingRate: {
+                        color: ''
+                    }
+                };
 
-            if (contact.type === 'contact') {
-                this.http.get('../rest/contacts/' + contact.id).pipe(
-                    tap((data: any) => {
-                        this.valuesToDisplay['contact'][data.id] = {
-                            type: 'contact',
-                            firstname: data.firstname,
-                            lastname: data.lastname,
-                            company: data.company,
-                            fillingRate: !this.functions.empty(data.fillingRate) ? {
-                                color: this.contactService.getFillingColor(data.fillingRate.thresholdLevel)
-                            } : '',
-                            sector: data.sector
-                        };
-                    }),
-                    finalize(() => this.loadingValues = false),
-                    catchError((err: any) => {
-                        this.notify.error(err.error.errors);
-                        return of(false);
-                    })
-                ).subscribe();
-            } else if (contact.type === 'user') {
-                this.http.get('../rest/users/' + contact.id).pipe(
-                    tap((data: any) => {
-                        this.valuesToDisplay['user'][data.id] = {
-                            type: 'user',
-                            firstname: data.firstname,
-                            lastname: data.lastname,
-                            fillingRate: {
-                                color: ''
-                            }
-                        };
-                    }),
-                    finalize(() => this.loadingValues = false),
-                    catchError((err: any) => {
-                        this.notify.error(err.error.errors);
-                        return of(false);
-                    })
-                ).subscribe();
-            } else if (contact.type === 'entity') {
-                this.http.get('../rest/entities/' + contact.id).pipe(
-                    tap((data: any) => {
-                        this.valuesToDisplay['entity'][data.id] = {
-                            type: 'entity',
-                            lastname: data.entity_label,
-                            fillingRate: {
-                                color: ''
-                            }
-                        };
-                    }),
-                    finalize(() => this.loadingValues = false),
-                    catchError((err: any) => {
-                        this.notify.error(err.error.errors);
-                        return of(false);
-                    })
-                ).subscribe();
+                if (contact.type === 'contact') {
+                    this.http.get('../rest/contacts/' + contact.id).pipe(
+                        tap((data: any) => {
+                            this.valuesToDisplay['contact'][data.id] = {
+                                type: 'contact',
+                                firstname: data.firstname,
+                                lastname: data.lastname,
+                                company: data.company,
+                                fillingRate: !this.functions.empty(data.fillingRate) ? {
+                                    color: this.contactService.getFillingColor(data.fillingRate.thresholdLevel)
+                                } : '',
+                                sector: data.sector
+                            };
+                        }),
+                        finalize(() => this.loadingValues = false),
+                        catchError((err: any) => {
+                            this.notify.error(err.error.errors);
+                            return of(false);
+                        })
+                    ).subscribe();
+                } else if (contact.type === 'user') {
+                    this.http.get('../rest/users/' + contact.id).pipe(
+                        tap((data: any) => {
+                            this.valuesToDisplay['user'][data.id] = {
+                                type: 'user',
+                                firstname: data.firstname,
+                                lastname: data.lastname,
+                                fillingRate: {
+                                    color: ''
+                                }
+                            };
+                        }),
+                        finalize(() => this.loadingValues = false),
+                        catchError((err: any) => {
+                            this.notify.error(err.error.errors);
+                            return of(false);
+                        })
+                    ).subscribe();
+                } else if (contact.type === 'entity') {
+                    this.http.get('../rest/entities/' + contact.id).pipe(
+                        tap((data: any) => {
+                            this.valuesToDisplay['entity'][data.id] = {
+                                type: 'entity',
+                                lastname: data.entity_label,
+                                fillingRate: {
+                                    color: ''
+                                }
+                            };
+                        }),
+                        finalize(() => this.loadingValues = false),
+                        catchError((err: any) => {
+                            this.notify.error(err.error.errors);
+                            return of(false);
+                        })
+                    ).subscribe();
+                }
             }
         });
     }
@@ -307,7 +315,7 @@ export class ContactAutocompleteComponent implements OnInit {
     }
 
     removeItem(index: number) {
-
+        this.removeContactEvent.emit(this.controlAutocomplete.value[index].id);
         if (this.newIds.indexOf(this.controlAutocomplete.value[index]) === -1) {
             const arrValue = this.controlAutocomplete.value;
             this.controlAutocomplete.value.splice(index, 1);
@@ -370,6 +378,7 @@ export class ContactAutocompleteComponent implements OnInit {
 
     resetAll() {
         this.controlAutocomplete.setValue([]);
+        this.removeContactEvent.emit(false);
         this.valuesToDisplay = {
             contact : {},
             user: {},

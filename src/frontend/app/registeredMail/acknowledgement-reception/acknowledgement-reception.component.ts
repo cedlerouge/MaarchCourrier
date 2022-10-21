@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { catchError, debounceTime, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
@@ -32,7 +32,7 @@ export class AcknowledgementReceptionComponent implements OnInit {
 
     reasonOther: any;
 
-    adminFormGroup: FormGroup;
+    adminFormGroup: UntypedFormGroup;
 
     dataSource: MatTableDataSource<any>;
     displayedColumns = ['type', 'number', 'receivedDate', 'returnReason', 'rollback'];
@@ -51,7 +51,7 @@ export class AcknowledgementReceptionComponent implements OnInit {
         public functions: FunctionsService,
         public appService: AppService,
         public translate: TranslateService,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private dialog: MatDialog,
     ) {
 
@@ -59,7 +59,7 @@ export class AcknowledgementReceptionComponent implements OnInit {
 
     ngOnInit() {
         this.headerService.setHeader(this.translate.instant('lang.arReception'));
-        const validatorNumber: ValidatorFn[] = [Validators.pattern(/(2C|2D|RW) ?([0-9]{3} ?[0-9]{3} ?[0-9]{4}) ?([0-9])/), Validators.required];
+        const validatorNumber: ValidatorFn[] = [Validators.pattern(/((2C|2D)( ?[0-9]){11})|(RW( ?[0-9]){9} ?[A-Z]{2})/), Validators.required];
         this.adminFormGroup = this._formBuilder.group({
             type: ['', Validators.required],
             number: ['', validatorNumber],

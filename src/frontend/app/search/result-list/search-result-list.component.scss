@@ -45,16 +45,6 @@
     cursor: pointer;
 }
 
-.filtersContent {
-    width: 100%;
-    display: flex;
-
-    .orderTool {
-        flex: 1;
-    }
-}
-
-
 .basket-order {
     color: white;
     width: 300px;
@@ -99,15 +89,6 @@
 
     ::ng-deep .mat-form-field-underline {
         display: none;
-    }
-}
-
-.ascDescTool {
-    .mat-fab {
-        background: #135F7F;
-        border: solid 2px white;
-        color: white !important;
-        box-shadow: none;
     }
 }
 
@@ -195,4 +176,8 @@
     color: red;
     font-weight: bold;
     opacity: 0.6;
+}
+
+::ng-deep .table-head {
+    height: auto;
 }

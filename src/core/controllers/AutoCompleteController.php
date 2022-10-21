@@ -39,6 +39,8 @@ use User\models\UserModel;
 use Folder\models\FolderModel;
 use Folder\controllers\FolderController;
 use MessageExchange\controllers\AnnuaryController;
+use Parameter\models\ParameterModel;
+use Contact\models\ContactAddressSectorModel;
 
 class AutoCompleteController
 {
@@ -115,7 +117,7 @@ class AutoCompleteController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-
+        
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
@@ -701,13 +703,64 @@ class AutoCompleteController
     {
         $data = $request->getQueryParams();
 
-        $check = Validator::stringType()->notEmpty()->validate($data['address']);
-        $check = $check && Validator::stringType()->notEmpty()->validate($data['department']);
+        $check = Validator::stringType()->notEmpty()->validate($data['address'] ?? '');
+        $check = $check && Validator::stringType()->notEmpty()->validate($data['department'] ?? '');
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
-        $customId = CoreConfigModel::getCustomId();
 
+        $data['address'] = TextFormatModel::normalize(['string' => str_replace(['*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'], ' ', $data['address'])]);
+        $addressWords = explode(' ', $data['address']);
+        foreach ($addressWords as $key => $value) {
+            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
+                unset($addressWords[$key]);
+                continue;
+            }
+        }
+        $data['address'] = implode(' ', $addressWords);
+        if (empty($data['address'])) {
+            return $response->withJson([]);
+        }
+
+        $useSectors = ParameterModel::getById(['id' => 'useSectorsForAddresses', 'select' => ['param_value_int']]);
+        if (!empty($useSectors['param_value_int']) && $useSectors['param_value_int'] == 1) {
+            $addressFieldNames = ['address_number', 'address_street', 'address_postcode', 'address_town'];
+            $fields = AutoCompleteController::getInsensitiveFieldsForRequest([
+                'fields' => $addressFieldNames
+            ]);
+            $requestData = AutoCompleteController::getDataForRequest([
+                'search'        => $data['address'],
+                'fields'        => $fields,
+                'fieldsNumber'  => count($addressFieldNames),
+                'where'         => [],
+                'data'          => [],
+                'itemMinLength' => 1
+            ]);
+            $hits = ContactAddressSectorModel::get([
+                'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
+                'where'   => $requestData['where'],
+                'data'    => $requestData['data'],
+                'orderBy' => ['substring(address_number from \'^\d+\')::integer asc', 'length(replace(address_number, \' \', \'\')) asc', 'address_street asc'],
+                'limit'   => 100
+            ]);
+            $addresses = [];
+            foreach ($hits as $hit) {
+                $addresses[] = [
+                    'banId'      => $hit['ban_id'],
+                    'lon'        => null,
+                    'lat'        => null,
+                    'number'     => $hit['address_number'],
+                    'afnorName'  => $hit['address_street'],
+                    'postalCode' => $hit['address_postcode'],
+                    'city'       => $hit['address_town'],
+                    'address'    => "{$hit['address_number']} {$hit['address_street']}, {$hit['address_town']} ({$hit['address_postcode']})",
+                    'sector'     => $hit['label']
+                ];
+            }
+            return $response->withJson($addresses);
+        }
+
+        $customId = CoreConfigModel::getCustomId();
         if (is_dir("custom/{$customId}/referential/ban/indexes/{$data['department']}")) {
             $path = "custom/{$customId}/referential/ban/indexes/{$data['department']}";
         } elseif (is_dir('referential/ban/indexes/' . $data['department'])) {
@@ -723,23 +776,7 @@ class AutoCompleteController
         $index = \Zend_Search_Lucene::open($path);
         \Zend_Search_Lucene::setResultSetLimit(100);
 
-        $data['address'] = str_replace(['*', '~', '-', '\''], ' ', $data['address']);
-        $aAddress = explode(' ', $data['address']);
-        foreach ($aAddress as $key => $value) {
-            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
-                unset($aAddress[$key]);
-                continue;
-            }
-            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
-                $aAddress[$key] .= '*';
-            }
-        }
-        $data['address'] = implode(' ', $aAddress);
-        if (empty($data['address'])) {
-            return $response->withJson([]);
-        }
-
-        $hits = $index->find(TextFormatModel::normalize(['string' => $data['address']]));
+        $hits = $index->find($data['address']);
 
         $addresses = [];
         foreach ($hits as $key => $hit) {
@@ -1092,12 +1129,14 @@ class AutoCompleteController
         ValidatorModel::notEmpty($args, ['search', 'fields', 'fieldsNumber']);
         ValidatorModel::stringType($args, ['search', 'fields']);
         ValidatorModel::arrayType($args, ['where', 'data']);
-        ValidatorModel::intType($args, ['fieldsNumber']);
+        ValidatorModel::intType($args, ['fieldsNumber', 'itemMinLength']);
+        ValidatorModel::boolType($args, ['longField']);
 
-        $searchItems = explode(' ', $args['search']);
+        $searchItems   = preg_split('/\s+/', $args['search']);
+        $itemMinLength = $args['itemMinLength'] ?? 2;
 
         foreach ($searchItems as $keyItem => $item) {
-            if (strlen($item) >= 2) {
+            if (mb_strlen($item) >= $itemMinLength) {
                 $args['where'][] = $args['fields'];
 
                 $isIncluded = false;

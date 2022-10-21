@@ -244,20 +244,32 @@ class IndexingController
     {
         $queryParams = $request->getQueryParams();
 
+        // if delay is 0, then the process limit date is today
+        $delay = -1;
         if (!empty($queryParams['doctype'])) {
             $doctype = DoctypeModel::getById(['id' => $queryParams['doctype'], 'select' => ['process_delay']]);
             if (empty($doctype)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Doctype does not exists']);
             }
             $delay = $doctype['process_delay'];
-        } elseif (!empty($queryParams['priority'])) {
+        }
+        if (!empty($queryParams['priority'])) {
             $priority = PriorityModel::getById(['id' => $queryParams['priority'], 'select' => ['delays']]);
             if (empty($priority)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Priority does not exists']);
             }
             $delay = $priority['delays'];
         }
-        if ($delay == 0) {
+        if (!empty($queryParams['today'])) {
+            $queryParams['today'] = filter_var($queryParams['today'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if (!Validator::boolType()->validate($queryParams['today'])) {
+                return $response->withStatus(400)->withJson(['errors' => 'today is not a boolean']);
+            }
+            if ($queryParams['today']) {
+                $delay = 0;
+            }
+        }
+        if ($delay == -1) {
             return $response->withJson(['processLimitDate' => null]);
         }
         if (!Validator::intVal()->validate($delay)) {

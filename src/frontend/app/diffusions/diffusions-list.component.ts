@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { catchError, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AlertComponent } from '../../plugins/modal/alert.component';
@@ -75,7 +75,7 @@ export class DiffusionsListComponent implements OnInit {
     /**
       * FormControl to use this component in form
       */
-    @Input() diffFormControl: FormControl;
+    @Input() diffFormControl: UntypedFormControl;
 
     /**
       * Catch external event after select an element in autocomplete
@@ -528,7 +528,7 @@ export class DiffusionsListComponent implements OnInit {
     }
 
     hasEmptyDest() {
-        return this.diffList['dest'].items.length === 0;
+        return !this.functions.empty(this.diffList) && this.diffList['dest'].items.length === 0;
     }
 
     isEmptyList() {

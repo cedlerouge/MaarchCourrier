@@ -24,6 +24,7 @@ use Respect\Validation\Validator;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabaseModel;
 
 class ParameterController
 {
@@ -75,7 +76,7 @@ class ParameterController
 
     public function getById(Request $request, Response $response, array $aArgs)
     {
-        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowEndBySignatory']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
+        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -109,6 +110,12 @@ class ParameterController
         }
 
         ParameterModel::create($data);
+        if (strpos($data['id'], 'chrono_') !== false) {
+            if (Validator::intVal()->notEmpty()->validate($data['param_value_int'])) {
+                return $response->withStatus(400)->withJson(['errors' => _PARAMETER_VALUE_INT_FOR_CHRONO]);
+            }
+            DatabaseModel::createSequence(['id' => $data['id'] . '_seq', 'value' => $data['param_value_int']]);
+        }
         HistoryController::add([
             'tableName' => 'parameters',
             'recordId'  => $data['id'],
@@ -213,6 +220,9 @@ class ParameterController
                     return $response->withStatus(400)->withJson(['errors' => 'Parameter not found']);
                 }
                 ParameterModel::create(['id' => $args['id']]);
+                if (strpos($args['id'], 'chrono_') !== false) {
+                    DatabaseModel::createSequence(['id' => $args['id'] . '_seq']);
+                }
             }
 
             $check = (empty($body['param_value_int']) || Validator::intVal()->validate($body['param_value_int']));
@@ -223,6 +233,12 @@ class ParameterController
 
             $body['id'] = $args['id'];
             ParameterModel::update($body);
+            if (strpos($body['id'], 'chrono_') !== false) {
+                if (Validator::intVal()->notEmpty()->validate($data['param_value_int'])) {
+                    return $response->withStatus(400)->withJson(['errors' => _PARAMETER_VALUE_INT_FOR_CHRONO]);
+                }
+                DatabaseModel::updateSequence(['id' => $body['id'] . '_seq', 'value' => $body['param_value_int']]);
+            }
         }
 
         HistoryController::add([
@@ -244,6 +260,9 @@ class ParameterController
         }
 
         ParameterModel::delete(['id' => $aArgs['id']]);
+        if (strpos($aArgs['id'], 'chrono_') !== false) {
+            DatabaseModel::deleteSequence(['id' => $aArgs['id'] . '_seq']);
+        }
         HistoryController::add([
             'tableName' => 'parameters',
             'recordId'  => $aArgs['id'],

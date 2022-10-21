@@ -5,7 +5,7 @@ import {
     Renderer2,
     Output
 } from '@angular/core';
-import { ControlValueAccessor, FormControl } from '@angular/forms';
+import { ControlValueAccessor, UntypedFormControl } from '@angular/forms';
 import { MatOption } from '@angular/material/core';
 import { MatSelect } from '@angular/material/select';
 import { take, takeUntil, startWith, map, debounceTime, filter, tap, switchMap, finalize } from 'rxjs/operators';
@@ -27,7 +27,7 @@ export class PluginSelectAutocompleteSearchComponent implements OnInit, OnDestro
     /** Label of the search placeholder */
     @Input() placeholderLabel = this.translate.instant('lang.chooseValue');
 
-    @Input() formControlSelect: FormControl = new FormControl();
+    @Input() formControlSelect: UntypedFormControl = new UntypedFormControl();
 
     @Input() datas: any = [];
 
@@ -85,7 +85,7 @@ export class PluginSelectAutocompleteSearchComponent implements OnInit, OnDestro
 
     @ViewChild('test', { static: true }) matSelect: MatSelect;
 
-    formControlSearch = new FormControl();
+    formControlSearch = new UntypedFormControl();
     noResult: boolean = null;
     loadingSearch: boolean = null;
 
@@ -354,7 +354,7 @@ export class PluginSelectAutocompleteSearchComponent implements OnInit, OnDestro
         });
 
         return forkJoin(arrayObs).pipe(
-            map(items => {
+            map((items: any[]) => {
                 items.forEach((element: any) => {
                     element.forEach((element2: any) => {
                         let obj = {
@@ -405,7 +405,7 @@ export class PluginSelectAutocompleteSearchComponent implements OnInit, OnDestro
         }
         const overlayClass = 'cdk-overlay-pane-select-search';
 
-        this.matSelect.overlayDir.attach
+        this.matSelect.stateChanges
             .pipe(takeUntil(this._onDestroy))
             .subscribe(() => {
                 // note: this is hacky, but currently there is no better way to do this

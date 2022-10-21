@@ -26,6 +26,17 @@
             <div class="col-md-12" style="padding-top: 10px;">
                 <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>
             </div>
+            <ng-container *ngIf="showToggle">
+                <div class="row">
+                    <div class="col-md-12" style="margin: 10px 0px 10px 0px;">
+                        <mat-slide-toggle name="history" color="primary"
+                            [title]="'lang.canGoToNextResDesc' | translate" [(ngModel)]="canGoToNextRes" [checked]="canGoToNextRes">
+                            {{'lang.canGoToNextRes' | translate}}
+                        </mat-slide-toggle>
+                    </div>
+                </div>
+                <mat-divider></mat-divider>
+            </ng-container>
         </div>
     </div>
     <span class="divider-modal"></span>

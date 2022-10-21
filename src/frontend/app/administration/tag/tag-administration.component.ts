@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { FormControl, Validators, FormGroup } from '@angular/forms';
+import { UntypedFormControl, Validators, UntypedFormGroup } from '@angular/forms';
 import { finalize, tap, catchError, filter, exhaustMap, map, startWith } from 'rxjs/operators';
 import { of, Observable } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -31,20 +31,20 @@ export class TagAdministrationComponent implements OnInit {
     tags: any[] = [];
 
     tag: any = {
-        label: new FormControl({ value: '', disabled: false }, [Validators.required]),
-        description: new FormControl({ value: '', disabled: false }),
-        parentId: new FormControl({ value: '', disabled: false }),
-        links: new FormControl({ value: [], disabled: false }),
-        usage: new FormControl({ value: '', disabled: false }),
-        canMerge: new FormControl({ value: true, disabled: false }),
-        countResources: new FormControl({ value: 0, disabled: false })
+        label: new UntypedFormControl({ value: '', disabled: false }, [Validators.required]),
+        description: new UntypedFormControl({ value: '', disabled: false }),
+        parentId: new UntypedFormControl({ value: '', disabled: false }),
+        links: new UntypedFormControl({ value: [], disabled: false }),
+        usage: new UntypedFormControl({ value: '', disabled: false }),
+        canMerge: new UntypedFormControl({ value: true, disabled: false }),
+        countResources: new UntypedFormControl({ value: 0, disabled: false })
     };
-    myControl = new FormControl();
+    myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
 
-    selectMergeTag = new FormControl({ value: '', disabled: false });
+    selectMergeTag = new UntypedFormControl({ value: '', disabled: false });
 
-    tagFormGroup = new FormGroup(this.tag);
+    tagFormGroup = new UntypedFormGroup(this.tag);
 
     currTagChildren: any = [];
 

@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { tap, catchError, debounceTime } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { FunctionsService } from '@service/functions.service';
 
@@ -13,19 +13,21 @@ import { FunctionsService } from '@service/functions.service';
 })
 
 export class VisaParametersComponent implements OnInit {
-    visaParameters: FormGroup;
+    visaParameters: UntypedFormGroup;
+
+    signatoryRoleOptions: string[] = ['mandatory', 'mandatory_final', 'optional'];
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private _formBuilder: FormBuilder,
+        private _formBuilder: UntypedFormBuilder,
         private notify: NotificationService,
         private functions: FunctionsService
     ) {
         this.visaParameters = this._formBuilder.group({
             minimumVisaRole: ['', [Validators.required, Validators.max(50)]],
             maximumSignRole: ['', [Validators.required, Validators.max(50)]],
-            workflowEndBySignatory: ['']
+            workflowSignatoryRole: ['']
         });
     }
 
@@ -55,8 +57,8 @@ export class VisaParametersComponent implements OnInit {
                         this.visaParameters.controls['maximumSignRole'].enable();
                     }
 
-                    parameter = data.parameters.filter((item: { id: any }) => item.id === 'workflowEndBySignatory')[0];
-                    this.visaParameters.controls['workflowEndBySignatory'].setValue(this.functions.empty(parameter) ? 0 : parameter.param_value_int);
+                    parameter = data.parameters.filter((item: { id: any }) => item.id === 'workflowSignatoryRole')[0];
+                    this.visaParameters.controls['workflowSignatoryRole'].setValue(this.functions.empty(parameter) ? 0 : parameter.param_value_string);
 
                     setTimeout(() => {
                         this.visaParameters.controls['minimumVisaRole'].valueChanges.pipe(
@@ -69,9 +71,9 @@ export class VisaParametersComponent implements OnInit {
                             tap(() => this.saveParameter('maximumSignRole'))
                         ).subscribe();
 
-                        this.visaParameters.controls['workflowEndBySignatory'].valueChanges.pipe(
+                        this.visaParameters.controls['workflowSignatoryRole'].valueChanges.pipe(
                             debounceTime(200),
-                            tap(() => this.saveParameter('workflowEndBySignatory'))
+                            tap(() => this.saveParameter('workflowSignatoryRole'))
                         ).subscribe();
                     });
                     resolve(true);
@@ -85,22 +87,39 @@ export class VisaParametersComponent implements OnInit {
     }
 
     saveParameter(id: string) {
-        if (Number.isSafeInteger(this.visaParameters.controls[id].value)) {
-            if (Math.sign(this.visaParameters.controls[id].value) !== -1) {
-                if (!this.visaParameters.get(id).hasError('max')) {
-                    this.http.put('../rest/parameters/' + id, {
-                        param_value_int : Math.abs(this.visaParameters.controls[id].value)
-                    })
-                        .subscribe(() => {
-                            this.notify.success(this.translate.instant('lang.parameterUpdated'));
-                        }, (err) => {
-                            this.notify.error(err.error.errors);
-                        });
+        if (id !== 'workflowSignatoryRole') {
+            if (Number.isSafeInteger(this.visaParameters.controls[id].value)) {
+                if (Math.sign(this.visaParameters.controls[id].value) !== -1) {
+                    if (!this.visaParameters.get(id).hasError('max')) {
+                        this.setRequest(id);
+                    }
+                } else {
+                    this.visaParameters.controls[id].setValue(Math.abs(this.visaParameters.controls[id].value));
                 }
-            } else {
-                this.visaParameters.controls[id].setValue(Math.abs(this.visaParameters.controls[id].value));
             }
+        } else {
+            this.setRequest(id);
         }
+    }
+
+    setRequest(id: any) {
+        const objToSend: any = id === 'workflowSignatoryRole' ?
+            {
+                param_value_string: this.visaParameters.controls[id].value
+            } :
+            {
+                param_value_int : Math.abs(this.visaParameters.controls[id].value)
+            };
+        this.http.put(`../rest/parameters/${id}`, objToSend)
+            .pipe(
+                tap(() => {
+                    this.notify.success(this.translate.instant('lang.parameterUpdated'));
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err.error.errors);
+                    return of(false);
+                })
+            ).subscribe();
     }
 
     toggle(id: string) {

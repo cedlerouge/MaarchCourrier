@@ -30,6 +30,7 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserEntityModel;
 use User\models\UserModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class ListInstanceController
 {
@@ -242,7 +243,7 @@ class ListInstanceController
 
             $recipientFound = false;
             foreach ($listInstanceByRes['listInstances'] as $instance) {
-                if ($instance['item_mode'] == 'dest') {
+                if (!empty($instance['item_mode']) && $instance['item_mode'] == 'dest') {
                     $recipientFound = true;
                 }
             }
@@ -421,11 +422,14 @@ class ListInstanceController
         if ($args['type'] == 'visaCircuit') {
             $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
             $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-            $workflowEndBySignatory = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'workflowEndBySignatory']);
+            $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
 
             $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
             $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
-            $workflowEndBySignatory = !empty($workflowEndBySignatory['param_value_int']);
+            $workflowSignatoryRole = $workflowSignatoryRole['param_value_string'];
+            if (!in_array($workflowSignatoryRole, SignatureBookController::SIGNATORY_ROLES)) {
+                $workflowSignatoryRole = SignatureBookController::SIGNATORY_ROLE_DEFAULT;
+            }
         }
 
         DatabaseModel::beginTransaction();
@@ -442,7 +446,7 @@ class ListInstanceController
                 return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances is empty"]);
             }
 
-            if ($args['type'] == 'visaCircuit' && !empty($workflowEndBySignatory)) {
+            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
                 $last = count($resource['listInstances']) -1;
                 if (empty($resource['listInstances'][$last]['process_date']) && $resource['listInstances'][$last]['requested_signature'] == false) {
                     DatabaseModel::rollbackTransaction();
@@ -468,19 +472,24 @@ class ListInstanceController
             ]);
 
             $minSequenceNoProcessDate = -1;
+            $hasVisa = false;
+            $hasSign = false;
             foreach ($listInstances as $listInstanceKey => $listInstance) {
                 if (empty($listInstance['process_date'])) {
                     unset($listInstances[$listInstanceKey]);
+                    continue;
+                }
+                if ($listInstance['sequence'] > $minSequenceNoProcessDate) {
+                    $minSequenceNoProcessDate = $listInstance['sequence'];
+                }
+                if ($listInstance['signatory']) {
+                    $hasSign = true;
                 } else {
-                    if ($listInstance['sequence'] > $minSequenceNoProcessDate) {
-                        $minSequenceNoProcessDate = $listInstance['sequence'];
-                    }
+                    $hasVisa = true;
                 }
             }
-            $listInstances =  array_values($listInstances);
+            $listInstances = array_values($listInstances);
 
-            $hasVisa = false;
-            $hasSign = false;
             foreach ($resource['listInstances'] as $key => $listInstance) {
                 if (!empty($listInstance['process_date'])) {
                     continue;
@@ -536,21 +545,29 @@ class ListInstanceController
                     'delegate'              => $listInstance['delegate'] ?? null
                 ];
 
-                if ($args['type'] == 'visaCircuit' && $listInstance['item_mode'] == 'visa') {
-                    $hasVisa = true;
-                } elseif ($args['type'] == 'visaCircuit' && $listInstance['item_mode'] == 'sign') {
-                    $hasSign = true;
+                if ($args['type'] == 'visaCircuit') {
+                    if ($listInstance['requested_signature']) {
+                        $hasSign = true;
+                    } else {
+                        $hasVisa = true;
+                    }
                 }
+            }
+
+            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign) {
+                DatabaseModel::rollbackTransaction();
+                return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances requires at least one sign user", 'lang' => 'signUserRequired']);
             }
 
             if ($args['type'] == 'visaCircuit' && (!empty($minimumVisaRole) || !empty($maximumSignRole))) {
                 $nbVisaRole = 0;
                 $nbSignRole = 0;
                 foreach ($listInstances as $listInstance) {
-                    if ($listInstance['item_mode'] == 'visa') {
-                        $nbVisaRole++;
-                    } elseif ($listInstance['item_mode'] == 'sign') {
+                    $isSign = $listInstance['signatory'] || ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
+                    if ($isSign) {
                         $nbSignRole++;
+                    } else {
+                        $nbVisaRole++;
                     }
                 }
                 if ($minimumVisaRole != 0 && $nbVisaRole < $minimumVisaRole) {
@@ -559,7 +576,7 @@ class ListInstanceController
                 }
                 if ($maximumSignRole != 0 && $nbSignRole > $maximumSignRole) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances have too many sign users", 'lang' => 'tooManySignUser']);
+                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances has too many sign users", 'lang' => 'tooManySignUser']);
                 }
             }
 

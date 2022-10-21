@@ -11,7 +11,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { takeUntil, startWith, switchMap, map, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ConfirmComponent } from '../../../../plugins/modal/confirm.component';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { ContactExportComponent } from './export/contact-export.component';
 import { AdministrationService } from '../../../../app/administration/administration.service';
@@ -21,6 +21,7 @@ import { ContactsGroupFormModalComponent } from '../group/form/modal/contacts-gr
 import { MatMenuTrigger } from '@angular/material/menu';
 import { LatinisePipe } from 'ngx-pipes';
 import { ContactService } from '@service/contact.service';
+import { ManageDuplicateComponent } from '../contact-duplicate/manage-duplicate/manage-duplicate.component';
 
 @Component({
     selector: 'app-contact-list',
@@ -55,10 +56,10 @@ export class ContactsListAdministrationComponent implements OnInit {
     correspondentsGroups: any = [];
     selection = new SelectionModel<Element>(true, []);
 
-    searchContact = new FormControl();
+    searchContact = new UntypedFormControl();
     search: string = '';
     dialogRef: MatDialogRef<any>;
-    filterCorrespondentsGroups = new FormControl();
+    filterCorrespondentsGroups = new UntypedFormControl();
     filteredCorrespondentsGroups: Observable<string[]>;
 
     contextMenuPosition = { x: '0px', y: '0px' };
@@ -276,7 +277,7 @@ export class ContactsListAdministrationComponent implements OnInit {
     }
 
     initAutocompleteContacts() {
-        this.searchContact = new FormControl(this.adminService.getFilter('field'));
+        this.searchContact = new UntypedFormControl(this.adminService.getFilter('field'));
         this.searchContact.valueChanges
             .pipe(
                 tap((value) => {
@@ -373,6 +374,26 @@ export class ContactsListAdministrationComponent implements OnInit {
 
     handlePageEvent(event: PageEvent) {
         this.pageSize = event.pageSize;
+    }
+
+    mergeContacts(selection: any) {
+        const dialogRef = this.dialog.open(ManageDuplicateComponent, {
+            panelClass: 'maarch-modal',
+            disableClose: true,
+            data: { duplicate: selection._selected.map((contactId: any) => ({ id: contactId, type: 'contact'})) }
+        });
+        dialogRef.afterClosed().pipe(
+            filter((data: any) => !this.functions.empty(data)),
+            tap(() => {
+                this.notify.success(this.translate.instant('lang.contactsMerged'));
+                this.selection.clear();
+                this.initContactList();
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     private _filter(value: string): string[] {

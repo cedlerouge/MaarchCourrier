@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { takeUntil, startWith, switchMap, map, catchError, tap, finalize } from 'rxjs/operators';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { LatinisePipe } from 'ngx-pipes';
 import { PrivilegeService } from '@service/privileges.service';
@@ -43,7 +43,7 @@ export class HistoryComponent implements OnInit {
     resultListDatabase: HistoryListHttpDao | null;
     resultsLength = 0;
 
-    searchHistory = new FormControl();
+    searchHistory = new UntypedFormControl();
     startDateFilter: any = '';
     endDateFilter: any = '';
     filterUrl: string = '';

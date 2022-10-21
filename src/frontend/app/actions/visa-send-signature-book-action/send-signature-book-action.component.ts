@@ -8,6 +8,9 @@ import { tap, finalize, catchError, exhaustMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
+import { ActionsService } from '../actions.service';
+import { Router } from '@angular/router';
+import { SessionStorageService } from '@service/session-storage.service';
 
 @Component({
     templateUrl: 'send-signature-book-action.component.html',
@@ -17,6 +20,8 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
 
     @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+
+    actionService: ActionsService; // To resolve circular dependencies
 
     loading: boolean = true;
 
@@ -31,13 +36,18 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     };
 
-    minimumVisaRole: any = 0;
-    maximumSignRole: any = 0;
-    visaNumberCorrect: any = true;
-    signNumberCorrect: any = true;
-    atLeastOneSign: any = true;
-    lastOneIsSign: any = true;
-    lastOneMustBeSignatory: any = false;
+    minimumVisaRole: number = 0;
+    maximumSignRole: number = 0;
+    visaNumberCorrect: boolean = true;
+    signNumberCorrect: boolean = true;
+    atLeastOneSign: boolean = true;
+    lastOneIsSign: boolean = true;
+    lastOneMustBeSignatory: boolean = false;
+    workflowSignatoryRole: string = '';
+
+    canGoToNextRes: boolean = false;
+    showToggle: boolean = false;
+    inLocalStorage: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -45,7 +55,10 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendSignatureBookActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService) { }
+        public functions: FunctionsService,
+        public route: Router,
+        private sessionStorage: SessionStorageService
+    ) { }
 
     async ngAfterViewInit(): Promise<void> {
         if (this.data.resIds.length === 0) {
@@ -53,6 +66,9 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             this.checkSignatureBookInIndexingPage();
         }
         this.initVisaWorkflow();
+        this.showToggle = this.data.additionalInfo.showToggle;
+        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
         this.loading = false;
     }
 
@@ -73,6 +89,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             const res = await this.appVisaWorkflow.saveVisaWorkflow(realResSelected);
 
             if (res) {
+                this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
                 this.executeAction(realResSelected);
             }
         }
@@ -111,7 +128,30 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             }),
             finalize(() => this.loading = false),
             catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
+                this.actionService.stopRefreshResourceLock();
+                const path: string = `resourcesList/users/${this.data.userId}/groups/${this.data.groupId}/baskets/${this.data.basketId}?limit=10&offset=0`;
+                this.http.get(`../rest/${path}`).pipe(
+                    tap((data: any) => {
+                        if (!this.route.url.includes('signatureBook')) {
+                            this.dialogRef.close(data.allResources[0]);
+                        } else {
+                            if (data.defaultAction?.component === 'signatureBookAction' && data.defaultAction?.data.goToNextDocument) {
+                                if (data.count > 0) {
+                                    this.dialogRef.close();
+                                    this.route.navigate(['/signatureBook/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/resources/' + data.allResources[0]]);
+                                } else {
+                                    this.dialogRef.close();
+                                    this.route.navigate([`/basketList/users/${this.data.userId}/groups/${this.data.groupId}/baskets/${this.data.basketId}`]);
+                                    this.notify.handleSoftErrors(err);
+                                }
+                            } else {
+                                this.dialogRef.close();
+                                this.route.navigate([`/basketList/users/${this.data.userId}/groups/${this.data.groupId}/baskets/${this.data.basketId}`]);
+                                this.notify.handleSoftErrors(err);
+                            }
+                        }
+                    })
+                ).subscribe();
                 return of(false);
             })
         ).subscribe();
@@ -204,6 +244,8 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.minimumVisaRole = data.minimumVisaRole;
                     this.maximumSignRole = data.maximumSignRole;
                     this.lastOneMustBeSignatory = data.workflowEndBySignatory;
+                    this.workflowSignatoryRole = data.workflowSignatoryRole;
+                    this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
                     resolve(true);
                 }, (err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -262,7 +304,12 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
             }
         });
 
-        this.atLeastOneSign = nbSignRole >= 1;
+        if (['optional', 'mandatory_final'].indexOf(this.workflowSignatoryRole) > -1) {
+            this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
+            this.atLeastOneSign = true;
+        } else {
+            this.atLeastOneSign = nbSignRole >= 1;
+        }
 
         if (this.maximumSignRole !== 0 || this.minimumVisaRole !== 0) {
             this.visaNumberCorrect = this.minimumVisaRole === 0 || nbVisaRole >= this.minimumVisaRole;
@@ -286,11 +333,14 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.maximumSignRole = data.parameter.param_value_int;
                     resolve(true);
                 }),
-                exhaustMap(() => this.http.get('../rest/parameters/workflowEndBySignatory')),
+                exhaustMap(() => this.http.get('../rest/parameters/workflowSignatoryRole')),
                 tap((data: any) => {
-                    this.lastOneMustBeSignatory = data.parameter.param_value_int !== 0;
+                    if (!this.functions.empty(data.parameter)) {
+                        this.workflowSignatoryRole = data.parameter.param_value_string;
+                    }
                     resolve(true);
                 }),
+                finalize(() => this.checkWorkflowParameters(this.appVisaWorkflow.getWorkflow())),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     resolve(false);

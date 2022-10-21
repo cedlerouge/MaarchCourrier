@@ -52,19 +52,24 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use Attachment\controllers\AttachmentTypeController;
 
 class SearchController
 {
     public function get(Request $request, Response $response)
     {
-        $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
-        if (empty($adminSearch)) {
-            return $response->withStatus(400)->withJson(['errors' => 'No admin_search configuration found', 'lang' => 'noAdminSearchConfiguration']);
+        $body = $request->getParsedBody();
+
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'adv_search_mlb', 'userId' => $GLOBALS['id']]) && !$body['linkedResource']) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        } else {
+            $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
+            if (empty($adminSearch)) {
+                return $response->withStatus(400)->withJson(['errors' => 'No admin_search configuration found', 'lang' => 'noAdminSearchConfiguration']);
+            }
         }
 
         ini_set('memory_limit', -1);
-
-        $body = $request->getParsedBody();
 
         $userdataClause = SearchController::getUserDataClause(['userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']]);
         $searchWhere    = $userdataClause['searchWhere'];
@@ -648,7 +653,12 @@ class SearchController
             $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
             $searchableParameters = array_column($searchableParameters, 'identifier');
             $searchableParameters = array_map(function ($parameter) {
-                return ContactController::MAPPING_FIELDS[$parameter];
+                if (strpos($parameter, 'contactCustomField_') !== false) {
+                    $customFieldId = explode('_', $parameter)[1];
+                    return "custom_fields->>'{$customFieldId}'";
+                } else {
+                    return ContactController::MAPPING_FIELDS[$parameter];
+                }
             }, $searchableParameters);
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchableParameters]);
 
@@ -713,7 +723,12 @@ class SearchController
             $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
             $searchableParameters = array_column($searchableParameters, 'identifier');
             $searchableParameters = array_map(function ($parameter) {
-                return ContactController::MAPPING_FIELDS[$parameter];
+                if (strpos($parameter, 'contactCustomField_') !== false) {
+                    $customFieldId = explode('_', $parameter)[1];
+                    return "custom_fields->>'{$customFieldId}'";
+                } else {
+                    return ContactController::MAPPING_FIELDS[$parameter];
+                }
             }, $searchableParameters);
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchableParameters]);
 
@@ -832,17 +847,22 @@ class SearchController
         }
 
         if (!empty($body['attachment_type']) && !empty($body['attachment_type']['values']) && is_array($body['attachment_type']['values'])) {
-            $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where attachment_type in (?) and status in (\'TRA\', \'A_TRA\', \'FRZ\'))';
+            $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where attachment_type in (?) and status in (?))';
             $args['searchData'][]  = $body['attachment_type']['values'];
+            $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
         }
         if (!empty($body['attachment_creationDate']) && !empty($body['attachment_creationDate']['values']) && is_array($body['attachment_creationDate']['values'])) {
             if (Validator::date()->notEmpty()->validate($body['attachment_creationDate']['values']['start'])) {
-                $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where creation_date >= ? and status in (\'TRA\', \'A_TRA\', \'FRZ\') and attachment_type <> \'summary_sheet\')';
+                $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where status in (?) and creation_date >= ? and attachment_type not in (?))';
+                $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
                 $args['searchData'][]  = $body['attachment_creationDate']['values']['start'];
+                $args['searchData'][]  = AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES;
             }
             if (Validator::date()->notEmpty()->validate($body['attachment_creationDate']['values']['end'])) {
-                $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where creation_date <= ? and status in (\'TRA\', \'A_TRA\', \'FRZ\') and attachment_type <> \'summary_sheet\')';
+                $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where status in (?) and creation_date <= ? and attachment_type not in (?))';
+                $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
                 $args['searchData'][]  = TextFormatModel::getEndDayDate(['date' => $body['attachment_creationDate']['values']['end']]);
+                $args['searchData'][]  = AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES;
             }
         }
         if (!empty($body['groupSign']) && !empty($body['groupSign']['values']) && is_array($body['groupSign']['values'])) {

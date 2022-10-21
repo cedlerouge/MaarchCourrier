@@ -13,7 +13,7 @@ import { ConfirmComponent } from '../../plugins/modal/confirm.component';
 import { Router } from '@angular/router';
 import { FolderUpdateComponent } from './folder-update/folder-update.component';
 import { FoldersService } from './folders.service';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { PluginAutocompleteComponent } from '../../plugins/autocomplete/autocomplete.component';
 import { HeaderService } from '@service/header.service';
 import { FolderCreateModalComponent } from './folder-create-modal/folder-create-modal.component';
@@ -86,7 +86,7 @@ export class FolderTreeComponent implements OnInit, OnDestroy {
 
     loading: boolean = true;
 
-    searchTerm: FormControl = new FormControl();
+    searchTerm: UntypedFormControl = new UntypedFormControl();
 
     TREE_DATA: any[] = [];
     dialogRef: MatDialogRef<any>;

@@ -26,6 +26,7 @@ use History\controllers\HistoryController;
 use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
+use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -179,6 +180,7 @@ class EntityController
 
         $entity['users'] = EntityModel::getUsersById(['id' => $entity['entity_id'], 'select' => ['users.id','users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
         $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$args['id']]]);
+        $entity['contact'] = $this->getContactLinkCount($entity['id']);
         $entity['hasChildren'] = count($children) > 0;
         $documents = ResModel::get(['select' => [1], 'where' => ['destination = ?'], 'data' => [$args['id']]]);
         $entity['documents'] = count($documents);
@@ -193,6 +195,13 @@ class EntityController
 
         return $response->withJson(['entity' => $entity]);
     }
+
+    public function getContactLinkCount(int $id)
+    {
+        $linkCount = count(ResourceContactModel::get(['select' => ['distinct res_id'], 'where' => ['item_id = ?', 'type = ?'], 'data' => [$id, 'entity']]));
+        return $linkCount;
+    }
+
 
     public function create(Request $request, Response $response)
     {
@@ -530,9 +539,29 @@ class EntityController
             'where'     => ["indexation_parameters->'entities' @> ?"],
             'data'      => ['"'.$dyingEntity['id'].'"']
         ]);
-
-
+        //ResourceContact
+        $dyingConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
+        $successorConnection = [];
+        if(!empty($dyingConnection)) {
+            $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_unique(array_column($dyingConnection, 'res_id'))]]);
+        }
+        $dyingIds = array_column($dyingConnection, 'id');
+        $idsToDelete = [];
+        foreach ($dyingConnection as $dyingConn) {
+            foreach ($successorConnection as $successorConn) {
+                if ($dyingConn['mode'] == $successorConn['mode'] && $dyingConn['res_id'] == $successorConn['res_id']) {
+                    $idsToDelete[] = $dyingConn['id'];
+                }
+            }
+        }
+        if(!empty($idsToDelete)) {
+            ResourceContactModel::delete(['where' => ['id in (?)'], 'data' => [$idsToDelete]]);
+        }
+        if(!empty($dyingIds)) {
+            ResourceContactModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['id in (?)'], 'data' => [$dyingIds]]);
+        }
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+
         HistoryController::add([
             'tableName' => 'entities',
             'recordId'  => $aArgs['id'],

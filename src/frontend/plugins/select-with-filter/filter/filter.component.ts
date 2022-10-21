@@ -7,7 +7,7 @@ import {
     ViewChild,
     OnDestroy
 } from '@angular/core';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { UntypedFormGroup, UntypedFormBuilder } from '@angular/forms';
 import { A, Z, ZERO, NINE, SPACE, END, HOME } from '@angular/cdk/keycodes';
 import { LatinisePipe } from 'ngx-pipes';
 import { TranslateService } from '@ngx-translate/core';
@@ -37,13 +37,13 @@ export class FilterComponent implements OnInit, OnDestroy {
     localSpinner = false;
 
     public filteredItems: any = [];
-    public searchForm: FormGroup;
+    public searchForm: UntypedFormGroup;
 
     constructor(
         public translate: TranslateService,
         public functionsService: FunctionsService,
         private latinisePipe: LatinisePipe,
-        fb: FormBuilder
+        fb: UntypedFormBuilder
     ) {
         this.searchForm = fb.group({
             value: ''
