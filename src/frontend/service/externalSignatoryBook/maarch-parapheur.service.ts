@@ -50,7 +50,7 @@ export class MaarchParapheurService {
         });
     }
 
-    getUserAvatar(externalId: number): Promise<any> {
+    getUserAvatar(externalId: any): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
                 tap((data: any) => {
@@ -160,5 +160,14 @@ export class MaarchParapheurService {
                 })
             ).subscribe();
         });
+    }
+
+    setExternalInformation(item: any) {
+        return {
+            ... item,
+            externalId: {
+                maarchParapheur: item.id
+            }
+        };
     }
 }

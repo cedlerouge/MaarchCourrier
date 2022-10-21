@@ -237,7 +237,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         });
     }
 
-    addItemToWorkflow(item: any) {
+    async addItemToWorkflow(item: any) {
+        item = await this.externalSignatoryBookManagerService.setExternalInformation(item);
         return new Promise((resolve, reject) => {
             const user: UserWorkflow = {
                 item_id: item.id,
@@ -249,14 +250,14 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                 signatory: !this.functions.empty(item.signatory) ? item.signatory : false,
                 hasPrivilege: true,
                 isValid: true,
-                availableRoles : ['visa'].concat(item.signatureModes),
+                availableRoles : [... new Set(['visa'].concat(item.signatureModes))],
                 role: item.signatureModes[item.signatureModes.length - 1]
             };
             this.visaWorkflow.items.push(user);
             if (!this.isValidRole(this.visaWorkflow.items.length - 1, item.signatureModes[item.signatureModes.length - 1], item.signatureModes[item.signatureModes.length - 1])) {
                 this.visaWorkflow.items[this.visaWorkflow.items.length - 1].role = 'visa';
             }
-            this.getUserAvatar(item.externalId.maarchParapheur, this.visaWorkflow.items.length - 1);
+            this.getUserAvatar(item.externalId[this.externalSignatoryBookManagerService.signatoryBookEnabled], this.visaWorkflow.items.length - 1);
             this.searchVisaSignUser.reset();
             resolve(true);
         });
@@ -296,10 +297,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         }
     }
 
-    async getUserAvatar(externalId: number, key: number) {
-        if (!this.functions.empty(externalId)) {
-            this.visaWorkflow.items[key].picture = await this.externalSignatoryBookManagerService?.getUserAvatar(externalId);
-        }
+    async getUserAvatar(externalId: any = null, key: number) {
+        this.visaWorkflow.items[key].picture = await this.externalSignatoryBookManagerService?.getUserAvatar(externalId);
     }
 
     isModified(): boolean {
@@ -321,6 +320,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     openCreateUserOtp(item: any = null) {
+        console.log('item', item);
+
         if (this.adminMode && (item === null || (item && item.item_id === null))) {
             const objToSend: any = item === null || (item && item.item_id) !== null ? null : {
                 firstname: item.externalInformations.firstname,

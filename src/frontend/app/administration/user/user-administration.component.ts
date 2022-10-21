@@ -135,7 +135,7 @@ export class UserAdministrationComponent implements OnInit {
         public appService: AppService,
         public authService: AuthService,
         public functions: FunctionsService,
-        public externSignatoryBook: ExternalSignatoryBookManagerService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         private privilegeService: PrivilegeService,
         private viewContainerRef: ViewContainerRef,
         private route: ActivatedRoute,
@@ -212,7 +212,7 @@ export class UserAdministrationComponent implements OnInit {
                         this.minDate = new Date(this.currentYear + '-' + this.currentMonth + '-01');
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
-                        if (this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] !== undefined) {
+                        if (this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] !== undefined) {
                             this.checkInfoExternalSignatoryBookAccount();
                         }
 
@@ -230,7 +230,7 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     async checkInfoExternalSignatoryBookAccount() {
-        const data: any = await this.externSignatoryBook.checkInfoExternalSignatoryBookAccount(this.serialId);
+        const data: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.serialId);
         if (!this.functions.empty(data)) {
             this.externalSignatoryBookLink.login = data.link;
             this.loading = false;
@@ -249,7 +249,8 @@ export class UserAdministrationComponent implements OnInit {
                 autoFocus: false,
                 disableClose: true,
                 data: {
-                    user: this.user
+                    user: this.user,
+                    title: this.getLabelById('linkAccount')
                 }
             });
         dialogRef.afterClosed().subscribe(result => {
@@ -265,25 +266,25 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     async linkAccountToSignatoryBook(result: any) {
-        const data: any = await this.externSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
+        const data: any = await this.externalSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
         if (data) {
             this.user.canCreateMaarchParapheurUser = false;
-            this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] = result.id;
+            this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
         }
     }
 
     async createExternalSignatoryBookAccount(result: any, login: string) {
-        const data: any = await this.externSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
+        const data: any = await this.externalSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
         if (!this.functions.empty(data)) {
             this.user.canCreateMaarchParapheurUser = false;
-            this.user.external_id[this.externSignatoryBook.signatoryBookEnabled] = data.externalId;
+            this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = data.externalId;
             this.checkInfoExternalSignatoryBookAccount();
         }
     }
 
     async getUserAvatar(externalId: number) {
-        this.externalSignatoryBookLink.picture = await this.externSignatoryBook.getUserAvatar(externalId);
+        this.externalSignatoryBookLink.picture = await this.externalSignatoryBook.getUserAvatar(externalId);
     }
 
     unlinkSignatoryBookAccount() {
@@ -299,7 +300,7 @@ export class UserAdministrationComponent implements OnInit {
             });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
-            exhaustMap(async () => await this.externSignatoryBook.unlinkSignatoryBookAccount(this.serialId)),
+            exhaustMap(async () => await this.externalSignatoryBook.unlinkSignatoryBookAccount(this.serialId)),
             tap(() => {
                 this.user.canCreateMaarchParapheurUser = true;
                 this.externalSignatoryBookLink.login = '';
@@ -1009,6 +1010,10 @@ export class UserAdministrationComponent implements OnInit {
                 this.loadingSign = false;
                 this.notify.error(err.error.errors);
             });
+    }
+
+    getLabelById(varLang: string): string {
+        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled)}`;
     }
 }
 

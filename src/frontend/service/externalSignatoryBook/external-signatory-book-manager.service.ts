@@ -62,7 +62,7 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.loadWorkflow(attachmentId, type);
     }
 
-    getUserAvatar(externalId: number) {
+    getUserAvatar(externalId: any) {
         return this.serviceInjected?.getUserAvatar(externalId);
     }
 
@@ -106,5 +106,9 @@ export class ExternalSignatoryBookManagerService {
 
     checkInfoExternalSignatoryBookAccount(serialId: number) {
         return this.serviceInjected?.checkInfoExternalSignatoryBookAccount(serialId);
+    }
+
+    setExternalInformation(item: any) {
+        return this.serviceInjected.setExternalInformation(item);
     }
 }

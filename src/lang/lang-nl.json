@@ -1079,7 +1079,7 @@
     "accountUnlinked": "Account unlinked__TO_TRANSLATE",
     "maarchParapheurAccountMsg": "A <b>new</b> account with login__TO_TRANSLATE",
     "maarchParapheurAccountMsg2": " will be created in Maarch Parapheur.__TO_TRANSLATE",
-    "searchUserInMaarchParapheur": "Search unlinked an user in Maarch Parapheur__TO_TRANSLATE",
+    "searchUserInExternalSignatoryBook": "Search unlinked an user in__TO_TRANSLATE",
     "newLoginInMaarchParapheur": "New Maarch Parapheur Login__TO_TRANSLATE",
     "loginAlreadyExistsInMaarchParapheur": "Login already exists in Maarch Parapheur__TO_TRANSLATE",
     "maarchParapheurLinkbroken": "Maarch Parapheur link is broken__TO_TRANSLATE",

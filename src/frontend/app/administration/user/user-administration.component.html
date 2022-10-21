@@ -32,7 +32,7 @@
                 (click)="linkExternalSignatoryBookAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
                 <mat-icon color="primary" mat-list-icon class="fa fa-link"></mat-icon>
                 <p mat-line>
-                    {{'lang.linkAccount' | translate}}
+                    {{getLabelById('linkAccount')}}
                 </p>
                 <p mat-line *ngIf="!externalSignatoryBookConnectionStatus" style="font-size:11px;color:red">
                     {{'lang.maarchParapheurLinkbroken' | translate}}
@@ -41,11 +41,11 @@
         </mat-nav-list>
         <mat-divider></mat-divider>
         <mat-list *ngIf="externalSignatoryBookLink.login !== ''">
-            <h3 mat-subheader>Compte Maarch Parapheur</h3>
+            <h3 mat-subheader>{{getLabelById('account')}}</h3>
             <mat-list-item>
                 <mat-icon class="avatarAccount" color="primary" mat-list-icon
                     [style.background-image]="'url('+externalSignatoryBookLink.picture+')'"></mat-icon>
-                <p mat-line class="accountInfo">
+                <p mat-line class="accountInfo" [title]="externalSignatoryBookLink.login">
                     <span>
                         {{externalSignatoryBookLink.login}}
                     </span>
