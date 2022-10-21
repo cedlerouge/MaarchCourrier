@@ -2679,5 +2679,6 @@
     "maarchParapheur": "Maarch Parapheur",
     "fastParapheur": "Fast Parapheur",
     "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
-    "enabledSignatoryBook": "Parapheur actif"
+    "enabledSignatoryBook": "Parapheur actif",
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
 }
