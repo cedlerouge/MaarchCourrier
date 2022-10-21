@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
+import { UserWorkflow } from '../../models/user-workflow.model';
 
 @Injectable({
     providedIn: 'root'
@@ -12,13 +13,15 @@ export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
 
+    userWorkflow = new UserWorkflow();
+
     constructor(
         private http: HttpClient,
         private notify: NotificationService,
         private translate: TranslateService
     ) { }
 
-    getUserAvatar(externalId: number = null): Promise<any> {
+    getUserAvatar(externalId: any = null): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(
                 tap((response: any) => {
@@ -48,7 +51,7 @@ export class FastParapheurService {
                     resolve(null);
                     return of(false);
                 })
-            ).subscribe();
+            );
         });
     }
 
@@ -118,5 +121,15 @@ export class FastParapheurService {
                 })
             ).subscribe();
         });
+    }
+
+    setExternalInformation(item: any) {
+        return {
+            ... item,
+            signatureModes: this.userWorkflow.signatureModes,
+            externalId: {
+                fastParapheur: item.email
+            }
+        };
     }
 }

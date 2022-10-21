@@ -69,4 +69,8 @@ export class AccountLinkComponent implements OnInit {
     getUserFullName(externalUser: any): string {
         return !this.functions.empty(externalUser.idToDisplay) ? externalUser.idToDisplay : `${externalUser.firstname} ${externalUser.lastname}`;
     }
+
+    getLabelPlaceHolder(): string {
+        return `${this.translate.instant('lang.searchUserInExternalSignatoryBook')} ${this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled)}`;
+    }
 }
