@@ -165,12 +165,12 @@ export class DashboardService {
                 // Fast Parapheur views
                 {
                     id: 'list',
-                    route: '',
+                    route: ':fastParapheurUrl/dist/documents/:resId',
                     viewDocRoute: null
                 },
                 {
                     id: 'summary',
-                    route: ''
+                    route: ':fastParapheurUrl/dist/home'
                 }
             ]
         },

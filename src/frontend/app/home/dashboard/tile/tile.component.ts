@@ -7,13 +7,14 @@ import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { FunctionsService } from '@service/functions.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     selector: 'app-tile',
     templateUrl: 'tile.component.html',
     styleUrls: ['tile.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class TileDashboardComponent implements OnInit, AfterViewInit {
 
@@ -36,9 +37,10 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
         public translate: TranslateService,
         public http: HttpClient,
         public appService: AppService,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
-        private notify: NotificationService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public dashboardService: DashboardService,
+        public authService: AuthService,
+        private notify: NotificationService,
         private functionsService: FunctionsService
     ) { }
 
@@ -139,6 +141,6 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     }
 
     getTileLabel(tile: any) {
-        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.externalSignatoryBook.enabledSignatoryBook)})` : tile.label;
+        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)})` : tile.label;
     }
 }
