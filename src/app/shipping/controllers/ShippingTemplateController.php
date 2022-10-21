@@ -232,10 +232,11 @@ class ShippingTemplateController
 
         $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
         $body['fee']      = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
+        $body['subscribed'] = !empty($body['subscribed']);
         foreach ($body['entities'] as $key => $entity) {
             $body['entities'][$key] = (string)$entity;
         }
-        if (!!$body['subscribed'] && !$alreadySubscribed) {
+        if ($body['subscribed'] && !$alreadySubscribed) {
             $subscriptions = ShippingTemplateController::subscribeToNotifications($body);
             if (!empty($subscriptions['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $subscriptions['errors']]);
@@ -797,7 +798,7 @@ class ShippingTemplateController
         } elseif (!$mailevaConfig['enabled']) {
             return ['errors' => 'Maileva configuration is disabled'];
         }
-        $configFile = CoreConfigModel::getJsonLoaded(['path' => 'apps/maarch_entreprise/xml/config.json']);
+        $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $maarchUrl = rtrim($configFile['config']['maarchUrl'], '/') ?? null;
         if (empty($maarchUrl)) {
             return ['errors' => 'maarchUrl is not configured'];
