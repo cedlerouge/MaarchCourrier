@@ -40,6 +40,7 @@ use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Contact\models\ContactAddressSectorModel;
 use ExternalSignatoryBook\controllers\FastParapheurController;
+use Contact\models\ContactAddressSectorModel;
 
 class AutoCompleteController
 {
@@ -116,7 +117,7 @@ class AutoCompleteController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        
+
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {

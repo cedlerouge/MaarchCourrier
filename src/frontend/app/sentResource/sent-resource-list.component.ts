@@ -308,6 +308,25 @@ export class SentResourceListComponent implements OnInit {
                     shippingData: row
                 }
             });
+
+            dialogRef.afterClosed().pipe(
+                filter((data: any) => data.state === 'success' || data === 'success'),
+                tap(() => {
+                    this.refreshEmailList();
+                    this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
+                    setTimeout(() => {
+                        this.refreshWaitingElements(1);
+                        setTimeout(() => {
+                            this.dataSource = new MatTableDataSource(this.sentResources);
+                            this.dataSource.sort = this.sort;
+                        }, 0);
+                    }, 5000);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         }
     }
 

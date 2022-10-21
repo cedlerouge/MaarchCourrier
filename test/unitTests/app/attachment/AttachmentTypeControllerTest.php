@@ -161,7 +161,7 @@ class AttachmentTypeControllerTest extends CourrierTestCase
 
         $body = ['visible' => true, 'typeId' => 'signed_response', 'label' => 'Réponse signée UP'];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
-        
+
         $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This attachment type cannot be made visible', $responseBody['errors']);
@@ -169,7 +169,7 @@ class AttachmentTypeControllerTest extends CourrierTestCase
 
         $body = ['signedByDefault' => false, 'typeId' => 'signed_response', 'label' => 'Réponse signée UP'];
         $fullRequest = $this->createRequestWithBody('PUT', $body);
-        
+
         $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => 3]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This option cannot be disabled on this type', $responseBody['errors']);
@@ -238,6 +238,11 @@ class AttachmentTypeControllerTest extends CourrierTestCase
         $response     = $attachmentTypeController->delete($request, new Response(), ['id' => $responseProjectType['id']]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Type is used in attachments', $responseBody['errors']);
+        $this->assertSame(400, $response->getStatusCode());
+
+        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $this->assertSame('This attachment type cannot be deleted', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $response     = $attachmentTypeController->delete($request, new Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql

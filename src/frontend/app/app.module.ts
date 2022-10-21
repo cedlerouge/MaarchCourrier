@@ -305,7 +305,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         CheckSaeInterconnectionComponent,
         ContactSearchModalComponentComponent,
         IndexingModelValuesSelectorComponent
-        ShippingModalComponent
+        ShippingModalComponent,
+        IndexingModelValuesSelectorComponent
     ],
     exports: [
         SharedModule
