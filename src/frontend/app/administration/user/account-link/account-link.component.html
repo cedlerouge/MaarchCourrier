@@ -16,7 +16,7 @@
         </button>
       </mat-list-item>
     </mat-list>
-    <ng-container *ngIf="externalSignatoryBokkGenerator.enabledSignatoryBook !== 'fastParapheur'">
+    <ng-container *ngIf="externalSignatoryBook.signatoryBookEnabled !== 'fastParapheur'">
       <mat-form-field *ngIf="!externalUser.inExternalSignatoryBook">
         <input type="text" matInput placeholder="{{'lang.newLoginInMaarchParapheur' | translate}}" [(ngModel)]="externalUser.login">
       </mat-form-field>

@@ -3,13 +3,13 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'account-link.component.html',
     styleUrls: ['account-link.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class AccountLinkComponent implements OnInit {
 
@@ -25,7 +25,7 @@ export class AccountLinkComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        public externalSignatoryBokkGenerator: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public dialogRef: MatDialogRef<AccountLinkComponent>,
@@ -34,13 +34,12 @@ export class AccountLinkComponent implements OnInit {
     }
 
     async ngOnInit(): Promise<void> {
-        const dataUsers: any = await this.externalSignatoryBokkGenerator.getAutocompleteUsersDatas(this.data);
+        const dataUsers: any = await this.externalSignatoryBook.getAutocompleteUsersDatas(this.data);
         if (!this.functions.empty(dataUsers)) {
-            const enabled: string = this.externalSignatoryBokkGenerator.enabledSignatoryBook.charAt(0).toUpperCase() + this.externalSignatoryBokkGenerator.enabledSignatoryBook.slice(1);
             if (dataUsers.length > 0) {
                 this.externalUser = dataUsers[0];
                 this.externalUser.inExternalSignatoryBook = true;
-                this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
+                this.externalUser.picture = await this.externalSignatoryBook.getUserAvatar(this.externalUser.id);
             } else {
                 this.externalUser.inExternalSignatoryBook = false;
                 this.externalUser = this.data.user;
@@ -52,7 +51,7 @@ export class AccountLinkComponent implements OnInit {
 
     async selectUser(user: any) {
         this.externalUser = user;
-        this.externalUser.picture = await this.externalSignatoryBokkGenerator.getUserAvatar(this.externalUser.id);
+        this.externalUser.picture = await this.externalSignatoryBook.getUserAvatar(this.externalUser.id);
         this.externalUser.inExternalSignatoryBook = true;
     }
 
@@ -64,7 +63,7 @@ export class AccountLinkComponent implements OnInit {
     }
 
     getRouteDatas(): string[] {
-        return [`${this.externalSignatoryBokkGenerator.getAutocompleteUsersRoute()}?exludeAlreadyConnected=true`];
+        return [`${this.externalSignatoryBook.getAutocompleteUsersRoute()}?exludeAlreadyConnected=true`];
     }
 
     getUserFullName(externalUser: any): string {
