@@ -2682,5 +2682,6 @@
     "fastParapheur": "Fast Parapheur",
     "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
     "enabledSignatoryBook": "Parapheur actif",
-    "account": "Compte"
+    "account": "Compte",
+    "checkExternalSignatoryBookConfig": "Vérifier la configuration du <b>parapheur externe</b> dans le fichier <b>remoteSignatoryBooks.xml</b> de votre custom"
 }

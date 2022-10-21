@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'account-link.component.html',
@@ -27,6 +28,7 @@ export class AccountLinkComponent implements OnInit {
         public http: HttpClient,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
+        public authService: AuthService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public dialogRef: MatDialogRef<AccountLinkComponent>,
         private notify: NotificationService
@@ -71,6 +73,6 @@ export class AccountLinkComponent implements OnInit {
     }
 
     getLabelPlaceHolder(): string {
-        return `${this.translate.instant('lang.searchUserInExternalSignatoryBook')} ${this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled)}`;
+        return `${this.translate.instant('lang.searchUserInExternalSignatoryBook')} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)}`;
     }
 }

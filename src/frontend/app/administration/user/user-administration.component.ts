@@ -186,7 +186,7 @@ export class UserAdministrationComponent implements OnInit {
                 this.creationMode = false;
                 this.serialId = params['id'];
                 this.http.get('../rest/users/' + this.serialId + '/details')
-                    .subscribe((data: any) => {
+                    .subscribe(async (data: any) => {
                         this.user = data;
 
                         if (this.user.mode === 'rest') {
@@ -213,7 +213,8 @@ export class UserAdministrationComponent implements OnInit {
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
                         if (this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] !== undefined) {
-                            this.checkInfoExternalSignatoryBookAccount();
+                            this.loading = true;
+                            await this.checkInfoExternalSignatoryBookAccount();
                         }
 
                         this.loading = false;
@@ -1013,7 +1014,11 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     getLabelById(varLang: string): string {
-        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled)}`;
+        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)}`;
+    }
+
+    canLinkAccount(): boolean {
+        return !this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled);
     }
 }
 
