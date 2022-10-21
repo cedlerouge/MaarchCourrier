@@ -24,16 +24,16 @@ export class ExternalSignatoryBookManagerService {
         private authService: AuthService,
         private functions: FunctionsService
     ) {
-        this.integratedWorkflow = this.authService.externalSignatoryBook.integratedWorkflow;
-        if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook.id) > -1) {
-            if (this.authService.externalSignatoryBook.id === 'maarchParapheur') {
-                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
+        this.integratedWorkflow = this.authService.externalSignatoryBook?.integratedWorkflow;
+        if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
+            if (this.authService.externalSignatoryBook?.id === 'maarchParapheur') {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.authService.externalSignatoryBook.id === 'fastParapheur' && this.integratedWorkflow) {
-                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
+            } else if (this.authService.externalSignatoryBook?.id === 'fastParapheur' && this.integratedWorkflow) {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
-        } else if (this.functions.empty(this.authService.externalSignatoryBook.id)) {
+        } else if (this.functions.empty(this.authService.externalSignatoryBook?.id)) {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
     }

@@ -1014,7 +1014,7 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     getLabelById(varLang: string): string {
-        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)}`;
+        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook?.id)}`;
     }
 
     canLinkAccount(): boolean {

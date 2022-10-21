@@ -73,6 +73,6 @@ export class AccountLinkComponent implements OnInit {
     }
 
     getLabelPlaceHolder(): string {
-        return `${this.translate.instant('lang.searchUserInExternalSignatoryBook')} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)}`;
+        return `${this.translate.instant('lang.searchUserInExternalSignatoryBook')} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook?.id)}`;
     }
 }
