@@ -2679,5 +2679,6 @@
     "externalSignoryBookNotEnabled": "No external signatory book enabled",
     "maarchParapheur": "Maarch Parapheur",
     "fastParapheur": "Fast Parapheur",
-    "noOtpConfigurationFound": "No OTP configuration found"
+    "noOtpConfigurationFound": "No OTP configuration found",
+    "fastParapheurWorkflow": "Fast Parapheur workflow"
 }

@@ -8,12 +8,12 @@ import { FunctionsService } from '@service/functions.service';
 import { tap } from 'rxjs/operators';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PrivilegeService } from '@service/privileges.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     templateUrl: 'summary-sheet.component.html',
     styleUrls: ['summary-sheet.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService]
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class SummarySheetComponent implements OnInit {
 
@@ -182,7 +182,7 @@ export class SummarySheetComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         public dialogRef: MatDialogRef<SummarySheetComponent>,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
         private privilegeService: PrivilegeService,
@@ -208,9 +208,9 @@ export class SummarySheetComponent implements OnInit {
             })
         ).subscribe();
 
-        if (this.externalSignatoryBook.enabledSignatoryBook === 'maarchParapheur') {
+        if (this.externalSignatoryBook.signatoryBookEnabled === 'maarchParapheur') {
             this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur');
-        } else if (this.externalSignatoryBook.enabledSignatoryBook === 'fastParapheur') {
+        } else if (this.externalSignatoryBook.signatoryBookEnabled === 'fastParapheur') {
             this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
         } else {
             this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur' && item.id !== 'visaWorkflowMaarchParapheur');
