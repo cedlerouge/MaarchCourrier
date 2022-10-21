@@ -876,7 +876,7 @@
     "life_cycle": "Cycle de vie",
     "limitDataReached": "Vous avez atteint la limite d'affichage (<b>25000 entrées</b>), veuillez affiner votre <b>plage de dates</b>",
     "limitDataReached_1000": "Limite de <b>1000 entrées</b> atteinte.",
-    "linkAccount": "Lier un compte Maarch Parapheur",
+    "linkAccount": "Lier un compte",
     "linkContact": "Associer un contact",
     "linkDetails": "Accédez à la fiche détaillée",
     "linkEntityToUserInfo": "Cliquez sur une entité de l'arborescence pour l'associer / dissocier à l'utilisateur",
@@ -1383,7 +1383,7 @@
     "searchNewAssignee": "Rechercher un nouvel attributaire",
     "searchTag": "Rechercher un mot-clé",
     "searchTrackedMail": "Rechercher dans les courriers suivis",
-    "searchUserInMaarchParapheur": "Rechercher un utilisateur dans Maarch Parapheur",
+    "searchUserInExternalSignatoryBook": "Rechercher un utilisateur dans",
     "searchValue": "Rechercher un élément",
     "secondLevelAdded": "Sous-chemise créée",
     "secondLevelAttached": "Rattacher à la sous-chemise",
@@ -2674,5 +2674,13 @@
     "emptyListOfCustomFields": "La liste des champs personnalisés est vide",
     "updateFieldsForMail": "Les valeurs des champs <b>{{fields}}</b> seront mises à jour via cette action.",
     "updateFieldsForMails": "Les valeurs des champs ci-dessous seront mises à jour via cette action.",
-    "deleteField": "Supprimer le champ"
+    "deleteField": "Supprimer le champ",
+    "workflowSignatoryRole": "Rôle signataire",
+    "mandatory_final": "Obligatoire en fin de circuit",
+    "externalSignoryBookNotEnabled": "Aucun parapheur externe activé",
+    "maarchParapheur": "Maarch Parapheur",
+    "fastParapheur": "Fast Parapheur",
+    "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
+    "enabledSignatoryBook": "Parapheur actif",
+    "account": "Compte"
 }

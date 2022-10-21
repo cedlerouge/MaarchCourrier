@@ -112,7 +112,7 @@
                                             <mat-label>{{fieldItemValue.label}}</mat-label>
                                             <mat-form-field class="action-admin-input-form"
                                                 [floatLabel]="appService.getViewMode() ? '' : 'never'">
-                                                <mat-select [(value)]="selected"
+                                                <mat-select
                                                     [(ngModel)]="fieldItemValue.selectedValues"
                                                     [ngModelOptions]="{standalone: true}"
                                                     style="margin-left: 15px;">
@@ -345,7 +345,7 @@
                         <div class="form-group">
                             <div class="col-sm-12" style="text-align:center;">
                                 <button mat-raised-button color="primary" type="submit"
-                                    [disabled]="!actionsFormUp.form.valid">{{'lang.save' | translate}}</button>
+                                    [disabled]="!actionsFormUp.form.valid || !checkCurrentFieldValue()">{{'lang.save' | translate}}</button>
                             </div>
                         </div>
                     </form>

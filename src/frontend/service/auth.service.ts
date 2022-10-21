@@ -27,6 +27,8 @@ export class AuthService {
     user: any = {};
     maarchUrl: string = '';
     noInstall: boolean = false;
+    externalSignatoryBook: any = null;
+
     private eventAction = new Subject<any>();
 
     constructor(public http: HttpClient,
@@ -253,6 +255,7 @@ export class AuthService {
                         this.changeKey = data.changeKey;
                         this.applicationName = data.applicationName;
                         this.loginMessage = data.loginMessage;
+                        this.externalSignatoryBook = data.externalSignatoryBook;
                         this.setEvent('authenticationInformations');
                         this.authMode = data.authMode;
                         this.authUri = data.authUri;

@@ -21,12 +21,15 @@ import { AuthService } from '@service/auth.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
 
 @Component({
     templateUrl: 'user-administration.component.html',
-    styleUrls: ['user-administration.component.scss']
+    styleUrls: ['user-administration.component.scss'],
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class UserAdministrationComponent implements OnInit {
 
@@ -61,7 +64,7 @@ export class UserAdministrationComponent implements OnInit {
     };
     userAbsenceModel: any[] = [];
     userList: any[] = [];
-    maarchParapheurLink: any = {
+    externalSignatoryBookLink: any = {
         login: '',
         picture: ''
     };
@@ -69,7 +72,7 @@ export class UserAdministrationComponent implements OnInit {
     selectedSignatureLabel: string = '';
     loadingSign: boolean = false;
     data: any[] = [];
-    CurrentYear: number = new Date().getFullYear();
+    currentYear: number = new Date().getFullYear();
     currentMonth: number = new Date().getMonth() + 1;
     minDate: Date = new Date();
     firstFormGroup: UntypedFormGroup;
@@ -95,7 +98,7 @@ export class UserAdministrationComponent implements OnInit {
     displayedColumns = ['event_date', 'record_id', 'info', 'remote_ip'];
     dataSource = new MatTableDataSource(this.data);
     selectedTabIndex: number = 0;
-    maarchParapheurConnectionStatus = true;
+    externalSignatoryBookConnectionStatus = true;
 
     canViewPersonalDatas: boolean = false;
     canManagePersonalDatas: boolean = false;
@@ -127,17 +130,19 @@ export class UserAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public dialog: MatDialog,
+        public headerService: HeaderService,
+        public appService: AppService,
+        public authService: AuthService,
+        public functions: FunctionsService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        private privilegeService: PrivilegeService,
+        private viewContainerRef: ViewContainerRef,
         private route: ActivatedRoute,
         private router: Router,
         private zone: NgZone,
         private notify: NotificationService,
-        public dialog: MatDialog,
-        public headerService: HeaderService,
         private _formBuilder: UntypedFormBuilder,
-        public appService: AppService,
-        public authService: AuthService,
-        private privilegeService: PrivilegeService,
-        private viewContainerRef: ViewContainerRef
     ) {
         window['angularUserAdministrationComponent'] = {
             componentAfterUpload: (base64Content: any) => this.processAfterUpload(base64Content),
@@ -204,11 +209,11 @@ export class UserAdministrationComponent implements OnInit {
                         }
                         this.data = data.history;
                         this.userId = data.user_id;
-                        this.minDate = new Date(this.CurrentYear + '-' + this.currentMonth + '-01');
+                        this.minDate = new Date(this.currentYear + '-' + this.currentMonth + '-01');
                         this.headerService.setHeader(this.translate.instant('lang.userModification'), data.firstname + ' ' + data.lastname);
 
-                        if (this.user.external_id.maarchParapheur !== undefined) {
-                            this.checkInfoMaarchParapheurAccount();
+                        if (this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] !== undefined) {
+                            this.checkInfoExternalSignatoryBookAccount();
                         }
 
                         this.loading = false;
@@ -224,81 +229,84 @@ export class UserAdministrationComponent implements OnInit {
         });
     }
 
-    checkInfoMaarchParapheurAccount() {
-        this.http.get('../rest/users/' + this.serialId + '/statusInMaarchParapheur')
-            .subscribe((data: any) => {
-                this.maarchParapheurLink.login = data.link;
-                this.loading = false;
-                if (this.maarchParapheurLink.login !== '') {
-                    this.loadAvatarMaarchParapheur(this.user.external_id.maarchParapheur);
-                } else {
-                    this.maarchParapheurConnectionStatus = false;
-                }
-            });
+    async checkInfoExternalSignatoryBookAccount() {
+        const data: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.serialId);
+        if (!this.functions.empty(data)) {
+            this.externalSignatoryBookLink.login = data.link;
+            this.loading = false;
+            if (this.externalSignatoryBookLink.login !== '') {
+                this.getUserAvatar(this.user.external_id.maarchParapheur);
+            } else {
+                this.externalSignatoryBookConnectionStatus = false;
+            }
+        }
     }
 
-    linkMaarchParapheurAccount() {
-        const dialogRef = this.dialog.open(AccountLinkComponent, { panelClass: 'maarch-modal', autoFocus: false, data: { user: this.user } });
+    linkExternalSignatoryBookAccount() {
+        const dialogRef = this.dialog.open(AccountLinkComponent,
+            {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    user: this.user,
+                    title: this.getLabelById('linkAccount')
+                }
+            });
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                if (result.inMaarchParapheur) {
-                    this.linkAccountToMaarchParahpeur(result.id);
+                if (result.inExternalSignatoryBook) {
+                    this.linkAccountToSignatoryBook(result);
                 } else {
-                    this.createAccountToMaarchParahpeur(result.id, result.login);
+                    this.createExternalSignatoryBookAccount(result, result.login);
                 }
 
             }
         });
     }
 
-    linkAccountToMaarchParahpeur(externalId: number) {
-        this.http.put('../rest/users/' + this.serialId + '/linkToMaarchParapheur', { maarchParapheurUserId: externalId })
-            .subscribe(() => {
-                this.user.canCreateMaarchParapheurUser = false;
-                this.user.external_id['maarchParapheur'] = externalId;
-                this.checkInfoMaarchParapheurAccount();
-                this.notify.success(this.translate.instant('lang.accountLinked'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+    async linkAccountToSignatoryBook(result: any) {
+        const data: any = await this.externalSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
+        if (data) {
+            this.user.canCreateMaarchParapheurUser = false;
+            this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = result.id;
+            this.checkInfoExternalSignatoryBookAccount();
+        }
     }
 
-    createAccountToMaarchParahpeur(id: number, login: string) {
-        this.http.put('../rest/users/' + id + '/createInMaarchParapheur', { login: login })
-            .subscribe((data: any) => {
-                this.user.canCreateMaarchParapheurUser = false;
-                this.user.external_id['maarchParapheur'] = data.externalId;
-                this.checkInfoMaarchParapheurAccount();
-                this.notify.success(this.translate.instant('lang.accountAdded'));
-            }, (err) => {
-                if (err.error.errors === 'Login already exists') {
-                    err.error.errors = this.translate.instant('lang.loginAlreadyExistsInMaarchParapheur');
+    async createExternalSignatoryBookAccount(result: any, login: string) {
+        const data: any = await this.externalSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
+        if (!this.functions.empty(data)) {
+            this.user.canCreateMaarchParapheurUser = false;
+            this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = data.externalId;
+            this.checkInfoExternalSignatoryBookAccount();
+        }
+    }
+
+    async getUserAvatar(externalId: number) {
+        this.externalSignatoryBookLink.picture = await this.externalSignatoryBook.getUserAvatar(externalId);
+    }
+
+    unlinkSignatoryBookAccount() {
+        const dialogRef = this.dialog.open(ConfirmComponent,
+            {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: `${this.translate.instant('lang.unlinkAccount')}`,
+                    msg: this.translate.instant('lang.confirmAction')
                 }
-                this.notify.error(err.error.errors);
             });
-    }
-
-    loadAvatarMaarchParapheur(externalId: number) {
-        this.http.get('../rest/maarchParapheur/user/' + externalId + '/picture')
-            .subscribe((data: any) => {
-                this.maarchParapheurLink.picture = data.picture;
-
-            }, (err) => {
-                this.notify.handleErrors(err);
-            });
-    }
-
-    unlinkMaarchParapheurAccount() {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.unlinkAccount')}`, msg: this.translate.instant('lang.confirmAction') } });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
-            exhaustMap(() => this.http.put('../rest/users/' + this.serialId + '/unlinkToMaarchParapheur', {})),
+            exhaustMap(async () => await this.externalSignatoryBook.unlinkSignatoryBookAccount(this.serialId)),
             tap(() => {
                 this.user.canCreateMaarchParapheurUser = true;
-                this.maarchParapheurLink.login = '';
-                this.maarchParapheurLink.picture = '';
+                this.externalSignatoryBookLink.login = '';
+                this.externalSignatoryBookLink.picture = '';
                 this.notify.success(this.translate.instant('lang.accountUnlinked'));
-                this.maarchParapheurConnectionStatus = true;
+                this.externalSignatoryBookConnectionStatus = true;
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -987,23 +995,6 @@ export class UserAdministrationComponent implements OnInit {
         }
     }
 
-    sendToMaarchParapheur() {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.createUserInMaarchParapheur')}`, msg: this.translate.instant('lang.confirmAction') } });
-        dialogRef.afterClosed().pipe(
-            filter((data: string) => data === 'ok'),
-            exhaustMap(() => this.http.put('../rest/users/' + this.serialId + '/maarchParapheur', '')),
-            tap((data: any) => {
-                this.notify.success(this.translate.instant('lang.userCreatedInMaarchParapheur'));
-                this.user.external_id['maarchParapheur'] = data.externalId;
-                this.user.canCreateMaarchParapheurUser = false;
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
-    }
-
     setLowerUserId() {
         this.user.userId = this.user.userId.toLowerCase();
     }
@@ -1019,6 +1010,10 @@ export class UserAdministrationComponent implements OnInit {
                 this.loadingSign = false;
                 this.notify.error(err.error.errors);
             });
+    }
+
+    getLabelById(varLang: string): string {
+        return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled)}`;
     }
 }
 

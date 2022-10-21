@@ -2,8 +2,21 @@
 </div>
 <form [formGroup]="visaParameters" style="display: contents;">
     <div>
-        <mat-slide-toggle [ngStyle]="{'display': visaParameters.controls['minimumVisaRole'].value !== 0 ? 'inline-block' : 'flex'}" style="width: 20%; margin-bottom: 20px;" color="primary" name="minimumVisaRole" (toggleChange)="toggle('minimumVisaRole')"
-                          [checked]="visaParameters.controls['minimumVisaRole'].value !== 0">
+        <mat-form-field style="margin-left: 10px; display: inline-block; width: 70% !important;">
+            <mat-label>{{'lang.workflowSignatoryRole' | translate}}</mat-label>
+            <mat-select name="workflowSignatoryRole" formControlName="workflowSignatoryRole" [value]="visaParameters.controls['workflowSignatoryRole'].value">
+                <mat-option *ngFor="let value of signatoryRoleOptions" [value]="value">
+                    {{'lang.' + value | translate}}
+                </mat-option>
+            </mat-select>
+        </mat-form-field>
+    </div>
+
+    <div style="margin-left: 5px;">
+        <mat-slide-toggle style="width: 20%; margin-bottom: 20px;" color="primary" name="minimumVisaRole"
+            [checked]="visaParameters.controls['minimumVisaRole'].value !== 0"
+            [ngStyle]="{'display': visaParameters.controls['minimumVisaRole'].value !== 0 ? 'inline-block' : 'flex'}" 
+            (toggleChange)="toggle('minimumVisaRole')">
             {{'lang.minimumVisaUser' | translate}}
         </mat-slide-toggle>
         <mat-form-field *ngIf="visaParameters.controls['minimumVisaRole'].value !== 0" style="margin-left: 10px; display: inline-block; width: 70% !important;">
@@ -15,9 +28,11 @@
         </mat-form-field>
     </div>
 
-    <div>
-        <mat-slide-toggle [ngStyle]="{'display': visaParameters.controls['maximumSignRole'].value !== 0 ? 'inline-block' : 'flex'}" style="width: 20%; margin-bottom: 20px;" color="primary" name="maximumSignRole" (toggleChange)="toggle('maximumSignRole')"
-                          [checked]="visaParameters.controls['maximumSignRole'].value !== 0">
+    <div style="margin-left: 5px;">
+        <mat-slide-toggle style="width: 20%; margin-bottom: 20px;" color="primary" name="maximumSignRole"
+            [ngStyle]="{'display': visaParameters.controls['maximumSignRole'].value !== 0 ? 'inline-block' : 'flex'}"
+            [checked]="visaParameters.controls['maximumSignRole'].value !== 0"
+            (toggleChange)="toggle('maximumSignRole')">
             {{'lang.maximumSignUser' | translate}}
         </mat-slide-toggle>
         <mat-form-field *ngIf="visaParameters.controls['maximumSignRole'].value !== 0" style="margin-left: 10px; display: inline-block; width: 70% !important;">
@@ -28,6 +43,4 @@
             align="start" style="color: red;" [innerHTML]="('lang.mandatoryField' | translate)"></mat-hint>
         </mat-form-field>
     </div>
-
-    <mat-slide-toggle color="primary" name="workflowEndBySignatory" (toggleChange)="toggle('workflowEndBySignatory')" [checked]="visaParameters.controls['workflowEndBySignatory'].value !== 0">{{'lang.workflowEndBySignatory' | translate}}</mat-slide-toggle>
 </form>

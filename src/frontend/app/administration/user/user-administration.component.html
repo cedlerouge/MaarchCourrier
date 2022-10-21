@@ -28,28 +28,28 @@
                     {{'lang.changePassword' | translate}}
                 </p>
             </a>
-            <a mat-list-item *ngIf="user.canCreateMaarchParapheurUser || maarchParapheurLink.login === ''"
-                (click)="linkMaarchParapheurAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
+            <a mat-list-item *ngIf="user.canCreateMaarchParapheurUser || externalSignatoryBookLink.login === ''"
+                (click)="linkExternalSignatoryBookAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
                 <mat-icon color="primary" mat-list-icon class="fa fa-link"></mat-icon>
                 <p mat-line>
-                    {{'lang.linkAccount' | translate}}
+                    {{getLabelById('linkAccount')}}
                 </p>
-                <p mat-line *ngIf="!maarchParapheurConnectionStatus" style="font-size:11px;color:red">
+                <p mat-line *ngIf="!externalSignatoryBookConnectionStatus" style="font-size:11px;color:red">
                     {{'lang.maarchParapheurLinkbroken' | translate}}
                 </p>
             </a>
         </mat-nav-list>
         <mat-divider></mat-divider>
-        <mat-list *ngIf="maarchParapheurLink.login !== ''">
-            <h3 mat-subheader>Compte Maarch Parapheur</h3>
+        <mat-list *ngIf="externalSignatoryBookLink.login !== ''">
+            <h3 mat-subheader>{{getLabelById('account')}}</h3>
             <mat-list-item>
                 <mat-icon class="avatarAccount" color="primary" mat-list-icon
-                    [style.background-image]="'url('+maarchParapheurLink.picture+')'"></mat-icon>
-                <p mat-line class="accountInfo">
+                    [style.background-image]="'url('+externalSignatoryBookLink.picture+')'"></mat-icon>
+                <p mat-line class="accountInfo" [title]="externalSignatoryBookLink.login">
                     <span>
-                        {{maarchParapheurLink.login}}
+                        {{externalSignatoryBookLink.login}}
                     </span>
-                    <button mat-icon-button color="warn" (click)="unlinkMaarchParapheurAccount()"
+                    <button mat-icon-button color="warn" (click)="unlinkSignatoryBookAccount()"
                         title="{{'lang.unlinkAccount' | translate}}">
                         <mat-icon class="fas fa-unlink"></mat-icon>
                     </button>

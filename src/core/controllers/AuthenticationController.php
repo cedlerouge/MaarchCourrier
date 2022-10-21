@@ -81,16 +81,36 @@ class AuthenticationController
         $emailConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
         $emailConfiguration = !empty($emailConfiguration['value']) ? json_decode($emailConfiguration['value'], true) : null;
 
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $externalSignatoryBook = null;
+
+        if (!empty($loadedXml)) {
+            if (!empty((string)$loadedXml->signatoryBookEnabled)) {
+                $externalSignatoryBook['id'] = (string)$loadedXml->signatoryBookEnabled;
+                if ($externalSignatoryBook['id'] == 'maarchParapheur') {
+                    $externalSignatoryBook['integratedWorkflow'] = true;
+                } else {
+                    foreach ($loadedXml->signatoryBook as $value) {
+                        if ((string)$value->id === $externalSignatoryBook['id']) {
+                            $externalSignatoryBook['integratedWorkflow'] = filter_var((string)$value->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
         $return = [
-            'instanceId'        => $hashedPath,
-            'applicationName'   => $appName,
-            'loginMessage'      => $parameter['param_value_string'] ?? null,
-            'changeKey'         => $encryptKey == 'Security Key Maarch Courrier #2008',
-            'authMode'          => $loggingMethod['id'],
-            'authUri'           => $authUri,
-            'lang'              => CoreConfigModel::getLanguage(),
-            'mailServerOnline'  => $emailConfiguration['online'],
-            'maarchUrl'         => $maarchUrl
+            'instanceId'            => $hashedPath,
+            'applicationName'       => $appName,
+            'loginMessage'          => $parameter['param_value_string'] ?? null,
+            'changeKey'             => $encryptKey == 'Security Key Maarch Courrier #2008',
+            'authMode'              => $loggingMethod['id'],
+            'authUri'               => $authUri,
+            'lang'                  => CoreConfigModel::getLanguage(),
+            'mailServerOnline'      => $emailConfiguration['online'],
+            'maarchUrl'             => $maarchUrl,
+            'externalSignatoryBook'  => $externalSignatoryBook,
         ];
 
         if (!empty($keycloakState)) {
