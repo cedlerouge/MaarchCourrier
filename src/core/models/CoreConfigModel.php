@@ -110,7 +110,7 @@ class CoreConfigModel
             }
         }
 
-        return null;
+        return 'fr';
     }
 
     public static function getCustomLanguage($aArgs = [])

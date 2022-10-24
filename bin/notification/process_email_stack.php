@@ -47,10 +47,6 @@ fclose($lockFile);
 setBatchNumber();
 
 $language = \SrcCore\models\CoreConfigModel::getLanguage();
-if (empty($language)) {
-    writeLog(['message' => "Language 'fr' not found", 'level' => 'ERROR']);
-    exit();
-}
 
 if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
     require_once("custom/{$customID}/src/core/lang/lang-{$language}.php");
