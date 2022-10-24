@@ -14,7 +14,6 @@ export class ExternalSignatoryBookManagerService {
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
     serviceInjected: MaarchParapheurService | FastParapheurService;
     signatoryBookEnabled: string = '';
-    integratedWorkflow: boolean = false; // allows when FAST PARAPHEUR is activated to know which method to use
 
     constructor(
         private injector: Injector,
@@ -24,14 +23,12 @@ export class ExternalSignatoryBookManagerService {
         private authService: AuthService,
         private functions: FunctionsService
     ) {
-        this.integratedWorkflow = this.authService.externalSignatoryBook?.integratedWorkflow;
         if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
             if (this.authService.externalSignatoryBook?.id === 'maarchParapheur') {
                 this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
             } else if (this.authService.externalSignatoryBook?.id === 'fastParapheur' && this.authService.externalSignatoryBook?.integratedWorkflow) {
                 this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
-                this.integratedWorkflow = true;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
         } else if (this.functions.empty(this.authService.externalSignatoryBook?.id)) {
@@ -113,8 +110,8 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected.setExternalInformation(item);
     }
 
-    isValidParaph(additionalsInfos: any = null, workflow: any[] = []) {
-        return additionalsInfos.attachments.length > 0 && workflow.length > 0;
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
+        return this.serviceInjected.isValidParaph(additionalsInfos, workflow, resourcesToSign, userOtps);
     }
 
     getRessources(additionalsInfos: any): any[] {

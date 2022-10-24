@@ -157,8 +157,12 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     isValidAction(): boolean {
-        if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled) && this.externalSignatoryBook.integratedWorkflow) {
-            return this.externalSignatoryBook.isValidParaph(this.additionalsInfos, this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getWorkflow());
+        if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled) && this.authService.externalSignatoryBook.integratedWorkflow) {
+            return this.externalSignatoryBook.isValidParaph(
+                this.additionalsInfos,
+                this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getWorkflow(),
+                this.resourcesToSign
+            );
         } else {
             if (this[this.authService.externalSignatoryBook?.id] !== undefined) {
                 return this[this.authService.externalSignatoryBook?.id].isValidParaph();
@@ -203,7 +207,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
+        if (this.authService.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
             const externalUsers: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;

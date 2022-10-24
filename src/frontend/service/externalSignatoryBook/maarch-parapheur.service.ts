@@ -203,4 +203,12 @@ export class MaarchParapheurService {
         delete position.resId;
         return position;
     }
+
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
+        if (additionalsInfos.attachments.length === 0 || workflow.length === 0 || userOtps.length > 0 || resourcesToSign.length === 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

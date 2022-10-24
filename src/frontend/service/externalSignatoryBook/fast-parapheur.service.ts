@@ -67,10 +67,20 @@ export class FastParapheurService {
          */
     }
 
-    getAutocompleteDatas() {
-        /**
-         * Get datas from autocomplete users url
-         */
+    getAutocompleteDatas(data: any): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get(`..${this.autocompleteUsersRoute}`, { params: { 'search': data.user.mail, 'exludeAlreadyConnected': 'true' } })
+                .pipe(
+                    tap((result: any) => {
+                        resolve(result);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        resolve(null);
+                        return of(false);
+                    })
+                ).subscribe();
+        });
     }
 
     linkAccountToSignatoryBook(externalId: any, serialId: number): Promise<any> {
@@ -139,5 +149,9 @@ export class FastParapheurService {
 
     getDatas(externalSignatoryBookDatas: any = null, workflow: any[] = [], resourcesToSign: any[] = []): any {
         return externalSignatoryBookDatas;
+    }
+
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
+        return additionalsInfos.attachments.length > 0 && workflow.length > 0;
     }
 }

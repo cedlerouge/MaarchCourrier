@@ -8,6 +8,7 @@ import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ExternalVisaWorkflowComponent } from '@appRoot/visa/externalVisaWorkflow/external-visa-workflow.component';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-maarch-paraph',
@@ -40,7 +41,8 @@ export class MaarchParaphComponent implements OnInit {
         private notify: NotificationService,
         public http: HttpClient,
         private functions: FunctionsService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService
     ) { }
 
     ngOnInit(): void {
@@ -52,11 +54,7 @@ export class MaarchParaphComponent implements OnInit {
     }
 
     isValidParaph(): boolean {
-        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0 || this.resourcesToSign.length === 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return this.externalSignatoryBookManagerService.isValidParaph(this.additionalsInfos, this.appExternalVisaWorkflow.getWorkflow(), this.appExternalVisaWorkflow.getUserOtpsWorkflow(), this.resourcesToSign);
     }
 
     openSignaturePosition(resource: any) {
