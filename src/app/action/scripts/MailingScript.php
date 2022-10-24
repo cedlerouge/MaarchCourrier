@@ -43,6 +43,9 @@ class MailingScript
             new DatabasePDO(['customId' => $data['customId']]);
             $GLOBALS['customId'] = $data['customId'];
             $language = \SrcCore\models\CoreConfigModel::getLanguage();
+            if (empty($language)) {
+                return;
+            }
 
             if (file_exists("custom/{$GLOBALS['customId']}/src/core/lang/lang-{$language}.php")) {
                 require_once("custom/{$GLOBALS['customId']}/src/core/lang/lang-{$language}.php");

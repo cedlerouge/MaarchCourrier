@@ -164,6 +164,10 @@ new \SrcCore\models\DatabasePDO(['customId' => $GLOBALS['customId']]);
 
 // Load lang variables
 $language = \SrcCore\models\CoreConfigModel::getLanguage();
+if (empty($language)) {
+    writeLog(['message' => "Language 'fr' not found", 'level' => 'ERROR']);
+    exit();
+}
 $customID = $config['customID'] ?? null;
 
 if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
