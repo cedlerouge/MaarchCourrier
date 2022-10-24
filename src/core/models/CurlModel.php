@@ -235,13 +235,26 @@ class CurlModel
 
         $postData = '';
         foreach ($args['body'] as $key => $value) {
-            $postData .= "--{$delimiter}\r\n";
-            if (is_array($value) && $value['isFile']) {
-                $postData .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$value['filename']}\"\r\n";
-                $postData .= "\r\n{$value['content']}\r\n";
+            if (is_array($value['subvalues'])) {
+                foreach ($value['subvalues'] as $subvalue) {
+                    $postData .= "--{$delimiter}\r\n";
+                    if (is_array($subvalue) && !empty($subvalue['isFile']) && !empty($subvalue['filename']) && !empty($subvalue['content'])) {
+                        $postData .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$subvalue['filename']}\"\r\n";
+                        $postData .= "\r\n{$subvalue['content']}\r\n";
+                    } else {
+                        $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
+                        $postData .= "\r\n{$subvalue}\r\n";
+                    }
+                }
             } else {
-                $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
-                $postData .= "\r\n{$value}\r\n";
+                $postData .= "--{$delimiter}\r\n";
+                if (is_array($value) && !empty($value['isFile']) && !empty($value['filename']) && !empty($value['content'])) {
+                    $postData .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$value['filename']}\"\r\n";
+                    $postData .= "\r\n{$value['content']}\r\n";
+                } else {
+                    $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
+                    $postData .= "\r\n{$value}\r\n";
+                }
             }
         }
         $postData .= "--{$delimiter}--\r\n";

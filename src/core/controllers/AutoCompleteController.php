@@ -128,6 +128,9 @@ class AutoCompleteController
                     break;
                 }
             }
+            if (empty($url) || empty($userId) || empty($password)) {
+                return $response->withStatus(500)->withJson(['errors' => 'Maarch Parapheur is not fully configured']);
+            }
 
             $curlResponse = CurlModel::exec([
                 'url'           => rtrim($url, '/') . '/rest/autocomplete/users?search='.urlencode($data['search']),

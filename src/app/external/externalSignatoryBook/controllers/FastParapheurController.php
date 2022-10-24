@@ -34,6 +34,7 @@ use User\controllers\UserController;
 use History\controllers\HistoryController;
 use Slim\Http\Request;
 use Slim\Http\Response;
+use SrcCore\models\TextFormatModel;
 
 /**
     * @codeCoverageIgnore
@@ -420,12 +421,22 @@ class FastParapheurController
             'resId'  => $args['resIdMaster'],
             'select' => ['res_id', 'subject', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
         ]);
+        $resource['external_id'] = json_decode($resource['external_id'], true);
+        if ($resource['format'] != 'pdf') {
+            $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
+            if (!empty($convertedDocument['errors'])) {
+                return ['error' => 'unable to convert main document'];
+            }
+            $resource['docserver_id'] = $convertedDocument['docserver_id'];
+            $resource['path'] = $convertedDocument['path'];
+            $resource['filename'] = $convertedDocument['filename'];
+        }
 
         if (empty($resource)) {
             return ['error' => 'resource does not exist', 'code' => 400];
         }
 
-        if (!empty($resource['external_id']['fastParapheur'])) {
+        if (!empty($resource['external_id']['signatureBookId'])) {
             return ['error' => 'resource is already in fastParapheur', 'code' => 400];
         }
 
@@ -443,6 +454,18 @@ class FastParapheurController
             'where'     => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (\'DEL\', \'OBS\', \'FRZ\', \'TMP\', \'SEND_MASS\')', 'in_signature_book is true'],
             'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
         ]);
+        foreach ($attachments as $key => $attachment) {
+            if ($attachment['format'] != 'pdf') {
+                $convertedAttachment = ConvertPdfController::getConvertedPdfById(['collId' => 'attachments_coll', 'resId' => $attachment['res_id']]);
+                if (!empty($convertedAttachment['errors'])) {
+                    continue;
+                }
+                $attachments[$key]['docserver_id'] = $convertedAttachment['docserver_id'];
+                $attachments[$key]['path']         = $convertedAttachment['path'];
+                $attachments[$key]['filename']     = $convertedAttachment['filename'];
+                $attachments[$key]['format']       = 'pdf';
+            }
+        }
 
         if (empty($docservers[$resource['docserver_id']])) {
             return ['error' => 'resource docserver does not exist', 'code' => 500];
@@ -458,8 +481,9 @@ class FastParapheurController
         foreach ($attachments as $attachment) {
             $sentAttachments[] = [
                 'comment'  => $attachment['title'],
-                'signable' => $attachmentTypeSignable[$attachment['attachment_type']],
-                'path'     => $docservers[$attachment['docserver_id']] . $attachment['path'] . $attachment['filename']
+                'signable' => $attachmentTypeSignable[$attachment['attachment_type']] && $attachment['format'] == 'pdf',
+                'path'     => $docservers[$attachment['docserver_id']] . $attachment['path'] . $attachment['filename'],
+                'resId'    => $attachment['res_id']
             ];
         }
 
@@ -468,12 +492,26 @@ class FastParapheurController
             'comment'    => '',
             'appendices' => []
         ];
+        $signTarget = null;
         if (!empty($sentMainDocument) && is_file($sentMainDocument['path'])) {
             if ($sentMainDocument['signable']) {
-                $upload['doc'] = $sentMainDocument['path'];
+                $upload['doc'] = [
+                    'path'     => $sentMainDocument['path'],
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
                 $upload['comment'] = $sentMainDocument['comment'];
+                $signTarget = ['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']];
             } else {
-                $upload['appendices'][] = $sentMainDocument['path'];
+                $upload['appendices'][] = [
+                    'path'     => $sentMainDocument['path'],
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
             }
         }
         foreach ($sentAttachments as $sentAttachment) {
@@ -481,10 +519,23 @@ class FastParapheurController
                 continue;
             }
             if ($sentAttachment['signable']) {
-                $upload['doc'] = $sentAttachment['path'];
+                $upload['doc'] = [
+                    'path'     => $sentAttachment['path'],
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
                 $upload['comment'] = $sentAttachment['comment'];
+                $signTarget = ['collId' => 'attachments_coll', 'resId' => $sentAttachment['resId']];
             } else {
-                $upload['appendices'][] = $sentAttachment['path'];
+                $upload['appendices'][] = [
+                    'path'     => $sentAttachment['path'],
+                    'filename' => TextFormatModel::formatFilename([
+                        'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
+                        'maxLength' => 50
+                    ])
+                ];
             }
         }
         if (empty($upload['doc'])) {
@@ -495,18 +546,18 @@ class FastParapheurController
             'type'  => 'BUREAUTIQUE_PDF',
             'steps' => []
         ];
-        $otpInfo = [];
+        //$otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
-            if ($step['type'] == 'user' && !empty($step['id'])) {
-                $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+            if (in_array($step['mode'], ['signature', 'visa', 'serverSignature']) && !empty($step['userId'])) {
+                $user = UserModel::getById(['id' => $step['userId'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
                 if (empty($user['fastParapheurEmail'])) {
-                    return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
+                    return ['errors' => 'no FastParapheurEmail for user ' . $step['userId'], 'code' => 400];
                 }
                 $circuit['steps'][] = [
-                    'step'    => 'signature',
+                    'step'    => $step['mode'],
                     'members' => [$user['fastParapheurEmail']]
                 ];
-            } elseif ($step['type'] == 'externalOTP'
+            } /*elseif ($step['type'] == 'externalOTP'
                       && Validator::notEmpty()->phone()->validate($step['phone'])
                       && Validator::notEmpty()->email()->validate($step['email'])
                       && Validator::notEmpty()->stringType()->validate($step['firstname'])
@@ -519,7 +570,7 @@ class FastParapheurController
                 $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
                 $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
                 $otpInfo['OTP_email_' . $index]       = $step['email'];
-            } else {
+            } */ else {
                 return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
         }
@@ -527,6 +578,7 @@ class FastParapheurController
             return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
+        /*
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
             $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
@@ -535,6 +587,7 @@ class FastParapheurController
                 $metadataElement->addAttribute($name, $value);
             }
         }
+        */
 
         $curlReturn = CurlModel::exec([
             'method'  => 'POST',
@@ -546,8 +599,16 @@ class FastParapheurController
             ],
             'multipartBody' => [
                 'comment' => $upload['comment'],
-                'doc'     => ['isFile' => true, 'filename' => basename($upload['doc']), 'content' => file_get_contents($upload['doc'])],
-                // TODO: annexes -> zip from $upload['appendices']
+                'doc'     => ['isFile' => true, 'filename' => $upload['doc']['filename'], 'content' => file_get_contents($upload['doc']['path'])],
+                'annexes' => [
+                    'subvalues' => array_map(function ($appendix) {
+                        return [
+                            'isFile'   => true,
+                            'filename' => $appendix['filename'],
+                            'content'  => file_get_contents($appendix['path'])
+                        ];
+                    }, $upload['appendices'])
+                ],
                 'circuit' => json_encode($circuit)
             ]
         ]);
@@ -556,6 +617,7 @@ class FastParapheurController
         }
         $fastParapheurDocId = (string)$curlReturn['response'];
 
+        /*
         if (!empty($otpInfoXML)) {
             $curlReturn = CurlModel::exec([
                 'method'  => 'PUT',
@@ -573,13 +635,12 @@ class FastParapheurController
                 return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
             }
         }
+        */
 
         return [
             'sended' => [
-                'letterbox_coll' => [
-                    'resIdMaster' => [
-                        $args['resIdMaster'] => $fastParapheurDocId
-                    ]
+                $signTarget['collId'] => [
+                    $signTarget['resId'] => $fastParapheurDocId
                 ]
             ]
         ];
