@@ -172,14 +172,6 @@ export class MaarchParapheurService {
         };
     }
 
-    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], userOtpWorkflow: any[] = [], resourcesToSign: any[] = []): boolean {
-        if (additionalsInfos.attachments.length === 0 || workflow.length === 0 || userOtpWorkflow.length > 0 || resourcesToSign.length === 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
     getRessources(additionalsInfos: any): any[] {
         return additionalsInfos.attachments.map((e: any) => e.res_id);
     }
