@@ -171,4 +171,44 @@ export class MaarchParapheurService {
             }
         };
     }
+
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], userOtpWorkflow: any[] = [], resourcesToSign: any[] = []): boolean {
+        if (additionalsInfos.attachments.length === 0 || workflow.length === 0 || userOtpWorkflow.length > 0 || resourcesToSign.length === 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    getRessources(additionalsInfos: any): any[] {
+        return additionalsInfos.attachments.map((e: any) => e.res_id);
+    }
+
+    getDatas(externalSignatoryBookDatas: any = null, workflow: any[] = [], resourcesToSign: any[] = []): any {
+        const formatedData: any = { steps: [] };
+        resourcesToSign.forEach((resource: any) => {
+            workflow.forEach((element: any, index: number) => {
+                formatedData['steps'].push(
+                    {
+                        'resId': resource.resId,
+                        'mainDocument': resource.mainDocument,
+                        'externalId': element.externalId.maarchParapheur,
+                        'sequence': index,
+                        'action': element.role === 'visa' ? 'visa' : 'sign',
+                        'signatureMode': element.role,
+                        'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                        'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                        'externalInformations': element.hasOwnProperty('externalInformations') ? element.externalInformations : null
+                    }
+                );
+            });
+        });
+        return formatedData;
+    }
+
+    formatPositions(position: any): any {
+        delete position.mainDocument;
+        delete position.resId;
+        return position;
+    }
 }

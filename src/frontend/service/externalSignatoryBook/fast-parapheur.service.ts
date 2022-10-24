@@ -132,4 +132,16 @@ export class FastParapheurService {
             }
         };
     }
+
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], userOtpWorkflow: any[] = [], resourcesToSign: any[] = []): boolean {
+        return additionalsInfos.attachments.length > 0 && workflow.length > 0;
+    }
+
+    getRessources(additionalsInfos: any): any[] {
+        return additionalsInfos.attachments.map((e: any) => e.res_id);
+    }
+
+    getDatas(externalSignatoryBookDatas: any = null, workflow: any[] = [], resourcesToSign: any[] = []): any {
+        return externalSignatoryBookDatas;
+    }
 }
