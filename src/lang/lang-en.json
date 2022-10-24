@@ -2681,5 +2681,8 @@
     "fastParapheur": "Fast Parapheur",
     "noOtpConfigurationFound": "No OTP configuration found",
     "account": "Compte",
-    "checkExternalSignatoryBookConfig": "Check the <b>external signatory book</b> configuration in the <b>remoteSignatoryBooks.xml</b> file of your custom"
+    "checkExternalSignatoryBookConfig": "Check the <b>external signatory book</b> configuration in the <b>remoteSignatoryBooks.xml</b> file of your custom",
+    "ixbus": "Ixbus",
+    "iParapheur": "IParapheur",
+    "xParaph": "XParaph"
 }

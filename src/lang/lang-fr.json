@@ -2683,5 +2683,8 @@
     "noOtpConfigurationFound": "Aucune configuration OTP trouvée",
     "enabledSignatoryBook": "Parapheur actif",
     "account": "Compte",
-    "checkExternalSignatoryBookConfig": "Vérifier la configuration du <b>parapheur externe</b> dans le fichier <b>remoteSignatoryBooks.xml</b> de votre custom"
+    "checkExternalSignatoryBookConfig": "Vérifier la configuration du <b>parapheur externe</b> dans le fichier <b>remoteSignatoryBooks.xml</b> de votre custom",
+    "ixbus": "Ixbus",
+    "iParapheur": "IParapheur",
+    "xParaph": "XParaph"
 }

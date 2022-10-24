@@ -35,15 +35,15 @@
                         </ul>
                     </div>
                     <div>
-                        <app-i-paraph #iParapheur *ngIf="authService.externalSignatoryBook.id =='iParapheur'"
+                        <app-i-paraph #iParapheur *ngIf="authService.externalSignatoryBook.id === 'iParapheur' && !loading"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-i-paraph>
-                        <app-ixbus-paraph #ixbus *ngIf="authService.externalSignatoryBook.id =='ixbus'"
+                        <app-ixbus-paraph #ixbus *ngIf="authService.externalSignatoryBook.id === 'ixbus' && !loading"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-ixbus-paraph>
-                        <app-fast-paraph #fastParapheur *ngIf="authService.externalSignatoryBook.id === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
+                        <app-fast-paraph #fastParapheur *ngIf="!loading && authService.externalSignatoryBook.id === 'fastParapheur' && externalSignatoryBook.signatoryBookEnabled === ''"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-fast-paraph>
@@ -54,7 +54,7 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-maarch-paraph>
-                        <app-x-paraph #xParaph *ngIf="authService.externalSignatoryBook.id === 'xParaph'"
+                        <app-x-paraph #xParaph *ngIf="authService.externalSignatoryBook.id === 'xParaph' && !loading"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"

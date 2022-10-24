@@ -76,6 +76,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
+        await this.checkExternalSignatureBook();
         this.showToggle = this.data.additionalInfo.showToggle;
         this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
         this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
@@ -93,7 +94,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
                 })
             ).subscribe();
         }
-        await this.checkExternalSignatureBook();
     }
 
     async onSubmit() {
@@ -127,9 +127,16 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     executeAction() {
-        const realResSelected: string[] = this.externalSignatoryBook.getRessources(this.additionalsInfos);
-        const workflow: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.getWorkflow();
-        const datas: any = this.externalSignatoryBook.getDatas(this.externalSignatoryBookDatas, workflow, this.resourcesToSign);
+        let realResSelected: string[];
+        let datas: any;
+        if (this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
+            realResSelected = this[this.authService.externalSignatoryBook.id].getRessources();
+            datas = this[this.authService.externalSignatoryBook.id].getDatas();
+        } else {
+            realResSelected = this.externalSignatoryBook.getRessources(this.additionalsInfos);
+            const workflow: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.getWorkflow();
+            datas = this.externalSignatoryBook.getDatas(this.externalSignatoryBookDatas, workflow, this.resourcesToSign);
+        }
 
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(
             tap((data: any) => {
