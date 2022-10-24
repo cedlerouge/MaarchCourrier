@@ -17,6 +17,9 @@ $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 date_default_timezone_set(\SrcCore\models\CoreConfigModel::getTimezone());
 
 $language = \SrcCore\models\CoreConfigModel::getLanguage();
+if (empty($language)) {
+    return;
+}
 require_once("src/core/lang/lang-{$language}.php");
 
 class httpRequestCustom
