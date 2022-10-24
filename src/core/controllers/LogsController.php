@@ -102,7 +102,7 @@ class LogsController
      * @param   array   $args
      * @return  string
      */
-    private static function prepareLogLine(array $args)
+    public static function prepareLogLine(array $args)
     {
         $logLine = str_replace(
             [
@@ -146,7 +146,7 @@ class LogsController
      * @param   array   $log
      * @return  void
      */
-    protected static function logWithMonolog(array $log)
+    public static function logWithMonolog(array $log)
     {
         ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormate', 'levelConfig', 'name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormate', 'name', 'path', 'line']);
@@ -218,7 +218,7 @@ class LogsController
      * @param   array   $file
      * @return  void
      */
-    private static function rotateLogByFileSize(array $file)
+    public static function rotateLogByFileSize(array $file)
     {
         ValidatorModel::notEmpty($file, ['path']);
         ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
@@ -250,7 +250,7 @@ class LogsController
      * @param   string   $value     The size + prefix (of 2 characters)
      * @return  int
      */
-    private static function setMaxFileSize(string $value)
+    public static function setMaxFileSize(string $value)
     {
 		$maxFileSize = null;
 		$numpart = substr($value,0, strlen($value) -2);
