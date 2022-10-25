@@ -407,12 +407,12 @@ class FastParapheurController
     }
 
     /**
-     * upload to FastParapheur with integrated workflow
+     * upload to FastParapheur with integrated workflow steps
      *
      * @param array $args:
      *   - resIdMaster: identifier of the res_letterbox item to send
      *   - config: FastParapheur configuration
-     *   - workflow: an array of steps, each being an associative array with:
+     *   - steps: an array of steps, each being an associative array with:
      *     - mode: 'visa' or 'signature'
      *     - type: 'maarchCourrierUserId' or 'fastParapheurUserEmail'
      *     - id: identifies the user, int for maarchCourrierUserId, string for fastParapheurUserEmail
@@ -431,11 +431,11 @@ class FastParapheurController
      *     ]
      *   ]
      */
-    public static function uploadWithWorkflow(array $args)
+    public static function uploadWithSteps(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resIdMaster', 'workflow', 'config']);
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config']);
         ValidatorModel::intType($args, ['resIdMaster']);
-        ValidatorModel::arrayType($args, ['workflow', 'config']);
+        ValidatorModel::arrayType($args, ['steps', 'config']);
 
         $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
@@ -447,7 +447,7 @@ class FastParapheurController
             'steps' => []
         ];
         //$otpInfo = [];
-        foreach ($args['workflow'] as $index => $step) {
+        foreach ($args['steps'] as $index => $step) {
             if (in_array($step['mode'], ['signature', 'visa']) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
                     $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
@@ -482,7 +482,7 @@ class FastParapheurController
             }
         }
         if (empty($circuit['steps'])) {
-            return ['error' => 'workflow is empty or invalid', 'code' => 400];
+            return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
         /*
@@ -708,56 +708,73 @@ class FastParapheurController
     public static function sendDatas(array $args)
     {
         $config = $args['config'];
-        // We need the SIRET field and the user_id of the signatory user's primary entity
-        $signatory = DatabaseModel::select([
-            'select'    => ['user_id', 'external_id', 'entities.entity_label'],
-            'table'     => ['listinstance', 'users_entities', 'entities'],
-            'left_join' => ['item_id = user_id', 'users_entities.entity_id = entities.entity_id'],
-            'where'     => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
-            'data'      => [$args['resIdMaster'], 'sign']
-        ])[0];
-        $redactor = DatabaseModel::select([
-            'select'    => ['short_label'],
-            'table'     => ['res_view_letterbox', 'users_entities', 'entities'],
-            'left_join' => ['dest_user = user_id', 'users_entities.entity_id = entities.entity_id'],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['resIdMaster']]
-        ])[0];
 
-        $signatory['business_id'] = json_decode($signatory['external_id'], true)['fastParapheurSubscriberId'];
-        if (empty($signatory['business_id']) || substr($signatory['business_id'], 0, 3) == 'org') {
-            $signatory['business_id'] = $config['data']['subscriberId'];
+        if (!empty($config['data']['integratedWorkflow']) && $config['data']['integratedWorkflow'] == 'true') {
+            $steps = [];
+            foreach ($args['steps'] as $step) {
+                $steps[] = [
+                    'mode' => $step['action'] == 'sign' ? 'signature' : 'visa',
+                    'type' => 'fastParapheurUserEmail',
+                    'id'   => $step['externalId']
+                ];
+            }
+            return FastParapheurController::uploadWithSteps([
+                'config'      => $config['data'],
+                'resIdMaster' => $args['resIdMaster'],
+                'steps'       => $steps
+            ]);
+        } else {
+            // We need the SIRET field and the user_id of the signatory user's primary entity
+            $signatory = DatabaseModel::select([
+                'select'    => ['user_id', 'external_id', 'entities.entity_label'],
+                'table'     => ['listinstance', 'users_entities', 'entities'],
+                'left_join' => ['item_id = user_id', 'users_entities.entity_id = entities.entity_id'],
+                'where'     => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
+                'data'      => [$args['resIdMaster'], 'sign']
+            ])[0];
+            $redactor = DatabaseModel::select([
+                'select'    => ['short_label'],
+                'table'     => ['res_view_letterbox', 'users_entities', 'entities'],
+                'left_join' => ['dest_user = user_id', 'users_entities.entity_id = entities.entity_id'],
+                'where'     => ['res_id = ?'],
+                'data'      => [$args['resIdMaster']]
+            ])[0];
+
+            $signatory['business_id'] = json_decode($signatory['external_id'], true)['fastParapheurSubscriberId'];
+            if (empty($signatory['business_id']) || substr($signatory['business_id'], 0, 3) == 'org') {
+                $signatory['business_id'] = $config['data']['subscriberId'];
+            }
+
+            $user = [];
+            if (!empty($signatory['user_id'])) {
+                $user = UserModel::getById(['id' => $signatory['user_id'], 'select' => ['user_id']]);
+            }
+
+            if (empty($user['user_id'])) {
+                return ['error' => _VISA_WORKFLOW_NOT_FOUND];
+            }
+
+            // check if circuidId is an email
+            if (Validator::email()->notEmpty()->validate($user['user_id'])) {
+                $user['user_id'] = explode("@", $user['user_id'])[0];
+            }
+
+            if (empty($signatory['business_id'])) {
+                return ['error' => _NO_BUSINESS_ID];
+            }
+
+            if (empty($redactor['short_label'])) {
+                return ['error' => _VISA_WORKFLOW_ENTITY_NOT_FOUND];
+            }
+
+            return FastParapheurController::upload([
+                'config'        => $config,
+                'resIdMaster'   => $args['resIdMaster'],
+                'businessId'    => $signatory['business_id'],
+                'circuitId'     => $user['user_id'],
+                'label'         => $redactor['short_label']
+            ]);
         }
-
-        $user = [];
-        if (!empty($signatory['user_id'])) {
-            $user = UserModel::getById(['id' => $signatory['user_id'], 'select' => ['user_id']]);
-        }
-
-        if (empty($user['user_id'])) {
-            return ['error' => _VISA_WORKFLOW_NOT_FOUND];
-        }
-
-        // check if circuidId is an email
-        if (Validator::email()->notEmpty()->validate($user['user_id'])) {
-            $user['user_id'] = explode("@", $user['user_id'])[0];
-        }
-
-        if (empty($signatory['business_id'])) {
-            return ['error' => _NO_BUSINESS_ID];
-        }
-
-        if (empty($redactor['short_label'])) {
-            return ['error' => _VISA_WORKFLOW_ENTITY_NOT_FOUND];
-        }
-
-        return FastParapheurController::upload([
-            'config'        => $config, 
-            'resIdMaster'   => $args['resIdMaster'], 
-            'businessId'    => $signatory['business_id'], 
-            'circuitId'     => $user['user_id'], 
-            'label'         => $redactor['short_label']
-        ]);
     }
 
     public static function getRefusalMessage(array $args)
