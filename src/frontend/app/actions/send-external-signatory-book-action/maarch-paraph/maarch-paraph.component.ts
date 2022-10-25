@@ -45,16 +45,15 @@ export class MaarchParaphComponent implements OnInit {
         public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService
     ) { }
 
-    ngOnInit(): void {
-        if (typeof this.additionalsInfos.destinationId !== 'undefined' && this.additionalsInfos.destinationId !== '') {
-            setTimeout(() => {
-                this.appExternalVisaWorkflow.loadListModel(this.additionalsInfos.destinationId);
-            }, 0);
+    async ngOnInit(): Promise<void> {
+        this.loading = true;
+        if (!this.functions.empty(this.additionalsInfos?.destinationId)) {
+            await this.appExternalVisaWorkflow.loadListModel(this.additionalsInfos.destinationId).finally(() => this.loading = false);
         }
     }
 
     isValidParaph(): boolean {
-        return this.externalSignatoryBookManagerService.isValidParaph(this.additionalsInfos, this.appExternalVisaWorkflow.getWorkflow(), this.appExternalVisaWorkflow.getUserOtpsWorkflow(), this.resourcesToSign);
+        return this.externalSignatoryBookManagerService.isValidParaph(this.additionalsInfos, this.appExternalVisaWorkflow.getWorkflow(), this.resourcesToSign, this.appExternalVisaWorkflow.getUserOtpsWorkflow());
     }
 
     openSignaturePosition(resource: any) {

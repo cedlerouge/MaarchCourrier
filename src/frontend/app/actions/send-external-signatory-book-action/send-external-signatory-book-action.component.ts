@@ -161,7 +161,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             return this.externalSignatoryBook.isValidParaph(
                 this.additionalsInfos,
                 this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getWorkflow(),
-                this.resourcesToSign
+                this.resourcesToSign,
+                this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getUserOtpsWorkflow()
             );
         } else {
             if (this[this.authService.externalSignatoryBook?.id] !== undefined) {
