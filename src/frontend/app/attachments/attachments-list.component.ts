@@ -13,13 +13,13 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { VisaWorkflowModalComponent } from '../visa/modal/visa-workflow-modal.component';
 import { AppService } from '@service/app.service';
-import { ExternalSignatoryBookGeneratorService } from '@service/externalSignatoryBook/external-signatory-book-generator.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-attachments-list',
     templateUrl: 'attachments-list.component.html',
     styleUrls: ['attachments-list.component.scss'],
-    providers: [ExternalSignatoryBookGeneratorService],
+    providers: [ExternalSignatoryBookManagerService],
     animations: [
         trigger(
             'myAnimation',
@@ -70,7 +70,7 @@ export class AttachmentsListComponent implements OnInit {
         public http: HttpClient,
         public dialog: MatDialog,
         public appService: AppService,
-        public externalSignatoryBook: ExternalSignatoryBookGeneratorService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         private notify: NotificationService,
         private headerService: HeaderService,
         private privilegeService: PrivilegeService
@@ -80,7 +80,7 @@ export class AttachmentsListComponent implements OnInit {
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-        if (this.externalSignatoryBook.enabledSignatoryBook === 'maarchParapheur') {
+        if (this.externalSignatoryBook.signatoryBookEnabled === 'maarchParapheur') {
             this.maarchParapheurEnabled = true;
         }
         if (this.resId !== null) {
@@ -231,7 +231,7 @@ export class AttachmentsListComponent implements OnInit {
             data: {
                 id: attachment.resId,
                 type: 'attachment',
-                title: this.translate.instant(`lang.${this.externalSignatoryBook.enabledSignatoryBook}Workflow`),
+                title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
                 linkedToMaarchParapheur: true
             }
         });
