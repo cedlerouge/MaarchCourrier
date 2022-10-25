@@ -59,6 +59,18 @@ export class FastParapheurService {
         /**
          * Load list model from Fast Parapheur API
          */
+        //  return new Promise((resolve) => {
+        //     this.http.get(`../rest/listTemplates/${serialId}?type=visaCircuit&fastParapheur=true`).pipe(
+        //         tap((data: any) => {
+        //             resolve(data);
+        //         }),
+        //         catchError((err: any) => {
+        //             this.notify.handleSoftErrors(err);
+        //             resolve(null);
+        //             return of(false);
+        //         })
+        //     );
+        // });
     }
 
     loadWorkflow() {
@@ -136,6 +148,7 @@ export class FastParapheurService {
     setExternalInformation(item: any): UserWorkflow {
         return {
             ... item,
+            id: item.email,
             signatureModes: this.userWorkflow.signatureModes,
             externalId: {
                 fastParapheur: item.email
@@ -145,10 +158,6 @@ export class FastParapheurService {
 
     getRessources(additionalsInfos: any): any[] {
         return additionalsInfos.attachments.map((e: any) => e.res_id);
-    }
-
-    getDatas(externalSignatoryBookDatas: any = null, workflow: any[] = [], resourcesToSign: any[] = []): any {
-        return externalSignatoryBookDatas;
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {

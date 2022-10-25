@@ -135,7 +135,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         } else {
             realResSelected = this.externalSignatoryBook.getRessources(this.additionalsInfos);
             const workflow: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.getWorkflow();
-            datas = this.externalSignatoryBook.getDatas(this.externalSignatoryBookDatas, workflow, this.resourcesToSign);
+            datas = this.externalSignatoryBook.getDatas(workflow, this.resourcesToSign);
         }
 
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(

@@ -320,8 +320,6 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     openCreateUserOtp(item: any = null) {
-        console.log('item', item);
-
         if (this.adminMode && (item === null || (item && item.item_id === null))) {
             const objToSend: any = item === null || (item && item.item_id) !== null ? null : {
                 firstname: item.externalInformations.firstname,

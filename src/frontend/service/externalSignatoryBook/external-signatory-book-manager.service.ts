@@ -7,6 +7,7 @@ import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@service/auth.service';
 import { FunctionsService } from '@service/functions.service';
+import { ResourceStep } from '@models/resource-step.model';
 @Injectable()
 
 export class ExternalSignatoryBookManagerService {
@@ -118,7 +119,30 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected.getRessources(additionalsInfos);
     }
 
-    getDatas(externalSignatoryBookDatas: any = null, workflow: any[] = [], resourcesToSign: any[] = []) {
-        return this.serviceInjected.getDatas(externalSignatoryBookDatas, workflow, resourcesToSign);
+    getDatas(workflow: any[] = [], resourcesToSign: any[] = []): any {
+        const formatedData: any = { steps: [] };
+        resourcesToSign.forEach((resource: any) => {
+            workflow.forEach((element: any, index: number) => {
+                const step: ResourceStep = {
+                    'resId': resource.resId,
+                    'mainDocument': resource.mainDocument,
+                    'externalId': element.externalId[this.signatoryBookEnabled],
+                    'sequence': index,
+                    'action': element.role === 'visa' ? 'visa' : 'sign',
+                    'signatureMode': element.role,
+                    'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                    'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                    'externalInformations': element.hasOwnProperty('externalInformations') ? element.externalInformations : null
+                };
+                formatedData['steps'].push(step);
+            });
+        });
+        return formatedData;
+    }
+
+    formatPositions(position: any): any {
+        delete position.mainDocument;
+        delete position.resId;
+        return position;
     }
 }
