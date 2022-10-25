@@ -30,11 +30,16 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
+    public static function getMonolevels()
+    {
+        return Logger::getLevels();
+    }
+
     /**
      * @description Get log config
      * @return  array
      */
-    private static function getLogConfig()
+    public static function getLogConfig()
     {
         $path = null;
         $customId = CoreConfigModel::getCustomId() ?: null;
