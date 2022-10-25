@@ -228,7 +228,15 @@ class AutoCompleteController
                 }
                 $users = array_merge($users, $subscriberUsers);
             }
-            $users = array_values(array_unique($users));
+        }
+        $usersEmails = array_values(array_unique(array_column($users, 'email')));
+        foreach ($users as $userKey => $user) {
+            $emailKey = array_search($user['email'], $usersEmails);
+            if ($emailKey !== false) {
+                unset($usersEmails[$emailKey]);
+            } else {
+                unset($users[$userKey]);
+            }
         }
         $users = array_filter($users, function ($user) use ($excludedUsers) {
             return !in_array($user['email'], $excludedUsers);
