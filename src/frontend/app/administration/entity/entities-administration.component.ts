@@ -20,6 +20,7 @@ import { Observable, of } from 'rxjs';
 import { EntitiesExportComponent } from './export/entities-export.component';
 import { UntypedFormControl } from '@angular/forms';
 import { InputCorrespondentGroupComponent } from '../contact/group/inputCorrespondent/input-correspondent-group.component';
+import { AuthService } from '@service/auth.service';
 
 declare let $: any;
 @Component({
@@ -72,17 +73,17 @@ export class EntitiesAdministrationComponent implements OnInit {
     addressBANFilteredResult: Observable<string[]>;
     addressBANCurrentDepartment: string = '75';
     departmentList: any[] = [];
-    externalSignatoryBook: string;
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialog: MatDialog,
-        private headerService: HeaderService,
-        private router: Router,
         public appService: AppService,
         public functions: FunctionsService,
+        public authService: AuthService,
+        private notify: NotificationService,
+        private headerService: HeaderService,
+        private router: Router,
         private viewContainerRef: ViewContainerRef
     ) { }
 
@@ -115,21 +116,6 @@ export class EntitiesAdministrationComponent implements OnInit {
         this.initEntitiesTree();
         this.initBanSearch();
         this.initAutocompleteAddressBan();
-        this.initSignatoryBook();
-    }
-
-    initSignatoryBook() {
-        this.http.get('../rest/externalConnectionsEnabled').pipe(
-            tap((data: any) => {
-                Object.keys(data.connection).filter(connectionId => connectionId !== 'maileva').forEach(connectionId => {
-                    this.externalSignatoryBook = connectionId;
-                });
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
     }
 
     initEntitiesTree() {

@@ -145,4 +145,8 @@ export class ExternalSignatoryBookManagerService {
         delete position.resId;
         return position;
     }
+
+    canCreateUser(): boolean {
+        return this.serviceInjected.canCreateUser;
+    }
 }

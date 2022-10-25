@@ -13,6 +13,7 @@ import { UserWorkflow } from '@models/user-workflow.model';
 export class MaarchParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/maarchParapheurUsers';
+    canCreateUser: boolean = true;
 
     constructor(
         public functions: FunctionsService,

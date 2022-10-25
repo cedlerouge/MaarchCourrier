@@ -12,7 +12,7 @@ import { UserWorkflow } from '@models/user-workflow.model';
 export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
-
+    canCreateUser: boolean = false;
     userWorkflow = new UserWorkflow();
 
     constructor(
