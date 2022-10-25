@@ -54,7 +54,7 @@
                 <mat-icon class="avatarAccount" color="primary" mat-list-icon
                     [style.background-image]="'url('+externalSignatoryBookLink.picture+')'"></mat-icon>
                 <p mat-line class="accountInfo" [title]="externalSignatoryBookLink.login">
-                    <span>
+                    <span class="externalUserLogin">
                         {{externalSignatoryBookLink.login}}
                     </span>
                     <button mat-icon-button color="warn" (click)="unlinkSignatoryBookAccount()"
