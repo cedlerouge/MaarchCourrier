@@ -13,6 +13,7 @@ import { CreateExternalUserComponent } from './createExternalUser/create-externa
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { UserWorkflow } from '@models/user-workflow.model';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     selector: 'app-external-visa-workflow',
@@ -54,6 +55,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         public functions: FunctionsService,
         public dialog: MatDialog,
         public actionService: ActionsService,
+        public authService: AuthService,
         public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService,
         private notify: NotificationService
     ) { }
@@ -111,7 +113,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             }
             this.visaWorkflow.items.forEach((element: any, key: number) => {
                 if (!this.functions.empty(element['externalId'])) {
-                    this.getUserAvatar(element.externalId.maarchParapheur, key);
+                    this.getUserAvatar(element.externalId[this.authService.externalSignatoryBook.id], key);
                 }
             });
             this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));

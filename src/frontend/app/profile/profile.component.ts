@@ -87,13 +87,13 @@ export class ProfileComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private zone: NgZone,
-        private notify: NotificationService,
         public dialog: MatDialog,
-        private _formBuilder: UntypedFormBuilder,
-        private authService: AuthService,
         public headerService: HeaderService,
         public appService: AppService,
+        public authService: AuthService,
+        private zone: NgZone,
+        private notify: NotificationService,
+        private _formBuilder: UntypedFormBuilder,
         private viewContainerRef: ViewContainerRef,
         private functions: FunctionsService,
     ) {

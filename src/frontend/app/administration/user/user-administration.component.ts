@@ -236,7 +236,7 @@ export class UserAdministrationComponent implements OnInit {
             this.externalSignatoryBookLink.login = data.link;
             this.loading = false;
             if (this.externalSignatoryBookLink.login !== '') {
-                this.getUserAvatar(this.user.external_id.maarchParapheur);
+                this.getUserAvatar(this.user.external_id[this.authService.externalSignatoryBook.id]);
             } else {
                 this.externalSignatoryBookConnectionStatus = false;
             }
