@@ -166,10 +166,7 @@ export class MaarchParapheurService {
 
     setExternalInformation(item: any): UserWorkflow {
         return {
-            ... item,
-            externalId: {
-                maarchParapheur: item.id
-            }
+            ...item
         };
     }
 

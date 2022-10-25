@@ -105,7 +105,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
                 this.visaWorkflow.items = listModel.listTemplates[0].items.map((item: any) => ({
-                    ...item,
+                    ...this.externalSignatoryBookManagerService.setExternalInformation(item),
                     item_entity: item.descriptionToDisplay,
                     requested_signature: item.item_mode !== 'visa',
                     currentRole: item.item_mode

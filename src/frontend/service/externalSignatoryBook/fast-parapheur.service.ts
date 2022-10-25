@@ -55,22 +55,22 @@ export class FastParapheurService {
         });
     }
 
-    loadListModel() {
+    loadListModel(serialId: number) {
         /**
          * Load list model from Fast Parapheur API
          */
-        //  return new Promise((resolve) => {
-        //     this.http.get(`../rest/listTemplates/${serialId}?type=visaCircuit&fastParapheur=true`).pipe(
-        //         tap((data: any) => {
-        //             resolve(data);
-        //         }),
-        //         catchError((err: any) => {
-        //             this.notify.handleSoftErrors(err);
-        //             resolve(null);
-        //             return of(false);
-        //         })
-        //     );
-        // });
+        return new Promise((resolve) => {
+            this.http.get(`../rest/listTemplates/${serialId}?type=visaCircuit&fastParapheur=true`).pipe(
+                tap((data: any) => {
+                    resolve({listTemplates: [data.listTemplate]});
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     loadWorkflow() {
@@ -149,7 +149,10 @@ export class FastParapheurService {
         return {
             ... item,
             id: item.email,
+            labelToDisplay: item.idToDisplay,
             signatureModes: this.userWorkflow.signatureModes,
+            availableRoles: this.userWorkflow.signatureModes,
+            role: this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             externalId: {
                 fastParapheur: item.email
             }
