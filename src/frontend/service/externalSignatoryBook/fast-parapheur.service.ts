@@ -69,7 +69,7 @@ export class FastParapheurService {
 
     getAutocompleteDatas(data: any): Promise<any> {
         return new Promise((resolve) => {
-            this.http.get(`..${this.autocompleteUsersRoute}`, { params: { 'search': data.user.mail, 'exludeAlreadyConnected': 'true' } })
+            this.http.get(`..${this.autocompleteUsersRoute}`, { params: { 'search': data.user.mail, 'excludeAlreadyConnected': 'true' } })
                 .pipe(
                     tap((result: any) => {
                         resolve(result);

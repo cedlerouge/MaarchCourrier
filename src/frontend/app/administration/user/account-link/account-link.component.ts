@@ -65,7 +65,7 @@ export class AccountLinkComponent implements OnInit {
     }
 
     getRouteDatas(): string[] {
-        return [`${this.externalSignatoryBook.getAutocompleteUsersRoute()}?exludeAlreadyConnected=true`];
+        return [`${this.externalSignatoryBook.getAutocompleteUsersRoute()}?excludeAlreadyConnected=true`];
     }
 
     getUserFullName(externalUser: any): string {
