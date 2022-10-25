@@ -406,22 +406,109 @@ class FastParapheurController
         return ['success' => (string)$documentId];
     }
 
-    public static function uploadWithSteps(array $args)
+    /**
+     * upload to FastParapheur with integrated workflow
+     *
+     * @param array $args:
+     *   - resIdMaster: identifier of the res_letterbox item to send
+     *   - config: FastParapheur configuration
+     *   - workflow: an array of steps, each being an associative array with:
+     *     - mode: 'visa' or 'signature'
+     *     - type: 'maarchCourrierUserId' or 'fastParapheurUserEmail'
+     *     - id: identifies the user, int for maarchCourrierUserId, string for fastParapheurUserEmail
+     *
+     * @return array links between MC and FP identifiers:
+     *   [
+     *     'sended' => [
+     *       'letterbox_coll' => [
+     *         $maarchCourrierResId => $fastParapheurDocumentId,
+     *         ...
+     *       ],
+     *       'attachments_coll' => [
+     *         $maarchCourrierAttachmentResId => $fastParapheurDocumentId,
+     *         ...
+     *       ]
+     *     ]
+     *   ]
+     */
+    public static function uploadWithWorkflow(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config']);
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'workflow', 'config']);
         ValidatorModel::intType($args, ['resIdMaster']);
-        ValidatorModel::arrayType($args, ['steps', 'config']);
+        ValidatorModel::arrayType($args, ['workflow', 'config']);
 
         $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
             return ['error' => 'no subscriberId provided'];
         }
 
+        $circuit = [
+            'type'  => 'BUREAUTIQUE_PDF',
+            'steps' => []
+        ];
+        //$otpInfo = [];
+        foreach ($args['workflow'] as $index => $step) {
+            if (in_array($step['mode'], ['signature', 'visa']) && !empty($step['type']) && !empty($step['id'])) {
+                if ($step['type'] == 'maarchCourrierUserId') {
+                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+                    if (empty($user['fastParapheurEmail'])) {
+                        return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
+                    }
+                    $circuit['steps'][] = [
+                        'step'    => $step['mode'],
+                        'members' => [$user['fastParapheurEmail']]
+                    ];
+                } elseif ($step['type'] == 'fastParapheurUserEmail') {
+                    $circuit['steps'][] = [
+                        'step'    => $step['mode'],
+                        'members' => [$step['id']]
+                    ];
+                }
+            } /*elseif ($step['type'] == 'externalOTP'
+                      && Validator::notEmpty()->phone()->validate($step['phone'])
+                      && Validator::notEmpty()->email()->validate($step['email'])
+                      && Validator::notEmpty()->stringType()->validate($step['firstname'])
+                      && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+                $circuit['steps'][] = [
+                    'step'    => 'OTPSignature',
+                    'members' => [$step['email']]
+                ];
+                $otpInfo['OTP_firstname_' . $index]   = $step['firstname'];
+                $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
+                $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
+                $otpInfo['OTP_email_' . $index]       = $step['email'];
+            } */ else {
+                return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
+            }
+        }
+        if (empty($circuit['steps'])) {
+            return ['error' => 'workflow is empty or invalid', 'code' => 400];
+        }
+
+        /*
+        $otpInfoXML = null;
+        if (!empty($otpInfo)) {
+            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            foreach ($otpInfo as $name => $value) {
+                $metadataElement = $otpInfoXML->addChild('meta-data');
+                $metadataElement->addAttribute($name, $value);
+            }
+        }
+        */
+
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
             'select' => ['res_id', 'subject', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
         ]);
+        if (empty($resource)) {
+            return ['error' => 'resource does not exist', 'code' => 400];
+        }
+
         $resource['external_id'] = json_decode($resource['external_id'], true);
+        if (!empty($resource['external_id']['signatureBookId'])) {
+            return ['error' => 'resource is already in fastParapheur', 'code' => 400];
+        }
+
         if ($resource['format'] != 'pdf') {
             $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
             if (!empty($convertedDocument['errors'])) {
@@ -430,14 +517,6 @@ class FastParapheurController
             $resource['docserver_id'] = $convertedDocument['docserver_id'];
             $resource['path'] = $convertedDocument['path'];
             $resource['filename'] = $convertedDocument['filename'];
-        }
-
-        if (empty($resource)) {
-            return ['error' => 'resource does not exist', 'code' => 400];
-        }
-
-        if (!empty($resource['external_id']['signatureBookId'])) {
-            return ['error' => 'resource is already in fastParapheur', 'code' => 400];
         }
 
         $sentAttachments = [];
@@ -487,25 +566,26 @@ class FastParapheurController
             ];
         }
 
-        $upload = [
-            'doc'        => null,
-            'comment'    => '',
-            'appendices' => []
-        ];
-        $signTarget = null;
+        $uploads = [];
+        $appendices = [];
         if (!empty($sentMainDocument) && is_file($sentMainDocument['path'])) {
             if ($sentMainDocument['signable']) {
-                $upload['doc'] = [
-                    'path'     => $sentMainDocument['path'],
-                    'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                $uploads[] = [
+                    'id' => [
+                        'collId' => 'letterbox_coll',
+                        'resId'  => $args['resIdMaster']
+                    ],
+                    'doc' => [
+                        'path'     => $sentMainDocument['path'],
+                        'filename' => TextFormatModel::formatFilename([
+                            'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
+                            'maxLength' => 50
+                        ])
+                    ],
+                    'comment' => $sentMainDocument['comment']
                 ];
-                $upload['comment'] = $sentMainDocument['comment'];
-                $signTarget = ['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']];
             } else {
-                $upload['appendices'][] = [
+                $appendices[] = [
                     'path'     => $sentMainDocument['path'],
                     'filename' => TextFormatModel::formatFilename([
                         'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
@@ -519,17 +599,22 @@ class FastParapheurController
                 continue;
             }
             if ($sentAttachment['signable']) {
-                $upload['doc'] = [
-                    'path'     => $sentAttachment['path'],
-                    'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                $uploads[] = [
+                    'id' => [
+                        'collId' => 'attachments_coll',
+                        'resId'  => $sentAttachment['resId']
+                    ],
+                    'doc' => [
+                        'path'     => $sentAttachment['path'],
+                        'filename' => TextFormatModel::formatFilename([
+                            'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
+                            'maxLength' => 50
+                        ])
+                    ],
+                    'comment' => $sentAttachment['comment']
                 ];
-                $upload['comment'] = $sentAttachment['comment'];
-                $signTarget = ['collId' => 'attachments_coll', 'resId' => $sentAttachment['resId']];
             } else {
-                $upload['appendices'][] = [
+                $appendices[] = [
                     'path'     => $sentAttachment['path'],
                     'filename' => TextFormatModel::formatFilename([
                         'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
@@ -538,112 +623,62 @@ class FastParapheurController
                 ];
             }
         }
-        if (empty($upload['doc'])) {
+        if (empty($uploads)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
         }
 
-        $circuit = [
-            'type'  => 'BUREAUTIQUE_PDF',
-            'steps' => []
-        ];
-        //$otpInfo = [];
-        foreach ($args['steps'] as $index => $step) {
-            if (in_array($step['mode'], ['signature', 'visa', 'serverSignature']) && !empty($step['userId'])) {
-                $user = UserModel::getById(['id' => $step['userId'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
-                if (empty($user['fastParapheurEmail'])) {
-                    return ['errors' => 'no FastParapheurEmail for user ' . $step['userId'], 'code' => 400];
-                }
-                $circuit['steps'][] = [
-                    'step'    => $step['mode'],
-                    'members' => [$user['fastParapheurEmail']]
-                ];
-            } /*elseif ($step['type'] == 'externalOTP'
-                      && Validator::notEmpty()->phone()->validate($step['phone'])
-                      && Validator::notEmpty()->email()->validate($step['email'])
-                      && Validator::notEmpty()->stringType()->validate($step['firstname'])
-                      && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
-                $circuit['steps'][] = [
-                    'step'    => 'OTPSignature',
-                    'members' => [$step['email']]
-                ];
-                $otpInfo['OTP_firstname_' . $index]   = $step['firstname'];
-                $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
-                $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
-                $otpInfo['OTP_email_' . $index]       = $step['email'];
-            } */ else {
-                return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
-            }
-        }
-        if (empty($step)) {
-            return ['error' => 'steps are empty or invalid', 'code' => 400];
+        foreach ($appendices as $key => $appendix) {
+            $appendices[$key] = [
+                'isFile'   => true,
+                'filename' => $appendix['filename'],
+                'content'  => file_get_contents($appendix['path'])
+            ];
         }
 
-        /*
-        $otpInfoXML = null;
-        if (!empty($otpInfo)) {
-            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
-            foreach ($otpInfo as $name => $value) {
-                $metadataElement = $otpInfoXML->addChild('meta-data');
-                $metadataElement->addAttribute($name, $value);
-            }
-        }
-        */
-
-        $curlReturn = CurlModel::exec([
-            'method'  => 'POST',
-            'url'     => $args['config']['url'] . '/documents/ondemand/' . $subscriberId . '/upload',
-            'options' => [
-                CURLOPT_SSLCERT       => $args['config']['certPath'],
-                CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
-            ],
-            'multipartBody' => [
-                'comment' => $upload['comment'],
-                'doc'     => ['isFile' => true, 'filename' => $upload['doc']['filename'], 'content' => file_get_contents($upload['doc']['path'])],
-                'annexes' => [
-                    'subvalues' => array_map(function ($appendix) {
-                        return [
-                            'isFile'   => true,
-                            'filename' => $appendix['filename'],
-                            'content'  => file_get_contents($appendix['path'])
-                        ];
-                    }, $upload['appendices'])
-                ],
-                'circuit' => json_encode($circuit)
-            ]
-        ]);
-        if ($curlReturn['code'] != 200) {
-            return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
-        }
-        $fastParapheurDocId = (string)$curlReturn['response'];
-
-        /*
-        if (!empty($otpInfoXML)) {
+        $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
+        foreach ($uploads as $upload) {
             $curlReturn = CurlModel::exec([
-                'method'  => 'PUT',
-                'url'     => $args['config']['url'] . '/documents/v2/otp/' . $fastParapheurDocId . '/metadata/define',
+                'method'  => 'POST',
+                'url'     => $args['config']['url'] . '/documents/ondemand/' . $subscriberId . '/upload',
                 'options' => [
                     CURLOPT_SSLCERT       => $args['config']['certPath'],
                     CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
                     CURLOPT_SSLCERTTYPE   => $args['config']['certType']
                 ],
                 'multipartBody' => [
-                    'otpinformation' => ['isFile' => true, 'filename' => 'otpinfo.xml', 'content' => $otpInfoXML->asXML()]
+                    'comment' => $upload['comment'],
+                    'doc'     => ['isFile' => true, 'filename' => $upload['doc']['filename'], 'content' => file_get_contents($upload['doc']['path'])],
+                    'annexes' => ['subvalues' => $appendices],
+                    'circuit' => json_encode($circuit)
                 ]
             ]);
             if ($curlReturn['code'] != 200) {
                 return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
             }
-        }
-        */
+            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$curlReturn['response'];
 
-        return [
-            'sended' => [
-                $signTarget['collId'] => [
-                    $signTarget['resId'] => $fastParapheurDocId
-                ]
-            ]
-        ];
+            /*
+            if (!empty($otpInfoXML)) {
+                $curlReturn = CurlModel::exec([
+                    'method'  => 'PUT',
+                    'url'     => $args['config']['url'] . '/documents/v2/otp/' . $fastParapheurDocId . '/metadata/define',
+                    'options' => [
+                        CURLOPT_SSLCERT       => $args['config']['certPath'],
+                        CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
+                        CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+                    ],
+                    'multipartBody' => [
+                        'otpinformation' => ['isFile' => true, 'filename' => 'otpinfo.xml', 'content' => $otpInfoXML->asXML()]
+                    ]
+                ]);
+                if ($curlReturn['code'] != 200) {
+                    return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+                }
+            }
+            */
+        }
+
+        return $returnIds;
     }
 
     public static function download(array $args)
