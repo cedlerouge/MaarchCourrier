@@ -23,6 +23,7 @@ use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
 use Resource\controllers\StoreController;
+use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -132,6 +133,60 @@ class FastParapheurController
         }
 
         return $response->withJson(['link' => $user['fastParapheurEmail'], 'errors' => '']);
+    }
+
+    public function getWorkflow(Request $request, Response $response, array $args)
+    {
+        $queryParams = $request->getQueryParams();
+
+        if (!empty($queryParams['type']) && $queryParams['type'] == 'resource') {
+            if (!ResController::hasRightByResId(['resId' => [$args['id']], 'userId' => $GLOBALS['id']])) {
+                return $response->withStatus(400)->withJson(['errors' => 'Resource out of perimeter']);
+            }
+            $resource = ResModel::getById(['resId' => $args['id'], 'select' => ['external_id']]);
+            if (empty($resource)) {
+                return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
+            }
+        } else {
+            $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'status', 'external_id']]);
+            if (empty($resource)) {
+                return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
+            }
+            if (!ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])) {
+                return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
+            }
+        }
+
+        $externalId = json_decode($resource['external_id'], true);
+        if (empty($externalId['signatureBookId'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Resource is not linked to Fast Parapheur']);
+        }
+
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+        }
+
+        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($fastParapheurBlock)) {
+            return $response->withStatus(500)->withJson(['errors' => 'invalid configuration for FastParapheur']);
+        }
+        $url = (string)$fastParapheurBlock->url;
+        $certPath = (string)$fastParapheurBlock->certPath;
+        $certPass = (string)$fastParapheurBlock->certPass;
+        $certType = (string)$fastParapheurBlock->certType;
+
+        $curlReturn = CurlModel::exec([
+            'url'           => $url . '/documents/v2/' . $externalId['signatureBookId'] . '/history',
+            'method'        => 'GET',
+            'options'       => [
+                CURLOPT_SSLCERT       => $certPath,
+                CURLOPT_SSLCERTPASSWD => $certPass,
+                CURLOPT_SSLCERTTYPE   => $certType
+            ]
+        ]);
+
+        return $response->withJson($curlReturn['response']);
     }
 
     public static function retrieveSignedMails(array $args)
