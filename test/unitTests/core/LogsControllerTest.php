@@ -139,7 +139,7 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logFonctionnel']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[${getmypid()}]"));
+        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
         $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
         $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
@@ -174,7 +174,7 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[${getmypid()}]"));
+        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
         $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
         $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
@@ -207,7 +207,7 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['queries']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[${getmypid()}]"));
+        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
         $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
         $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
@@ -260,7 +260,7 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[${getmypid()}]"));
+        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
         $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ALERT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
