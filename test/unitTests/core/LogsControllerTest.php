@@ -245,6 +245,15 @@ class LogsControllerTest extends TestCase
             'eventType' => 'LogEvent',
             'eventId'   => 'This is a test message'
         ]);
+        $logsController->add([
+            'isTech'    => true,
+            'moduleId'  => 'LogModuleId',
+            'level'     => 'ALERT',
+            'tableName' => 'LogTableName',
+            'recordId'  => 'LogId',
+            'eventType' => 'LogEvent',
+            'eventId'   => 'This is a test message'
+        ]);
 
         // check output
         $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
@@ -253,6 +262,7 @@ class LogsControllerTest extends TestCase
         $this->assertNotEmpty($logFileOutput);
         $this->assertIsInt(strpos($logFileOutput, "[${getmypid()}]"));
         $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
+        $this->assertIsInt(strpos($logFileOutput, "[ALERT]"));
         $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
         $this->assertFalse(strpos($logFileOutput, "[DEBUG]"));
         $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
@@ -262,6 +272,103 @@ class LogsControllerTest extends TestCase
 
         unlink($logConfig['logTechnique']['file']);
         $this->assertFileDoesNotExist($logConfig['logTechnique']['file'], "File '" . $logConfig['logTechnique']['file'] . "' exists");
+    }
+
+    public function testConvertMaxFileSizeToBytes()
+    {
+        $logsController = new \SrcCore\controllers\LogsController();
+        $logConfig = $logsController->getLogConfig();
+
+        $this->assertNotEmpty($logConfig['logFonctionnel']['maxFileSize']);
+        $this->assertIsInt($logsController->setMaxFileSize($logConfig['logFonctionnel']['maxFileSize']));
+        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['logFonctionnel']['maxFileSize']));
+
+        $this->assertNotEmpty($logConfig['logTechnique']['maxFileSize']);
+        $this->assertIsInt($logsController->setMaxFileSize($logConfig['logTechnique']['maxFileSize']));
+        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['logTechnique']['maxFileSize']));
+
+        $this->assertNotEmpty($logConfig['queries']['maxFileSize']);
+        $this->assertIsInt($logsController->setMaxFileSize($logConfig['queries']['maxFileSize']));
+        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['queries']['maxFileSize']));
+    }
+
+    public function testRotateLogFileBySize()
+    {
+        $logsController = new \SrcCore\controllers\LogsController();
+        $logConfig = $logsController->getLogConfig();
+
+        $lineData = [
+            'isTech'    => true,
+            'moduleId'  => 'LogModuleId',
+            'level'     => 'CRITICAL',
+            'tableName' => 'LogTableName',
+            'recordId'  => 'LogId',
+            'eventType' => 'LogEvent',
+            'eventId'   => 'This is a test message'
+        ];
+
+        $logsController->add($lineData);
+        $logsController->rotateLogFileBySize([
+            'path'      => $logConfig['logTechnique']['file'],
+            'maxSize'   => (filesize($logConfig['logTechnique']['file']) - 10),
+            'maxFiles'  => (int)$logConfig['logTechnique']['maxBackupFiles']
+        ]);
+        $logsController->add($lineData);
+
+        $path_parts = pathinfo($logConfig['logTechnique']['file']);
+        $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . "-1." . $path_parts['extension'];
+
+        $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
+        $this->assertFileExists($newFilePath, "Le fichier logTechnique backup n'est pas créé : $newFilePath");
+
+        unlink($newFilePath);
+        unlink($logConfig['logTechnique']['file']);
+        $this->assertFileDoesNotExist($newFilePath, "File '$newFilePath' exists");
+        $this->assertFileDoesNotExist($logConfig['logTechnique']['file'], "File '" . $logConfig['logTechnique']['file'] . "' exists");
+    }
+
+    public function testRotateLogFileByMaxFiles()
+    {
+        $logsController = new \SrcCore\controllers\LogsController();
+        $logConfig = $logsController->getLogConfig();
+
+        $lineData = [
+            'isTech'    => true,
+            'moduleId'  => 'LogModuleId',
+            'level'     => 'CRITICAL',
+            'tableName' => 'LogTableName',
+            'recordId'  => 'LogId',
+            'eventType' => 'LogEvent',
+            'eventId'   => 'This is a test message'
+        ];
+
+        $filesToDelete = [];
+        for ($index=0; $index < ((int)$logConfig['logTechnique']['maxBackupFiles'] + 3); $index++) { 
+            $logsController->add($lineData);
+            $logsController->rotateLogFileBySize([
+                'path'      => $logConfig['logTechnique']['file'],
+                'maxSize'   => (filesize($logConfig['logTechnique']['file']) - 10),
+                'maxFiles'  => (int)$logConfig['logTechnique']['maxBackupFiles']
+            ]);
+            $logsController->add($lineData);
+
+            $path_parts = pathinfo($logConfig['logTechnique']['file']);
+            $newFilePath  = $path_parts['dirname'] . '/';
+            $newFilePath .= ($index == 0 ? $path_parts['filename'] . "." : $path_parts['filename'] . "-$index.");
+            $newFilePath .= $path_parts['extension'];
+
+            if ($index <= (int)$logConfig['logTechnique']['maxBackupFiles']) {
+                $this->assertFileExists($newFilePath, "Le fichier logTechnique n'existe pas : $newFilePath");
+                $filesToDelete[] = $newFilePath;
+            } else {
+                $this->assertFileDoesNotExist($newFilePath, "Le fichier logTechnique existe : $newFilePath");
+            }
+        }
+
+        foreach ($filesToDelete as $value) {
+            unlink($value);
+            $this->assertFileDoesNotExist($newFilePath, "Le fichier logTechnique existe : $value");
+        }
     }
 
     protected function tearDown(): void

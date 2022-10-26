@@ -160,7 +160,7 @@ class LogsController
         if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
             return;
         }
-        LogsController::rotateLogByFileSize([
+        LogsController::rotateLogFileBySize([
             'path'      => $log['path'],
             'maxSize'   => $log['maxSize'],
             'maxFiles'  => $log['maxFiles']
@@ -223,7 +223,7 @@ class LogsController
      * @param   array   $file
      * @return  void
      */
-    public static function rotateLogByFileSize(array $file)
+    public static function rotateLogFileBySize(array $file)
     {
         ValidatorModel::notEmpty($file, ['path']);
         ValidatorModel::intVal($file, ['maxSize', 'maxFiles']);
