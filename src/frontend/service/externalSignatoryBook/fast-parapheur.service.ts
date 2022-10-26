@@ -55,14 +55,14 @@ export class FastParapheurService {
         });
     }
 
-    loadListModel(serialId: number) {
+    loadListModel(entityId: number) {
         /**
          * Load list model from Fast Parapheur API
          */
         return new Promise((resolve) => {
-            this.http.get(`../rest/listTemplates/${serialId}?type=visaCircuit&fastParapheur=true`).pipe(
+            this.http.get(`../rest/listTemplates/entities/${entityId}?type=visaCircuit&fastParapheur=true`).pipe(
                 tap((data: any) => {
-                    resolve({listTemplates: [data.listTemplate]});
+                    resolve(data);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -148,13 +148,13 @@ export class FastParapheurService {
     setExternalInformation(item: any): UserWorkflow {
         return {
             ... item,
-            id: item.email,
-            labelToDisplay: item.idToDisplay,
-            signatureModes: this.userWorkflow.signatureModes,
-            availableRoles: this.userWorkflow.signatureModes,
-            role: this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
+            id: item.email ?? item.externalId.fastParapheur,
+            signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
+            role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
+            isValid: true,
+            hasPrivilege: true,
             externalId: {
-                fastParapheur: item.email
+                fastParapheur: item.email ?? item.externalId.fastParapheur
             }
         };
     }

@@ -165,9 +165,7 @@ export class MaarchParapheurService {
     }
 
     setExternalInformation(item: any): UserWorkflow {
-        return {
-            ...item
-        };
+        return item;
     }
 
     getRessources(additionalsInfos: any): any[] {
