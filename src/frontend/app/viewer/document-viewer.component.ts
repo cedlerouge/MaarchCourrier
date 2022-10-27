@@ -1420,7 +1420,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 id: this.resId,
                 type: 'resource',
                 title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
-                linkedToMaarchParapheur: true
+                linkedToExternalSignatoryBook: true
             }
         });
     }
