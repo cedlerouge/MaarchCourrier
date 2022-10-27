@@ -380,7 +380,7 @@ class ListTemplateController
                             'descriptionToDisplay' => $externalId['fastParapheur'],
                             'labelToDisplay'       => trim($user['firstname'] . ' ' . $user['lastname']),
                             'availableRoles'       => ['visa', 'sign'],
-                            'role'                 => 'sign'
+                            'role'                 => $listTemplateItems[$itemKey]['item_mode']
                         ];
                     }
                 }
