@@ -14,6 +14,7 @@ export class MaarchParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/maarchParapheurUsers';
     canCreateUser: boolean = true;
+    canSynchronizeSignatures: boolean = true;
 
     constructor(
         public functions: FunctionsService,

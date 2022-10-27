@@ -474,7 +474,7 @@
                                     <button *ngIf="user.signatures.length > 0 && canManagePersonalDatas" mat-icon-button
                                         color="primary" (click)="synchronizeSignatures()"
                                         matTooltip="{{'lang.syncSignsToMaarchParapheur' | translate}}"
-                                        [disabled]="!user.external_id[authService.externalSignatoryBook.id] || loadingSign">
+                                        [disabled]="!externalSignatoryBook.canSynchronizeSignatures() || loadingSign">
                                         <mat-icon class="fa fa-sync-alt fa-2x" [class.fa-spin]="loadingSign"></mat-icon>
                                     </button>
                                 </div>

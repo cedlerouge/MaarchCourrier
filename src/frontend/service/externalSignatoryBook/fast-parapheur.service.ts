@@ -13,6 +13,7 @@ export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
     canCreateUser: boolean = false;
+    canSynchronizeSignatures: boolean = false;
     userWorkflow = new UserWorkflow();
 
     constructor(
@@ -171,30 +172,6 @@ export class FastParapheurService {
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
         return additionalsInfos.attachments.length > 0 && workflow.length > 0;
-    }
-
-    synchronizeSignatures(data: any) {
-        /**
-         * Synchronize signatures
-         */
-    }
-
-    synchronizeSignatures(data: any) {
-        /**
-         * Synchronize signatures
-         */
-    }
-
-    synchronizeSignatures(data: any) {
-        /**
-         * Synchronize signatures
-         */
-    }
-
-    synchronizeSignatures(data: any) {
-        /**
-         * Synchronize signatures
-         */
     }
 
     synchronizeSignatures(data: any) {
