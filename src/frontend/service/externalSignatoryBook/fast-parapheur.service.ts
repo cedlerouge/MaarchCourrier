@@ -56,9 +56,6 @@ export class FastParapheurService {
     }
 
     loadListModel(entityId: number) {
-        /**
-         * Load list model from Fast Parapheur API
-         */
         return new Promise((resolve) => {
             this.http.get(`../rest/listTemplates/entities/${entityId}?type=visaCircuit&fastParapheur=true`).pipe(
                 tap((data: any) => {
@@ -73,10 +70,19 @@ export class FastParapheurService {
         });
     }
 
-    loadWorkflow() {
-        /**
-         * Load worfklow from Fast Parapheur API
-         */
+    loadWorkflow(resId: number, type: string) {
+        return new Promise((resolve) => {
+            this.http.get(`../rest/documents/${resId}/fastParapheurWorkflow?type=${type}`).pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     getAutocompleteDatas(data: any): Promise<any> {

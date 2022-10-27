@@ -37,9 +37,9 @@ export class MaarchParapheurService {
         });
     }
 
-    loadWorkflow(attachmentId: number, type: string): Promise<any> {
+    loadWorkflow(resId: number, type: string): Promise<any> {
         return new Promise((resolve) => {
-            this.http.get(`../rest/documents/${attachmentId}/maarchParapheurWorkflow?type=${type}`).pipe(
+            this.http.get(`../rest/documents/${resId}/maarchParapheurWorkflow?type=${type}`).pipe(
                 tap((data: any) => {
                     resolve(data);
                 }),
