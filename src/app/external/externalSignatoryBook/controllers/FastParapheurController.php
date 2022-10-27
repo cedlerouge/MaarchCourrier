@@ -143,23 +143,30 @@ class FastParapheurController
             if (!ResController::hasRightByResId(['resId' => [$args['id']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource out of perimeter']);
             }
-            $resource = ResModel::getById(['resId' => $args['id'], 'select' => ['external_id']]);
+            $resource = ResModel::getById(['resId' => $args['id'], 'select' => ['external_id', 'external_state']]);
             if (empty($resource)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
+            $resource['coll_id'] = 'letterbox_coll';
         } else {
-            $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'status', 'external_id']]);
+            $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'external_id', 'external_state']]);
             if (empty($resource)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
             }
             if (!ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
+            $resource['coll_id'] = 'attachments_coll';
         }
 
         $externalId = json_decode($resource['external_id'], true);
         if (empty($externalId['signatureBookId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Resource is not linked to Fast Parapheur']);
+        }
+
+        $externalState = json_decode($resource['external_state'], true);
+        if (!empty($externalState['signatureBookWorkflow']['fetchDate']) && strtotime($externalState['signatureBookWorkflow']['fetchDate']) >= strtotime('-30 minutes')) {
+            return $response->withJson($externalState['signatureBookWorkflow']['data']);
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
@@ -185,6 +192,30 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $certType
             ]
         ]);
+
+        if ($curlReturn['code'] != 200) {
+            return $response->withStatus($curlReturn['code'])->withJson($curlReturn['errors']);
+        }
+
+        $externalState['signatureBookWorkflow']['fetchDate'] = date_format(new \DateTime(), 'c');
+        $externalState['signatureBookWorkflow']['data'] = $curlReturn['response'];
+        if ($resource['coll_id'] == 'letterbox_coll') {
+            ResModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$args['id']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
+        } else {
+            AttachmentModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$args['id']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
+        }
 
         return $response->withJson($curlReturn['response']);
     }
