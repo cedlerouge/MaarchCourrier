@@ -14,6 +14,7 @@ import { HeaderService } from '@service/header.service';
 import { VisaWorkflowModalComponent } from '../visa/modal/visa-workflow-modal.component';
 import { AppService } from '@service/app.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     selector: 'app-attachments-list',
@@ -55,7 +56,7 @@ export class AttachmentsListComponent implements OnInit {
     loading: boolean = true;
     pos = 0;
     mailevaEnabled: boolean = false;
-    maarchParapheurEnabled: boolean = false;
+    externalSignatoryBookEnabled: boolean = false;
 
     hideMainInfo: boolean = false;
 
@@ -71,18 +72,19 @@ export class AttachmentsListComponent implements OnInit {
         public dialog: MatDialog,
         public appService: AppService,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        public functions: FunctionsService,
         private notify: NotificationService,
         private headerService: HeaderService,
         private privilegeService: PrivilegeService
     ) { }
 
     ngOnInit(): void {
+        this.externalSignatoryBookEnabled = !this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled);
+
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-        if (this.externalSignatoryBook.signatoryBookEnabled === 'maarchParapheur') {
-            this.maarchParapheurEnabled = true;
-        }
+
         if (this.resId !== null) {
             this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
                 tap((data: any) => {
@@ -232,7 +234,7 @@ export class AttachmentsListComponent implements OnInit {
                 id: attachment.resId,
                 type: 'attachment',
                 title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
-                linkedToMaarchParapheur: true
+                linkedToExternalSignatoryBook: true
             }
         });
     }
