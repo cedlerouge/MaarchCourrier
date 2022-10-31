@@ -180,13 +180,13 @@ class AutoCompleteController
         }
         $search = $queryParams['search'];
 
-        $excludedUsers = [];
+        $excludedEmails = [];
         if (!empty($queryParams['excludeAlreadyConnected'])) {
             $usersAlreadyConnected = UserModel::get([
-                'select' => ['external_id->>\'fastParapheur\' as external_id'],
-                'where'  => ['external_id->>\'fastParapheur\' is not null']
+                'select' => ['external_id#>>\'{fastParapheur,email}\' as external_email'],
+                'where'  => ['external_id#>>\'{fastParapheur,email}\' is not null']
             ]);
-            $excludedUsers = array_column($usersAlreadyConnected, 'external_id');
+            $excludedEmails = array_column($usersAlreadyConnected, 'external_email');
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
@@ -236,8 +236,8 @@ class AutoCompleteController
                 unset($users[$userKey]);
             }
         }
-        $users = array_filter($users, function ($user) use ($excludedUsers) {
-            return !in_array($user['email'], $excludedUsers);
+        $users = array_filter($users, function ($user) use ($excludedEmails) {
+            return !in_array($user['email'], $excludedEmails);
         });
         $users = array_filter($users, function ($user) use ($search) {
             return mb_stripos($user['email'], $search) > -1 || mb_stripos($user['idToDisplay'], $search) > -1;

@@ -38,7 +38,7 @@ use Slim\Http\Response;
 use SrcCore\models\TextFormatModel;
 
 /**
-    * @codeCoverageIgnore
+* @codeCoverageIgnore
 */
 class FastParapheurController
 {
@@ -47,6 +47,9 @@ class FastParapheurController
         $body = $request->getParsedBody();
         if (!Validator::notEmpty()->email()->validate($body['fastParapheurUserEmail'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'body fastParapheurUserEmail is not a valid email address']);
+        }
+        if (!Validator::notEmpty()->stringType()->validate($body['fastParapheurUserName'] ?? null)) {
+            return $response->withStatus(400)->withJson(['errors' => 'body fastParapheurUserName is empty or not a string']);
         }
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'args id is not an integer']);
@@ -60,7 +63,7 @@ class FastParapheurController
 
         $alreadyLinked = UserModel::get([
             'select' => [1],
-            'where'  => ['external_id->>\'fastParapheur\' = ?'],
+            'where'  => ['external_id#>>\'{fastParapheur,email}\' = ?'],
             'data'   => [$body['fastParapheurUserEmail']]
         ]);
         if (!empty($alreadyLinked)) {
@@ -70,7 +73,10 @@ class FastParapheurController
         $userInfo = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $args['id']]);
 
         $externalId = json_decode($userInfo['external_id'], true);
-        $externalId['fastParapheur'] = $body['fastParapheurUserEmail'];
+        $externalId['fastParapheur'] = [
+            'name'  => $body['fastParapheurUserName'],
+            'email' => $body['fastParapheurUserEmail']
+        ];
 
         UserModel::updateExternalId(['id' => $args['id'], 'externalId' => json_encode($externalId)]);
 
@@ -127,12 +133,12 @@ class FastParapheurController
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
-        if (empty($user['fastParapheurEmail'])) {
-            return $response->withStatus(403)->withJson(['errors' => 'user does not have Fast Parapheur email']);
+        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurId"']]);
+        if (empty($user['fastParapheurId'])) {
+            return $response->withStatus(403)->withJson(['errors' => 'user does not have a Fast Parapheur email']);
         }
 
-        return $response->withJson(['link' => $user['fastParapheurEmail'], 'errors' => '']);
+        return $response->withJson(['link' => json_decode($user['fastParapheurId'], true), 'errors' => '']);
     }
 
     public function getWorkflow(Request $request, Response $response, array $args)
@@ -639,7 +645,7 @@ class FastParapheurController
         if ($resource['integrations']['inSignatureBook']) {
             $sentMainDocument = [
                 'comment'  => $resource['subject'],
-                'signable' => $resource['category_id'] == 'outgoing',
+                'signable' => true,
                 'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
             ];
         }
