@@ -103,7 +103,7 @@ export class FastParapheurService {
 
     linkAccountToSignatoryBook(externalId: any, serialId: number): Promise<any> {
         return new Promise((resolve) => {
-            this.http.put(`../rest/users/${serialId}/linkToFastParapheur`, { fastParapheurUserEmail: externalId.email }).pipe(
+            this.http.put(`../rest/users/${serialId}/linkToFastParapheur`, { fastParapheurUserEmail: externalId.email, fastParapheurUserName: externalId.idToDisplay }).pipe(
                 tap(() => {
                     this.notify.success(this.translate.instant('lang.accountLinked'));
                     resolve(true);
@@ -140,7 +140,8 @@ export class FastParapheurService {
         return new Promise((resolve) => {
             this.http.get('../rest/users/' + serialId + '/statusInFastParapheur').pipe(
                 tap((data: any) => {
-                    resolve(data);
+                    const userInfo: string = `${data.link.name} (${data.link.email})`;
+                    resolve({link: userInfo});
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -152,9 +153,12 @@ export class FastParapheurService {
     }
 
     setExternalInformation(item: any): UserWorkflow {
-        return {
+        const label = item.labelToDisplay;
+        delete item.labelToDisplay;
+        const objeToSend: any = {
             ... item,
             id: item.email ?? item.externalId.fastParapheur,
+            labelToDisplay: item.externalId.fastParapheur.name !== undefined ? `${item.externalId.fastParapheur.name} (${label})` : label,
             signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
@@ -163,6 +167,7 @@ export class FastParapheurService {
                 fastParapheur: item.email ?? item.externalId.fastParapheur
             }
         };
+        return objeToSend;
     }
 
     getRessources(additionalsInfos: any): any[] {
