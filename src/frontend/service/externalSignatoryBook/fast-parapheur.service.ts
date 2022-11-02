@@ -4,6 +4,7 @@ import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
 import { UserWorkflow } from '@models/user-workflow.model';
+import { FunctionsService } from '@service/functions.service';
 
 @Injectable({
     providedIn: 'root'
@@ -18,7 +19,8 @@ export class FastParapheurService {
     constructor(
         private http: HttpClient,
         private notify: NotificationService,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private functions: FunctionsService
     ) { }
 
     getUserAvatar(externalId: any = null): Promise<any> {
@@ -158,7 +160,7 @@ export class FastParapheurService {
         const objeToSend: any = {
             ... item,
             id: item.email ?? item.externalId.fastParapheur,
-            labelToDisplay: item.externalId.fastParapheur.name !== undefined ? `${item.externalId.fastParapheur.name} (${label})` : label,
+            labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur.name) ? `${item.externalId.fastParapheur.name} (${label})` : label,
             signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
