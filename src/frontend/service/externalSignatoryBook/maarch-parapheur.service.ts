@@ -14,6 +14,7 @@ export class MaarchParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/maarchParapheurUsers';
     canCreateUser: boolean = true;
+    canManageSignaturesPositions: boolean = true;
 
     constructor(
         public functions: FunctionsService,

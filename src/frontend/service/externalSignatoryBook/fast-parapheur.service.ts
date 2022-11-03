@@ -14,6 +14,7 @@ export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
     canCreateUser: boolean = false;
+    canManageSignaturesPositions: boolean = false;
     userWorkflow = new UserWorkflow();
 
     constructor(

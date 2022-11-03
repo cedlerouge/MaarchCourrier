@@ -57,7 +57,7 @@ export class AccountLinkComponent implements OnInit {
         this.externalUser.inExternalSignatoryBook = true;
     }
 
-    unlinkMaarchParapheurAccount() {
+    removeItem() {
         this.externalUser.inExternalSignatoryBook = false;
         this.externalUser = this.data.user;
         this.externalUser.login = this.data.user.user_id;

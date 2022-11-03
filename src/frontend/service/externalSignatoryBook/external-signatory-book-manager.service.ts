@@ -149,4 +149,8 @@ export class ExternalSignatoryBookManagerService {
     canCreateUser(): boolean {
         return this.serviceInjected.canCreateUser;
     }
+
+    canManageSignaturesPositions(): boolean {
+        return this.serviceInjected.canManageSignaturesPositions;
+    }
 }

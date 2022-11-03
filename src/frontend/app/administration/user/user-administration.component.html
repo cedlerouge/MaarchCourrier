@@ -50,7 +50,7 @@
         <mat-divider></mat-divider>
         <mat-list *ngIf="externalSignatoryBookLink.login !== ''">
             <h3 mat-subheader>{{getLabelById('account')}}</h3>
-            <mat-list-item>
+            <mat-list-item style="margin-top: 10px;">
                 <mat-icon class="avatarAccount" color="primary" mat-list-icon
                     [style.background-image]="'url('+externalSignatoryBookLink.picture+')'"></mat-icon>
                 <p mat-line class="accountInfo" [title]="externalSignatoryBookLink.login">
