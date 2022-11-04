@@ -166,10 +166,14 @@ export class FastParapheurService {
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
             hasPrivilege: true,
-            externalId: item?.externalId === undefined ? null : {
-                fastParapheur: item.email ?? item.externalId.fastParapheur
-            }
         };
+        if (item?.id !== undefined && item?.externalId?.fastParapheur === undefined) {
+            objeToSend.externalId = null;
+        } else {
+            objeToSend.externalId = {
+                fastParapheur: item.email ?? item.externalId.fastParapheur
+            };
+        }
         return objeToSend;
     }
 

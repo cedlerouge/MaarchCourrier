@@ -239,8 +239,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         });
     }
 
-    async addItemToWorkflow(item: any) {
-        item = await this.externalSignatoryBookManagerService.setExternalInformation(item);
+    addItemToWorkflow(item: any) {
+        item = this.externalSignatoryBookManagerService.setExternalInformation(item);
         return new Promise((resolve, reject) => {
             const user: UserWorkflow = {
                 item_id: item.id,
