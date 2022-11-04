@@ -10,7 +10,7 @@
             <div *ngIf="appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0"
                 class="alert-message alert-message-danger" role="alert">
                 <b>{{appExternalVisaWorkflow.getUserOtpsWorkflow().join(', ')}}</b>
-                {{'lang.usersMissingInSignatureBook' | translate}} !
+                {{getErrorMessage()}} !
             </div>
         </div>
     </div>

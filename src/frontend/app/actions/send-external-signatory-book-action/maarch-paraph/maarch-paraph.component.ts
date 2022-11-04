@@ -82,4 +82,8 @@ export class MaarchParaphComponent implements OnInit {
     hasPositions(resource: any): boolean {
         return this.appExternalVisaWorkflow?.getDocumentsFromPositions().filter((document: any) => document.resId === resource.resId && document.mainDocument === resource.mainDocument).length > 0;
     }
+
+    getErrorMessage(): string {
+        return `${this.translate.instant('lang.usersMissingInSignatureBook')} ${this.translate.instant('lang.' + this.externalSignatoryBookManagerService.signatoryBookEnabled)}`;
+    }
 }

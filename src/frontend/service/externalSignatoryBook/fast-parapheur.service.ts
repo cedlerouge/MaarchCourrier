@@ -160,13 +160,13 @@ export class FastParapheurService {
         delete item.labelToDisplay;
         const objeToSend: any = {
             ... item,
-            id: item.email ?? item.externalId.fastParapheur,
+            id: item.email ?? item?.externalId?.fastParapheur ?? null,
             labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur.name) ? `${item.externalId.fastParapheur.name} (${label})` : label,
             signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
             hasPrivilege: true,
-            externalId: {
+            externalId: item?.externalId === undefined ? null : {
                 fastParapheur: item.email ?? item.externalId.fastParapheur
             }
         };
@@ -178,6 +178,6 @@ export class FastParapheurService {
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
-        return additionalsInfos.attachments.length > 0 && workflow.length > 0;
+        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0;
     }
 }
