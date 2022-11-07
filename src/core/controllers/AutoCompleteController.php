@@ -195,7 +195,7 @@ class AutoCompleteController
         $excludedEmails = [];
         $usersAlreadyConnected = UserModel::get([
             'select' => [
-                'concat(firstname, \' \', lastname, \' (\', external_id#>>\'{fastParapheur,name}\', \')\') as "idToDisplay"',
+                'concat(external_id#>>\'{fastParapheur,name}\', \' (\', firstname, \' \', lastname, \')\') as "idToDisplay"',
                 'external_id#>>\'{fastParapheur,email}\' as email'
             ],
             'where'  => ['external_id#>>\'{fastParapheur,email}\' is not null']
