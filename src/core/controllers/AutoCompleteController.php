@@ -180,29 +180,30 @@ class AutoCompleteController
         }
         $search = $queryParams['search'];
 
-        $excludedEmails = [];
-        if (!empty($queryParams['excludeAlreadyConnected'])) {
-            $usersAlreadyConnected = UserModel::get([
-                'select' => ['external_id#>>\'{fastParapheur,email}\' as external_email'],
-                'where'  => ['external_id#>>\'{fastParapheur,email}\' is not null']
-            ]);
-            $excludedEmails = array_column($usersAlreadyConnected, 'external_email');
-        }
-
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
         }
 
-        $config = [];
-        foreach ($loadedXml->signatoryBook as $signatoryBookConfig) {
-            if ($signatoryBookConfig->id == 'fastParapheur') {
-                $config = (array)$signatoryBookConfig;
-                break;
-            }
-        }
+        $config = $loadedXml->xpath('/root/signatoryBook[id=\'fastParapheur\']')[0] ?? null;
         if (empty($config)) {
             return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
+        }
+        $config = (array)$config;
+
+        $users = [];
+        $excludedEmails = [];
+        $usersAlreadyConnected = UserModel::get([
+            'select' => [
+                'concat(firstname, \' \', lastname, \' (\', external_id#>>\'{fastParapheur,name}\', \')\') as "idToDisplay"',
+                'external_id#>>\'{fastParapheur,email}\' as email'
+            ],
+            'where'  => ['external_id#>>\'{fastParapheur,email}\' is not null']
+        ]);
+        if (!empty($queryParams['excludeAlreadyConnected'])) {
+            $excludedEmails = array_column($usersAlreadyConnected, 'external_email');
+        } else {
+            $users = $usersAlreadyConnected;
         }
 
         $subscriberIds = EntityModel::getWithUserEntities([
@@ -213,12 +214,11 @@ class AutoCompleteController
         $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
 
         if (empty($subscriberIds)) {
-            $users = FastParapheurController::getUsers(['config' => $config]);
+            $users = array_merge($users, FastParapheurController::getUsers(['config' => $config]));
             if (!empty($users['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $users['errors']]);
             }
         } else {
-            $users = [];
             foreach ($subscriberIds as $subscriberId) {
                 $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
                 if (!empty($users['errors'])) {
