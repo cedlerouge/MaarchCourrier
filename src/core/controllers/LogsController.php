@@ -80,7 +80,7 @@ class LogsController
                 'name'              => $logConfig['customId'] ?? 'SCRIPT',
                 'path'              => $logConfig['queries']['file'],
                 'level'             => $args['level'],
-                'maxSize'           => LogsController::setMaxFileSize( $logConfig['queries']['maxFileSize']),
+                'maxSize'           => LogsController::calculateFileSizeToBytes( $logConfig['queries']['maxFileSize']),
                 'maxFiles'          => $logConfig['queries']['maxBackupFiles'],
                 'line'              => $logLine,
                 'extraData'         => $args['extraData'] ?? []
@@ -95,7 +95,7 @@ class LogsController
             'name'              => $logConfig['customId'] ?? 'SCRIPT',
             'path'              => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
             'level'             => $args['level'],
-            'maxSize'           => LogsController::setMaxFileSize(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
+            'maxSize'           => LogsController::calculateFileSizeToBytes(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
             'maxFiles'          => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
             'line'              => $logLine,
             'extraData'         => $args['extraData'] ?? []
@@ -151,7 +151,7 @@ class LogsController
      * @param   array   $log
      * @return  void
      */
-    public static function logWithMonolog(array $log)
+    private static function logWithMonolog(array $log)
     {
         ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormate', 'levelConfig', 'name', 'path', 'level', 'line']);
         ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormate', 'name', 'path', 'line']);
@@ -255,7 +255,7 @@ class LogsController
      * @param   string   $value     The size + prefix (of 2 characters)
      * @return  int
      */
-    public static function setMaxFileSize(string $value)
+    public static function calculateFileSizeToBytes($value)
     {
 		$maxFileSize = null;
 		$numpart = substr($value,0, strlen($value) -2);
@@ -266,7 +266,7 @@ class LogsController
 			case 'MB': $maxFileSize = (int)((int)$numpart * 1024 * 1024); break;
 			case 'GB': $maxFileSize = (int)((int)$numpart * 1024 * 1024 * 1024); break;
 			default:
-				if(is_numeric($value)) {
+				if (is_numeric($value)) {
 					$maxFileSize = (int)$value;
 				}
 		}

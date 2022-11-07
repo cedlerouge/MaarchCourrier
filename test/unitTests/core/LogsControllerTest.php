@@ -4,7 +4,7 @@
 * See LICENCE.txt file at the root folder for more details.
 * This file is part of Maarch software.
 
-* @brief   ActionsControllerTest
+* @brief   LogsControllerTest
 * @author  dev <dev@maarch.org>
 * @ingroup core
 */
@@ -15,6 +15,7 @@ class LogsControllerTest extends TestCase
 {
     private static $generalConfigPath = null;
     private static $generalConfigOriginal = null;
+    private static $filesToDelete = [];
 
     protected function setUp(): void
     {
@@ -27,6 +28,8 @@ class LogsControllerTest extends TestCase
         $generalConfig['log']['logFonctionnel']['file'] = '/tmp/fonctionnel.log';
         $generalConfig['log']['logTechnique']['file'] = '/tmp/technique.log';
         $generalConfig['log']['queries']['file'] = '/tmp/queries.log';
+        $filesToDelete = ['/tmp/fonctionnel.log', '/tmp/technique.log', '/tmp/queries.log'];
+
         file_put_contents(self::$generalConfigPath, json_encode($generalConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
@@ -116,7 +119,7 @@ class LogsControllerTest extends TestCase
         $this->assertNotEmpty($logLine);
         $this->assertSame("[SELECT * FROM logsController WHERE id = ? AND moduleTest = ?][[10,\"LogModuleId\"]][Any sql Exception error goes here...]", $logLine);
     }
-    
+
     public function testLogFonctionnel()
     {
         $logsController = new \SrcCore\controllers\LogsController();
@@ -139,16 +142,13 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logFonctionnel']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
-        $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
-        $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
-        $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
-        $this->assertIsInt(strpos($logFileOutput, "processId"));
-        $this->assertIsInt(strpos($logFileOutput, "extraData"));
-        $this->assertIsInt(strpos($logFileOutput, "memory_usage"));
-
-        unlink($logConfig['logFonctionnel']['file']);
-        $this->assertFileDoesNotExist($logConfig['logFonctionnel']['file'], "File '" . $logConfig['logFonctionnel']['file'] . "' exists");
+        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
+        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
+        $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
+        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
+        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
+        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
+        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
     }
 
     public function testLogTechnique()
@@ -174,16 +174,13 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
-        $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
-        $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
-        $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
-        $this->assertIsInt(strpos($logFileOutput, "processId"));
-        $this->assertIsInt(strpos($logFileOutput, "extraData"));
-        $this->assertIsInt(strpos($logFileOutput, "memory_usage"));
-
-        unlink($logConfig['logTechnique']['file']);
-        $this->assertFileDoesNotExist($logConfig['logTechnique']['file'], "File '" . $logConfig['logTechnique']['file'] . "' exists");
+        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
+        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
+        $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
+        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
+        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
+        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
+        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
     }
 
     public function testLogQueries()
@@ -207,19 +204,16 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['queries']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
-        $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
-        $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
-        $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
-        $this->assertIsInt(strpos($logFileOutput, "processId"));
-        $this->assertIsInt(strpos($logFileOutput, "extraData"));
-        $this->assertIsInt(strpos($logFileOutput, "memory_usage"));
-
-        unlink($logConfig['queries']['file']);
-        $this->assertFileDoesNotExist($logConfig['queries']['file'], "File '" . $logConfig['queries']['file'] . "' exists");
+        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
+        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
+        $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
+        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
+        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
+        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
+        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
     }
 
-    public function testLogLevels()
+    public function testLogFileOutputWithLogLevelError()
     {
         $logsController = new \SrcCore\controllers\LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -260,36 +254,60 @@ class LogsControllerTest extends TestCase
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertIsInt(strpos($logFileOutput, "[" . getmypid() . "]"));
-        $this->assertIsInt(strpos($logFileOutput, "[SCRIPT]"));
-        $this->assertIsInt(strpos($logFileOutput, "[ALERT]"));
-        $this->assertIsInt(strpos($logFileOutput, "[ERROR]"));
-        $this->assertFalse(strpos($logFileOutput, "[DEBUG]"));
-        $this->assertIsInt(strpos($logFileOutput, "[$logMessage]"));
-        $this->assertIsInt(strpos($logFileOutput, "processId"));
-        $this->assertIsInt(strpos($logFileOutput, "extraData"));
-        $this->assertIsInt(strpos($logFileOutput, "memory_usage"));
-
-        unlink($logConfig['logTechnique']['file']);
-        $this->assertFileDoesNotExist($logConfig['logTechnique']['file'], "File '" . $logConfig['logTechnique']['file'] . "' exists");
+        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
+        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
+        $this->assertStringContainsString("[ALERT]", $logFileOutput, "Log file output doesn't contains the log level alert '[ALERT]'");
+        $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
+        $this->assertStringNotContainsString("[DEBUG]", $logFileOutput, "Log file output contains the log level debug '[DEBUG]'");
+        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
+        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
+        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
+        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
     }
 
-    public function testConvertMaxFileSizeToBytes()
+    /**
+     * @dataProvider provideFileSizeData
+     */
+    public function testCalculateMaxFileSizeToBytes($input, $expectedOutput)
+    {
+        $logsController = new \SrcCore\controllers\LogsController();
+
+        $this->assertNotEmpty($input);
+        $bytes = $logsController->calculateFileSizeToBytes($input);
+        $this->assertSame($expectedOutput, $bytes);
+    }
+
+    public function provideFileSizeData()
     {
         $logsController = new \SrcCore\controllers\LogsController();
         $logConfig = $logsController->getLogConfig();
 
-        $this->assertNotEmpty($logConfig['logFonctionnel']['maxFileSize']);
-        $this->assertIsInt($logsController->setMaxFileSize($logConfig['logFonctionnel']['maxFileSize']));
-        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['logFonctionnel']['maxFileSize']));
-
-        $this->assertNotEmpty($logConfig['logTechnique']['maxFileSize']);
-        $this->assertIsInt($logsController->setMaxFileSize($logConfig['logTechnique']['maxFileSize']));
-        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['logTechnique']['maxFileSize']));
-
-        $this->assertNotEmpty($logConfig['queries']['maxFileSize']);
-        $this->assertIsInt($logsController->setMaxFileSize($logConfig['queries']['maxFileSize']));
-        $this->assertSame(10485760, $logsController->setMaxFileSize($logConfig['queries']['maxFileSize']));
+        return [
+            '10000 string value' => [
+                "input"             => "10000",
+                "expectedOutput"    => 10000
+            ],
+            '10000 int value' => [
+                "input"             => 10000,
+                "expectedOutput"    => 10000
+            ],
+            '1 Kilobyte' => [
+                "input"             => "1KB",
+                "expectedOutput"    => 1024
+            ],
+            '1 Megabyte' => [
+                "input"             => "1MB",
+                "expectedOutput"    => 1048576
+            ],
+            '1 Gigabyte' => [
+                "input"             => "1GB",
+                "expectedOutput"    => 1073741824
+            ],
+            '1 Terabyte' => [
+                "input"             => "1TB",
+                "expectedOutput"    => null
+            ]
+        ];
     }
 
     public function testRotateLogFileBySize()
@@ -317,14 +335,10 @@ class LogsControllerTest extends TestCase
 
         $path_parts = pathinfo($logConfig['logTechnique']['file']);
         $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . "-1." . $path_parts['extension'];
+        self::$filesToDelete[] = $newFilePath;
 
         $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
         $this->assertFileExists($newFilePath, "Le fichier logTechnique backup n'est pas créé : $newFilePath");
-
-        unlink($newFilePath);
-        unlink($logConfig['logTechnique']['file']);
-        $this->assertFileDoesNotExist($newFilePath, "File '$newFilePath' exists");
-        $this->assertFileDoesNotExist($logConfig['logTechnique']['file'], "File '" . $logConfig['logTechnique']['file'] . "' exists");
     }
 
     public function testRotateLogFileByMaxFiles()
@@ -342,7 +356,7 @@ class LogsControllerTest extends TestCase
             'eventId'   => 'This is a test message'
         ];
 
-        $filesToDelete = [];
+
         for ($index=0; $index < ((int)$logConfig['logTechnique']['maxBackupFiles'] + 3); $index++) { 
             $logsController->add($lineData);
             $logsController->rotateLogFileBySize([
@@ -359,20 +373,23 @@ class LogsControllerTest extends TestCase
 
             if ($index <= (int)$logConfig['logTechnique']['maxBackupFiles']) {
                 $this->assertFileExists($newFilePath, "Le fichier logTechnique n'existe pas : $newFilePath");
-                $filesToDelete[] = $newFilePath;
+                self::$filesToDelete[] = $newFilePath;
             } else {
                 $this->assertFileDoesNotExist($newFilePath, "Le fichier logTechnique existe : $newFilePath");
             }
-        }
-
-        foreach ($filesToDelete as $value) {
-            unlink($value);
-            $this->assertFileDoesNotExist($newFilePath, "Le fichier logTechnique existe : $value");
         }
     }
 
     protected function tearDown(): void
     {
+        $logsController = new \SrcCore\controllers\LogsController();
+        $logConfig = $logsController->getLogConfig();
+
+        foreach (self::$filesToDelete as $filePath) {
+            if (file_exists($logConfig['logFonctionnel']['file'])) {
+                unlink($logConfig['logFonctionnel']['file']);
+            }
+        }
         file_put_contents(self::$generalConfigPath, json_encode(self::$generalConfigOriginal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 }
