@@ -203,8 +203,43 @@ class FastParapheurController
             return $response->withStatus($curlReturn['code'])->withJson($curlReturn['errors']);
         }
 
+        $externalWorkflow = [];
+        $order = 0;
+        $mode = null;
+        foreach ($curlReturn['response'] as $step) {
+            if (mb_stripos($step['stateName'], 'Préparé') === 0) {
+                continue;
+            }
+            if (empty($step['userFullname'])) {
+                $mode = mb_stripos($step['stateName'], 'visa') !== false ? 'visa' : 'sign';
+                continue;
+            }
+            $order++;
+            $user = UserModel::get([
+                'select' => [
+                    'id',
+                    'concat(firstname, \' \', lastname) as name',
+                ],
+                'where'  => ['external_id#>>\'{fastParapheur,name}\' = ?'],
+                'data'   => [$step['userFullname']],
+                'limit'  => 1
+            ]);
+            if (empty($user)) {
+                $user = ['id' => '-', 'external_name' => '-', 'name' => '-'];
+            } else {
+                $user = $user[0];
+            }
+            $externalWorkflow[] = [
+                'userId'        => $user['id'],
+                'userDisplay'   => $step['userFullname'] . ' (' . $user['name'] . ')',
+                'mode'          => $mode,
+                'order'         => $order,
+                'process_date'  => date_format(new \DateTime($step['date']), 'd-m-Y H:i')
+            ];
+        }
+
         $externalState['signatureBookWorkflow']['fetchDate'] = date_format(new \DateTime(), 'c');
-        $externalState['signatureBookWorkflow']['data'] = $curlReturn['response'];
+        $externalState['signatureBookWorkflow']['data'] = $externalWorkflow;
         if ($resource['coll_id'] == 'letterbox_coll') {
             ResModel::update([
                 'where'   => ['res_id = ?'],
@@ -223,7 +258,7 @@ class FastParapheurController
             ]);
         }
 
-        return $response->withJson($curlReturn['response']);
+        return $response->withJson($externalWorkflow);
     }
 
     public static function retrieveSignedMails(array $args)
@@ -926,7 +961,7 @@ class FastParapheurController
         $users = [];
         foreach ($curlReturn['response']['users'] as $user) {
             $users[] = [
-                'idToDisplay' => trim($user['prenom'] . ' ' . $user['nom']),
+                'idToDisplay' => trim($user['nom'] . ' ' . $user['prenom']),
                 'email'       => trim($user['email'])
             ];
         }
