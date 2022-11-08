@@ -27,7 +27,7 @@
                     </ng-container>
                 </mat-menu>
                 <mat-menu #toolMenuView="matMenu">
-                    <ng-container *ngFor="let view of tile.views">
+                    <ng-container *ngFor="let view of getViews(tile)">
                         <button mat-menu-item *ngIf="view.id!=='chart'" [disabled]="tile.view === view.id"
                             (click)="changeView(tile,view.id)">
                             <mat-icon *ngIf="view.id==='list'" class="fa fa-list" color="primary"
