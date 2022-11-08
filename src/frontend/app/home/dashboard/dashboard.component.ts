@@ -217,4 +217,16 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         const getTile: any = this.tileErrors.find((tile: any) => tile.id === idTile);
         return getTile !== undefined ? getTile.error : false;
     }
+
+    getViews(tile: any) {
+        if (tile.type === 'externalSignatoryBook') {
+            // To avoid duplicate views for externalSignatoryBook type tile
+            const result: any[] = [... new Set(tile.views.map((view: any) => view.id))];
+            return result.map((view: any) => ({
+                id: view,
+            }));
+        } else {
+            return tile.views;
+        }
+    }
 }
