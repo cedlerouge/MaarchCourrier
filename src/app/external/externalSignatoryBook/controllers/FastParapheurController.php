@@ -577,7 +577,7 @@ class FastParapheurController
         foreach ($args['steps'] as $index => $step) {
             if (in_array($step['mode'], ['signature', 'visa']) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
-                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id#>>\'{fastParapheur,email}\' as "fastParapheurEmail"']]);
                     if (empty($user['fastParapheurEmail'])) {
                         return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
                     }
@@ -588,7 +588,7 @@ class FastParapheurController
                 } elseif ($step['type'] == 'fastParapheurUserEmail') {
                     $circuit['steps'][] = [
                         'step'    => $step['mode'],
-                        'members' => [$step['id']]
+                        'members' => [$step['id']['email']]
                     ];
                 }
             } /*elseif ($step['type'] == 'externalOTP'
@@ -630,11 +630,7 @@ class FastParapheurController
         if (empty($resource)) {
             return ['error' => 'resource does not exist', 'code' => 400];
         }
-
         $resource['external_id'] = json_decode($resource['external_id'], true);
-        if (!empty($resource['external_id']['signatureBookId'])) {
-            return ['error' => 'resource is already in fastParapheur', 'code' => 400];
-        }
 
         if ($resource['format'] != 'pdf') {
             $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
@@ -680,7 +676,7 @@ class FastParapheurController
         if ($resource['integrations']['inSignatureBook']) {
             $sentMainDocument = [
                 'comment'  => $resource['subject'],
-                'signable' => true,
+                'signable' => empty($resource['external_id']['signatureBookId']),
                 'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
             ];
         }
