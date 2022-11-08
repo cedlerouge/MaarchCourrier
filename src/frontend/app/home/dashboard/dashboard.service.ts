@@ -155,12 +155,12 @@ export class DashboardService {
                 // Maarch Parapheur views
                 {
                     id: 'list',
-                    route: ':maarchParapheurUrl/dist/documents/:resId',
+                    route: ':maarchParapheurUrl/dist/#/documents/:resId',
                     viewDocRoute: null
                 },
                 {
                     id: 'summary',
-                    route: ':maarchParapheurUrl/dist/home'
+                    route: ':maarchParapheurUrl/dist/#/home'
                 },
                 // Fast Parapheur views
                 {
