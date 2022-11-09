@@ -65,7 +65,7 @@
     },
     "log": {
         "enable": true,
-        "dateTimeFormate" : "d/m/Y H:i:s",
+        "dateTimeFormat" : "d/m/Y H:i:s",
         "lineFormat": "[%datetime%][%extra.process_id%][%channel%][%level_name%][%message%][%extra%]\n",
         "logFonctionnel": {
             "level": "ERROR",

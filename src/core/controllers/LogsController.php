@@ -75,7 +75,7 @@ class LogsController
         if (!empty($args['isSql'])) {
             LogsController::logWithMonolog([
                 'lineFormat'        => $logConfig['lineFormat'],
-                'dateTimeFormate'   => $logConfig['dateTimeFormate'],
+                'dateTimeFormat'   => $logConfig['dateTimeFormat'],
                 'levelConfig'       => $logConfig['queries']['level'],
                 'name'              => $logConfig['customId'] ?? 'SCRIPT',
                 'path'              => $logConfig['queries']['file'],
@@ -90,7 +90,7 @@ class LogsController
 
         LogsController::logWithMonolog([
             'lineFormat'        => $logConfig['lineFormat'],
-            'dateTimeFormate'   => $logConfig['dateTimeFormate'],
+            'dateTimeFormat'   => $logConfig['dateTimeFormat'],
             'levelConfig'       => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
             'name'              => $logConfig['customId'] ?? 'SCRIPT',
             'path'              => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
@@ -153,8 +153,8 @@ class LogsController
      */
     private static function logWithMonolog(array $log)
     {
-        ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormate', 'levelConfig', 'name', 'path', 'level', 'line']);
-        ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormate', 'name', 'path', 'line']);
+        ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormat', 'levelConfig', 'name', 'path', 'level', 'line']);
+        ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormat', 'name', 'path', 'line']);
         ValidatorModel::intVal($log, ['maxSize', 'maxFiles']);
 
         if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
@@ -166,7 +166,7 @@ class LogsController
             'maxFiles'  => $log['maxFiles']
         ]);
 
-        $dateFormat = $log['dateTimeFormate'];
+        $dateFormat = $log['dateTimeFormat'];
         $output = $log['lineFormat'];
         $formatter = new LineFormatter($output, $dateFormat);
 
