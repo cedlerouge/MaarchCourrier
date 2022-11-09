@@ -21,7 +21,7 @@
     "lint": "eslint -c .eslintrc.js --ext .ts src/frontend/",
     "lint-fix": "eslint -c .eslintrc.js --ext .ts src/frontend/ --fix",
     "reload-packages": "rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps true && npm ci",
-    "reload-packages-addin-outlook": "cd plugins/addin-outlook && rm -Rf node_modules && npm cache clean --force && && npm config set legacy-peer-deps true && npm ci",
+    "reload-packages-addin-outlook": "cd plugins/addin-outlook && rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps true && npm ci",
     "reload-packages-prod": "rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps && npm ci --production",
     "reload-packages-prod-addin-outlook": "cd plugins/addin-outlook && rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps && npm ci --production",
     "create-component": "echo Component name ? && read varname && ng g c $varname --module app --style=scss",
