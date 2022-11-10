@@ -47,7 +47,6 @@ export class PanelComponent implements OnInit {
                 this.inApp = await this.checkMailInApp();
 
                 if (!this.inApp) {
-                    console.log(Office.context.mailbox.item);
                     this.initMailInfo();
                     this.status = 'end';
                 }
