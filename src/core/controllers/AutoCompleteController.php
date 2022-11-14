@@ -193,18 +193,13 @@ class AutoCompleteController
 
         $users = [];
         $excludedEmails = [];
-        $usersAlreadyConnected = UserModel::get([
+        $alreadyConnectedUsers = UserModel::get([
             'select' => [
-                'concat(external_id#>>\'{fastParapheur,name}\', \' (\', firstname, \' \', lastname, \')\') as "idToDisplay"',
-                'external_id#>>\'{fastParapheur,email}\' as email'
+                'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                'trim(concat(firstname, \' \', lastname)) as name'
             ],
-            'where'  => ['external_id#>>\'{fastParapheur,email}\' is not null']
+            'where'  => ['external_id->>\'fastParapheur\' is not null']
         ]);
-        if (!empty($queryParams['excludeAlreadyConnected'])) {
-            $excludedEmails = array_column($usersAlreadyConnected, 'external_email');
-        } else {
-            $users = $usersAlreadyConnected;
-        }
 
         $subscriberIds = EntityModel::getWithUserEntities([
             'select' => ['entities.external_id->>\'fastParapheurSubscriberId\' as "fastParapheurSubscriberId"'],
@@ -236,12 +231,23 @@ class AutoCompleteController
                 unset($users[$userKey]);
             }
         }
-        $users = array_filter($users, function ($user) use ($excludedEmails) {
-            return !in_array($user['email'], $excludedEmails);
-        });
         $users = array_filter($users, function ($user) use ($search) {
             return mb_stripos($user['email'], $search) > -1 || mb_stripos($user['idToDisplay'], $search) > -1;
         });
+        if (!empty($queryParams['excludeAlreadyConnected'])) {
+            $excludedEmails = array_column($alreadyConnectedUsers, 'fastParapheurEmail');
+            $users = array_filter($users, function ($user) use ($excludedEmails) {
+                return !in_array($user['email'], $excludedEmails);
+            });
+        } else {
+            foreach ($alreadyConnectedUsers as $alreadyConnectedUser) {
+                foreach ($users as $key => $user) {
+                    if ($user['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
+                        $users[$key]['idToDisplay'] = $user['idToDisplay'] . ' (' . $alreadyConnectedUser['name'] . ')';
+                    }
+                }
+            }
+        }
         $users = array_values($users);
 
         return $response->withJson($users);
