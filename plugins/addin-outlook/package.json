@@ -1,6 +1,6 @@
 {
   "name": "addin-outlook",
-  "version": "1.0.0",
+  "version": "2301",
   "scripts": {
     "dep-list": "npm list --depth=0",
     "reload-packages": "rm -Rf node_modules && rm package-lock.json && npm cache clean --force && npm i"
