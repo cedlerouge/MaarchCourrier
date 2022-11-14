@@ -182,6 +182,7 @@ class FastParapheurController
         $certPath = (string)$fastParapheurBlock->certPath;
         $certPass = (string)$fastParapheurBlock->certPass;
         $certType = (string)$fastParapheurBlock->certType;
+        $subscriberId = (string)$fastParapheurBlock->subscriberId;
 
         $curlReturn = CurlModel::exec([
             'url'           => $url . '/documents/v2/' . $externalId['signatureBookId'] . '/history',
@@ -195,6 +196,17 @@ class FastParapheurController
 
         if ($curlReturn['code'] != 200) {
             return $response->withStatus($curlReturn['code'])->withJson($curlReturn['errors']);
+        }
+
+        if (!empty($curlReturn)) {
+            $fastParapheurUsers = FastParapheurController::getUsers(['config' => [
+                'subscriberId' => $subscriberId,
+                'url'          => $url,
+                'certPath'     => $certPath,
+                'certPass'     => $certPass,
+                'certType'     => $certType
+            ]]);
+            $fastParapheurUsers = array_column($fastParapheurUsers, 'email', 'idToDisplay');
         }
 
         $externalWorkflow = [];
@@ -214,12 +226,12 @@ class FastParapheurController
                     'id',
                     'concat(firstname, \' \', lastname) as name',
                 ],
-                'where'  => ['external_id#>>\'{fastParapheur,name}\' = ?'],
-                'data'   => [$step['userFullname']],
+                'where'  => ['external_id->>\'fastParapheur\' = ?'],
+                'data'   => [$fastParapheurUsers[$step['userFullname']]],
                 'limit'  => 1
             ]);
             if (empty($user)) {
-                $user = ['id' => '-', 'external_name' => '-', 'name' => '-'];
+                $user = ['id' => null, 'name' => '-'];
             } else {
                 $user = $user[0];
             }
@@ -571,7 +583,7 @@ class FastParapheurController
         foreach ($args['steps'] as $index => $step) {
             if (in_array($step['mode'], ['signature', 'visa']) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
-                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id#>>\'{fastParapheur,email}\' as "fastParapheurEmail"']]);
+                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
                     if (empty($user['fastParapheurEmail'])) {
                         return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
                     }
@@ -951,7 +963,7 @@ class FastParapheurController
         $users = [];
         foreach ($curlReturn['response']['users'] as $user) {
             $users[] = [
-                'idToDisplay' => trim($user['nom'] . ' ' . $user['prenom']),
+                'idToDisplay' => trim($user['prenom'] . ' ' . $user['nom']),
                 'email'       => trim($user['email'])
             ];
         }
