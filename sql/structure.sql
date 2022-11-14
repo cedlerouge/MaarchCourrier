@@ -1091,7 +1091,7 @@ recipients jsonb DEFAULT '[]',
 account_id character varying(64) NOT NULL,
 creation_date timestamp without time zone NOT NULL,
 history jsonb DEFAULT '[]',
-attachments DEFAULT '[]',
+attachments jsonb DEFAULT '[]',
 sending_id character varying(64),
 action_id INTEGER,
 CONSTRAINT shippings_pkey PRIMARY KEY (id)
