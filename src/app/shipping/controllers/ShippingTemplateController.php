@@ -80,17 +80,17 @@ class ShippingTemplateController
         return $response->withJson(['shippings' => ShippingTemplateModel::get(['select' => ['id', 'label', 'description', 'options', 'fee', 'entities', "account->>'id' as accountid"]])]);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    public function getById(Request $request, Response $response, array $args)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->validate($aArgs['id'])) {
+        if (!Validator::intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'id is not an integer']);
         }
 
-        $shippingInfo = ShippingTemplateModel::getById(['id' => $aArgs['id']]);
+        $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id']]);
         if (empty($shippingInfo)) {
             return $response->withStatus(400)->withJson(['errors' => 'Shipping does not exist']);
         }
@@ -204,14 +204,14 @@ class ShippingTemplateController
         return $response->withJson(['shippingId' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    public function update(Request $request, Response $response, array $args)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $body = $request->getParsedBody();
-        $body['id'] = $aArgs['id'];
+        $body['id'] = $args['id'];
 
         $errors = ShippingTemplateController::checkData($body, 'update');
         if (!empty($errors)) {
@@ -221,7 +221,7 @@ class ShippingTemplateController
         if (!empty($body['account']['password'])) {
             $body['account']['password'] = PasswordModel::encrypt(['password' => $body['account']['password']]);
         } else {
-            $shippingInfo = ShippingTemplateModel::getById(['id' => $aArgs['id'], 'select' => ['account']]);
+            $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id'], 'select' => ['account']]);
             $shippingInfo['account'] = json_decode($shippingInfo['account'], true);
             $body['account']['password'] = $shippingInfo['account']['password'];
         }
@@ -268,7 +268,7 @@ class ShippingTemplateController
 
         HistoryController::add([
             'tableName' => 'shipping_templates',
-            'recordId'  => $aArgs['id'],
+            'recordId'  => $args['id'],
             'eventType' => 'UP',
             'eventId'   => 'shippingup',
             'info'      => _MAILEVA_UPDATED. ' : ' . $body['label']
@@ -277,17 +277,17 @@ class ShippingTemplateController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    public function delete(Request $request, Response $response, array $args)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->validate($aArgs['id'])) {
+        if (!Validator::intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'id is not an integer']);
         }
 
-        $shippingInfo = ShippingTemplateModel::getById(['id' => $aArgs['id'], 'select' => ['label', 'subscriptions', 'account']]);
+        $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id'], 'select' => ['label', 'subscriptions', 'account']]);
         if (empty($shippingInfo)) {
             return $response->withStatus(400)->withJson(['errors' => 'Shipping does not exist']);
         }
@@ -307,11 +307,11 @@ class ShippingTemplateController
             }
         }
 
-        ShippingTemplateModel::delete(['id' => $aArgs['id']]);
+        ShippingTemplateModel::delete(['id' => $args['id']]);
 
         HistoryController::add([
             'tableName' => 'shipping_templates',
-            'recordId'  => $aArgs['id'],
+            'recordId'  => $args['id'],
             'eventType' => 'DEL',
             'eventId'   => 'shippingdel',
             'info'      => _MAILEVA_DELETED. ' : ' . $shippingInfo['label']
@@ -687,10 +687,10 @@ class ShippingTemplateController
         return $errors;
     }
 
-    public static function calculShippingFee(array $aArgs)
+    public static function calculShippingFee(array $args)
     {
         $fee = 0;
-        foreach ($aArgs['resources'] as $value) {
+        foreach ($args['resources'] as $value) {
             $resourceId = $value['res_id'];
 
             $collId = $value['type'] == 'attachment' ? 'attachments_coll' : 'letterbox_coll';
@@ -703,8 +703,8 @@ class ShippingTemplateController
             $img->pingImage($pathToDocument);
             $pageCount = $img->getNumberImages();
 
-            $attachmentFee = ($pageCount > 1) ? ($pageCount - 1) * $aArgs['fee']['nextPagePrice'] : 0 ;
-            $fee = $fee + $attachmentFee + $aArgs['fee']['firstPagePrice'] + $aArgs['fee']['postagePrice'];
+            $attachmentFee = ($pageCount > 1) ? ($pageCount - 1) * $args['fee']['nextPagePrice'] : 0 ;
+            $fee = $fee + $attachmentFee + $args['fee']['firstPagePrice'] + $args['fee']['postagePrice'];
         }
 
         return $fee;
