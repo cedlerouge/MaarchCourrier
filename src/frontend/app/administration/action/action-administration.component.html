@@ -260,6 +260,207 @@
                             </div>
                         </div>
                         <div class="form-group" *ngIf="intermediateStatusActions.indexOf(action.actionPageId) !== -1">
+                            <div class="col-sm-12">
+                                <app-plugin-select-search [showLabel]="true" [class]="''"
+                                    [label]="'lang.fieldsToUpdate' | translate"
+                                    [placeholderLabel]="(!this.functions.empty(availableFillCustomFields) ? 'lang.fieldsToUpdate' : 'lang.emptyListOfCustomFields') | translate"
+                                    [formControlSelect]="fillcustomFieldsFormControl" [datas]="availableFillCustomFields"
+                                    (afterSelected)="getSelectedFieldsToFill()" style="width:100%;">
+                                </app-plugin-select-search>
+                                <div class="checkbox-selected-list">
+                                    <div *ngFor="let fieldItemValue of selectedFieldItems.selectedFieldsValue; let i = index">
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'string'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
+                                            <mat-form-field class="action-admin-input-form"
+                                                [floatLabel]="appService.getViewMode() ? '' : 'never'">
+                                                <textarea [id]="fieldItemValue.id" matInput cdkTextareaAutosize
+                                                    [(ngModel)]="fieldItemValue.selectedValues"
+                                                    [ngModelOptions]="{standalone: true}"
+                                                    class="subject"
+                                                    style="margin-left: 20px;"></textarea>
+                                                <mat-placeholder class="placeholder" style="margin-left: 15px;">
+                                                    {{fieldItemValue.selectedValues ? '' : 'lang.typeValue' | translate}}
+                                                </mat-placeholder>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;bottom: 30px;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'integer'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
+                                            <mat-form-field class="action-admin-input-form input-integer"
+                                                [floatLabel]="appService.getViewMode() ? '' : 'never'">
+                                                <input [id]="fieldItemValue.id" type="number" matInput
+                                                    [(ngModel)]="fieldItemValue.selectedValues"
+                                                    [ngModelOptions]="{standalone: true}"
+                                                    style="margin-right: 10px;margin-left: 20px;"
+                                                    min="0" step="0.1">
+                                                <mat-placeholder class="placeholder" style="margin-left: 15px;">
+                                                    {{fieldItemValue.selectedValues ? '' : 'lang.defaultValue' | translate}}
+                                                </mat-placeholder>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;bottom: 30px;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'select'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
+                                            <mat-form-field class="action-admin-input-form"
+                                                [floatLabel]="appService.getViewMode() ? '' : 'never'">
+                                                <mat-select
+                                                    [(ngModel)]="fieldItemValue.selectedValues"
+                                                    [ngModelOptions]="{standalone: true}"
+                                                    style="margin-left: 15px;">
+                                                    <mat-option *ngFor="let optionItem of fieldItemValue.values; let i = index" [value]="optionItem.label">
+                                                        {{optionItem.label}}
+                                                    </mat-option>
+                                                </mat-select>
+                                                <mat-placeholder class="placeholder" style="margin-left: 15px;">
+                                                    {{fieldItemValue.selectedValues ? '' : 'lang.defaultValue' | translate}}
+                                                </mat-placeholder>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;bottom: 30px;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'date'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
+                                            <div class="row" style="display: flex;">
+                                                <div class="col-md-1 col-sm-1" style="margin-top: 5px;">
+                                                    <button mat-button color="primary" matPreffix mat-icon-button type="button"
+                                                        (click)="$event.stopPropagation();toggleTodayDate(fieldItemValue);"
+                                                        [title]="'lang.todayDate' | translate"
+                                                        style="margin-bottom: 5px;">
+                                                        <mat-icon color="primary"
+                                                            class="{{fieldItemValue.today ? 'far fa-bell-slash' : 'far fa-bell'}}">
+                                                        </mat-icon>
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-11 col-sm-11">
+                                                    <mat-form-field class="action-admin-input-form input-date" (click)="picker.open()"
+                                                        style="cursor:pointer;">
+                                                        <input [id]="fieldItemValue.id"
+                                                            matInput [matDatepicker]="picker"
+                                                            placeholder="{{fieldItemValue.selectedValues ? '' : 'lang.chooseDate' | translate}}"
+                                                            [min]="today"
+                                                            [ngModel]="fieldItemValue.selectedValues"
+                                                            [ngModelOptions]="{standalone: true}"
+                                                            (dateChange)="onDateChange($event, fieldItemValue)"
+                                                            readonly style="cursor:pointer;">
+                                                        <mat-datepicker-toggle matSuffix [for]="picker"
+                                                            *ngIf="!fieldItemValue.selectedValues"></mat-datepicker-toggle>
+                                                        <mat-datepicker [touchUi]="appService.getViewMode()" #picker></mat-datepicker>
+                                                        <button mat-button color="warn" matSuffix mat-icon-button
+                                                            *ngIf="fieldItemValue.selectedValues"
+                                                            (click)="$event.stopPropagation();resetFieldItemValue(fieldItemValue, i);"
+                                                            [title]="'lang.eraseValue' | translate">
+                                                            <mat-icon color="warn" class="fa fa-calendar-times"></mat-icon>
+                                                        </button>
+                                                        <button mat-button color="warn" matSuffix mat-icon-button
+                                                            [title]="'lang.deleteField' | translate"
+                                                            style="position: absolute;bottom: 35px;"
+                                                            (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                            <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                        </button>
+                                                    </mat-form-field>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'radio'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
+                                            <mat-form-field class="action-admin-input-form input-radio"
+                                                [floatLabel]="appService.getViewMode() ? '' : 'never'">
+                                                <input matInput style="display: none;">
+                                                <mat-radio-group class="action-admin-radio-form" color="primary" aria-label="Select an option"
+                                                    [(ngModel)]="fieldItemValue.selectedValues"
+                                                    [ngModelOptions]="{standalone: true}">
+                                                    <mat-radio-button *ngFor="let value of fieldItemValue.values" [value]="value.label">
+                                                        {{value.label}}
+                                                    </mat-radio-button>
+                                                </mat-radio-group>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;bottom: 30px;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </mat-form-field>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'checkbox'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                            <div class="action-admin-input-form action-admin-checkbox-form" style="border-radius: 10px;">
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;top: -11px;right: 0;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                                <mat-selection-list #shoes class="div-list"
+                                                    [(ngModel)]="fieldItemValue.selectedValues"
+                                                    [ngModelOptions]="{standalone: true}">
+                                                    <mat-list-option color="primary" *ngFor="let value of fieldItemValue.values"
+                                                        style="width: 300px;"
+                                                        [value]="value.label" checkboxPosition="before">
+                                                        {{value.label}}
+                                                    </mat-list-option>
+                                                </mat-selection-list>
+                                                <mat-divider style="position: inherit;"
+                                                    *ngIf="shoes.selectedOptions.selected.length > 0" ></mat-divider>
+                                                <mat-chip-list class="action-admin-checkbox-selected-list">
+                                                    <mat-chip *ngFor="let chip of shoes.selectedOptions.selected" selected>
+                                                        {{getCheckboxListLabel(chip.value, fieldItemValue.values)}}
+                                                    </mat-chip>
+                                                </mat-chip-list>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'contact'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                            <div class="action-admin-input-form action-admin-contact-form">
+                                                <app-contact-autocomplete [id]="fieldItemValue.id"
+                                                    style="width:100%;"
+                                                    [control]="fieldItemValue.formControl"
+                                                    (afterContactSelected)="selectedContact($event, fieldItemValue)"
+                                                    (removeContactEvent)="removeContactEvent($event, fieldItemValue)">
+                                                </app-contact-autocomplete>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;top: -10px;right: 0;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;"  *ngIf="fieldItemValue.type === 'banAutocomplete'">
+                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                                <div class="action-admin-input-form action-admin-banauto-form">
+                                                    <app-address-ban-input [id]="fieldItemValue.id"
+                                                    style="width:100%;"
+                                                    [control]="fieldItemValue.formControl"
+                                                    (afterAddressBanSelected)="selectedAddressBan($event, fieldItemValue)"
+                                                    (removeAddressBanEvent)="removeAddressBanEvent($event, fieldItemValue)">
+                                                </app-address-ban-input>
+                                                <button mat-button color="warn" matSuffix mat-icon-button
+                                                    [title]="'lang.deleteField' | translate"
+                                                    style="position: absolute;top: -10px;right: 0;"
+                                                    (click)="$event.stopPropagation();removeSelectedFieldsToFill(i);">
+                                                    <mat-icon color="warn" class="fa fa-times-circle"></mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" *ngIf="intermediateStatusActions.indexOf(action.actionPageId) !== -1">
                             <div *ngIf="action.actionPageId === 'send_shipping'" class="col-sm-6">
                                 <app-plugin-select-search [showLabel]="true" [class]="''" [title]="'lang.intermediateStatus' | translate"
                                     [label]="'lang.intermediateStatus' | translate"

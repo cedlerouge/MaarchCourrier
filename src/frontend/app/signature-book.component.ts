@@ -553,7 +553,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     unSignMainDocument(attachment: any) {
         this.http.put(`../rest/resources/${attachment.res_id}/unsign`, {}).pipe(
             tap(() => {
-                this.appDocumentViewer.loadRessource(attachment.res_id, 'maintDocument');
+                this.appDocumentViewer.loadRessource(attachment.res_id, 'mainDocument');
                 this.rightViewerLink += '?tsp=' + Math.floor(Math.random() * 100);
                 this.signatureBook.attachments[this.rightSelectedThumbnail].status = 'A_TRA';
 
@@ -588,6 +588,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                 this.signatureBook.attachments[this.rightSelectedThumbnail].idToDl = attachment.res_id;
                 this.signatureBook.attachments[this.rightSelectedThumbnail].signed = false;
                 this.signatureBook.attachments[this.rightSelectedThumbnail].viewerId = attachment.res_id;
+
                 if (this.signatureBook.resList.length > 0) {
                     this.signatureBook.resList[this.signatureBook.resListIndex].allSigned = false;
                 }

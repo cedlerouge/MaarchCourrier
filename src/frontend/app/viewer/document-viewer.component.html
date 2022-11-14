@@ -156,12 +156,12 @@
         <mat-spinner style="margin:auto;"></mat-spinner>
     </div>
 </ng-container>
-<button mat-fab *ngIf="isDocModified && mode === 'mainDocument' && resId !== null && editor.mode !== 'office365sharepoint' && !loading" color="accent"
+<button mat-fab *ngIf="canSaveModifications('mainDocument')" color="accent"
     [title]="'lang.saveModifications' | translate" style="position: absolute;z-index: 3;bottom: 40px;right: 60px;"
     (click)="saveMainDocument()">
     <mat-icon style="height:auto;font-size:20px;" class="fas fa-check"></mat-icon>
 </button>
-<button mat-fab *ngIf="isDocModified && mode === 'attachment' && editor.mode !== 'office365sharepoint' && !loading" color="accent"
+<button mat-fab *ngIf="canSaveModifications('attachment')" color="accent"
     [title]="'lang.saveModifications' | translate" style="position: absolute;z-index: 3;bottom: 40px;right: 60px;"
     (click)="saveTmpDocument()">
     <mat-icon style="height:auto;font-size:20px;" class="fas fa-check"></mat-icon>

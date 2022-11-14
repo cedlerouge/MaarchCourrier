@@ -99,18 +99,18 @@ class CoreConfigModel
 
     public static function getLanguage()
     {
-        $availableLanguages = ['en', 'fr', 'nl'];
+        $availableLanguages = ['fr'];
 
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
 
-        if ($file) {
+        if (!empty($file['config']['lang'])) {
             $lang = $file['config']['lang'];
             if (in_array($lang, $availableLanguages)) {
                 return $lang;
             }
         }
 
-        return 'en';
+        return 'fr';
     }
 
     public static function getCustomLanguage($aArgs = [])
