@@ -1073,7 +1073,9 @@ description character varying(255) NOT NULL,
 options json DEFAULT '{}',
 fee json DEFAULT '{}',
 entities jsonb DEFAULT '{}',
-account json DEFAULT '{}',
+account jsonb DEFAULT '{}',
+subscriptions json DEFAULT '[]',
+token_min_iat TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
 CONSTRAINT shipping_templates_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
@@ -1090,6 +1092,10 @@ recipient_entity_id INTEGER NOT NULL,
 recipients jsonb DEFAULT '[]',
 account_id character varying(64) NOT NULL,
 creation_date timestamp without time zone NOT NULL,
+history jsonb DEFAULT '[]',
+attachments DEFAULT '[]',
+sending_id character varying(64),
+action_id INTEGER,
 CONSTRAINT shippings_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
