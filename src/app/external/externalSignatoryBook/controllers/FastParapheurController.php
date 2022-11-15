@@ -964,4 +964,59 @@ class FastParapheurController
 
         return $users;
     }
+
+    public static function getResourcesCount()
+    {
+        $resourcesInFastParapheur = ResModel::get([
+            'select' => [1],
+            'where'  => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $attachmentsInFastParapheur = AttachmentModel::get([
+            'select' => [1],
+            'where'  => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        return count($resourcesInFastParapheur) + count($attachmentsInFastParapheur);
+    }
+
+    public static function getResourcesDetails() {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return ['errors' => 'configuration file missing'];
+        }
+
+        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($fastParapheurBlock)) {
+            return ['errors' => 'invalid configuration for FastParapheur'];
+        }
+        $fastParapheurUrl = (string)$fastParapheurBlock->url;
+        $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', $fastParapheurUrl);
+
+        $resourcesInFastParapheur = ResModel::get([
+            'select' => [
+                'external_id->>\'signatureBookId\' as "signatureBookId"',
+                'subject'
+            ],
+            'where' => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $attachmentsInFastParapheur = AttachmentModel::get([
+            'select' => [
+                'external_id->>\'signatureBookId\' as "signatureBookId"',
+                'title as subject'
+            ],
+            'where' => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+        $documentsInFastParapheur = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
+            return [
+                'subject' => $doc['subject'],
+                'url'     => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
+            ];
+        }, $documentsInFastParapheur));
+
+        return $documentsInFastParapheur;
+    }
 }
