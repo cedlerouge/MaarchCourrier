@@ -94,7 +94,6 @@ export class AuthService {
             this.http.get('../rest/authenticationInformations')
                 .pipe(
                     tap((data: any) => {
-                        console.log(data);
                         this.applicationName = data.applicationName;
                         this.appUrl = data.maarchUrl;
                         this.setAppSession(data.instanceId);
