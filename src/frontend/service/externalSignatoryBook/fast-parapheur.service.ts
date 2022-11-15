@@ -143,8 +143,7 @@ export class FastParapheurService {
         return new Promise((resolve) => {
             this.http.get('../rest/users/' + serialId + '/statusInFastParapheur').pipe(
                 tap((data: any) => {
-                    const userInfo: string = `${data.link.name} (${data.link.email})`;
-                    resolve({link: userInfo});
+                    resolve(data);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -161,7 +160,7 @@ export class FastParapheurService {
         const objeToSend: any = {
             ... item,
             id: item.email ?? item?.externalId?.fastParapheur ?? null,
-            labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur.name) ? `${item.externalId.fastParapheur.name} (${label})` : label,
+            labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur) ? `${label} (${item.externalId.fastParapheur})` : label,
             signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
