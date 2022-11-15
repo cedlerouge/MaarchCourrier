@@ -272,26 +272,33 @@ class VersionUpdateController
         $parameter = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'database_version']);
 
         $parameter = explode('.', $parameter['param_value_string']);
-        $minorVersion = count($parameter) > 2 ? (int)$parameter[2] : 1;
 
-        $applicationVersion = CoreConfigModel::getApplicationVersion();
-        $versions = explode('.', $applicationVersion);
-        $currentVersion = (int)$versions[2];
-
-        $minorVersion++;
-        $sqlFiles = [];
-        while ($minorVersion <= $currentVersion) {
-            if (is_file("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql")) {
-                if (!is_readable("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql")) {
-                    return $response->withStatus(400)->withJson(['errors' => "File migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql is not readable"]);
-                }
-                $sqlFiles[] = "migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql";
-            }
-            $minorVersion++;
+        if (count($parameter) < 2) {
+            return $response->withStatus(400)->withJson(['errors' => "Bad format database_version"]); 
         }
 
-        if (!empty($sqlFiles)) {
-            $control = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $sqlFiles]);
+        $dbMinorVersion = (int)$parameter[2];
+
+        $dbMajorVersion = (int)$parameter[1];
+
+        $sqlFiles = array_diff(scandir('migration'), array('..', '.'));
+        natsort($sqlFiles);
+        $targetedSqlFiles = [];
+
+        foreach ($sqlFiles as $key => $file) {
+            $fileVersions = explode('.', $file);
+            $fileMinorVersion = (int)$fileVersions[2];
+            $fileMajorVersion = (int)$fileVersions[1];
+            if ($fileMajorVersion > $dbMajorVersion || ($fileMajorVersion == $dbMajorVersion && $fileMinorVersion > $dbMinorVersion)) {
+                if (!is_readable("migration/{$file}")) {
+                    return $response->withStatus(400)->withJson(['errors' => "File migration/{$file} is not readable"]);
+                }
+                $targetedSqlFiles[] = "migration/{$file}"; 
+            }
+        }
+
+        if (!empty($targetedSqlFiles)) {
+            $control = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $targetedSqlFiles]);
             if (!empty($control['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
             }
