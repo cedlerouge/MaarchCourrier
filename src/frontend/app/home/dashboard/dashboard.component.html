@@ -28,15 +28,15 @@
                 </mat-menu>
                 <mat-menu #toolMenuView="matMenu">
                     <ng-container *ngFor="let view of getViews(tile)">
-                        <button mat-menu-item *ngIf="view.id!=='chart'" [disabled]="tile.view === view.id"
+                        <button mat-menu-item *ngIf="view.id !== 'chart'" [disabled]="tile.view === view.id"
                             (click)="changeView(tile,view.id)">
-                            <mat-icon *ngIf="view.id==='list'" class="fa fa-list" color="primary"
+                            <mat-icon *ngIf="view.id === 'list'" class="fa fa-list" color="primary"
                                 style="height: auto;width: auto;"></mat-icon>
-                            <mat-icon *ngIf="view.id==='summary'" class="fas fa-equals" color="primary"
+                            <mat-icon *ngIf="view.id === 'summary'" class="fas fa-equals" color="primary"
                                 style="height: auto;width: auto;"></mat-icon>
                             <span>{{'lang.' + view.id | translate}}</span>
                         </button>
-                        <button mat-menu-item *ngIf="view.id==='chart'" [matMenuTriggerFor]="toolMenuChartTypes">
+                        <button mat-menu-item *ngIf="view.id === 'chart'" [matMenuTriggerFor]="toolMenuChartTypes">
                             <mat-icon class="fas fa-chart-pie" color="primary" style="height: auto;width: auto;">
                             </mat-icon>
                             <span>{{'lang.' + view.id | translate}}</span>
