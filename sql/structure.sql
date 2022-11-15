@@ -1072,7 +1072,7 @@ options json DEFAULT '{}',
 fee json DEFAULT '{}',
 entities jsonb DEFAULT '{}',
 account jsonb DEFAULT '{}',
-subscriptions json DEFAULT '[]',
+subscriptions jsonb DEFAULT '[]',
 token_min_iat TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
 CONSTRAINT shipping_templates_pkey PRIMARY KEY (id)
 )

@@ -233,9 +233,9 @@ class ShippingTemplateController
         $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
         $body['fee']      = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
         $body['subscribed'] = !empty($body['subscribed']);
-        foreach ($body['entities'] as $key => $entity) {
-            $body['entities'][$key] = (string)$entity;
-        }
+        $body['entities'] = array_map(function ($entity) {
+            return (string)$entity;
+        }, $body['entities']);
         if ($body['subscribed'] && !$alreadySubscribed) {
             $subscriptions = ShippingTemplateController::subscribeToNotifications($body);
             if (!empty($subscriptions['errors'])) {
@@ -645,20 +645,17 @@ class ShippingTemplateController
             if (empty($shippingInfo)) {
                 $errors[] = 'Shipping does not exist';
             }
-        } else {
-            if (!empty($args['account'])) {
-                if (!Validator::notEmpty()->validate($args['account']['id']) || !Validator::notEmpty()->validate($args['account']['password'])) {
-                    $errors[] = 'account id or password is empty';
-                }
-            }
+        } elseif (!empty($args['account']) && (
+            !Validator::notEmpty()->validate($args['account']['id'])
+            || !Validator::notEmpty()->validate($args['account']['password'])
+        )) {
+            $errors[] = 'account id or password is empty';
         }
            
-        if (!Validator::notEmpty()->validate($args['label']) ||
-            !Validator::length(1, 64)->validate($args['label'])) {
+        if (!Validator::notEmpty()->length(1, 64)->validate($args['label'])) {
             $errors[] = 'label is empty or too long';
         }
-        if (!Validator::notEmpty()->validate($args['description']) ||
-            !Validator::length(1, 255)->validate($args['description'])) {
+        if (!Validator::notEmpty()->length(1, 255)->validate($args['description'])) {
             $errors[] = 'description is empty or too long';
         }
 
@@ -674,12 +671,8 @@ class ShippingTemplateController
             }
         }
 
-        if (!empty($args['fee'])) {
-            foreach ($args['fee'] as $value) {
-                if (!empty($value) && !Validator::floatVal()->positive()->validate($value)) {
-                    $errors[] = 'fee must be an array with positive values';
-                }
-            }
+        if (!empty($args['fee']) && !Validator::each(Validator::floatVal()->positive())->validate($args['fee'])) {
+            $errors[] = 'fee must be an array with positive values';
         }
 
         return $errors;

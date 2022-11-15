@@ -20,7 +20,7 @@ class ShippingTemplateControllerTest extends TestCase
         $request     = \Slim\Http\Request::createFromEnvironment($environment);
         $shipping    = new \Shipping\controllers\ShippingTemplateController();
 
-        $aArgs = [
+        $args = [
             'label'           => 'TEST',
             'description'     => 'description du TEST',
             'options'         => [
@@ -31,7 +31,7 @@ class ShippingTemplateControllerTest extends TestCase
             'entities'        => [1, 2],
             'account'         => ['id' => 'toto', 'password' => '1234']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
         $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
         $this->assertSame(200, $response->getStatusCode());
@@ -41,7 +41,7 @@ class ShippingTemplateControllerTest extends TestCase
         self::$id = $responseBody->shippingId;
 
         ####### FAIL ##########
-        $aArgs = [
+        $args = [
             'description' => 'description too long !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
@@ -51,7 +51,7 @@ class ShippingTemplateControllerTest extends TestCase
             'account'     => ['id' => 'toto', 'password' => ''],
             'entities'    => [99999]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
         $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
         $this->assertSame(400, $response->getStatusCode());
@@ -63,7 +63,7 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame('99999 does not exists', $responseBody->errors[3]);
         $this->assertSame('fee must be an array with positive values', $responseBody->errors[4]);
 
-        $aArgs = [
+        $args = [
             'description' => 'description',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
@@ -73,7 +73,7 @@ class ShippingTemplateControllerTest extends TestCase
             'account'     => ['id' => 'toto', 'password' => ''],
             'entities'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
         $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
         $this->assertSame(400, $response->getStatusCode());
@@ -180,20 +180,21 @@ class ShippingTemplateControllerTest extends TestCase
         $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
         $request     = \Slim\Http\Request::createFromEnvironment($environment);
 
-        $aArgs = [
-            'label'           => 'TEST 2',
-            'description'     => 'description du test 2',
-            'options'         => [
-                'shaping'    => ['color', 'address_page'],
-                'sendMode'   => 'fast'
+        $args = [
+            'label'       => 'TEST 2',
+            'description' => 'description du test 2',
+            'options'     => [
+                'shaping'  => ['color', 'address_page'],
+                'sendMode' => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
-            'account'         => ['id' => 'toto', 'password' => '1234']
+            'fee'        => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto', 'password' => '1234'],
+            'subscribed' => false
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $shipping = new \Shipping\controllers\ShippingTemplateController();
         $response = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
 
         $responseBody = json_decode((string)$response->getBody());
@@ -221,39 +222,41 @@ class ShippingTemplateControllerTest extends TestCase
         $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
         $request     = \Slim\Http\Request::createFromEnvironment($environment);
 
-        $aArgs = [
+        $args = [
             'description' => 'description',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
                 'sendMode' => 'fast'
             ],
-            'fee'         => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
-            'account'     => ['id' => 'toto', 'password' => '1234'],
-            'entities'    => 'wrong format'
+            'fee'        => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto', 'password' => '1234'],
+            'entities'   => 'wrong format',
+            'subscribed' => false
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
         $response     = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => 'wrong format']);
         $this->assertSame(500, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
-        $this->assertSame('Id is not a numeric', $responseBody->errors[0]);
+        $this->assertSame('id is not an integer', $responseBody->errors[0]);
         $this->assertSame('Shipping does not exist', $responseBody->errors[1]);
         $this->assertSame('label is empty or too long', $responseBody->errors[2]);
         $this->assertSame('entities must be an array', $responseBody->errors[3]);
 
-        $aArgs = [
-            'label'           => 'TEST 2',
-            'description'     => 'description du test 2',
-            'options'         => [
-                'shaping'    => ['color', 'address_page'],
-                'sendMode'   => 'fast'
+        $args = [
+            'label'       => 'TEST 2',
+            'description' => 'description du test 2',
+            'options'     => [
+                'shaping'  => ['color', 'address_page'],
+                'sendMode' => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
-            'account'         => ['id' => 'toto']
+            'fee'        => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto'],
+            'subscribed' => false
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
 
         $shipping    = new \Shipping\controllers\ShippingTemplateController();
         $response = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
