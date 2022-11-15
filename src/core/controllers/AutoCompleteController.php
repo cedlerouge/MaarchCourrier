@@ -191,7 +191,7 @@ class AutoCompleteController
         }
         $config = (array)$config;
 
-        $users = [];
+        $fpUsers = [];
         $excludedEmails = [];
         $alreadyConnectedUsers = UserModel::get([
             'select' => [
@@ -209,48 +209,48 @@ class AutoCompleteController
         $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
 
         if (empty($subscriberIds)) {
-            $users = array_merge($users, FastParapheurController::getUsers(['config' => $config]));
-            if (!empty($users['errors'])) {
-                return $response->withStatus(400)->withJson(['errors' => $users['errors']]);
+            $fpUsers = array_merge($fpUsers, FastParapheurController::getUsers(['config' => $config]));
+            if (!empty($fpUsers['errors'])) {
+                return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
             }
         } else {
             foreach ($subscriberIds as $subscriberId) {
                 $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
-                if (!empty($users['errors'])) {
-                    return $response->withStatus(400)->withJson(['errors' => $users['errors']]);
+                if (!empty($fpUsers['errors'])) {
+                    return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
                 }
-                $users = array_merge($users, $subscriberUsers);
+                $fpUsers = array_merge($fpUsers, $subscriberUsers);
             }
         }
-        $usersEmails = array_values(array_unique(array_column($users, 'email')));
-        foreach ($users as $userKey => $user) {
-            $emailKey = array_search($user['email'], $usersEmails);
+        $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
+        foreach ($fpUsers as $fpUserKey => $fpUser) {
+            $emailKey = array_search($fpUser['email'], $fpUsersEmails);
             if ($emailKey !== false) {
-                unset($usersEmails[$emailKey]);
+                unset($fpUsersEmails[$emailKey]);
             } else {
-                unset($users[$userKey]);
+                unset($fpUsers[$fpUserKey]);
             }
         }
-        $users = array_filter($users, function ($user) use ($search) {
-            return mb_stripos($user['email'], $search) > -1 || mb_stripos($user['idToDisplay'], $search) > -1;
-        });
         if (!empty($queryParams['excludeAlreadyConnected'])) {
             $excludedEmails = array_column($alreadyConnectedUsers, 'fastParapheurEmail');
-            $users = array_filter($users, function ($user) use ($excludedEmails) {
-                return !in_array($user['email'], $excludedEmails);
+            $fpUsers = array_filter($fpUsers, function ($fpUser) use ($excludedEmails) {
+                return !in_array($fpUser['email'], $excludedEmails);
             });
         } else {
             foreach ($alreadyConnectedUsers as $alreadyConnectedUser) {
-                foreach ($users as $key => $user) {
-                    if ($user['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
-                        $users[$key]['idToDisplay'] = $user['idToDisplay'] . ' (' . $alreadyConnectedUser['name'] . ')';
+                foreach ($fpUsers as $key => $fpUser) {
+                    if ($fpUser['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
+                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name'] . ' (' . $alreadyConnectedUser['fastParapheurEmail'] . ')';
                     }
                 }
             }
         }
-        $users = array_values($users);
+        $fpUsers = array_filter($fpUsers, function ($fpUser) use ($search) {
+            return mb_stripos($fpUser['email'], $search) > -1 || mb_stripos($fpUser['idToDisplay'], $search) > -1;
+        });
+        $fpUsers = array_values($fpUsers);
 
-        return $response->withJson($users);
+        return $response->withJson($fpUsers);
     }
 
     public static function getCorrespondents(Request $request, Response $response)
