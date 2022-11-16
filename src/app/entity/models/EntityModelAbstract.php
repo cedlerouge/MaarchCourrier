@@ -472,7 +472,7 @@ abstract class EntityModelAbstract
             ];
         }
 
-        return $tmpRoles;
+        return $roles;
     }
 
     public static function getEntityPathByEntityId(array $args)
