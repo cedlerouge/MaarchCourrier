@@ -222,7 +222,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     getViews(tile: any) {
         if (tile.type === 'externalSignatoryBook') {
-            return (tile.views as any[]).filter((item: any) => (item.route as string).includes(this.externalSignatoryBook.signatoryBookEnabled));
+            return (tile.views as any[]).filter((item: any) => (item.target === this.externalSignatoryBook.signatoryBookEnabled));
         } else {
             return tile.views;
         }

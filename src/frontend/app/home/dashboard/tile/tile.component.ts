@@ -48,8 +48,13 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
 
     async ngAfterViewInit(): Promise<void> {
         await this['get_' + this.view]();
-        this.route = this.tile.views.find((viewItem: any) => viewItem.id === this.view).route;
-        this.viewDocRoute = this.tile.views.find((viewItem: any) => viewItem.id === this.view).viewDocRoute;
+        if (this.tile.type === 'externalSignatoryBook') {
+            this.route = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled).route;
+            this.viewDocRoute = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled).viewDocRoute;
+        } else {
+            this.route = this.tile.views.find((viewItem: any) => viewItem.id === this.view).route;
+            this.viewDocRoute = this.tile.views.find((viewItem: any) => viewItem.id === this.view).viewDocRoute;
+        }
         this.loading = false;
     }
 
