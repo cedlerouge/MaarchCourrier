@@ -43,13 +43,11 @@ export class VersionsUpdateAdministrationComponent implements OnInit {
         this.http.get('../rest/versionsUpdate').pipe(
             tap((data: any) => {
                 this.versions = data;
+                this.loading = false;
             }),
             catchError(err => {
                 this.notify.handleErrors(err);
                 return of(false);
-            }),
-            tap(() => {
-                this.loading = false;
             })
         ).subscribe();
     }
@@ -69,7 +67,7 @@ export class VersionsUpdateAdministrationComponent implements OnInit {
                     return false;
                 }
             }),
-            exhaustMap(() => this.http.put('../rest/versionsUpdate', {})),
+            exhaustMap(() => this.http.put('../rest/versionsUpdate', { tag : this.versions.lastAvailableMinorVersion })),
             tap(() => {
                 this.dialogRef = this.dialog.open(AlertComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.updateOk'), msg: this.translate.instant('lang.saveInDocserversInfo') } });
             }),
