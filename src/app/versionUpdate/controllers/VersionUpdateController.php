@@ -26,6 +26,8 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\DatabasePDO;
 use Respect\Validation\Validator;
 use SrcCore\models\ValidatorModel;
+use History\controllers\HistoryController;
+use User\models\UserModel;
 
 class VersionUpdateController
 {
@@ -173,6 +175,18 @@ class VersionUpdateController
             return $response->withStatus(400)->withJson(['errors' => "Application update failed. Please check updateVersion.log at {$migrationFolder['path']}"]);
         }
 
+        $user = UserModel::get(['select' => ['id'], 'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
+
+        HistoryController::add([
+            'tableName' => 'none',
+            'recordId'  => $targetTag,
+            'eventType' => 'UP',
+            'userId'       => $user[0]['id'],
+            'info'      => _APP_UPDATED_TO_TAG. ' : ' . $targetTag,
+            'moduleId'  => null,
+            'eventId'   => 'appUpdate',
+        ]);
+
         return $response->withStatus(204);
     }
 
@@ -187,6 +201,8 @@ class VersionUpdateController
         }
 
         if (!empty($args['sqlFiles'])) {
+            $user = UserModel::get(['select' => ['id'], 'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
+
             $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
 
             $actualTime = date("dmY-His");
@@ -218,6 +234,16 @@ class VersionUpdateController
             foreach ($args['sqlFiles'] as $sqlFile) {
                 $fileContent = file_get_contents($sqlFile);
                 DatabaseModel::exec($fileContent);
+                $fileName = explode('/', $sqlFile)[1];
+                HistoryController::add([
+                    'tableName' => 'none',
+                    'recordId'  => $fileName,
+                    'eventType' => 'UP',
+                    'userId'    => $user[0]['id'],
+                    'info'      => _DB_UPDATED_WITH_FILE. ' : ' . $fileName,
+                    'moduleId'  => null,
+                    'eventId'   => 'databaseUpdate',
+                ]);
             }
         }
 
