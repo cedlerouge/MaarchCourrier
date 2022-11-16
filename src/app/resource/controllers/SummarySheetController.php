@@ -696,7 +696,7 @@ class SummarySheetController
                     }
                 }
 
-                // Sort keys to be in the same order defined in the roles.xml file
+                // Sort keys to be in the same order defined in the roles database
                 $rolesIDs = array_column($roles, 'id');
                 $tmp      = [];
                 foreach ($rolesIDs as $key) {
