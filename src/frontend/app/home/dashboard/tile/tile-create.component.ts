@@ -74,7 +74,7 @@ export class TileCreateComponent implements OnInit {
         }));
     }
 
-    getViews() {
+    async getViews() {
         this.tileLabel = this.translate.instant('lang.' + this.selectedTileType);
         this.getRelatedViews();
         this.selectedView = this.views.length > 0 ? this.views[0].id : null;
@@ -86,7 +86,7 @@ export class TileCreateComponent implements OnInit {
         } else if (this.selectedTileType === 'shortcut') {
             this.getAdminMenu();
         } else if (this.selectedTileType === 'externalSignatoryBook') {
-            this.getEnabledExternalSignatoryBook();
+            await this.checkLink();
         } else if (this.selectedTileType === 'searchTemplate') {
             this.getSearchTemplates();
         }
@@ -130,23 +130,18 @@ export class TileCreateComponent implements OnInit {
         }
     }
 
-    getEnabledExternalSignatoryBook() {
-        if (this.authService.externalSignatoryBook.id === 'maarchParapheur') {
-            this.checkLink();
-        }
-    }
-
     async checkLink() {
-        const data: any = await this.externalSignatoryBook.isLinkedToExternalSignatoryBook();
-        if (!this.functionsService.empty(data)) {
-            if (!data.isLinkedToMaarchParapheur) {
-                this.notify.error(this.translate.instant('lang.acountNotLinkedTomaarchParapheur'));
-                this.resetData();
-            } else {
+        const result: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.headerService.user.id);
+        if (!this.functionsService.empty(result)) {
+            const data: any = await this.externalSignatoryBook.isLinkedToExternalSignatoryBook();
+            if (!this.functionsService.empty(data)) {
                 this.tileOtherInfos = {
                     maarchParapheurUrl: data.maarchParapheurUrl
                 };
             }
+        } else {
+            this.notify.error(this.translate.instant('lang.acountNotLinkedTomaarchParapheur'));
+            this.resetData();
         }
     }
 
@@ -351,7 +346,7 @@ export class TileCreateComponent implements OnInit {
         }));
         if (this.selectedTileType === 'externalSignatoryBook') {
             // Get the views linked to the enabled external signatory book
-            this.views = this.views.filter((item: any) => item.route.includes(this.authService.externalSignatoryBook.id));
+            this.views = this.views.filter((item: any) => item.target === this.authService.externalSignatoryBook.id);
             this.enabledSignatoryBook = this.translate.instant(`lang.${this.authService.externalSignatoryBook.id}`);
         }
     }

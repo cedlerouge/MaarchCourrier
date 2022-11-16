@@ -23,6 +23,7 @@ interface TileView {
     'id': 'list' | 'summary' | 'chart'; // identifier
     'route': string; // router when click on tile
     'viewDocRoute'?: string; // router when view a doc (usefull for list view)
+    'target'?: string; // route target after click
 }
 
 @Injectable()
@@ -156,21 +157,25 @@ export class DashboardService {
                 {
                     id: 'list',
                     route: ':maarchParapheurUrl/dist/#/documents/:resId',
+                    target: 'maarchParapheur',
                     viewDocRoute: null
                 },
                 {
                     id: 'summary',
-                    route: ':maarchParapheurUrl/dist/#/home'
+                    route: ':maarchParapheurUrl/dist/#/home',
+                    target: 'maarchParapheur',
                 },
                 // Fast Parapheur views
                 {
                     id: 'list',
-                    route: ':fastParapheurUrl/dist/documents/:resId',
+                    route: '',
+                    target: 'fastParapheur',
                     viewDocRoute: null
                 },
                 {
                     id: 'summary',
-                    route: ':fastParapheurUrl/dist/home'
+                    route: '',
+                    target: 'fastParapheur',
                 }
             ]
         },
