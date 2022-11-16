@@ -468,11 +468,11 @@ abstract class EntityModelAbstract
             $roles[] = [
                 'id'                    => $tmpValue['id'],
                 'label'                 => defined($tmpValue['label']) ? constant($tmpValue['label']) : $tmpValue['label'],
-                'keepInListInstance'    => $tmpValue['keepInListInstance']
+                'keepInListInstance'    => (bool) $tmpValue['keepInListInstance']
             ];
         }
 
-        return $roles;
+        return $tmpRoles;
     }
 
     public static function getEntityPathByEntityId(array $args)
