@@ -57,6 +57,30 @@ class DocserverController
         return $response->withJson($docserver);
     }
 
+    /**
+     * Get Path of migration folder (shadow docserver, not available in docserver administration)
+     */
+    public static function getMigrationFolderPath()
+    {
+        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]);
+        if (empty($docserver)) {
+            return $response->withStatus(400)->withJson(['errors' => 'Docserver letterbox_coll  does not exist']);
+        }
+        $directoryPath = explode('/', rtrim($docserver['path_template'], '/'));
+        array_pop($directoryPath);
+        $directoryPath = implode('/', $directoryPath);
+
+        if (!is_dir($directoryPath . '/migration')) {
+            if (!is_writable($directoryPath)) {
+                return ['errors' => 'Directory path is not writable : ' . $directoryPath];
+            }
+            mkdir($directoryPath . '/migration', 0755, true);
+        } elseif (!is_writable($directoryPath . '/migration')) {
+            return ['errors' => 'Directory path is not writable : ' . $directoryPath . '/migration'];
+        }
+        return ['path' => $directoryPath . '/migration'];
+    }
+
     public function create(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
