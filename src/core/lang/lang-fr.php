@@ -502,3 +502,6 @@ define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché 
 define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
 define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');
+
+define('_DB_UPDATED_WITH_FILE', 'Base de données mise à jour avec le fichier');
+define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
