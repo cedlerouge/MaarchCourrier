@@ -1576,7 +1576,7 @@ DECLARE
     retval bigint;
 BEGIN
     -- Check if sequence exist, if not create
-    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = "chrono_seq_name" ) THEN
+	IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
       EXECUTE 'CREATE SEQUENCE "' || chrono_seq_name || '" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;';
     END IF;
     -- Check if chrono exist in parameters table, if not create
@@ -1584,7 +1584,7 @@ BEGIN
       EXECUTE 'INSERT INTO parameters (id, param_value_int) VALUES ( ''' || chrono_id_name || ''', 1)';
     END IF;
     -- Get next value of sequence, update the value in parameters table before returning the value
-    SELECT nextval("chrono_seq_name") INTO retval;
+    SELECT nextval(chrono_seq_name) INTO retval;
 	  UPDATE parameters set param_value_int = retval WHERE id =  chrono_id_name;
 	  RETURN QUERY SELECT retval;
 END;
@@ -1599,7 +1599,7 @@ DECLARE
 BEGIN
   -- Loop through each chrono found in parameters table
 	FOR chrono IN (SELECT * FROM parameters WHERE id LIKE '%_' || extract(YEAR FROM current_date)) LOOP
-    EXECUTE 'SELECT setVal(''"' || CONCAT(chrono.id, '_seq') || '"'', 1)';
+    EXECUTE 'SELECT setVal(''' || CONCAT(chrono.id, '_seq') || ''', 1)';
     UPDATE parameters SET param_value_int = '1' WHERE id = chrono.id;
   END LOOP;
 END

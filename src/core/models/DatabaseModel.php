@@ -87,7 +87,7 @@ class DatabaseModel
         ValidatorModel::notEmpty($args, ['chronoIdName', 'chronoSeqName']);
         ValidatorModel::stringType($args, ['chronoIdName', 'chronoSeqName']);
 
-        $query = "SELECT increase_chrono('\"{$args['chronoSeqName']}\"' ,'{$args['chronoIdName']}')";
+        $query = "SELECT increase_chrono('{$args['chronoSeqName']}' ,'{$args['chronoIdName']}')";
 
         $db = new DatabasePDO();
         $stmt = $db->query($query);
