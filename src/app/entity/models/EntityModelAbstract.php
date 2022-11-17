@@ -460,7 +460,7 @@ abstract class EntityModelAbstract
     {
         $roles = [];
         $tmpRoles = DatabaseModel::select([
-            'select'    => ['id', 'label', 'keepInListInstance'],
+            'select'    => ['id', 'label', 'keep_in_list_instance'],
             'table'     => ['roles']
         ]);
 
@@ -468,7 +468,7 @@ abstract class EntityModelAbstract
             $roles[] = [
                 'id'                    => $tmpValue['id'],
                 'label'                 => defined($tmpValue['label']) ? constant($tmpValue['label']) : $tmpValue['label'],
-                'keepInListInstance'    => (bool) $tmpValue['keepInListInstance']
+                'keepInListInstance'    => $tmpValue['keep_in_list_instance']
             ];
         }
 

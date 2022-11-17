@@ -1608,6 +1608,6 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE IF NOT EXISTS roles (
   id CHARACTER varying(32) UNIQUE NOT NULL,
   label CHARACTER varying(255) NOT NULL,
-  keepInListInstance BOOL NOT NULL DEFAULT FALSE,
+  keep_in_list_instance BOOL NOT NULL DEFAULT FALSE,
   CONSTRAINT roles_id_pkey PRIMARY KEY (id)
 );

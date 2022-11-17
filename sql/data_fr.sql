@@ -738,13 +738,13 @@ INSERT INTO registered_mail_number_range (id, type, tracking_account_number, ran
 INSERT INTO registered_mail_number_range (id, type, tracking_account_number, range_start, range_end, creator, creation_date, status, current_number) VALUES (2, 'RW', 'SuiviNumberInternational', 1, 10, 23, '2020-09-14 14:39:32.972626', 'OK', 1);
 INSERT INTO registered_mail_number_range (id, type, tracking_account_number, range_start, range_end, creator, creation_date, status, current_number) VALUES (3, '2D', 'suiviNumber', 1, 10, 23, '2020-09-14 14:39:16.779322', 'OK', 1);
 
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('dest', '_DEST_USER', false);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('copy', '_TO_CC', true);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('visa', '_VISA_USER', false);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('sign', '_TO_SIGN', false);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('avis', '_AVIS_USER', false);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('avis_copy', '_AVIS_USER_COPY', false);
-INSERT INTO roles (id, label, keepInListInstance) VALUES ('avis_info', '_AVIS_USER_INFO', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('dest', '_DEST_USER', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('copy', '_TO_CC', true);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('visa', '_VISA_USER', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('sign', '_TO_SIGN', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('avis', '_AVIS_USER', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('avis_copy', '_AVIS_USER_COPY', false);
+INSERT INTO roles (id, label, keep_in_list_instance) VALUES ('avis_info', '_AVIS_USER_INFO', false);
 
 INSERT INTO search_templates (id, user_id, label, creation_date, query) VALUES (1, 23, 'Tous les courriers', '2021-03-25 11:54:30.273871', '[{"identifier":"category","values":""},{"identifier":"meta"}]');
 INSERT INTO search_templates (id, user_id, label, creation_date, query) VALUES (2, 18, 'Courriers arrivés', '2021-03-25 11:59:29.500487', '[{"identifier":"category","values":[{"id":"incoming","label":"Courrier Arriv\u00e9e"}]},{"identifier":"meta"}]');
