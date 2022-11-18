@@ -2,8 +2,8 @@
     "swagger" : "2.0",
     "info" : {
         "title" : "Maarch Courrier",
-        "version" : "21.03",
-        "description" : "Documentation de l'API Maarch Courrier V21.03",
+        "version" : "2301",
+        "description" : "Documentation de l'API Maarch Courrier V2301",
         "contact" : {
             "name" : "Maarch",
             "email" : "dev.maarch@maarch.org"

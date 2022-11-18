@@ -1,6 +1,6 @@
 {
   "name": "addin-outlook",
-  "version": "1.0.0",
+  "version": "2301",
   "scripts": {
     "dep-list": "npm list --depth=0",
     "ng-update": "ng update --allow-dirty --force",

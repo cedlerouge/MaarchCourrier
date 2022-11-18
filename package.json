@@ -1,6 +1,6 @@
 {
   "name": "maarchcourrier",
-  "version": "21.03.1",
+  "version": "2301.0.0",
   "description": "MaarchCourrier",
   "engines": {
     "npm": ">=8.15.0",
