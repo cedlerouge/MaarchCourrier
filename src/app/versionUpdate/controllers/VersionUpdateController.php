@@ -73,7 +73,6 @@ class VersionUpdateController
 
             $branchVersionTag = $explodedValue[0];
             $minorVersionTag = $explodedValue[2];
-            $majorVersionTag = $explodedValue[1];
 
             if ($branchVersionTag > $currentVersionBranch) {
                 $availableMajorVersions[] = $value['name'];
