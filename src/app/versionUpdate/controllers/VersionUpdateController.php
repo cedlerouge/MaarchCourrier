@@ -61,7 +61,6 @@ class VersionUpdateController
 
         $currentVersionBranch = $versions[0];
         $currentMinorVersionTag = $versions[2];
-        $currentMajorVersionTag = $versions[1];
 
         $availableMinorVersions = [];
         $availableMajorVersions = [];
