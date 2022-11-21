@@ -64,7 +64,7 @@ class DocserverController
     {
         $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]);
         if (empty($docserver)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver letterbox_coll  does not exist']);
+            return ['errors' => 'Docserver letterbox_coll  does not exist'];
         }
         $directoryPath = explode('/', rtrim($docserver['path_template'], '/'));
         array_pop($directoryPath);
