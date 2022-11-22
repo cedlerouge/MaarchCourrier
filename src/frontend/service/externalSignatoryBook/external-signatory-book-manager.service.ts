@@ -157,4 +157,8 @@ export class ExternalSignatoryBookManagerService {
     canSynchronizeSignatures(): boolean {
         return this.serviceInjected.canSynchronizeSignatures;
     }
+
+    canManageSignaturesPositions(): boolean {
+        return this.serviceInjected.canManageSignaturesPositions;
+    }
 }

@@ -38,7 +38,7 @@ use Slim\Http\Response;
 use SrcCore\models\TextFormatModel;
 
 /**
-    * @codeCoverageIgnore
+* @codeCoverageIgnore
 */
 class FastParapheurController
 {
@@ -98,8 +98,8 @@ class FastParapheurController
         }
 
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'external_id']]);
-        $externalId = json_decode($user['external_id']);
-        unset($externalId->fastParapheur);
+        $externalId = json_decode($user['external_id'], true);
+        unset($externalId['fastParapheur']);
 
         UserModel::updateExternalId(['id' => $args['id'], 'externalId' => json_encode($externalId)]);
 
@@ -127,12 +127,12 @@ class FastParapheurController
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
-        if (empty($user['fastParapheurEmail'])) {
-            return $response->withStatus(403)->withJson(['errors' => 'user does not have Fast Parapheur email']);
+        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurId"']]);
+        if (empty($user['fastParapheurId'])) {
+            return $response->withStatus(403)->withJson(['errors' => 'user does not have a Fast Parapheur email']);
         }
 
-        return $response->withJson(['link' => $user['fastParapheurEmail'], 'errors' => '']);
+        return $response->withJson(['link' => $user['fastParapheurId'], 'errors' => '']);
     }
 
     public function getWorkflow(Request $request, Response $response, array $args)
@@ -182,6 +182,7 @@ class FastParapheurController
         $certPath = (string)$fastParapheurBlock->certPath;
         $certPass = (string)$fastParapheurBlock->certPass;
         $certType = (string)$fastParapheurBlock->certType;
+        $subscriberId = (string)$fastParapheurBlock->subscriberId;
 
         $curlReturn = CurlModel::exec([
             'url'           => $url . '/documents/v2/' . $externalId['signatureBookId'] . '/history',
@@ -197,8 +198,54 @@ class FastParapheurController
             return $response->withStatus($curlReturn['code'])->withJson($curlReturn['errors']);
         }
 
+        if (!empty($curlReturn)) {
+            $fastParapheurUsers = FastParapheurController::getUsers(['config' => [
+                'subscriberId' => $subscriberId,
+                'url'          => $url,
+                'certPath'     => $certPath,
+                'certPass'     => $certPass,
+                'certType'     => $certType
+            ]]);
+            $fastParapheurUsers = array_column($fastParapheurUsers, 'email', 'idToDisplay');
+        }
+
+        $externalWorkflow = [];
+        $order = 0;
+        $mode = null;
+        foreach ($curlReturn['response'] as $step) {
+            if (mb_stripos($step['stateName'], 'Préparé') === 0) {
+                continue;
+            }
+            if (empty($step['userFullname'])) {
+                $mode = mb_stripos($step['stateName'], 'visa') !== false ? 'visa' : 'sign';
+                continue;
+            }
+            $order++;
+            $user = UserModel::get([
+                'select' => [
+                    'id',
+                    'concat(firstname, \' \', lastname) as name',
+                ],
+                'where'  => ['external_id->>\'fastParapheur\' = ?'],
+                'data'   => [$fastParapheurUsers[$step['userFullname']]],
+                'limit'  => 1
+            ]);
+            if (empty($user)) {
+                $user = ['id' => null, 'name' => '-'];
+            } else {
+                $user = $user[0];
+            }
+            $externalWorkflow[] = [
+                'userId'        => $user['id'],
+                'userDisplay'   => $step['userFullname'] . ' (' . $user['name'] . ')',
+                'mode'          => $mode,
+                'order'         => $order,
+                'process_date'  => date_format(new \DateTime($step['date']), 'd-m-Y H:i')
+            ];
+        }
+
         $externalState['signatureBookWorkflow']['fetchDate'] = date_format(new \DateTime(), 'c');
-        $externalState['signatureBookWorkflow']['data'] = $curlReturn['response'];
+        $externalState['signatureBookWorkflow']['data'] = $externalWorkflow;
         if ($resource['coll_id'] == 'letterbox_coll') {
             ResModel::update([
                 'where'   => ['res_id = ?'],
@@ -217,7 +264,7 @@ class FastParapheurController
             ]);
         }
 
-        return $response->withJson($curlReturn['response']);
+        return $response->withJson($externalWorkflow);
     }
 
     public static function retrieveSignedMails(array $args)
@@ -547,7 +594,7 @@ class FastParapheurController
                 } elseif ($step['type'] == 'fastParapheurUserEmail') {
                     $circuit['steps'][] = [
                         'step'    => $step['mode'],
-                        'members' => [$step['id']]
+                        'members' => [$step['id']['email']]
                     ];
                 }
             } /*elseif ($step['type'] == 'externalOTP'
@@ -589,11 +636,7 @@ class FastParapheurController
         if (empty($resource)) {
             return ['error' => 'resource does not exist', 'code' => 400];
         }
-
         $resource['external_id'] = json_decode($resource['external_id'], true);
-        if (!empty($resource['external_id']['signatureBookId'])) {
-            return ['error' => 'resource is already in fastParapheur', 'code' => 400];
-        }
 
         if ($resource['format'] != 'pdf') {
             $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
@@ -639,7 +682,7 @@ class FastParapheurController
         if ($resource['integrations']['inSignatureBook']) {
             $sentMainDocument = [
                 'comment'  => $resource['subject'],
-                'signable' => $resource['category_id'] == 'outgoing',
+                'signable' => empty($resource['external_id']['signatureBookId']),
                 'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
             ];
         }
@@ -926,5 +969,60 @@ class FastParapheurController
         }
 
         return $users;
+    }
+
+    public static function getResourcesCount()
+    {
+        $resourcesInFastParapheur = ResModel::get([
+            'select' => [1],
+            'where'  => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $attachmentsInFastParapheur = AttachmentModel::get([
+            'select' => [1],
+            'where'  => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        return count($resourcesInFastParapheur) + count($attachmentsInFastParapheur);
+    }
+
+    public static function getResourcesDetails() {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return ['errors' => 'configuration file missing'];
+        }
+
+        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($fastParapheurBlock)) {
+            return ['errors' => 'invalid configuration for FastParapheur'];
+        }
+        $fastParapheurUrl = (string)$fastParapheurBlock->url;
+        $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', $fastParapheurUrl);
+
+        $resourcesInFastParapheur = ResModel::get([
+            'select' => [
+                'external_id->>\'signatureBookId\' as "signatureBookId"',
+                'subject'
+            ],
+            'where' => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $attachmentsInFastParapheur = AttachmentModel::get([
+            'select' => [
+                'external_id->>\'signatureBookId\' as "signatureBookId"',
+                'title as subject'
+            ],
+            'where' => ['external_id->>\'signatureBookId\' is not null']
+        ]);
+
+        $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+        $documentsInFastParapheur = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
+            return [
+                'subject' => $doc['subject'],
+                'url'     => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
+            ];
+        }, $documentsInFastParapheur));
+
+        return $documentsInFastParapheur;
     }
 }

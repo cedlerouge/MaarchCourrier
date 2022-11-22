@@ -4,6 +4,7 @@ import { catchError, of, tap } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
 import { UserWorkflow } from '@models/user-workflow.model';
+import { FunctionsService } from '@service/functions.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,12 +15,14 @@ export class FastParapheurService {
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
     canCreateUser: boolean = false;
     canSynchronizeSignatures: boolean = false;
+    canManageSignaturesPositions: boolean = false;
     userWorkflow = new UserWorkflow();
 
     constructor(
         private http: HttpClient,
         private notify: NotificationService,
-        private translate: TranslateService
+        private translate: TranslateService,
+        private functions: FunctionsService
     ) { }
 
     getUserAvatar(externalId: any = null): Promise<any> {
@@ -104,7 +107,7 @@ export class FastParapheurService {
 
     linkAccountToSignatoryBook(externalId: any, serialId: number): Promise<any> {
         return new Promise((resolve) => {
-            this.http.put(`../rest/users/${serialId}/linkToFastParapheur`, { fastParapheurUserEmail: externalId.email }).pipe(
+            this.http.put(`../rest/users/${serialId}/linkToFastParapheur`, { fastParapheurUserEmail: externalId.email, fastParapheurUserName: externalId.idToDisplay }).pipe(
                 tap(() => {
                     this.notify.success(this.translate.instant('lang.accountLinked'));
                     resolve(true);
@@ -153,17 +156,25 @@ export class FastParapheurService {
     }
 
     setExternalInformation(item: any): UserWorkflow {
-        return {
+        const label = item.labelToDisplay;
+        delete item.labelToDisplay;
+        const objeToSend: any = {
             ... item,
-            id: item.email ?? item.externalId.fastParapheur,
+            id: item.email ?? item?.externalId?.fastParapheur ?? null,
+            labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur) ? `${label} (${item.externalId.fastParapheur})` : label,
             signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
             hasPrivilege: true,
-            externalId: {
-                fastParapheur: item.email ?? item.externalId.fastParapheur
-            }
         };
+        if (item?.id !== undefined && item?.externalId?.fastParapheur === undefined) {
+            objeToSend.externalId = null;
+        } else {
+            objeToSend.externalId = {
+                fastParapheur: item.email ?? item.externalId.fastParapheur
+            };
+        }
+        return objeToSend;
     }
 
     getRessources(additionalsInfos: any): any[] {
@@ -171,7 +182,7 @@ export class FastParapheurService {
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
-        return additionalsInfos.attachments.length > 0 && workflow.length > 0;
+        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0;
     }
 
     synchronizeSignatures(data: any) {
