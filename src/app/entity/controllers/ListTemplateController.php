@@ -468,7 +468,7 @@ class ListTemplateController
 
         $data = $request->getParams();
 
-        $check = Validator::arrayType()->notEmpty()->validate($data['roles']);
+        $check = Validator::arrayType()->notEmpty()->validate($data['roles'] ?? null);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
