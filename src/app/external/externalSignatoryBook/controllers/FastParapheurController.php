@@ -77,8 +77,8 @@ class FastParapheurController
         HistoryController::add([
             'tableName'    => 'users',
             'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
+            'eventType'    => 'UP',
+            'eventId'      => 'userModification',
             'info'         => _USER_LINKED_TO_FASTPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
@@ -106,8 +106,8 @@ class FastParapheurController
         HistoryController::add([
             'tableName'    => 'users',
             'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
+            'eventType'    => 'UP',
+            'eventId'      => 'userModification',
             'info'         => _USER_UNLINKED_TO_FASTPARAPHEUR . " : {$user['firstname']} {$user['lastname']}"
         ]);
 
