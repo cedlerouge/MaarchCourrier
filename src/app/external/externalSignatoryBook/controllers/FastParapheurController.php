@@ -132,7 +132,7 @@ class FastParapheurController
             return $response->withStatus(403)->withJson(['errors' => 'user does not have a Fast Parapheur email']);
         }
 
-        return $response->withJson(['link' => $user['fastParapheurId'], 'errors' => '']);
+        return $response->withJson(['link' => $user['fastParapheurId']]);
     }
 
     public function getWorkflow(Request $request, Response $response, array $args)
@@ -570,7 +570,7 @@ class FastParapheurController
         ValidatorModel::intType($args, ['resIdMaster']);
         ValidatorModel::arrayType($args, ['steps', 'config']);
 
-        $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
+        $subscriberId = $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
             return ['error' => 'no subscriberId provided'];
         }
