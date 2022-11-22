@@ -82,7 +82,7 @@ class FastParapheurController
             'info'         => _USER_LINKED_TO_FASTPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
-        return $response->withJson(['success' => 'success']);
+        return $response->withStatus(204);
     }
 
     public function unlinkUserToFastParapheur(Request $request, Response $response, array $args)
@@ -111,7 +111,7 @@ class FastParapheurController
             'info'         => _USER_UNLINKED_TO_FASTPARAPHEUR . " : {$user['firstname']} {$user['lastname']}"
         ]);
 
-        return $response->withJson(['success' => 'success']);
+        return $response->withStatus(204);
     }
 
     public function userStatusInFastParapheur(Request $request, Response $response, array $args)
