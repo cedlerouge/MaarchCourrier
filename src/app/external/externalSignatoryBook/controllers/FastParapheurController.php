@@ -165,10 +165,10 @@ class FastParapheurController
         }
 
         $externalState = json_decode($resource['external_state'], true);
-        $fetchDate = new DateTimeImmutable($externalState['signatureBookWorkflow']['fetchDate']);
-        $timeAgo = new DateTimeImmutable('-30 minutes');
+        // $fetchDate = new DateTimeImmutable($externalState['signatureBookWorkflow']['fetchDate']);
+        // $timeAgo = new DateTimeImmutable('-30 minutes');
         
-        if (!empty($externalState['signatureBookWorkflow']['fetchDate']) && $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
+        if (!empty($externalState['signatureBookWorkflow']['fetchDate']) && strtotime($externalState['signatureBookWorkflow']['fetchDate']) >= strtotime('-30 minutes')) {
             return $response->withJson($externalState['signatureBookWorkflow']['data']);
         }
 
@@ -238,13 +238,13 @@ class FastParapheurController
             } else {
                 $user = $user[0];
             }
-            $processDate = new DateTimeImmutable($step['date']);
+            // $processDate = new DateTimeImmutable($step['date']);
             $externalWorkflow[] = [
                 'userId'        => $user['id'],
                 'userDisplay'   => $step['userFullname'] . ' (' . $user['name'] . ')',
                 'mode'          => $mode,
                 'order'         => $order,
-                'process_date'  => $processDate->format('d-m-Y H:i')
+                'process_date'  => date_format(new \DateTime($step['date']), 'd-m-Y H:i')
             ];
         }
 
