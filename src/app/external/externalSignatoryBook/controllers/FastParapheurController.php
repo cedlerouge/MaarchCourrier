@@ -147,7 +147,7 @@ class FastParapheurController
             if (empty($resource)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
-            $resource['coll_id'] = 'letterbox_coll';
+            $resource['resourceType'] = 'letterbox_coll';
         } else {
             $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'external_id', 'external_state']]);
             if (empty($resource)) {
@@ -156,7 +156,7 @@ class FastParapheurController
             if (!ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
-            $resource['coll_id'] = 'attachments_coll';
+            $resource['resourceType'] = 'attachments_coll';
         }
 
         $externalId = json_decode($resource['external_id'], true);
@@ -246,7 +246,7 @@ class FastParapheurController
 
         $externalState['signatureBookWorkflow']['fetchDate'] = date_format(new \DateTime(), 'c');
         $externalState['signatureBookWorkflow']['data'] = $externalWorkflow;
-        if ($resource['coll_id'] == 'letterbox_coll') {
+        if ($resource['resourceType'] == 'letterbox_coll') {
             ResModel::update([
                 'where'   => ['res_id = ?'],
                 'data'    => [$args['id']],
