@@ -235,7 +235,7 @@ class CurlModel
 
         $postData = '';
         foreach ($args['body'] as $key => $value) {
-            if (is_array($value['subvalues'])) {
+            if (!empty($value['subvalues']) && is_array($value['subvalues'])) {
                 foreach ($value['subvalues'] as $subvalue) {
                     $postData .= "--{$delimiter}\r\n";
                     if (is_array($subvalue) && !empty($subvalue['isFile']) && !empty($subvalue['filename']) && !empty($subvalue['content'])) {
