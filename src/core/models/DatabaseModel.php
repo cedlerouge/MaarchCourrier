@@ -28,7 +28,7 @@ class DatabaseModel
         ValidatorModel::notEmpty($args, ['id', 'value']);
         ValidatorModel::stringType($args, ['id']);
 
-        $query = "CREATE SEQUENCE {$args['id']} INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
+        $query = "CREATE SEQUENCE \"{$args['id']}\" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
 
         $db = new DatabasePDO();
         $db->query($query);
@@ -48,7 +48,7 @@ class DatabaseModel
         ValidatorModel::stringType($args, ['id']);
         ValidatorModel::intType($args, ['value']);
 
-        $query = "SELECT setval('{$args['id']}', {$args['value']})";
+        $query = "SELECT setval('\"" . $args['id'] . "\"', {$args['value']})";
 
         $db = new DatabasePDO();
         $stmt = $db->query($query);
@@ -68,7 +68,7 @@ class DatabaseModel
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::stringType($args, ['id']);
 
-        $query = "DROP SEQUENCE IF EXISTS {$args['id']}";
+        $query = "DROP SEQUENCE IF EXISTS \"{$args['id']}\"";
 
         $db = new DatabasePDO();
         $db->query($query);
@@ -305,7 +305,7 @@ class DatabaseModel
         $dataSet = [];
         if (!empty($args['set'])) {
             foreach ($args['set'] as $key => $value) {
-                if ($value == 'SYSDATE' || strpos($value, 'CURRENT_TIMESTAMP') !== false) {
+                if ($value == 'SYSDATE' || (!empty($value) && strpos($value, 'CURRENT_TIMESTAMP') !== false)) {
                     $querySet[] = "{$key} = {$value}";
                 } else {
                     $querySet[] = "{$key} = ?";

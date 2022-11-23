@@ -206,7 +206,7 @@ class CurlModel
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'curl',
-                'level'     => 'DEBUG',
+                'level'     => ($code >= 400 ? 'ERROR' : 'INFO'),
                 'tableName' => 'curl',
                 'recordId'  => 'curl_exec',
                 'eventType' => "Url : {$args['url']} HttpCode : {$code} Errors : {$errors}",

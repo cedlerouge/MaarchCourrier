@@ -10,6 +10,5 @@ modules/visa/xml/remoteSignatoryBooks.xml
 dist/
 dist-addin/
 node_modules/
-package-lock.json
 /custom/*
 /tmp/*

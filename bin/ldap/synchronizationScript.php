@@ -138,6 +138,7 @@ function getUsersEntries($xmlfile)
         'entityId'      => (string)$xmlfile->mapping->user->user_entity ?? null
     ];
     $defaultEntity = (string)$xmlfile->mapping->user->defaultEntity ?? null;
+    $arrayAttributes = ['entityId']; // other attributes are scalar: only first value is taken
 
     foreach ($xmlfile->filter->dn as $valueDN) {
         if ((string)$valueDN['type'] == 'users') {
@@ -187,7 +188,11 @@ function getUsersEntries($xmlfile)
                 if (count($entry[$ldapField]) === 1 || (isset($entry[$ldapField]['count']) && $entry[$ldapField]['count'] === 1)) {
                     $user[$mcField] = $entry[$ldapField][0];
                 } elseif (count($entry[$ldapField]) > 1) {
-                    $user[$mcField] = $entry[$ldapField];
+                    if (in_array($mcField, $arrayAttributes)) {
+                        $user[$mcField] = $entry[$ldapField];
+                    } else {
+                        $user[$mcField] = $entry[$ldapField][0];
+                    }
                 } else {
                     $user[$mcField] = '';
                 }

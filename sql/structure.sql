@@ -1578,8 +1578,8 @@ DECLARE
     retval bigint;
 BEGIN
     -- Check if sequence exist, if not create
-    IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
-      EXECUTE 'CREATE SEQUENCE ' || chrono_seq_name || ' INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;';
+	IF NOT EXISTS (SELECT 0 FROM pg_class where relname = chrono_seq_name ) THEN
+      EXECUTE 'CREATE SEQUENCE "' || chrono_seq_name || '" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;';
     END IF;
     -- Check if chrono exist in parameters table, if not create
     IF NOT EXISTS (SELECT 0 FROM parameters where id = chrono_id_name ) THEN

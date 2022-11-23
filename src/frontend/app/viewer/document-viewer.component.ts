@@ -1473,4 +1473,9 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             ).subscribe();
         });
     }
+
+    canSaveModifications(currentMode: string) {
+        const commonConditions: boolean = this.isDocModified && this.mode === currentMode && this.editor.mode !== 'office365sharepoint' && !this.loading;
+        return currentMode === 'mainDocument' ? commonConditions && this.resId !== null : commonConditions;
+    }
 }

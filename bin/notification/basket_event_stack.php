@@ -1,6 +1,5 @@
 <?php
-// WARNING: logs for this file are only enabled if the app root log4php.xml is set to INFO or DEBUG!
-// no logs will be written to technique.log if only the custom log4php.xml is modified.
+// WARNING: logs for this file are only enabled if config.json log level is set to INFO or DEBUG!
 
 $options = getopt("c:n:", ["config:", "notif:"]);
 
