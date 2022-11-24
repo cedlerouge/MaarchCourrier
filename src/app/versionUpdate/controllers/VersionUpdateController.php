@@ -15,6 +15,7 @@
 namespace VersionUpdate\controllers;
 
 use Docserver\models\DocserverModel;
+use Docserver\controllers\DocserverController;
 use Gitlab\Client;
 use Group\controllers\PrivilegeController;
 use Parameter\models\ParameterModel;
@@ -23,7 +24,10 @@ use Slim\Http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\DatabasePDO;
+use Respect\Validation\Validator;
 use SrcCore\models\ValidatorModel;
+use History\controllers\HistoryController;
+use User\models\UserModel;
 
 class VersionUpdateController
 {
@@ -41,39 +45,39 @@ class VersionUpdateController
         }
 
         $applicationVersion = CoreConfigModel::getApplicationVersion();
+
         if (empty($applicationVersion)) {
             return $response->withStatus(400)->withJson(['errors' => "Can't load package.json"]);
         }
 
         $currentVersion = $applicationVersion;
-
         $versions = explode('.', $currentVersion);
-        $currentVersionBranch = "{$versions[0]}.{$versions[1]}";
-        $currentVersionTag = $versions[2];
-        $currentVersionBranchYear = $versions[0];
-        $currentVersionBranchMonth = $versions[1];
+
+        if (count($versions) < 3) {
+            return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$applicationVersion}"]);
+        } else if (strlen($versions[0]) !== 4) {
+            return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$applicationVersion}"]);
+        }
+
+        $currentVersionBranch = $versions[0];
+        $currentMinorVersionTag = $versions[2];
 
         $availableMinorVersions = [];
         $availableMajorVersions = [];
 
         foreach ($tags as $value) {
-            if (!preg_match("/^\d{2}\.\d{2}\.\d+$/", $value['name'])) {
+            if (!preg_match("/^\d{4}\.\d\.\d+$/", $value['name'])) {
                 continue;
             }
             $explodedValue = explode('.', $value['name']);
-            $tag = $explodedValue[2];
 
-            $pos = strpos($value['name'], $currentVersionBranch);
-            if ($pos === false) {
-                $year = substr($value['name'], 0, 2);
-                $month = substr($value['name'], 3, 2);
-                if (($year == $currentVersionBranchYear && $month > $currentVersionBranchMonth) || $year > $currentVersionBranchYear) {
-                    $availableMajorVersions[] = $value['name'];
-                }
-            } else {
-                if ($tag > $currentVersionTag) {
-                    $availableMinorVersions[] = $value['name'];
-                }
+            $branchVersionTag = $explodedValue[0];
+            $minorVersionTag = $explodedValue[2];
+
+            if ($branchVersionTag > $currentVersionBranch) {
+                $availableMajorVersions[] = $value['name'];
+            } else if ($branchVersionTag == $currentVersionBranch && $minorVersionTag > $currentMinorVersionTag) {
+                $availableMinorVersions[] = $value['name'];
             }
         }
 
@@ -83,13 +87,13 @@ class VersionUpdateController
         if (empty($availableMinorVersions)) {
             $lastAvailableMinorVersion = null;
         } else {
-            $lastAvailableMinorVersion = $availableMinorVersions[0];
+            $lastAvailableMinorVersion = end($availableMinorVersions);
         }
 
         if (empty($availableMajorVersions)) {
             $lastAvailableMajorVersion = null;
         } else {
-            $lastAvailableMajorVersion = $availableMajorVersions[0];
+            $lastAvailableMajorVersion = end($availableMajorVersions);
         }
 
         $output = [];
@@ -114,12 +118,17 @@ class VersionUpdateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $client = Client::create('https://labs.maarch.org/api/v4/');
-        try {
-            $tags = $client->api('tags')->all('12');
-        } catch (\Exception $e) {
-            return $response->withJson(['errors' => $e->getMessage()]);
+        $body = $request->getParsedBody();
+        $targetTag = $body['tag'];
+        $targetTagVersions = explode('.', $targetTag);
+
+        if (count($targetTagVersions) < 3) {
+            return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$body['tag']}"]);
         }
+
+        $targetVersionBranch = $targetTagVersions[0];
+        $targetMinorVersionTag = $targetTagVersions[2];
+        $targetMajorVersionTag = $targetTagVersions[1];
 
         $applicationVersion = CoreConfigModel::getApplicationVersion();
         if (empty($applicationVersion)) {
@@ -129,30 +138,19 @@ class VersionUpdateController
         $currentVersion = $applicationVersion;
 
         $versions = explode('.', $currentVersion);
-        $currentVersionBranch = "{$versions[0]}.{$versions[1]}";
-        $currentVersionTag = $versions[2];
+        $currentVersionBranch = $versions[0];
+        $currentMinorVersionTag = $versions[2];
+        $currentMajorVersionTag = $versions[1];
 
-        $availableMinorVersions = [];
-
-        foreach ($tags as $value) {
-            if (strpos($value['name'], $currentVersionBranch) === false) {
-                continue;
-            }
-            $explodedValue = explode('.', $value['name']);
-            $tag = $explodedValue[2];
-
-            if ($tag > $currentVersionTag) {
-                $availableMinorVersions[] = $value['name'];
-            }
+        if ($currentVersionBranch !== $targetVersionBranch) {
+            return $response->withStatus(400)->withJson(['errors' => "Target branch version did not match with current branch"]);
         }
 
-        if (empty($availableMinorVersions)) {
-            return $response->withStatus(400)->withJson(['errors' => 'No minor versions available']);
+        if ($targetMajorVersionTag < $currentMajorVersionTag) {
+            return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same major tag"]);
+        } else if ($targetMajorVersionTag == $currentMajorVersionTag && $targetMinorVersionTag <= $currentMinorVersionTag) {
+            return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same minor tag"]);
         }
-
-        natcasesort($availableMinorVersions);
-
-        $minorVersion = $availableMinorVersions[0];
 
         $output = [];
         exec('git status --porcelain --untracked-files=no 2>&1', $output);
@@ -160,53 +158,34 @@ class VersionUpdateController
             return $response->withStatus(400)->withJson(['errors' => 'Some files are modified. Can not update application', 'lang' => 'canNotUpdateApplication']);
         }
 
-        $minorVersions = explode('.', $minorVersion);
-        $currentVersionTag = (int)$currentVersionTag;
-        $currentVersionTag++;
-        $sqlFiles = [];
-        while ($currentVersionTag <= (int)$minorVersions[2]) {
-            if (is_file("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$currentVersionTag}.sql")) {
-                if (!is_readable("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$currentVersionTag}.sql")) {
-                    return $response->withStatus(400)->withJson(['errors' => "File migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$currentVersionTag}.sql is not readable"]);
-                }
-                $sqlFiles[] = "migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$currentVersionTag}.sql";
-            }
-            $currentVersionTag++;
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+
+        if (!empty($migrationFolder['errors'])) {
+            return $response->withStatus(400)->withJson(['errors' => $migrationFolder['errors']]);
         }
 
-        $control = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $sqlFiles]);
-        if (!empty($control['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
-        }
-
-        $currentCustomId = CoreConfigModel::getCustomId();
-        if (is_file('custom/custom.json')) {
-            $jsonFile = file_get_contents('custom/custom.json');
-            $jsonFile = json_decode($jsonFile, true);
-
-            foreach ($jsonFile as $custom) {
-                if ($custom['id'] != $currentCustomId && is_dir("custom/{$custom['id']}")) {
-                    DatabasePDO::reset();
-                    new DatabasePDO(['customId' => $custom['id']]);
-
-                    $controlCustom = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $sqlFiles]);
-                    if (!empty($controlCustom['errors'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "Error with custom {$custom['id']} : " . $controlCustom['errors']]);
-                    }
-                }
-            }
-        }
+        $actualTime = date("dmY-His");
 
         $output = [];
         exec('git fetch');
-        exec("git checkout {$minorVersion} 2>&1", $output, $returnCode);
+        exec("git checkout {$targetTag} 2>&1", $output, $returnCode);
 
-        $log = "Application update from {$currentVersion} to {$minorVersion}\nCheckout response {$returnCode} => " . implode(' ', $output) . "\n";
-        file_put_contents("{$control['directoryPath']}/updateVersion.log", $log, FILE_APPEND);
+        $log = "Application update from {$currentVersion} to {$targetTag}\nCheckout response {$returnCode} => " . implode(' ', $output) . "\n";
+        file_put_contents("{$migrationFolder['path']}/updateVersion_{$actualTime}.log", $log, FILE_APPEND);
 
         if ($returnCode != 0) {
-            return $response->withStatus(400)->withJson(['errors' => "Application update failed. Please check updateVersion.log at {$control['directoryPath']}"]);
+            return $response->withStatus(400)->withJson(['errors' => "Application update failed. Please check updateVersion.log at {$migrationFolder['path']}"]);
         }
+
+        HistoryController::add([
+            'tableName' => 'none',
+            'recordId'  => $targetTag,
+            'eventType' => 'UP',
+            'userId'    => $GLOBALS['id'],
+            'info'      => _APP_UPDATED_TO_TAG. ' : ' . $targetTag,
+            'moduleId'  => null,
+            'eventId'   => 'appUpdate',
+        ]);
 
         return $response->withStatus(204);
     }
@@ -215,18 +194,10 @@ class VersionUpdateController
     {
         ValidatorModel::arrayType($args, ['sqlFiles']);
 
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]);
-        $directoryPath = explode('/', rtrim($docserver['path_template'], '/'));
-        array_pop($directoryPath);
-        $directoryPath = implode('/', $directoryPath);
-
-        if (!is_dir($directoryPath . '/migration')) {
-            if (!is_writable($directoryPath)) {
-                return ['errors' => 'Directory path is not writable : ' . $directoryPath];
-            }
-            mkdir($directoryPath . '/migration', 0755, true);
-        } elseif (!is_writable($directoryPath . '/migration')) {
-            return ['errors' => 'Directory path is not writable : ' . $directoryPath . '/migration'];
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+        
+        if (!empty($migrationFolder['errors'])) {
+            return $response->withStatus(400)->withJson(['errors' => $migrationFolder['errors']]);
         }
 
         if (!empty($args['sqlFiles'])) {
@@ -253,7 +224,7 @@ class VersionUpdateController
                 }
             }
 
-            $execReturn = exec("pg_dump --dbname=\"postgresql://{$config['database'][0]['user']}:{$config['database'][0]['password']}@{$config['database'][0]['server']}:{$config['database'][0]['port']}/{$config['database'][0]['name']}\" {$tablesToSave} -a > \"{$directoryPath}/migration/backupDB_maarchcourrier_{$actualTime}.sql\"", $output, $intReturn);
+            $execReturn = exec("pg_dump --dbname=\"postgresql://{$config['database'][0]['user']}:{$config['database'][0]['password']}@{$config['database'][0]['server']}:{$config['database'][0]['port']}/{$config['database'][0]['name']}\" {$tablesToSave} -a > \"{$migrationFolder['path']}/backupDB_maarchcourrier_{$actualTime}.sql\"", $output, $intReturn);
             if (!empty($execReturn)) {
                 return ['errors' => 'Pg dump failed : ' . $execReturn];
             }
@@ -261,10 +232,20 @@ class VersionUpdateController
             foreach ($args['sqlFiles'] as $sqlFile) {
                 $fileContent = file_get_contents($sqlFile);
                 DatabaseModel::exec($fileContent);
+                $fileName = explode('/', $sqlFile)[1];
+                HistoryController::add([
+                    'tableName' => 'none',
+                    'recordId'  => $fileName,
+                    'eventType' => 'UP',
+                    'userId'    => $GLOBALS['id'],
+                    'info'      => _DB_UPDATED_WITH_FILE. ' : ' . $fileName,
+                    'moduleId'  => null,
+                    'eventId'   => 'databaseUpdate',
+                ]);
             }
         }
 
-        return ['directoryPath' => "{$directoryPath}/migration"];
+        return ['directoryPath' => "{$migrationFolder['path']}"];
     }
 
     public function updateSQLVersion(Request $request, Response $response)
@@ -272,26 +253,33 @@ class VersionUpdateController
         $parameter = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'database_version']);
 
         $parameter = explode('.', $parameter['param_value_string']);
-        $minorVersion = count($parameter) > 2 ? (int)$parameter[2] : 1;
 
-        $applicationVersion = CoreConfigModel::getApplicationVersion();
-        $versions = explode('.', $applicationVersion);
-        $currentVersion = (int)$versions[2];
-
-        $minorVersion++;
-        $sqlFiles = [];
-        while ($minorVersion <= $currentVersion) {
-            if (is_file("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql")) {
-                if (!is_readable("migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql")) {
-                    return $response->withStatus(400)->withJson(['errors' => "File migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql is not readable"]);
-                }
-                $sqlFiles[] = "migration/{$versions[0]}.{$versions[1]}/{$versions[0]}{$versions[1]}{$minorVersion}.sql";
-            }
-            $minorVersion++;
+        if (count($parameter) < 2) {
+            return $response->withStatus(400)->withJson(['errors' => "Bad format database_version"]); 
         }
 
-        if (!empty($sqlFiles)) {
-            $control = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $sqlFiles]);
+        $dbMinorVersion = (int)$parameter[2];
+
+        $dbMajorVersion = (int)$parameter[1];
+
+        $sqlFiles = array_diff(scandir('migration'), array('..', '.'));
+        natcasesort($sqlFiles);
+        $targetedSqlFiles = [];
+
+        foreach ($sqlFiles as $key => $file) {
+            $fileVersions = explode('.', $file);
+            $fileMinorVersion = (int)$fileVersions[2];
+            $fileMajorVersion = (int)$fileVersions[1];
+            if ($fileMajorVersion > $dbMajorVersion || ($fileMajorVersion == $dbMajorVersion && $fileMinorVersion > $dbMinorVersion)) {
+                if (!is_readable("migration/{$file}")) {
+                    return $response->withStatus(400)->withJson(['errors' => "File migration/{$file} is not readable"]);
+                }
+                $targetedSqlFiles[] = "migration/{$file}"; 
+            }
+        }
+
+        if (!empty($targetedSqlFiles)) {
+            $control = VersionUpdateController::executeSQLUpdate(['sqlFiles' => $targetedSqlFiles]);
             if (!empty($control['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
             }
