@@ -309,11 +309,17 @@ class FastParapheurController
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
+                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
+                        'config'        => $args['config'],
+                        'valueResponse' => $valueResponse,
+                        'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo(['resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
+                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
+                        'config'        => $args['config'],
+                        'valueResponse' => $valueResponse,
+                        'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                     $response = FastParapheurController::getRefusalMessage([
                         'config'        => $args['config'],
                         'documentId'    => $value['external_id'],
@@ -334,15 +340,63 @@ class FastParapheurController
 
     public static function getSignatoryUserInfo(array $args = [])
     {
-        $res = DatabaseModel::select([
-            'select'    => ['firstname', 'lastname', 'users.id'],
-            'table'     => ['listinstance', 'users'],
-            'left_join' => ['listinstance.item_id = users.id'],
-            'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
-            'data'      => [$args['resId'], 'VISA_CIRCUIT']
-        ])[0];
+        ValidatorModel::notEmpty($args, ['config']);
 
-        return $res;
+        $signatoryInfo = null;
+
+        if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
+            $signatoryInfo = DatabaseModel::select([
+                'select'    => ['firstname', 'lastname', 'users.id'],
+                'table'     => ['listinstance', 'users'],
+                'left_join' => ['listinstance.item_id = users.id'],
+                'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
+                'data'      => [$args['resId'], 'VISA_CIRCUIT']
+            ])[0];
+        } else {
+            if (!empty($args['valueResponse']['userFullname'])) {
+                $search = $args['valueResponse']['userFullname'];
+                // $curlReturn = CurlModel::exec([
+                //     'url'           => $args['config']['data']['url'] . '/exportUsersData?siren=' . urlencode($args['config']['data']['subscriberId']),
+                //     'method'        => 'GET',
+                //     'options'       => [
+                //         CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                //         CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
+                //         CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                //     ]
+                // ]);
+                
+                $fpUsers = FastParapheurController::getUsers([
+                    'config' => [
+                        'subscriberId' => $args['config']['data']['subscriberId'],
+                        'url'          => $args['config']['data']['url'],
+                        'certPath'     => $args['config']['data']['certPath'],
+                        'certPass'     => $args['config']['data']['certPass'],
+                        'certType'     => $args['config']['data']['certType']
+                    ]
+                ]);
+
+                $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
+                    return mb_stripos($fpUser['email'], $search) > -1 || 
+                        mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
+                        mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) > -1;
+                });
+                $fpUser = array_values($fpUser)[0];
+
+                $signatoryInfo = UserModel::get([
+                    'select' => [
+                        'id', 
+                        'firstname',
+                        'lastname',
+                        'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                        'trim(concat(firstname, \' \', lastname)) as name'
+                    ],
+                    'where' => ['external_id->>\'fastParapheur\' = ?'],
+                    'data'  => [$fpUser['email']]
+                ])[0];
+            }
+        }
+
+        return $signatoryInfo;
     }
 
     public static function processVisaWorkflow(array $args = [])
@@ -599,7 +653,7 @@ class FastParapheurController
                 } elseif ($step['type'] == 'fastParapheurUserEmail') {
                     $circuit['steps'][] = [
                         'step'    => $step['mode'],
-                        'members' => [$step['id']['email']]
+                        'members' => [$step['id']]
                     ];
                 }
             } /*elseif ($step['type'] == 'externalOTP'
