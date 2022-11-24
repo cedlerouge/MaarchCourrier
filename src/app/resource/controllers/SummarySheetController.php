@@ -39,6 +39,7 @@ use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class SummarySheetController
 {
@@ -655,7 +656,7 @@ class SummarySheetController
                 $assignee    = '';
                 $destination = '';
                 $found       = false;
-                $roles       = EntityModel::getRoles();
+                $roles       = BroadcastListRoleModel::getRoles();
                 $rolesItems  = [];
                 $nbItems     = 0;
                 foreach ($args['data']['listInstances'] as $listKey => $listInstance) {

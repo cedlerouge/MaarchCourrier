@@ -1605,7 +1605,7 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS difflist_roles (
   id SERIAL NOT NULL,
   role_id CHARACTER varying(32) UNIQUE NOT NULL,
   label CHARACTER varying(255) NOT NULL,
