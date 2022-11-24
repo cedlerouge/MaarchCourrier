@@ -523,8 +523,14 @@ class AuthenticationController
             return ['errors' => 'Cas version not supported'];
         }
 
-        \phpCAS::setDebug();
-        \phpCAS::setVerbose(true);
+        $logger = LogsController::initMonologLogger();
+        \phpCAS::setLogger($logger);
+        $logTypeInfo = LogsController::getLogType('logTechnique');
+        
+        if($logTypeInfo['level'] == 'DEBUG'){
+            \phpCAS::setVerbose(true);        
+        } 
+        
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
@@ -558,8 +564,13 @@ class AuthenticationController
         $uri = (string)$casConfiguration->WEB_CAS_CONTEXT;
         $certificate = (string)$casConfiguration->PATH_CERTIFICATE;
 
-        \phpCAS::setDebug();
-        \phpCAS::setVerbose(true);
+        $logger = LogsController::initMonologLogger();
+        \phpCAS::setLogger($logger);
+        $logTypeInfo = LogsController::getLogType('logTechnique');
+        
+        if($logTypeInfo['level'] == 'DEBUG'){
+            \phpCAS::setVerbose(true);        
+        } 
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {

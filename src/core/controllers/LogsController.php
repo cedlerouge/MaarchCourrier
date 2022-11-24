@@ -30,6 +30,39 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
+
+    /**
+     * @return Logger
+     */
+    public static function initMonologLogger()
+    {
+        $logConfig = LogsController::getLogConfig();
+        if (empty($logConfig)) {
+            return ['code' => 400, 'errors' => "Log config not found!"];
+        }
+
+        $dateFormat = $logConfig['dateTimeFormat'];
+        $output = $logConfig['lineFormat'];
+        $formatter = new LineFormatter($output, $dateFormat);
+
+        $streamHandler = new StreamHandler($logConfig['logTechnique']['file']);
+        $streamHandler->setFormatter($formatter);
+
+        $logger = new Logger($logConfig['customId']);
+        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($logConfig['logTechnique']['level']));
+        $logger->pushHandler($filterHandler);
+
+        $logger->pushProcessor(new ProcessIdProcessor());
+        $logger->pushProcessor(new MemoryUsageProcessor());
+        return $logger;
+    }
+
+    public static function getLogType($logType){
+        $logConfig = LogsController::getLogConfig();
+        return $logConfig[$logType];
+    }
+
+
     public static function getMonolevels()
     {
         return Logger::getLevels();
