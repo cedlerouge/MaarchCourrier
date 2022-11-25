@@ -14,8 +14,10 @@
                 <app-contact-detail *ngIf="mode === 'read'" [contact]="contact"></app-contact-detail>
             </mat-sidenav-content>
             <mat-sidenav #drawer position='end' mode="side" style="overflow-x:hidden;width: 50%;" autoFocus="false">
-                <app-document-viewer *ngIf="loadedDocument" #appDocumentViewer
-                    style="height:100%;width:100%;position: relative;" [editMode]="false"
+                <app-document-viewer *ngIf="loadedDocument"
+                    #appDocumentViewer
+                    class="documentViewer"
+                    [editMode]="false"
                     [base64]="headerService.getLastLoadedFile()">
                 </app-document-viewer>
             </mat-sidenav>
