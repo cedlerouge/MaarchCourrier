@@ -639,7 +639,7 @@ class FastParapheurController
         }
 
         $circuit = [
-            'type'  => $args['config']['typeCircuit'],
+            'type'  => $args['config']['workflowType'],
             'steps' => []
         ];
         //$otpInfo = [];
