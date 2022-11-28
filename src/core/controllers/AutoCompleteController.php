@@ -240,7 +240,7 @@ class AutoCompleteController
             foreach ($alreadyConnectedUsers as $alreadyConnectedUser) {
                 foreach ($fpUsers as $key => $fpUser) {
                     if ($fpUser['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
-                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name'] . ' (' . $alreadyConnectedUser['fastParapheurEmail'] . ')';
+                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name'] . ' (' . $fpUsers[$key]['idToDisplay'] . ')';
                     }
                 }
             }
