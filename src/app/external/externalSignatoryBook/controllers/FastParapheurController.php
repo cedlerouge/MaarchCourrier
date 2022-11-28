@@ -309,11 +309,14 @@ class FastParapheurController
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
-                        'config'        => $args['config'],
-                        'valueResponse' => $valueResponse,
-                        'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
-                    $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
+                    $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
+
+                    if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
+                        $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
+                            'config'        => $args['config'],
+                            'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
+                    }
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
@@ -327,7 +330,11 @@ class FastParapheurController
                         'version'       => $version
                     ]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'refused';
-                    $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
+                    if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
+                        $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
+                    } else {
+                        $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['name'] . ' : ' . $response];
+                    }
                     break;
                 } else {
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
@@ -340,7 +347,7 @@ class FastParapheurController
 
     public static function getSignatoryUserInfo(array $args = [])
     {
-        ValidatorModel::notEmpty($args, ['config']);
+        ValidatorModel::notEmpty($args, ['resId', 'config']);
 
         $signatoryInfo = null;
 
@@ -355,16 +362,7 @@ class FastParapheurController
         } else {
             if (!empty($args['valueResponse']['userFullname'])) {
                 $search = $args['valueResponse']['userFullname'];
-                // $curlReturn = CurlModel::exec([
-                //     'url'           => $args['config']['data']['url'] . '/exportUsersData?siren=' . urlencode($args['config']['data']['subscriberId']),
-                //     'method'        => 'GET',
-                //     'options'       => [
-                //         CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
-                //         CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                //         CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
-                //     ]
-                // ]);
-                
+
                 $fpUsers = FastParapheurController::getUsers([
                     'config' => [
                         'subscriberId' => $args['config']['data']['subscriberId'],
@@ -374,6 +372,9 @@ class FastParapheurController
                         'certType'     => $args['config']['data']['certType']
                     ]
                 ]);
+                if (empty($fpUsers)) {
+                    return null;
+                }
 
                 $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
                     return mb_stripos($fpUser['email'], $search) > -1 || 
@@ -382,17 +383,20 @@ class FastParapheurController
                 });
                 $fpUser = array_values($fpUser)[0];
 
-                $signatoryInfo = UserModel::get([
+                $alreadyLinkedUsers = UserModel::get([
                     'select' => [
-                        'id', 
-                        'firstname',
-                        'lastname',
                         'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
                         'trim(concat(firstname, \' \', lastname)) as name'
                     ],
-                    'where' => ['external_id->>\'fastParapheur\' = ?'],
-                    'data'  => [$fpUser['email']]
-                ])[0];
+                    'where'  => ['external_id->>\'fastParapheur\' is not null']
+                ]);
+
+                foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
+                    if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
+                        $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
+                        break;
+                    }
+                }
             }
         }
 
