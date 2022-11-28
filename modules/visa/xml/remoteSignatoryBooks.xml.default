@@ -31,6 +31,7 @@
     <signatoryBook>
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
+        <typeCircuit>BUREAUTIQUE_PDF</typeCircuit>
         <subscriberId></subscriberId>
         <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
         <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>

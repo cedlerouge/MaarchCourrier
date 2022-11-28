@@ -635,7 +635,7 @@ class FastParapheurController
         }
 
         $circuit = [
-            'type'  => 'BUREAUTIQUE_PDF',
+            'type'  => $args['config']['typeCircuit'],
             'steps' => []
         ];
         //$otpInfo = [];
