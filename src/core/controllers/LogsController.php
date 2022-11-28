@@ -59,7 +59,7 @@ class LogsController
 
     public static function getLogType($logType){
         $logConfig = LogsController::getLogConfig();
-        return $logConfig[$logType];
+        return $logConfig[$logType] ?? false;
     }
 
 

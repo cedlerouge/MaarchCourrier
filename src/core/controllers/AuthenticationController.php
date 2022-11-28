@@ -526,6 +526,10 @@ class AuthenticationController
         $logger = LogsController::initMonologLogger();
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
+
+        if($logTypeInfo === false){
+            return ['errors' => 'Cas configuration missing'];
+        }
         
         if($logTypeInfo['level'] == 'DEBUG'){
             \phpCAS::setVerbose(true);        
@@ -567,6 +571,10 @@ class AuthenticationController
         $logger = LogsController::initMonologLogger();
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
+        
+        if($logTypeInfo === false){
+            return ['errors' => 'Cas configuration missing'];
+        }
         
         if($logTypeInfo['level'] == 'DEBUG'){
             \phpCAS::setVerbose(true);        
