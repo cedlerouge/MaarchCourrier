@@ -7,6 +7,7 @@
             "Administration\\"          : "src/app/administration/",
             "Attachment\\"              : "src/app/attachment/",
             "Basket\\"                  : "src/app/basket/",
+            "BroadcastList\\"           : "src/app/broadcastList/",
             "Configuration\\"           : "src/app/configuration/",
             "Contact\\"                 : "src/app/contact/",
             "ContentManagement\\"       : "src/app/contentManagement/",
@@ -44,7 +45,8 @@
             "Outlook\\"                 : "src/app/external/outlook/",
             "Sendmail\\"                : "modules/sendmail/",
             "Multigest\\"               : "src/app/external/multigest/",
-            "Noxxie\\PdfParser\\"       : "vendor/noxxie/pdfparser/src/Smalot/PdfParser/"
+            "Noxxie\\PdfParser\\"       : "vendor/noxxie/pdfparser/src/Smalot/PdfParser/",
+            "Monolog\\"                 : "vendor/monolog/monolog/src/Monolog/"
     	}
     },
     "require": {

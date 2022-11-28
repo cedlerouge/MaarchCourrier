@@ -39,6 +39,7 @@ use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class SummarySheetController
 {
@@ -655,7 +656,7 @@ class SummarySheetController
                 $assignee    = '';
                 $destination = '';
                 $found       = false;
-                $roles       = EntityModel::getRoles();
+                $roles       = BroadcastListRoleModel::getRoles();
                 $rolesItems  = [];
                 $nbItems     = 0;
                 foreach ($args['data']['listInstances'] as $listKey => $listInstance) {
@@ -696,7 +697,7 @@ class SummarySheetController
                     }
                 }
 
-                // Sort keys to be in the same order defined in the roles.xml file
+                // Sort keys to be in the same order defined in the roles database
                 $rolesIDs = array_column($roles, 'id');
                 $tmp      = [];
                 foreach ($rolesIDs as $key) {

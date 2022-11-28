@@ -28,6 +28,7 @@ use Slim\Http\Response;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class ListTemplateController
 {
@@ -74,7 +75,7 @@ class ListTemplateController
             }
         }
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $difflistType = $listTemplate['type'] == 'diffusionList' ? 'entity_id' : ($listTemplate['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT');
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => [$difflistType]]);
         $rolesForService = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
@@ -428,7 +429,7 @@ class ListTemplateController
         if ($aArgs['typeId'] == 'entity_id') {
             $unneededRoles = ['visa', 'sign'];
         }
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => [$aArgs['typeId']]]);
         $rolesForType = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
         foreach ($roles as $key => $role) {
@@ -468,7 +469,7 @@ class ListTemplateController
 
         $data = $request->getParams();
 
-        $check = Validator::arrayType()->notEmpty()->validate($data['roles']);
+        $check = Validator::arrayType()->notEmpty()->validate($data['roles'] ?? null);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -558,7 +559,7 @@ class ListTemplateController
 
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => ['entity_id']]);
         $availableRoles = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         foreach ($roles as $key => $role) {
             if (!in_array($role['id'], $availableRoles)) {
                 unset($roles[$key]);
