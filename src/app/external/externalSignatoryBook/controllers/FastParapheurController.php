@@ -297,8 +297,10 @@ class FastParapheurController
 
             if (!empty($curlReturn['response']['developerMessage']) && !empty($value['res_id_master'])) {
                 echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$curlReturn['response']['developerMessage']} " . PHP_EOL;
+                unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             } elseif (!empty($curlReturn['response']['developerMessage'])) {
+                unset($args['idsToRetrieve'][$version][$resId]);
                 echo "Document principal n° $resId : {$curlReturn['response']['developerMessage']} " . PHP_EOL;
                 continue;
             }
