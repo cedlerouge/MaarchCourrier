@@ -221,9 +221,7 @@ define("_CLOSE_FOLDER", "Clôturer le dossier");
 define("_TAG_DEFAULT", "Mot-clé");
 define("_PRIVATE_TAGS", "Lier les Mots-clé à l'entité de l'utilisateur (Niveau direction)");
 define("_PRIVATE_TAGS_DESC", "L'utilisateur ne verra que les Mots-clé qui ont été restreints à sa direction (l'ajout / modification associera le mot clé automatiquement à sa direction).");
-
 define('_REDIRECTION', 'Rediriger');
-
 define('_NOT_INCOMING_CATEGORY', 'Catégorie différente de \'Courrier arrivée\'');
 define('_NO_CONTACT', 'Pas de contact associé');
 define('_USER_MISSING_INFORMATIONS', 'Un contact n\'a pas de courriel, ni d\'adresse postale valide');
@@ -251,7 +249,6 @@ define('_ASSIGNEE', 'Attributaire');
 define('_DOCUMENT_WITH_NOTES', 'Document annoté');
 define("_ACKNOWLEDGEMENT_RECORD_MANAGEMENT", "Accusé de réception (Archivage)");
 define("_REPLY_RECORD_MANAGEMENT", "Réponse au transfert (Archivage)");
-
 define('_SUMMARY_SHEET', 'Fiche de liaison');
 define('_UNDEFINED', 'Non défini');
 define('_CATEGORY', 'Catégorie');
@@ -274,23 +271,17 @@ define('_ADMISSION_DATE', 'Date d\'arrivée');
 define('_PROCESS_LIMIT_DATE', 'Date limite de traitement');
 define('_CLOSING_DATE', 'Date de clôture');
 define('_ACTION_DATE', 'Date d\'action');
-
 define('_USER_CREATED_IN_MAARCHPARAPHEUR', 'Utilisateur créé dans Maarch Parapheur');
 define('_USER_LINKED_TO_MAARCHPARAPHEUR', 'Utilisateur associé à un compte Maarch Parapheur');
 define('_USER_UNLINKED_TO_MAARCHPARAPHEUR', 'Utilisateur dissocié d\'un Maarch Parapheur');
 define('_SIGNATURES_SEND_TO_MAARCHPARAPHEUR', 'Signature(s) envoyée(s) à Maarch Parapheur');
-
 define('_USER_LINKED_TO_FASTPARAPHEUR', 'Utilisateur associé à un compte Fast Parapheur');
 define('_USER_UNLINKED_TO_FASTPARAPHEUR', 'Utilisateur dissocié d\'un compte Fast Parapheur');
-
 define('_CREATE_ACKNOWLEDGEMENT_RECEIPT', 'Générer et envoyer les accusés de réception');
 define('_UPDATE_ACKNOWLEDGEMENT_SEND_DATE', 'Renseigner la date d\'envoi des accusés de réception pdf');
-
 define("_M2M_ACTION_DONE", "actionné par");
 define("_M2M_ENTITY_DESTINATION", "Le courrier est dans l'entité");
-
 define('_ACKNOWLEDGEMENT_RECEIPT_DISPLAYING', 'Visualisation de l\'accusé de réception');
-
 define("_EMAIL_DRAFT", "Brouillon");
 define("_EMAIL_WAIT", "En attente d'envoi");
 define("_EMAIL_SENT", "Envoyé");
@@ -298,16 +289,12 @@ define("_EMAIL_ERROR", "Erreur lors de l'envoi");
 define("_EMAIL_DRAFT_SAVED", "Brouillon enregistré");
 define("_EMAIL_ERROR_SENT", "Non envoyé");
 define("_EMAIL_SENDING", "En cours d'envoi...");
-
 define("_MAILEVA_ADDED", "Envoi postal Maileva ajouté");
 define("_MAILEVA_UPDATED", "Envoi postal Maileva mis à jour");
 define("_MAILEVA_DELETED", "Envoi postal Maileva supprimé");
-
 define("_SEND_MAILEVA", "Envoyer vers Maileva");
-
 define('_VISA_BY', 'Visa par');
 define('_INSTEAD_OF', 'à la place de');
-
 define("_AVIS_WORKFLOW", "Circuit d'avis");
 define("_VISA_WORKFLOW", "Circuit de visa");
 define("_DIFFUSION_LIST", "Liste de diffusion");
@@ -315,7 +302,6 @@ define("_SECONDARY_INFORMATION", "Informations secondaires");
 define("_DEST_INFORMATION", "Informations de destination");
 define("_XPARAPH_ACCOUNT_DELETED", "Compte xParaph supprimé");
 define("_XPARAPH_ACCOUNT_CREATED", "Compte xParaph créé");
-
 define("_FILE_NOT_ALLOWED_INFO_1", "L'extension");
 define("_FILE_NOT_ALLOWED_INFO_2", "avec le type MIME");
 define("_FILE_NOT_ALLOWED_INFO_3", "n'est pas autorisée");
@@ -325,7 +311,6 @@ define("_SIGNATORY", "Signataire");
 define("_VISA_USER_MIN", "Viseur");
 define("_NOTE_USER", "Annotateur");
 define("_WF_SEND_TO", "Envoyé à : ");
-
 define("_FOLDER_CREATION", "Dossier créé");
 define("_FOLDER_MODIFICATION", "Dossier modifié");
 define("_FOLDER_SUPPRESSION", "Dossier supprimé");
@@ -335,55 +320,41 @@ define("_FOLDER_RESOURCES_REMOVED", "Ressource(s) retirée(s)");
 define("_FOLDER_TO_FOLDER", "au dossier");
 define("_ADDED_TO_FOLDER", "Ajouté au dossier");
 define("_REMOVED_TO_FOLDER", "Retiré du dossier");
-
 define("_NOT_EXISTS", "n'existe pas");
-
 define("_CUSTOMFIELDS_CREATION", "Champ personnalisé créé");
 define("_CUSTOMFIELDS_MODIFICATION", "Champ personnalisé modifié");
 define("_CUSTOMFIELDS_SUPPRESSION", "Champ personnalisé supprimé");
-
 define("_CONTACT_CUSTOMFIELDS_CREATION", "Champ personnalisé de contact créé");
 define("_CONTACT_CUSTOMFIELDS_MODIFICATION", "Champ personnalisé de contact modifié");
 define("_CONTACT_CUSTOMFIELDS_SUPPRESSION", "Champ personnalisé de contact supprimé");
-
 define("_CONTACT_CREATION", "Contact créé");
 define("_CONTACT_MODIFICATION", "Contact modifié");
 define("_CONTACT_SUPPRESSION", "Contact supprimé");
-
 define("_INDEXINGMODEL_CREATION", "Modèle d'enregistrement créé");
 define("_INDEXINGMODEL_MODIFICATION", "Modèle d'enregistrement modifié");
 define("_INDEXINGMODEL_SUPPRESSION", "Modèle d'enregistrement supprimé");
-
 define("_PRIORITY_DELAY_ALREADY_SET", "Ce délai de traitement est déjà défini pour une autre priorité");
-
 define("_NOTIFICATIONS_FORGOT_PASSWORD_SUBJECT", "[Maarch Courrier] Demande de réinitialisation de mot de passe");
 define("_NOTIFICATIONS_FORGOT_PASSWORD_BODY", "Bonjour,<br/><br/>Vous avez demandé à retrouver le mot de passe d'accès à votre compte Maarch Courrier.<br/><br/>Pour modifier votre mot de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>");
 define("_NOTIFICATIONS_FORGOT_PASSWORD_FOOTER", "<br/><br/>Si vous n'êtes pas à l'origine de cette demande, merci d'ignorer ce courriel.<br/><br/>Pour toutes questions, merci de contacter l'administrateur de la solution.");
 define("_PASSWORD_REINIT_SENT", "Réinitialisation du mot de passe envoyé");
 define("_PASSWORD_REINIT", "Mot de passe réinitialisé");
-
 define("_NOTIFICATIONS_USER_CREATION_SUBJECT", "[Maarch Courrier] Activer votre compte utilisateur");
 define("_NOTIFICATIONS_USER_CREATION_BODY", "Bienvenue,<br/><br/>Vous disposez maintenant d'un compte dans l'application de gestion électronique de courrier Maarch Courrier.<br/><br/>Pour vous connecter et définir votre mot de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>");
 define("_CLICK_HERE", "Cliquez-ici pour définir votre mot de passe");
 define("_YOUR_ID", "<b>Votre identifiant :</b>");
 define("_NOTIFICATIONS_USER_CREATION_FOOTER", "<br/><br/>Ce message est envoyé automatiquement à la suite d'une action de l'administrateur.<br/>Merci de ne pas y répondre.<br/><br/>Pour toutes questions, merci de contacter l'administrateur technique de la solution.");
-
 define("_M2M_ANNUARY_IS_NOT_SET", "Aucun annuaire M2M paramétré");
 define("_M2M_LDAP_AUTHENTICATION_FAILED", "Connexion impossible à l'annuaire M2M");
 define("_M2M_LDAP_ADD_FAILED", "Problème lors de l'ajout du contact dans l'annuaire M2M");
 define("_NO_M2M_ANNUARY_AVAILABLE", "Aucun annuaire M2M disponible");
 define("_CANNOT_SYNCHRONIZE_M2M_ANNUARY", "Le contact ne peut pas être ajouté dans l'annuaire car un des champs suivants est manquant : Société, moyen de communication, service");
-
 define("_DATE_LOCALE", "fr_FR.utf8");
-
 define("_USER_PREFERENCE_UPDATED", "Préférences utilisateur modifiées");
 define("_USER_FEATURE_TOUR_UPDATED", "Une ou plusieurs étapes du didacticiel ont été faites");
-
 define("_NO_SENDERS", "Aucun expéditeur lié au courrier");
-
 define("_INTERRUPTED_WORKFLOW", "Circuit interrompu");
 define("_HAS_INTERRUPTED_WORKFLOW", "A terminé le circuit");
-
 define("_AVIS_SENT", "Avis donné");
 define("_BY", "par");
 define("_TO_AVIS", "POUR AVIS");
@@ -393,17 +364,13 @@ define("_UPDATE_LISTINSTANCE", "Liste de diffusion mise à jour");
 define("_UPDATE_LISTINSTANCE_DEST", "Destinataire de la liste de diffusion mis à jour");
 define("_UPDATE_VISA_CIRCUIT", "Circuit de visa mis à jour");
 define("_UPDATE_AVIS_CIRCUIT", "Circuit d'avis mis à jour");
-
 define("_VISA_CIRCUIT_DELETED", "Circuit de visa supprimé");
 define("_AVIS_CIRCUIT_DELETED", "Circuit d'avis supprimé");
-
 define("_COMMUNICATION_MEANS_VALIDATOR", "Le moyen de communication doit être une uri ou un courriel");
 define("_EXTERNALID_M2M_VALIDATOR", "L'identifiant Maarch2Maarch doit être au format SIRET/entityId");
-
 define("_NUMERIC_PACKAGE_ADDED", "Pli numérique ajouté");
 define('_ON_DOC_NUM', ' sur le document n°');
 define("_NUMERIC_PACKAGE_IMPORTED", "Pli numérique importé");
-
 define("_ACKNOWLEDGEMENT_RECEIPT", "Accusé de réception");
 define("_CREATED_BY", "Créé par");
 define("_SENT_DATE", "Envoyé le");
@@ -417,12 +384,10 @@ define('_TO_CCI', 'En copie caché');
 define('_PRIMARY_INFORMATION', 'Informations principales');
 define('_SEND_ALFRESCO', 'Envoyer vers Alfresco');
 define("_EMPTY_SUBJECT", "Objet vide");
-
 define("_ATTACH_REMOVE_FROM_SIGNATORY_BOOK", "Pièce jointe retirée du parapheur électronique");
 define("_ATTACH_ADD_TO_SIGNATORY_BOOK", "Pièce jointe intégrée au parapheur électronique");
 define("_ATTACH_REMOVE_FROM_SHIPPING", "Pièce jointe retirée des envois Maileva");
 define("_ATTACH_ADD_TO_SHIPPING", "Pièce jointe intégrée aux envois Maileva");
-
 define("_DOC_ADD_TO_SIGNATORY_BOOK", "Courrier intégré au parapheur électronique");
 define("_DOC_REMOVE_FROM_SIGNATORY_BOOK", "Courrier retiré du parapheur électronique");
 define("_DOC_ADD_TO_MAILEVA", "Courrier intégré aux envois Maileva");
@@ -436,15 +401,12 @@ define("_NO", "Non");
 define("_RESET_BINDING_DOCUMENT", "Paramètre Document engageant supprimé");
 define("_FREEZE_RETENTION_RULE", "La durée d'utilité courante a été gelée");
 define("_UNFREEZE_RETENTION_RULE", "La durée d'utilité courante a été dégelée");
-
 define("_ISSUING_SITE_CREATED", "Site émetteur créé");
 define("_ISSUING_SITE_UPDATED", "Site émetteur modifié");
 define("_ISSUING_SITE_DELETED", "Site émetteur supprimé");
-
 define("_REGISTERED_NUMBER_RANGE_CREATED", "Plage de recommandé créé");
 define("_REGISTERED_NUMBER_RANGE_UPDATED", "Plage de recommandé modifié");
 define("_REGISTERED_NUMBER_RANGE_DELETED", "Plage de recommandé supprimé");
-
 define('_SAVE_REGISTERED_MAIL', 'Enregistrer le recommandé');
 define('_SAVE_PRINT_REGISTERED_MAIL', 'Enregistrer et imprimer le recommandé');
 define('_SAVE_INDEX_REGISTERED_MAIL', 'Enregistrer le recommandé et lancer l\'indexation');
@@ -453,27 +415,20 @@ define('_PRINT_DEPOSIT_LIST', "Imprimer le descriptif de pli");
 define('_NOT_REGISTERED_MAIL', "N'est pas un recommandé");
 define('_NOT_GENERATED', 'Non généré');
 define('_NO_RANGE_FOUND', 'Aucune plage correspondante trouvée');
-
 define('_REGISTERED_MAIL_DISTRIBUTED', 'Accusé de réception reçu : recommandé distribué');
 define('_REGISTERED_MAIL_NOT_DISTRIBUTED', 'Accusé de réception reçu : recommandé non distribué');
-
 define('_CONFIGURATION_UPDATED', 'Configuration modifiée');
 define('_SEND_TO_RECORD_MANAGEMENT', 'Envoyer dans un système d\'archivage électronique');
 define('_SEND_TO_RECORD_MANAGEMENT_DESC', 'Envoyer dans un système d\'archivage électronique');
-
 define('_CHECK_REPLY_RECORD_MANAGEMENT', 'Vérification de la réponse au transfert du système d\'archivage électronique');
 define('_CHECK_REPLY_RECORD_MANAGEMENT_DESC', 'Vérification de la réponse au transfert du système d\'archivage électronique');
-
 define('_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT', 'Vérification du transfert du paquet au système d\'archivage électronique');
 define('_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT_DESC', 'Vérification du transfert du paquet au système d\'archivage électronique');
 define('_RESET_RECORD_MANAGEMENT', 'Remise à zéro du circuit d\'archivage');
 define('_RESET_RECORD_MANAGEMENT_DESC', 'Remise à zéro du circuit d\'archivage');
-
 define('_USER_SKIPPED', 'Utilisateur passé');
-
 define('_MAARCH_PARAPHEUR_STATUS_VAL', 'Validé');
 define('_MAARCH_PARAPHEUR_STATUS_REF', 'Refusé');
-
 define('_INCA_CARD', 'Carte agent');
 define('_INCA_CARD_EIDAS', 'Carte agent + Cachet');
 define('_EIDAS', 'Cachet');
@@ -482,12 +437,9 @@ define('_RGS_2STARS_TIMESTAMPED', 'Clé RGS** + horodatage');
 define('_STAMP', 'Griffe');
 define('_OTP_SIGN_YOUSIGN', 'Signataire (YouSign)');
 define('_OTP_VISA_YOUSIGN', 'Viseur (YouSign)');
-
 define('_SIGNED', 'Signé');
 define('_VALIDATED', 'Validé');
-
 define('_NO_SENDER_EMAIL', "Aucun courriel défini pour envoyer les AR électronique");
-
 define('_SIZE', "Taille");
 define('_FILENAME', "Nom du fichier");
 define('_DOCSERVER_PATH_FILE', "Chemin du fichier stocké");
@@ -496,15 +448,12 @@ define('_FULLTEXT', "Plein texte");
 define('_CREATION_DATE', "Date de création");
 define('_SUCCESS', "Réussi");
 define('_ERROR', "Erreur");
-
 define('_VIA_ACTION', "via l'action");
-
 define('_VISA_WORKFLOW_NOT_FOUND', "Aucun circuit visa trouvé!");
 define('_NO_BUSINESS_ID', "Aucun identifiant de fast parapheur!");
 define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché au courrier!");
 define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
 define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');
-
 define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberId' fourni. vérifiez votre configuration FastParapheur");
 define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun paramètre 'workflowType' fourni. vérifiez votre configuration FastParapheur");
