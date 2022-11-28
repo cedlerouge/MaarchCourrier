@@ -505,3 +505,6 @@ define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché 
 define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
 define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');
+
+define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberId' fourni. vérifiez votre configuration FastParapheur");
+define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun paramètre 'workflowType' fourni. vérifiez votre configuration FastParapheur");

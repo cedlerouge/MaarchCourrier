@@ -637,7 +637,10 @@ class FastParapheurController
 
         $subscriberId = $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
-            return ['error' => 'no subscriberId provided'];
+            return ['error' => _NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR];
+        }
+        if (empty($args['config']['workflowType'])) {
+            return ['error' => _NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR];
         }
 
         $circuit = [
