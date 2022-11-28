@@ -1000,17 +1000,9 @@ export class UserAdministrationComponent implements OnInit {
         this.user.userId = this.user.userId.toLowerCase();
     }
 
-    syncMP() {
+    async synchronizeSignatures() {
         this.loadingSign = true;
-
-        this.http.put('../rest/users/' + this.user.id + '/externalSignatures', {})
-            .subscribe((data: any) => {
-                this.loadingSign = false;
-                this.notify.success(this.translate.instant('lang.signsSynchronized'));
-            }, (err) => {
-                this.loadingSign = false;
-                this.notify.error(err.error.errors);
-            });
+        await this.externalSignatoryBook.synchronizeSignatures(this.user).finally(() => this.loadingSign = false);
     }
 
     getLabelById(varLang: string): string {

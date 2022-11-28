@@ -14,12 +14,13 @@ export class MaarchParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/maarchParapheurUsers';
     canCreateUser: boolean = true;
+    canSynchronizeSignatures: boolean = true;
     canManageSignaturesPositions: boolean = true;
 
     constructor(
         public functions: FunctionsService,
-        private http: HttpClient,
         public translate: TranslateService,
+        private http: HttpClient,
         private notify: NotificationService
     ) { }
 
@@ -179,5 +180,21 @@ export class MaarchParapheurService {
         } else {
             return true;
         }
+    }
+
+    synchronizeSignatures(data: any) {
+        return new Promise((resolve) => {
+            this.http.put(`../rest/users/${data.id}/externalSignatures`, {}).pipe(
+                tap((result: any) => {
+                    this.notify.success(this.translate.instant('lang.signsSynchronized'));
+                    resolve(result);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }

@@ -14,6 +14,7 @@ export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
     canCreateUser: boolean = false;
+    canSynchronizeSignatures: boolean = false;
     canManageSignaturesPositions: boolean = false;
     userWorkflow = new UserWorkflow();
 
@@ -182,5 +183,11 @@ export class FastParapheurService {
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
         return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0;
+    }
+
+    synchronizeSignatures(data: any) {
+        /**
+         * Synchronize signatures
+         */
     }
 }

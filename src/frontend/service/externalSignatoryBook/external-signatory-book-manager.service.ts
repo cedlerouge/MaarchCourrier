@@ -150,6 +150,14 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected.canCreateUser;
     }
 
+    async synchronizeSignatures(data: any) {
+        await this.serviceInjected.synchronizeSignatures(data);
+    }
+
+    canSynchronizeSignatures(): boolean {
+        return this.serviceInjected.canSynchronizeSignatures;
+    }
+
     canManageSignaturesPositions(): boolean {
         return this.serviceInjected.canManageSignaturesPositions;
     }
