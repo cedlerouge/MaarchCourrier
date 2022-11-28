@@ -57,15 +57,13 @@ class LogsController
         return $logger;
     }
 
-    public static function getLogType($logType){
-        $logConfig = LogsController::getLogConfig();
-        return $logConfig[$logType] ?? false;
-    }
-
-
-    public static function getMonolevels()
+    public static function getLogType($logType) 
     {
-        return Logger::getLevels();
+        $logConfig = LogsController::getLogConfig();
+        if (empty($logConfig[$logType])) {
+            return ['code' => 400, 'errors' => "Log config of type '$logType' not found!"];
+        }
+        
     }
 
     /**

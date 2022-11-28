@@ -527,11 +527,11 @@ class AuthenticationController
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
 
-        if($logTypeInfo === false){
-            return ['errors' => 'Cas configuration missing'];
-        }
+        if (!empty($logTypeInfo['errors'])) {
+            return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
+        }        
         
-        if($logTypeInfo['level'] == 'DEBUG'){
+        if ($logTypeInfo['level'] == 'DEBUG') {
             \phpCAS::setVerbose(true);        
         } 
         
@@ -572,11 +572,11 @@ class AuthenticationController
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
         
-        if($logTypeInfo === false){
-            return ['errors' => 'Cas configuration missing'];
+        if (!empty($logTypeInfo['errors'])) {
+            return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
         }
         
-        if($logTypeInfo['level'] == 'DEBUG'){
+        if ($logTypeInfo['level'] == 'DEBUG') {
             \phpCAS::setVerbose(true);        
         } 
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
