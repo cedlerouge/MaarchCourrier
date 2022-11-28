@@ -734,12 +734,10 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     openPdfInTab() {
         let src = '';
-        if(this.file.contentMode === 'route'){
+        if (this.file.contentMode === 'route'){
             this.http.get(this.file.content, { responseType: 'json' }).pipe(
                 tap((data: any) => {
-                    console.log(data);
-                    const file = new Blob([data.encodedDocument], { type: data.mimeType });
-                    const contentBlob = this.b64toBlob(data.encodedDocument,data.mimeType);
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
                     const fileURL = URL.createObjectURL(contentBlob);
                     const newWindow = window.open();
                     newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
@@ -750,19 +748,29 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                     return of(false);
                 })
             ).subscribe();
-        }
-        else if (this.file.contentMode === 'base64') {
-            src = `data:${this.file.type};base64,${this.file.content}`;
-            const newWindow = window.open();
-            newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${src}" frameborder="0" allowfullscreen></iframe>`);
-            newWindow.document.title = this.title;
+        } else if (this.file.contentMode === 'base64') {
+            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+                tap((data: any) => {
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
+                    const fileURL = URL.createObjectURL(contentBlob);
+                    const newWindow = window.open();
+                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
+                    newWindow.document.title = data.filename;
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         } else {
             this.http.get(this.file.contentView).pipe(
                 tap((data: any) => {
                     src = `data:${data.mimeType};base64,${data.encodedDocument}`;
+                    const contentBlob = this.b64toBlob(src, data.mimeType);
+                    const fileURL = URL.createObjectURL(contentBlob);
                     const newWindow = window.open();
-                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${src}" frameborder="0" allowfullscreen></iframe>`);
-                    newWindow.document.title = this.title;
+                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
+                    newWindow.document.title = data.title;
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
