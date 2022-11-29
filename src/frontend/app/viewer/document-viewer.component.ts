@@ -765,8 +765,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         } else {
             this.http.get(this.file.contentView).pipe(
                 tap((data: any) => {
-                    src = `data:${data.mimeType};base64,${data.encodedDocument}`;
-                    const contentBlob = this.b64toBlob(src, data.mimeType);
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
                     const fileURL = URL.createObjectURL(contentBlob);
                     const newWindow = window.open();
                     newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
