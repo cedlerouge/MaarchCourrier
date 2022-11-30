@@ -1,45 +1,81 @@
 #!/bin/bash
 
-# EXCLUDE TMA BRANCH
-IS_TMA=$(echo $CI_COMMIT_TAG | grep -o '[.]*_TMA[.]*')
+TAGS=()
 
-if [[ -n $IS_TMA ]]; then
-  echo "On TMA branch ! Skipping..."
-  exit 0
+RESPONSE=$(curl --write-out '%{url_effective} [%{response_code}]' --silent --output /dev/null --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$CI_COMMIT_BRANCH")
+RESPONSE_CODE=$(echo $RESPONSE | grep -o '\[[0-9]*\]$')
+
+if [ $RESPONSE_CODE != '[200]' ]; then
+    echo "Error ! $RESPONSE"
+    exit 1
 fi
 
-tag=$CI_COMMIT_TAG
+for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$CI_COMMIT_BRANCH" | jq -r '.[] | @base64'); do
+    _jq() {
+        echo ${row} | base64 --decode | jq -r ${1}
+    }
 
-echo "tag:$tag"
+    NAME=$(_jq '.name')
 
-structures=$(echo $CI_COMMIT_TAG | tr "." "\n")
+    IS_TMA=$(echo $NAME | grep -o '[.]*_TMA[.]*')
+
+    if [[ -n $IS_TMA ]]; then
+        echo "TMA tag branch : $NAME ! Skipping..."
+    else
+        TAGS+=("$NAME")
+    fi
+done
+
+SORTED_TAGS=($(echo ${TAGS[*]} | tr " " "\n" | sort -Vr))
+LATEST_TAG=$(echo ${SORTED_TAGS[0]})
+
+echo "Latest tag : $LATEST_TAG"
+
+structures=$(echo $LATEST_TAG | tr "." "\n")
 
 IT=1
 for item in $structures; do
-  if [ $IT = 1 ]; then
-    major_version=$item
-  fi
+    if [ $IT = 1 ]; then
+        BRANCH_TAG_VERSION=$item
+    fi
 
-  if [ $IT = 2 ]; then
-    major_version="$major_version.$item"
-  fi
+    if [ $IT = 2 ]; then
+        MAJOR_TAG_VERSION="$item"
+    fi
 
-  if [ $IT = 3 ]; then
-    current_num_tag=$item
-  fi
+    if [ $IT = 3 ]; then
+        MINOR_TAG_VERSION=$item
+    fi
 
-  IT=$((IT + 1))
+    IT=$((IT + 1))
 done
 
-previous_num_tag=$((current_num_tag - 1))
-next_num_tag=$((current_num_tag + 1))
+echo "BRANCH : $BRANCH_TAG_VERSION"
+echo "MAJOR TAG : $MAJOR_TAG_VERSION"
+echo "MINOR TAG : $MINOR_TAG_VERSION"
 
-previous_tag="$major_version.$previous_num_tag"
-next_tag="$major_version.$next_num_tag"
+if [[ -z $BRANCH_TAG_VERSION ]] || [[ -z $MAJOR_TAG_VERSION ]] || [[ -z $MINOR_TAG_VERSION ]]
+then
+    echo "Bad tag structure ! $LATEST_TAG"
+    exit 1;
+fi
 
-echo "previoustag:$previous_tag"
+if [ $TAG_MODE  == 'major' ]; then
+    VERSION=$((MAJOR_TAG_VERSION + 1))
+    NEXT_TAG="$BRANCH_TAG_VERSION.$VERSION.0"
+fi
+if [ $TAG_MODE  == 'minor' ]; then
+    VERSION=$((MINOR_TAG_VERSION + 1))
+    NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION"
+fi
 
-for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones?search=$CI_COMMIT_TAG" | jq -r '.[] | @base64'); do
+echo "NEXT TAG : $NEXT_TAG"
+
+## CREATE TAG
+curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=$CI_COMMIT_BRANCH"
+
+## CLOSE MILESTONE
+for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones?search=$LATEST_TAG" | jq -r '.[] | @base64'); do
   _jq() {
     echo ${row} | base64 --decode | jq -r ${1}
   }
@@ -50,42 +86,42 @@ for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.o
 
   BODY="{\"id\":\"$ID\",\"state_event\":\"close\"}"
 
-  curl -v -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X PUT https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones/$ID
+  curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X PUT https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones/$ID
 
 done
 
-BODY="{\"id\":\"$CI_PROJECT_ID\",\"title\":\"$next_tag\"}"
+
+BODY="{\"id\":\"$CI_PROJECT_ID\",\"title\":\"$NEXT_TAG\"}"
 
 # CREATE NEXT TAG MILESTONE
-curl -v -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones
+curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones
 
 # GENERATE RAW CHANGELOG
 COMMIT_LOG_FILE="tmp.txt"
 ISSUES_IDS_FILE="tmp2.txt"
 SORTED_UNIQUE_ISSUES_IDS="tmp3.txt"
 FINAL_LOG="tmp4.txt"
-
 CONTENT=""
 
-ls -al
 
 echo "Set user git : $GITLAB_USER_NAME <$GITLAB_USER_EMAIL>"
 
-git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME"
+git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
 
 git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GILAB_URL}/${CI_PROJECT_PATH}"
 
-git branch -D $major_version
-git pull origin $major_version
-git checkout $major_version
+git fetch
+git branch -D $CI_COMMIT_BRANCH
+git pull origin $CI_COMMIT_BRANCH
+git checkout $CI_COMMIT_BRANCH
 
-echo "git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='Update referential' --all-match"
+echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='Update referential' --all-match"
 
-REF_UPDATED=$(git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='Update referential' --all-match)
+REF_UPDATED=$(git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='Update referential' --all-match)
 
-echo "git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='FEAT' --all-match"
+echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FEAT' --all-match"
 
-git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='FEAT' --all-match >$COMMIT_LOG_FILE
+git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FEAT' --all-match >$COMMIT_LOG_FILE
 echo '' >>$COMMIT_LOG_FILE
 
 while IFS= read -r line; do
@@ -93,9 +129,9 @@ while IFS= read -r line; do
   echo "$ISSUE_ID" >>$ISSUES_IDS_FILE
 done <"$COMMIT_LOG_FILE"
 
-echo "git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='FIX' --all-match"
+echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FIX' --all-match"
 
-git log $previous_tag..$CI_COMMIT_TAG --pretty=format:'%s' --grep='FIX' --all-match >$COMMIT_LOG_FILE
+git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FIX' --all-match >$COMMIT_LOG_FILE
 echo '' >>$COMMIT_LOG_FILE
 
 while IFS= read -r line; do
@@ -137,17 +173,14 @@ done <"changelog.txt"
 echo $CONTENT
 
 # Update tag release
-BODY="{\"description\":\"$CONTENT\"}"
+BODY="{\"description\":\"$CONTENT\",\"tag_name\":\"$NEXT_TAG\", \"milestones\": [\"$NEXT_TAG\"]}"
 
-curl -v -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags/$CI_COMMIT_TAG/release
-
-# NOTIFY TAG IN SLACK
-curl -X POST --data-urlencode "payload={\"channel\": \"$CHANNEL_SLACK_NOTIFICATION\", \"username\": \"$USERNAME_SLACK_NOTIFICATION\", \"text\": \"Jalon mis à jour à la version $tag!\nVeuillez rédiger le <$CI_PROJECT_URL/tags/$tag/release/edit|changelog> et définir une date de sortie.\", \"icon_emoji\": \":cop:\"}" $URL_SLACK_NOTIFICATION
+curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/releases
 
 # Update files version
 cp package.json tmp_package.json
 
-jq -r ".version |= \"$next_tag\"" tmp_package.json >package.json
+jq -r ".version |= \"$NEXT_TAG\"" tmp_package.json >package.json
 
 rm tmp_package.json
 
@@ -159,14 +192,6 @@ mv $ISSUES_IDS_FILE ci/build/
 mv $SORTED_UNIQUE_ISSUES_IDS ci/build/
 mv $FINAL_LOG ci/build/
 
-# sed -i -e "s/$CI_COMMIT_TAG/$next_tag/g" sql/test.sql
+git commit -m "Update next tag version files : $NEXT_TAG"
 
-# git add -f sql/test.sql
-
-git status
-
-git commit -m "Update next tag version files : $next_tag"
-
-git status
-
-git push origin $major_version
+git push origin $CI_COMMIT_BRANCH
