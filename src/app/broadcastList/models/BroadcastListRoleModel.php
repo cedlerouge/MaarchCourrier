@@ -30,7 +30,7 @@ class BroadcastListRoleModel
         foreach ($tmpRoles as $tmpValue) {
             $roles[] = [
                 'id'                    => $tmpValue['role_id'],
-                'label'                 => defined($tmpValue['label']) ? constant($tmpValue['label']) : $tmpValue['label'],
+                'label'                 => $tmpValue['label'],
                 'keepInListInstance'    => $tmpValue['keep_in_list_instance']
             ];
         }
@@ -52,7 +52,7 @@ class BroadcastListRoleModel
 
         return [
             'id'                    => $role[0]['role_id'],
-            'label'                 => defined($role[0]['label']) ? constant($role[0]['label']) : $role[0]['label'],
+            'label'                 => $role[0]['label'],
             'keepInListInstance'    => $role[0]['keep_in_list_instance']
         ];
     }
