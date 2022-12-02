@@ -7,10 +7,11 @@
             <mat-icon class="fa fa-times-circle fa-2x"></mat-icon>
         </button>
     </h1>
-    <div mat-dialog-content style="min-height: 200px;">
+    <div mat-dialog-content [ngStyle]="{'min-width': !noFile ? '90vh' : '200px', 'min-height': !noFile ? '99vh' : '200px'}">
         <app-document-viewer #appDocumentViewer style="display:block;height:100%;width:100%;overflow: auto;"
             [editMode]="false" [resId]="data.resource.resId"
-            [title]="data.resource.chrono + ' - ' + data.resource.subject">
+            [title]="data.resource.chrono + ' - ' + data.resource.subject"
+            (fileEvent)="noFile = $event">
         </app-document-viewer>
     </div>
 </div>
