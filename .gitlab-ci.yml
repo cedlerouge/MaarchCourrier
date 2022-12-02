@@ -72,7 +72,7 @@ job_e2e:
     expire_in: 2 days
     when: always
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == null'
 # only:
 #   - schedules
 
@@ -202,7 +202,7 @@ new_tag:
   # only:
   #   - tags
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE != null'
   before_script:
     # Install git and curl command
     - apt-get update -yqq > /dev/null
