@@ -4,7 +4,7 @@
             <h3 mat-subheader>{{'lang.actions' | translate}}</h3>
             <a mat-list-item routerLink="/administration/users/new">
                 <mat-icon color="primary" mat-list-icon class="fa fa-plus"></mat-icon>
-                <p mat-line>
+                <p mat-line style="margin-left: 10px">
                     {{'lang.add' | translate}}
                 </p>
             </a>
@@ -16,7 +16,7 @@
             </a>
             <a mat-list-item (click)="openUsersImportModal()">
                 <mat-icon color="primary" mat-list-icon class="fas fa-file-import"></mat-icon>
-                <p mat-line>
+                <p mat-line style="margin-left: 6px;">
                     {{'lang.usersImport' | translate}}
                 </p>
             </a>

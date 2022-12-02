@@ -4,15 +4,15 @@
             <h3 mat-subheader>{{'lang.actions' | translate}}</h3>
             <a mat-list-item disableRipple="true" matTooltip="{{'lang.toogleShippingConf' | translate}}">
                 <mat-icon color="primary" mat-list-icon>
-                    <mat-slide-toggle #toggleConf [formControl]="shippingConf.enabled" color="primary" style="position: absolute;"></mat-slide-toggle>
+                    <mat-slide-toggle #toggleConf [formControl]="shippingConf.enabled" color="primary" style="position: relative;"></mat-slide-toggle>
                 </mat-icon>
                 <p mat-line [ngStyle]="{'opacity': shippingConf.enabled.value ? '' : '0.3'}" (click)="toggleConf.toggle()">
                     {{(shippingConf.enabled.value ? 'lang.enabled' : 'lang.disabled') | translate}}
                 </p>
             </a>
             <a mat-list-item routerLink="/administration/shippings/new">
-                <mat-icon color="primary" mat-list-icon class="fa fa-plus"></mat-icon>
-                <p mat-line>
+                <mat-icon color="primary" mat-list-icon class="fa fa-plus" style="margin-left: 9px;"></mat-icon>
+                <p mat-line style="margin-left: 5px;">
                     {{'lang.add' | translate}}
                 </p>
             </a>
