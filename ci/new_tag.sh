@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# for test 
+CI_COMMIT_BRANCH='2301'
+
 FIRST_TAG=0
 
 TAGS=()
