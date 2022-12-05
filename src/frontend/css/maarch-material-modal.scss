@@ -25,7 +25,8 @@
 
 
 .maarch-full-height-modal {
-  height: auto;
+  height: 99%;
+  min-height: 99%;
 
   .mat-dialog-title {
     margin: 0;
@@ -38,17 +39,8 @@
     align-items: center;
     justify-content: center;
 
-    span {
-      flex : 1;
-      text-align: center;
-    }
-    
     small {
       color: #F99830; 
-    }
-
-    mat-icon {
-      line-height: 30px;
     }
   }
 
@@ -60,15 +52,16 @@
 
   .mat-dialog-content {
     height: 100%;
+    min-height: 150px;
     max-height: 100% !important;
     margin: 0px;
     position: relative;
-    padding: 0px !important;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .mat-dialog-container {
     padding: 0px;
-    overflow: hidden;
   }
 
   .mat-dialog-actions {
@@ -104,10 +97,6 @@
     small {
       color: #F99830; 
     }
-
-    mat-icon {
-      line-height: 30px;
-    }
   }
 
   .mat-dialog-content-container {
@@ -118,15 +107,16 @@
 
   .mat-dialog-content {
     height: 100%;
+    min-height: 150px;
     max-height: 100% !important;
     margin: 0px;
     position: relative;
-    padding: 0px !important;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 
   .mat-dialog-container {
     padding: 0px;
-    overflow: hidden;
   }
 
   .mat-dialog-actions {

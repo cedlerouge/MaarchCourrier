@@ -100,7 +100,6 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
       * Event emitter
       */
     @Output() triggerEvent = new EventEmitter<string>();
-    @Output() fileEvent = new EventEmitter<boolean>();
 
 
     /**
@@ -836,7 +835,6 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 ).subscribe();
             }
         }
-        this.fileEvent.emit(this.noFile);
     }
 
     loadMainDocumentSubInformations() {
