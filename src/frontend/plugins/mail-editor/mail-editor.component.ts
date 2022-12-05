@@ -1038,7 +1038,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         if (type === 'attachments') {
             this.http.get(`../rest/attachments/${attach.id}/content?mode=base64`).pipe(
                 tap((data: any) => {
-                    this.dialog.open(DocumentViewerModalComponent, { autoFocus: false, panelClass: 'maarch-full-height-modal', data: { title: `${attach.label}`, base64: data.encodedDocument, filename: data.filename } });
+                    this.dialog.open(DocumentViewerModalComponent, { autoFocus: false, panelClass: 'maarch-modal-viewer', data: { title: `${attach.label}`, base64: data.encodedDocument, filename: data.filename } });
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);

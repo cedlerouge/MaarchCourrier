@@ -100,6 +100,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
       * Event emitter
       */
     @Output() triggerEvent = new EventEmitter<string>();
+    @Output() fileEvent = new EventEmitter<boolean>();
 
 
     /**
@@ -379,7 +380,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
             autoFocus: false,
             disableClose: true,
-            panelClass: 'maarch-full-height-modal',
+            panelClass: 'maarch-modal-viewer',
             data: {
                 title: file.name,
                 filename: file.name,
@@ -835,6 +836,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 ).subscribe();
             }
         }
+        this.fileEvent.emit(this.noFile);
     }
 
     loadMainDocumentSubInformations() {
@@ -1363,7 +1365,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             tap((data: any) => {
                 const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
                     autoFocus: false,
-                    panelClass: 'maarch-full-height-modal',
+                    panelClass: 'maarch-modal-viewer',
                     data: {
                         title: `${title}`,
                         base64: data.encodedDocument,
