@@ -37,9 +37,10 @@ class VersionUpdateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $client = Client::create('https://labs.maarch.org/api/v4/');
+        $client = new Client();
+        $client->setUrl('https://labs.maarch.org/api/v4/');
         try {
-            $tags = $client->api('tags')->all('12');
+            $tags = $client->tags()->all('12');
         } catch (\Exception $e) {
             return $response->withJson(['errors' => $e->getMessage()]);
         }
@@ -197,7 +198,7 @@ class VersionUpdateController
         $migrationFolder = DocserverController::getMigrationFolderPath();
         
         if (!empty($migrationFolder['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $migrationFolder['errors']]);
+            return ['errors' => $migrationFolder['errors']];
         }
 
         if (!empty($args['sqlFiles'])) {

@@ -25,11 +25,13 @@ use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Doctype\models\DoctypeModel;
 use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use IndexingModel\models\IndexingModelModel;
 use Note\models\NoteModel;
 use Parameter\models\ParameterModel;
+use PiBarCode\PiBarCode;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use SrcCore\models\CoreConfigModel;
@@ -40,7 +42,7 @@ use Template\models\TemplateModel;
 use User\models\UserModel;
 
 include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
-include_once('vendor/rafikhaceb/pi-barcode/pi_barcode.php');
+//include_once('vendor/rafikhaceb/pi-barcode/pi_barcode.php');
 
 
 class MergeController
@@ -485,7 +487,7 @@ class MergeController
         }
 
         $barcodeFile = CoreConfigModel::getTmpPath() . mt_rand() ."_{$GLOBALS['id']}_barcode.png";
-        $generator = new \PiBarCode();
+        $generator = new PiBarCode();
         $generator->setCode($args['chrono']);
         $generator->setType('C128');
         $generator->setSize(30, 50);
@@ -510,7 +512,9 @@ class MergeController
         ];
         $data = json_encode($data);
         $qrCode = new QrCode($data);
-        $qrCode->writeFile($qrcodeFile);
+        $pngWriter = new PngWriter();
+        $qrCodeResult = $pngWriter->write($qrCode);
+        $qrCodeResult->saveToFile($qrcodeFile);
 
         if (!empty($args['path'])) {
             if ($extension == 'odt') {
