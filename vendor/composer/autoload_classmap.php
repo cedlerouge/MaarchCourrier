@@ -60,6 +60,7 @@ return array(
     'CAS_TypeMismatchException' => $vendorDir . '/jasig/phpcas/source/CAS/TypeMismatchException.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'Datamatrix' => $vendorDir . '/tecnickcom/tcpdf/include/barcodes/datamatrix.php',
+    'JsonException' => $vendorDir . '/symfony/polyfill-php73/Resources/stubs/JsonException.php',
     'OpenIDConnectClient' => $vendorDir . '/jumbojett/openid-connect-php/OpenIDConnectClient.php',
     'OpenIDConnectClientException' => $vendorDir . '/jumbojett/openid-connect-php/OpenIDConnectClient.php',
     'PDF417' => $vendorDir . '/tecnickcom/tcpdf/include/barcodes/pdf417.php',
