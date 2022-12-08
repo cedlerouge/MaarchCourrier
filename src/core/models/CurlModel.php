@@ -118,7 +118,6 @@ class CurlModel
         $args['isXml'] = $args['isXml'] ?? false;
 
         $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true, CURLOPT_SSL_VERIFYPEER => false, CURLOPT_CONNECTTIMEOUT => 10];
-        $opts[CURLOPT_SSL_VERIFYHOST] = false;
 
         if (!empty($args['followRedirect'])) {
             $opts[CURLOPT_FOLLOWLOCATION] = true;
