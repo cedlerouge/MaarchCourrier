@@ -24,8 +24,8 @@ use Respect\Validation\Validator;
 use Action\models\ActionModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class ActionController
 {

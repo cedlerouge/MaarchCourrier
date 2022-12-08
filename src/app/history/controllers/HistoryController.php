@@ -23,8 +23,8 @@ use SrcCore\controllers\LogsController;
 use SrcCore\models\ValidatorModel;
 use History\models\HistoryModel;
 use Notification\controllers\NotificationsEventsController;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use User\models\UserModel;
 
 class HistoryController

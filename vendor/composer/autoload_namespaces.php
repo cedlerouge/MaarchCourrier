@@ -10,5 +10,4 @@ return array(
     'Zend_Search_Lucene' => array($vendorDir . '/zf1/zend-search-lucene/library'),
     'Zend_Search' => array($vendorDir . '/zf1/zend-search/library'),
     'Zend_Exception' => array($vendorDir . '/zf1/zend-exception/library'),
-    'Pimple' => array($vendorDir . '/pimple/pimple/src'),
 );

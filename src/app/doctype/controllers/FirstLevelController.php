@@ -19,8 +19,8 @@ use Respect\Validation\Validator;
 use Doctype\models\FirstLevelModel;
 use Doctype\models\SecondLevelModel;
 use Doctype\models\DoctypeModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class FirstLevelController
 {
@@ -124,7 +124,7 @@ class FirstLevelController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $data = $this->manageValue($data);
 
         $errors = $this->control($data, 'create');
@@ -155,7 +155,7 @@ class FirstLevelController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $obj = $request->getParams();
+        $obj = $request->getParsedBody();
         $obj['doctypes_first_level_id'] = $aArgs['id'];
         unset($obj['hasChildren']);
 

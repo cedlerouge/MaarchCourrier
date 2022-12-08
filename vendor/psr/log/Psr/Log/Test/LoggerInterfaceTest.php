@@ -84,8 +84,8 @@ abstract class LoggerInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testObjectCastToString()
     {
-        if (method_exists($this, 'createMock')) {
-            $dummy = $this->createMock('Psr\Log\Test\DummyTest', array('__toString'));
+        if (method_exists($this, 'createPartialMock')) {
+            $dummy = $this->createPartialMock('Psr\Log\Test\DummyTest', array('__toString'));
         } else {
             $dummy = $this->getMock('Psr\Log\Test\DummyTest', array('__toString'));
         }
@@ -101,6 +101,9 @@ abstract class LoggerInterfaceTest extends \PHPUnit_Framework_TestCase
 
     public function testContextCanContainAnything()
     {
+        $closed = fopen('php://memory', 'r');
+        fclose($closed);
+
         $context = array(
             'bool' => true,
             'null' => null,
@@ -110,6 +113,7 @@ abstract class LoggerInterfaceTest extends \PHPUnit_Framework_TestCase
             'nested' => array('with object' => new DummyTest),
             'object' => new \DateTime,
             'resource' => fopen('php://memory', 'r'),
+            'closed' => $closed,
         );
 
         $this->getLogger()->warning('Crazy context data', $context);

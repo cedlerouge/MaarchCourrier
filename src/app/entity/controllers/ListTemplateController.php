@@ -23,8 +23,8 @@ use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
@@ -390,7 +390,7 @@ class ListTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
         
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         DatabaseModel::beginTransaction();
 
@@ -467,7 +467,7 @@ class ListTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::arrayType()->notEmpty()->validate($data['roles'] ?? null);
         if (!$check) {

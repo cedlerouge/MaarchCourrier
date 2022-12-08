@@ -23,8 +23,8 @@ use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\TextFormatModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 
 /**

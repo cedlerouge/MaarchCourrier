@@ -14,20 +14,16 @@
 
 namespace VersionUpdate\controllers;
 
-use Docserver\models\DocserverModel;
 use Docserver\controllers\DocserverController;
 use Gitlab\Client;
 use Group\controllers\PrivilegeController;
 use Parameter\models\ParameterModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
-use SrcCore\models\DatabasePDO;
-use Respect\Validation\Validator;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
-use User\models\UserModel;
 
 class VersionUpdateController
 {

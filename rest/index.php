@@ -25,14 +25,25 @@ if (file_exists("custom/{$customId}/src/core/lang/lang-{$language}.php")) {
 }
 require_once("src/core/lang/lang-{$language}.php");
 
-$app = new \Slim\App(['settings' => ['displayErrorDetails' => true, 'determineRouteBeforeAppMiddleware' => true, 'addContentLengthHeader' => true ]]);
+//$app = new App(['settings' => ['displayErrorDetails' => true, 'determineRouteBeforeAppMiddleware' => true, 'addContentLengthHeader' => true ]]);
+
+$responseFactory = new \SrcCore\http\ResponseFactory();
+
+$app = \Slim\Factory\AppFactory::create($responseFactory);
+$app->setBasePath('/rest');
 
 //Authentication
-$app->add(function (\Slim\Http\Request $request, \Slim\Http\Response $response, callable $next) {
-    $route = $request->getAttribute('route');
-    $currentMethod = empty($route) ? '' : $route->getMethods()[0];
-    $currentRoute = empty($route) ? '' : $route->getPattern();
-    if (!in_array($currentMethod.$currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
+$app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
+    $response = new \SrcCore\http\Response();
+
+    $routeContext = \Slim\Routing\RouteContext::fromRequest($request);
+    $route = $routeContext->getRoute();
+    $route->getPattern();
+
+    $currentMethod = $route->getMethods()[0];
+    $currentRoute = $route->getPattern();
+
+    if (!in_array($currentMethod . $currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
         if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWhitoutAuthentication(['route' => $currentMethod.$currentRoute])) {
             $authorizationHeaders = $request->getHeader('Authorization');
             $userId = \SrcCore\controllers\AuthenticationController::authentication($authorizationHeaders);
@@ -49,10 +60,16 @@ $app->add(function (\Slim\Http\Request $request, \Slim\Http\Response $response, 
             }
         }
     }
-    $response = $next($request, $response);
 
-    return $response;
+    return $requestHandler->handle($request);
 });
+
+// Add Routing Middleware
+$app->addRoutingMiddleware();
+
+// Parse the request body into an array
+$bodyParsingMiddleware = new \Slim\Middleware\BodyParsingMiddleware();
+$app->add($bodyParsingMiddleware);
 
 //Authentication
 $app->get('/authenticationInformations', \SrcCore\controllers\AuthenticationController::class . ':getInformations');
@@ -211,7 +228,7 @@ $app->get('/onlyOffice/mergedFile', \ContentManagement\controllers\OnlyOfficeCon
 $app->get('/onlyOffice/encodedFile', \ContentManagement\controllers\OnlyOfficeController::class . ':getEncodedFileFromUrl');
 $app->get('/onlyOffice/available', \ContentManagement\controllers\OnlyOfficeController::class . ':isAvailable');
 $app->get('/onlyOffice/content', \ContentManagement\controllers\OnlyOfficeController::class . ':getTmpFile');
-$app->post('/onlyOfficeCallback', function (\Slim\Http\Request $request, \Slim\Http\Response $response) {
+$app->post('/onlyOfficeCallback', function (\Slim\Psr7\Request $request, \SrcCore\http\Response $response) {
     return $response->withJson(['error' => 0]);
 });
 
@@ -725,5 +742,26 @@ $app->get('/multigest/accounts/{id}', \Multigest\controllers\MultigestController
 $app->put('/multigest/accounts/{id}', \Multigest\controllers\MultigestController::class . ':updateAccount');
 $app->delete('/multigest/accounts/{id}', \Multigest\controllers\MultigestController::class . ':deleteAccount');
 $app->post('/multigest/checkAccounts', \Multigest\controllers\MultigestController::class . ':checkAccount');
+
+
+$contentLengthMiddleware = new \Slim\Middleware\ContentLengthMiddleware();
+$app->add($contentLengthMiddleware);
+
+/**
+ * Add Error Handling Middleware
+ *
+ * @param bool $displayErrorDetails -> Should be set to false in production
+ * @param bool $logErrors -> Parameter is passed to the default ErrorHandler
+ * @param bool $logErrorDetails -> Display error details in error log
+ * which can be replaced by a callable of your choice.
+
+ * Note: This middleware should be added last. It will not handle any exceptions/errors
+ * for middleware added after it.
+ */
+$errorMiddleware = $app->addErrorMiddleware(true, true, true); // TODO use monolog to log errors
+
+// Get the default error handler and register my custom error renderer.
+$errorHandler = $errorMiddleware->getDefaultErrorHandler();
+$errorHandler->registerErrorRenderer('application/json', \SrcCore\http\JsonErrorRenderer::class);
 
 $app->run();

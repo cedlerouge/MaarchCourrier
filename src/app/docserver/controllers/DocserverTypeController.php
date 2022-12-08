@@ -16,8 +16,8 @@ namespace Docserver\controllers;
 
 use Group\controllers\PrivilegeController;
 use Docserver\models\DocserverTypeModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class DocserverTypeController
 {
