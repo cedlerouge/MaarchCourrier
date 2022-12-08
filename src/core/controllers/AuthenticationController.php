@@ -529,11 +529,11 @@ class AuthenticationController
 
         if (!empty($logTypeInfo['errors'])) {
             return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
-        }        
-        
+        }
+
         if ($logTypeInfo['level'] == 'DEBUG') {
-            \phpCAS::setVerbose(true);        
-        } 
+            \phpCAS::setVerbose(true);
+        }
         
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
@@ -577,8 +577,8 @@ class AuthenticationController
         }
         
         if ($logTypeInfo['level'] == 'DEBUG') {
-            \phpCAS::setVerbose(true);        
-        } 
+            \phpCAS::setVerbose(true);
+        }
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {

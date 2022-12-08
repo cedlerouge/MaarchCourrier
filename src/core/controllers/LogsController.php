@@ -57,13 +57,18 @@ class LogsController
         return $logger;
     }
 
-    public static function getLogType($logType) 
+    /**
+     * @description Get log config by type
+     * @param   string  $logType    logFonctionnel | logTechnique | queries
+     * @return  array
+     */
+    public static function getLogType(string $logType) 
     {
         $logConfig = LogsController::getLogConfig();
         if (empty($logConfig[$logType])) {
             return ['code' => 400, 'errors' => "Log config of type '$logType' not found!"];
         }
-        
+        return $logConfig[$logType];
     }
 
     /**
