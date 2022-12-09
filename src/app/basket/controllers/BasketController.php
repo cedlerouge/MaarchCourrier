@@ -60,7 +60,7 @@ class BasketController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['id']) && preg_match("/^[\w-]*$/", $data['id']) && (strlen($data['id']) <= 32);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['basket_name']);
@@ -107,7 +107,7 @@ class BasketController
             return $response->withStatus(400)->withJson(['errors' => 'Basket not found']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['basket_name']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['basket_desc']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['clause']);
@@ -212,7 +212,7 @@ class BasketController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         foreach ($data as $key => $basketToUpdate) {
             if ($key != $basketToUpdate['basket_order']) {

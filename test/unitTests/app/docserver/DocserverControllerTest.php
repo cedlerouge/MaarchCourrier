@@ -7,21 +7,25 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\docserver;
 
-class DocserverControllerTest extends TestCase
+use Docserver\controllers\DocserverController;
+use Docserver\controllers\DocserverTypeController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+
+class DocserverControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
 
     public function testGet()
     {
-        $docserverController = new \Docserver\controllers\DocserverController();
+        $docserverController = new DocserverController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $docserverController->get($request, new \Slim\Http\Response());
+        $response     = $docserverController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docservers);
@@ -30,17 +34,14 @@ class DocserverControllerTest extends TestCase
 
     public function testCreate()
     {
-        $docserverController = new \Docserver\controllers\DocserverController();
+        $docserverController = new DocserverController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         if (!is_dir(self::$pathTemplate)) {
             mkdir(self::$pathTemplate);
         }
 
-        $aArgs = [
+        $args = [
             'docserver_id'           =>  'NEW_DOCSERVER',
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'new docserver',
@@ -48,27 +49,23 @@ class DocserverControllerTest extends TestCase
             'path_template'          =>  self::$pathTemplate,
             'coll_id'                =>  'letterbox_coll'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $docserverController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->docserver;
         $this->assertIsInt(self::$id);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $docserverController->getById($request, new \Slim\Http\Response(), ['id' =>  self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('NEW_DOCSERVER', $responseBody->docserver_id);
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'docserver_id'           =>  'WRONG_PATH',
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'new docserver',
@@ -76,17 +73,15 @@ class DocserverControllerTest extends TestCase
             'path_template'          =>  '/wrong/path/',
             'coll_id'                =>  'letterbox_coll'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+
+        $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         
         $this->assertSame(_PATH_OF_DOCSERVER_UNAPPROACHABLE, $responseBody->errors);
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'docserver_id'           =>  'BAD_REQUEST',
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'new docserver',
@@ -94,17 +89,14 @@ class DocserverControllerTest extends TestCase
             'path_template'          =>  null,
             'coll_id'                =>  'letterbox_coll'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         
         $this->assertSame('Bad Request', $responseBody->errors);
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'docserver_id'           =>  'NEW_DOCSERVER',
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'new docserver',
@@ -112,8 +104,8 @@ class DocserverControllerTest extends TestCase
             'path_template'          =>  '/var/docserversDEV/dev1804/archive_transfer/',
             'coll_id'                =>  'letterbox_coll'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         
         $this->assertSame(_ID. ' ' . _ALREADY_EXISTS, $responseBody->errors);
@@ -121,63 +113,54 @@ class DocserverControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $docserverController = new \Docserver\controllers\DocserverController();
+        $docserverController = new DocserverController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'docserver_type_id' =>  'DOC',
             'device_label'      =>  'updated docserver',
             'size_limit_number' =>  50000000000,
             'path_template'     =>  self::$pathTemplate,
             'is_readonly'       =>  true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docserver);
         $this->assertSame('updated docserver', $responseBody->docserver->device_label);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $docserverController->getById($request, new \Slim\Http\Response(), ['id' =>  self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('updated docserver', $responseBody->device_label);
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'updated docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  '/wrong/path/',
             'is_readonly'       =>  true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(_PATH_OF_DOCSERVER_UNAPPROACHABLE, $responseBody->errors);
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'docserver_type_id'      =>  'DOC',
             'device_label'           =>  'updated docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  self::$pathTemplate,
             'is_readonly'       =>  true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $docserverController->update($fullRequest, new \Slim\Http\Response(), ['id' => 12345]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response     = $docserverController->update($fullRequest, new Response(), ['id' => 12345]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver not found', $responseBody->errors);
@@ -185,28 +168,25 @@ class DocserverControllerTest extends TestCase
 
     public function testDelete()
     {
-        $docserverController = new \Docserver\controllers\DocserverController();
+        $docserverController = new DocserverController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $docserverController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $docserverController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertsame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $docserverController->getById($request, new \Slim\Http\Response(), ['id' =>  self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver not found', $responseBody->errors);
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $docserverController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $docserverController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver does not exist', $responseBody->errors);
@@ -216,12 +196,11 @@ class DocserverControllerTest extends TestCase
 
     public function testGetDocserverTypes()
     {
-        $docserverTypeController = new \Docserver\controllers\DocserverTypeController();
+        $docserverTypeController = new DocserverTypeController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $docserverTypeController->get($request, new \Slim\Http\Response());
+        $response     = $docserverTypeController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docserverTypes);

@@ -7,9 +7,22 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\contact;
 
-class ContactControllerTest extends TestCase
+use Contact\controllers\ContactCivilityController;
+use Contact\controllers\ContactController;
+use Contact\models\ContactCustomFieldListModel;
+use Contact\models\ContactModel;
+use Contact\models\ContactParameterModel;
+use Group\models\PrivilegeModel;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use Resource\models\ResourceContactModel;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+use User\models\UserModel;
+
+class ContactControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $id2 = null;
@@ -19,12 +32,9 @@ class ContactControllerTest extends TestCase
 
     public function testCreate()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'civility'          => 1,
             'firstname'         => 'Hal',
@@ -44,9 +54,9 @@ class ContactControllerTest extends TestCase
                 'm2m' => '45239273100025/PJS'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -54,10 +64,10 @@ class ContactControllerTest extends TestCase
         self::$id = $responseBody['id'];
 
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        \Group\models\PrivilegeModel::addPrivilegeToGroup(['privilegeId' => 'create_contacts', 'groupId' => 'WEBSERVICE']);
+        PrivilegeModel::addPrivilegeToGroup(['privilegeId' => 'create_contacts', 'groupId' => 'WEBSERVICE']);
 
         $args = [
             'civility'        => 1,
@@ -75,18 +85,18 @@ class ContactControllerTest extends TestCase
             'phone'           => '911',
             'notes'           => 'In brightest day'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->create($fullRequest, new Response());
 
-        \Group\models\PrivilegeModel::removePrivilegeToGroup(['privilegeId' => 'create_contacts', 'groupId' => 'WEBSERVICE']);
+        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => 'create_contacts', 'groupId' => 'WEBSERVICE']);
 
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(self::$id, $responseBody['id']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $args2 = [
@@ -111,15 +121,15 @@ class ContactControllerTest extends TestCase
                 'm2m'           => '45239273100025/PJS'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args2, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args2);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertIsInt($responseBody['id']);
         self::$id2 = $responseBody['id'];
 
-        self::$customFieldId = \Contact\models\ContactCustomFieldListModel::create([
+        self::$customFieldId = ContactCustomFieldListModel::create([
             'label'         => 'TEST CUSTOM',
             'type'          => 'integer',
             'values'        => '[]'
@@ -127,19 +137,18 @@ class ContactControllerTest extends TestCase
 
         $args2['email'] = 'dschrute@dundermifflin.com';
         $args2['customFields'][self::$customFieldId] = 42;
-        $fullRequest = \httpRequestCustom::addContentInBody($args2, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args2);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertIsInt($responseBody['id']);
         self::$duplicateId = $responseBody['id'];
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -166,15 +175,12 @@ class ContactControllerTest extends TestCase
 
 
         //  ERRORS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
 
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or empty', $responseBody['errors']);
@@ -193,9 +199,9 @@ class ContactControllerTest extends TestCase
             'phone'             => '911',
             'notes'             => 'In brightest day',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body lastname or company is mandatory', $responseBody['errors']);
@@ -217,9 +223,9 @@ class ContactControllerTest extends TestCase
             'notes'              => 'Assistant to the regional manager',
             'communicationMeans' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_COMMUNICATION_MEANS_VALIDATOR, $responseBody['errors']);
@@ -242,9 +248,9 @@ class ContactControllerTest extends TestCase
             'notes'           => 'Assistant to the regional manager',
             'customFields'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body email is not valid', $responseBody['errors']);
@@ -266,9 +272,9 @@ class ContactControllerTest extends TestCase
             'notes'              => 'Assistant to the regional manager',
             'communicationMeans' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body phone is not valid', $responseBody['errors']);
@@ -290,9 +296,9 @@ class ContactControllerTest extends TestCase
             'notes'           => 'Assistant to the regional manager',
             'customFields'    => [1000 => 'wrong field']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields : One or more custom fields do not exist', $responseBody['errors']);
@@ -314,9 +320,9 @@ class ContactControllerTest extends TestCase
             'notes'           => 'Assistant to the regional manager',
             'customFields'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields is not an array', $responseBody['errors']);
@@ -338,39 +344,38 @@ class ContactControllerTest extends TestCase
             'notes'           => 'Assistant to the regional manager',
             'customFields'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body company length is not valid (1..256)', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $contactController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetDuplicatedContacts()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         $queryParams = [
             'criteria' => ['company']
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $contactController->getDuplicatedContacts($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->getDuplicatedContacts($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -388,7 +393,7 @@ class ContactControllerTest extends TestCase
         $this->assertSame(2, count($dunderMifflinDuplicates));
 
         // Errors
-        $response = $contactController->getDuplicatedContacts($request, new \Slim\Http\Response());
+        $response = $contactController->getDuplicatedContacts($request, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Query criteria is empty or not an array', $responseBody['errors']);
@@ -397,7 +402,7 @@ class ContactControllerTest extends TestCase
             'criteria' => ['contactCustomField_1000']
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $contactController->getDuplicatedContacts($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->getDuplicatedContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Custom criteria does not exist', $responseBody['errors']);
@@ -406,46 +411,44 @@ class ContactControllerTest extends TestCase
             'criteria' => ['fieldThatDoesNotExist']
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $contactController->getDuplicatedContacts($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->getDuplicatedContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('criteria does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->getDuplicatedContacts($request, new \Slim\Http\Response());
+        $response = $contactController->getDuplicatedContacts($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testMergeContacts()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         $body = [
             'duplicates' => [self::$duplicateId]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->mergeContacts($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->mergeContacts($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(204, $response->getStatusCode());
 
         // Errors
-        $response = $contactController->mergeContacts($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $request = $this->createRequest('PUT');
+        $response = $contactController->mergeContacts($request, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response = $contactController->mergeContacts($request, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response = $contactController->mergeContacts($request, new Response(), ['id' => self::$id2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body duplicates is empty or not an array', $responseBody['errors']);
@@ -453,8 +456,8 @@ class ContactControllerTest extends TestCase
         $body = [
             'duplicates' => [self::$duplicateId * 1000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->mergeContacts($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2 * 1000]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->mergeContacts($fullRequest, new Response(), ['id' => self::$id2 * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('master does not exist', $responseBody['errors']);
@@ -462,34 +465,31 @@ class ContactControllerTest extends TestCase
         $body = [
             'duplicates' => [self::$duplicateId * 1000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->mergeContacts($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->mergeContacts($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('duplicates do not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->mergeContacts($request, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response = $contactController->mergeContacts($request, new Response(), ['id' => self::$id2]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'civility'          => 1,
             'lastname'          => 'Sinestro',
@@ -505,17 +505,16 @@ class ContactControllerTest extends TestCase
             'phone'             => '919',
             'notes'             => 'In blackest day',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -557,16 +556,13 @@ class ContactControllerTest extends TestCase
             'notes'           => 'Assistant to the regional manager',
             'externalId'      => ['schruteFarmId' => 2]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response = $contactController->update($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(204, $response->getStatusCode());
 
 
         //  ERRORS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'civility'          => 1,
             'firstname'         => 'Hal',
@@ -581,9 +577,9 @@ class ContactControllerTest extends TestCase
             'phone'             => '911',
             'notes'             => 'In brightest day',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body lastname or company is mandatory', $responseBody['errors']);
@@ -604,46 +600,45 @@ class ContactControllerTest extends TestCase
             'phone'           => '5705551212',
             'notes'           => 'Assistant to the regional manager'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2 * 1000]);
+        $response = $contactController->update($fullRequest, new Response(), ['id' => self::$id2 * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
-        $response = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response = $contactController->update($fullRequest, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $contactController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response     = $contactController->update($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGet()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $queryParams = [
             'orderBy' => 'filling'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->get($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->get($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -660,7 +655,7 @@ class ContactControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->get($fullRequest, new \Slim\Http\Response());
+        $response = $contactController->get($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -669,36 +664,36 @@ class ContactControllerTest extends TestCase
         $this->assertSame(0, $responseBody['count']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $contactController->get($request, new \Slim\Http\Response());
+        $response     = $contactController->get($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testControlLengthNameAfnor()
     {
-        $name = \Contact\controllers\ContactController::controlLengthNameAfnor(['civility' => 1, 'fullName' => 'Prénom NOM', 'strMaxLength' => 38]);
+        $name = ContactController::controlLengthNameAfnor(['civility' => 1, 'fullName' => 'Prénom NOM', 'strMaxLength' => 38]);
 
         $this->assertSame('Monsieur Prénom NOM', $name);
 
-        $name = \Contact\controllers\ContactController::controlLengthNameAfnor(['civility' => 3, 'fullName' => 'Prénom NOM TROP LOOOOOOOOOOOOONG', 'strMaxLength' => 38]);
+        $name = ContactController::controlLengthNameAfnor(['civility' => 3, 'fullName' => 'Prénom NOM TROP LOOOOOOOOOOOOONG', 'strMaxLength' => 38]);
 
         $this->assertSame('Mlle Prénom NOM TROP LOOOOOOOOOOOOONG', $name);
     }
 
     public function testGetContactAfnor()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  GET
-        $contact = \Contact\models\ContactModel::getById([
+        $contact = ContactModel::getById([
             'select' => [
                 'company', 'firstname', 'lastname', 'civility', 'address_additional1', 'address_additional2', 'address_number',
                 'address_street', 'address_postcode', 'address_town'
@@ -721,15 +716,12 @@ class ContactControllerTest extends TestCase
 
     public function testGetByResId()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -775,30 +767,29 @@ class ContactControllerTest extends TestCase
 
             ]
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $fullRequest = httpRequestCustom::addContentInBody($argsMailNew, $request);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
         self::$resId = $responseBody['resId'];
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Senders
         $queryParams = [
             'type' => 'senders'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $contactController->getByResId($fullRequest, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $contactController->getByResId($fullRequest, new Response(), ['resId' => self::$resId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -836,7 +827,7 @@ class ContactControllerTest extends TestCase
             'type' => 'recipients'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $contactController->getByResId($fullRequest, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $contactController->getByResId($fullRequest, new Response(), ['resId' => self::$resId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -890,46 +881,45 @@ class ContactControllerTest extends TestCase
         $this->assertEmpty($responseBody['contacts'][1]['fillingRate']);
 
         // No contact type provided
-        $response = $contactController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $contactController->getByResId($request, new Response(), ['resId' => self::$resId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody['contacts']);
         $this->assertEmpty($responseBody['contacts']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $contactController->getByResId($request, new Response(), ['resId' => self::$resId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         // Delete resource
-        \Resource\models\ResourceContactModel::delete(['where' => ['res_id = ?'], 'data' => [self::$resId]]);
-        \Resource\models\ResModel::delete([
+        ResourceContactModel::delete(['where' => ['res_id = ?'], 'data' => [self::$resId]]);
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data' => [self::$resId]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetCivilities()
     {
-        $contactCivilityController = new \Contact\controllers\ContactCivilityController();
+        $contactCivilityController = new ContactCivilityController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactCivilityController->get($request, new \Slim\Http\Response());
+        $response = $contactCivilityController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -939,12 +929,11 @@ class ContactControllerTest extends TestCase
 
     public function testGetAvailableDepartments()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactController->getAvailableDepartments($request, new \Slim\Http\Response());
+        $response = $contactController->getAvailableDepartments($request, new Response());
         $responseBody      = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['departments']);
@@ -953,12 +942,11 @@ class ContactControllerTest extends TestCase
 
     public function testGetLightFormattedContact()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => self::$id2, 'type' => 'contact']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => self::$id2, 'type' => 'contact']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -971,36 +959,36 @@ class ContactControllerTest extends TestCase
         $this->assertSame('Scranton', $responseBody['contact']['addressTown']);
         $this->assertSame('USA', $responseBody['contact']['addressCountry']);
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => 1, 'type' => 'user']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => 1, 'type' => 'user']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsString($responseBody['contact']['firstname']);
         $this->assertIsString($responseBody['contact']['lastname']);
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => 1, 'type' => 'entity']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => 1, 'type' => 'entity']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsString($responseBody['contact']['label']);
 
         // Fail
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Query params id is not an integer', $responseBody['errors']);
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => self::$id * 1000, 'type' => 'contact']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => self::$id * 1000, 'type' => 'contact']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => self::$id * 1000, 'type' => 'user']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => self::$id * 1000, 'type' => 'user']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
-        $response = $contactController->getLightFormattedContact($request, new \Slim\Http\Response(), ['id' => self::$id * 1000, 'type' => 'entity']);
+        $response = $contactController->getLightFormattedContact($request, new Response(), ['id' => self::$id * 1000, 'type' => 'entity']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
@@ -1008,10 +996,7 @@ class ContactControllerTest extends TestCase
 
     public function testUpdateContactsParameters()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         // Success
         $body = [
@@ -1029,45 +1014,44 @@ class ContactControllerTest extends TestCase
                 'second_threshold' => 80,
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $contactController->updateContactsParameters($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->updateContactsParameters($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('success', $responseBody['success']);
 
         // Fail
         $body = [ ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $contactController->updateContactsParameters($fullRequest, new \Slim\Http\Response());
+        $response     = $contactController->updateContactsParameters($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $contactController->updateContactsParameters($request, new \Slim\Http\Response());
+        $response     = $contactController->updateContactsParameters($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetContactsParameters()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $customParameterId = \Contact\models\ContactParameterModel::create(['identifier' => 'contactCustomField_1000']);
+        $customParameterId = ContactParameterModel::create(['identifier' => 'contactCustomField_1000']);
 
-        $contactController = new \Contact\controllers\ContactController();
-        $response          = $contactController->getContactsParameters($request, new \Slim\Http\Response());
+        $contactController = new ContactController();
+        $response          = $contactController->getContactsParameters($request, new Response());
         $responseBody      = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['contactsFilling']);
@@ -1076,7 +1060,7 @@ class ContactControllerTest extends TestCase
         $this->assertNotEmpty($responseBody['contactsParameters']);
         $this->assertSame(false, $responseBody['annuaryEnabled']);
 
-        \Contact\models\ContactParameterModel::delete([
+        ContactParameterModel::delete([
             'where' => ['id = ?'],
             'data'  => [$customParameterId]
         ]);
@@ -1084,16 +1068,15 @@ class ContactControllerTest extends TestCase
 
     public function testUpdateActivation()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         // Success
-        $response          = $contactController->updateActivation($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response          = $contactController->updateActivation($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $contact = \Contact\models\ContactModel::getById([
+        $contact = ContactModel::getById([
             'select' => ['enabled'],
             'id'     => self::$id
         ]);
@@ -1102,23 +1085,24 @@ class ContactControllerTest extends TestCase
         $body = [
             'enabled' => true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response          = $contactController->updateActivation($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+
+        $response          = $contactController->updateActivation($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $contact = \Contact\models\ContactModel::getById([
+        $contact = ContactModel::getById([
             'select' => ['enabled'],
             'id'     => self::$id
         ]);
         $this->assertSame(true, $contact['enabled']);
 
         // Fail
-        $response = $contactController->updateActivation($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response = $contactController->updateActivation($request, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response = $contactController->updateActivation($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response = $contactController->updateActivation($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
@@ -1126,25 +1110,22 @@ class ContactControllerTest extends TestCase
         $this->assertIsArray((array)$responseBody->contactsFilling);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->updateActivation($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response = $contactController->updateActivation($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testExportContacts()
     {
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         // Success
         $body = [
@@ -1155,8 +1136,8 @@ class ContactControllerTest extends TestCase
                 ['value' => 'contactCustomField_' . self::$customFieldId, 'label' => 'Custom']
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $headers = $response->getHeaders();
         $this->assertSame('application/vnd.ms-excel', $headers['Content-Type'][0]);
@@ -1165,8 +1146,8 @@ class ContactControllerTest extends TestCase
         $body = [
             'delimiter' => '$'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Delimiter is empty or not a string between [\',\', \';\', \'TAB\']', $responseBody['errors']);
@@ -1174,8 +1155,8 @@ class ContactControllerTest extends TestCase
         $body = [
             'delimiter' => ';'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Data data is empty or not an array', $responseBody['errors']);
@@ -1186,8 +1167,8 @@ class ContactControllerTest extends TestCase
                 []
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('field value is empty or not a string', $responseBody['errors']);
@@ -1198,8 +1179,8 @@ class ContactControllerTest extends TestCase
                 ['value' => 'wrongValue']
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('field label is empty or not a string', $responseBody['errors']);
@@ -1210,8 +1191,8 @@ class ContactControllerTest extends TestCase
                 ['value' => 'wrongValue', 'label' => 'WrongValue']
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('field does not exist', $responseBody['errors']);
@@ -1222,42 +1203,41 @@ class ContactControllerTest extends TestCase
                 ['value' => 'contactCustomField_1000', 'label' => 'WrongValue']
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $contactController->exportContacts($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Custom field does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->exportContacts($request, new \Slim\Http\Response());
+        $response = $contactController->exportContacts($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $contactController = new \Contact\controllers\ContactController();
+        $contactController = new ContactController();
 
         //  DELETE
 
         //  ERRORS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response = $contactController->delete($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response = $contactController->delete($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
-        $response = $contactController->delete($request, new \Slim\Http\Response(), ['id' => ['wrong format']]);
+        $response = $contactController->delete($request, new Response(), ['id' => ['wrong format']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
@@ -1267,7 +1247,7 @@ class ContactControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->delete($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Query param redirect is not an integer', $responseBody['errors']);
@@ -1277,7 +1257,7 @@ class ContactControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->delete($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Cannot redirect to contact you are deleting', $responseBody['errors']);
@@ -1287,22 +1267,22 @@ class ContactControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->delete($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $contactController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response = $contactController->delete($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
@@ -1311,23 +1291,22 @@ class ContactControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response = $contactController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id2]);
+        $response = $contactController->delete($fullRequest, new Response(), ['id' => self::$id2]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response = $contactController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $contactController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $contactController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Contact does not exist', $responseBody['errors']);
 
-        \Contact\models\ContactCustomFieldListModel::delete([
+        ContactCustomFieldListModel::delete([
             'where' => ['id = ?'],
             'data'  => [self::$customFieldId]
         ]);
@@ -1347,12 +1326,12 @@ class ContactControllerTest extends TestCase
 //        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
 //
 //        $contactController = new \Contact\controllers\ContactController();
-//        $response          = $contactController->updateFilling($fullRequest, new \Slim\Http\Response());
+//        $response          = $contactController->updateFilling($fullRequest, new Response());
 //        $responseBody      = json_decode((string)$response->getBody());
 //
 //        $this->assertSame('success', $responseBody->success);
 //
-//        $response          = $contactController->getFilling($request, new \Slim\Http\Response());
+//        $response          = $contactController->getFilling($request, new Response());
 //        $responseBody      = json_decode((string)$response->getBody());
 //
 //        $this->assertSame(true, $responseBody->contactsFilling->enable);
@@ -1368,7 +1347,7 @@ class ContactControllerTest extends TestCase
 //        ];
 //        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
 //
-//        $response          = $contactController->updateFilling($fullRequest, new \Slim\Http\Response());
+//        $response          = $contactController->updateFilling($fullRequest, new Response());
 //        $responseBody      = json_decode((string)$response->getBody());
 //
 //        $this->assertSame('Bad Request', $responseBody->errors);

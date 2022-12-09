@@ -7,18 +7,21 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\core;
 
-class PasswordControllerTest extends TestCase
+use SrcCore\controllers\PasswordController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+
+class PasswordControllerTest extends CourrierTestCase
 {
     public function testGetRules()
     {
-        $passwordController = new \SrcCore\controllers\PasswordController();
+        $passwordController = new PasswordController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $passwordController->getRules($request, new \Slim\Http\Response());
+        $response     = $passwordController->getRules($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->rules);
@@ -27,12 +30,11 @@ class PasswordControllerTest extends TestCase
 
     public function testUpdateRules()
     {
-        $passwordController = new \SrcCore\controllers\PasswordController();
+        $passwordController = new PasswordController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $passwordController->getRules($request, new \Slim\Http\Response());
+        $response     = $passwordController->getRules($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         // reset
@@ -49,8 +51,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');
@@ -66,11 +68,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');
@@ -87,8 +86,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');
@@ -105,8 +104,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');
@@ -123,8 +122,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');
@@ -145,8 +144,8 @@ class PasswordControllerTest extends TestCase
             }
         }
 
-        $fullRequest    = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-        $response       = $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+        $response       = $passwordController->updateRules($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame($responseBody->success, 'success');

@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'unitTests\\' => array($baseDir . '/test/unitTests'),
     'setasign\\Fpdi\\' => array($vendorDir . '/setasign/fpdi/src'),
     'phpseclib\\' => array($vendorDir . '/phpseclib/phpseclib/phpseclib'),
     'jamesiarmes\\PhpNtlm\\' => array($vendorDir . '/jamesiarmes/php-ntlm/src'),

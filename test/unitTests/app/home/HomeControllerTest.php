@@ -11,24 +11,26 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\home;
 
-class HomeControllerTest extends TestCase
+use Home\controllers\HomeController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+use User\models\UserModel;
+
+class HomeControllerTest extends CourrierTestCase
 {
-    private static $id = null;
-
     public function testGet()
     {
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $homeController = new \Home\controllers\HomeController();
+        $homeController = new HomeController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $homeController->get($request, new \Slim\Http\Response());
+        $response = $homeController->get($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertNotNull($responseBody->regroupedBaskets);
@@ -36,22 +38,21 @@ class HomeControllerTest extends TestCase
         $this->assertNotEmpty($responseBody->homeMessage);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetMaarchParapheurDocuments()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $homeController = new \Home\controllers\HomeController();
+        $homeController = new HomeController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $homeController->getMaarchParapheurDocuments($request, new \Slim\Http\Response());
+        $response = $homeController->getMaarchParapheurDocuments($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertIsArray($responseBody->documents);
@@ -63,14 +64,13 @@ class HomeControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // ERROR
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $homeController->getMaarchParapheurDocuments($request, new \Slim\Http\Response());
+        $response = $homeController->getMaarchParapheurDocuments($request, new Response());
         $responseBody = json_decode((string) $response->getBody(), true);
         $this->assertSame('User is not linked to Maarch Parapheur', $responseBody['errors']);
     }

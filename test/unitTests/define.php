@@ -21,6 +21,12 @@ require_once("src/core/lang/lang-{$language}.php");
 
 class httpRequestCustom
 {
+    /**
+     * @deprecated Use CourrierTestCase instead
+     * @param $aArgs
+     * @param $request
+     * @return mixed
+     */
     public static function addContentInBody($aArgs, $request)
     {
         $json = json_encode($aArgs);
@@ -28,7 +34,7 @@ class httpRequestCustom
         $stream = fopen('php://memory', 'r+');
         fputs($stream, $json);
         rewind($stream);
-        $httpStream = new \Slim\Http\Stream($stream);
+        $httpStream = new \Slim\Psr7\Stream($stream);
         $request = $request->withBody($httpStream);
         $request = $request->withHeader('Content-Type', 'application/json');
 

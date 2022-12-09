@@ -46,6 +46,11 @@
             "Noxxie\\PdfParser\\"       : "vendor/noxxie/pdfparser/src/Smalot/PdfParser/"
     	}
     },
+    "autoload-dev": {
+      "psr-4": {
+        "unitTests\\": "test/unitTests"
+      }
+    },
     "config": {
       "platform-check": false
     },

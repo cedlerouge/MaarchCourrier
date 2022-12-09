@@ -9,15 +9,20 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\core;
 
-class AuthenticationControllerTest extends TestCase
+use SrcCore\controllers\AuthenticationController;
+use SrcCore\controllers\PasswordController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+
+class AuthenticationControllerTest extends CourrierTestCase
 {
     public function testAuthentication()
     {
         $_SERVER['PHP_AUTH_USER'] = 'superadmin';
         $_SERVER['PHP_AUTH_PW'] = 'superadmin';
-        $response = \SrcCore\controllers\AuthenticationController::authentication();
+        $response = AuthenticationController::authentication();
 
         $this->assertNotEmpty($response);
         $this->assertSame(23, $response);
@@ -25,26 +30,27 @@ class AuthenticationControllerTest extends TestCase
 
     public function testAuthenticate()
     {
-        $authenticationController = new \SrcCore\controllers\AuthenticationController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $authenticationController = new AuthenticationController();
 
         $args = [
             'login'     => 'bbain',
             'password'  => 'maarch'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $authenticationController->authenticate($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+
+        $response     = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
+        $headers = $response->getHeaders();
+        $this->assertArrayHasKey('Token', $headers);
+        $this->assertArrayHasKey('Refresh-Token', $headers);
 
         //  ERRORS
         $args = [
             'login'     => 'bbain',
             'password'  => 'maarche'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $authenticationController->authenticate($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(401, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -54,8 +60,9 @@ class AuthenticationControllerTest extends TestCase
             'logi'     => 'bbain',
             'password'  => 'maarche'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $authenticationController->authenticate($fullRequest, new \Slim\Http\Response());
+
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -66,25 +73,24 @@ class AuthenticationControllerTest extends TestCase
             'login'     => 'superadmin',
             'password'  => 'superadmin'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $authenticationController->authenticate($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
     }
 
     public function testIsRouteAvailable()
     {
-        $response = \SrcCore\controllers\AuthenticationController::isRouteAvailable(['userId' => 23, 'currentRoute' => '/actions', 'currentMethod' => 'POST']);
+        $response = AuthenticationController::isRouteAvailable(['userId' => 23, 'currentRoute' => '/actions', 'currentMethod' => 'POST']);
         $this->assertSame(true, $response['isRouteAvailable']);
     }
 
     public function testHandleFailedAuthentication()
     {
-        $passwordController = new \SrcCore\controllers\PasswordController();
+        $passwordController = new PasswordController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $passwordController->getRules($request, new \Slim\Http\Response());
+        $response     = $passwordController->getRules($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         // reset rules
@@ -110,9 +116,9 @@ class AuthenticationControllerTest extends TestCase
         }
 
         if (!empty($lockAttempts) && !empty($lockTime)) {
-            $fullRequest = \httpRequestCustom::addContentInBody(['rules' => $rules], $request);
-            $passwordController->updateRules($fullRequest, new \Slim\Http\Response());
-    
+            $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
+            $passwordController->updateRules($fullRequest, new Response());
+
             \User\models\UserModel::update([
                 'set'   => ['failed_authentication' => 0, 'locked_until' => null],
                 'where' => ['user_id = ?'],
@@ -120,12 +126,12 @@ class AuthenticationControllerTest extends TestCase
             ]);
 
             for ($i = 1; $i < $lockAttempts; $i++) {
-                $response = \SrcCore\controllers\AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
+                $response = AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
                 $this->assertSame(true, $response);
             }
-            $response = \SrcCore\controllers\AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
+            $response = AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
             $this->assertSame(true, $response['accountLocked']);
-            $response = \SrcCore\controllers\AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
+            $response = AuthenticationController::handleFailedAuthentication(['userId' => $GLOBALS['id']]);
             $this->assertSame(true, $response['accountLocked']);
             $this->assertNotNull($response['lockedDate']);
 

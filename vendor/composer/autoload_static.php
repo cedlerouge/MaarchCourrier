@@ -22,6 +22,10 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
     );
 
     public static $prefixLengthsPsr4 = array (
+        'u' => 
+        array (
+            'unitTests\\' => 10,
+        ),
         's' => 
         array (
             'setasign\\Fpdi\\' => 14,
@@ -186,6 +190,10 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
     );
 
     public static $prefixDirsPsr4 = array (
+        'unitTests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/test/unitTests',
+        ),
         'setasign\\Fpdi\\' => 
         array (
             0 => __DIR__ . '/..' . '/setasign/fpdi/src',

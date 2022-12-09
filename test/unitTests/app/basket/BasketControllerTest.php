@@ -7,22 +7,22 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\basket;
 
-class BasketControllerTest extends TestCase
+use Basket\controllers\BasketController;
+use Group\models\GroupModel;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+use User\models\UserBasketPreferenceModel;
+
+class BasketControllerTest extends CourrierTestCase
 {
-    private static $id = null;
-    private static $baskets = null;
-
     public function testCreate()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'id'                => 'TEST-BASKET123',
             'basket_name'       => 'TEST-BASKET123-NAME',
             'basket_desc'       => 'TEST BASKET123 DESCRIPTION',
@@ -30,17 +30,16 @@ class BasketControllerTest extends TestCase
             'isSearchBasket'    => true,
             'color'             => '#123456'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $basketController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $basketController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-BASKET123', $responseBody->basket);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getById($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-BASKET123', $responseBody->basket->basket_id);
@@ -54,12 +53,10 @@ class BasketControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'basket_name'       => 'TEST-BASKET123-UPDATED',
             'basket_desc'       => 'TEST BASKET123 DESCRIPTION UPDATED',
             'clause'            => '1=3',
@@ -67,17 +64,16 @@ class BasketControllerTest extends TestCase
             'flagNotif'         => true,
             'color'             => '#111222'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $basketController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $response     = $basketController->update($fullRequest, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getById($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-BASKET123', $responseBody->basket->basket_id);
@@ -91,13 +87,10 @@ class BasketControllerTest extends TestCase
 
     public function testCreateGroup()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'group_id'      => 'AGENT',
             'list_display'  => [
                 'templateColumns' => 0,
@@ -121,16 +114,15 @@ class BasketControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $basketController->createGroup($fullRequest, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $response = $basketController->createGroup($fullRequest, new Response(), ['id' => 'TEST-BASKET123']);
 
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getGroups($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getGroups($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('AGENT', $responseBody->groups[0]->group_id);
@@ -159,10 +151,10 @@ class BasketControllerTest extends TestCase
         $this->assertIsArray($responseBody->allGroups);
         $this->assertNotNull($responseBody->allGroups);
 
-        $users = \Group\models\GroupModel::getUsersById(['select' => ['id'], 'id' => 2]);
-        $group = \Group\models\GroupModel::getByGroupId(['select' => ['id'], 'groupId' => 'AGENT']);
+        $users = GroupModel::getUsersById(['select' => ['id'], 'id' => 2]);
+        $group = GroupModel::getByGroupId(['select' => ['id'], 'groupId' => 'AGENT']);
         foreach ($users as $user) {
-            $preference = \User\models\UserBasketPreferenceModel::get([
+            $preference = UserBasketPreferenceModel::get([
                 'select'    => ['display'],
                 'where'     => ['user_serial_id = ?', 'group_serial_id = ?', 'basket_id = ?'],
                 'data'      => [$user['id'], $group['id'], 'TEST-BASKET123']
@@ -174,29 +166,25 @@ class BasketControllerTest extends TestCase
 
     public function testUpdateGroup()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'list_display' => [
                 'templateColumns' => 2,
                 'subInfos'        => [['value' => 'getPriority', 'cssClasses' => ['class1', 'class2']], ['value' => 'getCategory', 'cssClasses' => ['class3', 'class4']]]
             ],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $basketController->updateGroup($fullRequest, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
+        $response     = $basketController->updateGroup($fullRequest, new Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getGroups($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getGroups($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('AGENT', $responseBody->groups[0]->group_id);
@@ -212,13 +200,10 @@ class BasketControllerTest extends TestCase
 
     public function testUpdateGroupActions()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'groupActions'  => [
                 [
                     'id'                    => '1',
@@ -257,17 +242,16 @@ class BasketControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $basketController->updateGroupActions($fullRequest, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
+        $response     = $basketController->updateGroupActions($fullRequest, new Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getGroups($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getGroups($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('AGENT', $responseBody->groups[0]->group_id);
@@ -307,20 +291,18 @@ class BasketControllerTest extends TestCase
 
     public function testDeleteGroup()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->deleteGroup($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
+        $request = $this->createRequest('DELETE');
+        $response       = $basketController->deleteGroup($request, new Response(), ['id' => 'TEST-BASKET123', 'groupId' => 'AGENT']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getGroups($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getGroups($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertEmpty($responseBody->groups);
@@ -328,12 +310,11 @@ class BasketControllerTest extends TestCase
 
     public function testGet()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $basketController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->baskets);
@@ -342,20 +323,18 @@ class BasketControllerTest extends TestCase
 
     public function testDelete()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->delete($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('DELETE');
+        $response       = $basketController->delete($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->baskets);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-BASKET123']);
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getById($request, new Response(), ['id' => 'TEST-BASKET123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Basket not found', $responseBody->errors);
@@ -363,58 +342,59 @@ class BasketControllerTest extends TestCase
 
     public function testGetSorted()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $basketController->getSorted($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $basketController->getSorted($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->baskets);
-
-        self::$id = $responseBody->baskets[0]->basket_id;
-        self::$baskets = $responseBody->baskets;
     }
 
     public function testUpdateSort()
     {
-        $basketController = new \Basket\controllers\BasketController();
+        $basketController = new BasketController();
+
+        //  READ
+        $request = $this->createRequest('GET');
+        $response = $basketController->getSorted($request, new Response());
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $baskets = $responseBody['baskets'];
+        $basketId = $baskets[0]['basket_id'];
 
         //  PUT
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         // DOWN
-        $firstBasket = self::$baskets[0];
-        self::$baskets[0] = self::$baskets[1];
-        self::$baskets[1] = $firstBasket;
+        $firstBasket = $baskets[0];
+        $baskets[0] = $baskets[1];
+        $baskets[1] = $firstBasket;
 
-        $aArgs = self::$baskets;
+        $args = $baskets;
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response       = $basketController->updateSort($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response       = $basketController->updateSort($fullRequest, new Response(), ['id' => $basketId]);
+        $responseBody   = json_decode((string)$response->getBody(), true);
 
-        $this->assertIsArray($responseBody->baskets);
-        $this->assertSame(self::$id, $responseBody->baskets[1]->basket_id);
+        $this->assertIsArray($responseBody['baskets']);
+        $this->assertSame($basketId, $responseBody['baskets'][1]['basket_id']);
 
         // UP
-        self::$baskets = $responseBody->baskets;
+        $baskets = $responseBody['baskets'];
 
-        $firstBasket = self::$baskets[0];
-        self::$baskets[0] = self::$baskets[1];
-        self::$baskets[1] = $firstBasket;
+        $firstBasket = $baskets[0];
+        $baskets[0] = $baskets[1];
+        $baskets[1] = $firstBasket;
 
-        $aArgs = self::$baskets;
+        $args = $baskets;
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response       = $basketController->updateSort($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response       = $basketController->updateSort($fullRequest, new Response(), ['id' => $basketId]);
+        $responseBody   = json_decode((string)$response->getBody(), true);
 
-        $this->assertIsArray($responseBody->baskets);
-        $this->assertSame(self::$id, $responseBody->baskets[0]->basket_id);
+        $this->assertIsArray($responseBody['baskets']);
+        $this->assertSame($basketId, $responseBody['baskets'][0]['basket_id']);
     }
 }

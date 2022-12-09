@@ -9,32 +9,35 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\contentManagement;
 
-class ContentManagementControllerTest extends TestCase
+use ContentManagement\controllers\DocumentEditorController;
+use ContentManagement\controllers\JnlpController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+
+class ContentManagementControllerTest extends CourrierTestCase
 {
     private static $uniqueId = null;
 
     public function testRenderJnlp()
     {
-        $contentManagementController = new \ContentManagement\controllers\JnlpController();
+        $contentManagementController = new JnlpController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $contentManagementController->renderJnlp($request, new \Slim\Http\Response(), ['jnlpUniqueId' => 'superadmin_maarchCM_12345.js']);
+        $response     = $contentManagementController->renderJnlp($request, new Response(), ['jnlpUniqueId' => 'superadmin_maarchCM_12345.js']);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('File extension forbidden', $responseBody->errors);
     }
 
     public function testGenerateJnlp()
     {
-        $contentManagementController = new \ContentManagement\controllers\JnlpController();
+        $contentManagementController = new JnlpController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $contentManagementController->generateJnlp($request, new \Slim\Http\Response(), ['jnlpUniqueId' => 'superadmin_maarchCM_12345.js']);
+        $response     = $contentManagementController->generateJnlp($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertNotNull($responseBody->generatedJnlp);
         $this->assertNotNull($responseBody->jnlpUniqueId);
@@ -44,12 +47,11 @@ class ContentManagementControllerTest extends TestCase
 
     public function testIsLockFileExisting()
     {
-        $contentManagementController = new \ContentManagement\controllers\JnlpController();
+        $contentManagementController = new JnlpController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $contentManagementController->isLockFileExisting($request, new \Slim\Http\Response(), ['jnlpUniqueId' => self::$uniqueId]);
+        $response     = $contentManagementController->isLockFileExisting($request, new Response(), ['jnlpUniqueId' => self::$uniqueId]);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertNotNull($responseBody->lockFileFound);
         $this->assertIsBool($responseBody->lockFileFound);
@@ -60,12 +62,11 @@ class ContentManagementControllerTest extends TestCase
 
     public function testGetDocumentEditorConfig()
     {
-        $documentEditorController = new \ContentManagement\controllers\DocumentEditorController();
+        $documentEditorController = new DocumentEditorController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $documentEditorController->get($request, new \Slim\Http\Response());
+        $response     = $documentEditorController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
         
         $this->assertIsArray($responseBody);

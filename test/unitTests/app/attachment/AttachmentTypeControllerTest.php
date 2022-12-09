@@ -7,20 +7,25 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\attachment;
 
-class AttachmentTypeControllerTest extends TestCase
+use Attachment\controllers\AttachmentTypeController;
+use Attachment\models\AttachmentTypeModel;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+use User\models\UserModel;
+
+class AttachmentTypeControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testGetAttachmentTypes()
     {
-        $attachmentTypeController = new \Attachment\controllers\AttachmentTypeController();
+        $attachmentTypeController = new AttachmentTypeController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $attachmentTypeController->get($request, new \Slim\Http\Response());
+        $response = $attachmentTypeController->get($request, new Response());
         $response = json_decode((string)$response->getBody(), true);
 
         $this->assertNotNull($response['attachmentsTypes']);
@@ -42,19 +47,16 @@ class AttachmentTypeControllerTest extends TestCase
 
     public function testCreate()
     {
-        $attachmentTypeController = new \Attachment\controllers\AttachmentTypeController();
+        $attachmentTypeController = new AttachmentTypeController();
 
         //  CREATE SUCCESS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'typeId' => 'type_test',
             'label' => 'Type Test TU'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertIsInt($responseBody['id']);
@@ -62,25 +64,25 @@ class AttachmentTypeControllerTest extends TestCase
 
         // ERRORS
         $body = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or empty', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['label' => 'Type TU'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body typeId is empty or not a string', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['typeId' => 'type_test'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body label is empty or not a string', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
@@ -89,35 +91,32 @@ class AttachmentTypeControllerTest extends TestCase
             'typeId' => 'type_test',
             'label' => 'Type Test TU 2'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body typeId is already used by another type', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $attachmentTypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentTypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
         $this->assertSame(403, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $attachmentTypeController = new \Attachment\controllers\AttachmentTypeController();
+        $attachmentTypeController = new AttachmentTypeController();
 
         //  UPDATE SUCCESS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'typeId'            => 'type_test',
             'label'             => 'Type Test TU UP',
@@ -130,75 +129,74 @@ class AttachmentTypeControllerTest extends TestCase
             'newVersionDefault' => false,
             'icon'              => 'TU'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         // ERRORS
         $body = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or empty', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['typeId' => 'type_test'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body label is empty or not a string', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['label' => 'Type Test TU UP'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Attachment type not found or altered', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['visible' => true, 'typeId' => 'signed_response', 'label' => 'Réponse signée UP'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
         
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This attachment type cannot be made visible', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $body = ['signedByDefault' => false, 'typeId' => 'signed_response', 'label' => 'Réponse signée UP'];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
         
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => 3]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => 3]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This option cannot be disabled on this type', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $attachmentTypeController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
         $this->assertSame(403, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
-        $attachmentTypeController = new \Attachment\controllers\AttachmentTypeController();
+        $attachmentTypeController = new AttachmentTypeController();
 
         //  GET SUCCESS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $attachmentTypeController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
 
@@ -213,7 +211,7 @@ class AttachmentTypeControllerTest extends TestCase
         $this->assertSame(false, $responseBody['newVersionDefault']);
         $this->assertSame('TU', $responseBody['icon']);
 
-        $response     = $attachmentTypeController->getById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $attachmentTypeController->getById($request, new Response(), ['id' => self::$id * 1000]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Attachment type does not exist', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
@@ -221,48 +219,47 @@ class AttachmentTypeControllerTest extends TestCase
 
     public function testDelete()
     {
-        $attachmentTypeController = new \Attachment\controllers\AttachmentTypeController();
+        $attachmentTypeController = new AttachmentTypeController();
 
         //  DELETE SUCCESS
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  DELETE ERRORS
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Attachment type does not exist', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
-        $responseProjectType = \Attachment\models\AttachmentTypeModel::getByTypeId(['typeId' => 'response_project', 'select' => ['id']]);
+        $responseProjectType = AttachmentTypeModel::getByTypeId(['typeId' => 'response_project', 'select' => ['id']]);
 
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => $responseProjectType['id']]);
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => $responseProjectType['id']]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Type is used in attachments', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This attachment type cannot be deleted', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
         $this->assertSame(403, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  READ
-        $response = $attachmentTypeController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $attachmentTypeController->getById($request, new Response(), ['id' => self::$id]);
         $res = json_decode((string)$response->getBody(), true);
         $this->assertSame('Attachment type does not exist', $res['errors']);
         $this->assertSame(400, $response->getStatusCode());

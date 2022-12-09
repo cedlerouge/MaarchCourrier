@@ -9,21 +9,22 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace unitTests\app\action;
 
-class ActionsControllerTest extends TestCase
+use Action\controllers\ActionController;
+use SrcCore\http\Response;
+use unitTests\CourrierTestCase;
+
+class ActionControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testCreate()
     {
-        $actionController = new \Action\controllers\ActionController();
+        $actionController = new ActionController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'keyword'       => 'indexing',
             'label_action'  => 'TEST-LABEL',
             'id_status'     => '_NOSTATUS_',
@@ -31,9 +32,9 @@ class ActionsControllerTest extends TestCase
             'component'     => 'closeMailAction',
             'history'       => true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $actionController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $actionController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->actionId;
@@ -41,7 +42,7 @@ class ActionsControllerTest extends TestCase
         $this->assertIsInt(self::$id);
 
         // FAIL CREATE
-        $aArgs = [
+        $args = [
             'keyword'       => 'indexing',
             'label_action'  => '',
             'id_status'     => '',
@@ -49,9 +50,9 @@ class ActionsControllerTest extends TestCase
             'component'     => 'closeMailAction',
             'history'       => true
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $actionController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $actionController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         
         $this->assertSame('Invalid Status', $responseBody->errors[0]);
@@ -62,11 +63,10 @@ class ActionsControllerTest extends TestCase
     public function testRead()
     {
         //  READ
-        $environment      = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request          = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $actionController = new ActionController();
+        $response         = $actionController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertIsInt(self::$id);
@@ -79,19 +79,18 @@ class ActionsControllerTest extends TestCase
         $this->assertSame(true, $responseBody->action->history);
 
         // FAIL READ
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->getById($request, new \Slim\Http\Response(), ['id' => 'gaz']);
+        $actionController = new ActionController();
+        $response         = $actionController->getById($request, new Response(), ['id' => 'gaz']);
         $responseBody     = json_decode((string)$response->getBody());
         $this->assertSame('Route id is not an integer', $responseBody->errors);
     }
 
     public function testReadList()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->get($request, new \Slim\Http\Response());
+        $actionController = new ActionController();
+        $response         = $actionController->get($request, new Response());
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->actions);
@@ -100,9 +99,7 @@ class ActionsControllerTest extends TestCase
     public function testUpdate()
     {
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'keyword'      => '',
             'label_action' => 'TEST-LABEL_UPDATED',
             'id_status'    => 'COU',
@@ -110,16 +107,16 @@ class ActionsControllerTest extends TestCase
             'component'    => 'closeMailAction',
             'history'      => false
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $actionController = new ActionController();
+        $response         = $actionController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertSame(200, $response->getStatusCode());
 
         // UPDATE FAIL
-        $aArgs = [
+        $args = [
             'keyword'      => '',
             'label_action' => 'TEST-LABEL_UPDATED',
             'id_status'    => 'COU',
@@ -127,10 +124,10 @@ class ActionsControllerTest extends TestCase
             'component'    => 'closeMailAction',
             'history'      => false
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'gaz']);
+        $actionController = new ActionController();
+        $response         = $actionController->update($fullRequest, new Response(), ['id' => 'gaz']);
         $responseBody     = json_decode((string)$response->getBody());
         $this->assertSame('Id is not a numeric', $responseBody->errors[0]);
     }
@@ -138,30 +135,27 @@ class ActionsControllerTest extends TestCase
     public function testDelete()
     {
         //  DELETE
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $actionController = new ActionController();
+        $response         = $actionController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->actions);
 
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
-        $actionController = new \Action\controllers\ActionController();
-        $response     = $actionController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $actionController = new ActionController();
+        $response     = $actionController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Action does not exist', $responseBody->errors);
 
         // FAIL DELETE
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->delete($request, new \Slim\Http\Response(), ['id' => 'gaz']);
+        $actionController = new ActionController();
+        $response         = $actionController->delete($request, new Response(), ['id' => 'gaz']);
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
@@ -171,11 +165,10 @@ class ActionsControllerTest extends TestCase
     public function testGetInitAction()
     {
         // InitAction
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $actionController = new \Action\controllers\ActionController();
-        $response         = $actionController->initAction($request, new \Slim\Http\Response());
+        $actionController = new ActionController();
+        $response         = $actionController->initAction($request, new Response());
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->action);
