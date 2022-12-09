@@ -48,7 +48,7 @@
     },
     "autoload-dev": {
       "psr-4": {
-        "unitTests\\": "test/unitTests"
+        "MaarchCourrier\\Tests\\": "test/unitTests/"
       }
     },
     "config": {

@@ -22,10 +22,6 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
     );
 
     public static $prefixLengthsPsr4 = array (
-        'u' => 
-        array (
-            'unitTests\\' => 10,
-        ),
         's' => 
         array (
             'setasign\\Fpdi\\' => 14,
@@ -107,6 +103,7 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
             'Multigest\\' => 10,
             'Monolog\\' => 8,
             'MessageExchange\\' => 16,
+            'MaarchCourrier\\Tests\\' => 21,
         ),
         'L' => 
         array (
@@ -190,10 +187,6 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
     );
 
     public static $prefixDirsPsr4 = array (
-        'unitTests\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/test/unitTests',
-        ),
         'setasign\\Fpdi\\' => 
         array (
             0 => __DIR__ . '/..' . '/setasign/fpdi/src',
@@ -367,6 +360,10 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         'MessageExchange\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src/app/external/messageExchange',
+        ),
+        'MaarchCourrier\\Tests\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/test/unitTests',
         ),
         'League\\OAuth2\\Client\\' => 
         array (

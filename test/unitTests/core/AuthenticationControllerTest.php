@@ -9,12 +9,12 @@
 * @ingroup core
 */
 
-namespace unitTests\core;
+namespace MaarchCourrier\Tests\core;
 
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class AuthenticationControllerTest extends CourrierTestCase
 {

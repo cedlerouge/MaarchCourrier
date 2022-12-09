@@ -7,11 +7,11 @@
 *
 */
 
-namespace unitTests\app\contact;
+namespace MaarchCourrier\Tests\app\contact;
 
 use Contact\controllers\ContactCustomFieldController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class ContactCustomFieldControllerTest extends CourrierTestCase
 {

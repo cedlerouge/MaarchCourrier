@@ -594,7 +594,7 @@ class EntityController
             }
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['method']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);

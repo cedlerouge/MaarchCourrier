@@ -9,12 +9,12 @@
 * @ingroup core
 */
 
-namespace unitTests\app\contentManagement;
+namespace MaarchCourrier\Tests\app\contentManagement;
 
 use ContentManagement\controllers\DocumentEditorController;
 use ContentManagement\controllers\JnlpController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class ContentManagementControllerTest extends CourrierTestCase
 {

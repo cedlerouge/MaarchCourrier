@@ -7,11 +7,11 @@
 *
 */
 
-namespace unitTests\core;
+namespace MaarchCourrier\Tests\core;
 
 use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class PasswordControllerTest extends CourrierTestCase
 {

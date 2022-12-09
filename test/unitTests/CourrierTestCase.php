@@ -1,6 +1,6 @@
 <?php
 
-namespace unitTests;
+namespace MaarchCourrier\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Factory\StreamFactory;

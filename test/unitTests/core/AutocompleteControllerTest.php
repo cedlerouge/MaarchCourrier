@@ -9,11 +9,11 @@
 * @ingroup core
 */
 
-namespace unitTests\core;
+namespace MaarchCourrier\Tests\core;
 
 use SrcCore\controllers\AutoCompleteController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class AutocompleteControllerTest extends CourrierTestCase
 {

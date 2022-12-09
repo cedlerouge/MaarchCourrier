@@ -11,11 +11,11 @@
 * @ingroup core
 */
 
-namespace unitTests\app\home;
+namespace MaarchCourrier\Tests\app\home;
 
 use Home\controllers\HomeController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class HomeControllerTest extends CourrierTestCase

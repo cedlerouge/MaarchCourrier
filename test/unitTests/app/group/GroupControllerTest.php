@@ -7,20 +7,22 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\group;
 
-class GroupControllerTest extends TestCase
+use Group\controllers\GroupController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class GroupControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testCreate()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'group_id'      => 'TEST-JusticeLeague',
             'group_desc'    => 'Beyond the darkness',
@@ -29,9 +31,9 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->group;
@@ -39,9 +41,8 @@ class GroupControllerTest extends TestCase
         $this->assertIsInt($responseBody->group);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-JusticeLeague', $responseBody->group->group_id);
@@ -63,9 +64,9 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -78,9 +79,9 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_ID. ' ' . _ALREADY_EXISTS, $responseBody['errors']);
@@ -93,54 +94,50 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_INVALID_CLAUSE, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'description' => 'Beyond the darkness #2',
             'security'  => [
                 'where_clause'   => '1=3',
                 'maarch_comment' => 'commentateur du dimanche #2'
             ]
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $groupController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-JusticeLeague', $responseBody->group->group_id);
@@ -155,18 +152,15 @@ class GroupControllerTest extends TestCase
         $this->assertSame(true, $responseBody->group->canAdminBaskets);
 
         // Fail
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'security'      => [
                 'where_clause'      => '1=2',
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group not found', $responseBody['errors']);
@@ -177,9 +171,9 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -191,36 +185,35 @@ class GroupControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_INVALID_CLAUSE, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $groupController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->group);
@@ -230,34 +223,33 @@ class GroupControllerTest extends TestCase
         $this->assertSame('Beyond the darkness #2', $responseBody->group->group_desc);
 
         // ERROR
-        $response     = $groupController->getById($request, new \Slim\Http\Response(), ['id' => '123456789']);
+        $response     = $groupController->getById($request, new Response(), ['id' => '123456789']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGet()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $groupController->get($request, new \Slim\Http\Response());
+        $response     = $groupController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->groups);
@@ -270,10 +262,10 @@ class GroupControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->get($request, new \Slim\Http\Response());
+        $response     = $groupController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -286,18 +278,17 @@ class GroupControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetDetailedById()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('TEST-JusticeLeague', $responseBody['group']['group_id']);
@@ -312,10 +303,10 @@ class GroupControllerTest extends TestCase
         $this->assertSame(true, $responseBody['group']['canAdminBaskets']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -334,28 +325,27 @@ class GroupControllerTest extends TestCase
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetIndexingInformationById()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $groupController->getIndexingInformationsById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -369,50 +359,47 @@ class GroupControllerTest extends TestCase
         $this->assertNotEmpty($responseBody['entities']);
 
         // Fail
-        $response     = $groupController->getIndexingInformationsById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->getIndexingInformationsById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->getIndexingInformationsById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateIndexingInformationById()
     {
-        $groupController = new \Group\controllers\GroupController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $groupController = new GroupController();
 
         $body = [
             'actions' => [1],
             'entities' => [13]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         // Fail
         $body = [
 
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -421,15 +408,15 @@ class GroupControllerTest extends TestCase
         $body = [
             'actions' => [1, 100000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -439,117 +426,113 @@ class GroupControllerTest extends TestCase
             'actions' => [1],
             'entities' => [13, 100000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Body entities contains invalid entities', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->updateIndexingInformations($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->updateIndexingInformations($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testReassignUsers()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $groupController->reassignUsers($request, new \Slim\Http\Response(), ['id' => 1, 'newGroupId' => self::$id]);
+        $response     = $groupController->reassignUsers($request, new Response(), ['id' => 1, 'newGroupId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
 
-        $response     = $groupController->reassignUsers($request, new \Slim\Http\Response(), ['id' => self::$id, 'newGroupId' => 1]);
+        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id, 'newGroupId' => 1]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
 
         // Fail
-        $response     = $groupController->reassignUsers($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
-        $response     = $groupController->reassignUsers($request, new \Slim\Http\Response(), ['id' => self::$id, 'newGroupId' => self::$id * 1000]);
+        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id, 'newGroupId' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->reassignUsers($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->reassignUsers($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $groupController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $groupController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
         $this->assertNotEmpty($responseBody->groups);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);
 
         // Fail
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response     = $groupController->delete($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $groupController->delete($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Group not found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $groupController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $groupController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 }

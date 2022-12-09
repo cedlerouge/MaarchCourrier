@@ -6,7 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'unitTests\\' => array($baseDir . '/test/unitTests'),
     'setasign\\Fpdi\\' => array($vendorDir . '/setasign/fpdi/src'),
     'phpseclib\\' => array($vendorDir . '/phpseclib/phpseclib/phpseclib'),
     'jamesiarmes\\PhpNtlm\\' => array($vendorDir . '/jamesiarmes/php-ntlm/src'),
@@ -50,6 +49,7 @@ return array(
     'Multigest\\' => array($baseDir . '/src/app/external/multigest'),
     'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'MessageExchange\\' => array($baseDir . '/src/app/external/messageExchange'),
+    'MaarchCourrier\\Tests\\' => array($baseDir . '/test/unitTests'),
     'League\\OAuth2\\Client\\' => array($vendorDir . '/league/oauth2-client/src'),
     'IndexingModel\\' => array($baseDir . '/src/app/indexingModel'),
     'Http\\Promise\\' => array($vendorDir . '/php-http/promise/src'),

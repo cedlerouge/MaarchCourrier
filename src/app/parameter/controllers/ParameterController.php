@@ -95,7 +95,7 @@ class ParameterController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['id']) && preg_match("/^[\w-]*$/", $data['id']);
         $check = $check && (empty($data['param_value_int']) || Validator::intVal()->validate($data['param_value_int']));

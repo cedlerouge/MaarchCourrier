@@ -9,7 +9,7 @@
 * @ingroup core
 */
 
-namespace unitTests\app\doctype;
+namespace MaarchCourrier\Tests\app\doctype;
 
 use Doctype\controllers\DoctypeController;
 use Doctype\controllers\FirstLevelController;
@@ -18,7 +18,7 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use SrcCore\http\Response;
 use SrcCore\models\DatabaseModel;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class DoctypeControllerTest extends CourrierTestCase
@@ -67,7 +67,7 @@ class DoctypeControllerTest extends CourrierTestCase
         $this->assertNotNull($responseBody->structure[0]->id);
         $this->assertNotNull($responseBody->structure[0]->text);
         $this->assertNotNull($responseBody->structure[0]->parent);
-        
+
         $this->assertIsInt($responseBody->structure[0]->doctypes_first_level_id);
         $this->assertNotNull($responseBody->structure[0]->doctypes_first_level_id);
         $this->assertNotNull($responseBody->structure[0]->doctypes_first_level_label);
@@ -420,7 +420,7 @@ class DoctypeControllerTest extends CourrierTestCase
         $firstLevelController = new FirstLevelController();
         $response          = $firstLevelController->getById($request, new Response(), ["id" => self::$firstLevelId]);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame(self::$firstLevelId, $responseBody->firstLevel->doctypes_first_level_id);
         $this->assertSame('testTUfirstlevelUPDATE', $responseBody->firstLevel->doctypes_first_level_label);
         $this->assertSame('#7777', $responseBody->firstLevel->css_style);
@@ -429,7 +429,7 @@ class DoctypeControllerTest extends CourrierTestCase
         // READ FIRST LEVEL FAIL
         $response          = $firstLevelController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
 
         //  READ SECOND LEVEL
@@ -445,7 +445,7 @@ class DoctypeControllerTest extends CourrierTestCase
         // READ SECOND LEVEL FAIL
         $response          = $secondLevelController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
 
         // READ DOCTYPE
@@ -471,7 +471,7 @@ class DoctypeControllerTest extends CourrierTestCase
         // READ DOCTYPE FAIL
         $response          = $doctypeController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
     }
 

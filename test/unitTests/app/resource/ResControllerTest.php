@@ -7,9 +7,24 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\resource;
 
-class ResControllerTest extends TestCase
+use Basket\models\GroupBasketModel;
+use Convert\models\AdrModel;
+use DateInterval;
+use DateTime;
+use Folder\models\FolderModel;
+use IndexingModel\models\IndexingModelFieldModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\DepartmentController;
+use Resource\controllers\ResController;
+use Resource\controllers\StoreController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use Tag\models\TagModel;
+use User\models\UserModel;
+
+class ResControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $id2 = null;
@@ -17,10 +32,10 @@ class ResControllerTest extends TestCase
 
     public function testGetDepartmentById()
     {
-        $department = \Resource\controllers\DepartmentController::getById(['id' => '75']);
+        $department = DepartmentController::getById(['id' => '75']);
         $this->assertSame('Paris', $department);
 
-        $department = \Resource\controllers\DepartmentController::getById(['id' => 'not a french department']);
+        $department = DepartmentController::getById(['id' => 'not a french department']);
         $this->assertIsString($department);
         $this->assertEmpty($department);
     }
@@ -28,15 +43,12 @@ class ResControllerTest extends TestCase
     public function testCreate()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
@@ -57,10 +69,9 @@ class ResControllerTest extends TestCase
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]],
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         self::$id = $responseBody->resId;
         $this->assertIsInt(self::$id);
@@ -80,10 +91,9 @@ class ResControllerTest extends TestCase
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]],
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
@@ -108,17 +118,16 @@ class ResControllerTest extends TestCase
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]],
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
         self::$id3 = $responseBody['resId'];
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
 
         $this->assertIsArray($res);
 
@@ -131,9 +140,6 @@ class ResControllerTest extends TestCase
         $this->assertNotNull($res['initiator']);
 
         //  ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
@@ -154,19 +160,18 @@ class ResControllerTest extends TestCase
             'tags'          => [1, 2],
             'folders'       => [1, 2],
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body modelId is empty or not an integer', $responseBody['errors']);
 
         // Errors from ResourceControlController::controlResource
         $body = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or empty', $responseBody['errors']);
@@ -174,8 +179,8 @@ class ResControllerTest extends TestCase
         $body = [
             'doctype' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body doctype is not an integer', $responseBody['errors']);
@@ -185,8 +190,8 @@ class ResControllerTest extends TestCase
             'modelId' => 1,
             'status'  => 1 // wrong format
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body status is empty or not a string', $responseBody['errors']);
@@ -196,8 +201,8 @@ class ResControllerTest extends TestCase
             'modelId' => 1,
             'status'  => 'NEW'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body doctype does not exist', $responseBody['errors']);
@@ -208,8 +213,8 @@ class ResControllerTest extends TestCase
             'modelId' => 1000,
             'status'  => 'NEW'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body modelId does not exist', $responseBody['errors']);
@@ -221,8 +226,8 @@ class ResControllerTest extends TestCase
             'encodedFile' => $encodedFile,
             'format'      => 'docx'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Format with this mimeType is not allowed : docx text/plain', $responseBody['errors']);
@@ -235,8 +240,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'customFields' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields is not an array', $responseBody['errors']);
@@ -249,8 +254,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'customFields' => [1000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields : One or more custom fields do not exist', $responseBody['errors']);
@@ -263,8 +268,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'folders' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body folders is not an array', $responseBody['errors']);
@@ -277,8 +282,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'folders' => [100000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body folders : One or more folders do not exist or are out of perimeter', $responseBody['errors']);
@@ -291,8 +296,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'tags'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body tags is not an array', $responseBody['errors']);
@@ -305,8 +310,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'tags'    => [100000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body tags : One or more tags do not exist', $responseBody['errors']);
@@ -319,8 +324,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'senders' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body senders is not an array', $responseBody['errors']);
@@ -333,8 +338,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'senders' => ['wrong format']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body senders[0] is not an array', $responseBody['errors']);
@@ -347,8 +352,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'senders' => [['type' => 'alien']]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body senders[0][id] is empty or not an integer', $responseBody['errors']);
@@ -361,8 +366,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'senders' => [['type' => 'user', 'id' => 1000]]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body senders[0] id does not exist', $responseBody['errors']);
@@ -375,8 +380,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'recipients' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body recipients is not an array', $responseBody['errors']);
@@ -389,8 +394,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'recipients' => ['wrong format']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body recipients[0] is not an array', $responseBody['errors']);
@@ -403,8 +408,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'recipients' => [['type' => 'alien']]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body recipients[0][id] is empty or not an integer', $responseBody['errors']);
@@ -417,8 +422,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'recipients' => [['type' => 'user', 'id' => 1000]]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body recipients[0] id does not exist', $responseBody['errors']);
@@ -431,14 +436,14 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'documentDate' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body documentDate is not a date', $responseBody['errors']);
 
-        $dateInTheFuture = new \DateTime('tomorrow');
-        $dateInTheFuture->add(new \DateInterval('P10D'));
+        $dateInTheFuture = new DateTime('tomorrow');
+        $dateInTheFuture->add(new DateInterval('P10D'));
         $dateInTheFuture = $dateInTheFuture->format('d-m-Y');
         
         $body = [
@@ -449,8 +454,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'documentDate' => $dateInTheFuture
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body documentDate cannot be a date in the future', $responseBody['errors']);
@@ -463,8 +468,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'arrivalDate' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body arrivalDate is not a date', $responseBody['errors']);
@@ -477,8 +482,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'arrivalDate' => $dateInTheFuture
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body arrivalDate is not a valid date', $responseBody['errors']);
@@ -491,8 +496,8 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'departureDate' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body departureDate is not a date', $responseBody['errors']);
@@ -506,14 +511,14 @@ class ResControllerTest extends TestCase
             'format'        => 'txt',
             'departureDate' => '2020-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body departureDate is not a valid date', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -536,36 +541,34 @@ class ResControllerTest extends TestCase
                 ['id' => 19, 'mode' => 'dest']
             ]
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body initiator does not belong to your entities', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->getById($request, new \Slim\Http\Response(), ['resId' => self::$id2]);
+        $response     = $resController->getById($request, new Response(), ['resId' => self::$id2]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id2, $responseBody->resId);
@@ -603,15 +606,15 @@ class ResControllerTest extends TestCase
         
         // ERROR
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getById($request, new \Slim\Http\Response(), ['resId' => 123748]);
+        $response     = $resController->getById($request, new Response(), ['resId' => 123748]);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Document out of perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // LIGHT
@@ -619,7 +622,7 @@ class ResControllerTest extends TestCase
             'light'  => true
         ];
         $fullRequest = $request->withQueryParams($aArgs);
-        $response     = $resController->getById($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getById($fullRequest, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->resId);
@@ -639,22 +642,19 @@ class ResControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         // UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
-        $tag = \Tag\models\TagModel::get([
+        $tag = TagModel::get([
             'select' => ['id'],
             'limit' => 1
         ]);
         $tag = $tag[0]['id'];
 
-        $folder = \Folder\models\FolderModel::create([
+        $folder = FolderModel::create([
             'label'     => 'FOLDER TEST',
             'public'    => false,
             'user_id'   => $GLOBALS['id'],
@@ -662,7 +662,7 @@ class ResControllerTest extends TestCase
             'level'     => 0
         ]);
 
-        $aArgs = [
+        $args = [
             'status'           => 'NEW',
             'encodedFile'      => $encodedFile,
             'format'           => 'txt',
@@ -681,12 +681,12 @@ class ResControllerTest extends TestCase
             'tags'             => [$tag],
             'folders'          => [$folder],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $aArgs = [
+        $args = [
             'status'           => 'NEW',
             'encodedFile'      => $encodedFile,
             'format'           => 'txt',
@@ -702,22 +702,22 @@ class ResControllerTest extends TestCase
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
-        \Basket\models\GroupBasketModel::update([
+        GroupBasketModel::update([
             'set'   => ['list_event_data' => '{"canUpdateData": true, "defaultTab": "info", "canUpdateModel": true}'],
             'where' => ['group_id = ?', 'basket_id = ?'],
             'data'  => ['COURRIER', 'QualificationBasket']
         ]);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $aArgs = [
+        $args = [
             'modelId'          => 3,
             'status'           => 'NEW',
             'encodedFile'      => $encodedFile,
@@ -734,17 +734,17 @@ class ResControllerTest extends TestCase
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id3]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id3]);
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
 
         $this->assertIsArray($res);
 
@@ -759,10 +759,7 @@ class ResControllerTest extends TestCase
         $this->assertSame('2030-01-01 00:00:00', $res['process_limit_date']);
 
         //  ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'status'           => 'NEW',
             'encodedFile'      => $encodedFile,
             'confidentiality'  => true,
@@ -778,14 +775,14 @@ class ResControllerTest extends TestCase
             'senders'          => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]],
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body format is empty or not a string', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'status'           => 'NEW',
             'doctype'          => 'wrong format',
             'encodedFile'      => $encodedFile,
@@ -802,28 +799,27 @@ class ResControllerTest extends TestCase
             'tags'             => [1, 2],
             'folders'          => [1, 2],
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body doctype is not an integer', $responseBody['errors']);
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => 'wrong format']);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route resId is not an integer', $responseBody['errors']);
 
         // Errors from ResourceControlControllers->controlUpdateResource
         $body = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or empty', $responseBody['errors']);
 
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['status' => ''],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -832,13 +828,13 @@ class ResControllerTest extends TestCase
         $body = [
             'doctype'  => 102
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource status is empty. It can not be modified', $responseBody['errors']);
 
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['status' => 'TMP'],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -847,13 +843,13 @@ class ResControllerTest extends TestCase
         $body = [
             'doctype'  => 102
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource can not be modified because of status', $responseBody['errors']);
 
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['status' => 'NEW'],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -862,8 +858,8 @@ class ResControllerTest extends TestCase
         $body = [
             'doctype'  => 102000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body doctype does not exist', $responseBody['errors']);
@@ -872,15 +868,15 @@ class ResControllerTest extends TestCase
             'encodedFile' => ''
         ];
         $queryParams = ['onlyDocument' => true ];
-        $fullRequest = $request->withQueryParams($queryParams);
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $fullRequest);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $fullRequest = $fullRequest->withQueryParams($queryParams);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body encodedFile is not set or empty', $responseBody['errors']);
 
         $externalId = ['signatureBookId' => 42];
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['external_id' => json_encode($externalId)],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -890,21 +886,21 @@ class ResControllerTest extends TestCase
             'encodedFile' => $encodedFile
         ];
         $queryParams = ['onlyDocument' => true ];
-        $fullRequest = $request->withQueryParams($queryParams);
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $fullRequest);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $fullRequest = $fullRequest->withQueryParams($queryParams);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource is in external signature book, file can not be modified', $responseBody['errors']);
 
 
         $externalId = [];
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['external_id' => json_encode($externalId)],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
         ]);
-        \Convert\models\AdrModel::createDocumentAdr([
+        AdrModel::createDocumentAdr([
             'resId'         => self::$id,
             'type'          => 'SIGN',
             'docserverId'   => 'docserver_id',
@@ -918,19 +914,19 @@ class ResControllerTest extends TestCase
             'encodedFile' => $encodedFile
         ];
         $queryParams = ['onlyDocument' => true ];
-        $fullRequest = $request->withQueryParams($queryParams);
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $fullRequest);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $fullRequest = $fullRequest->withQueryParams($queryParams);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource is signed, file can not be modified', $responseBody['errors']);
 
-        \Convert\models\AdrModel::deleteDocumentAdr([
+        AdrModel::deleteDocumentAdr([
             'where' => ['res_id = ?', 'type = ?'],
             'data' => [self::$id, 'SIGN']
         ]);
 
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['format' => 'css'],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -940,14 +936,14 @@ class ResControllerTest extends TestCase
             'encodedFile' => $encodedFile
         ];
         $queryParams = ['onlyDocument' => true ];
-        $fullRequest = $request->withQueryParams($queryParams);
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $fullRequest);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $fullRequest = $fullRequest->withQueryParams($queryParams);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource is not convertible, file can not be modified', $responseBody['errors']);
 
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['format' => 'txt'],
             'where' => ['res_id = ?'],
             'data'  => [self::$id]
@@ -957,8 +953,8 @@ class ResControllerTest extends TestCase
             'doctype' => 102,
             'tags'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body tags is not an array', $responseBody['errors']);
@@ -967,8 +963,8 @@ class ResControllerTest extends TestCase
             'doctype'   => 102,
             'initiator' => 10000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body priority is not set', $responseBody['errors']);
@@ -984,8 +980,8 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body initiator does not exist', $responseBody['errors']);
@@ -1001,8 +997,8 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body initiator does not belong to your entities', $responseBody['errors']);
@@ -1017,35 +1013,35 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body documentDate is not a date', $responseBody['errors']);
 
         // test control custom fields
-        \IndexingModel\models\IndexingModelFieldModel::create([
+        IndexingModelFieldModel::create([
             'model_id'   => 1,
             'identifier' => 'indexingCustomField_1',
             'mandatory'  => 'true',
             'enabled'    => 'true',
             'unit'       => 'mail'
         ]);
-        \IndexingModel\models\IndexingModelFieldModel::create([
+        IndexingModelFieldModel::create([
             'model_id'   => 1,
             'identifier' => 'indexingCustomField_2',
             'mandatory'  => 'false',
             'enabled'    => 'true',
             'unit'       => 'mail'
         ]);
-        \IndexingModel\models\IndexingModelFieldModel::create([
+        IndexingModelFieldModel::create([
             'model_id'   => 1,
             'identifier' => 'indexingCustomField_3',
             'mandatory'  => 'false',
             'enabled'    => 'true',
             'unit'       => 'mail'
         ]);
-        \IndexingModel\models\IndexingModelFieldModel::create([
+        IndexingModelFieldModel::create([
             'model_id'   => 1,
             'identifier' => 'indexingCustomField_4',
             'mandatory'  => 'false',
@@ -1063,8 +1059,8 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[1] is empty', $responseBody['errors']);
@@ -1080,8 +1076,8 @@ class ResControllerTest extends TestCase
             'processLimitDate' => '2029-01-01',
             'customFields'     => [1 => 'wrong format']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[1] is not a date', $responseBody['errors']);
@@ -1100,8 +1096,8 @@ class ResControllerTest extends TestCase
                 3 => 'Mail printed with Paper form Dunder Mifflin Paper Company Inc.'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[3] has wrong value', $responseBody['errors']);
@@ -1120,8 +1116,8 @@ class ResControllerTest extends TestCase
                 4 => 42 // wrong format
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[4] is not a string', $responseBody['errors']);
@@ -1140,8 +1136,8 @@ class ResControllerTest extends TestCase
                 2 => ['wrong format']
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[2] is not an array', $responseBody['errors']);
@@ -1160,8 +1156,8 @@ class ResControllerTest extends TestCase
                 2 => [['address' => 'yes']]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[2] longitude is empty', $responseBody['errors']);
@@ -1184,8 +1180,8 @@ class ResControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[2] latitude is empty', $responseBody['errors']);
@@ -1209,8 +1205,8 @@ class ResControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[2] addressTown is empty', $responseBody['errors']);
@@ -1235,14 +1231,14 @@ class ResControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body customFields[2] addressPostcode is empty', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -1256,14 +1252,14 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id3]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id3]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body modelId does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -1277,31 +1273,31 @@ class ResControllerTest extends TestCase
             'destination'      => 15,
             'processLimitDate' => '2029-01-01'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id3]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $resController->update($fullRequest, new Response(), ['resId' => self::$id3]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Model can not be modified', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->update($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->update($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        \Folder\models\FolderModel::delete([
+        FolderModel::delete([
             'where' => ['id = ?'],
             'data'  => [$folder]
         ]);
 
-        \IndexingModel\models\IndexingModelFieldModel::delete([
+        IndexingModelFieldModel::delete([
             'where' => ['identifier in (?)', 'model_id = ?'],
             'data'  => [['indexingCustomField_1', 'indexingCustomField_2', 'indexingCustomField_3', 'indexingCustomField_4'], 1]
         ]);
@@ -1309,18 +1305,17 @@ class ResControllerTest extends TestCase
       
     public function testGetOriginalContent()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->getOriginalFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getOriginalFileContent($request, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(null, $responseBody);
 
         // GET FILE CONTENT
-        $response     = $resController->getFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getFileContent($request, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(null, $responseBody);
@@ -1330,7 +1325,7 @@ class ResControllerTest extends TestCase
             'mode'  => 'base64'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
-        $response     = $resController->getFileContent($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getFileContent($fullRequest, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->encodedDocument);
@@ -1341,7 +1336,7 @@ class ResControllerTest extends TestCase
             'mode'  => 'base64'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
-        $response     = $resController->getOriginalFileContent($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getOriginalFileContent($fullRequest, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertNotEmpty($responseBody['encodedDocument']);
@@ -1351,72 +1346,71 @@ class ResControllerTest extends TestCase
         $this->assertIsString($responseBody['mimeType']);
 
         // ERROR
-        $response     = $resController->getFileContent($request, new \Slim\Http\Response(), ['resId' => -2]);
+        $response     = $resController->getFileContent($request, new Response(), ['resId' => -2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
-        $response     = $resController->getFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id2]);
+        $response     = $resController->getFileContent($request, new Response(), ['resId' => self::$id2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document has no file', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getFileContent($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getFileContent($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getOriginalFileContent($request, new \Slim\Http\Response(), ['resId' => -2]);
+        $response     = $resController->getOriginalFileContent($request, new Response(), ['resId' => -2]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
-        $response     = $resController->getOriginalFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id2]);
+        $response     = $resController->getOriginalFileContent($request, new Response(), ['resId' => self::$id2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document has no file', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getOriginalFileContent($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getOriginalFileContent($fullRequest, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetThumbnailContent()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->getThumbnailContent($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => self::$id]);
 
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertEmpty($responseBody);
 
-        $response     = $resController->getThumbnailContent($request, new \Slim\Http\Response(), ['resId' => -2]);
+        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => -2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
-        $response     = $resController->getThumbnailContent($request, new \Slim\Http\Response(), ['resId' => 'wrong format']);
+        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('resId param is not an integer', $responseBody['errors']);
@@ -1424,24 +1418,23 @@ class ResControllerTest extends TestCase
 
     public function testGetItems()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $resController->getItems($request, new \Slim\Http\Response(), ['resId' => 'wrong format']);
+        $response     = $resController->getItems($request, new Response(), ['resId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
-        $response     = $resController->getItems($request, new \Slim\Http\Response(), ['resId' => -2]);
+        $response     = $resController->getItems($request, new Response(), ['resId' => -2]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
         // Success
-        $response     = $resController->getItems($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getItems($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1456,44 +1449,43 @@ class ResControllerTest extends TestCase
 
     public function testGetField()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getField($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getField($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getField($request, new \Slim\Http\Response(), ['resId' => self::$id, 'fieldId' => 'initiator']);
+        $response     = $resController->getField($request, new Response(), ['resId' => self::$id, 'fieldId' => 'initiator']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Field out of perimeter', $responseBody['errors']);
 
-        $response     = $resController->getField($request, new \Slim\Http\Response(), ['resId' => self::$id * 1000, 'fieldId' => 'destination']);
+        $response     = $resController->getField($request, new Response(), ['resId' => self::$id * 1000, 'fieldId' => 'destination']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
         // Success
-        $response     = $resController->getField($request, new \Slim\Http\Response(), ['resId' => self::$id2, 'fieldId' => 'externalId']);
+        $response     = $resController->getField($request, new Response(), ['resId' => self::$id2, 'fieldId' => 'externalId']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody['field']);
         $this->assertEmpty($responseBody['field']);
 
         $fullRequest = $request->withQueryParams(['alt' => true]);
-        $response     = $resController->getField($fullRequest, new \Slim\Http\Response(), ['resId' => self::$id2, 'fieldId' => 'destination']);
+        $response     = $resController->getField($fullRequest, new Response(), ['resId' => self::$id2, 'fieldId' => 'destination']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(15, $responseBody['field']);
@@ -1501,7 +1493,7 @@ class ResControllerTest extends TestCase
 
     public function testGetEncodedDocument()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         $response = $resController::getEncodedDocument(['resId' => self::$id, 'original' => false]);
 
@@ -1513,12 +1505,11 @@ class ResControllerTest extends TestCase
 
     public function testGetCategories()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->getCategories($request, new \Slim\Http\Response());
+        $response     = $resController->getCategories($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->categories);
@@ -1531,117 +1522,105 @@ class ResControllerTest extends TestCase
 
     public function testIsAllowedForCurrentUser()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->isAllowedForCurrentUser($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->isAllowedForCurrentUser($request, new Response(), ['resId' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(true, $responseBody->isAllowed);
 
         // NOT ALLOWED
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->isAllowedForCurrentUser($request, new \Slim\Http\Response(), ['resId' => 123456]);
+        $response     = $resController->isAllowedForCurrentUser($request, new Response(), ['resId' => 123456]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(false, $responseBody->isAllowed);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testSetInIntegrations()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'resources'   => [self::$id],
             'integrations' => ['inSignatureBook' => true, 'inShipping' => true]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $resController->setInIntegrations($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response     = $resController->setInIntegrations($fullRequest, new Response());
 
         $this->assertSame(204, $response->getStatusCode());
 
         // ERROR
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $aArgs = [
+        $args = [
             'resources'   => [12345],
             'integrations' => ['inSignatureBook' => true, 'inShipping' => true]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $resController->setInIntegrations($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response     = $resController->setInIntegrations($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Document out of perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateStatus()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  UPDATE STATUS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'resId'         => [self::$id],
             'status'        => 'EVIS'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertSame('EVIS', $res['status']);
 
         //  UPDATE WITHOUT STATUS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'resId'         => [self::$id]
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertSame('COU', $res['status']);
 
         $body = [
             'status' => 'STATUS_THAT_DOES_NOT_EXIST'
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_STATUS_NOT_FOUND, $responseBody['errors']);
@@ -1649,10 +1628,9 @@ class ResControllerTest extends TestCase
         $body = [
             'status' => 'EVIS',
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -1661,45 +1639,41 @@ class ResControllerTest extends TestCase
             'status' => 'EVIS',
             'resId'  => [self::$id * 1000]
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_DOCUMENT_NOT_FOUND, $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
             'status' => 'EVIS',
             'resId'  => [self::$id]
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $resController->updateStatus($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->updateStatus($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateExternalInfos()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  UPDATE STATUS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         //ALL OK
-        $aArgs = [
+        $args = [
                 'externalInfos' => [
                     [
                         'res_id'        => self::$id,
@@ -1709,17 +1683,16 @@ class ResControllerTest extends TestCase
                 ],
                 'status'        => "GRCSENT"
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response = $resController->updateExternalInfos($fullRequest, new \Slim\Http\Response());
+        $response = $resController->updateExternalInfos($fullRequest, new Response());
 
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         // EXTERNAL INFOS EMPTY AND RES ID IS NOT INTEGER
-        $aArgs = [
+        $args = [
             'externalInfos' => [
                     [
                         'res_id'        => "res_id",
@@ -1730,17 +1703,16 @@ class ResControllerTest extends TestCase
             'status'        => "GRCSENT"
 
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response = $resController->updateExternalInfos($fullRequest, new \Slim\Http\Response());
+        $response = $resController->updateExternalInfos($fullRequest, new Response());
 
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('Bad Request: invalid res_id', $responseBody->errors);
 
         // DOCUMENT DOES NOT EXIST
-        $aArgs = [
+        $args = [
             'externalInfos' => [
                         [
                             'res_id'        => 123456789,
@@ -1750,17 +1722,16 @@ class ResControllerTest extends TestCase
                     ],
             'status'        => 'GRCSENT'
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response = $resController->updateExternalInfos($fullRequest, new \Slim\Http\Response());
+        $response = $resController->updateExternalInfos($fullRequest, new Response());
 
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(_DOCUMENT_NOT_FOUND, $responseBody->errors);
 
         //MISSING STATUS
-        $aArgs = [
+        $args = [
                 'externalInfos' => [
                     [
                         'res_id'        => self::$id,
@@ -1771,23 +1742,23 @@ class ResControllerTest extends TestCase
                 'status'        => null
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $resController->updateExternalInfos($fullRequest, new \Slim\Http\Response());
+        $response = $resController->updateExternalInfos($fullRequest, new Response());
 
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('Bad Request : status is empty', $responseBody->errors);
 
         //MISSING EXTERNAL INFOS
-        $aArgs = [
+        $args = [
             'externalInfos' => null,
             'status'        => "GRCSENT"
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $resController->updateExternalInfos($fullRequest, new \Slim\Http\Response());
+        $response = $resController->updateExternalInfos($fullRequest, new Response());
 
         $responseBody = json_decode((string) $response->getBody());
 
@@ -1796,164 +1767,160 @@ class ResControllerTest extends TestCase
 
     public function testGetList()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'select'        => 'sve_start_date',
             'clause'        => '1=1',
             'withFile'      => true,
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $arr_res = $responseBody->resources;
         $this->assertNotNull($arr_res[0]->fileBase64Content);
         $this->assertIsInt($arr_res[0]->res_id);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => '1=1',
             'withFile'      => false,
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $arr_res = $responseBody->resources;
         $this->assertSame(null, $arr_res[0]->fileBase64Content);
         $this->assertIsInt($arr_res[0]->res_id);
 
         // Errors
-        $aArgs = [
+        $args = [
             'select'        => '',
             'clause'        => '1=1',
             'withFile'      => false,
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request: select is not valid', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => '',
             'withFile'      => false,
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request: clause is not valid', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => '1=1',
             'withFile'      => 'wrong format',
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request: withFile parameter is not a boolean', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => '1=1',
             'withFile'      => false,
             'orderBy'       => 'wrong format',
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request: orderBy parameter not valid', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => '1=1',
             'withFile'      => false,
             'orderBy'       => ['res_id'],
             'limit'         => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request: limit parameter not valid', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'select'        => 'res_id',
             'clause'        => 'dundermifflin_clients.branch',
             'withFile'      => false,
             'orderBy'       => ['res_id'],
             'limit'         => 1
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->getList($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->getList($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(_INVALID_REQUEST, $responseBody['errors']);
     }
 
     public function testGetProcessingData()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 'wrong format']);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('groupId param is not an integer', $responseBody['errors']);
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => 'wrong format']);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('userId param is not an integer', $responseBody['errors']);
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 'wrong format']);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('basketId param is not an integer', $responseBody['errors']);
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => 'wrong format']);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('resId param is not an integer', $responseBody['errors']);
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => self::$id]);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group is not linked to this user', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => self::$id]);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 2, 'resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group is not linked to this basket', $responseBody['errors']);
 
         // Success
-        $response     = $resController->getProcessingData($request, new \Slim\Http\Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 4, 'resId' => self::$id]);
+        $response     = $resController->getProcessingData($request, new Response(), ['groupId' => 2, 'userId' => $GLOBALS['id'], 'basketId' => 4, 'resId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1964,32 +1931,31 @@ class ResControllerTest extends TestCase
         $this->assertSame(false, $responseBody['listEventData']['canUpdateModel']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetResourceFileInformation()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getResourceFileInformation($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getResourceFileInformation($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response     = $resController->getResourceFileInformation($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getResourceFileInformation($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -2008,26 +1974,25 @@ class ResControllerTest extends TestCase
 
     public function testGetVersionsInformations()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getVersionsInformations($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getVersionsInformations($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response     = $resController->getVersionsInformations($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getVersionsInformations($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -2051,7 +2016,7 @@ class ResControllerTest extends TestCase
 
         $this->assertSame(true, $responseBody['convert']);
 
-        $response     = $resController->getVersionsInformations($request, new \Slim\Http\Response(), ['resId' => self::$id2]);
+        $response     = $resController->getVersionsInformations($request, new Response(), ['resId' => self::$id2]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -2067,36 +2032,35 @@ class ResControllerTest extends TestCase
 
     public function testGetVersionFileContent()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getVersionFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id]);
+        $response     = $resController->getVersionFileContent($request, new Response(), ['resId' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getVersionFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id, 'version' => 1000]);
+        $response     = $resController->getVersionFileContent($request, new Response(), ['resId' => self::$id, 'version' => 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Incorrect version', $responseBody['errors']);
 
-        $response     = $resController->getVersionFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id2, 'version' => 1]);
+        $response     = $resController->getVersionFileContent($request, new Response(), ['resId' => self::$id2, 'version' => 1]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document has no file', $responseBody['errors']);
 
         // Success
-        $response     = $resController->getVersionFileContent($request, new \Slim\Http\Response(), ['resId' => self::$id, 'version' => 1]);
+        $response     = $resController->getVersionFileContent($request, new Response(), ['resId' => self::$id, 'version' => 1]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -2107,28 +2071,28 @@ class ResControllerTest extends TestCase
     public function testDelete()
     {
         //  DELETE
-        \Resource\models\ResModel::update(['set' => ['status' => 'DEL'], 'where' => ['res_id = ?'], 'data' => [self::$id]]);
+        ResModel::update(['set' => ['status' => 'DEL'], 'where' => ['res_id = ?'], 'data' => [self::$id]]);
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertSame('DEL', $res['status']);
 
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data'  => [self::$id2]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id2, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id2, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data'  => [self::$id3]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$id3, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$id3, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }
@@ -2136,10 +2100,10 @@ class ResControllerTest extends TestCase
     public function testCreateMultipleDocument()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         $aNewDocument = [
             1 => [
@@ -2163,12 +2127,9 @@ class ResControllerTest extends TestCase
         $this->assertIsInt($entity['id']);
 
         foreach ($aNewDocument as $key => $value) {
-            $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-            $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
             $fileContent = file_get_contents('test/unitTests/samples/test.txt');
             $encodedFile = base64_encode($fileContent);
-            $aArgs = [
+            $args = [
                 'modelId'       => 1,
                 'status'        => $value[2],
                 'encodedFile'   => $encodedFile,
@@ -2190,8 +2151,8 @@ class ResControllerTest extends TestCase
                 'customFields'  => [4 => 'référence externe']
             ];
 
-            $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-            $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+            $fullRequest = $this->createRequestWithBody('POST', $args);
+            $response     = $resController->create($fullRequest, new Response());
             $responseBody = json_decode((string)$response->getBody());
             $newId = $responseBody->resId;
             $this->assertIsInt($newId);
@@ -2199,45 +2160,45 @@ class ResControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetBytesSizeFromPhpIni()
     {
         $size = '1K';
-        $byteSize = \Resource\controllers\StoreController::getBytesSizeFromPhpIni(['size' => $size]);
+        $byteSize = StoreController::getBytesSizeFromPhpIni(['size' => $size]);
         $this->assertSame(1024, $byteSize);
 
         $size = '1M';
-        $byteSize = \Resource\controllers\StoreController::getBytesSizeFromPhpIni(['size' => $size]);
+        $byteSize = StoreController::getBytesSizeFromPhpIni(['size' => $size]);
         $this->assertSame(1048576, $byteSize);
 
         $size = '1G';
-        $byteSize = \Resource\controllers\StoreController::getBytesSizeFromPhpIni(['size' => $size]);
+        $byteSize = StoreController::getBytesSizeFromPhpIni(['size' => $size]);
         $this->assertSame(1073741824, $byteSize);
 
         $size = 1;
-        $byteSize = \Resource\controllers\StoreController::getBytesSizeFromPhpIni(['size' => $size]);
+        $byteSize = StoreController::getBytesSizeFromPhpIni(['size' => $size]);
         $this->assertSame(1, $byteSize);
     }
 
     public function testGetFormattedSizeFromBytes()
     {
         $size = 1073741824 + 1;
-        $formatted = \Resource\controllers\StoreController::getFormattedSizeFromBytes(['size' => $size]);
+        $formatted = StoreController::getFormattedSizeFromBytes(['size' => $size]);
         $this->assertSame(round($size / 1073741824) . ' Go', $formatted);
 
         $size = 1048576 + 1;
-        $formatted = \Resource\controllers\StoreController::getFormattedSizeFromBytes(['size' => $size]);
+        $formatted = StoreController::getFormattedSizeFromBytes(['size' => $size]);
         $this->assertSame(round($size / 1048576) . ' Mo', $formatted);
 
         $size = 1024 + 1;
-        $formatted = \Resource\controllers\StoreController::getFormattedSizeFromBytes(['size' => $size]);
+        $formatted = StoreController::getFormattedSizeFromBytes(['size' => $size]);
         $this->assertSame(round($size / 1024) . ' Ko', $formatted);
 
         $size = 1;
-        $formatted = \Resource\controllers\StoreController::getFormattedSizeFromBytes(['size' => $size]);
+        $formatted = StoreController::getFormattedSizeFromBytes(['size' => $size]);
         $this->assertSame('1 o', $formatted);
     }
 }

@@ -9,11 +9,11 @@
 * @ingroup core
 */
 
-namespace unitTests\app\action;
+namespace MaarchCourrier\Tests\app\action;
 
 use Action\controllers\ActionController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class ActionControllerTest extends CourrierTestCase
 {

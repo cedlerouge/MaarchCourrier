@@ -9,11 +9,11 @@
 * @ingroup core
 */
 
-namespace unitTests\app\administration;
+namespace MaarchCourrier\Tests\app\administration;
 
 use Administration\controllers\AdministrationController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class AdministrationControllerTest extends CourrierTestCase

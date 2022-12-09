@@ -7,12 +7,12 @@
 *
 */
 
-namespace unitTests\app\docserver;
+namespace MaarchCourrier\Tests\app\docserver;
 
 use Docserver\controllers\DocserverController;
 use Docserver\controllers\DocserverTypeController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class DocserverControllerTest extends CourrierTestCase
 {

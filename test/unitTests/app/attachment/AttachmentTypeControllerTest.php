@@ -7,12 +7,12 @@
 *
 */
 
-namespace unitTests\app\attachment;
+namespace MaarchCourrier\Tests\app\attachment;
 
 use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentTypeModel;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class AttachmentTypeControllerTest extends CourrierTestCase

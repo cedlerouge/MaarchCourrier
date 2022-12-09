@@ -7,11 +7,11 @@
 *
 */
 
-namespace unitTests\app\customField;
+namespace MaarchCourrier\Tests\app\customField;
 
 use CustomField\controllers\CustomFieldController;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class CustomFieldControllerTest extends CourrierTestCase
 {

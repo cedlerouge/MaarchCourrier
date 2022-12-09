@@ -7,12 +7,12 @@
  *
  */
 
-namespace unitTests\app\contact;
+namespace MaarchCourrier\Tests\app\contact;
 
 use Contact\controllers\ContactGroupController;
 use Contact\models\ContactModel;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class ContactGroupControllerTest extends CourrierTestCase

@@ -9,12 +9,12 @@
 * @ingroup core
 */
 
-namespace unitTests\core;
+namespace MaarchCourrier\Tests\core;
 
 use SrcCore\controllers\CoreController;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 
 class CoreControllerTest extends CourrierTestCase
 {

@@ -7,7 +7,7 @@
 *
 */
 
-namespace unitTests\app\contact;
+namespace MaarchCourrier\Tests\app\contact;
 
 use Contact\controllers\ContactCivilityController;
 use Contact\controllers\ContactController;
@@ -19,7 +19,7 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
 class ContactControllerTest extends CourrierTestCase

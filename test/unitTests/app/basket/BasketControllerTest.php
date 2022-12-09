@@ -7,12 +7,12 @@
 *
 */
 
-namespace unitTests\app\basket;
+namespace MaarchCourrier\Tests\app\basket;
 
 use Basket\controllers\BasketController;
 use Group\models\GroupModel;
 use SrcCore\http\Response;
-use unitTests\CourrierTestCase;
+use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserBasketPreferenceModel;
 
 class BasketControllerTest extends CourrierTestCase
