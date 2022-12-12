@@ -674,6 +674,7 @@
     "externalComponents": "Composants externes",
     "externalVisaWorkflow": "Circuit de visa Maarch Parapheur",
     "fastParapheurUserAlreadyLinked": "Cet email Fast Parapheur est déjà lié à un utilisateur Maarch Courrier",
+    "maarchParapheurWorkflow": "Circuit de visa Maarch Parapheur",
     "february": "Février",
     "februaryShort": "Fév.",
     "fewSeconds": "quelques secondes",
@@ -2686,5 +2687,6 @@
     "checkExternalSignatoryBookConfig": "Vérifier la configuration du <b>parapheur externe</b> dans le fichier <b>remoteSignatoryBooks.xml</b> de votre custom",
     "ixbus": "Ixbus",
     "iParapheur": "IParapheur",
-    "xParaph": "XParaph"
+    "xParaph": "XParaph",
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
 }
