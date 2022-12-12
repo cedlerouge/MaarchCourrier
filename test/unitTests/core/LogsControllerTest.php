@@ -49,6 +49,173 @@ class LogsControllerTest extends TestCase
         $this->assertSame($logConfig['queries']['file'], '/tmp/queries.log');
     }
 
+    public function testInintMologErrorIfNoConfigFind(): void
+    {
+        // Arrange
+        $logConfig = [];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertSame(['code' => 400, 'errors' => "Log config is empty !"], $logger);
+    }
+
+    public function testInintMologErrorIfNoDateTimeIsFound(): void
+    {
+        // Arrange
+        $logConfig = ["toto"];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertSame(['code' => 400, 'errors' => "dateTimeFormat is empty !"], $logger);
+    }
+
+    public function testInintMologErrorIfNoLineFormatIsFound(): void
+    {
+        // Arrange
+        $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertSame(['code' => 400, 'errors' => "lineFormat is empty !"], $logger);
+    }
+
+    public function testInintMologLoggerHasFilterHandlerWithPath(): void
+    {
+        // Arrange
+        $logConfig = [
+            "dateTimeFormat" => "d/m/Y H:i:s", 
+            "lineFormat"     => "test", 
+            "logTechnique"   => ["file" => "test/test", "level" => "INFO"],
+            "customId"       => "myCustom"
+            
+        ];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+        $handlers = $logger->getHandlers();
+        
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertCount(1, $handlers);
+        $this->assertInstanceOf(Monolog\Handler\FilterHandler::class, $handlers[0]);
+        
+    }
+
+    public function testInintMologLoggerTechniqueLogFileNotFound(): void
+    {
+        // Arrange
+        $logConfig = [
+            "dateTimeFormat" => "d/m/Y H:i:s", 
+            "lineFormat"     => "test", 
+            
+        ];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+        
+        // Assert
+        $this->assertNotEmpty($logger);
+        
+        $this->assertSame(['code' => 400, 'errors' => "file path of LogTechnique is empty !"], $logger);
+    }
+
+    public function testInintMologCustomIdNotFound(): void
+    {
+        // Arrange
+        $logConfig = [
+            "dateTimeFormat" => "d/m/Y H:i:s", 
+            "lineFormat"     => "test", 
+            "logTechnique"   => ["file" => "test/test", "level" => "INFO"],
+            
+        ];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+        
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertSame(['code' => 400, 'errors' => "customId not found !"], $logger);
+    }
+
+    public function testInintMologLoggerTechniqueLogLevelNotFound(): void
+    {
+        // Arrange
+        $logConfig = [
+            "dateTimeFormat" => "d/m/Y H:i:s", 
+            "lineFormat"     => "test", 
+            "logTechnique"   => ["file" => "test/test"],
+            "customId"       => "myCustom"
+            
+        ];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+        
+        // Assert
+        $this->assertNotEmpty($logger);
+        
+        $this->assertSame(['code' => 400, 'errors' => "level of LogTechnique is empty !"], $logger);
+
+    }
+
+    public function testInintMologLoggerHasProcessors(): void
+    {
+        // Arrange
+        $logConfig = [
+            "dateTimeFormat" => "d/m/Y H:i:s", 
+            "lineFormat"     => "test", 
+            "logTechnique"   => ["file" => "test/test", "level" => "INFO"],
+            "customId"       => "myCustom"  
+        ];
+        
+        // Act
+        $logger = \srcCore\controllers\LogsController::initMonologLogger($logConfig);
+        $processors = $logger->getProcessors();
+        
+        // Assert
+        $this->assertNotEmpty($logger);
+        $this->assertNotEmpty($processors);
+        $this->assertCount(2, $processors);
+        $this->assertInstanceOf(Monolog\Processor\MemoryUsageProcessor::class, $processors[0]);
+        $this->assertInstanceOf(Monolog\Processor\ProcessIdProcessor::class, $processors[1]);
+    }
+
+    public function testGetLogTypeWrongLogType(): void 
+    {
+        // Arrange
+        $logType = "toto";
+        
+        // Act
+        $logConfig = \srcCore\controllers\LogsController::getLogType($logType);
+
+        // Assert
+        $this->assertNotEmpty($logConfig);
+        $this->assertSame(['code' => 400, 'errors' => "Log config of type '$logType' is empty !"], $logConfig);
+    }
+
+    public function testGetLogTypeValidLogType(): void
+    {
+        // Arrange
+        $logType = "logFonctionnel";
+
+        // Act
+        $logConfig = \srcCore\controllers\LogsController::getLogType($logType);
+
+        // Assert
+        $this->assertNotEmpty($logConfig);
+        $this->assertNotEmpty($logConfig["file"]);
+        $this->assertSame('/tmp/fonctionnel.log', $logConfig["file"]);
+    }
+
     public function testPrepareLogLine()
     {
         $logsController = new \SrcCore\controllers\LogsController();
@@ -216,7 +383,7 @@ class LogsControllerTest extends TestCase
     public function testLogFileOutputWithLogLevelError()
     {
         $logsController = new \SrcCore\controllers\LogsController();
-        $logConfig = $logsController->getLogConfig();
+        $logConfig = \SrcCore\controllers\LogsController::getLogConfig();
 
         $lineData = [
             'isTech'    => true,

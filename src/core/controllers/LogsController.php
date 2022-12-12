@@ -34,15 +34,32 @@ class LogsController
     /**
      * @return Logger
      */
-    public static function initMonologLogger()
+    public static function initMonologLogger(array $logConfig)
     {
-        $logConfig = LogsController::getLogConfig();
+        
         if (empty($logConfig)) {
-            return ['code' => 400, 'errors' => "Log config not found!"];
+            return ['code' => 400, 'errors' => "Log config is empty !"];
         }
 
-        $dateFormat = $logConfig['dateTimeFormat'];
-        $output = $logConfig['lineFormat'];
+        $dateFormat = $logConfig['dateTimeFormat'] ?? null;
+        if (empty($dateFormat)) {
+            return ['code' => 400, 'errors' => "dateTimeFormat is empty !"];
+        }
+        $output = $logConfig['lineFormat'] ?? null;
+        if (empty($output)) {
+            return ['code' => 400, 'errors' => "lineFormat is empty !"];
+        }
+        if (empty($logConfig['logTechnique']['file'])) {
+            return ['code' => 400, 'errors' => "file path of LogTechnique is empty !"];
+        }
+        if (empty($logConfig['customId'])) {
+            return ['code' => 400, 'errors' => "customId not found !"];
+        }
+        if (empty($logConfig['logTechnique']['level'])) {
+            return ['code' => 400, 'errors' => "level of LogTechnique is empty !"];
+        }
+
+
         $formatter = new LineFormatter($output, $dateFormat);
 
         $streamHandler = new StreamHandler($logConfig['logTechnique']['file']);
@@ -66,7 +83,7 @@ class LogsController
     {
         $logConfig = LogsController::getLogConfig();
         if (empty($logConfig[$logType])) {
-            return ['code' => 400, 'errors' => "Log config of type '$logType' not found!"];
+            return ['code' => 400, 'errors' => "Log config of type '$logType' is empty !"];
         }
         return $logConfig[$logType];
     }

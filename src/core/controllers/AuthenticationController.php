@@ -522,8 +522,8 @@ class AuthenticationController
         if (!in_array($version, ['CAS_VERSION_2_0', 'CAS_VERSION_3_0'])) {
             return ['errors' => 'Cas version not supported'];
         }
-
-        $logger = LogsController::initMonologLogger();
+        $logConfig = LogsController::getLogConfig();
+        $logger = LogsController::initMonologLogger($logConfig);
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
 
@@ -568,7 +568,9 @@ class AuthenticationController
         $uri = (string)$casConfiguration->WEB_CAS_CONTEXT;
         $certificate = (string)$casConfiguration->PATH_CERTIFICATE;
 
-        $logger = LogsController::initMonologLogger();
+
+        $logConfig = LogsController::getLogConfig();
+        $logger = LogsController::initMonologLogger($logConfig);
         \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
         
