@@ -7,20 +7,27 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\shipping;
 
-class ShippingTemplateControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use Shipping\controllers\ShippingController;
+use Shipping\controllers\ShippingTemplateController;
+use Shipping\models\ShippingModel;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class ShippingControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $resId = null;
 
     public function testCreate()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $shipping    = new ShippingTemplateController();
 
-        $aArgs = [
+        $args = [
             'label'           => 'TEST',
             'description'     => 'description du TEST',
             'options'         => [
@@ -31,9 +38,9 @@ class ShippingTemplateControllerTest extends TestCase
             'entities'        => [1, 2],
             'account'         => ['id' => 'toto', 'password' => '1234']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
+        $response     = $shipping->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -41,7 +48,7 @@ class ShippingTemplateControllerTest extends TestCase
         self::$id = $responseBody->shippingId;
 
         ####### FAIL ##########
-        $aArgs = [
+        $args = [
             'description' => 'description too long !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
@@ -51,9 +58,9 @@ class ShippingTemplateControllerTest extends TestCase
             'account'     => ['id' => 'toto', 'password' => ''],
             'entities'    => [99999]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
+        $response     = $shipping->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -63,7 +70,7 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame('99999 does not exists', $responseBody->errors[3]);
         $this->assertSame('fee must be an array with positive values', $responseBody->errors[4]);
 
-        $aArgs = [
+        $args = [
             'description' => 'description',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
@@ -73,9 +80,9 @@ class ShippingTemplateControllerTest extends TestCase
             'account'     => ['id' => 'toto', 'password' => ''],
             'entities'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $shipping->create($fullRequest, new \Slim\Http\Response());
+        $response     = $shipping->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -84,26 +91,25 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame('entities must be an array', $responseBody->errors[2]);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->create($request, new \Slim\Http\Response());
+        $response  = $shipping->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $request = $this->createRequest('GET');
+        $shipping    = new ShippingTemplateController();
 
-        $response  = $shipping->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response  = $shipping->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -121,37 +127,36 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertNotNull($responseBody->entities);
 
         ######## ERROR #############
-        $response  = $shipping->getById($request, new \Slim\Http\Response(), ['id' => 999999999]);
+        $response  = $shipping->getById($request, new Response(), ['id' => 999999999]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Shipping does not exist', $responseBody->errors);
 
-        $response  = $shipping->getById($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response  = $shipping->getById($request, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('id is not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response  = $shipping->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetList()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $request = $this->createRequest('GET');
+        $shipping    = new ShippingTemplateController();
 
-        $response  = $shipping->get($request, new \Slim\Http\Response());
+        $response  = $shipping->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->shippings);
@@ -162,25 +167,22 @@ class ShippingTemplateControllerTest extends TestCase
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->get($request, new \Slim\Http\Response());
+        $response  = $shipping->get($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'label'           => 'TEST 2',
             'description'     => 'description du test 2',
             'options'         => [
@@ -190,21 +192,19 @@ class ShippingTemplateControllerTest extends TestCase
             'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
             'account'         => ['id' => 'toto', 'password' => '1234']
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
-        $response = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $shipping    = new ShippingTemplateController();
+        $response = $shipping->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $request = $this->createRequest('GET');
+        $shipping    = new ShippingTemplateController();
 
-        $response  = $shipping->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response  = $shipping->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody);
@@ -218,10 +218,7 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame(12, $responseBody->shipping->fee->postagePrice);
         $this->assertNotNull($responseBody->entities);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'description' => 'description',
             'options'     => [
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
@@ -231,9 +228,9 @@ class ShippingTemplateControllerTest extends TestCase
             'account'     => ['id' => 'toto', 'password' => '1234'],
             'entities'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $shipping->update($fullRequest, new Response(), ['id' => 'wrong format']);
         $this->assertSame(500, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -242,7 +239,7 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame('label is empty or too long', $responseBody->errors[2]);
         $this->assertSame('entities must be an array', $responseBody->errors[3]);
 
-        $aArgs = [
+        $args = [
             'label'           => 'TEST 2',
             'description'     => 'description du test 2',
             'options'         => [
@@ -252,71 +249,68 @@ class ShippingTemplateControllerTest extends TestCase
             'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
             'account'         => ['id' => 'toto']
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
-        $response = $shipping->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $shipping    = new ShippingTemplateController();
+        $response = $shipping->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->update($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response  = $shipping->update($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $request = $this->createRequest('DELETE');
+        $shipping    = new ShippingTemplateController();
 
-        $response = $shipping->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $shipping->delete($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->shippings);
 
         ##### FAIL ######
-        $response = $shipping->delete($request, new \Slim\Http\Response(), ['id' => 'myid']);
+        $response = $shipping->delete($request, new Response(), ['id' => 'myid']);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('id is not an integer', $responseBody->errors);
 
-        $response = $shipping->delete($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response = $shipping->delete($request, new Response(), ['id' => self::$id * 1000]);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Shipping does not exist', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response  = $shipping->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testInitShipping()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $shipping    = new \Shipping\controllers\ShippingTemplateController();
+        $request = $this->createRequest('GET');
+        $shipping    = new ShippingTemplateController();
 
-        $response  = $shipping->initShipping($request, new \Slim\Http\Response());
+        $response  = $shipping->initShipping($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->entities);
@@ -328,31 +322,28 @@ class ShippingTemplateControllerTest extends TestCase
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response  = $shipping->initShipping($request, new \Slim\Http\Response());
+        $response  = $shipping->initShipping($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Service forbidden', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetByResId()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
@@ -380,14 +371,14 @@ class ShippingTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$resId = $responseBody['resId'];
         $this->assertIsInt(self::$resId);
 
-        \Shipping\models\ShippingModel::create([
+        ShippingModel::create([
             'userId'            => $GLOBALS['id'],
             'documentId'        => self::$resId,
             'documentType'      => 'resource',
@@ -401,17 +392,16 @@ class ShippingTemplateControllerTest extends TestCase
             'recipients'        => json_encode(['Recipient', 'contact'])
         ]);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Fail
-        $response  = \Shipping\controllers\ShippingController::getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId * 1000]);
+        $response  = ShippingController::getByResId($request, new Response(), ['resId' => self::$resId * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         // Success
-        $response  = \Shipping\controllers\ShippingController::getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response  = ShippingController::getByResId($request, new Response(), ['resId' => self::$resId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -421,17 +411,17 @@ class ShippingTemplateControllerTest extends TestCase
         $this->assertSame('2', $responseBody[0]['fee']);
         $this->assertSame(13, $responseBody[0]['recipientEntityId']);
 
-        Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id in (?)'],
             'data' => [[self::$resId]]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 }

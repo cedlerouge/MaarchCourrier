@@ -40,16 +40,16 @@
       <file>test/unitTests/app/entity/ListTemplateControllerTest.php</file>
       <file>test/unitTests/app/indexing/IndexingControllerTest.php</file>
       <file>test/unitTests/app/resource/ExportControllerTest.php</file>
-<!--      <file>test/unitTests/app/resource/LinkControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/entity/ListInstanceControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/resource/SummarySheetControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/status/StatusControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/shipping/ShippingControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/user/UserControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/versionUpdate/VersionUpdateControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/template/TemplateControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/note/NoteControllerTest.php</file>-->
-<!--      <file>test/unitTests/app/folder/FolderControllerTest.php</file>-->
+      <file>test/unitTests/app/resource/LinkControllerTest.php</file>
+      <file>test/unitTests/app/entity/ListInstanceControllerTest.php</file>
+      <file>test/unitTests/app/resource/SummarySheetControllerTest.php</file>
+      <file>test/unitTests/app/status/StatusControllerTest.php</file>
+      <file>test/unitTests/app/shipping/ShippingControllerTest.php</file>
+      <file>test/unitTests/app/user/UserControllerTest.php</file>
+      <file>test/unitTests/app/versionUpdate/VersionUpdateControllerTest.php</file>
+      <file>test/unitTests/app/template/TemplateControllerTest.php</file>
+      <file>test/unitTests/app/note/NoteControllerTest.php</file>
+      <file>test/unitTests/app/folder/FolderControllerTest.php</file>
 <!--      <file>test/unitTests/app/configuration/ConfigurationControllerTest.php</file>-->
 <!--      <file>test/unitTests/app/tag/TagControllerTest.php</file>-->
 <!--      <file>test/unitTests/app/resource/UserFollowedResourceControllerTest.php</file>-->

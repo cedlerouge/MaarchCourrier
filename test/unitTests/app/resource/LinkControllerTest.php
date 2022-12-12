@@ -7,9 +7,16 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\resource;
 
-class LinkControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\LinkController;
+use Resource\controllers\ResController;
+use SrcCore\http\Response;
+use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
+
+class LinkControllerTest extends CourrierTestCase
 {
     private static $firstResourceId = null;
     private static $secondResourceId = null;
@@ -17,18 +24,15 @@ class LinkControllerTest extends TestCase
     public function testLinkResources()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
-        $aArgs = [
+        $args = [
             'modelId'           => 1,
             'encodedFile'       => $encodedFile,
             'format'            => 'txt',
@@ -45,63 +49,61 @@ class LinkControllerTest extends TestCase
             'priority'          => 'poiuytre1357nbvc',
             'senders'           => [['type' => 'contact', 'id' => 1], ['type' => 'user', 'id' => 21], ['type' => 'entity', 'id' => 1]],
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         self::$firstResourceId = $responseBody->resId;
         $this->assertIsInt(self::$firstResourceId);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         self::$secondResourceId = $responseBody->resId;
         $this->assertIsInt(self::$secondResourceId);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
 
-        $linkController = new \Resource\controllers\LinkController();
+        $linkController = new LinkController();
 
         $args = [
             'linkedResources' => [self::$secondResourceId]
         ];
-
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $linkController->linkResources($fullRequest, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $linkController->linkResources($fullRequest, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(204, $response->getStatusCode());
 
 
         // ERRORS
         $args['linkedResources'][] = self::$firstResourceId;
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $linkController->linkResources($fullRequest, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $linkController->linkResources($fullRequest, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body linkedResources contains resource', $responseBody['errors']);
 
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $args['linkedResources'] = [9999999];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $linkController->linkResources($fullRequest, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $linkController->linkResources($fullRequest, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $args['linkedResources'] = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $linkController->linkResources($fullRequest, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $linkController->linkResources($fullRequest, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body linkedResources is empty or not an array', $responseBody['errors']);
@@ -109,13 +111,12 @@ class LinkControllerTest extends TestCase
 
     public function testGetLinkedResources()
     {
-        $linkController = new \Resource\controllers\LinkController();
+        $linkController = new LinkController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $linkController->getLinkedResources($request, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $response     = $linkController->getLinkedResources($request, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -127,7 +128,7 @@ class LinkControllerTest extends TestCase
         $this->assertNotEmpty($responseBody['linkedResources'][0]['destinationLabel']);
         $this->assertIsBool($responseBody['linkedResources'][0]['canConvert']);
 
-        $response     = $linkController->getLinkedResources($request, new \Slim\Http\Response(), ['resId' => self::$secondResourceId]);
+        $response     = $linkController->getLinkedResources($request, new Response(), ['resId' => self::$secondResourceId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -142,28 +143,27 @@ class LinkControllerTest extends TestCase
 
     public function testUnlinkResources()
     {
-        $linkController = new \Resource\controllers\LinkController();
+        $linkController = new LinkController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response     = $linkController->unlinkResources($request, new \Slim\Http\Response(), ['resId' => self::$firstResourceId, 'id' => self::$secondResourceId]);
+        $response     = $linkController->unlinkResources($request, new Response(), ['resId' => self::$firstResourceId, 'id' => self::$secondResourceId]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response     = $linkController->getLinkedResources($request, new \Slim\Http\Response(), ['resId' => self::$firstResourceId]);
+        $response     = $linkController->getLinkedResources($request, new Response(), ['resId' => self::$firstResourceId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertEmpty($responseBody['linkedResources']);
 
-        $response     = $linkController->getLinkedResources($request, new \Slim\Http\Response(), ['resId' => self::$secondResourceId]);
+        $response     = $linkController->getLinkedResources($request, new Response(), ['resId' => self::$secondResourceId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertEmpty($responseBody['linkedResources']);
 
-        \SrcCore\models\DatabaseModel::delete([
+        DatabaseModel::delete([
             'table' => 'res_letterbox',
             'where' => ['res_id in (?)'],
             'data'  => [[self::$firstResourceId, self::$secondResourceId]]

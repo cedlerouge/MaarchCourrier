@@ -7,18 +7,21 @@
  *
  */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\versionUpdate;
 
-class VersionUpdateControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use VersionUpdate\controllers\VersionUpdateController;
+
+class VersionUpdateControllerTest extends CourrierTestCase
 {
     public function testGet()
     {
-        $versionUpdateController = new \VersionUpdate\controllers\VersionUpdateController();
+        $versionUpdateController = new VersionUpdateController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $versionUpdateController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $versionUpdateController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
         $this->assertIsString($responseBody->currentVersion);
         $this->assertNotNull($responseBody->currentVersion);
