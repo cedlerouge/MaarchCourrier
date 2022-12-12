@@ -16,6 +16,7 @@ export class FastParapheurService {
     canCreateUser: boolean = false;
     canSynchronizeSignatures: boolean = false;
     canManageSignaturesPositions: boolean = false;
+    canViewWorkflow: boolean = false;
     userWorkflow = new UserWorkflow();
 
     constructor(

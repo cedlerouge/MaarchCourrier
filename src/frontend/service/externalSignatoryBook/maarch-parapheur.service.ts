@@ -16,6 +16,7 @@ export class MaarchParapheurService {
     canCreateUser: boolean = true;
     canSynchronizeSignatures: boolean = true;
     canManageSignaturesPositions: boolean = true;
+    canViewWorkflow: boolean = true;
 
     constructor(
         public functions: FunctionsService,

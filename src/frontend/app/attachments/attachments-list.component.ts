@@ -56,8 +56,6 @@ export class AttachmentsListComponent implements OnInit {
     loading: boolean = true;
     pos = 0;
     mailevaEnabled: boolean = false;
-    externalSignatoryBookEnabled: boolean = false;
-
     hideMainInfo: boolean = false;
 
     filterAttachTypes: any[] = [];
@@ -79,8 +77,6 @@ export class AttachmentsListComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.externalSignatoryBookEnabled = !this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled);
-
         if (this.autoOpenCreation) {
             this.createAttachment();
         }

@@ -161,4 +161,8 @@ export class ExternalSignatoryBookManagerService {
     canManageSignaturesPositions(): boolean {
         return this.serviceInjected.canManageSignaturesPositions;
     }
+
+    canViewWorkflow(): boolean {
+        return this.serviceInjected.canViewWorkflow;
+    }
 }
