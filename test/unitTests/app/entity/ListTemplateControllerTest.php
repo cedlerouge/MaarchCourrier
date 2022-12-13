@@ -836,19 +836,19 @@ class ListTemplateControllerTest extends TestCase
         $this->assertIsArray($responseBody['roles']);
 
         $this->assertSame('dest', $responseBody['roles'][0]['id']);
-        $this->assertSame(_ASSIGNEE, $responseBody['roles'][0]['label']);
+        $this->assertSame('Attributaire', $responseBody['roles'][0]['label']);
         $this->assertSame(false, $responseBody['roles'][0]['keepInListInstance']);
 
         $this->assertSame('cc', $responseBody['roles'][1]['id']);
-        $this->assertSame(_TO_CC, $responseBody['roles'][1]['label']);
+        $this->assertSame('En copie', $responseBody['roles'][1]['label']);
         $this->assertSame(true, $responseBody['roles'][1]['keepInListInstance']);
 
         $this->assertSame('avis', $responseBody['roles'][2]['id']);
-        $this->assertSame(_AVIS_USER, $responseBody['roles'][2]['label']);
+        $this->assertSame('Pour avis', $responseBody['roles'][2]['label']);
         $this->assertSame(false, $responseBody['roles'][2]['keepInListInstance']);
 
         $this->assertSame('avis_copy', $responseBody['roles'][3]['id']);
-        $this->assertSame(_AVIS_USER_COPY, $responseBody['roles'][3]['label']);
+        $this->assertSame('En copie (avis)', $responseBody['roles'][3]['label']);
         $this->assertSame(false, $responseBody['roles'][3]['keepInListInstance']);
 
         $queryParams = [
@@ -862,22 +862,22 @@ class ListTemplateControllerTest extends TestCase
         $this->assertIsArray($responseBody['roles']);
 
         $this->assertSame('dest', $responseBody['roles'][0]['id']);
-        $this->assertSame(_ASSIGNEE, $responseBody['roles'][0]['label']);
+        $this->assertSame('Attributaire', $responseBody['roles'][0]['label']);
         $this->assertSame(false, $responseBody['roles'][0]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][0]['canUpdate']);
 
         $this->assertSame('cc', $responseBody['roles'][1]['id']);
-        $this->assertSame(_TO_CC, $responseBody['roles'][1]['label']);
+        $this->assertSame('En copie', $responseBody['roles'][1]['label']);
         $this->assertSame(true, $responseBody['roles'][1]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][1]['canUpdate']);
 
         $this->assertSame('avis', $responseBody['roles'][2]['id']);
-        $this->assertSame(_AVIS_USER, $responseBody['roles'][2]['label']);
+        $this->assertSame('Pour avis', $responseBody['roles'][2]['label']);
         $this->assertSame(false, $responseBody['roles'][2]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][2]['canUpdate']);
 
         $this->assertSame('avis_copy', $responseBody['roles'][3]['id']);
-        $this->assertSame(_AVIS_USER_COPY, $responseBody['roles'][3]['label']);
+        $this->assertSame('En copie (avis)', $responseBody['roles'][3]['label']);
         $this->assertSame(false, $responseBody['roles'][3]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][3]['canUpdate']);
 
@@ -892,22 +892,22 @@ class ListTemplateControllerTest extends TestCase
         $this->assertIsArray($responseBody['roles']);
 
         $this->assertSame('dest', $responseBody['roles'][0]['id']);
-        $this->assertSame(_ASSIGNEE, $responseBody['roles'][0]['label']);
+        $this->assertSame('Attributaire', $responseBody['roles'][0]['label']);
         $this->assertSame(false, $responseBody['roles'][0]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][0]['canUpdate']);
 
         $this->assertSame('cc', $responseBody['roles'][1]['id']);
-        $this->assertSame(_TO_CC, $responseBody['roles'][1]['label']);
+        $this->assertSame('En copie', $responseBody['roles'][1]['label']);
         $this->assertSame(true, $responseBody['roles'][1]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][1]['canUpdate']);
 
         $this->assertSame('avis', $responseBody['roles'][2]['id']);
-        $this->assertSame(_AVIS_USER, $responseBody['roles'][2]['label']);
+        $this->assertSame('Pour avis', $responseBody['roles'][2]['label']);
         $this->assertSame(false, $responseBody['roles'][2]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][2]['canUpdate']);
 
         $this->assertSame('avis_copy', $responseBody['roles'][3]['id']);
-        $this->assertSame(_AVIS_USER_COPY, $responseBody['roles'][3]['label']);
+        $this->assertSame('En copie (avis)', $responseBody['roles'][3]['label']);
         $this->assertSame(false, $responseBody['roles'][3]['keepInListInstance']);
         $this->assertSame(true, $responseBody['roles'][3]['canUpdate']);
     }

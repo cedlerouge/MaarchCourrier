@@ -58,7 +58,7 @@
                             <cdk-virtual-scroll-viewport *ngIf="!displayCorrespondents" itemSize="48"
                                 class="example-viewport" style="height: 300px;">
 
-                                <mat-selection-list (selectionChange)="toggleCorrespondent($event.option.value)">
+                                <mat-selection-list (selectionChange)="toggleCorrespondent($event.options[0].value)">
                                     <ng-container *cdkVirtualFor="let element of dataSource.data;let i=index">
                                         <mat-list-option checkboxPosition="before" class="correspondent-list-item"
                                             color="primary"
