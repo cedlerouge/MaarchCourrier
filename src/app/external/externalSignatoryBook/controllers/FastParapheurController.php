@@ -36,6 +36,7 @@ use History\controllers\HistoryController;
 use Slim\Http\Request;
 use Slim\Http\Response;
 use SrcCore\models\TextFormatModel;
+use Contact\controllers\ContactController;
 
 /**
 * @codeCoverageIgnore
@@ -996,7 +997,7 @@ class FastParapheurController
         $resourcesInFastParapheur = ResModel::get([
             'select' => [
                 'external_id->>\'signatureBookId\' as "signatureBookId"',
-                'subject'
+                'subject', 'creation_date', 'res_id', 'category_id'
             ],
             'where' => ['external_id->>\'signatureBookId\' is not null']
         ]);
@@ -1004,16 +1005,23 @@ class FastParapheurController
         $attachmentsInFastParapheur = AttachmentModel::get([
             'select' => [
                 'external_id->>\'signatureBookId\' as "signatureBookId"',
-                'title as subject'
+                'title as subject', 'res_id', 'creation_date'
             ],
             'where' => ['external_id->>\'signatureBookId\' is not null']
         ]);
-
+        $correspondents = null;
         $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
         $documentsInFastParapheur = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
+            if ($doc['category_id'] == 'outgoing') {
+                $correspondents = ContactController::getFormattedContacts(['resId' => $doc['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
+            } else {
+                $correspondents = ContactController::getFormattedContacts(['resId' => $doc['res_id'], 'mode' => 'sender', 'onlyContact' => true]);
+            }
             return [
-                'subject' => $doc['subject'],
-                'url'     => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
+                'subject'           => $doc['subject'],
+                'creationDate'      => $doc['creation_date'],
+                'correspondents'    => $correspondents,
+                'url'               => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
             ];
         }, $documentsInFastParapheur));
 
