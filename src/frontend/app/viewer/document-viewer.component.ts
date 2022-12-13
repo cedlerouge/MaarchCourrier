@@ -393,8 +393,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 if (data === 'createNewVersion' && this.mode === 'mainDocument') {
                     const objToSend: any = {
                         resId: this.resId,
-                        encodedFile: file.base64,
-                        format: 'pdf',
+                        encodedFile: file.content,
+                        format: data.format
                     };
                     this.http.put(`../rest/resources/${this.resId}?onlyDocument=true`, objToSend).pipe(
                         tap(() => {
