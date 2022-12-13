@@ -7,19 +7,25 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
-use SrcCore\models\DatabaseModel;
+namespace MaarchCourrier\Tests\app\history;
 
-class HistoryControllerTest extends TestCase
+use History\controllers\BatchHistoryController;
+use History\controllers\HistoryController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
+
+class HistoryControllerTest extends CourrierTestCase
 {
     public function testGetHistoryByUserId()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $history     = new \History\controllers\HistoryController();
+        $request = $this->createRequest('GET');
+        $history     = new HistoryController();
 
-        $currentUser = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $response = $history->getByUserId($request, new \Slim\Http\Response(), ['userSerialId' => $currentUser['id']]);
+        $currentUser = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $response = $history->getByUserId($request, new Response(), ['userSerialId' => $currentUser['id']]);
 
         $responseBody = json_decode((string)$response->getBody());
 
@@ -28,13 +34,12 @@ class HistoryControllerTest extends TestCase
 
     public function testGetHistory()
     {
-        $history     = new \History\controllers\HistoryController();
+        $history     = new HistoryController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'superadmin', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'superadmin', 'select' => ['id']]);
 
         $aArgs = [
             'startDate' => date('Y-m-d H:i:s', 1521100000),
@@ -43,7 +48,7 @@ class HistoryControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response = $history->get($fullRequest, new \Slim\Http\Response());
+        $response = $history->get($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['history']);
@@ -52,11 +57,10 @@ class HistoryControllerTest extends TestCase
 
     public function testGetBatchHistory()
     {
-        $batchHistory     = new \History\controllers\BatchHistoryController();
+        $batchHistory     = new BatchHistoryController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'startDate' => date('Y-m-d H:i:s', 1521100000),
@@ -64,7 +68,7 @@ class HistoryControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response = $batchHistory->get($fullRequest, new \Slim\Http\Response());
+        $response = $batchHistory->get($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['history']);
@@ -74,13 +78,12 @@ class HistoryControllerTest extends TestCase
 
     public function testGetBatchAvailableFilters()
     {
-        $batchHistory = new \History\controllers\BatchHistoryController();
+        $batchHistory = new BatchHistoryController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $batchHistory->getAvailableFilters($request, new \Slim\Http\Response());
+        $response = $batchHistory->getAvailableFilters($request, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['modules']);
@@ -88,13 +91,12 @@ class HistoryControllerTest extends TestCase
 
     public function testGetAvailableFilters()
     {
-        $historyController = new \History\controllers\HistoryController();
+        $historyController = new HistoryController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $historyController->getAvailableFilters($request, new \Slim\Http\Response());
+        $response = $historyController->getAvailableFilters($request, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['actions']);
@@ -104,7 +106,7 @@ class HistoryControllerTest extends TestCase
 
     public function testRealDelete()
     {
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'bbain', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'bbain', 'select' => ['id']]);
 
         $aResId = DatabaseModel::select([
             'select'    => ['res_id'],
@@ -117,7 +119,7 @@ class HistoryControllerTest extends TestCase
         $aNewResId = array_column($aResId, 'res_id');
 
         //  REAL DELETE
-        \SrcCore\models\DatabaseModel::delete([
+        DatabaseModel::delete([
             'table' => 'res_letterbox',
             'where' => ['res_id in (?)'],
             'data'  => [$aNewResId]
@@ -125,7 +127,7 @@ class HistoryControllerTest extends TestCase
 
         //  READ
         foreach ($aNewResId as $resId) {
-            $res = \Resource\models\ResModel::getById(['resId' => $resId, 'select' => ['*']]);
+            $res = ResModel::getById(['resId' => $resId, 'select' => ['*']]);
             $this->assertIsArray($res);
             $this->assertEmpty($res);
         }
