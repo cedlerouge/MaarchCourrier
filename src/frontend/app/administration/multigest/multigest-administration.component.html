@@ -39,12 +39,9 @@
                                             [title]="creationMode ? ('lang.password' | translate) : ('lang.changePassword' | translate)"
                                             [type]="hidePassword ? 'password' : 'text'"
                                             [placeholder]="creationMode ? ('lang.password' | translate) : ('lang.changePassword' | translate)">
-                                        <mat-icon matSuffix
-                                            color="primary"
-                                            style="cursor: pointer; font-size: 18px; width: auto; height: auto;" 
+                                        <mat-icon color="primary" style="cursor: pointer; font-size: 18px;" matSuffix
                                             (click)="hidePassword = !hidePassword" class="fa fa-2x"
-                                            [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']">
-                                        </mat-icon>
+                                            [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                     </mat-form-field>
                                 </div>
                             </div>
