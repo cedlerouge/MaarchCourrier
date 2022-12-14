@@ -89,7 +89,7 @@
                                             <input matInput placeholder="{{'lang.typeCurrentPassword' | translate}}"
                                                 formControlName="currentPasswordCtrl" required
                                                 [type]="hidePassword ? 'password' : 'text'">
-                                            <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="fa fa-2x" style="width: auto;"
+                                            <mat-icon matSuffix (click)="hidePassword = !hidePassword" class="fa fa-2x"
                                                 [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                             <mat-error
                                                 *ngIf="firstFormGroup.controls['currentPasswordCtrl'].hasError('required')">
@@ -106,7 +106,7 @@
                                                     formControlName="newPasswordCtrl" required
                                                     [type]="hidePassword ? 'password' : 'text'">
                                                 <mat-icon matSuffix (click)="hidePassword = !hidePassword"
-                                                    class="fa fa-2x" style="width: auto;"
+                                                    class="fa fa-2x"
                                                     [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                                 <mat-hint *ngIf="validPassword">
                                                     <i color="accent" class="fa fa-check"></i>
@@ -122,7 +122,7 @@
                                                     [type]="hidePassword ? 'password' : 'text'"
                                                     formControlName="retypePasswordCtrl">
                                                 <mat-icon matSuffix (click)="hidePassword = !hidePassword"
-                                                    class="fa fa-2x" style="width: auto;"
+                                                    class="fa fa-2x"
                                                     [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                                 <mat-hint
                                                     *ngIf="!firstFormGroup.controls['retypePasswordCtrl'].hasError('mismatch') && firstFormGroup.controls['retypePasswordCtrl'].value != ''">
