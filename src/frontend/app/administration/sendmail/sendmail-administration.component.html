@@ -92,7 +92,7 @@
                                                 matInput
                                                 [placeholder]="sendmail.passwordAlreadyExists === true ? ('lang.passwordModification' | translate) : ('lang.password' | translate)"
                                                 [required]="!sendmail.passwordAlreadyExists">
-                                            <mat-icon color="primary" style="cursor: pointer; width: auto;" matSuffix
+                                            <mat-icon color="primary" style="cursor: pointer;" matSuffix
                                                 (click)="hidePassword = !hidePassword" class="fa fa-2x"
                                                 [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                         </mat-form-field>
