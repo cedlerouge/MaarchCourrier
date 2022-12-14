@@ -117,7 +117,7 @@
                                     <mat-form-field>
                                         <input name="password" [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="shipping.account.password"
                                                matInput [placeholder]="creationMode === false ? ('lang.passwordModification' | translate) : ('lang.password' | translate)" [required]="creationMode">
-                                        <mat-icon color="primary" style="cursor: pointer; width: auto;" matSuffix (click)="hidePassword = !hidePassword" maxlength="255"
+                                        <mat-icon color="primary" style="cursor: pointer;" matSuffix (click)="hidePassword = !hidePassword" maxlength="255"
                                                 class="fa fa-2x" [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
                                     </mat-form-field>
                                 </div>
