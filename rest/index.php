@@ -108,6 +108,7 @@ $app->delete('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeCon
 //AutoComplete
 $app->get('/autocomplete/users', \SrcCore\controllers\AutoCompleteController::class . ':getUsers');
 $app->get('/autocomplete/maarchParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getMaarchParapheurUsers');
+$app->get('/autocomplete/fastParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getFastParapheurUsers');
 $app->get('/autocomplete/correspondents', \SrcCore\controllers\AutoCompleteController::class . ':getCorrespondents');
 $app->get('/autocomplete/contacts', \SrcCore\controllers\AutoCompleteController::class . ':getContacts');
 $app->get('/autocomplete/contacts/company', \SrcCore\controllers\AutoCompleteController::class . ':getContactsCompany');
@@ -575,6 +576,9 @@ $app->put('/users/{id}/linkToMaarchParapheur', \ExternalSignatoryBook\controller
 $app->put('/users/{id}/unlinkToMaarchParapheur', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':unlinkUserToMaarchParapheur');
 $app->get('/users/{id}/statusInMaarchParapheur', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':userStatusInMaarchParapheur');
 $app->put('/users/{id}/externalSignatures', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':sendSignaturesToMaarchParapheur');
+$app->put('/users/{id}/linkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':linkUserToFastParapheur');
+$app->put('/users/{id}/unlinkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':unlinkUserToFastParapheur');
+$app->get('/users/{id}/statusInFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':userStatusInFastParapheur');
 $app->post('/users/{id}/groups', \User\controllers\UserController::class . ':addGroup');
 $app->put('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':updateGroup');
 $app->delete('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':deleteGroup');
@@ -647,6 +651,7 @@ $app->get('/messageExchangesInitialization', \MessageExchange\controllers\SendMe
 
 //ExternalSignatoryBooks
 $app->get('/documents/{id}/maarchParapheurWorkflow', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getWorkflow');
+$app->get('/documents/{id}/fastParapheurWorkflow', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':getWorkflow');
 $app->get('/maarchParapheurOtp', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getOtpList');
 $app->get('/maarchParapheur/user/{id}/picture', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getUserPicture');
 $app->get('/externalSignatureBooks/enabled', \ExternalSignatoryBook\controllers\ExternalSignatureBookController::class . ':getEnabledSignatureBook');

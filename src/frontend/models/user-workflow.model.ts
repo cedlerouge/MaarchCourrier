@@ -107,6 +107,11 @@ export interface UserWorkflow {
      * Date positions
      */
     datePositions?: any[];
+
+    /**
+     * Signature modes : 'visa', 'sign'
+     */
+    signatureModes?: string[];
 }
 
 export class UserWorkflow implements UserWorkflow {
@@ -132,5 +137,6 @@ export class UserWorkflow implements UserWorkflow {
         this.availableRoles = [];
         this.signaturePositions = [];
         this.datePositions = [];
+        this.signatureModes = ['visa', 'sign'];
     }
 }

@@ -283,6 +283,7 @@ CREATE TABLE res_attachments
   signatory_user_serial_id int,
   fulltext_result character varying(10) DEFAULT NULL::character varying,
   external_id jsonb DEFAULT '{}',
+  external_state jsonb DEFAULT '{}',
   CONSTRAINT res_attachments_pkey PRIMARY KEY (res_id)
 )
 WITH (OIDS=FALSE);
@@ -931,6 +932,7 @@ CREATE TABLE res_letterbox
   confidentiality character(1),
   fulltext_result character varying(10) DEFAULT NULL::character varying,
   external_id jsonb DEFAULT '{}',
+  external_state jsonb DEFAULT '{}',
   departure_date timestamp without time zone,
   opinion_limit_date timestamp without time zone default NULL,
   barcode text,

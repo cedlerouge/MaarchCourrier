@@ -21,6 +21,7 @@ import { CollaboraOnlineViewerComponent } from '@plugins/collabora-online/collab
 import { AuthService } from '@service/auth.service';
 import { LocalStorageService } from '@service/local-storage.service';
 import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoint/office365-sharepoint-viewer.component';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-document-viewer',
@@ -29,7 +30,7 @@ import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoin
         'document-viewer.component.scss',
         '../indexation/indexing-form/indexing-form.component.scss',
     ],
-    providers: [SortPipe]
+    providers: [SortPipe, ExternalSignatoryBookManagerService]
 })
 
 export class DocumentViewerComponent implements OnInit, OnDestroy {
@@ -179,13 +180,14 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public headerService: HeaderService,
         public appService: AppService,
-        private dialog: MatDialog,
-        private sortPipe: SortPipe,
         public functions: FunctionsService,
         public privilegeService: PrivilegeService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        private notify: NotificationService,
+        private dialog: MatDialog,
+        private sortPipe: SortPipe,
         private authService: AuthService,
         private localStorage: LocalStorageService
     ) {
@@ -1435,8 +1437,16 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    openMaarchParapheurWorkflow() {
-        this.dialog.open(VisaWorkflowModalComponent, { panelClass: 'maarch-modal', data: { id: this.resId, type: 'resource', linkedToMaarchParapheur: true } });
+    openExternalSignatoryBookWorkflow() {
+        this.dialog.open(VisaWorkflowModalComponent, {
+            panelClass: 'maarch-modal',
+            data: {
+                id: this.resId,
+                type: 'resource',
+                title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
+                linkedToExternalSignatoryBook: true
+            }
+        });
     }
 
     getOriginalFileInfos(version: number) {

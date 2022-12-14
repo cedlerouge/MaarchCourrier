@@ -8,11 +8,13 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-signature-book',
     templateUrl: './signature-book.component.html',
     styleUrls: ['./signature-book.component.scss'],
+    providers: [ExternalSignatoryBookManagerService]
 })
 
 export class MySignatureBookComponent implements OnInit {
@@ -26,12 +28,13 @@ export class MySignatureBookComponent implements OnInit {
 
     constructor(
         public translate: TranslateService,
-        private zone: NgZone,
         public http: HttpClient,
-        private notify: NotificationService,
         public functionsService: FunctionsService,
         public headerService: HeaderService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        private zone: NgZone,
+        private notify: NotificationService
     ){
         window['angularProfileComponent'] = {
             componentAfterUpload: (base64Content: any) => this.processAfterUpload(base64Content),
@@ -149,16 +152,9 @@ export class MySignatureBookComponent implements OnInit {
         ).subscribe();
     }
 
-    syncMP() {
+    async synchronizeSignatures() {
         this.loadingSign = true;
-        this.http.put('../rest/users/' + this.headerService.user.id + '/externalSignatures', {})
-            .subscribe((data: any) => {
-                this.loadingSign = false;
-                this.notify.success(this.translate.instant('lang.signsSynchronized'));
-            }, (err) => {
-                this.loadingSign = false;
-                this.notify.handleErrors(err);
-            });
+        await this.externalSignatoryBook.synchronizeSignatures(this.headerService.user).finally(() => this.loadingSign = false);
     }
 
 }

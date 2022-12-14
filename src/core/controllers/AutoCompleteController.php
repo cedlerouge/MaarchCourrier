@@ -22,7 +22,6 @@ use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use Group\models\PrivilegeModel;
-use Priority\models\PriorityModel;
 use Respect\Validation\Validator;
 use Slim\Http\Request;
 use Slim\Http\Response;
@@ -34,13 +33,13 @@ use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use Tag\models\TagModel;
 use User\controllers\UserController;
-use User\models\UserGroupModel;
 use User\models\UserModel;
 use Folder\models\FolderModel;
 use Folder\controllers\FolderController;
 use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Contact\models\ContactAddressSectorModel;
+use ExternalSignatoryBook\controllers\FastParapheurController;
 
 class AutoCompleteController
 {
@@ -127,6 +126,9 @@ class AutoCompleteController
                     break;
                 }
             }
+            if (empty($url) || empty($userId) || empty($password)) {
+                return $response->withStatus(500)->withJson(['errors' => 'Maarch Parapheur is not fully configured']);
+            }
 
             $curlResponse = CurlModel::exec([
                 'url'           => rtrim($url, '/') . '/rest/autocomplete/users?search='.urlencode($data['search']),
@@ -168,6 +170,87 @@ class AutoCompleteController
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
         }
+    }
+
+    public function getFastParapheurUsers(Request $request, Response $response)
+    {
+        $queryParams = $request->getQueryParams();
+        if (!Validator::notEmpty()->stringType()->length(2)->validate($queryParams['search'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'search is empty or too short']);
+        }
+        $search = $queryParams['search'];
+
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
+            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        }
+
+        $config = $loadedXml->xpath('/root/signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($config)) {
+            return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
+        }
+        $config = (array)$config;
+
+        $fpUsers = [];
+        $excludedEmails = [];
+        $alreadyConnectedUsers = UserModel::get([
+            'select' => [
+                'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                'trim(concat(firstname, \' \', lastname)) as name'
+            ],
+            'where'  => ['external_id->>\'fastParapheur\' is not null']
+        ]);
+
+        $subscriberIds = EntityModel::getWithUserEntities([
+            'select' => ['entities.external_id->>\'fastParapheurSubscriberId\' as "fastParapheurSubscriberId"'],
+            'where'  => ['users_entities.user_id = ?'],
+            'data'   => [$GLOBALS['id']]
+        ]);
+        $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
+
+        if (empty($subscriberIds)) {
+            $fpUsers = array_merge($fpUsers, FastParapheurController::getUsers(['config' => $config]));
+            if (!empty($fpUsers['errors'])) {
+                return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
+            }
+        } else {
+            foreach ($subscriberIds as $subscriberId) {
+                $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
+                if (!empty($fpUsers['errors'])) {
+                    return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
+                }
+                $fpUsers = array_merge($fpUsers, $subscriberUsers);
+            }
+        }
+        $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
+        foreach ($fpUsers as $fpUserKey => $fpUser) {
+            $emailKey = array_search($fpUser['email'], $fpUsersEmails);
+            if ($emailKey !== false) {
+                unset($fpUsersEmails[$emailKey]);
+            } else {
+                unset($fpUsers[$fpUserKey]);
+            }
+        }
+        if (!empty($queryParams['excludeAlreadyConnected'])) {
+            $excludedEmails = array_column($alreadyConnectedUsers, 'fastParapheurEmail');
+            $fpUsers = array_filter($fpUsers, function ($fpUser) use ($excludedEmails) {
+                return !in_array($fpUser['email'], $excludedEmails);
+            });
+        } else {
+            foreach ($alreadyConnectedUsers as $alreadyConnectedUser) {
+                foreach ($fpUsers as $key => $fpUser) {
+                    if ($fpUser['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
+                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name'] . ' (' . $fpUsers[$key]['idToDisplay'] . ')';
+                    }
+                }
+            }
+        }
+        $fpUsers = array_filter($fpUsers, function ($fpUser) use ($search) {
+            return mb_stripos($fpUser['email'], $search) > -1 || mb_stripos($fpUser['idToDisplay'], $search) > -1;
+        });
+        $fpUsers = array_values($fpUsers);
+
+        return $response->withJson($fpUsers);
     }
 
     public static function getCorrespondents(Request $request, Response $response)

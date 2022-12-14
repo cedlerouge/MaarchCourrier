@@ -343,14 +343,14 @@ class ListTemplateController
                     }
 
                     $listTemplateItems[$itemKey]['labelToDisplay'] = "{$user['firstname']} {$user['lastname']}";
-                    if (empty($queryParams['maarchParapheur'])) {
+                    if (empty($queryParams['maarchParapheur']) && empty($queryParams['fastParapheur'])) {
                         $listTemplateItems[$itemKey]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(['id' => $value['item_id'], 'select' => ['entity_label']])['entity_label'];
                     } else {
                         $listTemplateItems[$itemKey]['descriptionToDisplay'] = '';
                     }
 
                     $listTemplateItems[$itemKey]['hasPrivilege'] = true;
-                    if (empty($queryParams['maarchParapheur'])) {
+                    if (empty($queryParams['maarchParapheur']) && empty($queryParams['fastParapheur'])) {
                         if ($listTemplate['type'] == 'visaCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']]) && !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])) {
                             $listTemplateItems[$itemKey]['hasPrivilege'] = false;
                         } elseif ($listTemplate['type'] == 'opinionCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])) {
@@ -375,6 +375,14 @@ class ListTemplateController
                             $listTemplateItems[$itemKey]['availableRoles']                = array_merge(['visa'], $userExists['signatureModes']);
                             $listTemplateItems[$itemKey]['role']                          = end($userExists['signatureModes']);
                         }
+                    } elseif (!empty($queryParams['fastParapheur']) && !empty($externalId['fastParapheur'])) {
+                        $listTemplateItems[$itemKey] = [
+                            'externalId'           => ['fastParapheur' => $externalId['fastParapheur']],
+                            'descriptionToDisplay' => $externalId['fastParapheur'],
+                            'labelToDisplay'       => trim($user['firstname'] . ' ' . $user['lastname']),
+                            'availableRoles'       => ['visa', 'sign'],
+                            'role'                 => $listTemplateItems[$itemKey]['item_mode']
+                        ];
                     }
                 }
             }
