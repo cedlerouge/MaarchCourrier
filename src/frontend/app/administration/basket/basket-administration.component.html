@@ -133,9 +133,8 @@
                         <mat-tab *ngFor="let group of basketGroups;let i = index" label="{{group.group_desc}}">
                             <ng-template mat-tab-label>
                                 <span>{{group.group_desc}}</span>
-                                <mat-icon color="warn" class="fa fa-times"
-                                    matTooltip="{{'lang.unlinkGroup' | translate}}"
-                                    (click)="unlinkGroup(i)">
+                                <mat-icon color="warn" class="fa fa-times" matTooltip="{{'lang.unlinkGroup' | translate}}"
+                                    (click)="unlinkGroup(i)"></mat-icon>
                                 </mat-icon>
                             </ng-template>
                             <mat-tab-group *ngIf="selectedIndex > 0">
