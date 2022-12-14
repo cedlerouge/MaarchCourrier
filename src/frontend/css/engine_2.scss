@@ -156,6 +156,11 @@ body {
     width: auto;
 }
 
+.mat-tab-label .mat-tab-label-content {
+    gap: 10px;
+    align-items: center;
+}
+
 .mat-list-icon {
     height: auto !important;
     width: auto !important;
