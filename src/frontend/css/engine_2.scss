@@ -146,7 +146,12 @@ body {
     }
 }
 
-.fm.mat-icon, .fa.mat-icon, .far.mat-icon, .fas.mat-icon {
+.fm.mat-icon,
+.fa.mat-icon,
+.far.mat-icon,
+.fas.mat-icon,
+.mat-form-field-appearance-legacy .mat-form-field-prefix .fa.mat-icon, 
+.mat-form-field-appearance-legacy .mat-form-field-suffix .fa.mat-icon {
     height: auto;
     width: auto;
 }
