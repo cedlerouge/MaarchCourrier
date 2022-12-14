@@ -168,6 +168,17 @@ body {
     overflow: initial;
 }
 
+.mat-list-base .mat-list-item .mat-list-icon {
+    border-radius: 0px !important;
+    align-items: center;
+    display: flex;
+    overflow: initial;
+}
+
+.mat-icon-button .mat-icon {
+    overflow: initial;
+}
+
 .badgePipe_accent {
     color: #00CB55;
     font-size: 8px;
