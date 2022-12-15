@@ -32,7 +32,8 @@ class LogsController
 {
 
     /**
-     * @return Logger
+     * @param array $logConfig
+     * @return Logger $logger
      */
     public static function initMonologLogger(array $logConfig)
     {

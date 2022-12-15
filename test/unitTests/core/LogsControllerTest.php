@@ -49,7 +49,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame($logConfig['queries']['file'], '/tmp/queries.log');
     }
 
-    public function testInintMologErrorIfNoConfigFind(): void
+    public function testInitMologErrorIfNoConfigFound(): void
     {
         // Arrange
         $logConfig = [];
@@ -62,7 +62,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['code' => 400, 'errors' => "Log config is empty !"], $logger);
     }
 
-    public function testInintMologErrorIfNoDateTimeIsFound(): void
+    public function testInitMologErrorIfNoDateTimeIsFound(): void
     {
         // Arrange
         $logConfig = ["toto"];
@@ -75,7 +75,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['code' => 400, 'errors' => "dateTimeFormat is empty !"], $logger);
     }
 
-    public function testInintMologErrorIfNoLineFormatIsFound(): void
+    public function testInitMologErrorIfNoLineFormatIsFound(): void
     {
         // Arrange
         $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
@@ -88,7 +88,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['code' => 400, 'errors' => "lineFormat is empty !"], $logger);
     }
 
-    public function testInintMologLoggerHasFilterHandlerWithPath(): void
+    public function testInitMologLoggerHasFilterHandlerWithPath(): void
     {
         // Arrange
         $logConfig = [
@@ -110,7 +110,7 @@ class LogsControllerTest extends TestCase
         
     }
 
-    public function testInintMologLoggerTechniqueLogFileNotFound(): void
+    public function testInitMologLoggerTechniqueLogFileNotFound(): void
     {
         // Arrange
         $logConfig = [
@@ -128,7 +128,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['code' => 400, 'errors' => "file path of LogTechnique is empty !"], $logger);
     }
 
-    public function testInintMologCustomIdNotFound(): void
+    public function testInitMologCustomIdNotFound(): void
     {
         // Arrange
         $logConfig = [
@@ -146,7 +146,7 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['code' => 400, 'errors' => "customId not found !"], $logger);
     }
 
-    public function testInintMologLoggerTechniqueLogLevelNotFound(): void
+    public function testInitMologLoggerTechniqueLogLevelNotFound(): void
     {
         // Arrange
         $logConfig = [
@@ -167,7 +167,7 @@ class LogsControllerTest extends TestCase
 
     }
 
-    public function testInintMologLoggerHasProcessors(): void
+    public function testInitMologLoggerHasProcessors(): void
     {
         // Arrange
         $logConfig = [
