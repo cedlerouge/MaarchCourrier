@@ -2688,5 +2688,6 @@
     "ixbus": "Ixbus",
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
-    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
+    "badConfiguration": "Problème de paramètrage dans le fichier de configuration"
 }
