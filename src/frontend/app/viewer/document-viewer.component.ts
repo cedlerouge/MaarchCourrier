@@ -21,6 +21,7 @@ import { CollaboraOnlineViewerComponent } from '@plugins/collabora-online/collab
 import { AuthService } from '@service/auth.service';
 import { LocalStorageService } from '@service/local-storage.service';
 import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoint/office365-sharepoint-viewer.component';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-document-viewer',
@@ -29,7 +30,7 @@ import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoin
         'document-viewer.component.scss',
         '../indexation/indexing-form/indexing-form.component.scss',
     ],
-    providers: [SortPipe]
+    providers: [SortPipe, ExternalSignatoryBookManagerService]
 })
 
 export class DocumentViewerComponent implements OnInit, OnDestroy {
@@ -179,13 +180,14 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public headerService: HeaderService,
         public appService: AppService,
-        private dialog: MatDialog,
-        private sortPipe: SortPipe,
         public functions: FunctionsService,
         public privilegeService: PrivilegeService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        private notify: NotificationService,
+        private dialog: MatDialog,
+        private sortPipe: SortPipe,
         private authService: AuthService,
         private localStorage: LocalStorageService
     ) {
@@ -734,18 +736,42 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     openPdfInTab() {
         let src = '';
-        if (this.file.contentMode === 'base64') {
-            src = `data:${this.file.type};base64,${this.file.content}`;
-            const newWindow = window.open();
-            newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${src}" frameborder="0" allowfullscreen></iframe>`);
-            newWindow.document.title = this.title;
+        if (this.file.contentMode === 'route'){
+            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+                tap((data: any) => {
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
+                    const fileURL = URL.createObjectURL(contentBlob);
+                    const newWindow = window.open();
+                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
+                    newWindow.document.title = data.filename;
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        } else if (this.file.contentMode === 'base64') {
+            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+                tap((data: any) => {
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
+                    const fileURL = URL.createObjectURL(contentBlob);
+                    const newWindow = window.open();
+                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
+                    newWindow.document.title = data.filename;
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         } else {
             this.http.get(this.file.contentView).pipe(
                 tap((data: any) => {
-                    src = `data:${data.mimeType};base64,${data.encodedDocument}`;
+                    const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
+                    const fileURL = URL.createObjectURL(contentBlob);
                     const newWindow = window.open();
-                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${src}" frameborder="0" allowfullscreen></iframe>`);
-                    newWindow.document.title = this.title;
+                    newWindow.document.write(`<iframe style="width: 100%;height: 100%;margin: 0;padding: 0;" src="${fileURL}" frameborder="0" allowfullscreen></iframe>`);
+                    newWindow.document.title = data.title;
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -1411,8 +1437,16 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    openMaarchParapheurWorkflow() {
-        this.dialog.open(VisaWorkflowModalComponent, { panelClass: 'maarch-modal', data: { id: this.resId, type: 'resource', linkedToMaarchParapheur: true } });
+    openExternalSignatoryBookWorkflow() {
+        this.dialog.open(VisaWorkflowModalComponent, {
+            panelClass: 'maarch-modal',
+            data: {
+                id: this.resId,
+                type: 'resource',
+                title: this.translate.instant(`lang.${this.externalSignatoryBook.signatoryBookEnabled}Workflow`),
+                linkedToExternalSignatoryBook: true
+            }
+        });
     }
 
     getOriginalFileInfos(version: number) {
@@ -1472,5 +1506,10 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 })
             ).subscribe();
         });
+    }
+
+    canSaveModifications(currentMode: string) {
+        const commonConditions: boolean = this.isDocModified && this.mode === currentMode && this.editor.mode !== 'office365sharepoint' && !this.loading;
+        return currentMode === 'mainDocument' ? commonConditions && this.resId !== null : commonConditions;
     }
 }

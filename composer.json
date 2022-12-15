@@ -7,6 +7,7 @@
             "Administration\\"          : "src/app/administration/",
             "Attachment\\"              : "src/app/attachment/",
             "Basket\\"                  : "src/app/basket/",
+            "BroadcastList\\"           : "src/app/broadcastList/",
             "Configuration\\"           : "src/app/configuration/",
             "Contact\\"                 : "src/app/contact/",
             "ContentManagement\\"       : "src/app/contentManagement/",
@@ -44,7 +45,8 @@
             "Outlook\\"                 : "src/app/external/outlook/",
             "Sendmail\\"                : "modules/sendmail/",
             "Multigest\\"               : "src/app/external/multigest/",
-            "Noxxie\\PdfParser\\"       : "vendor/noxxie/pdfparser/src/Smalot/PdfParser/"
+            "Noxxie\\PdfParser\\"       : "vendor/noxxie/pdfparser/src/Smalot/PdfParser/",
+            "Monolog\\"                 : "vendor/monolog/monolog/src/Monolog/"
     	}
     },
     "require": {
@@ -66,7 +68,8 @@
         "rafikhaceb/pi-barcode": "^1.0",
         "sdaoudi/oauth2-keycloak": "^2.2",
         "jasig/phpcas": "^1.3",
-        "php-ews/php-ews": "^1.0"
+        "php-ews/php-ews": "^1.0",
+        "monolog/monolog": "^2.6"
     },
     "require-dev": {
         "phpunit/phpunit": "^9"

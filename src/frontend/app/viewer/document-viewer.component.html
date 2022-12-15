@@ -81,9 +81,9 @@
                         <mat-icon color="primary" class="fas fa-file-upload"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.uploadNewVersion' | translate}}</span>
                     </button>
-                    <button mat-menu-item *ngIf="(file.contentView !== undefined || base64 !== null) && resId != null && mode !== 'attachment' && externalId.signatureBookId" (click)="openMaarchParapheurWorkflow()">
+                    <button mat-menu-item *ngIf="(file.contentView !== undefined || base64 !== null) && resId != null && mode !== 'attachment' && externalId.signatureBookId && externalSignatoryBook.canViewWorkflow()" (click)="openExternalSignatoryBookWorkflow()">
                         <mat-icon color="primary" class="fas fa-list-ol"></mat-icon>
-                        <span>{{'lang.externalVisaWorkflow' | translate}}</span>
+                        <span>{{'lang.maarchParapheurWorkflow' | translate}}</span>
                     </button>
                     <button mat-menu-item *ngIf="editMode && resId === null" (click)="docToUpload.click()">
                         <mat-icon color="primary" class="fa fa-file-upload"></mat-icon>
@@ -156,12 +156,12 @@
         <mat-spinner style="margin:auto;"></mat-spinner>
     </div>
 </ng-container>
-<button mat-fab *ngIf="isDocModified && mode === 'mainDocument' && resId !== null && editor.mode !== 'office365sharepoint' && !loading" color="accent"
+<button mat-fab *ngIf="canSaveModifications('mainDocument')" color="accent"
     [title]="'lang.saveModifications' | translate" style="position: absolute;z-index: 3;bottom: 40px;right: 60px;"
     (click)="saveMainDocument()">
     <mat-icon style="height:auto;font-size:20px;" class="fas fa-check"></mat-icon>
 </button>
-<button mat-fab *ngIf="isDocModified && mode === 'attachment' && editor.mode !== 'office365sharepoint' && !loading" color="accent"
+<button mat-fab *ngIf="canSaveModifications('attachment')" color="accent"
     [title]="'lang.saveModifications' | translate" style="position: absolute;z-index: 3;bottom: 40px;right: 60px;"
     (click)="saveTmpDocument()">
     <mat-icon style="height:auto;font-size:20px;" class="fas fa-check"></mat-icon>

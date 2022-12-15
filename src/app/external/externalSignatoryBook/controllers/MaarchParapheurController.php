@@ -962,7 +962,7 @@ class MaarchParapheurController
             'recordId'     => $GLOBALS['id'],
             'eventType'    => 'ADD',
             'eventId'      => 'userCreation',
-            'info'         => _USER_LINKED_TO_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'info'         => _USER_LINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -988,7 +988,7 @@ class MaarchParapheurController
             'recordId'     => $GLOBALS['id'],
             'eventType'    => 'ADD',
             'eventId'      => 'userCreation',
-            'info'         => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'info'         => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);

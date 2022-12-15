@@ -36,6 +36,7 @@ use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use Tag\models\TagModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class ExportController
 {
@@ -796,7 +797,7 @@ class ExportController
 
         $list = [];
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $roles = array_column($roles, 'label', 'id');
 
         $listInstances = ListInstanceModel::get([

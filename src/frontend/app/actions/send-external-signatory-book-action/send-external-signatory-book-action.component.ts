@@ -26,7 +26,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
 
     @ViewChild('xParaph', { static: false }) xParaph: XParaphComponent;
-    @ViewChild('maarchParapheur', { static: false }) maarchParapheur: MaarchParaphComponent;
+    @ViewChild('externalSignatoryBookComponent', { static: false }) externalSignatoryBookComponent: MaarchParaphComponent;
     @ViewChild('fastParapheur', { static: false}) fastParapheur: FastParaphComponent;
     @ViewChild('iParapheur', { static: false }) iParapheur: IParaphComponent;
     @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
@@ -76,6 +76,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
+        await this.checkExternalSignatureBook();
         this.showToggle = this.data.additionalInfo.showToggle;
         this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
         this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
@@ -93,7 +94,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
                 })
             ).subscribe();
         }
-        await this.checkExternalSignatureBook();
     }
 
     async onSubmit() {
@@ -127,8 +127,16 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     executeAction() {
-        const realResSelected: string[] = this[this.authService.externalSignatoryBook.id].getRessources();
-        const datas: any = this[this.authService.externalSignatoryBook.id].getDatas();
+        let realResSelected: string[];
+        let datas: any;
+        if (this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
+            realResSelected = this[this.authService.externalSignatoryBook.id].getRessources();
+            datas = this[this.authService.externalSignatoryBook.id].getDatas();
+        } else {
+            realResSelected = this.externalSignatoryBook.getRessources(this.additionalsInfos);
+            const workflow: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.getWorkflow();
+            datas = this.externalSignatoryBook.getDatas(workflow, this.resourcesToSign);
+        }
 
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(
             tap((data: any) => {
@@ -141,6 +149,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             }),
             finalize(() => this.loading = false),
             catchError((err: any) => {
+
                 this.notify.handleSoftErrors(err);
                 return of(false);
             })
@@ -148,10 +157,19 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     isValidAction(): boolean {
-        if (this[this.authService.externalSignatoryBook.id] !== undefined) {
-            return this[this.authService.externalSignatoryBook.id].isValidParaph();
+        if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled) && this.authService.externalSignatoryBook.integratedWorkflow) {
+            return this.externalSignatoryBook.isValidParaph(
+                this.additionalsInfos,
+                this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getWorkflow(),
+                this.resourcesToSign,
+                this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getUserOtpsWorkflow()
+            );
         } else {
-            return false;
+            if (this[this.authService.externalSignatoryBook?.id] !== undefined) {
+                return this[this.authService.externalSignatoryBook?.id].isValidParaph();
+            } else {
+                return false;
+            }
         }
     }
 
@@ -190,12 +208,12 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     hasEmptyOtpSignaturePosition(): boolean {
-        if (this.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook.id) > -1) {
-            const externalUsers: any[] = this.maarchParapheur.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
+        if (this.authService.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
+            const externalUsers: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
                 this.resourcesToSign.forEach((resource: any) => {
-                    if (this.maarchParapheur.appExternalVisaWorkflow.hasOtpNoSignaturePositionFromResource(resource)) {
+                    if (this.externalSignatoryBookComponent.appExternalVisaWorkflow.hasOtpNoSignaturePositionFromResource(resource)) {
                         state = true;
                     }
                 });

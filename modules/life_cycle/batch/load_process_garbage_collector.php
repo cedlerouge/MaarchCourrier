@@ -212,7 +212,7 @@ $log4phpParams = $xmlconfig->LOG4PHP;
 if ((string) $log4phpParams->enabled == 'true') {
     $GLOBALS['logger']->set_log4PhpLibrary(
         $GLOBALS['MaarchDirectory'] 
-            . 'apps/maarch_entreprise/tools/log4php/Logger.php'
+            . 'modules/life_cycle/tools/log4php/Logger.php'
     );
     $GLOBALS['logger']->set_log4PhpLogger((string) $log4phpParams->Log4PhpLogger);
     $GLOBALS['logger']->set_log4PhpBusinessCode((string) $log4phpParams->Log4PhpBusinessCode);

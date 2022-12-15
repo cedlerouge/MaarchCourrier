@@ -14,6 +14,8 @@
 
 namespace SrcCore\models;
 
+use \SrcCore\controllers\LogsController;
+
 class DatabasePDO
 {
     private static $pdo             = null;
@@ -87,6 +89,11 @@ class DatabasePDO
                     if (!empty($jsonFile['database'][$key + 1])) {
                         continue;
                     } else {
+                        LogsController::add([
+                            'isSql'         => true,
+                            'level'         => 'ERROR',
+                            'sqlException'  => $PDOException->getMessage()
+                        ]);
                         throw new \Exception($PDOException->getMessage());
                     }
                 }
@@ -96,6 +103,13 @@ class DatabasePDO
 
     public function query($queryString, array $data = [])
     {
+        LogsController::add([
+            'isSql'         => true,
+            'level'         => 'INFO',
+            'sqlQuery'      => $queryString,
+            'sqlData'       => $data,
+        ]);
+
         if (self::$type == 'ORACLE') {
             $queryString = str_ireplace('CURRENT_TIMESTAMP', 'SYSDATE', $queryString);
         }
@@ -124,7 +138,6 @@ class DatabasePDO
             } else {
                 $query = self::$preparedQueries[$queryString];
             }
-
             $query->execute($data);
         } catch (\PDOException $PDOException) {
             if (strpos($PDOException->getMessage(), 'Admin shutdown: 7') !== false || strpos($PDOException->getMessage(), 'General error: 7') !== false) {
@@ -133,11 +146,13 @@ class DatabasePDO
                 $query = $db->query($queryString, $data);
             } else {
                 $param = implode(', ', $data);
-                $file = fopen('queries_error.log', 'a');
-                fwrite($file, '[' . date('Y-m-d H:i:s') . '] ' . $queryString . PHP_EOL);
-                fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$param}]" . PHP_EOL);
-                fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$PDOException->getMessage()}]" . PHP_EOL);
-                fclose($file);
+                LogsController::add([
+                    'isSql'         => true,
+                    'level'         => 'ERROR',
+                    'sqlQuery'      => $queryString . PHP_EOL,
+                    'sqlData'       => $param,
+                    'sqlException'  => $PDOException->getMessage()
+                ]);
 
                 throw new \Exception($PDOException->getMessage());
             }
@@ -148,13 +163,21 @@ class DatabasePDO
 
     public function exec(string $query)
     {
+        LogsController::add([
+            'isSql'         => true,
+            'level'         => 'INFO',
+            'sqlQuery'      => $query
+        ]);
+
         try {
             self::$pdo->exec($query);
         } catch (\PDOException $PDOException) {
-            $file = fopen('queries_error.log', 'a');
-            fwrite($file, '[' . date('Y-m-d H:i:s') . '] ' . $query . PHP_EOL);
-            fwrite($file, '[' . date('Y-m-d H:i:s') . "] [{$PDOException->getMessage()}]" . PHP_EOL);
-            fclose($file);
+            LogsController::add([
+                'isSql'         => true,
+                'level'         => 'ERROR',
+                'sqlQuery'      => $query . PHP_EOL,
+                'sqlException'  => $PDOException->getMessage()
+            ]);
 
             throw new \Exception($PDOException->getMessage());
         }

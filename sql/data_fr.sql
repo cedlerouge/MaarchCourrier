@@ -690,7 +690,7 @@ INSERT INTO notifications (notification_sid, notification_id, description, is_en
 INSERT INTO notifications (notification_sid, notification_id, description, is_enabled, event_id, notification_mode, template_id, diffusion_type, diffusion_properties, attachfor_type, attachfor_properties) VALUES (100, 'QUOTA', 'Alerte lorsque le quota est dépassé', 'Y', 'user_quota', 'EMAIL', 110, 'user', 'superadmin', NULL, NULL);
 
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('work_batch_autoimport_id', NULL, NULL, 1, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '22.12.1', NULL, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('database_version', NULL, '2301.0.0', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('user_quota', NULL, '', 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('defaultDepartment', 'Département par défaut sélectionné dans les autocomplétions de la Base Adresse Nationale', '75', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('thumbnailsSize', 'Résolution des imagettes', '750x900', NULL, NULL);
@@ -708,8 +708,8 @@ INSERT INTO parameters (id, description, param_value_string, param_value_int, pa
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('maximumSignRole', NULL, NULL, 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('workflowSignatoryRole', 'Rôle de signataire dans le circuit', 'mandatory', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('siret', 'Numéro SIRET de l''entreprise', '45239273100025', NULL, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('homepage_message', '', '<p><span style="font-size: 14pt;">Bienvenue sur <strong>Maarch Courrier 21.03</strong> </span><br /><span style="font-size: 14pt;">Suivez le <a title="notre guide de visite" href="https://docs.maarch.org/" target="_blank" rel="noopener"><span style="color: #f99830;"><strong>guide de visite en ligne</strong></span></a></span></p>', NULL, NULL);
-INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('loginpage_message', '', '<p><span style="font-size: 14pt; color: #ecf0f1;"><span style="color: #000000;"><strong>Acc&eacute;der au</strong> </span><a style="color: ##3598db;" title="le guide de visite" href="https://docs.maarch.org/gitbook/html/MaarchCourrier/21.03/guu/home.html" target="_blank" rel="noopener"><strong>guide de visite en ligne</strong></a></span></p>', NULL, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('homepage_message', '', '<p><span style="font-size: 14pt;">Bienvenue sur <strong>Maarch Courrier 2301</strong> </span><br /><span style="font-size: 14pt;">Suivez le <a title="notre guide de visite" href="https://docs.maarch.org/" target="_blank" rel="noopener"><span style="color: #f99830;"><strong>guide de visite en ligne</strong></span></a></span></p>', NULL, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('loginpage_message', '', '<p><span style="font-size: 14pt; color: #ecf0f1;"><span style="color: #000000;"><strong>Acc&eacute;der au</strong> </span><a style="color: ##3598db;" title="le guide de visite" href="https://docs.maarch.org/gitbook/html/MaarchCourrier/2301/guu/home.html" target="_blank" rel="noopener"><strong>guide de visite en ligne</strong></a></span></p>', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('traffic_record_summary_sheet', '', '', NULL, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_outgoing_2021', '', NULL, 3, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('chrono_incoming_2021', '', NULL, 4, NULL);
@@ -737,6 +737,14 @@ INSERT INTO registered_mail_issuing_sites_entities (id, site_id, entity_id) VALU
 INSERT INTO registered_mail_number_range (id, type, tracking_account_number, range_start, range_end, creator, creation_date, status, current_number) VALUES (1, '2C', 'SuiviNumber', 1, 10, 23, '2020-09-14 14:38:09.008644', 'OK', 1);
 INSERT INTO registered_mail_number_range (id, type, tracking_account_number, range_start, range_end, creator, creation_date, status, current_number) VALUES (2, 'RW', 'SuiviNumberInternational', 1, 10, 23, '2020-09-14 14:39:32.972626', 'OK', 1);
 INSERT INTO registered_mail_number_range (id, type, tracking_account_number, range_start, range_end, creator, creation_date, status, current_number) VALUES (3, '2D', 'suiviNumber', 1, 10, 23, '2020-09-14 14:39:16.779322', 'OK', 1);
+
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (1, 'dest', 'Destinataire', false);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (2, 'copy', 'En copie', true);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (3, 'visa', 'Pour visa', false);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (4, 'sign', 'Pour signature', false);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (5, 'avis', 'Pour avis', false);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (6, 'avis_copy', 'En copie (avis)', false);
+INSERT INTO difflist_roles (id, role_id, label, keep_in_list_instance) VALUES (7, 'avis_info', 'Pour information (avis)', false);
 
 INSERT INTO search_templates (id, user_id, label, creation_date, query) VALUES (1, 23, 'Tous les courriers', '2021-03-25 11:54:30.273871', '[{"identifier":"category","values":""},{"identifier":"meta"}]');
 INSERT INTO search_templates (id, user_id, label, creation_date, query) VALUES (2, 18, 'Courriers arrivés', '2021-03-25 11:59:29.500487', '[{"identifier":"category","values":[{"id":"incoming","label":"Courrier Arriv\u00e9e"}]},{"identifier":"meta"}]');

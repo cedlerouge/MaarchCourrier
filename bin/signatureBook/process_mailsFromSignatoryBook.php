@@ -383,7 +383,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
         $historyInfo = 'La signature de la pièce jointe ' . $historyIdentifier . ' a été refusée dans le parapheur externe' . $additionalHistoryInfo;
     }
     if (in_array($value['status'], ['validated', 'refused'])) {
-        Bt_createNote(['notes' => $value['notes'], 'resId' => $value['res_id_master']]);
+        Bt_createNote(['notes' => $value['notes'] ?? null, 'resId' => $value['res_id_master']]);
         Bt_history([
             'table_name' => 'res_attachments',
             'record_id'  => $resId,
@@ -487,7 +487,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             'event_type' => 'ACTION#1',
             'event_id'   => '1'
         ]);
-        Bt_createNote(['notes' => $value['notes'], 'resId' => $resId]);
+        Bt_createNote(['notes' => $value['notes'] ?? null, 'resId' => $resId]);
         \Resource\models\ResModel::update([
             'set'     => ['status' => $status],
             'postSet' => ['external_id' => "external_id - 'signatureBookId'"],

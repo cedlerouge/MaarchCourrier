@@ -27,7 +27,7 @@
 }
 
 .accountInfo {
-    margin-left: 20px !important;
+    margin-left: 0px !important;
     display: flex !important;
 
     span {
@@ -44,4 +44,9 @@
     .mat-line, mat-icon {
         opacity: 0.5;
     }
+}
+
+.externalUserLogin {
+    white-space: initial;
+    overflow: hidden
 }

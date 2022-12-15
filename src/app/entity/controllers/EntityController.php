@@ -35,6 +35,7 @@ use User\models\UserEntityModel;
 use User\models\UserModel;
 use Template\models\TemplateModel;
 use SrcCore\models\TextFormatModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class EntityController
 {
@@ -770,7 +771,7 @@ class EntityController
         $includeUsers     = in_array('users', array_column($fields, 'value'));
         $includeTemplates = in_array('templates', array_column($fields, 'value'));
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $roles = array_column($roles, 'label', 'id');
 
         foreach ($entities as $key => $entity) {

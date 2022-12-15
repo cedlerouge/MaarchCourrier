@@ -459,16 +459,17 @@ abstract class EntityModelAbstract
     public static function getRoles()
     {
         $roles = [];
+        $tmpRoles = DatabaseModel::select([
+            'select'    => ['role_id', 'label', 'keep_in_list_instance'],
+            'table'     => ['roles']
+        ]);
 
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/roles.xml']);
-        if ($loadedXml) {
-            foreach ($loadedXml->ROLES->ROLE as $value) {
-                $roles[] = [
-                    'id'                    => (string)$value->id,
-                    'label'                 => defined((string)$value->label) ? constant((string)$value->label) : (string)$value->label,
-                    'keepInListInstance'    => empty((string)$value->keep_in_diffusion_list) || (string)$value->keep_in_diffusion_list != 'true' ? false : true,
-                ];
-            }
+        foreach ($tmpRoles as $tmpValue) {
+            $roles[] = [
+                'id'                    => $tmpValue['role_id'],
+                'label'                 => defined($tmpValue['label']) ? constant($tmpValue['label']) : $tmpValue['label'],
+                'keepInListInstance'    => $tmpValue['keep_in_list_instance']
+            ];
         }
 
         return $roles;

@@ -22,16 +22,16 @@ class VersionUpdateControllerTest extends TestCase
         $responseBody   = json_decode((string)$response->getBody());
         $this->assertIsString($responseBody->currentVersion);
         $this->assertNotNull($responseBody->currentVersion);
-        $this->assertMatchesRegularExpression('/^\d{2}\.\d{2}\.\d+$/', $responseBody->currentVersion, 'Invalid current version');
+        $this->assertMatchesRegularExpression('/^\d{4}\.\d\.\d+$/', $responseBody->currentVersion, 'Invalid current version');
 
         if ($responseBody->lastAvailableMinorVersion != null) {
             $this->assertIsString($responseBody->lastAvailableMinorVersion);
-            $this->assertMatchesRegularExpression('/^\d{2}\.\d{2}\.\d+$/', $responseBody->lastAvailableMinorVersion, 'Invalid available minor version');
+            $this->assertMatchesRegularExpression('/^\d{4}\.\d\.\d+$/', $responseBody->lastAvailableMinorVersion, 'Invalid available minor version');
         }
 
         if ($responseBody->lastAvailableMajorVersion != null) {
             $this->assertIsString($responseBody->lastAvailableMajorVersion);
-            $this->assertMatchesRegularExpression('/^\d{2}\.\d{2}\.\d+$/', $responseBody->lastAvailableMajorVersion, 'Invalid available major version');
+            $this->assertMatchesRegularExpression('/^\d{4}\.\d\.\d+$/', $responseBody->lastAvailableMajorVersion, 'Invalid available major version');
         }
     }
 }

@@ -112,6 +112,7 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         array (
             'MyCLabs\\Enum\\' => 13,
             'Multigest\\' => 10,
+            'Monolog\\' => 8,
             'MessageExchange\\' => 16,
         ),
         'L' => 
@@ -180,6 +181,7 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         ),
         'B' => 
         array (
+            'BroadcastList\\' => 14,
             'Basket\\' => 7,
         ),
         'A' => 
@@ -376,6 +378,10 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         array (
             0 => __DIR__ . '/../..' . '/src/app/external/multigest',
         ),
+        'Monolog\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
+        ),
         'MessageExchange\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src/app/external/messageExchange',
@@ -540,6 +546,10 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         'Clue\\StreamFilter\\' => 
         array (
             0 => __DIR__ . '/..' . '/clue/stream-filter/src',
+        ),
+        'BroadcastList\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src/app/broadcastList',
         ),
         'Basket\\' => 
         array (
