@@ -104,15 +104,24 @@ class HomeController
 
         $externalId = json_decode($user['external_id'], true);
 
-        $isMaarchParapheurConnected = false;
-        $maarchParapheurUrl = null;
+        $isExternalSignatoryBookConnected = false;
+        $externalSignatoryBookUrl = null;
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (!empty($loadedXml)) {
+            $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
             foreach ($loadedXml->signatoryBook as $value) {
-                if ($value->id == "maarchParapheur") {
+                if ($value->id == "maarchParapheur" && $value->id == $signatoryBookEnabled) {
                     if (!empty($value->url) && !empty($value->userId) && !empty($value->password) && !empty($externalId['maarchParapheur'])) {
-                        $isMaarchParapheurConnected = true;
-                        $maarchParapheurUrl = rtrim((string)$value->url, "/");
+                        $isExternalSignatoryBookConnected = true;
+                        $externalSignatoryBookUrl = rtrim((string)$value->url, "/");
+                    }
+                    break;
+                } else if ($value->id == "fastParapheur" && $value->id == $signatoryBookEnabled) {
+                    if (!empty($value->url) && !empty($value->subscriberId) && !empty($externalId['fastParapheur'])) {
+                        $isExternalSignatoryBookConnected = true;
+                        $fastParapheurUrl = (string)$value->url;
+                        $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', $fastParapheurUrl);
+                        $externalSignatoryBookUrl = rtrim($fastParapheurUrl, "/");
                     }
                     break;
                 }
@@ -123,11 +132,12 @@ class HomeController
         $homeMessage = trim($homeMessage['param_value_string']);
 
         return $response->withJson([
-            'regroupedBaskets'          => $regroupedBaskets,
-            'assignedBaskets'           => $assignedBaskets,
-            'homeMessage'               => $homeMessage,
-            'isLinkedToMaarchParapheur' => $isMaarchParapheurConnected,
-            'maarchParapheurUrl'        => $maarchParapheurUrl
+            'regroupedBaskets'                          => $regroupedBaskets,
+            'assignedBaskets'                           => $assignedBaskets,
+            'homeMessage'                               => $homeMessage,
+            'isLinkedToExternalSignatoryBook'           => $isExternalSignatoryBookConnected,
+            'externalSignatoryBookUrl'                  => $externalSignatoryBookUrl,
+            'signatoryBookEnabled'                      => $signatoryBookEnabled,
         ]);
     }
 
