@@ -34,9 +34,7 @@ export class TileViewSummaryComponent implements OnInit, AfterViewInit {
         const data = { ...this.tile.parameters, ...this.tile };
         delete data.parameters;
         const link = this.dashboardService.getFormatedRoute(this.route, data);
-        if (this.tile.type === 'externalSignatoryBook' && link.route === '') {
-            window.open(this.tile.url, '_blank');
-        } else if (link) {
+        if (link) {
             const regex = /http[.]*/g;
             if (link.route.match(regex) === null) {
                 this.router.navigate([link.route], { queryParams: link.params });
