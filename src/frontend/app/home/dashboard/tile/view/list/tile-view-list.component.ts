@@ -60,7 +60,17 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
         if (link.route.match(regex) === null) {
             this.router.navigate([link.route], { queryParams: link.params });
         } else {
-            window.open(link.route, '_blank');
+            if (!this.functionsService.empty(link?.params)) {
+                let formatedParams: string = '';
+                const paramsArray: string[] = [];
+                Object.keys(link.params).forEach((item: any) => {
+                    paramsArray.push(item + '=' + link.params[item]);
+                    formatedParams = paramsArray.join('&');
+                });
+                window.open(`${link.route}?${formatedParams}`, '_blank');
+            } else {
+                window.open(link.route, '_blank');
+            }
         }
     }
 
