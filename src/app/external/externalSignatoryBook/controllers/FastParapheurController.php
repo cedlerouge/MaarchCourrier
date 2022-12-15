@@ -1095,6 +1095,7 @@ class FastParapheurController
                 'subject'           => $doc['subject'],
                 'creationDate'      => $doc['creation_date'],
                 'correspondents'    => $correspondents,
+                'resId'             => (int)$doc['signatureBookId'],
                 'url'               => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
             ];
         }, $documentsInFastParapheur));

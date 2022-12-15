@@ -56,15 +56,11 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
         const data = { ...resource, ...this.tile.parameters, ...this.tile };
         delete data.parameters;
         const link = this.dashboardService.getFormatedRoute(this.route, data);
-        if (this.tile.type === 'externalSignatoryBook' && link.route === '') {
-            window.open(resource.url, '_blank');
-        } else if (link) {
-            const regex = /http[.]*/g;
-            if (link.route.match(regex) === null) {
-                this.router.navigate([link.route], { queryParams: link.params });
-            } else {
-                window.open(link.route, '_blank');
-            }
+        const regex = /http[.]*/g;
+        if (link.route.match(regex) === null) {
+            this.router.navigate([link.route], { queryParams: link.params });
+        } else {
+            window.open(link.route, '_blank');
         }
     }
 

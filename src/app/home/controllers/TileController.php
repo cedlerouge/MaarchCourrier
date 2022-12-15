@@ -325,7 +325,10 @@ class TileController
             }
             $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
-                $tile['maarchParapheurUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
+                $tile['externalSignatoryBookUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
+            } else if ($enabledExternalSignatoryBook == 'fastParapheur') {
+                $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', (string)($loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']/url')[0]));
+                $tile['externalSignatoryBookUrl'] = rtrim($fastParapheurUrl, "/");
             }
         } elseif ($tile['type'] == 'searchTemplate') {
             $searchTemplate = SearchTemplateModel::get(['select' => ['label'], 'where' => ['id = ?', 'user_id = ?'], 'data' => [$tile['parameters']['searchTemplateId'], $GLOBALS['id']]]);

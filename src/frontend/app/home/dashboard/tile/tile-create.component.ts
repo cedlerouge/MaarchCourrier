@@ -136,7 +136,7 @@ export class TileCreateComponent implements OnInit {
             const data: any = await this.externalSignatoryBook.isLinkedToExternalSignatoryBook();
             if (!this.functionsService.empty(data)) {
                 this.tileOtherInfos = {
-                    maarchParapheurUrl: data.maarchParapheurUrl
+                    maarchParapheurUrl: data.externalSignatoryBookUrl
                 };
             }
         } else {
