@@ -67,8 +67,30 @@ class FastParapheurController
             return $response->withStatus(403)->withJson(['errors' => 'FastParapheur user email can only be linked to a single MaarchCourrier user', 'lang' => 'fastParapheurUserAlreadyLinked']);
         }
 
-        $userInfo = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $args['id']]);
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
+        }
 
+        $fpUsers = FastParapheurController::getUsers([
+            'config' => [
+                'subscriberId' => $config['subscriberId'],
+                'url'          => $config['url'],
+                'certPath'     => $config['certPath'],
+                'certPass'     => $config['certPass'],
+                'certType'     => $config['certType']
+            ]
+        ]);
+        if (empty($fpUsers)) {
+            return $response->withStatus(400)->withJson(['errors' => "FastParapheur users not found!"]);
+        }
+        $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
+        
+        if (!in_array($body['fastParapheurUserEmail'], $fpUsersEmails)) {
+            return $response->withStatus(400)->withJson(['errors' => "FastParapheur user '{$body['fastParapheurUserEmail']}' not found!"]);
+        }
+
+        $userInfo   = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $args['id']]);
         $externalId = json_decode($userInfo['external_id'], true);
         $externalId['fastParapheur'] = $body['fastParapheurUserEmail'];
 
@@ -270,6 +292,21 @@ class FastParapheurController
         }
 
         return $response->withJson($externalWorkflow);
+    }
+
+    public static function getConfig()
+    {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
+        }
+
+        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+        }
+        
+        return json_decode(json_encode($fastParapheurBlock), true);
     }
 
     public static function retrieveSignedMails(array $args)
