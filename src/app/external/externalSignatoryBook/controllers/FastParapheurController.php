@@ -67,27 +67,9 @@ class FastParapheurController
             return $response->withStatus(403)->withJson(['errors' => 'FastParapheur user email can only be linked to a single MaarchCourrier user', 'lang' => 'fastParapheurUserAlreadyLinked']);
         }
 
-        $config = FastParapheurController::getConfig();
-        if (!empty($config['errors'])) {
-            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
-        }
-
-        $fpUsers = FastParapheurController::getUsers([
-            'config' => [
-                'subscriberId' => $config['subscriberId'],
-                'url'          => $config['url'],
-                'certPath'     => $config['certPath'],
-                'certPass'     => $config['certPass'],
-                'certType'     => $config['certType']
-            ]
-        ]);
-        if (empty($fpUsers)) {
-            return $response->withStatus(400)->withJson(['errors' => "FastParapheur users not found!"]);
-        }
-        $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
-        
-        if (!in_array($body['fastParapheurUserEmail'], $fpUsersEmails)) {
-            return $response->withStatus(400)->withJson(['errors' => "FastParapheur user '{$body['fastParapheurUserEmail']}' not found!"]);
+        $check = FastParapheurController::checkUserExistanceInFastParapheur(['fastParapheurUserEmail' => $body['fastParapheurUserEmail']]);
+        if (!empty($check['errors'])) {
+            return $response->withStatus($check['code'])->withJson(['errors' => $check['errors']]);
         }
 
         $userInfo   = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $args['id']]);
@@ -152,6 +134,11 @@ class FastParapheurController
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurId"']]);
         if (empty($user['fastParapheurId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'user does not have a Fast Parapheur email']);
+        }
+
+        $check = FastParapheurController::checkUserExistanceInFastParapheur(['fastParapheurUserEmail' => $user['fastParapheurId']]);
+        if (!empty($check['errors'])) {
+            return $response->withStatus($check['code'])->withJson(['errors' => $check['errors']]);
         }
 
         return $response->withJson(['link' => $user['fastParapheurId']]);
@@ -300,7 +287,7 @@ class FastParapheurController
         if (empty($loadedXml)) {
             return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
         }
-
+        
         $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
         if (empty($fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
@@ -1074,6 +1061,38 @@ class FastParapheurController
         }
 
         return $users;
+    }
+
+    public static function checkUserExistanceInFastParapheur(array $args)
+    {
+        if (!Validator::notEmpty()->email()->validate($args['fastParapheurUserEmail'] ?? null)) {
+            return $response->withStatus(400)->withJson(['errors' => 'fastParapheurUserEmail is not a valid email address']);
+        }
+
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return ['code' => $config['code'], 'errors' => $config['errors']];
+        }
+
+        $fpUsers = FastParapheurController::getUsers([
+            'config' => [
+                'subscriberId' => $config['subscriberId'],
+                'url'          => $config['url'],
+                'certPath'     => $config['certPath'],
+                'certPass'     => $config['certPass'],
+                'certType'     => $config['certType']
+            ]
+        ]);
+        if (empty($fpUsers)) {
+            return ['code' => 400, 'errors' => "FastParapheur users not found!"];
+        }
+        $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
+
+        if (!in_array($args['fastParapheurUserEmail'], $fpUsersEmails)) {
+            return ['code' => 400, 'errors' => "FastParapheur user '{$args['fastParapheurUserEmail']}' not found!"];
+        }
+
+        return true;
     }
 
     public static function getResourcesCount()
