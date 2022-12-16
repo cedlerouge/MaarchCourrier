@@ -137,18 +137,6 @@ export class SummarySheetComponent implements OnInit {
             enabled: true
         },
         {
-            id: 'visaWorkflowFastParapheur',
-            unit: 'visaWorkflowFastParapheur',
-            label: this.translate.instant('lang.fastParapheurWorkflow'),
-            css: 'col-md-4 text-center',
-            desc: [
-                this.translate.instant('lang.firstname') + ' ' + this.translate.instant('lang.lastname'),
-                this.translate.instant('lang.role'),
-                this.translate.instant('lang.processDate')
-            ],
-            enabled: true
-        },
-        {
             id: 'notes',
             unit: 'notes',
             label: this.translate.instant('lang.notes'),
@@ -208,12 +196,10 @@ export class SummarySheetComponent implements OnInit {
             })
         ).subscribe();
 
-        if (this.externalSignatoryBook.signatoryBookEnabled === 'maarchParapheur') {
-            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur');
-        } else if (this.externalSignatoryBook.signatoryBookEnabled === 'fastParapheur') {
-            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
-        } else {
-            this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowFastParapheur' && item.id !== 'visaWorkflowMaarchParapheur');
+        if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
+            if (!this.externalSignatoryBook.canViewWorkflow()) {
+                this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
+            }
         }
 
         if (!this.privilegeService.hasCurrentUserPrivilege('view_doc_history') && !this.privilegeService.hasCurrentUserPrivilege('view_full_history')) {
