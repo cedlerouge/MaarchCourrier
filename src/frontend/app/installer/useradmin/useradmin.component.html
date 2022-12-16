@@ -20,7 +20,7 @@
             <mat-label>{{'lang.password' | translate}}</mat-label>
             <input [type]="hide ? 'password' : 'text'" matInput formControlName="password">
             <button mat-icon-button matSuffix color="primary" (click)="hide = !hide">
-                <mat-icon style="width: auto;" class="fa {{hide ? 'fa-eye-slash' : 'fa-eye'}}"></mat-icon>
+                <mat-icon class="fa {{hide ? 'fa-eye-slash' : 'fa-eye'}}"></mat-icon>
             </button>
             <mat-error>{{'lang.passwordNotMatch' | translate}}</mat-error>
         </mat-form-field>
@@ -28,7 +28,7 @@
             <mat-label>{{'lang.retypeNewPassword' | translate}}</mat-label>
             <input [type]="hide ? 'password' : 'text'" matInput formControlName="passwordConfirm">
             <button mat-icon-button matSuffix color="primary" (click)="hide = !hide">
-                <mat-icon style="width: auto;" class="fa {{hide ? 'fa-eye-slash' : 'fa-eye'}}"></mat-icon>
+                <mat-icon class="fa {{hide ? 'fa-eye-slash' : 'fa-eye'}}"></mat-icon>
             </button>
             <mat-error>{{'lang.passwordNotMatch' | translate}}</mat-error>
         </mat-form-field>
