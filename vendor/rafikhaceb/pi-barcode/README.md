@@ -26,6 +26,16 @@ Usage
 -----
 ```php
 // initialisation
+use PiBarCode\PiBarCodeGenerator;
+
+PiBarCodeGenerator::generate('123456789012', 'EAN', 150, 0, true);
+```
+Or
+
+```php
+// initialisation
+use PiBarCode\PiBarCode;
+
 $bc = new PiBarCode();
   
 // Code to generate
@@ -38,13 +48,13 @@ $bc->setType('EAN');
 //    min Height = 15px
 //    image width (can not be less than the space needed for the barcode)
 //    quiet areas (mini = 10px) to the left and to the right of barcode
-$bc->setSize(80, 150, 10);
+$bc->setSize(150);
   
 // Text under the bars :
 //    'AUTO' : displays the barcode value
 //    '' : does not display text under the code
 //    'text to display' : displays a free textu nder the bars
-$bc->setText('AUTO');
+//$bc->setText('AUTO');
   
 // If called, this method disables code type printing (EAN, C128...)
 $bc->hideCodeType();
@@ -53,11 +63,11 @@ $bc->hideCodeType();
 $bc->setColors('#123456', '#F9F9F9');
 
 // File type: GIF or PNG (default)
-$bc->setFiletype('PNG');
+$bc->setFileType('PNG');
   
 // Send the image to a file
-$bc->writeBarcodeFile('barcode.png');
+//$bc->writeBarcodeFile('barcode.png');
 
 // Or send the image to the browser
-// $bc->showBarcodeImage();
+$bc->showBarcodeImage();
 ```

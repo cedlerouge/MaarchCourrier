@@ -19,6 +19,7 @@ use Contact\controllers\ContactController;
 use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
 use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
@@ -221,7 +222,12 @@ class SummarySheetController
                 $qrCode = new QrCode($prefix . $resource['res_id']);
                 $qrCode->setSize(400);
                 $qrCode->setMargin(25);
-                $pdf->Image('@'.$qrCode->writeString(), 485, 10, 90, 90);
+
+                $pngWriter = new PngWriter();
+                $qrCodeResult = $pngWriter->write($qrCode);
+                $qrCodeResult = $qrCodeResult->getString();
+
+                $pdf->Image('@' . $qrCodeResult, 485, 10, 90, 90);
             }
         }
         foreach ($units as $key => $unit) {

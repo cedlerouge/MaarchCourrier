@@ -16,6 +16,7 @@ namespace Entity\controllers;
 
 use Com\Tecnick\Barcode\Barcode;
 use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use Parameter\models\ParameterModel;
@@ -77,7 +78,12 @@ class EntitySeparatorController
             if ($body['type'] == 'qrcode') {
                 $qrCode = new QrCode($prefix . $entityId);
                 $qrCode->setSize(600);
-                $pdf->Image('@'.$qrCode->writeString(), 0, 40, 200, '', '', '', '', false, 300, 'C');
+
+                $pngWriter = new PngWriter();
+                $qrCodeResult = $pngWriter->write($qrCode);
+                $qrCodeResult = $qrCodeResult->getString();
+
+                $pdf->Image('@' . $qrCodeResult, 0, 40, 200, '', '', '', '', false, 300, 'C');
             } else {
                 $barcode = new Barcode();
                 $bobj = $barcode->getBarcodeObj(
