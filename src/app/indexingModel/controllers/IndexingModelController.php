@@ -45,7 +45,7 @@ class IndexingModelController
         $where = ['(owner = ? OR private = ?)'];
 
         $showDisabled = false;
-        if (Validator::notEmpty()->validate($query['showDisabled'])) {
+        if (Validator::notEmpty()->validate($query['showDisabled'] ?? false)) {
             $showDisabled = $query['showDisabled'] == 'true';
         }
 
