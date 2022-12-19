@@ -379,7 +379,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
             autoFocus: false,
             disableClose: true,
-            panelClass: 'maarch-full-height-modal',
+            panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
             data: {
                 title: file.name,
                 filename: file.name,
