@@ -28,9 +28,15 @@ require_once("src/core/lang/lang-{$language}.php");
 //$app = new App(['settings' => ['displayErrorDetails' => true, 'determineRouteBeforeAppMiddleware' => true, 'addContentLengthHeader' => true ]]);
 
 $responseFactory = new \SrcCore\http\ResponseFactory();
-
 $app = \Slim\Factory\AppFactory::create($responseFactory);
-$app->setBasePath('/rest');
+
+// Since Slim 4, the basePath is not automatically calculated with the folder paths
+// Instead, Slim assumes the API is exposed at the root path '/'
+// We have to find the basePath dynamically
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/rest';
+$requestUri = explode('/rest', $requestUri);
+$requestUriBasePath = $requestUri[0] ?? '';
+$app->setBasePath($requestUriBasePath . '/rest');
 
 //Authentication
 $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
