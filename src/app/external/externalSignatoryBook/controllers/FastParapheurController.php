@@ -292,7 +292,8 @@ class FastParapheurController
             ]);           
 
             if ($curlReturn['code'] == 404) {
-                return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
+                echo "Erreur 404 : \n" . $curlReturn['raw'];
+                continue;
             }
 
             if (!empty($curlReturn['response']['developerMessage']) && !empty($value['res_id_master'])) {
