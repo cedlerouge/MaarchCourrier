@@ -50,3 +50,9 @@
     white-space: initial;
     overflow: hidden
 }
+
+.emptyExternalSignatoryBook {
+    cursor: help !important;
+    font-style: italic;
+    color: var(--maarch-color-danger);
+}

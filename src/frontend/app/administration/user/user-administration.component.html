@@ -31,8 +31,9 @@
                     {{'lang.changePassword' | translate}}
                 </p>
             </a>
-            <a mat-list-item [disabled]="!canLinkAccount()" *ngIf="!loading && (user.canCreateMaarchParapheurUser || externalSignatoryBookLink.login === '')"
-                (click)="linkExternalSignatoryBookAccount()" title="{{'lang.createUserInMaarchParapheur' | translate}}">
+            <a mat-list-item *ngIf="!loading && user.canLinkToExternalSignatoryBook"
+                (click)="linkExternalSignatoryBookAccount()"
+                [title]="getLabelById('linkAccount')">
                 <mat-icon color="primary" mat-list-icon class="fa fa-link"></mat-icon>
                 <p mat-line>
                     {{getLabelById('linkAccount')}}
@@ -41,11 +42,6 @@
                     {{'lang.maarchParapheurLinkbroken' | translate}}
                 </p>
             </a>
-            <div *ngIf="!canLinkAccount()"
-                class="alert-message alert-message-danger"
-                style="max-width: 100%;margin: 0px;"
-                [innerHTML]="'lang.checkExternalSignatoryBookConfig' | translate">
-            </div>
         </mat-nav-list>
         <mat-divider></mat-divider>
         <mat-list *ngIf="externalSignatoryBookLink.login !== ''">

@@ -269,7 +269,7 @@ export class UserAdministrationComponent implements OnInit {
     async linkAccountToSignatoryBook(result: any) {
         const data: any = await this.externalSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
         if (data) {
-            this.user.canCreateMaarchParapheurUser = false;
+            this.user.canLinkToExternalSignatoryBook = false;
             this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
         }
@@ -278,7 +278,7 @@ export class UserAdministrationComponent implements OnInit {
     async createExternalSignatoryBookAccount(result: any, login: string) {
         const data: any = await this.externalSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
         if (!this.functions.empty(data)) {
-            this.user.canCreateMaarchParapheurUser = false;
+            this.user.canLinkToExternalSignatoryBook = false;
             this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = data.externalId;
             this.checkInfoExternalSignatoryBookAccount();
         }
@@ -303,7 +303,7 @@ export class UserAdministrationComponent implements OnInit {
             filter((data: string) => data === 'ok'),
             exhaustMap(async () => await this.externalSignatoryBook.unlinkSignatoryBookAccount(this.serialId)),
             tap(() => {
-                this.user.canCreateMaarchParapheurUser = true;
+                this.user.canLinkToExternalSignatoryBook = true;
                 this.externalSignatoryBookLink.login = '';
                 this.externalSignatoryBookLink.picture = '';
                 this.notify.success(this.translate.instant('lang.accountUnlinked'));
@@ -1007,10 +1007,6 @@ export class UserAdministrationComponent implements OnInit {
 
     getLabelById(varLang: string): string {
         return `${this.translate.instant('lang.' + varLang)} ${this.translate.instant('lang.' + this.authService.externalSignatoryBook?.id)}`;
-    }
-
-    canLinkAccount(): boolean {
-        return !this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled);
     }
 }
 
