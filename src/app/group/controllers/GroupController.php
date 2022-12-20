@@ -8,8 +8,8 @@ use Entity\models\EntityModel;
 use Group\models\PrivilegeModel;
 use Group\models\GroupModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\models\ValidatorModel;
 use User\controllers\UserController;
@@ -58,7 +58,7 @@ class GroupController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['group_id']) && preg_match("/^[\w-]*$/", $data['group_id']) && (strlen($data['group_id']) < 33);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['group_desc']);
@@ -97,7 +97,7 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['description']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['security']['where_clause']);
         if (!$check) {

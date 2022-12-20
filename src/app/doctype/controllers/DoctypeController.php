@@ -17,8 +17,8 @@ use Respect\Validation\Validator;
 use Doctype\models\SecondLevelModel;
 use Doctype\models\DoctypeModel;
 use Template\models\TemplateModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use Resource\models\ResModel;
 
 class DoctypeController
@@ -67,7 +67,7 @@ class DoctypeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         
         $errors = DoctypeController::control($data, 'create');
         if (!empty($errors)) {
@@ -121,7 +121,7 @@ class DoctypeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data                            = $request->getParams();
+        $data                            = $request->getParsedBody();
         $data['type_id']                 = $aArgs['id'];
         
         $errors = DoctypeController::control($data, 'update');
@@ -216,7 +216,7 @@ class DoctypeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data            = $request->getParams();
+        $data            = $request->getParsedBody();
         $data['type_id'] = $aArgs['id'];
 
         if (!Validator::intVal()->validate($data['type_id'])) {

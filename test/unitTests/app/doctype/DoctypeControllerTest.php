@@ -9,10 +9,19 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
-use SrcCore\models\DatabaseModel;
+namespace MaarchCourrier\Tests\app\doctype;
 
-class DoctypeControllerTest extends TestCase
+use Doctype\controllers\DoctypeController;
+use Doctype\controllers\FirstLevelController;
+use Doctype\controllers\SecondLevelController;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use SrcCore\models\DatabaseModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+use User\models\UserModel;
+
+class DoctypeControllerTest extends CourrierTestCase
 {
     private static $firstLevelId  = null;
     private static $secondLevelId = null;
@@ -21,11 +30,10 @@ class DoctypeControllerTest extends TestCase
     public function testGet()
     {
         //  READ
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $doctypeController = new \Doctype\controllers\DoctypeController();
-        $response          = $doctypeController->get($request, new \Slim\Http\Response());
+        $doctypeController = new DoctypeController();
+        $response          = $doctypeController->get($request, new Response());
         $responseBody      = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->doctypes);
@@ -49,18 +57,17 @@ class DoctypeControllerTest extends TestCase
     public function testReadList()
     {
         //  READ LIST
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
-        $response          = $firstLevelController->getTree($request, new \Slim\Http\Response());
+        $firstLevelController = new FirstLevelController();
+        $response          = $firstLevelController->getTree($request, new Response());
         $responseBody      = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->structure);
         $this->assertNotNull($responseBody->structure[0]->id);
         $this->assertNotNull($responseBody->structure[0]->text);
         $this->assertNotNull($responseBody->structure[0]->parent);
-        
+
         $this->assertIsInt($responseBody->structure[0]->doctypes_first_level_id);
         $this->assertNotNull($responseBody->structure[0]->doctypes_first_level_id);
         $this->assertNotNull($responseBody->structure[0]->doctypes_first_level_label);
@@ -69,11 +76,10 @@ class DoctypeControllerTest extends TestCase
 
     public function testinitDoctypes()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
-        $response          = $firstLevelController->initDoctypes($request, new \Slim\Http\Response());
+        $firstLevelController = new FirstLevelController();
+        $response          = $firstLevelController->initDoctypes($request, new Response());
         $responseBody      = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->firstLevel);
@@ -85,20 +91,17 @@ class DoctypeControllerTest extends TestCase
 
     public function testCreateFirstLevel()
     {
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
+        $firstLevelController = new FirstLevelController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'doctypes_first_level_label' => 'testTUfirstlevel',
             'css_style'                    => '#99999',
             'enabled'                    => 'Y',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $firstLevelController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $firstLevelController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$firstLevelId = $responseBody->firstLevelId;
@@ -106,14 +109,14 @@ class DoctypeControllerTest extends TestCase
         $this->assertIsInt(self::$firstLevelId);
 
         // CREATE FAIL
-        $aArgs = [
+        $args = [
             'doctypes_first_level_label' => '',
             'css_style'                  => '#7777',
             'enabled'                    => 'gaz',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $firstLevelController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $firstLevelController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Invalid doctypes_first_level_label', $responseBody->errors[0]);
@@ -121,21 +124,18 @@ class DoctypeControllerTest extends TestCase
 
     public function testCreateSecondLevel()
     {
-        $secondLevelController = new \Doctype\controllers\SecondLevelController();
+        $secondLevelController = new SecondLevelController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'doctypes_second_level_label' => 'testTUsecondlevel',
             'doctypes_first_level_id'     => self::$firstLevelId,
             'css_style'                   => '#99999',
             'enabled'                     => 'Y',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $secondLevelController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $secondLevelController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$secondLevelId = $responseBody->secondLevelId;
@@ -143,15 +143,15 @@ class DoctypeControllerTest extends TestCase
         $this->assertIsInt(self::$secondLevelId);
 
         // CREATE FAIL
-        $aArgs = [
+        $args = [
             'doctypes_second_level_label' => '',
             'doctypes_first_level_id'     => '',
             'css_style'                  => '#7777',
             'enabled'                    => 'gaz',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $secondLevelController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $secondLevelController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Invalid doctypes_second_level_label', $responseBody->errors[0]);
@@ -160,13 +160,10 @@ class DoctypeControllerTest extends TestCase
 
     public function testCreateDoctype()
     {
-        $doctypeController = new \Doctype\controllers\DoctypeController();
+        $doctypeController = new DoctypeController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'description'                 => 'testUDoctype',
             'doctypes_second_level_id'    => self::$secondLevelId,
             'retention_final_disposition' => 'destruction',
@@ -214,9 +211,9 @@ class DoctypeControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $doctypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $doctypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$doctypeId = $responseBody->doctypeId;
@@ -225,7 +222,7 @@ class DoctypeControllerTest extends TestCase
         $this->assertNotNull($responseBody->doctypeTree);
 
         // CREATE FAIL
-        $aArgs = [
+        $args = [
             'description'                 => '',
             'doctypes_second_level_id'    => '',
             'retention_final_disposition' => '',
@@ -237,9 +234,9 @@ class DoctypeControllerTest extends TestCase
             'process_mode'                => '',
             'template_id'                 => 0,
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $doctypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $doctypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Invalid description', $responseBody->errors[0]);
@@ -251,19 +248,17 @@ class DoctypeControllerTest extends TestCase
 
     public function testUpdateFirstLevel()
     {
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
+        $firstLevelController = new FirstLevelController();
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'doctypes_first_level_label' => 'testTUfirstlevelUPDATE',
             'css_style'                  => '#7777',
             'enabled'                    => 'Y',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $firstLevelController->update($fullRequest, new \Slim\Http\Response(), ["id" => self::$firstLevelId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+
+        $response     = $firstLevelController->update($fullRequest, new Response(), ["id" => self::$firstLevelId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$firstLevelId, $responseBody->firstLevelId->doctypes_first_level_id);
@@ -272,14 +267,14 @@ class DoctypeControllerTest extends TestCase
         $this->assertSame('Y', $responseBody->firstLevelId->enabled);
 
         // UPDATE FAIL
-        $aArgs = [
+        $args = [
             'doctypes_first_level_label' => '',
             'css_style'                  => '#7777',
             'enabled'                    => 'gaz',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $firstLevelController->update($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $firstLevelController->update($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors[0]);
@@ -289,21 +284,18 @@ class DoctypeControllerTest extends TestCase
 
     public function testUpdateSecondLevel()
     {
-        $secondLevelController = new \Doctype\controllers\SecondLevelController();
+        $secondLevelController = new SecondLevelController();
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'doctypes_second_level_label' => 'testTUsecondlevelUPDATE',
             'doctypes_first_level_id'     => self::$firstLevelId,
             'css_style'                   => '#7777',
             'enabled'                     => 'Y',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $secondLevelController->update($fullRequest, new \Slim\Http\Response(), ["id" => self::$secondLevelId]);
+        $response     = $secondLevelController->update($fullRequest, new Response(), ["id" => self::$secondLevelId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$secondLevelId, $responseBody->secondLevelId->doctypes_second_level_id);
@@ -313,15 +305,15 @@ class DoctypeControllerTest extends TestCase
         $this->assertSame('Y', $responseBody->secondLevelId->enabled);
 
         // UPDATE FAIL
-        $aArgs = [
+        $args = [
             'doctypes_second_level_label' => '',
             'doctypes_first_level_id'     => '',
             'css_style'                  => '#7777',
             'enabled'                    => 'gaz',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $secondLevelController->update($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $secondLevelController->update($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors[0]);
@@ -332,13 +324,10 @@ class DoctypeControllerTest extends TestCase
 
     public function testUpdateDoctype()
     {
-        $doctypeController = new \Doctype\controllers\DoctypeController();
+        $doctypeController = new DoctypeController();
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'description'                 => 'testUDoctypeUPDATE',
             'doctypes_second_level_id'    => self::$secondLevelId,
             'retention_final_disposition' => 'destruction',
@@ -388,16 +377,16 @@ class DoctypeControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $doctypeController->update($fullRequest, new \Slim\Http\Response(), ["id" => self::$doctypeId]);
+        $response     = $doctypeController->update($fullRequest, new Response(), ["id" => self::$doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$doctypeId, $responseBody->doctype->type_id);
         $this->assertNotNull($responseBody->doctypeTree);
 
         // UPDATE FAIL
-        $aArgs = [
+        $args = [
             'description'                 => '',
             'doctypes_second_level_id'    => '',
             'retention_final_disposition' => '',
@@ -409,9 +398,9 @@ class DoctypeControllerTest extends TestCase
             'process_mode'                => '',
             'template_id'                 => 0,
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $doctypeController->update($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $doctypeController->update($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('type_id is not a numeric', $responseBody->errors[0]);
@@ -426,27 +415,26 @@ class DoctypeControllerTest extends TestCase
     public function testRead()
     {
         //  READ FIRST LEVEL
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
-        $response          = $firstLevelController->getById($request, new \Slim\Http\Response(), ["id" => self::$firstLevelId]);
+        $firstLevelController = new FirstLevelController();
+        $response          = $firstLevelController->getById($request, new Response(), ["id" => self::$firstLevelId]);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame(self::$firstLevelId, $responseBody->firstLevel->doctypes_first_level_id);
         $this->assertSame('testTUfirstlevelUPDATE', $responseBody->firstLevel->doctypes_first_level_label);
         $this->assertSame('#7777', $responseBody->firstLevel->css_style);
         $this->assertSame(true, $responseBody->firstLevel->enabled);
 
         // READ FIRST LEVEL FAIL
-        $response          = $firstLevelController->getById($request, new \Slim\Http\Response(), ["id" => 'GAZ']);
+        $response          = $firstLevelController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
 
         //  READ SECOND LEVEL
-        $secondLevelController = new \Doctype\controllers\SecondLevelController();
-        $response     = $secondLevelController->getById($request, new \Slim\Http\Response(), ["id" => self::$secondLevelId]);
+        $secondLevelController = new SecondLevelController();
+        $response     = $secondLevelController->getById($request, new Response(), ["id" => self::$secondLevelId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$secondLevelId, $responseBody->secondLevel->doctypes_second_level_id);
@@ -455,14 +443,14 @@ class DoctypeControllerTest extends TestCase
         $this->assertSame(true, $responseBody->secondLevel->enabled);
 
         // READ SECOND LEVEL FAIL
-        $response          = $secondLevelController->getById($request, new \Slim\Http\Response(), ["id" => 'GAZ']);
+        $response          = $secondLevelController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
 
         // READ DOCTYPE
-        $doctypeController = new \Doctype\controllers\DoctypeController();
-        $response     = $doctypeController->getById($request, new \Slim\Http\Response(), ["id" => self::$doctypeId]);
+        $doctypeController = new DoctypeController();
+        $response     = $doctypeController->getById($request, new Response(), ["id" => self::$doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$doctypeId, $responseBody->doctype->type_id);
@@ -481,21 +469,18 @@ class DoctypeControllerTest extends TestCase
         $this->assertNotNull($responseBody->models);
 
         // READ DOCTYPE FAIL
-        $response          = $doctypeController->getById($request, new \Slim\Http\Response(), ["id" => 'GAZ']);
+        $response          = $doctypeController->getById($request, new Response(), ["id" => 'GAZ']);
         $responseBody      = json_decode((string)$response->getBody());
- 
+
         $this->assertSame('wrong format for id', $responseBody->errors);
     }
 
     public function testDeleteRedirectDoctype()
     {
-        $doctypeController = new \Doctype\controllers\DoctypeController();
+        $doctypeController = new DoctypeController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'description'                 => 'testUDoctype',
             'doctypes_first_level_id'     => self::$firstLevelId,
             'doctypes_second_level_id'    => self::$secondLevelId,
@@ -546,27 +531,24 @@ class DoctypeControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $doctypeController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $doctypeController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $doctypeId = $responseBody->doctypeId;
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE RESOURCE
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
-        $aArgs = [
+        $args = [
             'modelId'       => 1,
             'status'        => 'NEW',
             'encodedFile'   => $encodedFile,
@@ -583,46 +565,40 @@ class DoctypeControllerTest extends TestCase
             'priority'      => 'poiuytre1357nbvc',
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response     = $resController->create($fullRequest, new Response());
 
         $responseBody = json_decode((string)$response->getBody());
 
         $resId = $responseBody->resId;
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
 
         //  CAN NOT DELETE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $args = [];
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
 
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $doctypeController->delete($fullRequest, new \Slim\Http\Response(), ["id" => $doctypeId]);
+        $response     = $doctypeController->delete($fullRequest, new Response(), ["id" => $doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(1, $responseBody->deleted);
         $this->assertNull($responseBody->doctypeTree);
         $this->assertNotNull($responseBody->doctypes);
 
-        $aArgs = [
+        $args = [
             "new_type_id" => self::$doctypeId
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $requestPut  = \Slim\Http\Request::createFromEnvironment($environment);
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $requestPut);
-
-        $response     = $doctypeController->deleteRedirect($fullRequest, new \Slim\Http\Response(), ["id" => $doctypeId]);
+        $response     = $doctypeController->deleteRedirect($fullRequest, new Response(), ["id" => $doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->doctypeTree);
 
-        $res = \Resource\models\ResModel::getById(['resId' => $resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => $resId, 'select' => ['*']]);
         $this->assertSame(self::$doctypeId, $res['type_id']);
 
         DatabaseModel::delete([
@@ -632,32 +608,29 @@ class DoctypeControllerTest extends TestCase
         ]);
 
         // DELETE REDIRECT FAIL
-        $aArgs = [
+        $args = [
             "new_type_id" => 'gaz'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response     = $doctypeController->deleteRedirect($fullRequest, new \Slim\Http\Response(), ["id" => $doctypeId]);
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
+        $response     = $doctypeController->deleteRedirect($fullRequest, new Response(), ["id" => $doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('wrong format for new_type_id', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDeleteDoctype()
     {
-        $doctypeController = new \Doctype\controllers\DoctypeController();
+        $doctypeController = new DoctypeController();
 
         //  DELETE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $args = [];
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
 
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $doctypeController->delete($fullRequest, new \Slim\Http\Response(), ["id" => self::$doctypeId]);
+        $response     = $doctypeController->delete($fullRequest, new Response(), ["id" => self::$doctypeId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(0, $responseBody->deleted);
@@ -665,13 +638,7 @@ class DoctypeControllerTest extends TestCase
         $this->assertNull($responseBody->doctypes);
 
         //  DELETE FAIL
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $doctypeController->delete($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $doctypeController->delete($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors);
@@ -679,16 +646,13 @@ class DoctypeControllerTest extends TestCase
 
     public function testDeleteSecondLevel()
     {
-        $secondLevelController = new \Doctype\controllers\SecondLevelController();
+        $secondLevelController = new SecondLevelController();
 
         //  DELETE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $args = [];
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
 
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $secondLevelController->delete($fullRequest, new \Slim\Http\Response(), ["id" => self::$secondLevelId]);
+        $response     = $secondLevelController->delete($fullRequest, new Response(), ["id" => self::$secondLevelId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$secondLevelId, $responseBody->secondLevelDeleted->doctypes_second_level_id);
@@ -698,13 +662,7 @@ class DoctypeControllerTest extends TestCase
         $this->assertSame('N', $responseBody->secondLevelDeleted->enabled);
 
         //  DELETE FAIL
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $secondLevelController->delete($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $secondLevelController->delete($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors);
@@ -712,16 +670,13 @@ class DoctypeControllerTest extends TestCase
 
     public function testDeleteFirstLevel()
     {
-        $firstLevelController = new \Doctype\controllers\FirstLevelController();
+        $firstLevelController = new FirstLevelController();
 
         //  DELETE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $args = [];
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
 
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $firstLevelController->delete($fullRequest, new \Slim\Http\Response(), ["id" => self::$firstLevelId]);
+        $response     = $firstLevelController->delete($fullRequest, new Response(), ["id" => self::$firstLevelId]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$firstLevelId, $responseBody->firstLevelDeleted->doctypes_first_level_id);
@@ -730,19 +685,13 @@ class DoctypeControllerTest extends TestCase
         $this->assertSame('N', $responseBody->firstLevelDeleted->enabled);
 
         //  DELETE FAIL
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $firstLevelController->delete($fullRequest, new \Slim\Http\Response(), ["id" => 'gaz']);
+        $response     = $firstLevelController->delete($fullRequest, new Response(), ["id" => 'gaz']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors);
     }
 
-    public function testDeleteSQL()
+    public static function tearDownAfterClass(): void
     {
         DatabaseModel::delete([
             'table' => 'doctypes_first_level',
@@ -754,8 +703,5 @@ class DoctypeControllerTest extends TestCase
             'where' => ['doctypes_second_level_id = ?'],
             'data'  => [self::$secondLevelId]
         ]);
-
-        // Bypass risky test
-        $this->assertSame(1, 1);
     }
 }

@@ -7,22 +7,27 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\group;
 
-class PrivilegeControllerTest extends TestCase
+use Group\controllers\GroupController;
+use Group\controllers\PrivilegeController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class PrivilegeControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $resId = null;
 
     public function testCreate()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'group_id'      => 'TEST-JusticeLeague',
             'group_desc'    => 'Beyond the darkness',
             'security'      => [
@@ -30,9 +35,9 @@ class PrivilegeControllerTest extends TestCase
                 'maarch_comment'    => 'commentateur du dimanche'
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $groupController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $groupController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->group;
@@ -42,23 +47,22 @@ class PrivilegeControllerTest extends TestCase
 
     public function testAddPrivilege()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         //  Add privilege
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('POST');
 
         $args = [
             'privilegeId'      => 'entities_print_sep_mlb',
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Add privilege again
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         $args = [
@@ -66,7 +70,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Error : group does not exist
@@ -75,7 +79,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id * 100
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -87,7 +91,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => 'wrong format'
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -99,7 +103,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -107,28 +111,25 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame('Route privilegeId is empty or not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->addPrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->addPrivilege($request, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateParameters()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         //  Remove privilege
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'privilegeId'      => 'entities_print_sep_mlb',
             'id'    => self::$id
@@ -139,18 +140,18 @@ class PrivilegeControllerTest extends TestCase
                 'enabled' => true
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $privilegeController->updateParameters($fullRequest, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Fails
         $body = [
             'parameters' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $privilegeController->updateParameters($fullRequest, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body parameters is not an array', $responseBody['errors']);
@@ -160,7 +161,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id * 100
         ];
 
-        $response     = $privilegeController->updateParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -172,7 +173,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => 'wrong format'
         ];
 
-        $response     = $privilegeController->updateParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -184,7 +185,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->updateParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -192,34 +193,33 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame('Route privilegeId is empty or not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->updateParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->updateParameters($fullRequest, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetParameters()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         //  Remove privilege
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('POST');
 
         $args = [
             'privilegeId'      => 'entities_print_sep_mlb',
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->getParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -231,7 +231,7 @@ class PrivilegeControllerTest extends TestCase
 
         $queryParams = ['parameter' => 'enabled'];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response     = $privilegeController->getParameters($fullRequest, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($fullRequest, new Response(), $args);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -242,7 +242,7 @@ class PrivilegeControllerTest extends TestCase
         // Fails
         $queryParams = ['parameter' => 'fake'];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response     = $privilegeController->getParameters($fullRequest, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($fullRequest, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -253,7 +253,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id * 100
         ];
 
-        $response     = $privilegeController->getParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -265,7 +265,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => 'wrong format'
         ];
 
-        $response     = $privilegeController->getParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -277,7 +277,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->getParameters($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->getParameters($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -287,7 +287,7 @@ class PrivilegeControllerTest extends TestCase
 
     public function testGetPrivilegesByUser()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         $response = $privilegeController::getPrivilegesByUser(['userId' => $GLOBALS['id']]);
 
@@ -296,7 +296,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame('ALL_PRIVILEGES', $response[0]);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::getPrivilegesByUser(['userId' => $GLOBALS['id']]);
@@ -305,13 +305,13 @@ class PrivilegeControllerTest extends TestCase
         $this->assertNotContains('ALL_PRIVILEGES', $response);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetAssignableGroups()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         $response = $privilegeController::getAssignableGroups(['userId' => $GLOBALS['id']]);
 
@@ -319,7 +319,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertEmpty($response);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::getAssignableGroups(['userId' => $GLOBALS['id']]);
@@ -328,13 +328,13 @@ class PrivilegeControllerTest extends TestCase
         $this->assertNotEmpty($response);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testCanAssignGroup()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         $response = $privilegeController::canAssignGroup(['userId' => $GLOBALS['id'], 'groupId' => self::$id]);
 
@@ -342,7 +342,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(true, $response);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::canAssignGroup(['userId' => $GLOBALS['id'], 'groupId' => self::$id]);
@@ -351,22 +351,19 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(false, $response);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testIsResourceInProcess()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE test resource
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
         $argsMailNew = [
@@ -393,14 +390,14 @@ class PrivilegeControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$resId = $responseBody['resId'];
         $this->assertIsInt(self::$resId);
 
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         $response = $privilegeController::isResourceInProcess(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
 
@@ -408,7 +405,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(false, $response);
 
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::isResourceInProcess(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
@@ -417,7 +414,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(true, $response);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::isResourceInProcess(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
@@ -429,10 +426,10 @@ class PrivilegeControllerTest extends TestCase
     public function testCanUpdateResource()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         $response = $privilegeController::canUpdateResource(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
 
@@ -440,7 +437,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(false, $response);
 
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::canUpdateResource(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
@@ -449,7 +446,7 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame(true, $response);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $response = $privilegeController::canUpdateResource(['userId' => $GLOBALS['id'], 'resId' => self::$resId]);
@@ -457,35 +454,34 @@ class PrivilegeControllerTest extends TestCase
         $this->assertIsBool($response);
         $this->assertSame(true, $response);
 
-        Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id in (?)'],
             'data' => [[self::$resId]]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }
 
     public function testRemovePrivilege()
     {
-        $privilegeController = new \Group\controllers\PrivilegeController();
+        $privilegeController = new PrivilegeController();
 
         //  Remove privilege
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('POST');
 
         $args = [
             'privilegeId' => 'entities_print_sep_mlb',
             'id'          => self::$id
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Remove privilege again
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(204, $response->getStatusCode());
 
         // Error : group does not exist
@@ -494,7 +490,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id * 100
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -506,7 +502,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => 'wrong format'
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -518,7 +514,7 @@ class PrivilegeControllerTest extends TestCase
             'id'    => self::$id
         ];
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -526,37 +522,35 @@ class PrivilegeControllerTest extends TestCase
         $this->assertSame('Route privilegeId is empty or not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $privilegeController->removePrivilege($request, new \Slim\Http\Response(), $args);
+        $response     = $privilegeController->removePrivilege($request, new Response(), $args);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $groupController = new \Group\controllers\GroupController();
+        $groupController = new GroupController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $groupController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $groupController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->groups);
         $this->assertNotEmpty($responseBody->groups);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $groupController->getDetailledById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $groupController->getDetailledById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Group not found', $responseBody->errors);

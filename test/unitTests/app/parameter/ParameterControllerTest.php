@@ -7,34 +7,34 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\parameter;
 
-class ParameterControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use Parameter\controllers\ParameterController;
+use SrcCore\http\Response;
+
+class ParameterControllerTest extends CourrierTestCase
 {
     public function testCreate()
     {
-        $parameterController = new \Parameter\controllers\ParameterController();
+        $parameterController = new ParameterController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'id'                    => 'TEST-PARAMETER123',
             'description'           => 'TEST PARAMETER123 DESCRIPTION',
             'param_value_string'    => '20.12'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $parameterController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $parameterController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $parameterController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-PARAMETER123']);
+        $request = $this->createRequest('GET');
+        $response       = $parameterController->getById($request, new Response(), ['id' => 'TEST-PARAMETER123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-PARAMETER123', $responseBody->parameter->id);
@@ -44,25 +44,21 @@ class ParameterControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $parameterController = new \Parameter\controllers\ParameterController();
+        $parameterController = new ParameterController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'description'           => 'TEST PARAMETER123 DESCRIPTION UPDATED',
             'param_value_string'    => '20.12.22'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $parameterController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'TEST-PARAMETER123']);
+        $response     = $parameterController->update($fullRequest, new Response(), ['id' => 'TEST-PARAMETER123']);
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $parameterController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-PARAMETER123']);
+        $request = $this->createRequest('GET');
+        $response       = $parameterController->getById($request, new Response(), ['id' => 'TEST-PARAMETER123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-PARAMETER123', $responseBody->parameter->id);
@@ -72,12 +68,11 @@ class ParameterControllerTest extends TestCase
 
     public function testGet()
     {
-        $parameterController = new \Parameter\controllers\ParameterController();
+        $parameterController = new ParameterController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $parameterController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $parameterController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->parameters);
@@ -86,20 +81,18 @@ class ParameterControllerTest extends TestCase
 
     public function testDelete()
     {
-        $parameterController = new \Parameter\controllers\ParameterController();
+        $parameterController = new ParameterController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $parameterController->delete($request, new \Slim\Http\Response(), ['id' => 'TEST-PARAMETER123']);
+        $request = $this->createRequest('DELETE');
+        $response       = $parameterController->delete($request, new Response(), ['id' => 'TEST-PARAMETER123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->parameters);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $parameterController->getById($request, new \Slim\Http\Response(), ['id' => 'TEST-PARAMETER123']);
+        $request = $this->createRequest('GET');
+        $response       = $parameterController->getById($request, new Response(), ['id' => 'TEST-PARAMETER123']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Parameter not found', $responseBody->errors);

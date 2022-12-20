@@ -7,10 +7,17 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
-use Resource\models\UserFollowedResourceModel;
+namespace MaarchCourrier\Tests\app\resource;
 
-class UserFollowedResourceControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\controllers\UserFollowedResourceController;
+use Resource\models\ResModel;
+use Resource\models\UserFollowedResourceModel;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class UserFollowedResourceControllerTest extends CourrierTestCase
 {
     private static $idFirst = null;
     private static $idSecond = null;
@@ -19,15 +26,12 @@ class UserFollowedResourceControllerTest extends TestCase
     public function testCreate()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
 
@@ -81,26 +85,26 @@ class UserFollowedResourceControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idFirst = $responseBody['resId'];
         $this->assertIsInt(self::$idFirst);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idSecond = $responseBody['resId'];
         $this->assertIsInt(self::$idFirst);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailATra, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailATra);
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idThird = $responseBody['resId'];
         $this->assertIsInt(self::$idFirst);
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idFirst, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idFirst, 'select' => ['*']]);
 
         $this->assertIsArray($res);
 
@@ -113,28 +117,24 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertNotNull($res['initiator']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUnFollow()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $usersFollowedResourcesController = new \Resource\controllers\UserFollowedResourceController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $usersFollowedResourcesController = new UserFollowedResourceController();
 
         $args = [
             'resources' => [self::$idFirst, self::$idSecond, self::$idThird]
         ];
+        $fullRequest = $this->createRequestWithBody('DELETE', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-
-        $response     = $usersFollowedResourcesController->unFollow($fullRequest, new \Slim\Http\Response());
+        $response     = $usersFollowedResourcesController->unFollow($fullRequest, new Response());
 
         $this->assertSame(200, $response->getStatusCode());
 
@@ -143,67 +143,63 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertSame(3, $responseBody['unFollowed']);
 
         $GLOBALS['login'] = 'ccharles';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $usersFollowedResourcesController->unFollow($fullRequest, new \Slim\Http\Response());
+        $response     = $usersFollowedResourcesController->unFollow($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(0, $responseBody->unFollowed);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testFollow()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $usersFollowedResourcesController = new \Resource\controllers\UserFollowedResourceController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $usersFollowedResourcesController = new UserFollowedResourceController();
 
         $args = [
             'resources' => [self::$idFirst, self::$idSecond, self::$idThird]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $usersFollowedResourcesController->follow($fullRequest, new \Slim\Http\Response());
+        $response     = $usersFollowedResourcesController->follow($fullRequest, new Response());
 
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'ccharles';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $usersFollowedResourcesController->follow($fullRequest, new \Slim\Http\Response());
+        $response     = $usersFollowedResourcesController->follow($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(403, $response->getStatusCode());
         $this->assertSame('Document out of perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetList()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $userFollowedResourceController = new \Resource\controllers\UserFollowedResourceController();
+        $userFollowedResourceController = new UserFollowedResourceController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $userFollowedResourceController->getFollowedResources($request, new \Slim\Http\Response());
+        $response     = $userFollowedResourceController->getFollowedResources($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsInt($responseBody->countResources);
@@ -217,37 +213,35 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertSame('Breaking News : Superman is alive - PHP unit FOLLOW / UNFOLLOW', $responseBody->resources[0]->subject);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $userFollowedResourceController->getFollowedResources($request, new \Slim\Http\Response());
+        $response     = $userFollowedResourceController->getFollowedResources($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsInt($responseBody->countResources);
         $this->assertSame(0, $responseBody->countResources);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetFilters()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $userFollowedResourceController = new \Resource\controllers\UserFollowedResourceController();
+        $userFollowedResourceController = new UserFollowedResourceController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $userFollowedResourceController->getFilters($request, new \Slim\Http\Response());
+        $response     = $userFollowedResourceController->getFilters($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -281,14 +275,13 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertEmpty($responseBody['folders']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $userFollowedResourceController->getFilters($request, new \Slim\Http\Response());
+        $response     = $userFollowedResourceController->getFilters($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -311,31 +304,30 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertEmpty($responseBody['folders']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetBaskets()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $userFollowedResourceController = new \Resource\controllers\UserFollowedResourceController();
+        $userFollowedResourceController = new UserFollowedResourceController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $userFollowedResourceController->getBaskets($request, new \Slim\Http\Response(), ['resId' => 'wrong format']);
+        $response     = $userFollowedResourceController->getBaskets($request, new Response(), ['resId' => 'wrong format']);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route resId is not an integer', $responseBody['errors']);
 
 
         // Success
-        $response     = $userFollowedResourceController->getBaskets($request, new \Slim\Http\Response(), ['resId' => self::$idFirst]);
+        $response     = $userFollowedResourceController->getBaskets($request, new Response(), ['resId' => self::$idFirst]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -356,22 +348,22 @@ class UserFollowedResourceControllerTest extends TestCase
         $this->assertSame('Courriers à traiter', $responseBody['groupsBaskets'][1]['basketName']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  DELETE
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id in (?)'],
             'data' => [[self::$idFirst, self::$idSecond, self::$idThird]]
         ]);
@@ -390,19 +382,19 @@ class UserFollowedResourceControllerTest extends TestCase
         ]);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  READ
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idFirst, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idFirst, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idSecond, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idSecond, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idThird, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idThird, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }

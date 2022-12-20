@@ -18,8 +18,8 @@ use Docserver\models\DocserverModel;
 use MessageExchange\models\MessageExchangeModel;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\CoreController;
 use User\models\UserModel;
 

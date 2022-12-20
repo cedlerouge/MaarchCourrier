@@ -7,9 +7,21 @@
  *
  */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\signatureBook;
 
-class SignatureBookControllerTest extends TestCase
+use Attachment\controllers\AttachmentController;
+use Basket\models\BasketModel;
+use Convert\models\AdrModel;
+use Entity\models\ListInstanceModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SignatureBook\controllers\SignatureBookController;
+use SrcCore\http\Response;
+use User\controllers\UserController;
+use User\models\UserModel;
+
+class SignatureBookControllerTest extends CourrierTestCase
 {
     private static $resId = null;
     private static $attachmentIdIncoming = null;
@@ -21,15 +33,12 @@ class SignatureBookControllerTest extends TestCase
 
     public function testInit()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('install/samples/templates/2021/03/0001/0001_742130848.docx');
         $encodedFile = base64_encode($fileContent);
@@ -60,21 +69,21 @@ class SignatureBookControllerTest extends TestCase
             'integrations' => json_encode(['inSignatureBook' => true, 'inShipping' => true])
         ];
 
-        $fullRequest = httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
         self::$resId = $responseBody['resId'];
 
         $integrations = ['inSignatureBook' => true, 'inShipping' => true];
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['integrations' => json_encode($integrations)],
             'where' => ['res_id = ?'],
             'data'  => [self::$resId]
         ]);
 
-        $attachmentController = new \Attachment\controllers\AttachmentController();
+        $attachmentController = new AttachmentController();
 
         $body = [
             'title'         => 'Nulle pierre ne peut être polie sans friction, nul homme ne peut parfaire son expérience sans épreuve.',
@@ -86,19 +95,18 @@ class SignatureBookControllerTest extends TestCase
             'recipientId'   => 1,
             'recipientType' => 'contact'
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $attachmentController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         self::$attachmentId = $responseBody->id;
         $this->assertIsInt(self::$attachmentId);
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        \Entity\models\ListInstanceModel::create([
+        ListInstanceModel::create([
             'res_id'          => self::$resId,
             'sequence'        => 0,
             'item_id'         => $userInfo['id'],
@@ -112,39 +120,38 @@ class SignatureBookControllerTest extends TestCase
 
     public function testGetSignatureBook()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->getSignatureBook($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
+        $response = $signatureBookController->getSignatureBook($request, new Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->getSignatureBook($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
+        $response = $signatureBookController->getSignatureBook($request, new Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('No Document Found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $myBasket = \Basket\models\BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
+        $myBasket = BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
 
-        $response = $signatureBookController->getSignatureBook($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getSignatureBook($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -178,32 +185,31 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame(false, $responseBody['isCurrentWorkflowUser']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetIncomingMailAndAttachmentsById()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
+        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         // Success
-        $myBasket = \Basket\models\BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
+        $myBasket = BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
 
-        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -215,9 +221,7 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame('../rest/resources/' . $GLOBALS['resources'][0] . '/thumbnail', $responseBody[0]['thumbnailLink']);
         $this->assertSame(false, $responseBody[0]['inSignatureBook']);
 
-        $attachmentController = new \Attachment\controllers\AttachmentController();
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $attachmentController = new AttachmentController();
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -234,17 +238,16 @@ class SignatureBookControllerTest extends TestCase
             'inSignatureBook' => true
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['id']);
         self::$attachmentIdIncoming = $responseBody['id'];
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getIncomingMailAndAttachmentsById($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -264,31 +267,30 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame('../rest/attachments/' . self::$attachmentIdIncoming . '/thumbnail', $responseBody[1]['thumbnailLink']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetResources()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $myBasket = \Basket\models\BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
+        $request = $this->createRequest('GET');
+        $myBasket = BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
 
         // Errors
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->getResources($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'groupId' => 1000, 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getResources($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'groupId' => 1000, 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Group or basket does not exist', $responseBody['errors']);
 
         // Success
-        $response = $signatureBookController->getResources($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'groupId' => 2, 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getResources($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'groupId' => 2, 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -320,34 +322,31 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame('Normal', $responseBody['resources'][2]['priorityLabel']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetAttachmentsById()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->getAttachmentsById($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
+        $response = $signatureBookController->getAttachmentsById($request, new Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         // Success
-        $myBasket = \Basket\models\BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
+        $myBasket = BasketModel::getByBasketId(['basketId' => 'MyBasket', 'select' => ['id']]);
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $attachmentController = new \Attachment\controllers\AttachmentController();
+        $attachmentController = new AttachmentController();
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -364,17 +363,16 @@ class SignatureBookControllerTest extends TestCase
             'inSignatureBook' => true
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $attachmentController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $attachmentController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['id']);
         self::$attachmentId2 = $responseBody['id'];
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $signatureBookController->getAttachmentsById($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
+        $response = $signatureBookController->getAttachmentsById($request, new Response(), ['resId' => $GLOBALS['resources'][0], 'basketId' => $myBasket['id'], 'userId' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -409,38 +407,37 @@ class SignatureBookControllerTest extends TestCase
         $this->assertEmpty($responseBody[0]['obsAttachments']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testSignResource()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         // Errors
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->signResource($request, new \Slim\Http\Response(), []);
+        $response = $signatureBookController->signResource($request, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route resId is not an integer', $responseBody['errors']);
 
-        $response = $signatureBookController->signResource($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $response = $signatureBookController->signResource($request, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of signatory book', $responseBody['errors']);
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        \Entity\models\ListInstanceModel::create([
+        ListInstanceModel::create([
             'res_id'          => $GLOBALS['resources'][0],
             'sequence'        => 0,
             'item_id'         => $userInfo['id'],
@@ -452,13 +449,13 @@ class SignatureBookControllerTest extends TestCase
         ]);
 
         $integrations = ['inSignatureBook' => true, 'inShipping' => false];
-        \Resource\models\ResModel::update([
+        ResModel::update([
             'set'   => ['integrations' => json_encode($integrations), 'status' => 'ESIG'],
             'where' => ['res_id = ?'],
             'data'  => [$GLOBALS['resources'][0]]
         ]);
 
-        $response = $signatureBookController->signResource($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $response = $signatureBookController->signResource($request, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body signatureId is empty or not an integer', $responseBody['errors']);
@@ -467,8 +464,8 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => 10000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signResource($fullRequest, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signResource($fullRequest, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature does not exist', $responseBody['errors']);
@@ -477,7 +474,7 @@ class SignatureBookControllerTest extends TestCase
         $encodedFile = base64_encode($fileContent);
 
         $GLOBALS['login'] = 'ppetit';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -485,24 +482,24 @@ class SignatureBookControllerTest extends TestCase
             'label'  => 'Signature1',
             'base64' => $encodedFile
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $userController = new \User\controllers\UserController();
-        $response = $userController->addSignature($fullRequest, new \Slim\Http\Response(), ['id' => $GLOBALS['id']]);
+        $userController = new UserController();
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['signatures'][0]['id']);
         self::$signatureIdPetit = $responseBody['signatures'][0]['id'];
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
             'signatureId' => self::$signatureIdPetit
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signResource($fullRequest, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signResource($fullRequest, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature out of perimeter', $responseBody['errors']);
@@ -512,16 +509,16 @@ class SignatureBookControllerTest extends TestCase
             'label'  => 'Signature1',
             'base64' => $encodedFile
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $userController = new \User\controllers\UserController();
-        $response = $userController->addSignature($fullRequest, new \Slim\Http\Response(), ['id' => $GLOBALS['id']]);
+        $userController = new UserController();
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => $GLOBALS['id']]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['signatures'][0]['id']);
         self::$signatureIdRenaud = $responseBody['signatures'][0]['id'];
 
-        \Convert\models\AdrModel::createDocumentAdr([
+        AdrModel::createDocumentAdr([
             'resId'         => self::$resId,
             'type'          => 'SIGN',
             'docserverId'   => 'docserver_id',
@@ -533,13 +530,13 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => self::$signatureIdRenaud
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signResource($fullRequest, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signResource($fullRequest, new Response(), ['resId' => self::$resId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document has already been signed', $responseBody['errors']);
 
-        \Convert\models\AdrModel::deleteDocumentAdr([
+        AdrModel::deleteDocumentAdr([
             'where' => ['res_id = ?', 'type = ?'],
             'data' => [self::$resId, 'SIGN']
         ]);
@@ -548,93 +545,91 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => self::$signatureIdRenaud
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signResource($fullRequest, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signResource($fullRequest, new Response(), ['resId' => self::$resId]);
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUnSignResource()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         // Errors
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->unsignResource($request, new \Slim\Http\Response(), []);
+        $response = $signatureBookController->unsignResource($request, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route resId is not an integer', $responseBody['errors']);
 
-        $response = $signatureBookController->unsignResource($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
+        $response = $signatureBookController->unsignResource($request, new Response(), ['resId' => $GLOBALS['resources'][0] * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->unsignResource($request, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $response = $signatureBookController->unsignResource($request, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Privilege forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response = $signatureBookController->unsignResource($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $signatureBookController->unsignResource($request, new Response(), ['resId' => self::$resId]);
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testSignAttachment()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         // Errors
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->signAttachment($request, new \Slim\Http\Response(), []);
+        $response = $signatureBookController->signAttachment($request, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response = $signatureBookController->signAttachment($request, new \Slim\Http\Response(), ['id' => self::$attachmentId * 1000]);
+        $response = $signatureBookController->signAttachment($request, new Response(), ['id' => self::$attachmentId * 1000]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Attachment out of perimeter', $responseBody['errors']);
 
-        $response = $signatureBookController->signAttachment($request, new \Slim\Http\Response(), ['id' => self::$attachmentIdIncoming]);
+        $response = $signatureBookController->signAttachment($request, new Response(), ['id' => self::$attachmentIdIncoming]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of signatory book', $responseBody['errors']);
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->signAttachment($request, new \Slim\Http\Response(), ['id' =>self::$attachmentId]);
+        $response = $signatureBookController->signAttachment($request, new Response(), ['id' =>self::$attachmentId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body signatureId is empty or not an integer', $responseBody['errors']);
@@ -642,8 +637,8 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => 10000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signAttachment($fullRequest, new \Slim\Http\Response(), ['id' =>self::$attachmentId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signAttachment($fullRequest, new Response(), ['id' =>self::$attachmentId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature does not exist', $responseBody['errors']);
@@ -651,8 +646,8 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => self::$signatureIdPetit
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signAttachment($fullRequest, new \Slim\Http\Response(), ['id' =>self::$attachmentId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signAttachment($fullRequest, new Response(), ['id' =>self::$attachmentId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Signature out of perimeter', $responseBody['errors']);
@@ -661,19 +656,18 @@ class SignatureBookControllerTest extends TestCase
         $body = [
             'signatureId' => self::$signatureIdRenaud
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $signatureBookController->signAttachment($fullRequest, new \Slim\Http\Response(), ['id' => self::$attachmentId]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $signatureBookController->signAttachment($fullRequest, new Response(), ['id' => self::$attachmentId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['id']);
         self::$signedAttachmentId = $responseBody['id'];
 
         // Test Get
-        $attachmentController = new \Attachment\controllers\AttachmentController();
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $attachmentController = new AttachmentController();
+        $request = $this->createRequest('GET');
 
-        $response = $attachmentController->getById($request, new \Slim\Http\Response(), ['id' => self::$attachmentId]);
+        $response = $attachmentController->getById($request, new Response(), ['id' => self::$attachmentId]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody);
 
@@ -682,7 +676,7 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame('SIGN', $responseBody['status']);
         $this->assertSame(1, $responseBody['relation']);
 
-        $response = $attachmentController->getById($request, new \Slim\Http\Response(), ['id' => self::$signedAttachmentId]);
+        $response = $attachmentController->getById($request, new Response(), ['id' => self::$signedAttachmentId]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsArray($responseBody);
 
@@ -691,7 +685,7 @@ class SignatureBookControllerTest extends TestCase
         $this->assertSame('TRA', $responseBody['status']);
         $this->assertSame(1, $responseBody['relation']);
 
-        $response = $attachmentController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response = $attachmentController->getByResId($request, new Response(), ['resId' => self::$resId]);
         $response = json_decode((string)$response->getBody(), true);
 
         $this->assertNotNull($response['attachments']);
@@ -699,7 +693,7 @@ class SignatureBookControllerTest extends TestCase
 
         $this->assertIsBool($response['mailevaEnabled']);
 
-        $userLabel = \User\models\UserModel::getLabelledUserById(['id' => $GLOBALS['id']]);
+        $userLabel = UserModel::getLabelledUserById(['id' => $GLOBALS['id']]);
         foreach ($response['attachments'] as $value) {
             if ($value['resId'] == self::$signedAttachmentId) {
                 $this->assertSame($userLabel, $value['signatory']);
@@ -709,78 +703,77 @@ class SignatureBookControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUnSignAttachment()
     {
-        $signatureBookController = new \SignatureBook\controllers\SignatureBookController();
+        $signatureBookController = new SignatureBookController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         // Errors
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->unsignAttachment($request, new \Slim\Http\Response(), []);
+        $response = $signatureBookController->unsignAttachment($request, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response = $signatureBookController->unsignAttachment($request, new \Slim\Http\Response(), ['id' => self::$attachmentId * 1000]);
+        $response = $signatureBookController->unsignAttachment($request, new Response(), ['id' => self::$attachmentId * 1000]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
         $this->assertSame(403, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $signatureBookController->unsignAttachment($request, new \Slim\Http\Response(), ['id' => self::$attachmentId]);
+        $response = $signatureBookController->unsignAttachment($request, new Response(), ['id' => self::$attachmentId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Privilege forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'rrenaud';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response = $signatureBookController->unsignAttachment($request, new \Slim\Http\Response(), ['id' => self::$attachmentId]);
+        $response = $signatureBookController->unsignAttachment($request, new Response(), ['id' => self::$attachmentId]);
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    // TODO change to tearDownAfterClass
     public function testClean()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $attachmentController = new \Attachment\controllers\AttachmentController();
+        $attachmentController = new AttachmentController();
 
-        $response     = $attachmentController->delete($request, new \Slim\Http\Response(), ['id' => self::$attachmentId]);
+        $response     = $attachmentController->delete($request, new Response(), ['id' => self::$attachmentId]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response     = $attachmentController->delete($request, new \Slim\Http\Response(), ['id' => self::$attachmentId2]);
+        $response     = $attachmentController->delete($request, new Response(), ['id' => self::$attachmentId2]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response     = $attachmentController->delete($request, new \Slim\Http\Response(), ['id' => self::$attachmentIdIncoming]);
+        $response     = $attachmentController->delete($request, new Response(), ['id' => self::$attachmentIdIncoming]);
         $this->assertSame(204, $response->getStatusCode());
 
         // Delete resource
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data' => [self::$resId]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }

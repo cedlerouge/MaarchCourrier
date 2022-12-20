@@ -20,8 +20,8 @@ use Entity\models\ListInstanceHistoryModel;
 use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use User\models\UserModel;
 
 class ListInstanceHistoryController

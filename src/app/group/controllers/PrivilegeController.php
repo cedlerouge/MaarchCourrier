@@ -11,8 +11,8 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
 use SignatureBook\controllers\SignatureBookController;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
@@ -117,7 +117,7 @@ class PrivilegeController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!Validator::arrayType()->validate($data['parameters'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body parameters is not an array']);

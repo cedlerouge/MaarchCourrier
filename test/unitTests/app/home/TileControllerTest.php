@@ -11,9 +11,15 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\home;
 
-class TileControllerTest extends TestCase
+use Home\controllers\TileController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
+
+class TileControllerTest extends CourrierTestCase
 {
     private static $basket = null;
     private static $folder = null;
@@ -25,60 +31,57 @@ class TileControllerTest extends TestCase
     public function testCreate()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        \SrcCore\models\DatabaseModel::delete([
+        DatabaseModel::delete([
             'table' => 'tiles',
             'where' => ['user_id = ?'],
             'data'  => [6]
         ]);
 
-        $tileController = new \Home\controllers\TileController();
-
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $tileController = new TileController();
 
         // Basket Error
-        $aArgs = [
+        $args = [
             'parameters' => ['basketId' => 1, 'groupId' => 2],
             'color'     => '#90caf9',
             'position'  => 0,
             'type'      => 'basket',
             'view'      => 'list',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         $this->assertSame('Basket is not linked to this group', $responseBody->errors);
     
         // Basket Error
-        $aArgs = [
+        $args = [
             'parameters' => ['basketId' => 1, 'groupId' => 1],
             'color'     => '#90caf9',
             'position'  => 0,
             'type'      => 'basket',
             'view'      => 'list',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertSame('User is not linked to this group', $responseBody->errors);
 
         // Basket
-        $aArgs = [
+        $args = [
             'parameters' => ['basketId' => 4, 'groupId' => 4],
             'color'     => '#90caf9',
             'position'  => 0,
             'type'      => 'basket',
             'view'      => 'list',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertNotNull($responseBody->id);
@@ -86,16 +89,16 @@ class TileControllerTest extends TestCase
         self::$basket = $responseBody->id;
 
         // Folder
-        $aArgs = [
+        $args = [
             'parameters' => ['folderId' => 5],
             'color'     => '#e6ee9c',
             'position'  => 1,
             'type'      => 'folder',
             'view'      => 'summary',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertNotNull($responseBody->id);
@@ -103,16 +106,16 @@ class TileControllerTest extends TestCase
         self::$folder = $responseBody->id;
 
         // Shortcut
-        $aArgs = [
+        $args = [
             'parameters' => ['privilegeId' => 'adv_search_mlb'],
             'color'     => '#90caf9',
             'position'  => 2,
             'type'      => 'shortcut',
             'view'      => 'summary',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->id);
@@ -120,16 +123,16 @@ class TileControllerTest extends TestCase
         self::$shortcut = $responseBody->id;
 
         // FollowedMail
-        $aArgs = [
+        $args = [
             'parameters' => ['chartType' => 'vertical-bar', 'chartMode' => 'status'],
             'color'     => '#a5d6a7',
             'position'  => 3,
             'type'      => 'followedMail',
             'view'      => 'chart',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         
         $this->assertNotNull($responseBody->id);
@@ -137,16 +140,16 @@ class TileControllerTest extends TestCase
         self::$followedMail = $responseBody->id;
 
         // Last Resources
-        $aArgs = [
+        $args = [
             'parameters' => ['chartType' => 'pie', 'chartMode' => 'destination'],
             'color'     => '#ce93d8',
             'position'  => 4,
             'type'      => 'myLastResources',
             'view'      => 'chart',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->id);
@@ -154,15 +157,15 @@ class TileControllerTest extends TestCase
         self::$myLastResources = $responseBody->id;
 
         // External signatory book
-        $aArgs = [
+        $args = [
             'color'     => '#90caf9',
             'position'  => 5,
             'type'      => 'externalSignatoryBook',
             'view'      => 'list',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $tileController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->id);
@@ -170,23 +173,22 @@ class TileControllerTest extends TestCase
         self::$externalSignatoryBook = $responseBody->id;
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 
     public function testGet()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        $tileController = new \Home\controllers\TileController();
+        $tileController = new TileController();
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $tileController->get($request, new \Slim\Http\Response());
+        $response     = $tileController->get($request, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -204,24 +206,23 @@ class TileControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 
     public function testGetById()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        $tileController = new \Home\controllers\TileController();
+        $tileController = new TileController();
 
         //  READ
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Basket
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$basket]);
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$basket]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -237,7 +238,7 @@ class TileControllerTest extends TestCase
         $this->assertSame(4, $responseBody['tile']['parameters']['basketId']);
 
         // Folder
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$folder]);
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$folder]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -252,7 +253,7 @@ class TileControllerTest extends TestCase
         $this->assertSame(5, $responseBody['tile']['parameters']['folderId']);
 
         // Shortcut
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$shortcut]);
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$shortcut]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -267,7 +268,7 @@ class TileControllerTest extends TestCase
         $this->assertSame('adv_search_mlb', $responseBody['tile']['parameters']['privilegeId']);
 
         // FollowedMail
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$followedMail]);
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$followedMail]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -283,7 +284,7 @@ class TileControllerTest extends TestCase
         $this->assertSame('status', $responseBody['tile']['parameters']['chartMode']);
 
         // Last Resources
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$myLastResources]);
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$myLastResources]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -299,23 +300,20 @@ class TileControllerTest extends TestCase
         $this->assertSame('destination', $responseBody['tile']['parameters']['chartMode']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 
     public function testUpdatePosition()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        $tileController = new \Home\controllers\TileController();
+        $tileController = new TileController();
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'tiles' => [
                 ['id' => self::$basket, 'position' => 5],
                 ['id' => self::$folder, 'position' => 4],
@@ -325,39 +323,37 @@ class TileControllerTest extends TestCase
                 ['id' => self::$externalSignatoryBook, 'position' => 0]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $tileController->updatePositions($fullRequest, new \Slim\Http\Response());
+        $response     = $tileController->updatePositions($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 
     public function testUpdate()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        $tileController = new \Home\controllers\TileController();
+        $tileController = new TileController();
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'color' => '#b0bec5',
             'view'  => 'list'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $tileController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$externalSignatoryBook]);
+        $response = $tileController->update($fullRequest, new Response(), ['id' => self::$externalSignatoryBook]);
         $this->assertSame(204, $response->getStatusCode());
 
         // External signatory book
-        $response     = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$externalSignatoryBook]);
+        $request = $this->createRequest('GET');
+        $response     = $tileController->getById($request, new Response(), ['id' => self::$externalSignatoryBook]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -371,31 +367,30 @@ class TileControllerTest extends TestCase
         $this->assertIsArray($responseBody['tile']['parameters']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 
     public function testDelete()
     {
         $GLOBALS['login'] = 'jjane';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
 
-        $tileController = new \Home\controllers\TileController();
+        $tileController = new TileController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response  = $tileController->delete($request, new \Slim\Http\Response(), ['id' => self::$externalSignatoryBook]);
+        $response  = $tileController->delete($request, new Response(), ['id' => self::$externalSignatoryBook]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response = $tileController->getById($request, new \Slim\Http\Response(), ['id' => self::$externalSignatoryBook]);
+        $response = $tileController->getById($request, new Response(), ['id' => self::$externalSignatoryBook]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Tile out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo         = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo         = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id']    = $userInfo['id'];
     }
 }

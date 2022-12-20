@@ -9,18 +9,22 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\core;
 
-class CoreControllerTest extends TestCase
+use SrcCore\controllers\CoreController;
+use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+
+class CoreControllerTest extends CourrierTestCase
 {
     public function testGetHeader()
     {
-        $coreController = new \SrcCore\controllers\CoreController();
+        $coreController = new CoreController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $coreController->getHeader($request, new \Slim\Http\Response());
+        $response     = $coreController->getHeader($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertNotEmpty($responseBody->user);
         $this->assertIsInt($responseBody->user->id);
@@ -39,7 +43,7 @@ class CoreControllerTest extends TestCase
             $this->assertFileExists("src/core/lang/lang-{$value}.php");
             $this->assertStringNotEqualsFile("src/core/lang/lang-{$value}.php", '');
         }
-        $language = \SrcCore\models\CoreConfigModel::getLanguage();
+        $language = CoreConfigModel::getLanguage();
         $this->assertNotEmpty($language);
         require_once("src/core/lang/lang-{$language}.php");
         
@@ -50,12 +54,11 @@ class CoreControllerTest extends TestCase
 
     public function testGetExternalConnectionsEnabled()
     {
-        $coreController = new \SrcCore\controllers\CoreController();
+        $coreController = new CoreController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $coreController->externalConnectionsEnabled($request, new \Slim\Http\Response());
+        $response     = $coreController->externalConnectionsEnabled($request, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsBool($responseBody['connection']['maarchParapheur']);
         $this->assertSame(true, $responseBody['connection']['maarchParapheur']);

@@ -10,15 +10,17 @@
 * @author  dev <dev@maarch.org>
 * @ingroup notifications
 */
-use PHPUnit\Framework\TestCase;
 
-class DiffusionTypesControllerTest extends TestCase
+namespace MaarchCourrier\Tests\app\notification;
+
+use MaarchCourrier\Tests\CourrierTestCase;
+use Notification\controllers\DiffusionTypesController;
+
+class DiffusionTypesControllerTest extends CourrierTestCase
 {
-    private static $id = null;
-
     public function testGetRecipientsByContact()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -47,7 +49,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByCopie()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -112,7 +114,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByDestUser()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -195,7 +197,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByDestEntity()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -246,7 +248,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByDestUserSign()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -305,7 +307,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByDestUserVisa()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         foreach ($GLOBALS['resources'] as $resId) {
             $args = [
@@ -364,7 +366,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByEntity()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         $args = [
             'notification' => [
@@ -407,7 +409,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByGroup()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         $args = [
             'notification' => [
@@ -441,7 +443,7 @@ class DiffusionTypesControllerTest extends TestCase
 
     public function testGetRecipientsByUser()
     {
-        $diffusionTypesController = new \Notification\controllers\DiffusionTypesController();
+        $diffusionTypesController = new DiffusionTypesController();
 
         $args = [
             'notification' => [

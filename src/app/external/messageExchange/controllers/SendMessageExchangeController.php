@@ -32,8 +32,8 @@ use SrcCore\models\PasswordModel;
 use SrcCore\models\TextFormatModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class SendMessageExchangeController
 {
