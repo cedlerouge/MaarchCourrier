@@ -9,12 +9,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { FunctionsService } from '@service/functions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { AuthService } from '@service/auth.service';
+import { SortPipe } from '@plugins/sorting.pipe';
 
 @Component({
     selector: 'app-tile',
     templateUrl: 'tile.component.html',
     styleUrls: ['tile.component.scss'],
-    providers: [ExternalSignatoryBookManagerService]
+    providers: [ExternalSignatoryBookManagerService, SortPipe]
 })
 export class TileDashboardComponent implements OnInit, AfterViewInit {
 
@@ -41,7 +42,8 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
         public dashboardService: DashboardService,
         public authService: AuthService,
         private notify: NotificationService,
-        private functionsService: FunctionsService
+        private functionsService: FunctionsService,
+        private SortPipe: SortPipe
     ) { }
 
     ngOnInit(): void { }
@@ -76,6 +78,9 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
         return new Promise((resolve) => {
             this.http.get(`../rest/tiles/${this.tile.id}`).pipe(
                 tap((data: any) => {
+                    if (data.tile.type === 'externalSignatoryBook' && !this.functionsService.empty(data.tile?.resources)) {
+                        this.SortPipe.transform(data.tile.resources, 'creationDate').reverse();
+                    }
                     const resources = data.tile.resources.map((resource: any) => {
                         let contactLabel = '';
                         let contactTitle = '';

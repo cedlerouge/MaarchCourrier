@@ -1073,7 +1073,9 @@ class FastParapheurController
                 'external_id->>\'signatureBookId\' as "signatureBookId"',
                 'subject', 'creation_date', 'res_id', 'category_id'
             ],
-            'where' => ['external_id->>\'signatureBookId\' is not null']
+            'where'     => ['external_id->>\'signatureBookId\' is not null'],
+            'orderBy'   => ['creation_date DESC'],
+            'limit'     => 5
         ]);
 
         $attachmentsInFastParapheur = AttachmentModel::get([
@@ -1081,7 +1083,9 @@ class FastParapheurController
                 'external_id->>\'signatureBookId\' as "signatureBookId"',
                 'title as subject', 'res_id', 'creation_date'
             ],
-            'where' => ['external_id->>\'signatureBookId\' is not null']
+            'where'     => ['external_id->>\'signatureBookId\' is not null'],
+            'orderBy'   => ['creation_date DESC'],
+            'limit'     => 5
         ]);
         $correspondents = null;
         $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
