@@ -184,7 +184,7 @@ Bt_getWorkBatch();
 Bt_writeLog(['level' => 'INFO', 'message' => 'Retrieve attachments sent to remote signatory book']);
 
 $attachments = \Attachment\models\AttachmentModel::get([
-    'select' => ['res_id', 'external_id->>\'signatureBookId\' as external_id', 'external_id->>\'xparaphDepot\' as xparaphdepot', 'format', 'res_id_master', 'title', 'identifier', 'attachment_type', 'recipient_id', 'recipient_type', 'typist', 'origin_id', 'relation'],
+    'select' => ['res_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'external_id->>\'signatureBookId\' as external_id', 'external_id->>\'xparaphDepot\' as xparaphdepot', 'format', 'res_id_master', 'title', 'identifier', 'attachment_type', 'recipient_id', 'recipient_type', 'typist', 'origin_id', 'relation'],
     'where' => ['status = ?', 'external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\''],
     'data'  => ['FRZ']
 ]);
@@ -213,7 +213,7 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 
 Bt_writeLog(['level' => 'INFO', 'message' => 'Retrieve mails sent to remote signatory book']);
 $resources = \Resource\models\ResModel::get([
-    'select' => ['res_id', 'external_id->>\'signatureBookId\' as external_id', 'subject', 'typist', 'version', 'alt_identifier'],
+    'select' => ['res_id', 'external_id->>\'signatureBookId\' as external_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'subject', 'typist', 'version', 'alt_identifier'],
     'where' => ['external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\'']
 ]);
 
