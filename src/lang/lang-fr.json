@@ -2688,5 +2688,7 @@
     "ixbus": "Ixbus",
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
-    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
+    "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
+    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante"
 }
