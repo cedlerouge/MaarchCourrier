@@ -274,16 +274,13 @@ class CoreConfigModel
     {
         if ($args['xml'] === false) {
             $args['xml'] = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><root></root>', null, false);
-            $historyNode = 'History';
         }
 
         foreach ($args['data'] as $key => $value) {
-            $node = $historyNode ?? $key;
-
             if (is_array($value)) {
-                CoreConfigModel::arrayToXml(['data' => $value, 'xml' => $args['xml']->addChild(str_replace([' ','(',')'], '', $node))]);
+                CoreConfigModel::arrayToXml(['data' => $value, 'xml' => $args['xml']->addChild(str_replace([' ','(',')'], '', (is_numeric($key) ? 'Item' : $key)) )]);
             } else {
-                $args['xml']->addChild(str_replace([' ','(',')'], '', $node), $value);
+                $args['xml']->addChild(str_replace([' ','(',')'], '', $key), $value);
             }
         }
 
