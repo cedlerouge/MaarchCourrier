@@ -279,7 +279,7 @@ class FastParapheurController
             $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
             $timeAgo = new \DateTimeImmutable('-30 minutes');
 
-            if (empty(trim($value['external_id'])) || (empty($value['xparaphdepot']) || is_array($value['xparaphdepot']))) {
+            if (empty(trim($value['external_id']))) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                 continue;
             }
@@ -339,7 +339,7 @@ class FastParapheurController
 
                     $proofDocument = FastParapheurController::makeHistoryProof([
                         'historyData'     => $historyResponse['response'],
-                        'metadata'        => $args['idsToRetrieve'][$version][$resId],
+                        'filename'        => ($args['idsToRetrieve'][$version][$resId]['title'] ?? $args['idsToRetrieve'][$version][$resId]['subject']) . '.pdf',
                         'signEncodedFile' => $response['b64FileContent']
                     ]);
                     if (!empty($proofDocument['encodedProofDocument'])) {
@@ -383,30 +383,40 @@ class FastParapheurController
     }
 
     /**
-     * Create proof from history data (required), signed document with metadata (optional)
+     * Create proof from history data, signed document and filename are required
      * 
-     * @param   array   $args   historyData, signEncodedFile, metadata
+     * @param   array   $args   historyData, signEncodedFile, filename
      */
     public static function makeHistoryProof(array $args)
     {
         if (!Validator::arrayType()->notEmpty()->validate($args['historyData'])) {
             return ['errors' => 'historyData is not an array'];
         }
+        if (!Validator::stringType()->notEmpty()->validate($args['filename'])) {
+            return ['errors' => 'filename is not a string'];
+        }
+        if (!Validator::stringType()->notEmpty()->validate($args['signEncodedFile'])) {
+            return ['errors' => 'signEncodedFile is not a string'];
+        }
 
         $documentPathToZip  = [];
         $tmpPath            = CoreConfigModel::getTmpPath();
+        $proof              = ['history' => $args['historyData']];
 
-        if (!empty($args['signEncodedFile'] && !empty($args['metadata']))) {
-            $signDocumentPath   = $tmpPath . 'fastSignDoc' . $GLOBALS['id'] . "_" . rand() . '.pdf';
-            file_put_contents($signDocumentPath, base64_decode($args['signEncodedFile']));
+        $signDocumentPath   = $tmpPath . 'fastSignDoc' . $GLOBALS['id'] . "_" . rand() . '.pdf';
+        file_put_contents($signDocumentPath, base64_decode($args['signEncodedFile']));
 
-            $filename = TextFormatModel::formatFilename(['filename' => ($args['metadata']['title'] ?? $args['metadata']['subject']) . 'pdf']);
-            if (file_exists($signDocumentPath) && filesize($signDocumentPath) > 0) {
-                $documentPathToZip[] = ['path' => $signDocumentPath, 'filename' => $filename];
-            }
+        $filename = TextFormatModel::formatFilename(['filename' => $args['filename']]);
+        if (file_exists($signDocumentPath) && filesize($signDocumentPath) > 0) {
+            $proof = [
+                'filename'      => $filename,
+                'filenameSize'  => filesize($signDocumentPath),
+                'history'       => $args['historyData']
+            ];
+            $documentPathToZip[] = ['path' => $signDocumentPath, 'filename' => $filename];
         }
 
-        $historyXml = CoreConfigModel::arrayToXml(['data' => $args['historyData'], 'xml' => false]);
+        $historyXml = CoreConfigModel::arrayToXml(['data' => $proof, 'xml' => false]);
         $historyXmlPath = $tmpPath . 'maarchProof' . $GLOBALS['id'] . "_" . rand() . '.xml';
         file_put_contents($historyXmlPath, $historyXml);
 
