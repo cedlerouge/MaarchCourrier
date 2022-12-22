@@ -26,6 +26,20 @@ export class FastParapheurService {
         private functions: FunctionsService
     ) { }
 
+    getWorkflowTypes(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/fastParapheurWorkflowTypes').pipe(
+                tap((data: any) => {
+                    resolve(data.workflowTypes ?? null);
+                }),
+                catchError(err => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
     getUserAvatar(externalId: any = null): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(

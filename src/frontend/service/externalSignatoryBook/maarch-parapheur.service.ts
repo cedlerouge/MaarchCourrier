@@ -25,6 +25,12 @@ export class MaarchParapheurService {
         private notify: NotificationService
     ) { }
 
+    getWorkflowTypes(): Promise<any> {
+        return new Promise((resolve) => {
+            resolve(null);
+        });
+    }
+
     loadListModel(entityId: number): Promise<any> {
         return new Promise((resolve) => {
             this.http.get(`../rest/listTemplates/entities/${entityId}?type=visaCircuit&maarchParapheur=true`).pipe(

@@ -31,8 +31,25 @@
     <signatoryBook>
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
-        <workflowType>BUREAUTIQUE_PDF</workflowType>
         <subscriberId></subscriberId>
+        <workflowTypes>
+            <type>
+                <id>BUREAUTIQUE_PDF</id>
+                <label>Signature PADES</label>
+            </type>
+            <type>
+                <id>BUREAUTIQUE_XML</id>
+                <label>Signature XADES détaché</label>
+            </type>
+            <type>
+                <id>HELIOS_AVEC_TELETRANSMISSION</id>
+                <label>Signature PES avec télétransmission vers la DGFIP</label>
+            </type>
+            <type>
+                <id>HELIOS_SANS_TELETRANSMISSION</id>
+                <label>Signature PES sans télétransmission</label>
+            </type>
+        </workflowTypes>
         <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
         <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>
         <certPass></certPass>
