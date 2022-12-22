@@ -2688,5 +2688,6 @@
     "ixbus": "Ixbus",
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
-    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur"
+    "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
+    "workflowType": "Type de circuit"
 }
