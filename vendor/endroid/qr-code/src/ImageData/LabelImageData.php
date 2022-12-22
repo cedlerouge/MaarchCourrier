@@ -8,10 +8,13 @@ use Endroid\QrCode\Label\LabelInterface;
 
 class LabelImageData
 {
-    private function __construct(
-        private int $width,
-        private int $height
-    ) {
+    private int $width;
+    private int $height;
+
+    private function __construct(int $width, int $height)
+    {
+        $this->width = $width;
+        $this->height = $height;
     }
 
     public static function createForLabel(LabelInterface $label): self

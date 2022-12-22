@@ -65,7 +65,7 @@
         "tecnickcom/tcpdf": "^6.6.1",
         "setasign/fpdi": "^v2.3.6",
         "phpmailer/phpmailer": "^v6.7",
-        "endroid/qr-code": "^4.5.2",
+        "endroid/qr-code": "4.6.1",
         "tinybutstrong/tinybutstrong": "~3.14",
         "tinybutstrong/opentbs": "~1.10",
         "tecnickcom/tc-lib-barcode": "^1.15",

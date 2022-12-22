@@ -8,14 +8,19 @@ use Endroid\QrCode\Matrix\MatrixInterface;
 
 final class PngResult extends AbstractResult
 {
-    public function __construct(
-        MatrixInterface $matrix,
-        private \GdImage $image
-    ) {
+    /** @var mixed */
+    private $image;
+
+    /** @param mixed $image */
+    public function __construct(MatrixInterface $matrix, $image)
+    {
         parent::__construct($matrix);
+
+        $this->image = $image;
     }
 
-    public function getImage(): \GdImage
+    /** @return mixed */
+    public function getImage()
     {
         return $this->image;
     }

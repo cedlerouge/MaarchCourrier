@@ -8,12 +8,18 @@ use Endroid\QrCode\Matrix\MatrixInterface;
 
 final class SvgResult extends AbstractResult
 {
+    private \SimpleXMLElement $xml;
+    private bool $excludeXmlDeclaration;
+
     public function __construct(
         MatrixInterface $matrix,
-        private \SimpleXMLElement $xml,
-        private bool $excludeXmlDeclaration = false
+        \SimpleXMLElement $xml,
+        bool $excludeXmlDeclaration = false
     ) {
         parent::__construct($matrix);
+
+        $this->xml = $xml;
+        $this->excludeXmlDeclaration = $excludeXmlDeclaration;
     }
 
     public function getXml(): \SimpleXMLElement

@@ -8,12 +8,15 @@ use Endroid\QrCode\Matrix\MatrixInterface;
 
 final class EpsResult extends AbstractResult
 {
-    public function __construct(
-        MatrixInterface $matrix,
-        /** @var array<string> $lines */
-        private array $lines
-    ) {
+    /** @var array<string> */
+    private array $lines;
+
+    /** @param array<string> $lines */
+    public function __construct(MatrixInterface $matrix, array $lines)
+    {
         parent::__construct($matrix);
+
+        $this->lines = $lines;
     }
 
     public function getString(): string

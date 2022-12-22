@@ -20,7 +20,7 @@ interface BuilderInterface
 
     public function writer(WriterInterface $writer): BuilderInterface;
 
-    /** @param array<string, mixed> $writerOptions */
+    /** @param array<mixed> $writerOptions */
     public function writerOptions(array $writerOptions): BuilderInterface;
 
     public function data(string $data): BuilderInterface;

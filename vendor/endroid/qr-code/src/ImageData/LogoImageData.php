@@ -8,14 +8,31 @@ use Endroid\QrCode\Logo\LogoInterface;
 
 class LogoImageData
 {
+    private string $data;
+
+    /** @var mixed */
+    private $image;
+
+    private string $mimeType;
+    private int $width;
+    private int $height;
+    private bool $punchoutBackground;
+
+    /** @param mixed $image */
     private function __construct(
-        private string $data,
-        private \GdImage|null $image,
-        private string $mimeType,
-        private int $width,
-        private int $height,
-        private bool $punchoutBackground
+        string $data,
+        $image,
+        string $mimeType,
+        int $width,
+        int $height,
+        bool $punchoutBackground
     ) {
+        $this->data = $data;
+        $this->image = $image;
+        $this->mimeType = $mimeType;
+        $this->width = $width;
+        $this->height = $height;
+        $this->punchoutBackground = $punchoutBackground;
     }
 
     public static function createForLogo(LogoInterface $logo): self
@@ -72,9 +89,10 @@ class LogoImageData
         return $this->data;
     }
 
-    public function getImage(): \GdImage
+    /** @return mixed */
+    public function getImage()
     {
-        if (!$this->image instanceof \GdImage) {
+        if (null === $this->image) {
             throw new \Exception('SVG Images have no image resource');
         }
 
@@ -108,7 +126,10 @@ class LogoImageData
 
     private static function detectMimeTypeFromUrl(string $url): string
     {
-        $headers = get_headers($url, true);
+        /** @var mixed $format */
+        $format = PHP_VERSION_ID >= 80000 ? true : 1;
+
+        $headers = get_headers($url, $format);
 
         if (!is_array($headers) || !isset($headers['Content-Type'])) {
             throw new \Exception(sprintf('Content type could not be determined for logo URL "%s"', $url));
