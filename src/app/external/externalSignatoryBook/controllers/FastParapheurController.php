@@ -1065,9 +1065,8 @@ class FastParapheurController
 
     public static function checkUserExistanceInFastParapheur(array $args)
     {
-        if (!Validator::notEmpty()->email()->validate($args['fastParapheurUserEmail'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'fastParapheurUserEmail is not a valid email address']);
-        }
+        ValidatorModel::notEmpty($args, ['fastParapheurUserEmail']);
+        ValidatorModel::stringType($args, ['fastParapheurUserEmail']);
 
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
