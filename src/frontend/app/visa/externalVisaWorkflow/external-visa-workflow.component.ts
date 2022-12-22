@@ -49,6 +49,13 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     visaWorkflow = new VisaWorkflow();
 
+    workflowTypeList = [
+        {
+            id: '',
+            label: this.translate.instant('lang.none')
+        }
+    ];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -61,10 +68,19 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<any> {
+        const workflowTypesData = await this.getWorkflowTypes();
+        if (!this.functions.empty(workflowTypesData)) {
+            this.workflowTypeList = this.workflowTypeList.concat(workflowTypesData);
+        }
+
         const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
         if (!this.functions.empty(data)) {
             this.otpConfig = data.otp.length;
         }
+    }
+
+    async getWorkflowTypes(): Promise<any> {
+        return await this.externalSignatoryBookManagerService?.getWorkflowTypes();
     }
 
     drop(event: CdkDragDrop<string[]>) {
@@ -466,12 +482,14 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 }
 
 export interface VisaWorkflow {
+    type: string;
     roles: string[];
     items: UserWorkflow[];
 }
 
 export class VisaWorkflow implements VisaWorkflow {
     constructor() {
+        this.type = null;
         this.roles = ['visa', 'sign'];
         this.items = [];
     }
