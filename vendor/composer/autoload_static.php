@@ -35,11 +35,6 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
             'jamesiarmes\\PhpNtlm\\' => 20,
             'jamesiarmes\\PhpEws\\' => 19,
         ),
-        'c' => 
-        array (
-            'chillerlan\\Traits\\' => 18,
-            'chillerlan\\QRCode\\' => 18,
-        ),
         'V' => 
         array (
             'VersionUpdate\\' => 14,
@@ -202,14 +197,6 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         'jamesiarmes\\PhpEws\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-ews/php-ews/src',
-        ),
-        'chillerlan\\Traits\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/chillerlan/php-traits/src',
-        ),
-        'chillerlan\\QRCode\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/chillerlan/php-qrcode/src',
         ),
         'VersionUpdate\\' => 
         array (
@@ -740,6 +727,7 @@ class ComposerStaticInitf21aebccfa6df888200dcb099aa69fbd
         'PHPUnit\\Framework\\MockObject\\CannotUseOnlyMethodsException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/CannotUseOnlyMethodsException.php',
         'PHPUnit\\Framework\\MockObject\\ClassAlreadyExistsException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/ClassAlreadyExistsException.php',
         'PHPUnit\\Framework\\MockObject\\ClassIsFinalException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/ClassIsFinalException.php',
+        'PHPUnit\\Framework\\MockObject\\ClassIsReadonlyException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/ClassIsReadonlyException.php',
         'PHPUnit\\Framework\\MockObject\\ConfigurableMethod' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/ConfigurableMethod.php',
         'PHPUnit\\Framework\\MockObject\\ConfigurableMethodsAlreadyInitializedException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/ConfigurableMethodsAlreadyInitializedException.php',
         'PHPUnit\\Framework\\MockObject\\DuplicateMethodException' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/MockObject/Exception/DuplicateMethodException.php',

@@ -10,8 +10,6 @@ return array(
     'phpseclib\\' => array($vendorDir . '/phpseclib/phpseclib/phpseclib'),
     'jamesiarmes\\PhpNtlm\\' => array($vendorDir . '/jamesiarmes/php-ntlm/src'),
     'jamesiarmes\\PhpEws\\' => array($vendorDir . '/php-ews/php-ews/src'),
-    'chillerlan\\Traits\\' => array($vendorDir . '/chillerlan/php-traits/src'),
-    'chillerlan\\QRCode\\' => array($vendorDir . '/chillerlan/php-qrcode/src'),
     'VersionUpdate\\' => array($baseDir . '/src/app/versionUpdate'),
     'User\\' => array($baseDir . '/src/app/user'),
     'Template\\' => array($baseDir . '/src/app/template'),
