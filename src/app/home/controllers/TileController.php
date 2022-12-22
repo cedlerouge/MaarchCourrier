@@ -25,6 +25,7 @@ use Docserver\models\DocserverModel;
 use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
 use Entity\models\ListTemplateModel;
+use ExternalSignatoryBook\controllers\FastParapheurController;
 use Folder\controllers\FolderController;
 use Folder\models\FolderModel;
 use Folder\models\ResourceFolderModel;
@@ -42,8 +43,8 @@ use Search\controllers\SearchController;
 use Search\models\SearchModel;
 use Search\models\SearchTemplateModel;
 use Shipping\models\ShippingTemplateModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -319,14 +320,12 @@ class TileController
             $tile['label'] = "{$folder['label']}";
         } elseif ($tile['type'] == 'externalSignatoryBook') {
             $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-            $tile['maarchParapheurUrl'] = null;
-            if (!empty($loadedXml)) {
-                foreach ($loadedXml->signatoryBook as $value) {
-                    if ($value->id == "maarchParapheur") {
-                        $tile['maarchParapheurUrl'] = rtrim($value->url, '/');
-                        break;
-                    }
-                }
+            if (empty($loadedXml)) {
+                return false;
+            }
+            $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
+            if ($enabledExternalSignatoryBook == 'maarchParapheur') {
+                $tile['maarchParapheurUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
             }
         } elseif ($tile['type'] == 'searchTemplate') {
             $searchTemplate = SearchTemplateModel::get(['select' => ['label'], 'where' => ['id = ?', 'user_id = ?'], 'data' => [$tile['parameters']['searchTemplateId'], $GLOBALS['id']]]);
@@ -364,7 +363,16 @@ class TileController
             $foldersResources = ResourceFolderModel::get(['select' => ['res_id'], 'where' => ['folder_id = ?'], 'data' => [$tile['parameters']['folderId']]]);
             TileController::getResourcesDetails($tile, $foldersResources);
         } elseif ($tile['type'] == 'externalSignatoryBook') {
-            $control = TileController::getMaarchParapheurDetails($tile);
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+            if (empty($loadedXml)) {
+                return ['errors' => 'configuration file missing: remoteSignatoryBooks.xml'];
+            }
+            $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
+            if ($enabledExternalSignatoryBook == 'maarchParapheur') {
+                $control = TileController::getMaarchParapheurDetails($tile);
+            } elseif ($enabledExternalSignatoryBook == 'fastParapheur') {
+                $control = TileController::getFastParapheurDetails($tile);
+            }
             if (!empty($control['errors'])) {
                 return ['errors' => $control['errors']];
             }
@@ -601,6 +609,15 @@ class TileController
         }
 
         return true;
+    }
+
+    private static function getFastParapheurDetails(array &$tile)
+    {
+        if ($tile['view'] == 'summary') {
+            $tile['resourcesNumber'] = FastParapheurController::getResourcesCount();
+        } elseif ($tile['view'] == 'list') {
+            $tile['resources'] = FastParapheurController::getResourcesDetails();
+        }
     }
 
     private static function getShortcutDetails(array &$tile)

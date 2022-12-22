@@ -22,8 +22,8 @@ use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use User\models\UserModel;
 
 class AcknowledgementReceiptController

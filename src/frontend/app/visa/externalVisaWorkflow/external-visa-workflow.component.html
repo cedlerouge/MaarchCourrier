@@ -43,7 +43,7 @@
             </ng-container>
             <div mat-line class="workflowLine">
                 <div class="workflowLineContainer">
-                    <div class="workflowLineLabel" [class.unauthorized]="!diffusion.hasPrivilege || !diffusion.isValid" [title]="diffusion.labelToDisplay">
+                    <div class="workflowLineLabel" style="white-space: initial" [class.unauthorized]="!diffusion.hasPrivilege || !diffusion.isValid" [title]="diffusion.labelToDisplay">
                         {{diffusion.labelToDisplay}}
                         <ng-container *ngIf="diffusion.process_date != null && diffusion.delegatedBy !== null">
                             <mat-icon mat-list-icon class="fas fa-exclamation-circle"

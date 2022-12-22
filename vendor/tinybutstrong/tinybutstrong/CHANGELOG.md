@@ -4,12 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [3.14.0] - 2022-07-25
+
+### Added
+
+- Support Doctrine DBAL in native.
+- Parameter 'strconv=utf8' is PHP 8.2 compliant. The feature no longer uses the deprecated PHP function utf8_encode().
+- New TBS option 'scripts_allowed' enables you to unlock the parameter 'script' which becomes forbidden by default.
+
+### Changed
+
+- By default, parameter 'script' is forbidden. It can be allowed using the new TBS option 'scripts_allowed'.
+
 ## [3.13.2] - 2022-02-23
 
 ### Fixed
 
-- Version
-
+- Version number
 
 ## [3.13.1] - 2022-02-13
 

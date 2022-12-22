@@ -21,8 +21,8 @@ use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 
@@ -95,7 +95,7 @@ class ParameterController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['id']) && preg_match("/^[\w-]*$/", $data['id']);
         $check = $check && (empty($data['param_value_int']) || Validator::intVal()->validate($data['param_value_int']));

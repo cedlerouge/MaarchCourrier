@@ -7,19 +7,20 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\configuration;
 
-class ConfigurationControllerTest extends TestCase
+use Configuration\controllers\ConfigurationController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+
+class ConfigurationControllerTest extends CourrierTestCase
 {
     public function testUpdate()
     {
-        $configurationController = new \Configuration\controllers\ConfigurationController();
+        $configurationController = new ConfigurationController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'       => 'smtp',
             'host'       => 'smtp.outlook.com',
             'port'       => '45',
@@ -30,17 +31,16 @@ class ConfigurationControllerTest extends TestCase
             'from'       => 'dev.maarch@maarch.org',
             'charset'    => 'utf-8',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $configurationController->getByPrivilege($request, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $request = $this->createRequest('GET');
+        $response       = $configurationController->getByPrivilege($request, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->configuration);
@@ -66,10 +66,7 @@ class ConfigurationControllerTest extends TestCase
         $this->assertJsonStringEqualsJsonString($jsonTest, json_encode($responseBody->configuration->value));
 
         //  UPDATE auth false
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'       => 'smtp',
             'host'       => 'smtp.outlook.com',
             'port'       => '231',
@@ -80,16 +77,15 @@ class ConfigurationControllerTest extends TestCase
             'from'       => 'dev.maarch@maarch.org',
             'charset'    => 'utf-8',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $configurationController->getByPrivilege($request, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $request = $this->createRequest('GET');
+        $response       = $configurationController->getByPrivilege($request, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->configuration);
@@ -116,23 +112,19 @@ class ConfigurationControllerTest extends TestCase
 
 
         //  UPDATE SENDMAIL
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type' => 'sendmail',
             'from' => 'notifications@maarch.org'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $configurationController->getByPrivilege($request, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $request = $this->createRequest('GET');
+        $response       = $configurationController->getByPrivilege($request, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->configuration);
@@ -152,37 +144,28 @@ class ConfigurationControllerTest extends TestCase
         $this->assertJsonStringEqualsJsonString($jsonTest, json_encode($responseBody->configuration->value));
 
         //  UPDATE ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type' => 'sendmail'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server_fail']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server_fail']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Unknown privilege', $responseBody->errors);
 
         //  UPDATE ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Configuration type is missing', $responseBody->errors);
 
         //  UPDATE ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'       => 'smtp',
             'port'       => '231',
             'auth'       => 'aze',
@@ -192,9 +175,9 @@ class ConfigurationControllerTest extends TestCase
             'from'       => 'dev.maarch@maarch.org',
             'charset'    => 'utf-8',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Configuration data is missing or not well formatted', $responseBody->errors);
@@ -202,13 +185,10 @@ class ConfigurationControllerTest extends TestCase
 
     public function testReset()
     {
-        $configurationController = new \Configuration\controllers\ConfigurationController();
+        $configurationController = new ConfigurationController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'       => 'smtp',
             'host'       => 'smtp.gmail.com',
             'port'       => '465',
@@ -219,17 +199,16 @@ class ConfigurationControllerTest extends TestCase
             'from'       => 'notifications@maarch.org',
             'charset'    => 'utf-8',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $configurationController->getByPrivilege($request, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $request = $this->createRequest('GET');
+        $response       = $configurationController->getByPrivilege($request, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->configuration);
@@ -255,10 +234,7 @@ class ConfigurationControllerTest extends TestCase
         $this->assertJsonStringEqualsJsonString($jsonTest, json_encode($responseBody->configuration->value));
 
         //  UPDATE TEST REST WITHOUT PASSWORD
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'       => 'smtp',
             'host'       => 'smtp.gmail.com',
             'port'       => '465',
@@ -269,17 +245,16 @@ class ConfigurationControllerTest extends TestCase
             'from'       => 'notifications@maarch.org',
             'charset'    => 'utf-8',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $configurationController->update($fullRequest, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $response     = $configurationController->update($fullRequest, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $configurationController->getByPrivilege($request, new \Slim\Http\Response(), ['privilege' => 'admin_email_server']);
+        $request = $this->createRequest('GET');
+        $response       = $configurationController->getByPrivilege($request, new Response(), ['privilege' => 'admin_email_server']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->configuration);

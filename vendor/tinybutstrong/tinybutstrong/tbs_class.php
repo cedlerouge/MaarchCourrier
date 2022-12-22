@@ -3,8 +3,8 @@
  *
  * TinyButStrong - Template Engine for Pro and Beginners
  *
- * @version 3.13.2 for PHP 5, 7, 8
- * @date    2022-02-23
+ * @version 3.14.0 for PHP 5, 7, 8
+ * @date    2022-09-25
  * @link    http://www.tinybutstrong.com Web site
  * @author  http://www.tinybutstrong.com/onlyyou.html
  * @license http://opensource.org/licenses/LGPL-3.0 LGPL-3.0
@@ -16,7 +16,6 @@
 
 // Check PHP version
 if (version_compare(PHP_VERSION,'5.0')<0) echo '<br><b>TinyButStrong Error</b> (PHP Version Check) : Your PHP version is '.PHP_VERSION.' while TinyButStrong needs PHP version 5.0 or higher. You should try with TinyButStrong Edition for PHP 4.';
-/* COMPAT#1 */
 
 // Render flags
 define('TBS_NOTHING', 0);
@@ -145,6 +144,8 @@ public function DataPrepare(&$SrcId,&$TBS) {
 		$this->Type = 13; $this->SubType = 2;
 	} elseif ($SrcId instanceof SQLite3Result) {
 		$this->Type = 13; $this->SubType = 3;
+	} elseif (is_a($SrcId, 'Doctrine\DBAL\Connection')) {
+		$this->Type = 14;
 	} elseif (is_object($SrcId)) {
 		$FctInfo = get_class($SrcId);
 		$FctCat = 'o';
@@ -218,10 +219,10 @@ public function DataOpen(&$Query,$QryPrms=false) {
 	case 0: // Array
 		if (($this->SubType===1) && (is_string($Query))) $this->SubType = 2;
 		if ($this->SubType===0) {
-			$this->RecSet = &$this->SrcId; /* COMPAT#2 */
+			$this->RecSet = &$this->SrcId;
 		} elseif ($this->SubType===1) {
 			if (is_array($Query)) {
-				$this->RecSet = &$Query; /* COMPAT#3 */
+				$this->RecSet = &$Query;
 			} else {
 				$this->DataAlert('type \''.gettype($Query).'\' not supported for the Query Parameter going with \'array\' Source Type.');
 			}
@@ -245,7 +246,7 @@ public function DataOpen(&$Query,$QryPrms=false) {
 				}
 			} else {
 				if (isset($this->TBS->VarRef[$Item0])) {
-					$Var = &$this->TBS->VarRef[$Item0]; /* COMPAT#4 */
+					$Var = &$this->TBS->VarRef[$Item0];
 					$i = 1;
 				} else {
 					$i = $this->DataAlert('invalid query \''.$Query.'\' because VarRef item \''.$Item0.'\' is not found.');
@@ -433,6 +434,14 @@ public function DataOpen(&$Query,$QryPrms=false) {
 			$this->DataAlert('SQLite3 error message when opening the query: '.$e->getMessage());
 		}
 		break;
+	case 14: // Doctrine DBAL
+		try {
+			if (!is_array($QryPrms)) $QryPrms = array();
+			$this->RecSet = $this->SrcId->executeQuery($Query, $QryPrms);
+		} catch (Exception $e) {
+			$this->DataAlert('Doctrine DBAL error message when opening the query: '.$e->getMessage());
+		}
+		break;
 	}
 
 	if (($this->Type===0) || ($this->Type===9)) {
@@ -598,7 +607,7 @@ private function _DataFetchOn($obj) {
 		$obj->CurrRec = $this->SrcId->tbsdb_fetch($this->RecSet,$obj->RecNum+1);
 		break;
 	case 7: // PostgreSQL
-		$obj->CurrRec = pg_fetch_assoc($this->RecSet); /* COMPAT#5 */
+		$obj->CurrRec = pg_fetch_assoc($this->RecSet);
 		break;
 	case 8: // SQLite
 		$obj->CurrRec = sqlite_fetch_array($this->RecSet,SQLITE_ASSOC);
@@ -624,6 +633,9 @@ private function _DataFetchOn($obj) {
 		break;
 	case 13: // SQLite3
 		$obj->CurrRec = $this->RecSet->fetchArray(SQLITE3_ASSOC);
+		break;
+	case 14: // Doctrine DBAL
+		$obj->CurrRec = $this->RecSet->fetchAssociative();
 		break;
 	}
 
@@ -655,7 +667,7 @@ public $Assigned = array();
 public $ExtendedMethods = array();
 public $ErrCount = 0;
 // Undocumented (can change at any version)
-public $Version = '3.13.2';
+public $Version = '3.14.0';
 public $Charset = '';
 public $TurboBlock = true;
 public $VarPrefix = '';
@@ -665,6 +677,7 @@ public $Protect = true;
 public $ErrMsg = '';
 public $AttDelim = false;
 public $MethodsAllowed = false;
+public $ScriptsAllowed = false;
 public $OnLoad = true;
 public $OnShow = true;
 public $IncludePath = array();
@@ -778,6 +791,7 @@ function SetOption($o, $v=false, $d=false) {
 	if (array_key_exists('include_path',$o))  self::f_Misc_UpdateArray($this->IncludePath, true, $o['include_path'], $d);
 	if (isset($o['render'])) $this->Render = $o['render'];
 	if (isset($o['methods_allowed'])) $this->MethodsAllowed = $o['methods_allowed'];
+	if (isset($o['scripts_allowed'])) $this->ScriptsAllowed = $o['scripts_allowed'];
 }
 
 function GetOption($o) {
@@ -808,6 +822,7 @@ function GetOption($o) {
 	if ($o==='include_path') return $this->IncludePath;
 	if ($o==='render') return $this->Render;
 	if ($o==='methods_allowed') return $this->MethodsAllowed;
+	if ($o==='scripts_allowed') return $this->ScriptsAllowed;
 	if ($o==='parallel_conf') return $GLOBALS['_TBS_ParallelLst'];
 	if ($o==='block_alias') return $GLOBALS['_TBS_BlockAlias'];
 	if ($o==='prm_combo') return $GLOBALS['_TBS_PrmCombo'];
@@ -1736,7 +1751,7 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 			$CurrVal = str_replace(array("\n","\r","\t"),array('\n','\r','\t'),$CurrVal);
 		}
 		if ($Loc->ConvUrl) $CurrVal = urlencode($CurrVal);
-		if ($Loc->ConvUtf8) $CurrVal = utf8_encode($CurrVal);
+		if ($Loc->ConvUtf8) $CurrVal = mb_convert_encoding($CurrVal, 'UTF-8', 'ISO-8859-1');
 	}
 
 	// if/then/else process, there may be several if/then
@@ -1790,9 +1805,18 @@ function meth_Locator_Replace(&$Txt,&$Loc,&$Value,$SubStart) {
 
 	if (isset($Loc->PrmLst['script'])) {// Include external PHP script
 		$x = $Loc->PrmLst['script'];
-		if ($x===true) $x = $CurrVal;
-		$this->meth_Merge_AutoVar($x,false);
-		$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
+		if ($this->ScriptsAllowed) {
+			if ($x===true) $x = $CurrVal;
+			$this->meth_Merge_AutoVar($x,false);
+			$x = trim(str_replace($this->_ChrVal,$CurrVal,$x));
+			if (basename($x) == basename($this->_LastFile)) {
+				if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'the file \''.$x.'\' given by parameter script cannot be called because it has the same name as the current template and this is suspicious.',true);
+				$x= '';
+			}
+		} else {
+			if (!isset($Loc->PrmLst['noerr'])) $this->meth_Misc_Alert($Loc,'parameter script with value \''.$x.'\' cannot be called because the current TBS settings do not allow to call scripts.',true);
+			$x = '';	
+		}
 		if ($x!=='') {
 			$this->_Subscript = $x;
 			$this->CurrPrm = &$Loc->PrmLst;
@@ -5223,14 +5247,12 @@ static function f_Xml_FindTagStart(&$Txt,$Tag,$Opening,$PosBeg,$Forward,$Case=tr
 		do {
 			if ($Forward) $p = strpos($Txt,$x,$p+1);  else $p = strrpos(substr($Txt,0,$p+1),$x);
 			if ($p===false) return false;
-			/* COMPAT#6 */
 			$z = substr($Txt,$p+$xl,1);
 		} while ( ($z!==' ') && ($z!=="\r") && ($z!=="\n") && ($z!=='>') && ($z!=='/') && ($Tag!=='/') && ($Tag!=='') );
 	} else {
 		do {
 			if ($Forward) $p = stripos($Txt,$x,$p+1);  else $p = strripos(substr($Txt,0,$p+1),$x);
 			if ($p===false) return false;
-			/* COMPAT#7 */
 			$z = substr($Txt,$p+$xl,1);
 		} while ( ($z!==' ') && ($z!=="\r") && ($z!=="\n") && ($z!=='>') && ($z!=='/') && ($Tag!=='/') && ($Tag!=='') );
 	}

@@ -27,8 +27,8 @@ use Resource\models\ResModel;
 use Resource\models\ResourceListModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\UrlController;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\TextFormatModel;
@@ -36,6 +36,7 @@ use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use Tag\models\TagModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class ExportController
 {
@@ -796,7 +797,7 @@ class ExportController
 
         $list = [];
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $roles = array_column($roles, 'label', 'id');
 
         $listInstances = ListInstanceModel::get([

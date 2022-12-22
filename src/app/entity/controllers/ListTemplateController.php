@@ -23,11 +23,12 @@ use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class ListTemplateController
 {
@@ -74,7 +75,7 @@ class ListTemplateController
             }
         }
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $difflistType = $listTemplate['type'] == 'diffusionList' ? 'entity_id' : ($listTemplate['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT');
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => [$difflistType]]);
         $rolesForService = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
@@ -342,14 +343,14 @@ class ListTemplateController
                     }
 
                     $listTemplateItems[$itemKey]['labelToDisplay'] = "{$user['firstname']} {$user['lastname']}";
-                    if (empty($queryParams['maarchParapheur'])) {
+                    if (empty($queryParams['maarchParapheur']) && empty($queryParams['fastParapheur'])) {
                         $listTemplateItems[$itemKey]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(['id' => $value['item_id'], 'select' => ['entity_label']])['entity_label'];
                     } else {
                         $listTemplateItems[$itemKey]['descriptionToDisplay'] = '';
                     }
 
                     $listTemplateItems[$itemKey]['hasPrivilege'] = true;
-                    if (empty($queryParams['maarchParapheur'])) {
+                    if (empty($queryParams['maarchParapheur']) && empty($queryParams['fastParapheur'])) {
                         if ($listTemplate['type'] == 'visaCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']]) && !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])) {
                             $listTemplateItems[$itemKey]['hasPrivilege'] = false;
                         } elseif ($listTemplate['type'] == 'opinionCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])) {
@@ -374,6 +375,14 @@ class ListTemplateController
                             $listTemplateItems[$itemKey]['availableRoles']                = array_merge(['visa'], $userExists['signatureModes']);
                             $listTemplateItems[$itemKey]['role']                          = end($userExists['signatureModes']);
                         }
+                    } elseif (!empty($queryParams['fastParapheur']) && !empty($externalId['fastParapheur'])) {
+                        $listTemplateItems[$itemKey] = [
+                            'externalId'           => ['fastParapheur' => $externalId['fastParapheur']],
+                            'descriptionToDisplay' => $externalId['fastParapheur'],
+                            'labelToDisplay'       => trim($user['firstname'] . ' ' . $user['lastname']),
+                            'availableRoles'       => ['visa', 'sign'],
+                            'role'                 => $listTemplateItems[$itemKey]['item_mode']
+                        ];
                     }
                 }
             }
@@ -389,7 +398,7 @@ class ListTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
         
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         DatabaseModel::beginTransaction();
 
@@ -428,7 +437,7 @@ class ListTemplateController
         if ($aArgs['typeId'] == 'entity_id') {
             $unneededRoles = ['visa', 'sign'];
         }
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => [$aArgs['typeId']]]);
         $rolesForType = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
         foreach ($roles as $key => $role) {
@@ -466,9 +475,9 @@ class ListTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
-        $check = Validator::arrayType()->notEmpty()->validate($data['roles']);
+        $check = Validator::arrayType()->notEmpty()->validate($data['roles'] ?? null);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -558,7 +567,7 @@ class ListTemplateController
 
         $listTemplateTypes = ListTemplateModel::getTypes(['select' => ['difflist_type_roles'], 'where' => ['difflist_type_id = ?'], 'data' => ['entity_id']]);
         $availableRoles = empty($listTemplateTypes[0]['difflist_type_roles']) ? [] : explode(' ', $listTemplateTypes[0]['difflist_type_roles']);
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         foreach ($roles as $key => $role) {
             if (!in_array($role['id'], $availableRoles)) {
                 unset($roles[$key]);

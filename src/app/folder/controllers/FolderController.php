@@ -28,8 +28,8 @@ use Resource\models\ResModel;
 use Resource\models\ResourceListModel;
 use Resource\models\UserFollowedResourceModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserEntityModel;
@@ -235,7 +235,7 @@ class FolderController
 
     public function update(Request $request, Response $response, array $args)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not an integer']);
@@ -357,7 +357,7 @@ class FolderController
 
     public function sharing(Request $request, Response $response, array $args)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not an integer']);

@@ -25,14 +25,31 @@ if (file_exists("custom/{$customId}/src/core/lang/lang-{$language}.php")) {
 }
 require_once("src/core/lang/lang-{$language}.php");
 
-$app = new \Slim\App(['settings' => ['displayErrorDetails' => true, 'determineRouteBeforeAppMiddleware' => true, 'addContentLengthHeader' => true ]]);
+//$app = new App(['settings' => ['displayErrorDetails' => true, 'determineRouteBeforeAppMiddleware' => true, 'addContentLengthHeader' => true ]]);
+
+$responseFactory = new \SrcCore\http\ResponseFactory();
+$app = \Slim\Factory\AppFactory::create($responseFactory);
+
+// Since Slim 4, the basePath is not automatically calculated with the folder paths
+// Instead, Slim assumes the API is exposed at the root path '/'
+// We have to find the basePath dynamically
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/rest';
+$requestUri = explode('/rest', $requestUri);
+$requestUriBasePath = $requestUri[0] ?? '';
+$app->setBasePath($requestUriBasePath . '/rest');
 
 //Authentication
-$app->add(function (\Slim\Http\Request $request, \Slim\Http\Response $response, callable $next) {
-    $route = $request->getAttribute('route');
-    $currentMethod = empty($route) ? '' : $route->getMethods()[0];
-    $currentRoute = empty($route) ? '' : $route->getPattern();
-    if (!in_array($currentMethod.$currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
+$app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
+    $response = new \SrcCore\http\Response();
+
+    $routeContext = \Slim\Routing\RouteContext::fromRequest($request);
+    $route = $routeContext->getRoute();
+    $route->getPattern();
+
+    $currentMethod = $route->getMethods()[0];
+    $currentRoute = $route->getPattern();
+
+    if (!in_array($currentMethod . $currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
         if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWhitoutAuthentication(['route' => $currentMethod.$currentRoute])) {
             $authorizationHeaders = $request->getHeader('Authorization');
             $userId = \SrcCore\controllers\AuthenticationController::authentication($authorizationHeaders);
@@ -49,10 +66,16 @@ $app->add(function (\Slim\Http\Request $request, \Slim\Http\Response $response, 
             }
         }
     }
-    $response = $next($request, $response);
 
-    return $response;
+    return $requestHandler->handle($request);
 });
+
+// Add Routing Middleware
+$app->addRoutingMiddleware();
+
+// Parse the request body into an array
+$bodyParsingMiddleware = new \Slim\Middleware\BodyParsingMiddleware();
+$app->add($bodyParsingMiddleware);
 
 //Authentication
 $app->get('/authenticationInformations', \SrcCore\controllers\AuthenticationController::class . ':getInformations');
@@ -108,6 +131,7 @@ $app->delete('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeCon
 //AutoComplete
 $app->get('/autocomplete/users', \SrcCore\controllers\AutoCompleteController::class . ':getUsers');
 $app->get('/autocomplete/maarchParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getMaarchParapheurUsers');
+$app->get('/autocomplete/fastParapheurUsers', \SrcCore\controllers\AutoCompleteController::class . ':getFastParapheurUsers');
 $app->get('/autocomplete/correspondents', \SrcCore\controllers\AutoCompleteController::class . ':getCorrespondents');
 $app->get('/autocomplete/contacts', \SrcCore\controllers\AutoCompleteController::class . ':getContacts');
 $app->get('/autocomplete/contacts/company', \SrcCore\controllers\AutoCompleteController::class . ':getContactsCompany');
@@ -211,7 +235,7 @@ $app->get('/onlyOffice/mergedFile', \ContentManagement\controllers\OnlyOfficeCon
 $app->get('/onlyOffice/encodedFile', \ContentManagement\controllers\OnlyOfficeController::class . ':getEncodedFileFromUrl');
 $app->get('/onlyOffice/available', \ContentManagement\controllers\OnlyOfficeController::class . ':isAvailable');
 $app->get('/onlyOffice/content', \ContentManagement\controllers\OnlyOfficeController::class . ':getTmpFile');
-$app->post('/onlyOfficeCallback', function (\Slim\Http\Request $request, \Slim\Http\Response $response) {
+$app->post('/onlyOfficeCallback', function (\Slim\Psr7\Request $request, \SrcCore\http\Response $response) {
     return $response->withJson(['error' => 0]);
 });
 
@@ -575,6 +599,9 @@ $app->put('/users/{id}/linkToMaarchParapheur', \ExternalSignatoryBook\controller
 $app->put('/users/{id}/unlinkToMaarchParapheur', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':unlinkUserToMaarchParapheur');
 $app->get('/users/{id}/statusInMaarchParapheur', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':userStatusInMaarchParapheur');
 $app->put('/users/{id}/externalSignatures', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':sendSignaturesToMaarchParapheur');
+$app->put('/users/{id}/linkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':linkUserToFastParapheur');
+$app->put('/users/{id}/unlinkToFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':unlinkUserToFastParapheur');
+$app->get('/users/{id}/statusInFastParapheur', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':userStatusInFastParapheur');
 $app->post('/users/{id}/groups', \User\controllers\UserController::class . ':addGroup');
 $app->put('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':updateGroup');
 $app->delete('/users/{id}/groups/{groupId}', \User\controllers\UserController::class . ':deleteGroup');
@@ -647,6 +674,7 @@ $app->get('/messageExchangesInitialization', \MessageExchange\controllers\SendMe
 
 //ExternalSignatoryBooks
 $app->get('/documents/{id}/maarchParapheurWorkflow', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getWorkflow');
+$app->get('/documents/{id}/fastParapheurWorkflow', \ExternalSignatoryBook\controllers\FastParapheurController::class . ':getWorkflow');
 $app->get('/maarchParapheurOtp', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getOtpList');
 $app->get('/maarchParapheur/user/{id}/picture', \ExternalSignatoryBook\controllers\MaarchParapheurController::class . ':getUserPicture');
 $app->get('/externalSignatureBooks/enabled', \ExternalSignatoryBook\controllers\ExternalSignatureBookController::class . ':getEnabledSignatureBook');
@@ -725,5 +753,26 @@ $app->get('/multigest/accounts/{id}', \Multigest\controllers\MultigestController
 $app->put('/multigest/accounts/{id}', \Multigest\controllers\MultigestController::class . ':updateAccount');
 $app->delete('/multigest/accounts/{id}', \Multigest\controllers\MultigestController::class . ':deleteAccount');
 $app->post('/multigest/checkAccounts', \Multigest\controllers\MultigestController::class . ':checkAccount');
+
+
+$contentLengthMiddleware = new \Slim\Middleware\ContentLengthMiddleware();
+$app->add($contentLengthMiddleware);
+
+/**
+ * Add Error Handling Middleware
+ *
+ * @param bool $displayErrorDetails -> Should be set to false in production
+ * @param bool $logErrors -> Parameter is passed to the default ErrorHandler
+ * @param bool $logErrorDetails -> Display error details in error log
+ * which can be replaced by a callable of your choice.
+
+ * Note: This middleware should be added last. It will not handle any exceptions/errors
+ * for middleware added after it.
+ */
+$errorMiddleware = $app->addErrorMiddleware(true, true, true); // TODO use monolog to log errors
+
+// Get the default error handler and register my custom error renderer.
+$errorHandler = $errorMiddleware->getDefaultErrorHandler();
+$errorHandler->registerErrorRenderer('application/json', \SrcCore\http\JsonErrorRenderer::class);
 
 $app->run();

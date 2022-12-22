@@ -283,6 +283,7 @@ CREATE TABLE res_attachments
   signatory_user_serial_id int,
   fulltext_result character varying(10) DEFAULT NULL::character varying,
   external_id jsonb DEFAULT '{}',
+  external_state jsonb DEFAULT '{}',
   CONSTRAINT res_attachments_pkey PRIMARY KEY (res_id)
 )
 WITH (OIDS=FALSE);
@@ -931,6 +932,7 @@ CREATE TABLE res_letterbox
   confidentiality character(1),
   fulltext_result character varying(10) DEFAULT NULL::character varying,
   external_id jsonb DEFAULT '{}',
+  external_state jsonb DEFAULT '{}',
   departure_date timestamp without time zone,
   opinion_limit_date timestamp without time zone default NULL,
   barcode text,
@@ -1604,3 +1606,11 @@ BEGIN
   END LOOP;
 END
 $$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS difflist_roles (
+  id SERIAL NOT NULL,
+  role_id CHARACTER varying(32) UNIQUE NOT NULL,
+  label CHARACTER varying(255) NOT NULL,
+  keep_in_list_instance BOOL NOT NULL DEFAULT FALSE,
+  CONSTRAINT roles_id_pkey PRIMARY KEY (id)
+);

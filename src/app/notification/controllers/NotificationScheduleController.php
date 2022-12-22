@@ -18,8 +18,8 @@ use Group\controllers\PrivilegeController;
 use Respect\Validation\Validator;
 use Notification\models\NotificationModel;
 use Notification\models\NotificationScheduleModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 
 class NotificationScheduleController
@@ -43,7 +43,7 @@ class NotificationScheduleController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (!NotificationScheduleController::checkCrontab($data)) {
             return $response->withStatus(500)->withJson(['errors' => 'Problem with crontab']);
         }
@@ -139,7 +139,7 @@ class NotificationScheduleController
         }
 
         $errors = [];
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (!Validator::intVal()->validate($data['notification_sid'])) {
             $errors[] = 'notification_sid is not a numeric';
         }

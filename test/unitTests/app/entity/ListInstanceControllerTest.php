@@ -7,27 +7,32 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\entity;
 
-class ListInstanceControllerTest extends TestCase
+use Entity\controllers\ListInstanceController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
+
+class ListInstanceControllerTest extends CourrierTestCase
 {
     private static $resourceId = null;
 
     public function testInit()
     {
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
-        $aArgs = [
+        $args = [
             'modelId'           => 1,
             'status'            => 'NEW',
             'encodedFile'       => $encodedFile,
@@ -58,27 +63,23 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$resourceId = $responseBody['resId'];
         $this->assertIsInt(self::$resourceId);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateCircuits()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
+        $listInstanceController = new ListInstanceController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'resources' => [
                 [
@@ -90,9 +91,9 @@ class ListInstanceControllerTest extends TestCase
                 ],
             ],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(204, $response->getStatusCode());
 
         $body = [
@@ -109,15 +110,15 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'opinionCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'opinionCircuit']);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // Errors
-        $fullRequest = \httpRequestCustom::addContentInBody([], $request);
+        $fullRequest = $this->createRequestWithBody('PUT', []);
 
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or not an array', $responseBody['errors']);
@@ -127,20 +128,20 @@ class ListInstanceControllerTest extends TestCase
                 []
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'toto']);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'toto']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route params type is empty or not valid', $responseBody['errors']);
 
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] resId is empty', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -150,14 +151,14 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -167,8 +168,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances is empty', $responseBody['errors']);
@@ -184,8 +185,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances[0] item_id is empty', $responseBody['errors']);
@@ -201,8 +202,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances[0] process_comment is too long', $responseBody['errors']);
@@ -218,8 +219,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances[0] item_id does not exist', $responseBody['errors']);
@@ -235,8 +236,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'visaCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'visaCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances[0] item_id has not enough privileges', $responseBody['errors']);
@@ -252,8 +253,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->updateCircuits($fullRequest, new \Slim\Http\Response(), ['type' => 'opinionCircuit']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->updateCircuits($fullRequest, new Response(), ['type' => 'opinionCircuit']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources[0] listInstances[0] item_id has not enough privileges', $responseBody['errors']);
@@ -261,13 +262,12 @@ class ListInstanceControllerTest extends TestCase
 
     public function testGetVisaCircuitByResId()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
+        $listInstanceController = new ListInstanceController();
 
         //  READ
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $listInstanceController->getVisaCircuitByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getVisaCircuitByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -282,33 +282,32 @@ class ListInstanceControllerTest extends TestCase
         $this->assertNotEmpty($responseBody['circuit'][1]['labelToDisplay']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->getVisaCircuitByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getVisaCircuitByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetByResId()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
+        $listInstanceController = new ListInstanceController();
 
         //  READ
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $listInstanceController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
 
         $this->assertIsArray($responseBody['listInstance']);
 
@@ -361,33 +360,32 @@ class ListInstanceControllerTest extends TestCase
         $this->assertNotEmpty($responseBody['listInstance'][2]['descriptionToDisplay']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetOpinionCircuitByResId()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
+        $listInstanceController = new ListInstanceController();
 
         //  READ
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $listInstanceController->getOpinionCircuitByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getOpinionCircuitByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'ppetit', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'ppetit', 'select' => ['id']]);
 
         $this->assertIsArray($responseBody['circuit']);
 
@@ -404,33 +402,32 @@ class ListInstanceControllerTest extends TestCase
         $this->assertSame(true, $responseBody['circuit'][0]['hasPrivilege']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->getOpinionCircuitByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getOpinionCircuitByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetParallelOpinionByResId()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
+        $listInstanceController = new ListInstanceController();
 
         //  READ
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $listInstanceController->getParallelOpinionByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getParallelOpinionByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'ppetit', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'ppetit', 'select' => ['id']]);
 
         $this->assertIsArray($responseBody);
 
@@ -448,24 +445,22 @@ class ListInstanceControllerTest extends TestCase
         $this->assertSame(true, $responseBody[0]['hasPrivilege']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->getParallelOpinionByResId($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->getParallelOpinionByResId($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $listInstanceController = new ListInstanceController();
 
         // Success
         $body = [
@@ -473,8 +468,8 @@ class ListInstanceControllerTest extends TestCase
                 'resId' => self::$resourceId
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->update($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         $body = [
@@ -489,8 +484,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->update($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
 
         // Errors
@@ -504,8 +499,8 @@ class ListInstanceControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->update($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Dest is missing', $responseBody['errors']);
@@ -515,75 +510,76 @@ class ListInstanceControllerTest extends TestCase
                 'toto' => self::$resourceId
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listInstanceController->update($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('resId is empty', $responseBody['errors']);
 
-        $response = $listInstanceController->update($request, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', []);
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body is not set or not an array', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->update($request, new \Slim\Http\Response());
+        $response = $listInstanceController->update($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDeleteCircuit()
     {
-        $listInstanceController = new \Entity\controllers\ListInstanceController();
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $listInstanceController = new ListInstanceController();
+        $request = $this->createRequest('DELETE');
 
         // Success
-        $response = $listInstanceController->deleteCircuit($request, new \Slim\Http\Response(), ['resId' => self::$resourceId, 'type' => 'visaCircuit']);
+        $response = $listInstanceController->deleteCircuit($request, new Response(), ['resId' => self::$resourceId, 'type' => 'visaCircuit']);
         $this->assertSame(204, $response->getStatusCode());
 
         // Errors
-        $response = $listInstanceController->deleteCircuit($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->deleteCircuit($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route params type is empty or not valid', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listInstanceController->deleteCircuit($request, new \Slim\Http\Response(), ['resId' => self::$resourceId]);
+        $response = $listInstanceController->deleteCircuit($request, new Response(), ['resId' => self::$resourceId]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resource out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    // TODO use tearDownAfterClass
     public function testClean()
     {
-        \SrcCore\models\DatabaseModel::delete([
+        DatabaseModel::delete([
             'table' => 'res_letterbox',
             'where' => ['res_id = ?'],
             'data'  => [self::$resourceId]
         ]);
-        \SrcCore\models\DatabaseModel::delete([
+        DatabaseModel::delete([
             'table' => 'listinstance',
             'where' => ['res_id = ?'],
             'data'  => [self::$resourceId]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resourceId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resourceId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }

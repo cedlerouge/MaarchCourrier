@@ -20,8 +20,8 @@ use History\controllers\HistoryController;
 use Respect\Validation\Validator;
 use Notification\models\NotificationModel;
 use Notification\models\NotificationScheduleModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 
 class NotificationController
@@ -102,7 +102,7 @@ class NotificationController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $errors = $this->control($data, 'create');
         if (!empty($errors)) {
@@ -155,7 +155,7 @@ class NotificationController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $data['notification_sid'] = $aArgs['id'];
         unset($data['scriptcreated']);
 

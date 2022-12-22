@@ -28,13 +28,14 @@ use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use Template\models\TemplateAssociationModel;
 use User\models\UserEntityModel;
 use User\models\UserModel;
 use Template\models\TemplateModel;
 use SrcCore\models\TextFormatModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class EntityController
 {
@@ -593,7 +594,7 @@ class EntityController
             }
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['method']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
@@ -770,7 +771,7 @@ class EntityController
         $includeUsers     = in_array('users', array_column($fields, 'value'));
         $includeTemplates = in_array('templates', array_column($fields, 'value'));
 
-        $roles = EntityModel::getRoles();
+        $roles = BroadcastListRoleModel::getRoles();
         $roles = array_column($roles, 'label', 'id');
 
         foreach ($entities as $key => $entity) {

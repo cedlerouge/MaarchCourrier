@@ -19,8 +19,8 @@ use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\ValidatorModel;
 use Docserver\models\DocserverModel;
 
@@ -87,7 +87,7 @@ class DocserverController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['docserver_id']) && preg_match("/^[\w-]*$/", $data['docserver_id']) && (strlen($data['docserver_id']) <= 32);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['docserver_type_id']);
@@ -141,7 +141,7 @@ class DocserverController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['device_label']);
         $check = $check && Validator::intVal()->notEmpty()->validate($data['size_limit_number']);

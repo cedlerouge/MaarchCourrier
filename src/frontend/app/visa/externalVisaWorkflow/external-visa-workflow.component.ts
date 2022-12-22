@@ -13,6 +13,7 @@ import { CreateExternalUserComponent } from './createExternalUser/create-externa
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { UserWorkflow } from '@models/user-workflow.model';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     selector: 'app-external-visa-workflow',
@@ -54,6 +55,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         public functions: FunctionsService,
         public dialog: MatDialog,
         public actionService: ActionsService,
+        public authService: AuthService,
         public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService,
         private notify: NotificationService
     ) { }
@@ -103,7 +105,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
                 this.visaWorkflow.items = listModel.listTemplates[0].items.map((item: any) => ({
-                    ...item,
+                    ...this.externalSignatoryBookManagerService.setExternalInformation(item),
                     item_entity: item.descriptionToDisplay,
                     requested_signature: item.item_mode !== 'visa',
                     currentRole: item.item_mode
@@ -111,7 +113,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             }
             this.visaWorkflow.items.forEach((element: any, key: number) => {
                 if (!this.functions.empty(element['externalId'])) {
-                    this.getUserAvatar(element.externalId.maarchParapheur, key);
+                    this.getUserAvatar(element.externalId[this.authService.externalSignatoryBook.id], key);
                 }
             });
             this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
@@ -238,6 +240,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     addItemToWorkflow(item: any) {
+        item = this.externalSignatoryBookManagerService.setExternalInformation(item);
         return new Promise((resolve, reject) => {
             const user: UserWorkflow = {
                 item_id: item.id,
@@ -249,14 +252,14 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                 signatory: !this.functions.empty(item.signatory) ? item.signatory : false,
                 hasPrivilege: true,
                 isValid: true,
-                availableRoles : ['visa'].concat(item.signatureModes),
+                availableRoles : [... new Set(['visa'].concat(item.signatureModes))],
                 role: item.signatureModes[item.signatureModes.length - 1]
             };
             this.visaWorkflow.items.push(user);
             if (!this.isValidRole(this.visaWorkflow.items.length - 1, item.signatureModes[item.signatureModes.length - 1], item.signatureModes[item.signatureModes.length - 1])) {
                 this.visaWorkflow.items[this.visaWorkflow.items.length - 1].role = 'visa';
             }
-            this.getUserAvatar(item.externalId.maarchParapheur, this.visaWorkflow.items.length - 1);
+            this.getUserAvatar(item.externalId[this.externalSignatoryBookManagerService.signatoryBookEnabled], this.visaWorkflow.items.length - 1);
             this.searchVisaSignUser.reset();
             resolve(true);
         });
@@ -296,10 +299,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         }
     }
 
-    async getUserAvatar(externalId: number, key: number) {
-        if (!this.functions.empty(externalId)) {
-            this.visaWorkflow.items[key].picture = await this.externalSignatoryBookManagerService?.getUserAvatar(externalId);
-        }
+    async getUserAvatar(externalId: any = null, key: number) {
+        this.visaWorkflow.items[key].picture = await this.externalSignatoryBookManagerService?.getUserAvatar(externalId);
     }
 
     isModified(): boolean {

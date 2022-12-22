@@ -7,24 +7,30 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\template;
 
-class DatasourceControllerTest extends TestCase
+use Entity\models\ListInstanceModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Note\controllers\NoteController;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use Template\controllers\DatasourceController;
+use User\models\UserModel;
+
+class DatasourceControllerTest extends CourrierTestCase
 {
     private static $noteId = null;
     private static $resId = null;
 
     public function testInit()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -54,28 +60,24 @@ class DatasourceControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
         self::$resId = $responseBody['resId'];
 
-        $noteController = new \Note\controllers\NoteController();
+        $noteController = new NoteController();
 
         // CREATE Note
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'value'     => "NOTE TEST",
             'entities'  => [],
             'resId'     => self::$resId
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $fullRequest = httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $noteController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $noteController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['noteId']);
 
@@ -84,7 +86,7 @@ class DatasourceControllerTest extends TestCase
 
     public function testNotifEvents()
     {
-        $dataSourceController   = new \Template\controllers\DatasourceController();
+        $dataSourceController   = new DatasourceController();
 
         $args = [
             'params' => [
@@ -120,7 +122,7 @@ class DatasourceControllerTest extends TestCase
 
     public function testLetterboxEvents()
     {
-        $dataSourceController   = new \Template\controllers\DatasourceController();
+        $dataSourceController   = new DatasourceController();
 
         $args = [
             'params' => [
@@ -268,7 +270,7 @@ class DatasourceControllerTest extends TestCase
 
     public function testNoteEvents()
     {
-        $dataSourceController   = new \Template\controllers\DatasourceController();
+        $dataSourceController   = new DatasourceController();
 
         $args = [
             'params' => [
@@ -367,7 +369,7 @@ class DatasourceControllerTest extends TestCase
             ]
         ];
 
-        \Entity\models\ListInstanceModel::create([
+        ListInstanceModel::create([
             'res_id'          => self::$resId,
             'sequence'        => 0,
             'item_id'         => 19, // args['params']['recipient']['id']
@@ -398,26 +400,29 @@ class DatasourceControllerTest extends TestCase
 
     public function testClean()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $GLOBALS['login'] = 'cchaplin';
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
 
-        $noteController = new \Note\controllers\NoteController();
-        $response         = $noteController->delete($request, new \Slim\Http\Response(), ['id' => self::$noteId]);
+        $request = $this->createRequest('DELETE');
+
+        $noteController = new NoteController();
+        $response         = $noteController->delete($request, new Response(), ['id' => self::$noteId]);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // Delete resource
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data' => [self::$resId]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 }

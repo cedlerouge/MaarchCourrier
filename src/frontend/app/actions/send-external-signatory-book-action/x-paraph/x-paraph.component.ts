@@ -63,8 +63,8 @@ export class XParaphComponent implements OnInit {
                 startWith(''),
                 map(state => state ? this._filterUsers(state) : this.usersWorkflowList.slice())
             );
-        this.http.get('../rest/xParaphWorkflow?login=' + account.login + '&siret=' + account.siret)
-            .subscribe((data: any) => {
+        this.http.get('../rest/xParaphWorkflow?login=' + account.login + '&siret=' + account.siret).pipe(
+            tap((data: any) => {
                 this.usersWorkflowList = data.workflow;
                 this.usersWorkflowList.forEach(element => {
                     element.currentRole = element.roles[0];
@@ -73,11 +73,13 @@ export class XParaphComponent implements OnInit {
                 setTimeout(() => {
                     $('#availableUsers').focus();
                 }, 0);
-
-            }, (err: any) => {
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err.error.errors[0]);
                 this.loading = false;
-                this.notify.error(err.error.errors[0]);
-            });
+                return of(false);
+            })
+        ).subscribe();
     }
 
     changeRole(i: number, role: string) {

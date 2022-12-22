@@ -13,7 +13,12 @@ export class VisaWorkflowModalComponent implements OnInit {
 
     @ViewChild('appExternalVisaWorkflow', { static: true }) appExternalVisaWorkflow: ExternalVisaWorkflowComponent;
 
-    constructor(public translate: TranslateService, public http: HttpClient, @Inject(MAT_DIALOG_DATA) public data: any, public dialogRef: MatDialogRef<VisaWorkflowModalComponent>) { }
+    constructor(
+        public translate: TranslateService,
+        public http: HttpClient,
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        public dialogRef: MatDialogRef<VisaWorkflowModalComponent>
+    ) { }
 
     ngOnInit(): void {
         this.appExternalVisaWorkflow.loadExternalWorkflow(this.data.id, this.data.type);

@@ -7,6 +7,7 @@ import { FastParapheurService } from './fast-parapheur.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '@service/auth.service';
 import { FunctionsService } from '@service/functions.service';
+import { ResourceStep } from '@models/resource-step.model';
 @Injectable()
 
 export class ExternalSignatoryBookManagerService {
@@ -14,7 +15,6 @@ export class ExternalSignatoryBookManagerService {
     allowedSignatoryBook: string[] = ['maarchParapheur', 'fastParapheur'];
     serviceInjected: MaarchParapheurService | FastParapheurService;
     signatoryBookEnabled: string = '';
-    integratedWorkflow: boolean = false; // allows when FAST PARAPHEUR is activated to know which method to use
 
     constructor(
         private injector: Injector,
@@ -24,16 +24,15 @@ export class ExternalSignatoryBookManagerService {
         private authService: AuthService,
         private functions: FunctionsService
     ) {
-        this.integratedWorkflow = this.authService.externalSignatoryBook.integratedWorkflow;
-        if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook.id) > -1) {
-            if (this.authService.externalSignatoryBook.id === 'maarchParapheur') {
-                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
+        if (this.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
+            if (this.authService.externalSignatoryBook?.id === 'maarchParapheur') {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<MaarchParapheurService>(MaarchParapheurService);
-            } else if (this.authService.externalSignatoryBook.id === 'fastParapheur' && this.integratedWorkflow) {
-                this.signatoryBookEnabled = this.authService.externalSignatoryBook.id;
+            } else if (this.authService.externalSignatoryBook?.id === 'fastParapheur' && this.authService.externalSignatoryBook?.integratedWorkflow) {
+                this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
-        } else if (this.functions.empty(this.authService.externalSignatoryBook.id)) {
+        } else if (this.functions.empty(this.authService.externalSignatoryBook?.id)) {
             this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
     }
@@ -55,23 +54,23 @@ export class ExternalSignatoryBookManagerService {
     }
 
     loadListModel(entityId: number) {
-        return this.serviceInjected.loadListModel(entityId);
+        return this.serviceInjected?.loadListModel(entityId);
     }
 
     loadWorkflow(attachmentId: number, type: string) {
-        return this.serviceInjected.loadWorkflow(attachmentId, type);
+        return this.serviceInjected?.loadWorkflow(attachmentId, type);
     }
 
-    getUserAvatar(externalId: number) {
-        return this.serviceInjected.getUserAvatar(externalId);
+    getUserAvatar(externalId: any) {
+        return this.serviceInjected?.getUserAvatar(externalId);
     }
 
     getOtpConfig() {
-        return this.serviceInjected.getOtpConfig();
+        return this.serviceInjected?.getOtpConfig();
     }
 
     getAutocompleteUsersRoute(): string {
-        return this.serviceInjected.autocompleteUsersRoute;
+        return this.serviceInjected?.autocompleteUsersRoute;
     }
 
     isValidExtWorkflow(workflow: any[]): boolean {
@@ -86,5 +85,84 @@ export class ExternalSignatoryBookManagerService {
             }
         });
         return res;
+    }
+
+    getAutocompleteUsersDatas(data: any) {
+        return this.serviceInjected?.getAutocompleteDatas(data);
+    }
+
+    linkAccountToSignatoryBook(data: any, serialId: number) {
+        return this.serviceInjected?.linkAccountToSignatoryBook(data, serialId);
+    }
+
+    unlinkSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected?.unlinkSignatoryBookAccount(serialId);
+    }
+
+    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+        return this.serviceInjected?.createExternalSignatoryBookAccount(id, login, serialId);
+    }
+
+    checkInfoExternalSignatoryBookAccount(serialId: number) {
+        return this.serviceInjected?.checkInfoExternalSignatoryBookAccount(serialId);
+    }
+
+    setExternalInformation(item: any) {
+        return this.serviceInjected.setExternalInformation(item);
+    }
+
+    isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
+        return this.serviceInjected.isValidParaph(additionalsInfos, workflow, resourcesToSign, userOtps);
+    }
+
+    getRessources(additionalsInfos: any): any[] {
+        return this.serviceInjected.getRessources(additionalsInfos);
+    }
+
+    getDatas(workflow: any[] = [], resourcesToSign: any[] = []): any {
+        const formatedData: any = { steps: [] };
+        resourcesToSign.forEach((resource: any) => {
+            workflow.forEach((element: any, index: number) => {
+                const step: ResourceStep = {
+                    'resId': resource.resId,
+                    'mainDocument': resource.mainDocument,
+                    'externalId': element.externalId[this.signatoryBookEnabled],
+                    'sequence': index,
+                    'action': element.role === 'visa' ? 'visa' : 'sign',
+                    'signatureMode': element.role,
+                    'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                    'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
+                    'externalInformations': element.hasOwnProperty('externalInformations') ? element.externalInformations : null
+                };
+                formatedData['steps'].push(step);
+            });
+        });
+        return formatedData;
+    }
+
+    formatPositions(position: any): any {
+        delete position.mainDocument;
+        delete position.resId;
+        return position;
+    }
+
+    canCreateUser(): boolean {
+        return this.serviceInjected.canCreateUser;
+    }
+
+    async synchronizeSignatures(data: any) {
+        await this.serviceInjected.synchronizeSignatures(data);
+    }
+
+    canSynchronizeSignatures(): boolean {
+        return this.serviceInjected.canSynchronizeSignatures;
+    }
+
+    canManageSignaturesPositions(): boolean {
+        return this.serviceInjected.canManageSignaturesPositions;
+    }
+
+    canViewWorkflow(): boolean {
+        return this.serviceInjected.canViewWorkflow;
     }
 }

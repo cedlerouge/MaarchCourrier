@@ -19,6 +19,7 @@ use Contact\controllers\ContactController;
 use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
 use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
@@ -32,13 +33,14 @@ use Priority\models\PriorityModel;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
+use BroadcastList\models\BroadcastListRoleModel;
 
 class SummarySheetController
 {
@@ -220,7 +222,12 @@ class SummarySheetController
                 $qrCode = new QrCode($prefix . $resource['res_id']);
                 $qrCode->setSize(400);
                 $qrCode->setMargin(25);
-                $pdf->Image('@'.$qrCode->writeString(), 485, 10, 90, 90);
+
+                $pngWriter = new PngWriter();
+                $qrCodeResult = $pngWriter->write($qrCode);
+                $qrCodeResult = $qrCodeResult->getString();
+
+                $pdf->Image('@' . $qrCodeResult, 485, 10, 90, 90);
             }
         }
         foreach ($units as $key => $unit) {
@@ -655,7 +662,7 @@ class SummarySheetController
                 $assignee    = '';
                 $destination = '';
                 $found       = false;
-                $roles       = EntityModel::getRoles();
+                $roles       = BroadcastListRoleModel::getRoles();
                 $rolesItems  = [];
                 $nbItems     = 0;
                 foreach ($args['data']['listInstances'] as $listKey => $listInstance) {
@@ -696,7 +703,7 @@ class SummarySheetController
                     }
                 }
 
-                // Sort keys to be in the same order defined in the roles.xml file
+                // Sort keys to be in the same order defined in the roles database
                 $rolesIDs = array_column($roles, 'id');
                 $tmp      = [];
                 foreach ($rolesIDs as $key) {

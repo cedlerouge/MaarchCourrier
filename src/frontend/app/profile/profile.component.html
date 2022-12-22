@@ -258,7 +258,7 @@
                                         [signatureModel]="signatureModel"
                                         [userSignatures]="user.signatures"
                                         [loadingSign]="loadingSign"
-                                        [externalIdMaarchParapheur]="user.external_id.maarchParapheur">
+                                        [externalIdMaarchParapheur]="user.external_id[authService.externalSignatoryBook.id]">
                                     </app-signature-book>
                                 </mat-expansion-panel>
                                 <mat-expansion-panel>

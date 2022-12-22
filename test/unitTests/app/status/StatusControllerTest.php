@@ -7,29 +7,30 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\status;
 
-class StatusControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use Status\controllers\StatusController;
+
+class StatusControllerTest extends CourrierTestCase
 {
-
     private static $id = null;
 
     public function testCreate()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $status      = new \Status\controllers\StatusController();
+        $status      = new StatusController();
 
-        $aArgs = [
+        $args = [
             'id'               => 'TEST',
             'label_status'     => 'TEST',
             'img_filename'     => 'fm-letter-end',
             'can_be_searched'  => 'true',
             'can_be_modified'  => '',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $status->create($fullRequest, new \Slim\Http\Response());
+        $response     = $status->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsInt($responseBody->status->identifier);
@@ -51,29 +52,27 @@ class StatusControllerTest extends TestCase
         $this->assertEqualsCanonicalizing($aCompare, $responseBody->status);
 
         ########## CREATE FAIL ##########
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'id'               => 'TEST',
             'label_status'     => 'TEST',
             'img_filename'     => 'fm-letter-end',
         ];
-        $fullRequest  = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $status->create($fullRequest, new \Slim\Http\Response());
+        $response     = $status->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(_ID . ' TEST ' . _ALREADY_EXISTS, $responseBody->errors[0]);
 
         ########## CREATE FAIL 2 ##########
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'id'               => 'papa',
             'label_status'     => '',
             'img_filename'     => 'fm-letter-end',
         ];
-        $fullRequest  = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $status->create($fullRequest, new \Slim\Http\Response());
+        $response     = $status->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Invalid label_status value', $responseBody->errors[0]);
@@ -81,18 +80,17 @@ class StatusControllerTest extends TestCase
 
     public function testGetById()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $status      = new \Status\controllers\StatusController();
+        $request = $this->createRequest('GET');
+        $status = new StatusController();
 
-        $response  = $status->getById($request, new \Slim\Http\Response(), ['id' => 'TEST']);
+        $response = $status->getById($request, new Response(), ['id' => 'TEST']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->status);
         $this->assertSame('TEST', $responseBody->status->id);
 
         // ERROR
-        $response  = $status->getById($request, new \Slim\Http\Response(), ['id' => 'NOTFOUNDSTATUS']);
+        $response  = $status->getById($request, new Response(), ['id' => 'NOTFOUNDSTATUS']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('id not found', $responseBody->errors);
@@ -101,11 +99,10 @@ class StatusControllerTest extends TestCase
     public function testGetListUpdateDelete()
     {
         ########## GET LIST ##########
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $status      = new \Status\controllers\StatusController();
+        $request = $this->createRequest('GET');
+        $status = new StatusController();
 
-        $response  = $status->get($request, new \Slim\Http\Response());
+        $response = $status->get($request, new Response());
 
         $responseBody = json_decode((string)$response->getBody());
         $this->assertNotNull($responseBody->statuses);
@@ -115,7 +112,7 @@ class StatusControllerTest extends TestCase
         }
 
         ########## GETBYIDENTIFIER ##########
-        $response     = $status->getByIdentifier($request, new \Slim\Http\Response(), ['identifier' => self::$id]);
+        $response     = $status->getByIdentifier($request, new Response(), ['identifier' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->status);
@@ -136,24 +133,21 @@ class StatusControllerTest extends TestCase
         $this->assertEqualsCanonicalizing($aCompare, $responseBody->status[0]);
 
         ########## GETBYIDENTIFIER FAIL ##########
-        $response     = $status->getByIdentifier($request, new \Slim\Http\Response(), ['identifier' => -1]);
+        $response     = $status->getByIdentifier($request, new Response(), ['identifier' => -1]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('identifier not found', $responseBody->errors);
 
 
         ########## UPDATE ##########
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'id'           => 'TEST',
             'label_status' => 'TEST AFTER UP',
             'img_filename' => 'fm-letter-end',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $status->update($fullRequest, new \Slim\Http\Response(), ['identifier' => self::$id]);
+        $response = $status->update($fullRequest, new Response(), ['identifier' => self::$id]);
 
         $responseBody = json_decode((string)$response->getBody());
 
@@ -173,36 +167,33 @@ class StatusControllerTest extends TestCase
         $this->assertEqualsCanonicalizing($aCompare, $responseBody->status);
 
         ########## UPDATE FAIL ##########
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'id'           => 'PZOEIRUTY',
             'label_status' => 'TEST AFTER UP',
             'img_filename' => 'fm-letter-end',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response = $status->update($fullRequest, new \Slim\Http\Response(), ['identifier' => -1]);
+        $response = $status->update($fullRequest, new Response(), ['identifier' => -1]);
 
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('-1 ' . _NOT_EXISTS, $responseBody->errors[0]);
 
 
         ########## DELETE ##########
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response = $status->delete($request, new \Slim\Http\Response(), ['identifier'=> self::$id]);
+        $response = $status->delete($request, new Response(), ['identifier'=> self::$id]);
 
         $this->assertMatchesRegularExpression('/statuses/', (string)$response->getBody());
     }
 
     public function testGetNewInformations()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
-        $status      = new \Status\controllers\StatusController();
+        $request = $this->createRequest('GET');
+        $status      = new StatusController();
 
-        $response = $status->getNewInformations($request, new \Slim\Http\Response());
+        $response = $status->getNewInformations($request, new Response());
 
         $responseBody = json_decode((string)$response->getBody());
 

@@ -79,13 +79,13 @@ abstract class AttachmentModelAbstract
 
     public static function update(array $args)
     {
-        ValidatorModel::notEmpty($args, ['set', 'where', 'data']);
-        ValidatorModel::arrayType($args, ['set', 'where', 'data', 'postSet']);
+        ValidatorModel::notEmpty($args, ['where', 'data']);
+        ValidatorModel::arrayType($args, ['set', 'postSet', 'where', 'data']);
 
         DatabaseModel::update([
             'table'   => 'res_attachments',
-            'set'     => $args['set'],
-            'postSet' => !empty($args['postSet']) ? $args['postSet'] : [],
+            'set'     => $args['set'] ?? [],
+            'postSet' => $args['postSet'] ?? [],
             'where'   => $args['where'],
             'data'    => $args['data']
         ]);

@@ -31,8 +31,8 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\AutoCompleteController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
@@ -631,7 +631,8 @@ class ContactController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
+
         $check = Validator::arrayType()->validate($data['contactsParameters']);
         $check = $check && Validator::arrayType()->validate($data['contactsFilling']);
         $check = $check && Validator::boolType()->validate($data['contactsFilling']['enable']);

@@ -7,9 +7,15 @@
  *
  */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\tag;
 
-class TagControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use Tag\controllers\TagController;
+use Tag\models\ResourceTagModel;
+use User\models\UserModel;
+
+class TagControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $idChild = null;
@@ -18,18 +24,15 @@ class TagControllerTest extends TestCase
 
     public function testCreate()
     {
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'label'    => 'TEST_LABEL_PARENT'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         self::$id = $responseBody['id'];
@@ -38,9 +41,8 @@ class TagControllerTest extends TestCase
         $this->assertIsInt(self::$id);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $tagController->getById($request, new Response(), ['id' => self::$id]);
 
         $this->assertSame(200, $response->getStatusCode());
 
@@ -52,15 +54,12 @@ class TagControllerTest extends TestCase
         $this->assertSame('TEST_LABEL_PARENT', $responseBody['label']);
 
         //  ERRORS
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'label'    => ''
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -70,9 +69,9 @@ class TagControllerTest extends TestCase
         $body = [
             'label'    => '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -82,9 +81,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -94,9 +93,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => self::$id * 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -107,9 +106,9 @@ class TagControllerTest extends TestCase
             'parentId' => self::$id,
             'links'    => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -120,9 +119,9 @@ class TagControllerTest extends TestCase
             'parentId' => self::$id,
             'links'    => ['wrong format']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -133,9 +132,9 @@ class TagControllerTest extends TestCase
             'parentId' => self::$id,
             'links'    => [self::$id * 1000]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -147,9 +146,9 @@ class TagControllerTest extends TestCase
             'parentId' => self::$id,
             'links'    => [self::$id]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(200, $response->getStatusCode());
@@ -157,9 +156,8 @@ class TagControllerTest extends TestCase
         self::$idChild = $responseBody['id'];
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $request = $this->createRequest('GET');
+        $response     = $tagController->getById($request, new Response(), ['id' => self::$idChild]);
 
         $this->assertSame(200, $response->getStatusCode());
 
@@ -174,9 +172,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_GRAND_CHILD',
             'parentId' => self::$idChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(200, $response->getStatusCode());
@@ -186,9 +184,9 @@ class TagControllerTest extends TestCase
         $body = [
             'label'    => 'TEST_LABEL_TO_MERGE',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $tagController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(200, $response->getStatusCode());
@@ -196,27 +194,26 @@ class TagControllerTest extends TestCase
         self::$idToMerge = $responseBody['id'];
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response         = $tagController->create($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody     = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $tagController->getById($request, new Response(), ['id' => self::$id]);
 
         $this->assertSame(200, $response->getStatusCode());
 
@@ -226,9 +223,8 @@ class TagControllerTest extends TestCase
         $this->assertIsString($responseBody['label']);
 
         //  READ fail
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => 'test']);
+        $request = $this->createRequest('GET');
+        $response     = $tagController->getById($request, new Response(), ['id' => 'test']);
 
         $this->assertSame(400, $response->getStatusCode());
 
@@ -237,7 +233,7 @@ class TagControllerTest extends TestCase
         $this->assertIsString($responseBody['errors']);
         $this->assertSame('Route id must be an integer val', $responseBody['errors']);
 
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $tagController->getById($request, new Response(), ['id' => self::$id * 1000]);
 
         $this->assertSame(404, $response->getStatusCode());
 
@@ -249,36 +245,30 @@ class TagControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         //  Update working
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'label'    => 'TEST_LABEL_2'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // Update fail
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'label'    => ''
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Tag does not exist', $responseBody['errors']);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $this->assertSame(400, $response->getStatusCode());
 
@@ -288,9 +278,8 @@ class TagControllerTest extends TestCase
         $this->assertSame('Body label is empty or not a string', $responseBody['errors']);
 
         //  Update fail
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->update($request, new \Slim\Http\Response(), ['id' => 'test']);
+        $request = $this->createRequest('PUT');
+        $response     = $tagController->update($request, new Response(), ['id' => 'test']);
 
         $this->assertSame(400, $response->getStatusCode());
 
@@ -302,9 +291,9 @@ class TagControllerTest extends TestCase
         $body = [
             'label'    => '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -314,9 +303,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -326,9 +315,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => self::$id * 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -338,9 +327,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => self::$idChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -350,9 +339,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_CHILD',
             'parentId' => self::$idGrandChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -362,9 +351,9 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL',
             'parentId' => self::$idGrandChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -374,18 +363,18 @@ class TagControllerTest extends TestCase
             'label'    => 'TEST_LABEL_GRAND_CHILD',
             'parentId' => self::$id
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idGrandChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idGrandChild]);
         $this->assertSame(204, $response->getStatusCode());
 
         $body = [
             'label'    => 'TEST_LABEL_GRAND_CHILD',
             'parentId' => self::$idChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idGrandChild]);
+        $response     = $tagController->update($fullRequest, new Response(), ['id' => self::$idGrandChild]);
         $this->assertSame(204, $response->getStatusCode());
 
         // Link tags
@@ -393,9 +382,9 @@ class TagControllerTest extends TestCase
             'label' => 'TEST_LABEL',
             'links' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response         = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -405,9 +394,9 @@ class TagControllerTest extends TestCase
             'label' => 'TEST_LABEL',
             'links' => [self::$id]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response         = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -418,39 +407,37 @@ class TagControllerTest extends TestCase
             'label' => 'TEST_LABEL',
             'links' => [self::$idGrandChild]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response         = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response         = $tagController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response         = $tagController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody     = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testMerge()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         // FAIL
         $body = [
             'idMaster' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -460,9 +447,9 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$id,
             'idMerge'  => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -472,9 +459,9 @@ class TagControllerTest extends TestCase
             'idMaster' => 1000,
             'idMerge'  => 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -484,9 +471,9 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$id * 1000,
             'idMerge'  => self::$idToMerge * 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(404, $response->getStatusCode());
@@ -496,9 +483,9 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$id,
             'idMerge'  => self::$idToMerge * 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(404, $response->getStatusCode());
@@ -508,9 +495,9 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$id,
             'idMerge'  => self::$idChild
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -520,9 +507,9 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$idToMerge,
             'idMerge'  => self::$id
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
@@ -532,67 +519,66 @@ class TagControllerTest extends TestCase
             'idMaster' => self::$id,
             'idMerge'  => self::$idToMerge
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response         = $tagController->merge($fullRequest, new Response());
 
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response         = $tagController->merge($fullRequest, new \Slim\Http\Response());
+        $response         = $tagController->merge($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody     = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
         // FAIL
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        \Tag\models\ResourceTagModel::create([
+        ResourceTagModel::create([
             'res_id' => $GLOBALS['resources'][0],
             'tag_id' => self::$idGrandChild
         ]);
 
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$idGrandChild]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$idGrandChild]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddaull';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$idGrandChild]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$idGrandChild]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(403, $response->getStatusCode());
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response         = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response         = $tagController->delete($request, new Response(), ['id' => self::$id * 1000]);
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Tag does not exist', $responseBody['errors']);
 
-        $response     = $tagController->delete($request, new \Slim\Http\Response(), ['id' => 'test']);
+        $response     = $tagController->delete($request, new Response(), ['id' => 'test']);
 
         $this->assertSame(400, $response->getStatusCode());
 
@@ -601,7 +587,7 @@ class TagControllerTest extends TestCase
         $this->assertIsString($responseBody['errors']);
         $this->assertSame('Route id must be an integer val', $responseBody['errors']);
 
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -609,19 +595,18 @@ class TagControllerTest extends TestCase
         $this->assertSame('Tag has children', $responseBody['errors']);
 
         //  Success
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$idGrandChild]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$idGrandChild]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$idChild]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$idChild]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response = $tagController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $tagController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $tagController->getById($request, new Response(), ['id' => self::$id]);
 
         $this->assertSame(404, $response->getStatusCode());
 
@@ -633,12 +618,11 @@ class TagControllerTest extends TestCase
 
     public function testGet()
     {
-        $tagController = new \Tag\controllers\TagController();
+        $tagController = new TagController();
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response     = $tagController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response     = $tagController->get($request, new Response());
 
         $this->assertSame(200, $response->getStatusCode());
 

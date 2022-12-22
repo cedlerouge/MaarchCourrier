@@ -10,44 +10,41 @@
 * @author  dev <dev@maarch.org>
 * @ingroup core
 */
-use PHPUnit\Framework\TestCase;
 
-class NotificationScheduleControllerTest extends TestCase
+namespace MaarchCourrier\Tests\app\notification;
+
+use MaarchCourrier\Tests\CourrierTestCase;
+use Notification\controllers\NotificationScheduleController;
+use SrcCore\http\Response;
+
+class NotificationScheduleControllerTest extends CourrierTestCase
 {
-    private static $id = null;
-
     public function testCreateScript()
     {
-        $NotificationScheduleController = new \Notification\controllers\NotificationScheduleController();
+        $NotificationScheduleController = new NotificationScheduleController();
 
         // CREATE FAIL
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'notification_sid' => 'gaz',
             'notification_id' => '',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $NotificationScheduleController->createScriptNotification($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->createScriptNotification($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('notification_sid is not a numeric', $responseBody->errors[0]);
         $this->assertSame('one of arguments is empty', $responseBody->errors[1]);
 
         // CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'notification_sid'  => 1,
             'notification_id'   => 'USERS',
             'event_id'          => 'users'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $NotificationScheduleController->createScriptNotification($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->createScriptNotification($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(true, $responseBody);
@@ -55,16 +52,15 @@ class NotificationScheduleControllerTest extends TestCase
 
     public function testSaveCrontab()
     {
-        $NotificationScheduleController = new \Notification\controllers\NotificationScheduleController();
+        $NotificationScheduleController = new NotificationScheduleController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $NotificationScheduleController->get($request, new \Slim\Http\Response());
-        $responseBody = json_decode((string) $response->getBody());
+        $response = $NotificationScheduleController->get($request, new Response());
+        $responseBody = json_decode((string) $response->getBody(), true);
 
         // CREATE FAIL
-        $aArgs = $responseBody->crontab;
+        $args = $responseBody['crontab'];
 
         $corePath = dirname(__FILE__, 5).'/';
         $newCrontab = [
@@ -76,19 +72,17 @@ class NotificationScheduleControllerTest extends TestCase
             'cmd' => $corePath.'bin/notification/scripts/notification_testtu.sh',
             'state' => 'normal',
         ];
+        array_push($args, $newCrontab);
 
-        array_push($aArgs, $newCrontab);
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationScheduleController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+
+        $response = $NotificationScheduleController->create($fullRequest, new Response());
         $responseBodyFail = json_decode((string) $response->getBody());
 
         $this->assertSame('wrong format for dom', $responseBodyFail->errors[ count($responseBodyFail->errors) - 1 ]);
 
         // CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = $responseBody->crontab;
+        $args = $responseBody['crontab'];
 
         $corePath = dirname(__FILE__, 5).'/';
         $newCrontab = [
@@ -100,10 +94,10 @@ class NotificationScheduleControllerTest extends TestCase
             'cmd' => $corePath.'bin/notification/scripts/notification_testtu.sh',
             'state' => 'normal',
         ];
+        array_push($args, $newCrontab);
 
-        array_push($aArgs, $newCrontab);
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationScheduleController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationScheduleController->create($fullRequest, new Response());
         $responseBodyCreate = json_decode((string) $response->getBody());
 
         $this->assertSame(true, $responseBodyCreate);
@@ -111,11 +105,10 @@ class NotificationScheduleControllerTest extends TestCase
 
     public function testReadAll()
     {
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $NotificationScheduleController = new \Notification\controllers\NotificationScheduleController();
-        $response = $NotificationScheduleController->get($request, new \Slim\Http\Response());
+        $NotificationScheduleController = new NotificationScheduleController();
+        $response = $NotificationScheduleController->get($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertIsArray($responseBody->crontab);
@@ -126,22 +119,18 @@ class NotificationScheduleControllerTest extends TestCase
 
     public function testUpdateCrontab()
     {
-        $NotificationScheduleController = new \Notification\controllers\NotificationScheduleController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $NotificationScheduleController = new NotificationScheduleController();
+        $request = $this->createRequest('GET');
 
-        $response = $NotificationScheduleController->get($request, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->get($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         //  UPDATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = $responseBody->crontab;
+        $args = $responseBody->crontab;
 
         $corePath = dirname(__FILE__, 5).'/';
 
-        $aArgs[count($aArgs) - 1] = [
+        $args[count($args) - 1] = [
             'm' => 35,
             'h' => 22,
             'dom' => '*',
@@ -150,18 +139,16 @@ class NotificationScheduleControllerTest extends TestCase
             'cmd' => $corePath.'bin/notification/scripts/notification_testtu.sh',
             'state' => 'normal',
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response = $NotificationScheduleController->create($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(true, $responseBody);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $NotificationScheduleController->get($request, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->get($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('35', $responseBody->crontab[count($responseBody->crontab) - 1]->m);
@@ -171,43 +158,40 @@ class NotificationScheduleControllerTest extends TestCase
     public function testDelete()
     {
         // DELETE FAIL
-        $NotificationScheduleController = new \Notification\controllers\NotificationScheduleController();
+        $NotificationScheduleController = new NotificationScheduleController();
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response = $NotificationScheduleController->get($request, new \Slim\Http\Response());
-        $responseBody = json_decode((string) $response->getBody());
+        $response = $NotificationScheduleController->get($request, new Response());
+        $responseBody = json_decode((string) $response->getBody(), true);
 
-        $aArgs = $responseBody->crontab;
+        $args = $responseBody['crontab'];
 
-        foreach ($aArgs as $id => $value) {
-            if ($value->cmd == dirname(__FILE__, 5).'/'.'bin/notification/scripts/notification_testtu.sh') {
-                $aArgs[$id]->state = 'hidden';
+        foreach ($args as $id => $value) {
+            if ($value['cmd'] == dirname(__FILE__, 5).'/'.'bin/notification/scripts/notification_testtu.sh') {
+                $args[$id]['state'] = 'hidden';
             }
         }
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $NotificationScheduleController->create($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->create($fullRequest, new Response());
         $responseBodyFail = json_decode((string) $response->getBody());
 
         $this->assertSame('Problem with crontab', $responseBodyFail->errors);
 
         // DELETE
-        $aArgs = $responseBody->crontab;
+        $args = $responseBody['crontab'];
 
-        foreach ($aArgs as $id => $value) {
-            if ($value->cmd == dirname(__FILE__, 5).'/'.'bin/notification/scripts/notification_testtu.sh') {
-                $aArgs[$id]->state = 'deleted';
+        foreach ($args as $id => $value) {
+            if ($value['cmd'] == dirname(__FILE__, 5).'/'.'bin/notification/scripts/notification_testtu.sh') {
+                $args[$id]['state'] = 'deleted';
             }
         }
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $NotificationScheduleController->create($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationScheduleController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(true, $responseBody);

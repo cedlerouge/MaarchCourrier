@@ -9,17 +9,20 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\core;
 
-class AutocompleteControllerTest extends TestCase
+use SrcCore\controllers\AutoCompleteController;
+use SrcCore\http\Response;
+use MaarchCourrier\Tests\CourrierTestCase;
+
+class AutocompleteControllerTest extends CourrierTestCase
 {
     public function testGetContactsForGroups()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'maarch',
@@ -27,7 +30,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getContacts($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getContacts($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -42,11 +45,10 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetMaarchParapheurUsers()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
-        //  GET (EMPTY BECAUSE USER ALREADY LINKED)
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        //  GET (EMPTY BECAUSE USER ALREADY LINKED);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search' => 'manfred',
@@ -54,7 +56,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -65,7 +67,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -82,11 +84,10 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetCorrespondents()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'maarch',
@@ -94,7 +95,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getCorrespondents($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getCorrespondents($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         foreach ($responseBody as $value) {
@@ -110,18 +111,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetUsers()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'bain'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsers($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -139,18 +139,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetUsersForAdministration()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'bern',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -174,7 +173,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -195,18 +194,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetUsersForCircuit()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'dau',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForCircuit($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getUsersForCircuit($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -224,18 +222,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetContactsCompany()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search' => 'maar',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getContactsCompany($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getContactsCompany($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -255,18 +252,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetEntities()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'mai',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getEntities($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getEntities($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -284,13 +280,12 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetStatuses()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $autocompleteController->getStatuses($request, new \Slim\Http\Response());
+        $response     = $autocompleteController->getStatuses($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -308,11 +303,10 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetBanAddresses()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'department'    => '75',
@@ -320,7 +314,7 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getBanAddresses($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getBanAddresses($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -348,12 +342,12 @@ class AutocompleteControllerTest extends TestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getBanAddresses($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getBanAddresses($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Department indexes do not exist', $responseBody->errors);
 
-        $response     = $autocompleteController->getBanAddresses($request, new \Slim\Http\Response());
+        $response     = $autocompleteController->getBanAddresses($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Bad Request', $responseBody->errors);
@@ -361,18 +355,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetAvailableContactsForM2M()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search' => 'Préfecture',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getAvailableContactsForM2M($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getAvailableContactsForM2M($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -391,18 +384,17 @@ class AutocompleteControllerTest extends TestCase
         $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search' => 'vie'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getFolders($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getFolders($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -422,18 +414,17 @@ class AutocompleteControllerTest extends TestCase
 
     public function testGetTags()
     {
-        $autocompleteController = new \SrcCore\controllers\AutoCompleteController();
+        $autocompleteController = new AutoCompleteController();
 
         //  GET
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request     = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $aArgs = [
             'search'    => 'maa'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getTags($fullRequest, new \Slim\Http\Response());
+        $response     = $autocompleteController->getTags($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);

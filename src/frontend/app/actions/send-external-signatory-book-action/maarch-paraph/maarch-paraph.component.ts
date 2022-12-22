@@ -8,6 +8,7 @@ import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ExternalVisaWorkflowComponent } from '@appRoot/visa/externalVisaWorkflow/external-visa-workflow.component';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-maarch-paraph',
@@ -40,57 +41,19 @@ export class MaarchParaphComponent implements OnInit {
         private notify: NotificationService,
         public http: HttpClient,
         private functions: FunctionsService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        public externalSignatoryBookManagerService: ExternalSignatoryBookManagerService
     ) { }
 
-    ngOnInit(): void {
-        if (typeof this.additionalsInfos.destinationId !== 'undefined' && this.additionalsInfos.destinationId !== '') {
-            setTimeout(() => {
-                this.appExternalVisaWorkflow.loadListModel(this.additionalsInfos.destinationId);
-            }, 0);
+    async ngOnInit(): Promise<void> {
+        this.loading = true;
+        if (!this.functions.empty(this.additionalsInfos?.destinationId)) {
+            await this.appExternalVisaWorkflow.loadListModel(this.additionalsInfos.destinationId).finally(() => this.loading = false);
         }
     }
 
     isValidParaph(): boolean {
-        if (this.additionalsInfos.attachments.length === 0 || this.appExternalVisaWorkflow.getWorkflow().length === 0 || this.appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0 || this.resourcesToSign.length === 0) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    getRessources() {
-        return this.additionalsInfos.attachments.map((e: any) => e.res_id);
-    }
-
-    getDatas() {
-        const formatedData: any = { steps: [] };
-        const workflow = this.appExternalVisaWorkflow.getWorkflow();
-
-        this.resourcesToSign.forEach((resource: any) => {
-            workflow.forEach((element: any, index: number) => {
-                formatedData['steps'].push(
-                    {
-                        'resId': resource.resId,
-                        'mainDocument': resource.mainDocument,
-                        'externalId': element.externalId.maarchParapheur,
-                        'sequence': index,
-                        'action': element.role === 'visa' ? 'visa' : 'sign',
-                        'signatureMode': element.role,
-                        'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
-                        'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
-                        'externalInformations': element.hasOwnProperty('externalInformations') ? element.externalInformations : null
-                    }
-                );
-            });
-        });
-        return formatedData;
-    }
-
-    formatPositions(position: any) {
-        delete position.mainDocument;
-        delete position.resId;
-        return position;
+        return this.externalSignatoryBookManagerService.isValidParaph(this.additionalsInfos, this.appExternalVisaWorkflow.getWorkflow(), this.resourcesToSign, this.appExternalVisaWorkflow.getUserOtpsWorkflow());
     }
 
     openSignaturePosition(resource: any) {
@@ -118,5 +81,9 @@ export class MaarchParaphComponent implements OnInit {
 
     hasPositions(resource: any): boolean {
         return this.appExternalVisaWorkflow?.getDocumentsFromPositions().filter((document: any) => document.resId === resource.resId && document.mainDocument === resource.mainDocument).length > 0;
+    }
+
+    getErrorMessage(): string {
+        return `${this.translate.instant('lang.usersMissingInSignatureBook')} ${this.translate.instant('lang.' + this.externalSignatoryBookManagerService.signatoryBookEnabled)}`;
     }
 }

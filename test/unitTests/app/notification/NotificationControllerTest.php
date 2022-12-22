@@ -10,21 +10,23 @@
 * @author  dev <dev@maarch.org>
 * @ingroup core
 */
-use PHPUnit\Framework\TestCase;
 
-class NotificationControllerTest extends TestCase
+namespace MaarchCourrier\Tests\app\notification;
+
+use MaarchCourrier\Tests\CourrierTestCase;
+use Notification\controllers\NotificationController;
+use SrcCore\http\Response;
+
+class NotificationControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testCreate()
     {
-        $NotificationController = new \Notification\controllers\NotificationController();
+        $NotificationController = new NotificationController();
 
         //  CREATE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'notification_id' => 'testcreatetu',
             'description' => 'description de la notification',
             'is_enabled' => 'Y',
@@ -36,9 +38,8 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'entity',
             'attachfor_properties' => ['COU', 'PJS'],
         ];
-
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertIsInt($responseBody->notification_sid);
@@ -59,11 +60,9 @@ class NotificationControllerTest extends TestCase
     public function testCreateFail1()
     {
         //Fail Create 1
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $NotificationController = new NotificationController();
 
-        $aArgs = [
+        $args = [
             'notification_id' => '',
             'description' => 'description de la notification',
             'is_enabled' => 'Y',
@@ -75,9 +74,9 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->create($fullRequest, new \Slim\Http\Response());
+        $response = $NotificationController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('notification_id is empty', $responseBody->errors[0]);
@@ -87,11 +86,9 @@ class NotificationControllerTest extends TestCase
     public function testCreateFail2()
     {
         //Fail Create 2
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $NotificationController = new NotificationController();
 
-        $aArgs = [
+        $args = [
             'notification_id' => 'testcreatetu',
             'description' => 'description de la notification',
             'is_enabled' => 'Y',
@@ -103,8 +100,8 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         $this->assertSame('Notification déjà existante', $responseBody->errors);
     }
@@ -112,10 +109,10 @@ class NotificationControllerTest extends TestCase
     public function testRead()
     {
         //READ
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $response = $NotificationController->getBySid($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $NotificationController = new NotificationController();
+        $request = $this->createRequest('GET');
+
+        $response = $NotificationController->getBySid($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(self::$id, $responseBody->notification->notification_sid);
@@ -130,10 +127,9 @@ class NotificationControllerTest extends TestCase
 
     public function testReadFail()
     {
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $response = $NotificationController->getBySid($request, new \Slim\Http\Response(), ['id' => 'test']);
+        $NotificationController = new NotificationController();
+        $request = $this->createRequest('GET');
+        $response = $NotificationController->getBySid($request, new Response(), ['id' => 'test']);
         $responseBody = json_decode((string) $response->getBody());
         $this->assertSame('Id is not a numeric', $responseBody->errors);
     }
@@ -141,20 +137,18 @@ class NotificationControllerTest extends TestCase
     public function testReadFail2()
     {
         //I CANT READ BECAUSE NO EXIST
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $response = $NotificationController->getBySid($request, new \Slim\Http\Response(), ['id' => '9999999999']);
+        $NotificationController = new NotificationController();
+        $request = $this->createRequest('GET');
+        $response = $NotificationController->getBySid($request, new Response(), ['id' => '9999999999']);
         $responseBody = json_decode((string) $response->getBody());
         $this->assertSame('Notification not found', $responseBody->errors);
     }
 
     public function testReadAll()
     {
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $response = $NotificationController->get($request, new \Slim\Http\Response());
+        $NotificationController = new NotificationController();
+        $request = $this->createRequest('GET');
+        $response = $NotificationController->get($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->notifications);
@@ -163,10 +157,9 @@ class NotificationControllerTest extends TestCase
     public function testUpdate()
     {
         //  UPDATE
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $NotificationController = new NotificationController();
+
+        $args = [
             'notification_id' => 'testcreatetu',
             'description' => 'nouvelle description',
             'is_enabled' => 'N',
@@ -178,8 +171,8 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'entity',
             'attachfor_properties' => ['COU', 'PJS'],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame(self::$id, $responseBody->notification->notification_sid);
@@ -198,10 +191,9 @@ class NotificationControllerTest extends TestCase
     public function testUpdateFail()
     {
         //  UPDATE
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $NotificationController = new NotificationController();
+
+        $args = [
             'notification_id' => 'testcreatetu',
             'description' => '',
             'is_enabled' => 'N',
@@ -213,8 +205,8 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'entity',
             'attachfor_properties' => ['COU', 'PJS'],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('wrong format for description', $responseBody->errors[0]);
@@ -224,10 +216,9 @@ class NotificationControllerTest extends TestCase
     public function testUpdateFail2()
     {
         //  UPDATE
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $NotificationController = new NotificationController();
+
+        $args = [
             'notification_id' => 'testcreatetu',
             'description' => 'description',
             'is_enabled' => 'N',
@@ -239,8 +230,8 @@ class NotificationControllerTest extends TestCase
             'attachfor_type' => 'entity',
             'attachfor_properties' => ['COU', 'PJS'],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-        $response = $NotificationController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'fail']);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => 'fail']);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('notification_sid is not a numeric', $responseBody->errors[0]);
@@ -249,26 +240,24 @@ class NotificationControllerTest extends TestCase
 
     public function testDelete()
     {
-        $NotificationController = new \Notification\controllers\NotificationController();
+        $NotificationController = new NotificationController();
 
         //  DELETE
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response = $NotificationController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response = $NotificationController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->notifications[0]);
 
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
-        $response = $NotificationController->getBySid($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response = $NotificationController->getBySid($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNull($responseBody->notifications[0]);
 
         // FAIL DELETE
-        $response = $NotificationController->delete($request, new \Slim\Http\Response(), ['id' => 'gaz']);
+        $response = $NotificationController->delete($request, new Response(), ['id' => 'gaz']);
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertSame('Id is not a numeric', $responseBody->errors);
@@ -277,11 +266,10 @@ class NotificationControllerTest extends TestCase
     public function testGetInitNotification()
     {
         // InitAction
-        $environment = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $NotificationController = new \Notification\controllers\NotificationController();
-        $response = $NotificationController->initNotification($request, new \Slim\Http\Response());
+        $NotificationController = new NotificationController();
+        $response = $NotificationController->initNotification($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertNotNull($responseBody->notification->data->event);

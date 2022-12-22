@@ -33,8 +33,8 @@ use Resource\controllers\SummarySheetController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\ValidatorModel;
@@ -962,7 +962,7 @@ class MaarchParapheurController
             'recordId'     => $GLOBALS['id'],
             'eventType'    => 'ADD',
             'eventId'      => 'userCreation',
-            'info'         => _USER_LINKED_TO_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'info'         => _USER_LINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -988,7 +988,7 @@ class MaarchParapheurController
             'recordId'     => $GLOBALS['id'],
             'eventType'    => 'ADD',
             'eventId'      => 'userCreation',
-            'info'         => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'info'         => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);
