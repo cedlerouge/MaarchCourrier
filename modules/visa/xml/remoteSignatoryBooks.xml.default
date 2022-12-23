@@ -45,10 +45,6 @@
                 <id>serverSignature</id>
                 <label>Signature Serveur</label>
             </mode>
-            <mode>
-                <id>OTPSignature</id>
-                <label>Signature OTP</label>
-            </mode>
         </workflowMemberModes>
         <workflowTypes>
             <type>
