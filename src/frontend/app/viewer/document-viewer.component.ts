@@ -394,7 +394,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                     const objToSend: any = {
                         resId: this.resId,
                         encodedFile: file.content,
-                        format: data.format
+                        format: file.format
                     };
                     this.http.put(`../rest/resources/${this.resId}?onlyDocument=true`, objToSend).pipe(
                         tap(() => {
@@ -733,7 +733,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     openPdfInTab() {
-        let src = '';
+        const src = '';
         if (this.file.contentMode === 'route'){
             this.http.get(this.file.content, { responseType: 'json' }).pipe(
                 tap((data: any) => {
