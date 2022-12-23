@@ -4,7 +4,7 @@
         <mat-select required name="workflowTypes"
             [title]="getWorkflowTypeLabel(workflowType)"
             [(ngModel)]="workflowType">
-            <mat-option *ngFor="let type of workflowTypes" [value]="type.id" [matTooltip]="getWorkflowTypeLabel(type.id)">
+            <mat-option *ngFor="let type of workflowTypes" [value]="type.id">
                 {{type.label}}
             </mat-option>
         </mat-select>
