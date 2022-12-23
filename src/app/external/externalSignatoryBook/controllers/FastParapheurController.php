@@ -648,20 +648,21 @@ class FastParapheurController
      */
     public static function uploadWithSteps(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config']);
+        ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config', 'workflowType']);
         ValidatorModel::intType($args, ['resIdMaster']);
         ValidatorModel::arrayType($args, ['steps', 'config']);
+        ValidatorModel::stringType($args, ['workflowType']);
 
         $subscriberId = $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
             return ['error' => _NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR];
         }
-        if (empty($args['config']['workflowType'])) {
+        if (empty($args['workflowType'])) {
             return ['error' => _NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR];
         }
 
         $circuit = [
-            'type'  => $args['config']['workflowType'],
+            'type'  => $args['workflowType'],
             'steps' => []
         ];
         //$otpInfo = [];
@@ -935,7 +936,8 @@ class FastParapheurController
             return FastParapheurController::uploadWithSteps([
                 'config'      => $config['data'],
                 'resIdMaster' => $args['resIdMaster'],
-                'steps'       => $steps
+                'steps'       => $steps,
+                'workflowType'=> $args['workflowType']
             ]);
         } else {
             // We need the SIRET field and the user_id of the signatory user's primary entity

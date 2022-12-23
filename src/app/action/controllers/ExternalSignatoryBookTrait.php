@@ -120,9 +120,10 @@ trait ExternalSignatoryBookTrait
                 ]);
             } elseif ($config['id'] == 'fastParapheur') {
                 $sentInfo = FastParapheurController::sendDatas([
-                    'config'      => $config,
-                    'resIdMaster' => $args['resId'],
-                    'steps'       => $args['data']['steps'] ?? []
+                    'config'        => $config,
+                    'resIdMaster'   => $args['resId'],
+                    'steps'         => $args['data']['steps'] ?? [],
+                    'workflowType'  => $args['data']['workflowType'] ?? null
                 ]);
             } elseif ($config['id'] == 'iParapheur') {
                 $sentInfo = IParapheurController::sendDatas([

@@ -456,6 +456,6 @@ define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
 define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');
 define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberId' fourni. vérifiez votre configuration FastParapheur");
-define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun paramètre 'workflowType' fourni. vérifiez votre configuration FastParapheur");
+define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun 'Type de circuit' fourni. vérifiez votre configuration FastParapheur");
 define('_DB_UPDATED_WITH_FILE', 'Base de données mise à jour avec le fichier');
 define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
