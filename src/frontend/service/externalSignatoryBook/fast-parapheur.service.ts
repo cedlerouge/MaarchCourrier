@@ -34,6 +34,7 @@ export class FastParapheurService {
                 }),
                 catchError(err => {
                     this.notify.handleErrors(err);
+                    resolve(null);
                     return of(false);
                 })
             ).subscribe();

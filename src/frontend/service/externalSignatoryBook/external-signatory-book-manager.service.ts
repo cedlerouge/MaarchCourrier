@@ -123,7 +123,7 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected.getRessources(additionalsInfos);
     }
 
-    getDatas(workflow: any[] = [], resourcesToSign: any[] = []): any {
+    getDatas(workflow: any[] = [], resourcesToSign: any[] = [], workflowType: any): any {
         const formatedData: any = { steps: [] };
         resourcesToSign.forEach((resource: any) => {
             workflow.forEach((element: any, index: number) => {
@@ -141,6 +141,9 @@ export class ExternalSignatoryBookManagerService {
                 formatedData['steps'].push(step);
             });
         });
+        if (this.signatoryBookEnabled === 'fastParapheur') {
+            formatedData['workflowType'] = workflowType;
+        }
         return formatedData;
     }
 

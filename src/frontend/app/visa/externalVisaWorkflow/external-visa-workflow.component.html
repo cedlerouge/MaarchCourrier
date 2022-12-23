@@ -1,13 +1,14 @@
 <mat-list *ngIf="!loading">
-    <mat-form-field *ngIf="!functions.empty(workflowTypeList) && workflowTypeList.length > 0">
+    <mat-form-field *ngIf="!functions.empty(workflowTypes)">
         <mat-label>{{'lang.workflowType' | translate}}</mat-label>
-        <mat-select required [(value)]="visaWorkflow.type" name="workflowType" placeholder="{{'lang.workflowType' | translate}}">
-            <ng-container *ngFor="let type of workflowTypeList">
-                <mat-option value="{{type.id}}">{{type.label}}</mat-option>
-            </ng-container>
+        <mat-select required name="workflowTypes"
+            [title]="getWorkflowTypeLabel(workflowType)"
+            [(ngModel)]="workflowType">
+            <mat-option *ngFor="let type of workflowTypes" [value]="type.id" [matTooltip]="getWorkflowTypeLabel(type.id)">
+                {{type.label}}
+            </mat-option>
         </mat-select>
     </mat-form-field>
-
     <app-plugin-autocomplete *ngIf="adminMode" [labelPlaceholder]="'lang.addPerson' | translate"
         [routeDatas]="getRouteDatas()" [targetSearchKey]="'idToDisplay'"
         [subInfoKey]="'email'" (triggerEvent)="addItemToWorkflow($event)" appearance="outline"

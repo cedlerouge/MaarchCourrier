@@ -49,12 +49,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     visaWorkflow = new VisaWorkflow();
 
-    workflowTypeList = [
-        {
-            id: '',
-            label: this.translate.instant('lang.none')
-        }
-    ];
+    workflowTypes: any[] = [];
+    workflowType: string = 'BUREAUTIQUE_PDF';
 
     constructor(
         public translate: TranslateService,
@@ -70,7 +66,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     async ngOnInit(): Promise<any> {
         const workflowTypesData = await this.getWorkflowTypes();
         if (!this.functions.empty(workflowTypesData)) {
-            this.workflowTypeList = this.workflowTypeList.concat(workflowTypesData);
+            this.workflowTypes = workflowTypesData;
+            this.visaWorkflow.type = workflowTypesData[0];
         }
 
         const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
@@ -478,6 +475,10 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     getRouteDatas(): string[] {
         return [this.externalSignatoryBookManagerService.getAutocompleteUsersRoute()];
+    }
+
+    getWorkflowTypeLabel(workflowType: string) {
+        return this.workflowTypes.find((item: any) => item.id === workflowType).label;
     }
 }
 
