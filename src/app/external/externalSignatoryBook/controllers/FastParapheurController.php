@@ -58,7 +58,7 @@ class FastParapheurController
 
         return $response->withJson([
             'workflowTypes'  => $config['workflowTypes']['type'],
-            'signatureModes' => $config['workflowMemberModes']['mode']
+            'signatureModes' => $config['signatureModes']['mode']
         ]);
     }
 

@@ -25,7 +25,7 @@ export class MaarchParapheurService {
         private notify: NotificationService
     ) { }
 
-    getWorkflowTypes(): Promise<any> {
+    getWorkflowDetails(): Promise<any> {
         return new Promise((resolve) => {
             resolve(null);
         });

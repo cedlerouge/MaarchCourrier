@@ -18,6 +18,7 @@ export class FastParapheurService {
     canManageSignaturesPositions: boolean = false;
     canViewWorkflow: boolean = false;
     userWorkflow = new UserWorkflow();
+    signatureModes: string[] = [];
 
     constructor(
         private http: HttpClient,
@@ -26,11 +27,16 @@ export class FastParapheurService {
         private functions: FunctionsService
     ) { }
 
-    getWorkflowTypes(): Promise<any> {
+    getWorkflowDetails(): Promise<any> {
         return new Promise((resolve) => {
-            this.http.get('../rest/fastParapheurWorkflowTypes').pipe(
-                tap((data: any) => {
-                    resolve(data.workflowTypes ?? null);
+            this.http.get('../rest/fastParapheurWorkflowDetails').pipe(
+                tap(async (data: any) => {
+                    const objToSend: any = {
+                        types: data?.workflowTypes,
+                        modes: data?.signatureModes
+                    };
+                    this.signatureModes = (data?.signatureModes as any[]).map((item: any) => item.id);
+                    resolve(objToSend);
                 }),
                 catchError(err => {
                     this.notify.handleErrors(err);
@@ -171,17 +177,18 @@ export class FastParapheurService {
         });
     }
 
-    setExternalInformation(item: any): UserWorkflow {
+    setExternalInformation(item: any): Promise<UserWorkflow> {
         const label = item.labelToDisplay;
         delete item.labelToDisplay;
         const objeToSend: any = {
             ... item,
             id: item.email ?? item?.externalId?.fastParapheur ?? null,
             labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur) ? `${label} (${item.externalId.fastParapheur})` : label,
-            signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
             hasPrivilege: true,
+            signatureModes: this.signatureModes,
+            availableRoles: this.signatureModes
         };
         if (item?.id !== undefined && item?.externalId?.fastParapheur === undefined) {
             objeToSend.externalId = null;

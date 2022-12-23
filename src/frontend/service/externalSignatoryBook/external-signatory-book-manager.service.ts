@@ -53,8 +53,8 @@ export class ExternalSignatoryBookManagerService {
         });
     }
 
-    getWorkflowTypes(): Promise<any> {
-        return this.serviceInjected?.getWorkflowTypes();
+    getWorkflowDetails(): Promise<any> {
+        return this.serviceInjected?.getWorkflowDetails();
     }
 
     loadListModel(entityId: number) {

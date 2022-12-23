@@ -32,7 +32,7 @@
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
-        <workflowMemberModes>
+        <signatureModes>
             <mode>
                 <id>visa</id>
                 <label>Visa</label>
@@ -45,7 +45,7 @@
                 <id>serverSignature</id>
                 <label>Signature Serveur</label>
             </mode>
-        </workflowMemberModes>
+        </signatureModes>
         <workflowTypes>
             <type>
                 <id>BUREAUTIQUE_PDF</id>

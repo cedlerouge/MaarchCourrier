@@ -2689,5 +2689,6 @@
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
     "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
-    "workflowType": "Type de circuit"
+    "workflowType": "Type de circuit",
+    "serverSignature": "Signature Serveur"
 }
