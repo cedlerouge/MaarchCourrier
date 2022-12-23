@@ -42,6 +42,23 @@ use SrcCore\models\TextFormatModel;
 */
 class FastParapheurController
 {
+    public function getWorkflowMemberTypes(Request $request, Response $response)
+    {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
+            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        }
+
+        $config = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($config)) {
+            return $response->withStatus(500)->withJson(['errors' => 'invalid configuration for FastParapheur']);
+        }
+
+        $config = json_decode(json_encode($config), true);
+
+        return $response->withJson(['workflowMemberTypes' => $config['workflowSteps']['step']]);
+    }
+
     public function getWorkflowTypes(Request $request, Response $response)
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
@@ -56,7 +73,7 @@ class FastParapheurController
 
         $config = json_decode(json_encode($config), true);
 
-        return $response->withJson(['workflowTypes' => $config['workflow']['type']]);
+        return $response->withJson(['workflowTypes' => $config['workflowTypes']['type']]);
     }
 
     public function linkUserToFastParapheur(Request $request, Response $response, array $args)

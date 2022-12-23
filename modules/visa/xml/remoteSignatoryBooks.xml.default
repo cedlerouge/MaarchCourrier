@@ -32,7 +32,25 @@
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
-        <workflow>
+        <workflowSteps>
+            <step>
+                <id>visa</id>
+                <label>Visa</label>
+            </step>
+            <step>
+                <id>signature</id>
+                <label>Signature</label>
+            </step>
+            <step>
+                <id>serverSignature</id>
+                <label>Signature Serveur</label>
+            </step>
+            <step>
+                <id>OTPSignature</id>
+                <label>Signature OTP</label>
+            </step>
+        </workflowSteps>
+        <workflowTypes>
             <type>
                 <id>BUREAUTIQUE_PDF</id>
                 <label>Signature PADES</label>
@@ -49,7 +67,7 @@
                 <id>HELIOS_SANS_TELETRANSMISSION</id>
                 <label>Signature PES sans télétransmission</label>
             </type>
-        </workflow>
+        </workflowTypes>
         <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
         <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>
         <certPass></certPass>
