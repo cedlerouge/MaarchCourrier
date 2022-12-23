@@ -33,22 +33,22 @@
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
         <workflow>
-            <types>
+            <type>
                 <id>BUREAUTIQUE_PDF</id>
                 <label>Signature PADES</label>
-            </types>
-            <types>
+            </type>
+            <type>
                 <id>BUREAUTIQUE_XML</id>
                 <label>Signature XADES détaché</label>
-            </types>
-            <types>
+            </type>
+            <type>
                 <id>HELIOS_AVEC_TELETRANSMISSION</id>
                 <label>Signature PES avec télétransmission vers la DGFIP</label>
-            </types>
-            <types>
+            </type>
+            <type>
                 <id>HELIOS_SANS_TELETRANSMISSION</id>
                 <label>Signature PES sans télétransmission</label>
-            </types>
+            </type>
         </workflow>
         <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
         <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>

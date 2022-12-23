@@ -56,7 +56,7 @@ class FastParapheurController
 
         $config = json_decode(json_encode($config), true);
 
-        return $response->withJson(['workflowTypes' => $config['workflow']['types']]);
+        return $response->withJson(['workflowTypes' => $config['workflow']['type']]);
     }
 
     public function linkUserToFastParapheur(Request $request, Response $response, array $args)
