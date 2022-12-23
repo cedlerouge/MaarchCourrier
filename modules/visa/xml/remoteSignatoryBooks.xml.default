@@ -38,7 +38,7 @@
                 <label>Visa</label>
             </mode>
             <mode>
-                <id>signature</id>
+                <id>sign</id>
                 <label>Signataire</label>
             </mode>
             <mode>
