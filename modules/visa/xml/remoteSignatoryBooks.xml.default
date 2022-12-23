@@ -32,7 +32,7 @@
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
-        <workflowTypes>
+        <workflow>
             <type>
                 <id>BUREAUTIQUE_PDF</id>
                 <label>Signature PADES</label>
@@ -49,7 +49,7 @@
                 <id>HELIOS_SANS_TELETRANSMISSION</id>
                 <label>Signature PES sans télétransmission</label>
             </type>
-        </workflowTypes>
+        </workflow>
         <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
         <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>
         <certPass></certPass>
