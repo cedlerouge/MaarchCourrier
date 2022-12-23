@@ -32,24 +32,24 @@
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
-        <workflowSteps>
-            <step>
+        <workflowMemberModes>
+            <mode>
                 <id>visa</id>
                 <label>Visa</label>
-            </step>
-            <step>
+            </mode>
+            <mode>
                 <id>signature</id>
-                <label>Signature</label>
-            </step>
-            <step>
+                <label>Signataire</label>
+            </mode>
+            <mode>
                 <id>serverSignature</id>
                 <label>Signature Serveur</label>
-            </step>
-            <step>
+            </mode>
+            <mode>
                 <id>OTPSignature</id>
                 <label>Signature OTP</label>
-            </step>
-        </workflowSteps>
+            </mode>
+        </workflowMemberModes>
         <workflowTypes>
             <type>
                 <id>BUREAUTIQUE_PDF</id>

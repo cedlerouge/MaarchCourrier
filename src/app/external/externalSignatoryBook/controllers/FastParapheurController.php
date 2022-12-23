@@ -42,7 +42,7 @@ use SrcCore\models\TextFormatModel;
 */
 class FastParapheurController
 {
-    public function getWorkflowMemberTypes(Request $request, Response $response)
+    public function getWorkflowMemberModes(Request $request, Response $response)
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
@@ -56,7 +56,7 @@ class FastParapheurController
 
         $config = json_decode(json_encode($config), true);
 
-        return $response->withJson(['workflowMemberTypes' => $config['workflowSteps']['step']]);
+        return $response->withJson(['workflowMemberModes' => $config['workflowMemberModes']['mode']]);
     }
 
     public function getWorkflowTypes(Request $request, Response $response)
