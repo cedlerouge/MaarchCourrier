@@ -2689,5 +2689,7 @@
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
     "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
-    "badConfiguration": "Problème de paramètrage dans le fichier de configuration"
+    "badConfiguration": "Problème de paramètrage dans le fichier de configuration",
+    "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
+    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante"
 }
