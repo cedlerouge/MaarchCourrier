@@ -24,7 +24,7 @@ class ResponseFactory implements ResponseFactoryInterface
 {
     public function createResponse(int $code = StatusCodeInterface::STATUS_OK, string $reasonPhrase = ''): ResponseInterface
     {
-        $response = new Response();
+        $response = new Response($code);
 
         if ($reasonPhrase !== '') {
             $response = $response->withStatus($code, $reasonPhrase);
