@@ -14,7 +14,10 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 
 
 @Component({
-    templateUrl: 'doctypes-administration.component.html'
+    templateUrl: 'doctypes-administration.component.html',
+    styleUrls: [
+        'doctypes-administration.component.scss',
+    ],
 })
 
 export class DoctypesAdministrationComponent implements OnInit {
