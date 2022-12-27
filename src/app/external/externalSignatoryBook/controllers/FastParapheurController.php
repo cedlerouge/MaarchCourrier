@@ -663,6 +663,14 @@ class FastParapheurController
         if (empty($args['workflowType'])) {
             return ['error' => _NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR];
         }
+        
+        $signatureModes = FastParapheurController::getSignatureModes();
+        if (!empty($signatureModes['errors'])) {
+            return ['errors' => $signatureModes['errors']];
+        }
+
+        $signatureModes['signatureModes'];
+        $signatureModes = array_column($signatureModes['signatureModes'], 'id');
 
         $circuit = [
             'type'  => $args['workflowType'],
@@ -670,7 +678,7 @@ class FastParapheurController
         ];
         //$otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
-            if (in_array($step['mode'], ['signature', 'visa']) && !empty($step['type']) && !empty($step['id'])) {
+            if (in_array($step['mode'], $signatureModes) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
                     $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
                     if (empty($user['fastParapheurEmail'])) {
@@ -931,7 +939,7 @@ class FastParapheurController
             $steps = [];
             foreach ($args['steps'] as $step) {
                 $steps[] = [
-                    'mode' => $step['action'] == 'sign' ? 'signature' : 'visa',
+                    'mode' => ($step['signatureMode'] == 'sign' ? 'signature' : $step['signatureMode']),
                     'type' => 'fastParapheurUserEmail',
                     'id'   => $step['externalId']
                 ];
@@ -1076,7 +1084,8 @@ class FastParapheurController
         return count($resourcesInFastParapheur) + count($attachmentsInFastParapheur);
     }
 
-    public static function getResourcesDetails() {
+    public static function getResourcesDetails() 
+    {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
             return ['errors' => 'configuration file missing'];
@@ -1114,5 +1123,37 @@ class FastParapheurController
         }, $documentsInFastParapheur));
 
         return $documentsInFastParapheur;
+    }
+
+    public static function getConfig()
+    {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
+            return ['code' => 403, 'errors' => 'fastParapheur is not enabled'];
+        }
+
+        $config = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($config)) {
+            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+        }
+
+        return ['config' => json_decode(json_encode($config), true)];
+    }
+
+    public static function getSignatureModes()
+    {
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return ['errors' => $config['errors']];
+        }
+        
+        //map sign to signature
+        $modes = [];
+        foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
+            $value['id'] = ($value['id'] == 'sign' ? 'signature' : $value['id']);
+            $modes[] = $value;
+        }
+
+        return ['signatureModes' => $modes];
     }
 }
