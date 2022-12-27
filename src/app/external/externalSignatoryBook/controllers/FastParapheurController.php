@@ -777,6 +777,18 @@ class FastParapheurController
         $attachmentTypeSignable = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypeSignable = array_column($attachmentTypeSignable, 'signable', 'type_id');
 
+        if (empty($docservers[$resource['docserver_id']]) && $docservers[$attachment['docserver_id']]) {
+            return ['error' => 'resource docserver does not exist', 'code' => 500];
+        }
+        $resource['integrations'] = json_decode($resource['integrations'], true);
+        if ($resource['integrations']['inSignatureBook']) {
+            $sentMainDocument = [
+                'comment'  => $resource['subject'],
+                'signable' => empty($resource['external_id']['signatureBookId']),
+                'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
+            ];
+        }
+        
         $attachments = AttachmentModel::get([
             'select'    => [
                 'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
@@ -790,25 +802,11 @@ class FastParapheurController
                 if (!empty($convertedAttachment['errors'])) {
                     continue;
                 }
-                $attachments[$key]['docserver_id'] = $convertedAttachment['docserver_id'];
-                $attachments[$key]['path']         = $convertedAttachment['path'];
-                $attachments[$key]['filename']     = $convertedAttachment['filename'];
-                $attachments[$key]['format']       = 'pdf';
+                $attachment[$key]['docserver_id'] = $convertedAttachment['docserver_id'];
+                $attachment[$key]['path']         = $convertedAttachment['path'];
+                $attachment[$key]['filename']     = $convertedAttachment['filename'];
+                $attachment[$key]['format']       = 'pdf';
             }
-        }
-
-        if (empty($docservers[$resource['docserver_id']]) && $docservers[$attachment['docserver_id']]) {
-            return ['error' => 'resource docserver does not exist', 'code' => 500];
-        }
-        $resource['integrations'] = json_decode($resource['integrations'], true);
-        if ($resource['integrations']['inSignatureBook']) {
-            $sentMainDocument = [
-                'comment'  => $resource['subject'],
-                'signable' => empty($resource['external_id']['signatureBookId']),
-                'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
-            ];
-        }
-        foreach ($attachments as $attachment) {
             $sentAttachments[] = [
                 'comment'  => $attachment['title'],
                 'signable' => $attachmentTypeSignable[$attachment['attachment_type']] && $attachment['format'] == 'pdf',
