@@ -841,7 +841,8 @@ class FastParapheurController
                 ];
             } else {
                 $appendices[] = [
-                    'path'     => $sentAttachment['path'],
+                    'isFile'   => true,
+                    'content'  => file_get_contents($sentAttachment['path']),
                     'filename' => TextFormatModel::formatFilename([
                         'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
                         'maxLength' => 50
@@ -851,14 +852,6 @@ class FastParapheurController
         }
         if (empty($uploads)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
-        }
-
-        foreach ($appendices as $key => $appendix) {
-            $appendices[$key] = [
-                'isFile'   => true,
-                'filename' => $appendix['filename'],
-                'content'  => file_get_contents($appendix['path'])
-            ];
         }
 
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
@@ -879,7 +872,10 @@ class FastParapheurController
                 ]
             ]);
             if ($curlReturn['code'] != 200) {
-                return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+                return ['code' => $curlReturn['code'], 'error' => $curlReturn['errors']];
+            }
+            if (!empty($curlReturn['response']['developerMessage'])) {
+                return ['code' => $curlReturn['code'], 'error' => $curlReturn['response']['userFriendlyMessage']];
             }
             $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$curlReturn['response'];
 
