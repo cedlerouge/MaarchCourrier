@@ -591,13 +591,40 @@ class FastParapheurController
         }
 
         $zip->close();
-
-        $b64Attachment = file_get_contents($zipFilePath);
-        $fileName      = $attachmentFileName . '.zip';
-        $circuitId     = str_replace('.', '-', $args['circuitId']);
         
+        $result = FastParapheurController::uploadFileToFast([
+            'config'        => $args['config'],
+            'circuitId'     => str_replace('.', '-', $args['circuitId']),
+            'fileName'      => $attachmentFileName . '.zip',
+            'b64Attachment' => file_get_contents($zipFilePath),
+            'label'         => $args['label']
+        ]);
+        if (!empty($result['error'])) {
+            return ['error' => $result['error'], 'code' => $result['code']];
+        }
+
+        FastParapheurController::processVisaWorkflow(['res_id_master' => $args['resIdMaster'], 'processSignatory' => false]);
+        $documentId = $result['response'];
+        return ['success' => (string)$documentId];
+    }
+
+    /**
+     * Function to send files to FastParapheur only
+     * @param   array   $args:
+     *                      - config
+     *                      - circuitId
+     *                      - fileName
+     *                      - circuib64AttachmenttId
+     *                      - label
+     */
+    public static function uploadFileToFast(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['config', 'circuitId']);
+        ValidatorModel::arrayType($args, ['config']);
+        ValidatorModel::stringType($args, ['circuitId']);
+
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['subscriberId'] . '/' . $circuitId . '/upload',
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['config']['data']['subscriberId'] . '/' . $args['circuitId'] . '/upload',
             'method'        => 'POST',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -605,23 +632,21 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
             ],
             'multipartBody' => [
-                'content'   => ['isFile' => true, 'filename' => $fileName, 'content' => $b64Attachment],
+                'content'   => ['isFile' => true, 'filename' => $args['fileName'], 'content' => $args['b64Attachment']],
                 'label'     => $args['label'],
                 'comment'   => ""
             ]
         ]);
 
         if ($curlReturn['code'] == 404) {
-            return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
+            return ['error' => 'Erreur 404 : ' . $curlReturn['raw'], 'code' => $curlReturn['code']];
         } elseif (!empty($curlReturn['errors'])) {
-            return ['error' => $curlReturn['errors']];
+            return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
-            return ['error' => $curlReturn['response']['developerMessage']];
+            return ['error' => $curlReturn['response']['developerMessage'], 'code' => $curlReturn['code']];
         }
 
-        FastParapheurController::processVisaWorkflow(['res_id_master' => $args['resIdMaster'], 'processSignatory' => false]);
-        $documentId = $curlReturn['response'];
-        return ['success' => (string)$documentId];
+        return ['response' => $curlReturn['response']];
     }
 
     /**
@@ -856,27 +881,17 @@ class FastParapheurController
 
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
         foreach ($uploads as $upload) {
-            $curlReturn = CurlModel::exec([
-                'method'  => 'POST',
-                'url'     => $args['config']['url'] . '/documents/ondemand/' . $subscriberId . '/upload',
-                'options' => [
-                    CURLOPT_SSLCERT       => $args['config']['certPath'],
-                    CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
-                    CURLOPT_SSLCERTTYPE   => $args['config']['certType']
-                ],
-                'multipartBody' => [
-                    'comment' => $upload['comment'],
-                    'doc'     => ['isFile' => true, 'filename' => $upload['doc']['filename'], 'content' => file_get_contents($upload['doc']['path'])],
-                    'annexes' => ['subvalues' => $appendices],
-                    'circuit' => json_encode($circuit)
-                ]
+            
+            $result = FastParapheurController::onDemandUploadFilesToFast([
+                'config'     => $args['config'],
+                'upload'     => $upload,
+                'circuit'    => $circuit,
+                'appendices' => $appendices
             ]);
-            if ($curlReturn['code'] != 200) {
-                return ['code' => $curlReturn['code'], 'error' => $curlReturn['errors']];
+            if (!empty($result['error'])) {
+                return ['code' => $result['code'], 'error' => $result['error']];
             }
-            if (!empty($curlReturn['response']['developerMessage'])) {
-                return ['code' => $curlReturn['code'], 'error' => $curlReturn['response']['userFriendlyMessage']];
-            }
+            
             $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$curlReturn['response'];
 
             /*
@@ -901,6 +916,34 @@ class FastParapheurController
         }
 
         return $returnIds;
+    }
+
+    public static function onDemandUploadFilesToFast(array $agrs)
+    {
+        ValidatorModel::notEmpty($args, ['config', 'upload', 'circuit']);
+        ValidatorModel::arrayType($args, ['config', 'upload', 'circuit', 'appendices']);
+
+        $curlReturn = CurlModel::exec([
+            'method'  => 'POST',
+            'url'     => $args['config']['url'] . '/documents/ondemand/' . $args['config']['subscriberId'] . '/upload',
+            'options' => [
+                CURLOPT_SSLCERT       => $args['config']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+            ],
+            'multipartBody' => [
+                'comment' => $args['upload']['comment'],
+                'doc'     => ['isFile' => true, 'filename' => $args['upload']['doc']['filename'], 'content' => file_get_contents($args['upload']['doc']['path'])],
+                'annexes' => ['subvalues' => $args['appendices']],
+                'circuit' => json_encode($args['circuit'])
+            ]
+        ]);
+        if ($curlReturn['code'] != 200) {
+            return ['code' => $curlReturn['code'], 'error' => $curlReturn['errors']];
+        }
+        if (!empty($curlReturn['response']['developerMessage'])) {
+            return ['code' => $curlReturn['code'], 'error' => $curlReturn['response']['userFriendlyMessage']];
+        }
     }
 
     public static function download(array $args)
