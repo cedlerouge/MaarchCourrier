@@ -58,6 +58,7 @@ define('_DOCUMENT_OUT_PERIMETER', 'Courrier en dehors du périmètre');
 define('_EMAIL_ADDED', 'Courriel ajouté');
 define('_EMAIL_REMOVED', 'Courriel supprimé');
 define('_EMAIL_UPDATED', 'Courriel mis à jour');
+define('_SENDER_EMAIL_REPLACED_SMTP_SENDER', "L'email de l'expéditeur est remplacé par l'expéditeur SMTP");
 define('_ENTITY_CREATION', 'Création entité');
 define('_ENTITY_MODIFICATION', 'Modification entité');
 define('_ENTITY_SUPPRESSION', 'Suppression entité');

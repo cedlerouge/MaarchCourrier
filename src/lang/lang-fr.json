@@ -1710,7 +1710,7 @@
     "zipcode": "Code postal",
     "forgotPassword": "Mot de passe oublié",
     "wrongLoginPassword": "L'identifiant ou le mot de passe est incorrect<br>(ou l'utilisateur n'a pas le droit de se connecter)",
-    "sessionExpired": "Votre session a expirée",
+    "sessionExpired": "Votre session a expiré",
     "accountSuspended": "Votre compte utilisateur a été suspendu",
     "accountLocked": "Nombre de tentatives de connexion dépassée. Réessayez dans",
     "modelUsedByResources": "Le modèle est utilisé par des courriers, vous ne pouvez pas le supprimer.",
@@ -2690,5 +2690,7 @@
     "xParaph": "XParaph",
     "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
     "workflowType": "Type de circuit",
-    "serverSignature": "Signature Serveur"
+    "serverSignature": "Signature Serveur",
+    "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
+    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante"
 }
