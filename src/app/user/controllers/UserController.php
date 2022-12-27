@@ -164,7 +164,14 @@ class UserController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
         if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
-            $user['canLinkToExternalSignatoryBook'] = true;
+            if ($signatoryBookEnabled == 'fastParapheur') {
+                $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+                if (!empty($fastParapheurBlock)) {
+                    $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                }
+            } else {
+                $user['canLinkToExternalSignatoryBook'] = true;
+            }
         }
 
         return $response->withJson($user);
