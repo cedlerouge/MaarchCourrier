@@ -1,5 +1,4 @@
 /.angular/cache
-composer.lock
 installed.lck
 config/config.json
 apps/maarch_entreprise/xml/log4php.xml
@@ -12,3 +11,5 @@ dist-addin/
 node_modules/
 /custom/*
 /tmp/*
+# vendor/ is not versioned on develop, but should be versioned in release branches
+vendor/
