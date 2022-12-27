@@ -772,7 +772,7 @@ class FastParapheurController
             }
         }
 
-        if (empty($docservers[$resource['docserver_id']])) {
+        if (empty($docservers[$resource['docserver_id']]) && $docservers[$attachment['docserver_id']]) {
             return ['error' => 'resource docserver does not exist', 'code' => 500];
         }
         $resource['integrations'] = json_decode($resource['integrations'], true);
