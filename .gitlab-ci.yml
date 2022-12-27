@@ -97,7 +97,7 @@ job_php-8.1:
   # except:
   #   - schedules
   rules:
-  - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|slim-migration)/'
+  - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
 
   artifacts:
     paths:
@@ -121,7 +121,7 @@ job_php-8.0:
   # except:
   #   - schedules
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|slim-migration)/'
+    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
   artifacts:
     paths:
       - test/unitTests/build/
@@ -144,7 +144,7 @@ job_php-7.4:
   # except:
   #   - schedules
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|slim-migration)/'
+    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
 
   artifacts:
     paths:
