@@ -788,7 +788,7 @@ class FastParapheurController
                 'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
             ];
         }
-        
+
         $attachments = AttachmentModel::get([
             'select'    => [
                 'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
@@ -890,7 +890,7 @@ class FastParapheurController
                 return ['code' => $result['code'], 'error' => $result['error']];
             }
             
-            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$curlReturn['response'];
+            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
 
             /*
             if (!empty($otpInfoXML)) {
@@ -916,7 +916,7 @@ class FastParapheurController
         return $returnIds;
     }
 
-    public static function onDemandUploadFilesToFast(array $agrs)
+    public static function onDemandUploadFilesToFast(array $args)
     {
         ValidatorModel::notEmpty($args, ['config', 'upload', 'circuit']);
         ValidatorModel::arrayType($args, ['config', 'upload', 'circuit', 'appendices']);
@@ -942,6 +942,8 @@ class FastParapheurController
         if (!empty($curlReturn['response']['developerMessage'])) {
             return ['code' => $curlReturn['code'], 'error' => $curlReturn['response']['userFriendlyMessage']];
         }
+
+        return ['response' => $curlReturn['response']];
     }
 
     public static function download(array $args)
