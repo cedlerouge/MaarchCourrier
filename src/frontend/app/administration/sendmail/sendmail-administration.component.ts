@@ -80,7 +80,8 @@ export class SendmailAdministrationComponent implements OnInit {
     recipientTest: string = '';
     passwordLabel: string = '';
 
-
+    useSMTPAuth: boolean = false;
+    
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
