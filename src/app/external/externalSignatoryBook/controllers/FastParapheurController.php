@@ -117,12 +117,6 @@ class FastParapheurController
 
     public function userStatusInFastParapheur(Request $request, Response $response, array $args)
     {
-        $userController = new UserController();
-        $error = $userController->hasUsersRights(['id' => $args['id']]);
-        if (!empty($error['error'])) {
-            return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
-        }
-
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
