@@ -18,8 +18,8 @@ use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Priority\models\PriorityModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class PriorityController
 {
@@ -78,7 +78,7 @@ class PriorityController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['label']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['color']);
         $check = $check && (Validator::intVal()->notEmpty()->validate($data['delays']) || $data['delays'] == 0);
@@ -150,7 +150,7 @@ class PriorityController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         foreach ($data as $key => $priorityToUpdate) {
             if ($key != $priorityToUpdate['order']) {

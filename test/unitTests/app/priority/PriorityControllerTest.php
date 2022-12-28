@@ -7,29 +7,31 @@
  *
  */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\priority;
 
-class PriorityControllerTest extends TestCase
+use MaarchCourrier\Tests\CourrierTestCase;
+use Priority\controllers\PriorityController;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class PriorityControllerTest extends CourrierTestCase
 {
     private static $id = null;
-    private static $priorities = null;
+    private static ?array $priorities = null;
 
     public function testCreate()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'label'             => 'TEST-OVER-URGENT',
             'color'             => '#ffffff',
             'delays'            => '72',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $priorityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->priority;
@@ -37,9 +39,8 @@ class PriorityControllerTest extends TestCase
         $this->assertIsString(self::$id);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $priorityController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->priority->id);
@@ -50,9 +51,9 @@ class PriorityControllerTest extends TestCase
         // fail
         $body = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $priorityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -63,41 +64,40 @@ class PriorityControllerTest extends TestCase
             'color'             => '#ffffff',
             'delays'            => '72',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $priorityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(_PRIORITY_DELAY_ALREADY_SET, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $priorityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGet()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $priorityController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->priorities);
@@ -106,28 +106,24 @@ class PriorityControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'label'             => 'TEST-OVER-URGENT-UPDATED',
             'color'             => '#f2f2f2',
             'delays'            => '64',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $priorityController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('success', $responseBody->success);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $priorityController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->priority->id);
@@ -138,9 +134,9 @@ class PriorityControllerTest extends TestCase
         // fail
         $body = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $priorityController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -151,81 +147,76 @@ class PriorityControllerTest extends TestCase
             'color'             => '#ffffff',
             'delays'            => '64',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => ((int) self::$id) * 1000]);
+        $response     = $priorityController->update($fullRequest, new Response(), ['id' => ((int) self::$id) * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(_PRIORITY_DELAY_ALREADY_SET, $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $priorityController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $priorityController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $priorityController->delete($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody->priorities);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $priorityController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Priority not found', $responseBody->errors);
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $body = [
-        ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $request = $this->createRequest('DELETE');
 
-        $response     = $priorityController->delete($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $priorityController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetSorted()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $priorityController->getSorted($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $priorityController->getSorted($request, new Response());
         $responseBody   = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['priorities']);
@@ -240,39 +231,34 @@ class PriorityControllerTest extends TestCase
 
         // Fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $body = [
-        ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $request = $this->createRequest('GET');
 
-        $response     = $priorityController->getSorted($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->getSorted($request, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateSorted()
     {
-        $priorityController = new \Priority\controllers\PriorityController();
+        $priorityController = new PriorityController();
 
         //  PUT
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $priority2 = self::$priorities[1];
         self::$priorities[1] = self::$priorities[0];
         self::$priorities[0] = $priority2;
 
-        $fullRequest = \httpRequestCustom::addContentInBody(self::$priorities, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', self::$priorities);
 
-        $response       = $priorityController->updateSort($fullRequest, new \Slim\Http\Response());
+        $response       = $priorityController->updateSort($fullRequest, new Response());
         $responseBody   = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['priorities']);
@@ -285,21 +271,21 @@ class PriorityControllerTest extends TestCase
 
         // fail
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $priorityController->updateSort($fullRequest, new \Slim\Http\Response());
+        $response     = $priorityController->updateSort($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 }

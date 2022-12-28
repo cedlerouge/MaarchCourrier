@@ -47,8 +47,8 @@ use Respect\Validation\Validator;
 use Search\controllers\SearchController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\controllers\CoreController;
 use SrcCore\models\CoreConfigModel;
@@ -381,7 +381,7 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (empty($data['status'])) {
             $data['status'] = 'COU';
@@ -947,7 +947,7 @@ class ResController extends ResourceControlController
 
     public function updateExternalInfos(Request $request, Response $response)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (empty($data['externalInfos'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request : externalInfos is empty']);
@@ -1312,7 +1312,7 @@ class ResController extends ResourceControlController
 
     public function getList(Request $request, Response $response)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!Validator::stringType()->notEmpty()->validate($data['select'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request: select is not valid']);

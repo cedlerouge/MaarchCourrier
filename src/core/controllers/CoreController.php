@@ -16,8 +16,8 @@ namespace SrcCore\controllers;
 
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
@@ -154,7 +154,7 @@ class CoreController
     /**
      * getMimeTypeAndFileSize
      * 
-     * @param args array with either an 'encodedFile' (base64 string), or a 'path' (file path as string)
+     * @param array $args with either an 'encodedFile' (base64 string), or a 'path' (file path as string)
      * @return array with 'mime' and 'size' entries or array with 'errors' entry
      */
     public static function getMimeTypeAndFileSize(array $args) {

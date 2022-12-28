@@ -381,7 +381,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
             autoFocus: false,
             disableClose: true,
-            panelClass: 'maarch-full-height-modal',
+            panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
             data: {
                 title: file.name,
                 filename: file.name,
@@ -395,8 +395,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 if (data === 'createNewVersion' && this.mode === 'mainDocument') {
                     const objToSend: any = {
                         resId: this.resId,
-                        encodedFile: file.base64,
-                        format: 'pdf',
+                        encodedFile: file.content,
+                        format: file.format
                     };
                     this.http.put(`../rest/resources/${this.resId}?onlyDocument=true`, objToSend).pipe(
                         tap(() => {
@@ -735,7 +735,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     openPdfInTab() {
-        let src = '';
+        const src = '';
         if (this.file.contentMode === 'route'){
             this.http.get(this.file.content, { responseType: 'json' }).pipe(
                 tap((data: any) => {
@@ -1389,7 +1389,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             tap((data: any) => {
                 const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
                     autoFocus: false,
-                    panelClass: 'maarch-full-height-modal',
+                    panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
                     data: {
                         title: `${title}`,
                         base64: data.encodedDocument,

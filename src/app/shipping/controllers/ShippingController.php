@@ -19,8 +19,8 @@ use Entity\models\EntityModel;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
 use Shipping\models\ShippingModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use User\models\UserModel;
 
 class ShippingController

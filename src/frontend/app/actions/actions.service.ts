@@ -629,7 +629,7 @@ export class ActionsService implements OnDestroy {
 
     viewDoc(options: any = null) {
         this.dialog.open(ViewDocActionComponent, {
-            panelClass: 'maarch-modal',
+            panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
             data: this.setDatasActionToSend()
         });
     }

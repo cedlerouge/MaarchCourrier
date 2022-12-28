@@ -30,9 +30,63 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
-    public static function getMonolevels()
+
+    /**
+     * @param array $logConfig
+     * @return Logger $logger
+     */
+    public static function initMonologLogger(array $logConfig)
     {
-        return Logger::getLevels();
+        
+        if (empty($logConfig)) {
+            return ['code' => 400, 'errors' => "Log config is empty !"];
+        }
+
+        $dateFormat = $logConfig['dateTimeFormat'] ?? null;
+        if (empty($dateFormat)) {
+            return ['code' => 400, 'errors' => "dateTimeFormat is empty !"];
+        }
+        $output = $logConfig['lineFormat'] ?? null;
+        if (empty($output)) {
+            return ['code' => 400, 'errors' => "lineFormat is empty !"];
+        }
+        if (empty($logConfig['logTechnique']['file'])) {
+            return ['code' => 400, 'errors' => "file path of LogTechnique is empty !"];
+        }
+        if (empty($logConfig['customId'])) {
+            return ['code' => 400, 'errors' => "customId not found !"];
+        }
+        if (empty($logConfig['logTechnique']['level'])) {
+            return ['code' => 400, 'errors' => "level of LogTechnique is empty !"];
+        }
+
+
+        $formatter = new LineFormatter($output, $dateFormat);
+
+        $streamHandler = new StreamHandler($logConfig['logTechnique']['file']);
+        $streamHandler->setFormatter($formatter);
+
+        $logger = new Logger($logConfig['customId']);
+        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($logConfig['logTechnique']['level']));
+        $logger->pushHandler($filterHandler);
+
+        $logger->pushProcessor(new ProcessIdProcessor());
+        $logger->pushProcessor(new MemoryUsageProcessor());
+        return $logger;
+    }
+
+    /**
+     * @description Get log config by type
+     * @param   string  $logType    logFonctionnel | logTechnique | queries
+     * @return  array
+     */
+    public static function getLogType(string $logType) 
+    {
+        $logConfig = LogsController::getLogConfig();
+        if (empty($logConfig[$logType])) {
+            return ['code' => 400, 'errors' => "Log config of type '$logType' is empty !"];
+        }
+        return $logConfig[$logType];
     }
 
     /**

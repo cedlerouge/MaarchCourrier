@@ -15,8 +15,8 @@
 namespace ContentManagement\controllers;
 
 use Configuration\models\ConfigurationModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\ValidatorModel;
 
 class DocumentEditorController

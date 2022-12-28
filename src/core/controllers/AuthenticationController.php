@@ -20,8 +20,8 @@ use Firebase\JWT\JWT;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\AuthenticationModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -522,9 +522,19 @@ class AuthenticationController
         if (!in_array($version, ['CAS_VERSION_2_0', 'CAS_VERSION_3_0'])) {
             return ['errors' => 'Cas version not supported'];
         }
+        $logConfig = LogsController::getLogConfig();
+        $logger = LogsController::initMonologLogger($logConfig);
+        \phpCAS::setLogger($logger);
+        $logTypeInfo = LogsController::getLogType('logTechnique');
 
-        \phpCAS::setDebug();
-        \phpCAS::setVerbose(true);
+        if (!empty($logTypeInfo['errors'])) {
+            return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
+        }
+
+        if ($logTypeInfo['level'] == 'DEBUG') {
+            \phpCAS::setVerbose(true);
+        }
+        
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
@@ -558,8 +568,19 @@ class AuthenticationController
         $uri = (string)$casConfiguration->WEB_CAS_CONTEXT;
         $certificate = (string)$casConfiguration->PATH_CERTIFICATE;
 
-        \phpCAS::setDebug();
-        \phpCAS::setVerbose(true);
+
+        $logConfig = LogsController::getLogConfig();
+        $logger = LogsController::initMonologLogger($logConfig);
+        \phpCAS::setLogger($logger);
+        $logTypeInfo = LogsController::getLogType('logTechnique');
+        
+        if (!empty($logTypeInfo['errors'])) {
+            return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
+        }
+        
+        if ($logTypeInfo['level'] == 'DEBUG') {
+            \phpCAS::setVerbose(true);
+        }
         \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {

@@ -9,21 +9,25 @@
 * @ingroup core
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\administration;
 
-class AdministrationControllerTest extends TestCase
+use Administration\controllers\AdministrationController;
+use SrcCore\http\Response;
+use MaarchCourrier\Tests\CourrierTestCase;
+use User\models\UserModel;
+
+class AdministrationControllerTest extends CourrierTestCase
 {
     public function testGetDetails()
     {
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $administrationController = new \Administration\controllers\AdministrationController();
-        $response         = $administrationController->getDetails($request, new \Slim\Http\Response());
+        $administrationController = new AdministrationController();
+        $response         = $administrationController->getDetails($request, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertNotNull($responseBody['count']);
@@ -34,11 +38,11 @@ class AdministrationControllerTest extends TestCase
         $nbUsersNotRoot = $responseBody['count']['users'];
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $administrationController = new \Administration\controllers\AdministrationController();
-        $response         = $administrationController->getDetails($request, new \Slim\Http\Response());
+        $administrationController = new AdministrationController();
+        $response         = $administrationController->getDetails($request, new Response());
         $responseBody     = json_decode((string)$response->getBody(), true);
 
         $this->assertNotNull($responseBody['count']);

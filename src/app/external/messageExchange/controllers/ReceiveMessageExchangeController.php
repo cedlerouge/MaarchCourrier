@@ -22,14 +22,13 @@ use Entity\models\EntityModel;
 use ExportSeda\controllers\SendMessageController;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
-use MessageExchange\controllers\SendMessageExchangeController;
 use MessageExchange\models\MessageExchangeModel;
 use Note\models\NoteModel;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\CoreController;
 use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
@@ -46,7 +45,7 @@ class ReceiveMessageExchangeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         $this->addComment('['.date("d/m/Y H:i:s") . '] Réception du pli numérique');
         $tmpName = self::createFile(['base64' => $data['base64'], 'extension' => $data['extension'], 'size' => $data['size']]);
@@ -509,7 +508,7 @@ class ReceiveMessageExchangeController
             return $response->withStatus(401)->withJson(['errors' => 'User Not Connected']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!self::checkNeededParameters(['data' => $data, 'needed' => ['type']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);

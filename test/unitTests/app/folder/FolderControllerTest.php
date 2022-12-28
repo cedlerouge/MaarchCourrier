@@ -7,9 +7,16 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\folder;
 
-class FolderControllerTest extends TestCase
+use Folder\controllers\FolderController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class FolderControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $idSub = null;
@@ -24,21 +31,18 @@ class FolderControllerTest extends TestCase
     public function testCreate()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'label'      => 'Mon premier dossier'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->folder;
@@ -50,9 +54,9 @@ class FolderControllerTest extends TestCase
             'label'     => 'Mon deuxieme dossier',
             'parent_id' => self::$id
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsInt($responseBody->folder);
@@ -63,9 +67,9 @@ class FolderControllerTest extends TestCase
         $body = [
             'label' => ''
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -76,9 +80,9 @@ class FolderControllerTest extends TestCase
             'label' => 'Test',
             'parent_id' => 'wrong format'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
@@ -89,37 +93,35 @@ class FolderControllerTest extends TestCase
             'label' => 'Test',
             'parent_id' => self::$id * 1000
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Parent Folder not found or out of your perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
         $body = [
             'label' => 'Mon premier dossier renomme',
             'parent_id'  => 0
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
 
         $this->assertSame(200, $response->getStatusCode());
 
@@ -129,13 +131,13 @@ class FolderControllerTest extends TestCase
             'parent_id'  => 999999
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('parent_id does not exist or Id is a parent of parent_id', $responseBody->errors);
 
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => 'wrong format']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Query id is empty or not an integer', $responseBody->errors);
@@ -146,8 +148,8 @@ class FolderControllerTest extends TestCase
             'parent_id'  => 999999
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Body label is empty or not a string', $responseBody->errors);
@@ -157,8 +159,8 @@ class FolderControllerTest extends TestCase
             'parent_id'  => 'wrong format'
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Body parent_id is not an integer', $responseBody->errors);
@@ -168,8 +170,8 @@ class FolderControllerTest extends TestCase
             'parent_id'  => self::$id
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Parent_id and id can not be the same', $responseBody->errors);
@@ -179,40 +181,37 @@ class FolderControllerTest extends TestCase
             'label' => 'TEST'
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testSharing()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $folderController = new FolderController();
 
         //ERROR
         $body = [
 
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => 'wrong format']);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Query id is empty or not an integer', $responseBody->errors);
 
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Body public is empty or not a boolean', $responseBody->errors);
 
@@ -220,19 +219,19 @@ class FolderControllerTest extends TestCase
             'public' => true
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Body sharing/entities does not exists', $responseBody->errors);
 
         //  Success
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Test bblier cannot get folder
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->getById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
@@ -240,7 +239,7 @@ class FolderControllerTest extends TestCase
 
         // share folder with entity 13, which bblier is part of
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -255,17 +254,18 @@ class FolderControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$id]);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // check that bblier can now get folder
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response     = $folderController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody['folder']);
@@ -278,7 +278,7 @@ class FolderControllerTest extends TestCase
 
         // Set different sharing for sub-folder
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -297,17 +297,18 @@ class FolderControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$idSub]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$idSub]);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // test that bblier can get sub-folder, but that he cannot edit/delete it
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$idSub]);
+        $request = $this->createRequest('GET');
+        $response     = $folderController->getById($request, new Response(), ['id' => self::$idSub]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody['folder']);
@@ -330,15 +331,15 @@ class FolderControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$idSub]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$idSub]);
 
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Cannot share/unshare folder because at least one folder is out of your perimeter', $responseBody['errors']);
 
-        $response     = $folderController->pinFolder($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->pinFolder($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         // test that bblier can share folder to another (14) entity in addition of 13
@@ -356,13 +357,12 @@ class FolderControllerTest extends TestCase
                 ]
             ]
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody['folder']);
@@ -373,29 +373,29 @@ class FolderControllerTest extends TestCase
         $this->assertSame(false, $responseBody['folder']['sharing']['entities'][0]['canDelete']);
 
         // test that bblier cannot share sub-folder
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$idSub]);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$idSub]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Cannot share/unshare folder because at least one folder is out of your perimeter', $responseBody['errors']);
 
         // test sub-folder creation, with keeping sharing rules from parent
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
             'label'     => 'Mon troisieme dossier',
             'parent_id' => self::$idSub
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsInt($responseBody['folder']);
         self::$idSubSub = $responseBody['folder'];
 
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$idSubSub]);
+        $response     = $folderController->getById($request, new Response(), ['id' => self::$idSubSub]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody['folder']['sharing']['entities']);
@@ -412,51 +412,48 @@ class FolderControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $folderController->sharing($fullRequest, new \Slim\Http\Response(), ['id' => self::$idSubSub]);
+        $response     = $folderController->sharing($fullRequest, new Response(), ['id' => self::$idSubSub]);
         $this->assertSame(204, $response->getStatusCode());
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdateMoveToFolder()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         //ERROR
         $body = [
             'label' => 'Mon troisieme dossier renomme 2',
             'parent_id'  => self::$idSubSub
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('parent_id does not exist or Id is a parent of parent_id', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
             'label'     => 'Mon dossier'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $folderController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $folderController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsInt($responseBody['folder']);
@@ -467,8 +464,8 @@ class FolderControllerTest extends TestCase
             'parent_id'  => self::$idMoved
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode(), true);
@@ -476,7 +473,7 @@ class FolderControllerTest extends TestCase
         $this->assertSame('Cannot move folder because at least one folder is out of your perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -484,8 +481,8 @@ class FolderControllerTest extends TestCase
             'parent_id'  => self::$idMoved
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame(400, $response->getStatusCode(), true);
@@ -497,28 +494,27 @@ class FolderControllerTest extends TestCase
             'parent_id'  => self::$id
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response     = $folderController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$idSubSub]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response     = $folderController->update($fullRequest, new Response(), ['id' => self::$idSubSub]);
 
         $this->assertSame(200, $response->getStatusCode(), true);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetById()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(self::$id, $responseBody->folder->id);
@@ -532,28 +528,27 @@ class FolderControllerTest extends TestCase
         $this->assertNotEmpty($responseBody->folder->ownerDisplayName);
 
         // ERROR
-        $response     = $folderController->getById($request, new \Slim\Http\Response(), ['id' => '123456789']);
+        $response     = $folderController->getById($request, new Response(), ['id' => '123456789']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGet()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $folderController->get($request, new \Slim\Http\Response());
+        $response     = $folderController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->folders);
@@ -573,10 +568,10 @@ class FolderControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $folderController->get($request, new \Slim\Http\Response());
+        $response     = $folderController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->folders);
@@ -585,111 +580,108 @@ class FolderControllerTest extends TestCase
     public function testUnpinFolder()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
         $args = [
             'id' => self::$id
         ];
 
-        $response     = $folderController->unpinFolder($request, new \Slim\Http\Response(), $args);
+        $response     = $folderController->unpinFolder($request, new Response(), $args);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // ERROR
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->unpinFolder($fullRequest, new \Slim\Http\Response(), $args);
+        $request = $this->createRequest('DELETE');
+        $response     = $folderController->unpinFolder($request, new Response(), $args);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Folder is not pinned', $responseBody->errors);
 
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->unpinFolder($fullRequest, new \Slim\Http\Response(), ['id' => self::$id + 100]);
+        $fullRequest = $this->createRequest('DELETE');
+        $response     = $folderController->unpinFolder($fullRequest, new Response(), ['id' => self::$id + 100]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->unpinFolder($fullRequest, new \Slim\Http\Response(), ['id' => 'test']);
+        $fullRequest = $this->createRequest('DELETE');
+        $response     = $folderController->unpinFolder($fullRequest, new Response(), ['id' => 'test']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Route id not found or is not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testPinFolder()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
         $args = [
             'id' => self::$id
         ];
 
-        $response     = $folderController->pinFolder($request, new \Slim\Http\Response(), $args);
+        $response     = $folderController->pinFolder($request, new Response(), $args);
 
         $this->assertSame(204, $response->getStatusCode());
 
         // ERROR
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->pinFolder($fullRequest, new \Slim\Http\Response(), $args);
+        $fullRequest = $this->createRequest('PUT');
+        $response     = $folderController->pinFolder($fullRequest, new Response(), $args);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Folder is already pinned', $responseBody->errors);
 
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->pinFolder($fullRequest, new \Slim\Http\Response(), ['id' => self::$id + 100]);
+        $fullRequest = $this->createRequest('PUT');
+        $response     = $folderController->pinFolder($fullRequest, new Response(), ['id' => self::$id + 100]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-        $response     = $folderController->pinFolder($fullRequest, new \Slim\Http\Response(), ['id' => 'test']);
+        $fullRequest = $this->createRequest('PUT');
+        $response     = $folderController->pinFolder($fullRequest, new Response(), ['id' => 'test']);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(400, $response->getStatusCode());
         $this->assertSame('Route id not found or is not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetPinned()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $folderController->getPinnedFolders($request, new \Slim\Http\Response());
+        $response     = $folderController->getPinnedFolders($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->folders);
@@ -709,7 +701,7 @@ class FolderControllerTest extends TestCase
         }
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
@@ -718,14 +710,12 @@ class FolderControllerTest extends TestCase
         // Create resources to add to folder
 
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -780,54 +770,53 @@ class FolderControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idFirstResource = $responseBody['resId'];
         $this->assertIsInt(self::$idFirstResource);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idSecondResource = $responseBody['resId'];
         $this->assertIsInt(self::$idFirstResource);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($argsMailATra, $request);
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailATra);
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$idThirdResource = $responseBody['resId'];
         $this->assertIsInt(self::$idFirstResource);
 
         // Actual test
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $folderController->addResourcesById($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->addResourcesById($request, new Response(), ['id' => 'wrong format']);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
         $body = [];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->addResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->addResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources is empty or not an array', $responseBody['errors']);
 
         // Success
         $body = ['resources' => [self::$idFirstResource, self::$idSecondResource, self::$idThirdResource]];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->addResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->addResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -837,50 +826,49 @@ class FolderControllerTest extends TestCase
 
 
         // Other errors
-        $response     = $folderController->addResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->addResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['countResources']);
         $this->assertSame(3, $responseBody['countResources']);
 
 
-        $response     = $folderController->addResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $folderController->addResourcesById($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Folder out of perimeter', $responseBody['errors']);
 
         $body = ['resources' => [self::$idFirstResource * 1000, self::$idSecondResource * 1000, self::$idThirdResource * 1000]];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $folderController->addResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->addResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertSame('Resources out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetResourceById()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $folderController->getResourcesById($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->getResourcesById($request, new Response(), ['id' => 'wrong format']);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response     = $folderController->getResourcesById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $folderController->getResourcesById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Folder out of perimeter', $responseBody['errors']);
@@ -889,7 +877,7 @@ class FolderControllerTest extends TestCase
         $queryParams = [];
         $fullRequest = $request->withQueryParams($queryParams);
 
-        $response     = $folderController->getResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->getResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -923,34 +911,33 @@ class FolderControllerTest extends TestCase
         $this->assertEmpty($responseBody['resources'][0]['display']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testGetFilters()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $folderController->getFilters($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->getFilters($request, new Response(), ['id' => 'wrong format']);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response     = $folderController->getFilters($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $folderController->getFilters($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Folder out of perimeter', $responseBody['errors']);
 
-        $response     = $folderController->getFilters($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->getFilters($request, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -984,10 +971,9 @@ class FolderControllerTest extends TestCase
         $this->assertEmpty($responseBody['folders']);
 
         //  GET
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response     = $folderController->getFilters($request, new \Slim\Http\Response(), ['id' => self::$idSub]);
+        $response     = $folderController->getFilters($request, new Response(), ['id' => self::$idSub]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -1010,46 +996,45 @@ class FolderControllerTest extends TestCase
         $this->assertEmpty($responseBody['folders']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testRemoveResourcesById()
     {
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Errors
-        $response     = $folderController->removeResourcesById($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $folderController->removeResourcesById($request, new Response(), ['id' => 'wrong format']);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route id is not an integer', $responseBody['errors']);
 
-        $response     = $folderController->removeResourcesById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $folderController->removeResourcesById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Folder out of perimeter', $responseBody['errors']);
 
         $body = [];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('DELETE', $body);
 
-        $response     = $folderController->removeResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->removeResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertNotEmpty(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body resources is empty or not an array', $responseBody['errors']);
 
         // Success
         $body = ['resources' => [self::$idFirstResource, self::$idSecondResource]];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('DELETE', $body);
 
-        $response     = $folderController->removeResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->removeResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -1059,78 +1044,75 @@ class FolderControllerTest extends TestCase
 
 
         // Other errors
-        $response     = $folderController->removeResourcesById($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $folderController->removeResourcesById($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['countResources']);
         $this->assertSame(1, $responseBody['countResources']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testDelete()
     {
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $folderController = new \Folder\controllers\FolderController();
+        $folderController = new FolderController();
 
         //  DELETE ERROR
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $folderController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $folderController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
 
-        $response       = $folderController->delete($request, new \Slim\Http\Response(), ['id' => 999999]);
+        $response       = $folderController->delete($request, new Response(), ['id' => 999999]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Cannot delete because at least one folder is out of your perimeter', $responseBody->errors);
 
-        $response       = $folderController->delete($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response       = $folderController->delete($request, new Response(), ['id' => 'wrong format']);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Query id is empty or not an integer', $responseBody->errors);
 
         $GLOBALS['login'] = 'aackermann';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $folderController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $folderController->delete($request, new Response(), ['id' => self::$id]);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $folderController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $folderController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('Folder not found or out of your perimeter', $responseBody->errors);
 
         // DELETE TEST RESOURCES
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id in (?)'],
             'data' => [[self::$idFirstResource, self::$idSecondResource, self::$idThirdResource]]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idFirstResource, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idFirstResource, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idSecondResource, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idSecondResource, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$idThirdResource, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$idThirdResource, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 }

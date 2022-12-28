@@ -16,8 +16,8 @@ namespace Search\controllers;
 
 use History\controllers\HistoryController;
 use Search\models\SearchTemplateModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use Respect\Validation\Validator;
 
 class SearchTemplateController

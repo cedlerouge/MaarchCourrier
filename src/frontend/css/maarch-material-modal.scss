@@ -75,6 +75,16 @@
   }
 }
 
+.maarch-doc-modal {
+  min-width: 856px;
+  .mat-dialog-content {
+    padding: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+}
+
+
 .maarch-modal {
   height: auto;
 
