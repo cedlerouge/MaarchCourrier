@@ -1043,16 +1043,25 @@ class FastParapheurController
     public static function getResourcesCount()
     {
         $resourcesInFastParapheur = ResModel::get([
-            'select' => [1],
+            'select' => ['res_id', 'external_id->>\'signatureBookId\' as "signatureBookId"'],
             'where'  => ['external_id->>\'signatureBookId\' is not null']
         ]);
 
         $attachmentsInFastParapheur = AttachmentModel::get([
-            'select' => [1],
+            'select' => ['res_id', 'external_id->>\'signatureBookId\' as "signatureBookId"'],
             'where'  => ['external_id->>\'signatureBookId\' is not null']
         ]);
 
-        return count($resourcesInFastParapheur) + count($attachmentsInFastParapheur);
+        $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+        $documentsInFastParapheur = FastParapheurController::getResources();
+        $resourcesNumber = 0;
+        foreach ($documentsInDataBase as $document) {
+            if (array_search($document['signatureBookId'], $documentsInFastParapheur)) {
+                $resourcesNumber++;
+            }
+        }
+
+        return $resourcesNumber;
     }
 
     public static function getResourcesDetails() {
@@ -1088,8 +1097,14 @@ class FastParapheurController
             'limit'     => 5
         ]);
         $correspondents = null;
-        $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
-        $documentsInFastParapheur = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
+        $documentsInFastParapheur = FastParapheurController::getResources();
+        $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+        foreach ($documentsInDataBase as $document) {
+            if (!(array_search($document['signatureBookId'], $documentsInFastParapheur))) {
+                unset($documentsInDataBase[array_search($document, $documentsInDataBase)]);
+            }
+        }
+        $documentsInDataBase = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
             if ($doc['category_id'] == 'outgoing') {
                 $correspondents = ContactController::getFormattedContacts(['resId' => $doc['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
             } else {
@@ -1102,8 +1117,54 @@ class FastParapheurController
                 'resId'             => (int)$doc['signatureBookId'],
                 'url'               => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
             ];
-        }, $documentsInFastParapheur));
+        }, $documentsInDataBase));
 
-        return $documentsInFastParapheur;
+        return $documentsInDataBase;
+    }
+
+    public static function getResources()
+    {
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        if (empty($loadedXml)) {
+            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+        }
+
+        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+        if (empty($fastParapheurBlock)) {
+            return $response->withStatus(500)->withJson(['errors' => 'invalid configuration for FastParapheur']);
+        }
+        $url = (string)$fastParapheurBlock->url;
+        $certPath = (string)$fastParapheurBlock->certPath;
+        $certPass = (string)$fastParapheurBlock->certPass;
+        $certType = (string)$fastParapheurBlock->certType;
+        $subscriberId = (string)$fastParapheurBlock->subscriberId;
+
+        $curlReturn = CurlModel::exec([
+            'url'           => $url . '/documents/search',
+            'method'        => 'POST',
+            'headers'   => [
+                'Accept: application/json',
+                'Content-Type: application/json'
+            ],
+            'options'       => [
+                CURLOPT_SSLCERT       => $certPath,
+                CURLOPT_SSLCERTPASSWD => $certPass,
+                CURLOPT_SSLCERTTYPE   => $certType
+            ],
+            'body' => json_encode([
+                'siren'     => $subscriberId
+                //'state'     => "Prepared",
+            ])
+        ]);
+
+        if ($curlReturn['code'] == 404) {
+            return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
+        } elseif (!empty($curlReturn['errors'])) {
+            return ['error' => $curlReturn['errors']];
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            return ['error' => $curlReturn['response']['developerMessage']];
+        }
+
+        return $curlReturn['response'];
     }
 }
