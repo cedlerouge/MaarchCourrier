@@ -268,25 +268,6 @@ class CoreConfigModel
         return $xmlfile;
     }
 
-
-    // faire les test unitaires
-    public static function arrayToXml(array $args)
-    {
-        if ($args['xml'] === false) {
-            $args['xml'] = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><root></root>', null, false);
-        }
-
-        foreach ($args['data'] as $key => $value) {
-            if (is_array($value)) {
-                CoreConfigModel::arrayToXml(['data' => $value, 'xml' => $args['xml']->addChild(str_replace([' ','(',')'], '', (is_numeric($key) ? 'Item' : $key)) )]);
-            } else {
-                $args['xml']->addChild(str_replace([' ','(',')'], '', $key), $value);
-            }
-        }
-
-        return $args['xml']->asXML();
-    }
-
     public static function getJsonLoaded(array $args)
     {
         ValidatorModel::notEmpty($args, ['path']);
