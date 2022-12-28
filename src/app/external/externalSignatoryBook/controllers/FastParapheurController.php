@@ -1054,9 +1054,13 @@ class FastParapheurController
 
         $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
         $documentsInFastParapheur = FastParapheurController::getResources();
+        if (!empty($documentsInFastParapheur['errors'])) {
+            return ['code' => $documentsInFastParapheur['code'], 'errors' => $documentsInFastParapheur['errors']];
+        }
+
         $resourcesNumber = 0;
         foreach ($documentsInDataBase as $document) {
-            if (array_search($document['signatureBookId'], $documentsInFastParapheur)) {
+            if (array_search($document['signatureBookId'], $documentsInFastParapheur['response'])) {
                 $resourcesNumber++;
             }
         }
@@ -1096,9 +1100,13 @@ class FastParapheurController
         ]);
         $correspondents = null;
         $documentsInFastParapheur = FastParapheurController::getResources();
+        if (!empty($documentsInFastParapheur['errors'])) {
+            return ['code' => $documentsInFastParapheur['code'], 'errors' => $documentsInFastParapheur['errors']];
+        }
+
         $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
         foreach ($documentsInDataBase as $document) {
-            if (!(array_search($document['signatureBookId'], $documentsInFastParapheur))) {
+            if (!(array_search($document['signatureBookId'], $documentsInFastParapheur['response']))) {
                 unset($documentsInDataBase[array_search($document, $documentsInDataBase)]);
             }
         }
@@ -1124,12 +1132,12 @@ class FastParapheurController
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
         }
 
         $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
         if (empty($fastParapheurBlock)) {
-            return $response->withStatus(500)->withJson(['errors' => 'invalid configuration for FastParapheur']);
+            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
         }
         $url = (string)$fastParapheurBlock->url;
         $certPath = (string)$fastParapheurBlock->certPath;
@@ -1138,18 +1146,18 @@ class FastParapheurController
         $subscriberId = (string)$fastParapheurBlock->subscriberId;
 
         $curlReturn = CurlModel::exec([
-            'url'           => $url . '/documents/search',
-            'method'        => 'POST',
+            'url'       => $url . '/documents/search',
+            'method'    => 'POST',
             'headers'   => [
                 'Accept: application/json',
                 'Content-Type: application/json'
             ],
-            'options'       => [
+            'options'   => [
                 CURLOPT_SSLCERT       => $certPath,
                 CURLOPT_SSLCERTPASSWD => $certPass,
                 CURLOPT_SSLCERTTYPE   => $certType
             ],
-            'body' => json_encode([
+            'body'      => json_encode([
                 'siren'     => $subscriberId,
                 'state'     => 'Prepared',
                 'circuit'   => 'circuit-a-la-volee'
@@ -1157,13 +1165,13 @@ class FastParapheurController
         ]);
 
         if ($curlReturn['code'] == 404) {
-            return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
+            return ['code' => 404, 'errors' => 'Erreur 404 : ' . $curlReturn['raw']];
         } elseif (!empty($curlReturn['errors'])) {
-            return ['error' => $curlReturn['errors']];
+            return ['code' => $curlReturn['code'], 'errors' => $curlReturn['errors']];
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
-            return ['error' => $curlReturn['response']['developerMessage']];
+            return ['code' => $curlReturn['code'], 'errors' => $curlReturn['response']['developerMessage']];
         }
 
-        return $curlReturn['response'];
+        return ['response' => $curlReturn['response']];
     }
 }
