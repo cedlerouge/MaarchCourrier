@@ -1083,8 +1083,7 @@ class FastParapheurController
                 'subject', 'creation_date', 'res_id', 'category_id'
             ],
             'where'     => ['external_id->>\'signatureBookId\' is not null'],
-            'orderBy'   => ['creation_date DESC'],
-            'limit'     => 5
+            'orderBy'   => ['creation_date DESC']
         ]);
 
         $attachmentsInFastParapheur = AttachmentModel::get([
@@ -1093,8 +1092,7 @@ class FastParapheurController
                 'title as subject', 'res_id', 'creation_date'
             ],
             'where'     => ['external_id->>\'signatureBookId\' is not null'],
-            'orderBy'   => ['creation_date DESC'],
-            'limit'     => 5
+            'orderBy'   => ['creation_date DESC']
         ]);
         $correspondents = null;
         $documentsInFastParapheur = FastParapheurController::getResources();
@@ -1152,8 +1150,9 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $certType
             ],
             'body' => json_encode([
-                'siren'     => $subscriberId
-                //'state'     => "Prepared",
+                'siren'     => $subscriberId,
+                'state'     => 'Prepared',
+                'circuit'   => 'circuit-a-la-volee'
             ])
         ]);
 
