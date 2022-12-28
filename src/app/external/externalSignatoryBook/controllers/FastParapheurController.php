@@ -33,8 +33,8 @@ use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
 use User\controllers\UserController;
 use History\controllers\HistoryController;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\TextFormatModel;
 use Contact\controllers\ContactController;
 
