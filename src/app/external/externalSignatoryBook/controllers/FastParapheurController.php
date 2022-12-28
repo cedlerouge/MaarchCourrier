@@ -277,23 +277,26 @@ class FastParapheurController
         $version = $args['version'];
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             
-            if (empty(trim($value['external_id'])) || empty($value['external_state_fetch_date'])) {
+            if (empty(trim($value['external_id']))) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                 continue;
             }
-            $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
-            $timeAgo = new \DateTimeImmutable('-30 minutes');
 
-            if (!empty($value['external_state_fetch_date']) && $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
-                $newDate = $fetchDate->modify('+30 minutes');
+            if (!empty($value['external_state_fetch_date'])) {
+                $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
+                $timeAgo = new \DateTimeImmutable('-30 minutes');
 
-                if (!empty($value['res_id_master'])) {
-                    echo "PJ n° $resId du document original n° {$value['res_id_master']} : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
-                } else {
-                    echo "Document principal n° $resId : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
+                if ($fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
+                    $newDate = $fetchDate->modify('+30 minutes');
+
+                    if (!empty($value['res_id_master'])) {
+                        echo "PJ n° $resId du document original n° {$value['res_id_master']} : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
+                    } else {
+                        echo "Document principal n° $resId : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
+                    }
+                    $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
+                    continue;
                 }
-                $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
-                continue;
             }
 
             $historyResponse = FastParapheurController::getDocumentHistory(['config' => $args['config'], 'documentId' => $value['external_id']]);
