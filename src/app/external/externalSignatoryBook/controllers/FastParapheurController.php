@@ -276,13 +276,13 @@ class FastParapheurController
     {
         $version = $args['version'];
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
-            $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
-            $timeAgo = new \DateTimeImmutable('-30 minutes');
-
-            if (empty(trim($value['external_id']))) {
+            
+            if (empty(trim($value['external_id'])) || empty($value['external_state_fetch_date'])) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                 continue;
             }
+            $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
+            $timeAgo = new \DateTimeImmutable('-30 minutes');
 
             if (!empty($value['external_state_fetch_date']) && $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
                 $newDate = $fetchDate->modify('+30 minutes');
@@ -315,7 +315,7 @@ class FastParapheurController
 
             $updateHistoryFetchDate = FastParapheurController::updateFetchHistoryDateByExternalId([
                 'type' => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
-                'documentId' => $value['external_id']
+                'resId' => $value['res_id']
             ]);
             if (!empty($updateHistoryFetchDate['errors'])) {
                 if (!empty($value['res_id_master'])) {
@@ -338,11 +338,16 @@ class FastParapheurController
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
 
                     $proofDocument = FastParapheurController::makeHistoryProof([
+                        'documentId'      => $value['external_id'],
+                        'config'          => $args['config'],
                         'historyData'     => $historyResponse['response'],
                         'filename'        => ($args['idsToRetrieve'][$version][$resId]['title'] ?? $args['idsToRetrieve'][$version][$resId]['subject']) . '.pdf',
                         'signEncodedFile' => $response['b64FileContent']
                     ]);
-                    if (!empty($proofDocument['encodedProofDocument'])) {
+                    if (!empty($proofDocument['errors'])) {
+                        echo $proofDocument['errors'] . PHP_EOL;
+                        continue;
+                    } elseif (!empty($proofDocument['encodedProofDocument'])) {
                         $args['idsToRetrieve'][$version][$resId]['log']       = $proofDocument['encodedProofDocument'];
                         $args['idsToRetrieve'][$version][$resId]['logFormat'] = $proofDocument['format'];
                         $args['idsToRetrieve'][$version][$resId]['logTitle']  = '[Faisceau de preuve]';
@@ -383,12 +388,18 @@ class FastParapheurController
     }
 
     /**
-     * Create proof from history data, signed document and filename are required
+     * Create proof from history data, get proof from fast (Fiche de Circulation)
      * 
-     * @param   array   $args   historyData, signEncodedFile, filename
+     * @param   array   $args   documentId, config, historyData, filename, signEncodedFile
      */
     public static function makeHistoryProof(array $args)
     {
+        if (!Validator::stringType()->notEmpty()->validate($args['documentId'])) {
+            return ['errors' => 'documentId is not an array'];
+        }
+        if (!Validator::arrayType()->notEmpty()->validate($args['config'])) {
+            return ['errors' => 'config is not an array'];
+        }
         if (!Validator::arrayType()->notEmpty()->validate($args['historyData'])) {
             return ['errors' => 'historyData is not an array'];
         }
@@ -409,30 +420,38 @@ class FastParapheurController
         $filename = TextFormatModel::formatFilename(['filename' => $args['filename']]);
         if (file_exists($signDocumentPath) && filesize($signDocumentPath) > 0) {
             $proof = [
-                'filename'      => $filename,
-                'filenameSize'  => filesize($signDocumentPath),
-                'history'       => $args['historyData']
+                'signedDocument'    => [
+                    'filename'      => $filename,
+                    'filenameSize'  => filesize($signDocumentPath)
+                ]
             ];
             $documentPathToZip[] = ['path' => $signDocumentPath, 'filename' => $filename];
         }
 
-        $historyXml = CoreConfigModel::arrayToXml(['data' => $proof, 'xml' => false]);
-        $historyXmlPath = $tmpPath . 'maarchProof' . $GLOBALS['id'] . "_" . rand() . '.xml';
-        file_put_contents($historyXmlPath, $historyXml);
-
-        $loadedXml  = CoreConfigModel::getXmlLoaded(['path' => $historyXmlPath]);
-        if (empty($loadedXml)) {
-            return ['code' => 500, 'errors' => 'Cannot create file ' . $historyXmlPath];
+        
+        $fdc = FastParapheurController::getProof(['documentId' => $args['documentId'], 'config' => $args['config']]);
+        if (!empty($fdc['errors'])) {
+            return ['errors' => $fdc['errors']];
         }
+        $fdcPath = $tmpPath . 'ficheDeCirculation' . $GLOBALS['id'] . "_" . rand() . '.pdf';
+        file_put_contents($fdcPath, $fdc['response']);
 
-        $xmlDocument = new \DOMDocument('1.0');
-        $xmlDocument->preserveWhiteSpace = false;
-        $xmlDocument->formatOutput = true;
-        $xmlDocument->loadXML($loadedXml->asXML());
-        $historyXml = $xmlDocument->saveXML();
-        file_put_contents($historyXmlPath, $historyXml);
+        $documentPathToZip[] = ['path' => $fdcPath, 'filename' => 'ficheDeCirculation.pdf'];
+        $proof['proof'] = [
+            'filename' => 'ficheDeCirculation.pdf',
+            'filenameSize' => filesize($fdcPath)
+        ];
+        $proof['history'] = $args['historyData'];
 
-        $documentPathToZip[] = ['path' => $historyXmlPath, 'filename' => 'maarchProof.xml'];
+
+        $proofJson = json_encode($proof, JSON_PRETTY_PRINT);
+        $proofJsonPath = $tmpPath . 'maarchProof' . $GLOBALS['id'] . "_" . rand() . '.json';
+        $proofCreation = file_put_contents($proofJsonPath, $proofJson);
+        if (empty($proofCreation)) {
+            return ['errors' => 'Cannot create proof json'];
+        }
+        $documentPathToZip[] = ['path' => $proofJsonPath, 'filename' => 'maarchProof.json'];
+
 
         $zipFileContent = null;
         $zip = new \ZipArchive();
@@ -453,11 +472,36 @@ class FastParapheurController
 
         foreach ($documentPathToZip as $document) {
             if(file_exists($document['path']) && filesize($document['path']) > 0) {
-                unlink($document['path']);
+                // unlink($document['path']);
             }
         }
 
         return ['format' => 'zip','encodedProofDocument' => base64_encode($zipFileContent)];
+    }
+
+    public static function getProof(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['documentId', 'config']);
+        ValidatorModel::stringType($args, ['documentId']);
+        ValidatorModel::arrayType($args, ['config']);
+
+        $curlReturn = CurlModel::exec([
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/getFdc',
+            'method'        => 'GET',
+            'options'       => [
+                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+            ],
+            'fileResponse'  => true
+        ]);
+
+        if ($curlReturn['code'] == 404) {
+            return ['code' => 400, 'errors' => "Erreur 404 : {$curlReturn['raw']}"];
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            return ['code' => 500, 'errors' => $curlReturn['response']['developerMessage']];
+        }
+        return ['response' => $curlReturn['response']];
     }
 
     public static function getSignatoryUserInfo(array $args = [])
@@ -1129,29 +1173,31 @@ class FastParapheurController
         if (!Validator::stringType()->notEmpty()->validate($args['type'])) {
             return ['errors' => $tag . 'type is not a string'];
         }
-        if (!Validator::notEmpty()->validate($args['documentId'])) {
-            return ['errors' => $tag . 'documentId is not found'];
+        if (!Validator::notEmpty()->validate($args['resId'])) {
+            return ['errors' => $tag . 'resId is not found'];
         }
 
         if (!empty($args['type']) && $args['type'] == 'resource') {
             $resource = ResModel::get([
                 'select' => ['res_id', 'external_id', 'external_state'],
-                'where' => ["external_id->>'signatureBookId' = ?"],
-                'data'  => [$args['documentId']]
-            ])[0];
+                'where' => ["res_id = ?"],
+                'data'  => [$args['resId']]
+            ]);
             if (empty($resource)) {
-                return ['errors' => $tag . 'Resource (' . $args['documentId'] .') does not exist'];
+                return ['errors' => $tag . 'Resource (' . $args['resId'] .') does not exist'];
             }
         } else {
             $resource = AttachmentModel::get([
                 'select' => ['res_id', 'res_id_master', 'external_id', 'external_state'],
-                'where' => ["external_id->>'signatureBookId' = ?"],
-                'data'  => [$args['documentId']]
-            ])[0];
+                'where' => ["res_id = ?"],
+                'data'  => [$args['resId']]
+            ]);
             if (empty($resource)) {
-                return ['errors' => $tag . 'Attachment (' . $args['documentId'] .') does not exist'];
+                return ['errors' => $tag . 'Attachment (' . $args['resId'] .') does not exist'];
             }
         }
+
+        $resource = $resource[0];
 
         $externalId = json_decode($resource['external_id'], true);
         if (empty($externalId['signatureBookId'])) {
