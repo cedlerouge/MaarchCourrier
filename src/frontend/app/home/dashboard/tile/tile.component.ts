@@ -10,6 +10,7 @@ import { FunctionsService } from '@service/functions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { AuthService } from '@service/auth.service';
 import { SortPipe } from '@plugins/sorting.pipe';
+import { HeaderService } from '@service/header.service';
 
 @Component({
     selector: 'app-tile',
@@ -41,9 +42,10 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public dashboardService: DashboardService,
         public authService: AuthService,
+        public headerService: HeaderService,
         private notify: NotificationService,
         private functionsService: FunctionsService,
-        private SortPipe: SortPipe
+        private sortPipe: SortPipe
     ) { }
 
     ngOnInit(): void { }
@@ -51,10 +53,15 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     async ngAfterViewInit(): Promise<void> {
         await this['get_' + this.view]();
         if (this.tile.type === 'externalSignatoryBook') {
-            console.log(this.externalSignatoryBook);
-            if (!this.functionsService.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
-                this.route = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.route;
-                this.viewDocRoute = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.viewDocRoute;
+            if (this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService?.externalSignatoryBook?.id) > -1 && this.authService?.externalSignatoryBook?.integratedWorkflow) {
+                const result: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.headerService.user.id);
+                if (!this.functionsService.empty(result)) {
+                    this.route = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.route;
+                    this.viewDocRoute = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.viewDocRoute;
+                } else {
+                    this.onError = true;
+                    this.errorMessage = this.translate.instant('lang.acountNotLinkedToExternalSignatoryBook');
+                }
             } else {
                 this.onError = true;
                 this.errorMessage = this.translate.instant('lang.badConfiguration');
@@ -79,25 +86,27 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
             this.http.get(`../rest/tiles/${this.tile.id}`).pipe(
                 tap((data: any) => {
                     if (data.tile.type === 'externalSignatoryBook' && !this.functionsService.empty(data.tile?.resources)) {
-                        this.SortPipe.transform(data.tile.resources, 'creationDate').reverse();
+                        this.sortPipe.transform(data.tile.resources, 'creationDate').reverse();
                     }
-                    const resources = data.tile.resources.map((resource: any) => {
-                        let contactLabel = '';
-                        let contactTitle = '';
-                        if (resource.correspondents.length === 1) {
-                            contactLabel = resource.correspondents[0];
-                            contactTitle = this.translate.instant('lang.contact') + ': ' + resource.correspondents[0];
-                        } else if (resource.correspondents.length > 1) {
-                            contactLabel = resource.correspondents.length + ' ' + this.translate.instant('lang.contacts');
-                            contactTitle = resource.correspondents;
-                        }
-                        return {
-                            ...resource,
-                            contactLabel: contactLabel,
-                            contactTitle: contactTitle
-                        };
-                    });
-                    this.resources = resources;
+                    if (!this.functionsService.empty(data.tile?.resources)) {
+                        const resources = data.tile.resources.map((resource: any) => {
+                            let contactLabel = '';
+                            let contactTitle = '';
+                            if (resource.correspondents.length === 1) {
+                                contactLabel = resource.correspondents[0];
+                                contactTitle = this.translate.instant('lang.contact') + ': ' + resource.correspondents[0];
+                            } else if (resource.correspondents.length > 1) {
+                                contactLabel = resource.correspondents.length + ' ' + this.translate.instant('lang.contacts');
+                                contactTitle = resource.correspondents;
+                            }
+                            return {
+                                ...resource,
+                                contactLabel: contactLabel,
+                                contactTitle: contactTitle
+                            };
+                        });
+                        this.resources = resources;
+                    }
                     resolve(true);
                 }),
                 catchError((err: any) => {
