@@ -140,7 +140,7 @@ export class TileCreateComponent implements OnInit {
                 };
             }
         } else {
-            this.notify.error(this.translate.instant('lang.acountNotLinkedTomaarchParapheur'));
+            this.notify.error(this.translate.instant('lang.acountNotLinkedToExternalSignatoryBook'));
             this.resetData();
         }
     }

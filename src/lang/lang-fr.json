@@ -2267,7 +2267,7 @@
     "nullStatus": "L'utilisateur n'a pas encore effectué d'action",
     "intermediateStatusMailing": "Les statuts intermédiaires et d'erreurs ne sont utilisés que lors d'un publipostage dans l'action",
     "navigation": "Navigation",
-    "acountNotLinkedTomaarchParapheur": "Votre compte n'est pas lié à Maarch Parapheur.",
+    "acountNotLinkedToExternalSignatoryBook": "Votre compte n'est pas lié au parapheur externe",
     "error": "Erreur",
     "tileLoadError": "Erreur de chargement de la tuile <b>{{0}}</b>",
     "tileColor": "Couleur de la tuile",
