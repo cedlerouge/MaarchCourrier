@@ -430,7 +430,7 @@ class ResourceControlController
                         return ['errors' => "Body customFields[{$customFieldId}] is not a string"];
                     } elseif ($customField['type'] == 'integer' && !Validator::floatVal()->notEmpty()->validate($body['customFields'][$customFieldId])) {
                         return ['errors' => "Body customFields[{$customFieldId}] is not a number"];
-                    } elseif ($customField['type'] == 'date' && !Validator::date()->notEmpty()->validate($body['customFields'][$customFieldId])) {
+                    } elseif ($customField['type'] == 'date' && !Validator::dateTime()->notEmpty()->validate($body['customFields'][$customFieldId])) {
                         return ['errors' => "Body customFields[{$customFieldId}] is not a date"];
                     } elseif (!empty($indexingModelField['allowed_values']) && !in_array($body['customFields'][$customFieldId], $indexingModelField['allowed_values'])) {
                         if(!empty($args['oldDoctypeId']) && $body['customFields'][$customFieldId] == $args['oldDoctypeId']) {
@@ -459,7 +459,7 @@ class ResourceControlController
         $body = $args['body'];
 
         if (!empty($body['documentDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['documentDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['documentDate'])) {
                 return ['errors' => "Body documentDate is not a date"];
             }
 
@@ -473,7 +473,7 @@ class ResourceControlController
             }
         }
         if (!empty($body['arrivalDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['arrivalDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['arrivalDate'])) {
                 return ['errors' => "Body arrivalDate is not a date"];
             }
 
@@ -484,7 +484,7 @@ class ResourceControlController
             }
         }
         if (!empty($body['departureDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['departureDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['departureDate'])) {
                 return ['errors' => "Body departureDate is not a date"];
             }
             $departureDate = new \DateTime($body['departureDate']);
@@ -493,7 +493,7 @@ class ResourceControlController
             }
         }
         if (!empty($body['processLimitDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['processLimitDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['processLimitDate'])) {
                 return ['errors' => "Body processLimitDate is not a date"];
             }
 

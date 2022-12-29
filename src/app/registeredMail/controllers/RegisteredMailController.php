@@ -213,7 +213,7 @@ class RegisteredMailController
         } else {
             if (!Validator::stringType()->notEmpty()->validate($body['returnReason'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body returnReason is empty or not a string']);
-            } elseif (!Validator::date()->notEmpty()->validate($body['receivedDate'])) {
+            } elseif (!Validator::dateTime()->notEmpty()->validate($body['receivedDate'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body receivedDate is empty or not a date']);
             }
             $receivedDate = new \DateTime($body['receivedDate']);
@@ -316,7 +316,7 @@ class RegisteredMailController
             if (!Validator::intVal()->notEmpty()->validate($registeredMail['modelId'])) {
                 $errors[] = ['error' => "Argument modelId is empty or not an integer for registered mail {$key}", 'index' => $key, 'lang' => 'argumentModelIdEmpty'];
                 continue;
-            } elseif (!Validator::date()->notEmpty()->validate($registeredMail['departureDate'])) {
+            } elseif (!Validator::dateTime()->notEmpty()->validate($registeredMail['departureDate'])) {
                 $errors[] = ['error' => "Argument departureDate is empty or not a date for registered mail {$key}", 'index' => $key, 'lang' => 'argumentDepartureDateEmpty'];
                 continue;
             } elseif (!Validator::stringType()->notEmpty()->validate($registeredMail['registeredMail_type']) || !in_array($registeredMail['registeredMail_type'], ['2D', '2C', 'RW'])) {
