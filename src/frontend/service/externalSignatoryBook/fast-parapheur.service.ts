@@ -19,6 +19,7 @@ export class FastParapheurService {
     canViewWorkflow: boolean = false;
     userWorkflow = new UserWorkflow();
     signatureModes: string[] = [];
+    workflowTypes: any[] = [];
 
     constructor(
         private http: HttpClient,
@@ -31,12 +32,18 @@ export class FastParapheurService {
         return new Promise((resolve) => {
             this.http.get('../rest/fastParapheurWorkflowDetails').pipe(
                 tap(async (data: any) => {
-                    const objToSend: any = {
-                        types: data?.workflowTypes,
-                        modes: data?.signatureModes
-                    };
-                    this.signatureModes = (data?.signatureModes as any[]).map((item: any) => item.id);
-                    resolve(objToSend);
+                    if (!this.functions.empty(data?.workflowTypes) && !this.functions.empty(data?.signatureModes)) {
+                        this.workflowTypes = Array.isArray(data.workflowTypes) ? data.workflowTypes : [data.workflowTypes];
+                        const signatureModes: any[] = Array.isArray(data.signatureModes) ? data.signatureModes : [data.signatureModes];
+                        const objToSend: any = {
+                            types: this.workflowTypes,
+                            modes: signatureModes
+                        };
+                        this.signatureModes = signatureModes.map((item: any) => item.id);
+                        resolve(objToSend);
+                    } else {
+                        resolve(null);
+                    }
                 }),
                 catchError(err => {
                     this.notify.handleErrors(err);
@@ -205,7 +212,7 @@ export class FastParapheurService {
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
-        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0;
+        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0 && this.workflowTypes.length > 0 && this.signatureModes.length > 0;
     }
 
     synchronizeSignatures(data: any) {
