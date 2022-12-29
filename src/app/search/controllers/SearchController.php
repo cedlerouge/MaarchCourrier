@@ -562,61 +562,61 @@ class SearchController
             $args['searchData'][] = $body['destination']['values'];
         }
         if (!empty($body['creationDate']) && !empty($body['creationDate']['values']) && is_array($body['creationDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['creationDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['creationDate']['values']['start'])) {
                 $args['searchWhere'][] = 'creation_date >= ?';
                 $args['searchData'][] = $body['creationDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['creationDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['creationDate']['values']['end'])) {
                 $args['searchWhere'][] = 'creation_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['creationDate']['values']['end']]);
             }
         }
         if (!empty($body['documentDate']) && !empty($body['documentDate']['values']) && is_array($body['documentDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['documentDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['documentDate']['values']['start'])) {
                 $args['searchWhere'][] = 'doc_date >= ?';
                 $args['searchData'][] = $body['documentDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['documentDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['documentDate']['values']['end'])) {
                 $args['searchWhere'][] = 'doc_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['documentDate']['values']['end']]);
             }
         }
         if (!empty($body['arrivalDate']) && !empty($body['arrivalDate']['values']) && is_array($body['arrivalDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['arrivalDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['arrivalDate']['values']['start'])) {
                 $args['searchWhere'][] = 'admission_date >= ?';
                 $args['searchData'][] = $body['arrivalDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['arrivalDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['arrivalDate']['values']['end'])) {
                 $args['searchWhere'][] = 'admission_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['arrivalDate']['values']['end']]);
             }
         }
         if (!empty($body['departureDate']) && !empty($body['departureDate']['values']) && is_array($body['departureDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['departureDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['departureDate']['values']['start'])) {
                 $args['searchWhere'][] = 'departure_date >= ?';
                 $args['searchData'][] = $body['departureDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['departureDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['departureDate']['values']['end'])) {
                 $args['searchWhere'][] = 'departure_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['departureDate']['values']['end']]);
             }
         }
         if (!empty($body['processLimitDate']) && !empty($body['processLimitDate']['values']) && is_array($body['processLimitDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['processLimitDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['processLimitDate']['values']['start'])) {
                 $args['searchWhere'][] = 'process_limit_date >= ?';
                 $args['searchData'][] = $body['processLimitDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['processLimitDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['processLimitDate']['values']['end'])) {
                 $args['searchWhere'][] = 'process_limit_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['processLimitDate']['values']['end']]);
             }
         }
         if (!empty($body['closingDate']) && !empty($body['closingDate']['values']) && is_array($body['closingDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['closingDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['closingDate']['values']['start'])) {
                 $args['searchWhere'][] = 'closing_date >= ?';
                 $args['searchData'][] = $body['closingDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['closingDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['closingDate']['values']['end'])) {
                 $args['searchWhere'][] = 'closing_date <= ?';
                 $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $body['closingDate']['values']['end']]);
             }
@@ -852,13 +852,13 @@ class SearchController
             $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
         }
         if (!empty($body['attachment_creationDate']) && !empty($body['attachment_creationDate']['values']) && is_array($body['attachment_creationDate']['values'])) {
-            if (Validator::date()->notEmpty()->validate($body['attachment_creationDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['attachment_creationDate']['values']['start'])) {
                 $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where status in (?) and creation_date >= ? and attachment_type not in (?))';
                 $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
                 $args['searchData'][]  = $body['attachment_creationDate']['values']['start'];
                 $args['searchData'][]  = AttachmentTypeController::HIDDEN_ATTACHMENT_TYPES;
             }
-            if (Validator::date()->notEmpty()->validate($body['attachment_creationDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['attachment_creationDate']['values']['end'])) {
                 $args['searchWhere'][] = 'res_id in (select DISTINCT res_id_master from res_attachments where status in (?) and creation_date <= ? and attachment_type not in (?))';
                 $args['searchData'][]  = ['TRA', 'A_TRA', 'FRZ'];
                 $args['searchData'][]  = TextFormatModel::getEndDayDate(['date' => $body['attachment_creationDate']['values']['end']]);
@@ -1066,11 +1066,11 @@ class SearchController
                         $args['searchWhere'][] = $where;
                     }
                 } elseif ($customField['type'] == 'date') {
-                    if (Validator::date()->notEmpty()->validate($value['values']['start'])) {
+                    if (Validator::dateTime()->notEmpty()->validate($value['values']['start'])) {
                         $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::timestamp >= ?";
                         $args['searchData'][] = $value['values']['start'];
                     }
-                    if (Validator::date()->notEmpty()->validate($value['values']['end'])) {
+                    if (Validator::dateTime()->notEmpty()->validate($value['values']['end'])) {
                         $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::timestamp <= ?";
                         $args['searchData'][] = TextFormatModel::getEndDayDate(['date' => $value['values']['end']]);
                     }
@@ -1163,11 +1163,11 @@ class SearchController
         if (!empty($body['registeredMail_receivedDate']) && !empty($body['registeredMail_receivedDate']['values']) && is_array($body['registeredMail_receivedDate']['values'])) {
             $where = [];
             $data = [];
-            if (Validator::date()->notEmpty()->validate($body['registeredMail_receivedDate']['values']['start'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['registeredMail_receivedDate']['values']['start'])) {
                 $where[] = 'received_date >= ?';
                 $data[] = $body['registeredMail_receivedDate']['values']['start'];
             }
-            if (Validator::date()->notEmpty()->validate($body['registeredMail_receivedDate']['values']['end'])) {
+            if (Validator::dateTime()->notEmpty()->validate($body['registeredMail_receivedDate']['values']['end'])) {
                 $where[] = 'received_date <= ?';
                 $data[] = TextFormatModel::getEndDayDate(['date' => $body['registeredMail_receivedDate']['values']['end']]);
             }

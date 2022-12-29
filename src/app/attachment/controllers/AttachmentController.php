@@ -1137,13 +1137,13 @@ class AttachmentController
         $body = $args['body'];
 
         if (!empty($body['validationDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['validationDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['validationDate'])) {
                 return ['errors' => "Body validationDate is not a date"];
             }
         }
 
         if (!empty($body['effectiveDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['effectiveDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['effectiveDate'])) {
                 return ['errors' => "Body effectiveDate is not a date"];
             }
         }
