@@ -694,7 +694,6 @@ class FastParapheurController
             return ['errors' => $signatureModes['errors']];
         }
 
-        $signatureModes['signatureModes'];
         $signatureModes = array_column($signatureModes['signatureModes'], 'id');
 
         $circuit = [
@@ -796,16 +795,16 @@ class FastParapheurController
             'where'     => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (\'DEL\', \'OBS\', \'FRZ\', \'TMP\', \'SEND_MASS\')', 'in_signature_book is true'],
             'data'      => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
         ]);
-        foreach ($attachments as $key => $attachment) {
+        foreach ($attachments as $attachment) {
             if ($attachment['format'] != 'pdf') {
                 $convertedAttachment = ConvertPdfController::getConvertedPdfById(['collId' => 'attachments_coll', 'resId' => $attachment['res_id']]);
                 if (!empty($convertedAttachment['errors'])) {
                     continue;
                 }
-                $attachment[$key]['docserver_id'] = $convertedAttachment['docserver_id'];
-                $attachment[$key]['path']         = $convertedAttachment['path'];
-                $attachment[$key]['filename']     = $convertedAttachment['filename'];
-                $attachment[$key]['format']       = 'pdf';
+                $attachment['docserver_id'] = $convertedAttachment['docserver_id'];
+                $attachment['path']         = $convertedAttachment['path'];
+                $attachment['filename']     = $convertedAttachment['filename'];
+                $attachment['format']       = 'pdf';
             }
             $sentAttachments[] = [
                 'comment'  => $attachment['title'],
