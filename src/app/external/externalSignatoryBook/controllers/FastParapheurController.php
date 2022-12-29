@@ -300,22 +300,8 @@ class FastParapheurController
             }
 
             $historyResponse = FastParapheurController::getDocumentHistory(['config' => $args['config'], 'documentId' => $value['external_id']]);
-            if (!empty($historyResponse['errors'])) {
-                if (!empty($historyResponse['code']) && $historyResponse['code'] == 404) {
-                    echo "Erreur 404 : \n" . $historyResponse['errors'];
-                    continue;
-                }
-                if (!empty($value['res_id_master'])) {
-                    echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$historyResponse['errors']} " . PHP_EOL;
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    continue;
-                } else {
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    echo "Document principal n° $resId : {$historyResponse['errors']} " . PHP_EOL;
-                    continue;
-                }
-            }
 
+            // Update external_state_fetch_date event if $historyResponse return an error. To avoid spamming the API endpoint.
             $updateHistoryFetchDate = FastParapheurController::updateFetchHistoryDateByExternalId([
                 'type' => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
                 'resId' => $value['res_id']
@@ -328,6 +314,23 @@ class FastParapheurController
                 } else {
                     unset($args['idsToRetrieve'][$version][$resId]);
                     echo "Document principal n° $resId : {$updateHistoryFetchDate['errors']} " . PHP_EOL;
+                    continue;
+                }
+            }
+
+            // Check for $historyResponse error
+            if (!empty($historyResponse['errors'])) {
+                if (!empty($historyResponse['code']) && $historyResponse['code'] == 404) {
+                    echo "Erreur 404 : \n" . $historyResponse['errors'];
+                    continue;
+                }
+                if (!empty($value['res_id_master'])) {
+                    echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$historyResponse['errors']} " . PHP_EOL;
+                    unset($args['idsToRetrieve'][$version][$resId]);
+                    continue;
+                } else {
+                    unset($args['idsToRetrieve'][$version][$resId]);
+                    echo "Document principal n° $resId : {$historyResponse['errors']} " . PHP_EOL;
                     continue;
                 }
             }
