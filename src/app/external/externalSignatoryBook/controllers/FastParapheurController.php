@@ -760,7 +760,7 @@ class FastParapheurController
         }
         $resource['external_id'] = json_decode($resource['external_id'], true);
 
-        if ($resource['format'] != 'pdf') {
+        if ($resource['format'] != 'pdf' && !empty($resource['docserver_id'])) {
             $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
             if (!empty($convertedDocument['errors'])) {
                 return ['error' => 'unable to convert main document'];
