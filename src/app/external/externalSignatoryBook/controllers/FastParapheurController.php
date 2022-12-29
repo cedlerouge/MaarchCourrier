@@ -776,16 +776,15 @@ class FastParapheurController
         $attachmentTypeSignable = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypeSignable = array_column($attachmentTypeSignable, 'signable', 'type_id');
 
-        if (empty($docservers[$resource['docserver_id']]) && $docservers[$attachment['docserver_id']]) {
-            return ['error' => 'resource docserver does not exist', 'code' => 500];
-        }
-        $resource['integrations'] = json_decode($resource['integrations'], true);
-        if ($resource['integrations']['inSignatureBook']) {
-            $sentMainDocument = [
-                'comment'  => $resource['subject'],
-                'signable' => empty($resource['external_id']['signatureBookId']),
-                'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
-            ];
+        if (!empty($docservers[$resource['docserver_id']])) {
+            $resource['integrations'] = json_decode($resource['integrations'], true);
+            if ($resource['integrations']['inSignatureBook']) {
+                $sentMainDocument = [
+                    'comment'  => $resource['subject'],
+                    'signable' => empty($resource['external_id']['signatureBookId']),
+                    'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
+                ];
+            }
         }
 
         $attachments = AttachmentModel::get([
