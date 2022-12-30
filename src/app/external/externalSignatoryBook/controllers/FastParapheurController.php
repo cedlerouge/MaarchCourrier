@@ -51,12 +51,12 @@ class FastParapheurController
 
         $signatureModes = FastParapheurController::getSignatureModes();
         if (!empty($signatureModes['errors'])) {
-            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
+            return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
         }
 
         return $response->withJson([
-            'workflowTypes'  => $config['workflowTypes']['type'],
-            'signatureModes' => $config['signatureModes']['mode']
+            'workflowTypes'  => $config['config']['workflowTypes']['type'],
+            'signatureModes' => $signatureModes['signatureModes']
         ]);
     }
 
