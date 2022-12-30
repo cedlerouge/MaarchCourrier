@@ -46,7 +46,12 @@ class FastParapheurController
     {
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
-            return ['errors' => $config['errors']];
+            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
+        }
+
+        $signatureModes = FastParapheurController::getSignatureModes();
+        if (!empty($signatureModes['errors'])) {
+            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
         }
 
         return $response->withJson([
@@ -1174,7 +1179,7 @@ class FastParapheurController
     {
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
-            return ['errors' => $config['errors']];
+            return ['code' => $config['code'], 'errors' => $config['errors']];
         }
         
         //map sign to signature
