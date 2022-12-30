@@ -44,17 +44,10 @@ class FastParapheurController
 {
     public function getWorkflowDetails(Request $request, Response $response)
     {
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
-            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return ['errors' => $config['errors']];
         }
-
-        $config = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
-        if (empty($config)) {
-            return $response->withStatus(500)->withJson(['errors' => 'invalid configuration for FastParapheur']);
-        }
-
-        $config = json_decode(json_encode($config), true);
 
         return $response->withJson([
             'workflowTypes'  => $config['workflowTypes']['type'],
@@ -976,7 +969,7 @@ class FastParapheurController
             $steps = [];
             foreach ($args['steps'] as $step) {
                 $steps[] = [
-                    'mode' => ($step['signatureMode'] == 'sign' ? 'signature' : $step['signatureMode']),
+                    'mode' => FastParapheurController::getSignatureModeById(['signatureModeId' => $step['signatureMode']]),
                     'type' => 'fastParapheurUserEmail',
                     'id'   => $step['externalId']
                 ];
@@ -1187,10 +1180,33 @@ class FastParapheurController
         //map sign to signature
         $modes = [];
         foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
-            $value['id'] = ($value['id'] == 'sign' ? 'signature' : $value['id']);
+            $value['id'] =  FastParapheurController::getSignatureModeById(['signatureModeId'=> $value['id']]);
             $modes[] = $value;
         }
 
         return ['signatureModes' => $modes];
+    }
+
+    public static function getSignatureModeById(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['signatureModeId']);
+        ValidatorModel::stringType($args, ['signatureModeId']);
+
+        $signatureModeId = null;
+        switch ($args['signatureModeId']) {
+            case 'sign':
+                $signatureModeId = 'signature';
+                break;
+            
+            case 'signature':
+                $signatureModeId = 'sign';
+                break;
+            
+            default:
+                $signatureModeId = $args['signatureModeId'];
+                break;
+        }
+
+        return $signatureModeId;
     }
 }
