@@ -700,6 +700,8 @@ class FastParapheurController
         ];
         //$otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
+            $step['mode'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
+
             if (in_array($step['mode'], $signatureModes) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
                     $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
@@ -974,7 +976,7 @@ class FastParapheurController
             $steps = [];
             foreach ($args['steps'] as $step) {
                 $steps[] = [
-                    'mode' => FastParapheurController::getSignatureModeById(['signatureModeId' => $step['signatureMode']]),
+                    'mode' => $step['signatureMode'],
                     'type' => 'fastParapheurUserEmail',
                     'id'   => $step['externalId']
                 ];
@@ -1185,7 +1187,7 @@ class FastParapheurController
         //map sign to signature
         $modes = [];
         foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
-            $value['id'] =  FastParapheurController::getSignatureModeById(['signatureModeId'=> $value['id']]);
+            $value['id'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $value['id']]);
             $modes[] = $value;
         }
 
