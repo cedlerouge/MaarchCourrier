@@ -166,6 +166,10 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.canViewWorkflow;
     }
 
+    canCreateTile(): boolean {
+        return this.serviceInjected?.canCreateTile;
+    }
+
     isLinkedToExternalSignatoryBook(): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('../rest/home').pipe(

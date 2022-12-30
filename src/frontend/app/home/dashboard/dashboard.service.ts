@@ -165,7 +165,7 @@ export class DashboardService {
                     route: ':externalSignatoryBookUrl/dist/#/home',
                     target: 'maarchParapheur',
                 },
-                // Fast Parapheur views
+                /* Fast Parapheur views
                 {
                     id: 'list',
                     route: ':externalSignatoryBookUrl/parapheur/showDoc.action?documentid=:resId',
@@ -176,7 +176,7 @@ export class DashboardService {
                     id: 'summary',
                     route: ':externalSignatoryBookUrl/parapheur/showDoc.action',
                     target: 'fastParapheur',
-                }
+                } */
             ]
         },
         shortcut: {

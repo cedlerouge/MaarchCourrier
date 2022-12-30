@@ -166,6 +166,6 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     }
 
     getTileLabel(tile: any) {
-        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.authService.externalSignatoryBook.id)})` : tile.label;
+        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.authService?.externalSignatoryBook?.id)})` : tile.label;
     }
 }
