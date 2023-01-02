@@ -53,7 +53,7 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     async ngAfterViewInit(): Promise<void> {
         await this['get_' + this.view]();
         if (this.tile.type === 'externalSignatoryBook') {
-            if (this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService?.externalSignatoryBook?.id) > -1 && this.authService?.externalSignatoryBook?.integratedWorkflow) {
+            if (this.authService?.externalSignatoryBook?.integratedWorkflow && this.externalSignatoryBook.canCreateTile()) {
                 const result: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.headerService.user.id);
                 if (!this.functionsService.empty(result)) {
                     this.route = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.route;
