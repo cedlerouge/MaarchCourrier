@@ -214,7 +214,7 @@ export class UserAdministrationComponent implements OnInit {
 
                         if (this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] !== undefined) {
                             this.loading = true;
-                            await this.checkInfoExternalSignatoryBookAccount();
+                            this.checkInfoExternalSignatoryBookAccount();
                         }
 
                         this.loading = false;
