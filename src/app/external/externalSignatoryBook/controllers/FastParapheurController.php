@@ -1047,8 +1047,9 @@ class FastParapheurController
                 CURLOPT_SSLCERTTYPE   => $args['config']['certType']
             ]
         ]);
-
-        if (empty($curlReturn['response']['users'])) {
+        if (!empty($curlReturn['errors'])) {
+            return ['code' => $curlReturn['code'], 'errors' =>  $curlReturn['errors']];
+        } else if (empty($curlReturn['response']['users'])) {
             return [];
         }
 
@@ -1082,7 +1083,9 @@ class FastParapheurController
                 'certType'     => $config['certType']
             ]
         ]);
-        if (empty($fpUsers)) {
+        if (!empty($fpUsers['errors'])) {
+            return ['code' => $fpUsers['code'], 'errors' => $fpUsers['errors']];
+        } else if (empty($fpUsers)) {
             return ['code' => 400, 'errors' => "FastParapheur users not found!"];
         }
         $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
