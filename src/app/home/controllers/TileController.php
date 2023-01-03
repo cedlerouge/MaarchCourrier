@@ -374,7 +374,8 @@ class TileController
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
                 $control = TileController::getMaarchParapheurDetails($tile);
             } elseif ($enabledExternalSignatoryBook == 'fastParapheur') {
-                $control = TileController::getFastParapheurDetails($tile);
+                // $control = TileController::getFastParapheurDetails($tile);
+                return ['errors' => 'Cannot create a tile for Fast Parapheur'];
             }
             if (!empty($control['errors'])) {
                 return ['errors' => $control['errors']];
