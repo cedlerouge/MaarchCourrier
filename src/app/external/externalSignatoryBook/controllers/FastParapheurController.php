@@ -49,7 +49,7 @@ class FastParapheurController
             return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
         }
 
-        $signatureModes = FastParapheurController::getSignatureModes();
+        $signatureModes = FastParapheurController::getSignatureModes(['mapping' => true]);
         if (!empty($signatureModes['errors'])) {
             return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
         }
@@ -687,7 +687,7 @@ class FastParapheurController
             return ['error' => _NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR];
         }
         
-        $signatureModes = FastParapheurController::getSignatureModes();
+        $signatureModes = FastParapheurController::getSignatureModes(['mapping' => false]);
         if (!empty($signatureModes['errors'])) {
             return ['errors' => $signatureModes['errors']];
         }
@@ -700,21 +700,21 @@ class FastParapheurController
         ];
         //$otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
-            $step['mode'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
+            $stepMode = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
 
-            if (in_array($step['mode'], $signatureModes) && !empty($step['type']) && !empty($step['id'])) {
+            if (in_array($stepMode, $signatureModes) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
                     $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
                     if (empty($user['fastParapheurEmail'])) {
                         return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
                     }
                     $circuit['steps'][] = [
-                        'step'    => $step['mode'],
+                        'step'    => $stepMode,
                         'members' => [$user['fastParapheurEmail']]
                     ];
                 } elseif ($step['type'] == 'fastParapheurUserEmail') {
                     $circuit['steps'][] = [
-                        'step'    => $step['mode'],
+                        'step'    => $stepMode,
                         'members' => [$step['id']]
                     ];
                 }
@@ -876,6 +876,7 @@ class FastParapheurController
         }
 
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
+
         foreach ($uploads as $upload) {
             
             $result = FastParapheurController::onDemandUploadFilesToFast([
@@ -1177,18 +1178,27 @@ class FastParapheurController
         return ['config' => json_decode(json_encode($config), true)];
     }
 
-    public static function getSignatureModes()
+    public static function getSignatureModes(array $args)
     {
+        ValidatorModel::boolType($args, ['mapping']);
+
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
             return ['code' => $config['code'], 'errors' => $config['errors']];
         }
+
+        if (empty($config['config']['signatureModes']['mode'])) {
+            return ['code' => 400, 'errors' => "signatureModes not found in config file"];
+        }
         
-        //map sign to signature
-        $modes = [];
-        foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
-            $value['id'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $value['id']]);
-            $modes[] = $value;
+        //map sign to signature or others
+        $modes = $config['config']['signatureModes']['mode'];
+        if (!empty($args['mapping'])) {
+            $modes = [];
+            foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
+                $value['id'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $value['id']]);
+                $modes[] = $value;
+            }
         }
 
         return ['signatureModes' => $modes];
