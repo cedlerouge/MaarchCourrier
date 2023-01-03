@@ -602,7 +602,7 @@ class UserController
         $user['lockAdvancedPrivileges'] = PrivilegeController::isAdvancedPrivilegesLocked();
         $userFollowed = UserFollowedResourceModel::get(['select' => ['count(1) as nb'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
         $user['nbFollowedResources'] = $userFollowed[0]['nb'];
-        $user['absence'] = json_decode($user['absence'], true);
+        $user['absence'] = json_decode($user['absence'] ?? '{}', true);
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if (in_array($loggingMethod['id'], self::ALTERNATIVES_CONNECTIONS_METHODS)) {
