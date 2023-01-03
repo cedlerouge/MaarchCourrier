@@ -17,7 +17,7 @@
         <userId></userId>
         <password></password>
         <url>https://secure-iparapheur-partenaires.libriciel.fr/ws-iparapheur</url>
-        <certPath>/var/www/html/maarchdev/modules/visa/xml/serveur_iparapheur.demonstrations.adullact.org.pem</certPath>
+        <certPath>serveur_iparapheur.demonstrations.adullact.org.pem</certPath>
         <certPass></certPass>
         <certType>pem</certType>
         <defaultType>Courrier</defaultType>
@@ -33,8 +33,8 @@
         <integratedWorkflow>true</integratedWorkflow>
         <workflowType>BUREAUTIQUE_PDF</workflowType>
         <subscriberId></subscriberId>
-        <url>https://demo-parapheur.dfast.fr/parapheur-soap/soap/v1/Documents?wsdl</url>
-        <certPath>/var/www/html/maarchdev/modules/visa/xml/92091.p12</certPath>
+        <url>https://demo-parapheur.dfast.fr/parapheur-ws/rest/v1</url>
+        <certPath>fast-user-depot.p12</certPath>
         <certPass></certPass>
         <certType>P12</certType>
         <validatedState>Signé</validatedState>
