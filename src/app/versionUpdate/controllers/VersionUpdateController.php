@@ -259,7 +259,7 @@ class VersionUpdateController
 
         $dbMajorVersion = (int)$parameter[1];
 
-        $sqlFiles = array_diff(scandir('migration'), array('..', '.'));
+        $sqlFiles = array_diff(scandir('migration'), array('..', '.', '.gitkeep'));
         natcasesort($sqlFiles);
         $targetedSqlFiles = [];
 
