@@ -209,15 +209,15 @@ class AutoCompleteController
         $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
 
         if (empty($subscriberIds)) {
-            $fpUsers = array_merge($fpUsers, FastParapheurController::getUsers(['config' => $config]));
+            $fpUsers = FastParapheurController::getUsers(['config' => $config]);
             if (!empty($fpUsers['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
             }
         } else {
             foreach ($subscriberIds as $subscriberId) {
                 $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
-                if (!empty($fpUsers['errors'])) {
-                    return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
+                if (!empty($subscriberUsers['errors'])) {
+                    return $response->withStatus(400)->withJson(['errors' => $subscriberUsers['errors']]);
                 }
                 $fpUsers = array_merge($fpUsers, $subscriberUsers);
             }
