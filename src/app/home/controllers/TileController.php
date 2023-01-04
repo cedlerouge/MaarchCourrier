@@ -754,7 +754,9 @@ class TileController
                     $value['values']['end'] = $date->format('Y-m-d');
                 }
             }
-            $query[$value['identifier']] = ['values' => $value['values']];
+            if (!empty($value['values'])) {
+                $query[$value['identifier']] = ['values' => $value['values']];
+            }
         }
 
         $userdataClause = SearchController::getUserDataClause(['userId' => $GLOBALS['id'], 'login' => $GLOBALS['login']]);
