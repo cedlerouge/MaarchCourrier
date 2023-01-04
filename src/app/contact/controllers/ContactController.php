@@ -339,7 +339,7 @@ class ContactController
             return $response->withStatus(400)->withJson(['errors' => 'Contact does not exist']);
         }
 
-        $contact['communication_means'] = json_decode($contact['communication_means'], true);
+        $contact['communication_means'] = json_decode($contact['communication_means'] ?? '{}', true);
         $contactBody = [];
         if (!empty($contact['communication_means']['password'])) {
             $contactBody['password'] = $contact['communication_means']['password'];
