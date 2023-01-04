@@ -292,8 +292,31 @@ class FastParapheurController
         if (empty($fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
         }
+
+        $fastParapheurBlock = json_decode(json_encode($fastParapheurBlock), true);
+        if (empty($fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+        } elseif (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'integratedWorkflow not found for FastParapheur'];
+        } elseif (!array_key_exists('workflowType', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'workflowType not found for FastParapheur'];
+        } elseif (!array_key_exists('subscriberId', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'subscriberId not found for FastParapheur'];
+        } elseif (!array_key_exists('url', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'url not found for FastParapheur'];
+        } elseif (!array_key_exists('certPath', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'certPath not found for FastParapheur'];
+        } elseif (!array_key_exists('certPass', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'certPass not found for FastParapheur'];
+        } elseif (!array_key_exists('certType', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'certType not found for FastParapheur'];
+        } elseif (!array_key_exists('validatedState', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'validatedState not found for FastParapheur'];
+        } elseif (!array_key_exists('refusedState', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'refusedState not found for FastParapheur'];
+        }
         
-        return json_decode(json_encode($fastParapheurBlock), true);
+        return $fastParapheurBlock;
     }
 
     public static function retrieveSignedMails(array $args)
