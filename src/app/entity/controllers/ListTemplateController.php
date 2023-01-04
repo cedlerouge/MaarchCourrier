@@ -153,7 +153,7 @@ class ListTemplateController
             }
         }
 
-        $control = ListTemplateController::controlItems(['items' => $body['items'], 'type' => $body['type'], 'entityId' => $body['entityId']]);
+        $control = ListTemplateController::controlItems(['items' => $body['items'], 'type' => $body['type'], 'entityId' => $body['entityId'] ?? null]);
         if (!empty($control['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $control['errors'], 'lang' => $control['lang']]);
         }
