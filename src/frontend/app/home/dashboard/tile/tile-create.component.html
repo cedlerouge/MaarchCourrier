@@ -15,7 +15,10 @@
             </mat-menu>
             <mat-label>{{'lang.tileType' | translate}}</mat-label>
             <mat-select [(ngModel)]="selectedTileType" (selectionChange)="getViews()">
-                <mat-option *ngFor="let tileType of tileTypes | sortBy : 'label'" [value]="tileType.id">
+                <mat-option *ngFor="let tileType of tileTypes | sortBy : 'label'"
+                    [value]="tileType.id"
+                    [disabled]="!canDisplayType(tileType)"
+                    [title]="getTitle(tileType)">
                     {{tileType.label}}
                 </mat-option>
             </mat-select>
