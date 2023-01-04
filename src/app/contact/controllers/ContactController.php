@@ -1316,7 +1316,7 @@ class ContactController
                         } elseif ($type == 'integer' && !Validator::floatVal()->validate($contact[$frontField])) {
                             $errors[] = ['error' => "Argument {$frontField} is not an integer for contact {$key}", 'index' => $key, 'lang' => 'argumentNotInteger', 'langParam' => $customLabels[$customId]];
                             continue 2;
-                        } elseif ($type == 'date' && !Validator::date()->validate($contact[$frontField])) {
+                        } elseif ($type == 'date' && !Validator::dateTime()->validate($contact[$frontField])) {
                             $errors[] = ['error' => "Argument {$frontField} is not a date for contact {$key}", 'index' => $key, 'lang' => 'argumentNotDate', 'langParam' => $customLabels[$customId]];
                             continue 2;
                         } elseif (in_array($type, ['string', 'select', 'radio']) && !Validator::stringType()->validate($contact[$frontField]) || !Validator::length(1, 255)->validate($contact[$frontField])) {
