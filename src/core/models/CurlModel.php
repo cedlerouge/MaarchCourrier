@@ -201,15 +201,11 @@ class CurlModel
             $formatedResponse = trim($response);
         } elseif(empty($args['fileResponse'])) {
             $formatedResponse = json_decode($response, true);
-            if (empty($code)) {
-                if (!empty($formatedResponse["code"])) {
-                    $code = $formatedResponse["code"];
-                }
+            if (empty($code) && !empty($formatedResponse["code"])) {
+                $code = $formatedResponse["code"];
             }
-            if (empty($errors)) {
-                if (!empty($formatedResponse["error"])) {
-                    $errors = $args['url'] . " ". $formatedResponse["error"];
-                }
+            if (empty($errors) && !empty($formatedResponse["error"])) {
+                $errors = $args['url'] . " ". $formatedResponse["error"];
             }
         }
 
