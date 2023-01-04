@@ -732,7 +732,7 @@ class ContactController
                 ],
                 'id'        => $aArgs['contactId']
             ]);
-            $customFields = json_decode($contactRaw['custom_fields'], true);
+            $customFields = json_decode($contactRaw['custom_fields'] ?? '{}', true);
 
             $percent = 0;
             foreach ($contactsParameters as $ratingColumn) {
