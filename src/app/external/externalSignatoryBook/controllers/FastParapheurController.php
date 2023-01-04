@@ -276,7 +276,11 @@ class FastParapheurController
     {
         $version = $args['version'];
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
-            
+            if (empty($value['res_id_master'])) {
+                Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve main document resId: ${resId}"]);
+            } else {
+                Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve attachment resId: ${resId}"]);
+            }
             if (empty(trim($value['external_id']))) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                 continue;
@@ -289,12 +293,9 @@ class FastParapheurController
                 if ($fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
                     $newDate = $fetchDate->modify('+30 minutes');
 
-                    if (!empty($value['res_id_master'])) {
-                        echo "PJ n° $resId du document original n° {$value['res_id_master']} : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
-                    } else {
-                        echo "Document principal n° $resId : prochaine récupération disponible le " . $newDate->format('d-m-Y H:i') . PHP_EOL;
-                    }
-                    $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
+                    Bt_writeLog(['level' => 'INFO', 'message' => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"]);
+
+                    unset($args['idsToRetrieve'][$version][$resId]);
                     continue;
                 }
             }
@@ -307,36 +308,21 @@ class FastParapheurController
                 'resId' => $value['res_id']
             ]);
             if (!empty($updateHistoryFetchDate['errors'])) {
-                if (!empty($value['res_id_master'])) {
-                    echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$updateHistoryFetchDate['errors']} " . PHP_EOL;
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    continue;
-                } else {
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    echo "Document principal n° $resId : {$updateHistoryFetchDate['errors']} " . PHP_EOL;
-                    continue;
-                }
+                Bt_writeLog(['level' => 'ERROR', 'message' => "{$updateHistoryFetchDate['errors']}"]);
+                unset($args['idsToRetrieve'][$version][$resId]);
+                continue;
             }
 
             // Check for $historyResponse error
             if (!empty($historyResponse['errors'])) {
-                if (!empty($historyResponse['code']) && $historyResponse['code'] == 404) {
-                    echo "Erreur 404 : \n" . $historyResponse['errors'];
-                    continue;
-                }
-                if (!empty($value['res_id_master'])) {
-                    echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$historyResponse['errors']} " . PHP_EOL;
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    continue;
-                } else {
-                    unset($args['idsToRetrieve'][$version][$resId]);
-                    echo "Document principal n° $resId : {$historyResponse['errors']} " . PHP_EOL;
-                    continue;
-                }
+                Bt_writeLog(['level' => 'ERROR', 'message' => "[fastParapheur api] {$historyResponse['errors']}"]);
+                unset($args['idsToRetrieve'][$version][$resId]);
+                continue;
             }
 
             foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
                 if ($valueResponse['stateName'] == $args['config']['data']['validatedState']) {
+                    Bt_writeLog(['level' => 'INFO', 'message' => "Circuit ended ! Retrieve file from fastParapheur"]);
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
@@ -351,9 +337,10 @@ class FastParapheurController
                         'signEncodedFile' => $response['b64FileContent']
                     ]);
                     if (!empty($proofDocument['errors'])) {
-                        echo $proofDocument['errors'] . PHP_EOL;
+                        Bt_writeLog(['level' => 'ERROR', 'message' => "{$proofDocument['errors']}"]);
                         continue;
                     } elseif (!empty($proofDocument['encodedProofDocument'])) {
+                        Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve proof from fastParapheur"]);
                         $args['idsToRetrieve'][$version][$resId]['log']       = $proofDocument['encodedProofDocument'];
                         $args['idsToRetrieve'][$version][$resId]['logFormat'] = $proofDocument['format'];
                         $args['idsToRetrieve'][$version][$resId]['logTitle']  = '[Faisceau de preuve]';
@@ -365,6 +352,7 @@ class FastParapheurController
                             'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
                     }
+                    Bt_writeLog(['level' => 'INFO', 'message' => "Done!"]);
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
@@ -383,6 +371,7 @@ class FastParapheurController
                     } else {
                         $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['name'] . ' : ' . $response];
                     }
+                    Bt_writeLog(['level' => 'INFO', 'message' => "Done!"]);
                     break;
                 } else {
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';

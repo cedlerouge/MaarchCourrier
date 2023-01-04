@@ -143,6 +143,7 @@ class LogsController
         }
         $logLine = TextFormatModel::htmlWasher($logLine);
         $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
+        $logLine = str_replace('[]', '', $logLine);
         return $logLine;
     }
 
