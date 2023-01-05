@@ -699,7 +699,7 @@ class ResourceListController
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
-            } elseif (strtotime($resource['locker_time']) < time()) {
+            } elseif (!empty($resource['locker_time']) && strtotime($resource['locker_time']) < time()) {
                 $lock = false;
             }
 
@@ -960,7 +960,7 @@ class ResourceListController
                     $isLocked = false;
                 } elseif ($resource['locker_user_id'] == $args['userId']) {
                     $isLocked = false;
-                } elseif (strtotime($resource['locker_time']) < time()) {
+                } elseif (!empty($resource['locker_time']) && strtotime($resource['locker_time']) < time()) {
                     $isLocked = false;
                 }
                 if ($isLocked) {
