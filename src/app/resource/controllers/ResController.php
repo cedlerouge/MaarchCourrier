@@ -1179,8 +1179,13 @@ class ResController extends ResourceControlController
             return $args['resources'];
         }
 
+        $mode = null;
+        if (!empty($args['mode'])) {
+            $mode = $args['mode'];
+        }
+
         $user = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
-        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $args['mode']]);
+        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $mode]);
 
         $data = [$args['resources']];
         $data = array_merge($data, $userDataClause['searchData']);
