@@ -47,7 +47,12 @@ class NoteController
             return $response->withStatus(403)->withJson(['errors' => 'Query limit is not an int val']);
         }
 
-        $notes = NoteModel::getByUserIdForResource(['select' => ['*'], 'resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'limit' => (int)$queryParams['limit']]);
+        $limit = null;
+        if (!empty($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+
+        $notes = NoteModel::getByUserIdForResource(['select' => ['*'], 'resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'limit' => $limit]);
         
         foreach ($notes as $key => $note) {
             $user = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $note['user_id']]);
