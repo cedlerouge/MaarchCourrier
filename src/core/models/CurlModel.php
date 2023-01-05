@@ -209,6 +209,8 @@ class CurlModel
             }
         }
 
+        $code = !empty($code) ? $code : 500;
+
         if (empty($args['noLogs'])) {
             if (in_array('Accept: application/zip', $args['headers'])) {
                 $logResponse = 'Zip file content';
