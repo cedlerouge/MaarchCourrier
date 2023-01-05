@@ -256,9 +256,9 @@ class ResController extends ResourceControlController
             $formattedData['followed'] = !empty($followed);
 
             $registeredMail = RegisteredMailModel::getByResId(['select' => ['deposit_id', 'received_date', 'return_reason'], 'resId' => $args['resId']]);
-            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'];
-            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'];
-            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'];
+            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'] ?? null;
+            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'] ?? null;
+            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'] ?? null;
         }
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
