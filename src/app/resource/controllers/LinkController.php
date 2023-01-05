@@ -37,7 +37,7 @@ class LinkController
             return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
         }
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['linked_resources']]);
+        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['res_id', 'linked_resources']]);
         $linkedResourcesIds = json_decode($resource['linked_resources'], true);
 
         $linkedResources = [];
@@ -68,7 +68,7 @@ class LinkController
                 }
 
                 $correspondents = ResourceContactModel::get([
-                    'select'    => ['item_id', 'type', 'mode'],
+                    'select'    => ['res_id', 'item_id', 'type', 'mode'],
                     'where'     => ['res_id = ?'],
                     'data'      => [$value['resId']]
                 ]);
@@ -76,7 +76,7 @@ class LinkController
                 $linkedResources[$key]['senders'] = [];
                 $linkedResources[$key]['recipients'] = [];
                 foreach ($correspondents as $correspondent) {
-                    if ($correspondent['res_id'] == $resource['resId']) {
+                    if ($correspondent['res_id'] == $resource['res_id']) {
                         if ($correspondent['type'] == 'contact') {
                             $contactRaw = ContactModel::getById(['select' => ['firstname', 'lastname', 'company'], 'id' => $correspondent['item_id']]);
                             $contactToDisplay = ContactController::getFormattedOnlyContact(['contact' => $contactRaw]);
