@@ -333,6 +333,11 @@ class AttachmentController
 
         $excludeAttachmentTypes = ['signed_response', 'summary_sheet'];
 
+        $limit = null;
+        if (!empty($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+
         $attachments = AttachmentModel::get([
             'select'    => [
                 'res_id as "resId"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
@@ -341,7 +346,7 @@ class AttachmentController
             'where'     => ['res_id_master = ?', 'status not in (?)', 'attachment_type not in (?)'],
             'data'      => [$args['resId'], ['DEL', 'OBS'], $excludeAttachmentTypes],
             'orderBy'   => ['modification_date DESC'],
-            'limit'     => (int)$queryParams['limit'] ?? 0
+            'limit'     => $limit
         ]);
 
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'label']]);
