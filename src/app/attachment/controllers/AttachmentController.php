@@ -696,6 +696,7 @@ class AttachmentController
         $filename = TextFormatModel::formatFilename(['filename' => $attachment['title'], 'maxLength' => 250]);
 
         if ($data['mode'] == 'base64') {
+            $signatoryId = null;
             if ($attachment['attachment_type'] == 'signed_response') {
                 if (!empty($attachment['signatory_user_serial_id'])) {
                     $signatoryId = $attachment['signatory_user_serial_id'];
