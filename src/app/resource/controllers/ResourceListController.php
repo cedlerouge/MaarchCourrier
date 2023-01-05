@@ -472,7 +472,7 @@ class ResourceListController
         $resourcesForAction = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
@@ -591,7 +591,7 @@ class ResourceListController
         $lockersId = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
@@ -695,11 +695,11 @@ class ResourceListController
         $lockersId = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
-            } elseif (!empty($resource['locker_time']) && strtotime($resource['locker_time']) < time()) {
+            } elseif (strtotime($resource['locker_time']) < time()) {
                 $lock = false;
             }
 
@@ -956,11 +956,11 @@ class ResourceListController
 
             if (!empty($args['checkLocked'])) {
                 $isLocked = true;
-                if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+                if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                     $isLocked = false;
                 } elseif ($resource['locker_user_id'] == $args['userId']) {
                     $isLocked = false;
-                } elseif (!empty($resource['locker_time']) && strtotime($resource['locker_time']) < time()) {
+                } elseif (strtotime($resource['locker_time']) < time()) {
                     $isLocked = false;
                 }
                 if ($isLocked) {
