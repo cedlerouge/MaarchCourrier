@@ -901,7 +901,7 @@ class EmailController
             }
         }
 
-        if (!empty($args['data']['document'] && !empty($args['data']['document']['id']))) {
+        if (!empty($args['data']['document']) && !empty($args['data']['document']['id'])) {
             $check = Validator::intVal()->notEmpty()->validate($args['data']['document']['id']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['isLinked']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['original']);
