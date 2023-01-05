@@ -446,11 +446,16 @@ class EmailController
             }
         }
 
+        $limit = null;
+        if (!empty($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+
         $emails = EmailModel::get([
             'select' => ['*'],
             'where'  => $where,
             'data'   => [$args['resId'], $GLOBALS['id']],
-            'limit'  => (int)$queryParams['limit'] ?? null
+            'limit'  => $limit
         ]);
 
         foreach ($emails as $key => $email) {
