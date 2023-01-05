@@ -450,7 +450,7 @@ class EmailController
             'select' => ['*'],
             'where'  => $where,
             'data'   => [$args['resId'], $GLOBALS['id']],
-            'limit'  => (int)$queryParams['limit']
+            'limit'  => (int)$queryParams['limit'] ?? null
         ]);
 
         foreach ($emails as $key => $email) {
