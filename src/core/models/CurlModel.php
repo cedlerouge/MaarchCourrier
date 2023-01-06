@@ -195,6 +195,22 @@ class CurlModel
         $headers  = explode("\r\n", $headers);
         $response = substr($rawResponse, $headerSize);
 
+        if ($args['isXml']) {
+            $formatedResponse = simplexml_load_string($response);
+        } elseif (in_array('Accept: application/zip', $args['headers'])) {
+            $formatedResponse = trim($response);
+        } elseif(empty($args['fileResponse'])) {
+            $formatedResponse = json_decode($response, true);
+            if (empty($code) && !empty($formatedResponse["code"])) {
+                $code = $formatedResponse["code"];
+            }
+            if (empty($errors) && !empty($formatedResponse["error"])) {
+                $errors = $args['url'] . " ". $formatedResponse["error"];
+            }
+        }
+
+        $code = !empty($code) ? $code : 500;
+
         if (empty($args['noLogs'])) {
             if (in_array('Accept: application/zip', $args['headers'])) {
                 $logResponse = 'Zip file content';
@@ -214,15 +230,7 @@ class CurlModel
             ]);
         }
 
-        if ($args['isXml']) {
-            $response = simplexml_load_string($response);
-        } elseif (in_array('Accept: application/zip', $args['headers'])) {
-            $response = trim($response);
-        } elseif(empty($args['fileResponse'])) {
-            $response = json_decode($response, true);
-        }
-
-        return ['raw' => $rawResponse, 'code' => $code, 'headers' => $headers, 'response' => $response, 'errors' => $errors];
+        return ['raw' => $rawResponse, 'code' => $code, 'headers' => $headers, 'response' => $formatedResponse, 'errors' => $errors];
     }
 
     private static function createMultipartFormData(array $args)

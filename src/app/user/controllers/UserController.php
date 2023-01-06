@@ -149,9 +149,9 @@ class UserController
         $user['assignedBaskets']    = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
         $user['redirectedBaskets']  = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
         $user['history']            = HistoryModel::get(['select' => ['record_id', 'event_date', 'info', 'remote_ip'], 'where' => ['user_id = ?'], 'data' => [$args['id']], 'orderBy' => ['event_date DESC'], 'limit' => 500]);
-        $user['canModifyPassword']              = false;
-        $user['canSendActivationNotification']  = false;
-        $user['canCreateMaarchParapheurUser']   = false;
+        $user['canModifyPassword']                      = false;
+        $user['canSendActivationNotification']          = false;
+        $user['canLinkToExternalSignatoryBook']         = false;
 
         if ($user['mode'] == 'rest') {
             $user['canModifyPassword'] = true;
@@ -162,8 +162,16 @@ class UserController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if ((string)$loadedXml->signatoryBookEnabled == 'maarchParapheur' && $user['mode'] != 'rest' && empty($user['external_id']['maarchParapheur'])) {
-            $user['canCreateMaarchParapheurUser'] = true;
+        $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
+        if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
+            if ($signatoryBookEnabled == 'fastParapheur') {
+                $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+                if (!empty($fastParapheurBlock)) {
+                    $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                }
+            } else {
+                $user['canLinkToExternalSignatoryBook'] = true;
+            }
         }
 
         return $response->withJson($user);

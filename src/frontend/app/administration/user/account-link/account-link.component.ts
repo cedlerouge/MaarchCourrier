@@ -48,6 +48,8 @@ export class AccountLinkComponent implements OnInit {
                 this.externalUser.login = this.data.user.user_id;
                 this.externalUser.email = this.data.user.mail;
             }
+        } else if (dataUsers === null) {
+            this.dialogRef.close('');
         }
     }
 
