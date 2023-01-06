@@ -82,7 +82,7 @@ class LogsControllerTest extends TestCase
         
         $logLine = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
         $this->assertNotEmpty($logLine);
-        $this->assertSame("[SELECT * FROM logsController][][]", $logLine);
+        $this->assertSame("[SELECT * FROM logsController]", $logLine);
     }
 
     public function testPrepareLogLineSqlWithParamsData()
