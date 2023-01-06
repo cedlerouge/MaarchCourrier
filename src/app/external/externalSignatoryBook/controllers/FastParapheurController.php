@@ -1059,7 +1059,7 @@ class FastParapheurController
     {
         $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
-            return ['errors' => 'no subscriber id provided'];
+            return ['code' => 400, 'errors' => 'no subscriber id provided'];
         }
         $curlReturn = CurlModel::exec([
             'url'           => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($subscriberId),
