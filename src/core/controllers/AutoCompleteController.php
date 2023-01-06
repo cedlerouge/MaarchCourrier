@@ -180,16 +180,10 @@ class AutoCompleteController
         }
         $search = $queryParams['search'];
 
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
-            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
         }
-
-        $config = $loadedXml->xpath('/root/signatoryBook[id=\'fastParapheur\']')[0] ?? null;
-        if (empty($config)) {
-            return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
-        }
-        $config = (array)$config;
 
         $fpUsers = [];
         $excludedEmails = [];
