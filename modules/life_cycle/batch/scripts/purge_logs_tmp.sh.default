@@ -1,7 +1,0 @@
-#!/bin/bash
-
-Mypath='/var/www/MaarchCourrier/modules/life_cycle/batch'
-
-rm -f $Mypath/logs/fill_stack/*
-rm -f $Mypath/logs/process_stack/*
-rm -Rf $Mypath/batch/tmp/*
