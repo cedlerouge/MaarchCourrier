@@ -165,4 +165,23 @@ export class ExternalSignatoryBookManagerService {
     canViewWorkflow(): boolean {
         return this.serviceInjected?.canViewWorkflow;
     }
+
+    canCreateTile(): boolean {
+        return this.serviceInjected?.canCreateTile;
+    }
+
+    isLinkedToExternalSignatoryBook(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/home').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
 }

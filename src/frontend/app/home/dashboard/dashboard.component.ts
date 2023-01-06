@@ -12,12 +12,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     selector: 'app-dashboard',
     templateUrl: 'dashboard.component.html',
     styleUrls: ['dashboard.component.scss'],
-    providers: [DashboardService]
+    providers: [DashboardService, ExternalSignatoryBookManagerService]
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
 
@@ -31,12 +32,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dashboardService: DashboardService,
+        public dialog: MatDialog,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        private notify: NotificationService,
         private functionsService: FunctionsService,
         private privilegeService: PrivilegeService,
         private headerService: HeaderService,
-        public dialog: MatDialog,
     ) { }
 
     ngOnInit(): void {
@@ -216,5 +218,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     hasError(idTile: any) {
         const getTile: any = this.tileErrors.find((tile: any) => tile.id === idTile);
         return getTile !== undefined ? getTile.error : false;
+    }
+
+    getViews(tile: any) {
+        if (tile.type === 'externalSignatoryBook') {
+            return (tile.views as any[]).filter((item: any) => (item.target === this.externalSignatoryBook.signatoryBookEnabled));
+        } else {
+            return tile.views;
+        }
     }
 }

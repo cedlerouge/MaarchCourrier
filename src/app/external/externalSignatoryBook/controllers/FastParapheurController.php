@@ -33,9 +33,10 @@ use SrcCore\models\ValidatorModel;
 use Respect\Validation\Validator;
 use User\controllers\UserController;
 use History\controllers\HistoryController;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\TextFormatModel;
+use Contact\controllers\ContactController;
 
 /**
 * @codeCoverageIgnore
@@ -120,12 +121,6 @@ class FastParapheurController
 
     public function userStatusInFastParapheur(Request $request, Response $response, array $args)
     {
-        $userController = new UserController();
-        $error = $userController->hasUsersRights(['id' => $args['id']]);
-        if (!empty($error['error'])) {
-            return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
-        }
-
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
@@ -1120,58 +1115,141 @@ class FastParapheurController
         return true;
     }
 
-    public static function getResourcesCount()
-    {
-        $resourcesInFastParapheur = ResModel::get([
-            'select' => [1],
-            'where'  => ['external_id->>\'signatureBookId\' is not null']
-        ]);
+    /* STANDBY : We can't create tiles for FAST
 
-        $attachmentsInFastParapheur = AttachmentModel::get([
-            'select' => [1],
-            'where'  => ['external_id->>\'signatureBookId\' is not null']
-        ]);
+        public static function getResourcesCount()
+        {
+            $resourcesInFastParapheur = ResModel::get([
+                'select' => ['res_id', 'external_id->>\'signatureBookId\' as "signatureBookId"'],
+                'where'  => ['external_id->>\'signatureBookId\' is not null']
+            ]);
 
-        return count($resourcesInFastParapheur) + count($attachmentsInFastParapheur);
-    }
+            $attachmentsInFastParapheur = AttachmentModel::get([
+                'select' => ['res_id', 'external_id->>\'signatureBookId\' as "signatureBookId"'],
+                'where'  => ['external_id->>\'signatureBookId\' is not null']
+            ]);
 
-    public static function getResourcesDetails() {
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if (empty($loadedXml)) {
-            return ['errors' => 'configuration file missing'];
+            $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+            $documentsInFastParapheur = FastParapheurController::getResources();
+            if (!empty($documentsInFastParapheur['errors'])) {
+                return ['code' => $documentsInFastParapheur['code'], 'errors' => $documentsInFastParapheur['errors']];
+            }
+
+            $resourcesNumber = 0;
+            foreach ($documentsInDataBase as $document) {
+                if (array_search($document['signatureBookId'], $documentsInFastParapheur['response'])) {
+                    $resourcesNumber++;
+                }
+            }
+
+            return $resourcesNumber;
         }
 
-        $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
-        if (empty($fastParapheurBlock)) {
-            return ['errors' => 'invalid configuration for FastParapheur'];
+        public static function getResourcesDetails() {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+            if (empty($loadedXml)) {
+                return ['errors' => 'configuration file missing'];
+            }
+
+            $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+            if (empty($fastParapheurBlock)) {
+                return ['errors' => 'invalid configuration for FastParapheur'];
+            }
+            $fastParapheurUrl = (string)$fastParapheurBlock->url;
+            $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', $fastParapheurUrl);
+
+            $resourcesInFastParapheur = ResModel::get([
+                'select' => [
+                    'external_id->>\'signatureBookId\' as "signatureBookId"',
+                    'subject', 'creation_date', 'res_id', 'category_id'
+                ],
+                'where'     => ['external_id->>\'signatureBookId\' is not null'],
+                'orderBy'   => ['creation_date DESC']
+            ]);
+
+            $attachmentsInFastParapheur = AttachmentModel::get([
+                'select' => [
+                    'external_id->>\'signatureBookId\' as "signatureBookId"',
+                    'title as subject', 'res_id', 'creation_date'
+                ],
+                'where'     => ['external_id->>\'signatureBookId\' is not null'],
+                'orderBy'   => ['creation_date DESC']
+            ]);
+            $correspondents = null;
+            $documentsInFastParapheur = FastParapheurController::getResources();
+            if (!empty($documentsInFastParapheur['errors'])) {
+                return ['code' => $documentsInFastParapheur['code'], 'errors' => $documentsInFastParapheur['errors']];
+            }
+
+            $documentsInDataBase = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
+            foreach ($documentsInDataBase as $document) {
+                if (!(array_search($document['signatureBookId'], $documentsInFastParapheur['response']))) {
+                    unset($documentsInDataBase[array_search($document, $documentsInDataBase)]);
+                }
+            }
+            $documentsInDataBase = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
+                if ($doc['category_id'] == 'outgoing') {
+                    $correspondents = ContactController::getFormattedContacts(['resId' => $doc['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
+                } else {
+                    $correspondents = ContactController::getFormattedContacts(['resId' => $doc['res_id'], 'mode' => 'sender', 'onlyContact' => true]);
+                }
+                return [
+                    'subject'           => $doc['subject'],
+                    'creationDate'      => $doc['creation_date'],
+                    'correspondents'    => $correspondents,
+                    'resId'             => (int)$doc['signatureBookId'],
+                    'url'               => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
+                ];
+            }, $documentsInDataBase));
+
+            return $documentsInDataBase;
         }
-        $fastParapheurUrl = (string)$fastParapheurBlock->url;
-        $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', $fastParapheurUrl);
 
-        $resourcesInFastParapheur = ResModel::get([
-            'select' => [
-                'external_id->>\'signatureBookId\' as "signatureBookId"',
-                'subject'
-            ],
-            'where' => ['external_id->>\'signatureBookId\' is not null']
-        ]);
+        public static function getResources()
+        {
+            $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+            if (empty($loadedXml)) {
+                return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
+            }
 
-        $attachmentsInFastParapheur = AttachmentModel::get([
-            'select' => [
-                'external_id->>\'signatureBookId\' as "signatureBookId"',
-                'title as subject'
-            ],
-            'where' => ['external_id->>\'signatureBookId\' is not null']
-        ]);
+            $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+            if (empty($fastParapheurBlock)) {
+                return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+            }
+            $url = (string)$fastParapheurBlock->url;
+            $certPath = (string)$fastParapheurBlock->certPath;
+            $certPass = (string)$fastParapheurBlock->certPass;
+            $certType = (string)$fastParapheurBlock->certType;
+            $subscriberId = (string)$fastParapheurBlock->subscriberId;
 
-        $documentsInFastParapheur = array_merge($resourcesInFastParapheur, $attachmentsInFastParapheur);
-        $documentsInFastParapheur = array_values(array_map(function ($doc) use ($fastParapheurUrl) {
-            return [
-                'subject' => $doc['subject'],
-                'url'     => $fastParapheurUrl . '/parapheur/showDoc.action?documentid=' . $doc['signatureBookId']
-            ];
-        }, $documentsInFastParapheur));
+            $curlReturn = CurlModel::exec([
+                'url'       => $url . '/documents/search',
+                'method'    => 'POST',
+                'headers'   => [
+                    'Accept: application/json',
+                    'Content-Type: application/json'
+                ],
+                'options'   => [
+                    CURLOPT_SSLCERT       => $certPath,
+                    CURLOPT_SSLCERTPASSWD => $certPass,
+                    CURLOPT_SSLCERTTYPE   => $certType
+                ],
+                'body'      => json_encode([
+                    'siren'     => $subscriberId,
+                    'state'     => 'Prepared',
+                    'circuit'   => 'circuit-a-la-volee'
+                ])
+            ]);
 
-        return $documentsInFastParapheur;
-    }
+            if ($curlReturn['code'] == 404) {
+                return ['code' => 404, 'errors' => 'Erreur 404 : ' . $curlReturn['raw']];
+            } elseif (!empty($curlReturn['errors'])) {
+                return ['code' => $curlReturn['code'], 'errors' => $curlReturn['errors']];
+            } elseif (!empty($curlReturn['response']['developerMessage'])) {
+                return ['code' => $curlReturn['code'], 'errors' => $curlReturn['response']['developerMessage']];
+            }
+
+            return ['response' => $curlReturn['response']];
+        }
+    */
 }

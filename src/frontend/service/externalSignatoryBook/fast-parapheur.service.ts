@@ -13,10 +13,13 @@ import { FunctionsService } from '@service/functions.service';
 export class FastParapheurService {
 
     autocompleteUsersRoute: string = '/rest/autocomplete/fastParapheurUsers';
+
     canCreateUser: boolean = false;
     canSynchronizeSignatures: boolean = false;
     canManageSignaturesPositions: boolean = false;
     canViewWorkflow: boolean = false;
+    canCreateTile: boolean = false;
+
     userWorkflow = new UserWorkflow();
 
     constructor(

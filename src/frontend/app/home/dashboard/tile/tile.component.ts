@@ -7,11 +7,16 @@ import { catchError, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { FunctionsService } from '@service/functions.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { AuthService } from '@service/auth.service';
+import { SortPipe } from '@plugins/sorting.pipe';
+import { HeaderService } from '@service/header.service';
 
 @Component({
     selector: 'app-tile',
     templateUrl: 'tile.component.html',
-    styleUrls: ['tile.component.scss']
+    styleUrls: ['tile.component.scss'],
+    providers: [ExternalSignatoryBookManagerService, SortPipe]
 })
 export class TileDashboardComponent implements OnInit, AfterViewInit {
 
@@ -33,18 +38,38 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public appService: AppService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public dashboardService: DashboardService,
-        private functionsService: FunctionsService
+        public authService: AuthService,
+        public headerService: HeaderService,
+        private notify: NotificationService,
+        private functionsService: FunctionsService,
+        private sortPipe: SortPipe
     ) { }
 
     ngOnInit(): void { }
 
     async ngAfterViewInit(): Promise<void> {
         await this['get_' + this.view]();
-        this.route = this.tile.views.find((viewItem: any) => viewItem.id === this.view).route;
-        this.viewDocRoute = this.tile.views.find((viewItem: any) => viewItem.id === this.view).viewDocRoute;
+        if (this.tile.type === 'externalSignatoryBook') {
+            if (this.authService?.externalSignatoryBook?.integratedWorkflow && this.externalSignatoryBook.canCreateTile()) {
+                const result: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.headerService.user.id);
+                if (!this.functionsService.empty(result)) {
+                    this.route = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.route;
+                    this.viewDocRoute = (this.tile.views as any[]).find((viewItem: any) => viewItem.id === this.view && viewItem.target === this.externalSignatoryBook.signatoryBookEnabled)?.viewDocRoute;
+                } else {
+                    this.onError = true;
+                    this.errorMessage = this.translate.instant('lang.acountNotLinkedToExternalSignatoryBook');
+                }
+            } else {
+                this.onError = true;
+                this.errorMessage = this.translate.instant('lang.badConfiguration');
+            }
+        } else {
+            this.route = this.tile.views.find((viewItem: any) => viewItem.id === this.view).route;
+            this.viewDocRoute = this.tile.views.find((viewItem: any) => viewItem.id === this.view).viewDocRoute;
+        }
         this.loading = false;
     }
 
@@ -60,23 +85,28 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
         return new Promise((resolve) => {
             this.http.get(`../rest/tiles/${this.tile.id}`).pipe(
                 tap((data: any) => {
-                    const resources = data.tile.resources.map((resource: any) => {
-                        let contactLabel = '';
-                        let contactTitle = '';
-                        if (resource.correspondents.length === 1) {
-                            contactLabel = resource.correspondents[0];
-                            contactTitle = this.translate.instant('lang.contact') + ': ' + resource.correspondents[0];
-                        } else if (resource.correspondents.length > 1) {
-                            contactLabel = resource.correspondents.length + ' ' + this.translate.instant('lang.contacts');
-                            contactTitle = resource.correspondents;
-                        }
-                        return {
-                            ...resource,
-                            contactLabel: contactLabel,
-                            contactTitle: contactTitle
-                        };
-                    });
-                    this.resources = resources;
+                    if (data.tile.type === 'externalSignatoryBook' && !this.functionsService.empty(data.tile?.resources)) {
+                        this.sortPipe.transform(data.tile.resources, 'creationDate').reverse();
+                    }
+                    if (!this.functionsService.empty(data.tile?.resources)) {
+                        const resources = data.tile.resources.map((resource: any) => {
+                            let contactLabel = '';
+                            let contactTitle = '';
+                            if (resource.correspondents.length === 1) {
+                                contactLabel = resource.correspondents[0];
+                                contactTitle = this.translate.instant('lang.contact') + ': ' + resource.correspondents[0];
+                            } else if (resource.correspondents.length > 1) {
+                                contactLabel = resource.correspondents.length + ' ' + this.translate.instant('lang.contacts');
+                                contactTitle = resource.correspondents;
+                            }
+                            return {
+                                ...resource,
+                                contactLabel: contactLabel,
+                                contactTitle: contactTitle
+                            };
+                        });
+                        this.resources = resources;
+                    }
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -133,5 +163,9 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
                 })
             ).subscribe();
         });
+    }
+
+    getTileLabel(tile: any) {
+        return tile.type === 'externalSignatoryBook' ? `${tile.label} (${this.translate.instant('lang.' + this.authService?.externalSignatoryBook?.id)})` : tile.label;
     }
 }
