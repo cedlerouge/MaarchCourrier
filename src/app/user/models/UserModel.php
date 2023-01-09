@@ -221,11 +221,10 @@ class UserModel
         ValidatorModel::notEmpty($aArgs, ['id', 'externalId']);
         ValidatorModel::intVal($aArgs, ['id']);
         ValidatorModel::json($aArgs, ['externalId']);
-
         DatabaseModel::update([
             'table'     => 'users',
             'set'       => [
-                'external_id' => $aArgs['externalId']
+                'external_id' => !empty(json_decode($aArgs['externalId'])) ? $aArgs['externalId'] : '{}'
             ],
             'where'     => ['id = ?'],
             'data'      => [$aArgs['id']]

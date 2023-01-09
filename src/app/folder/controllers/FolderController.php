@@ -108,7 +108,7 @@ class FolderController
 
     public function getById(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
@@ -237,7 +237,7 @@ class FolderController
     {
         $data = $request->getParsedBody();
 
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($data['label'])) {
@@ -359,7 +359,7 @@ class FolderController
     {
         $data = $request->getParsedBody();
 
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not an integer']);
         }
         if (!Validator::boolType()->validate($data['public'])) {
@@ -554,7 +554,7 @@ class FolderController
 
     public function delete(Request $request, Response $response, array $aArgs)
     {
-        if (!Validator::numeric()->notEmpty()->validate($aArgs['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($aArgs['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query id is empty or not an integer']);
         }
         $userEntities = EntityModel::getWithUserEntities([
@@ -667,7 +667,7 @@ class FolderController
 
     public function getResourcesById(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
@@ -766,7 +766,7 @@ class FolderController
 
     public function addResourcesById(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
@@ -824,7 +824,7 @@ class FolderController
 
     public function removeResourcesById(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
@@ -884,7 +884,7 @@ class FolderController
 
     public function getFilters(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is not an integer']);
         }
 
@@ -976,7 +976,7 @@ class FolderController
 
     public function pinFolder(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id not found or is not an integer']);
         }
 
@@ -1042,7 +1042,7 @@ class FolderController
 
     public function unpinFolder(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['id'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id not found or is not an integer']);
         }
 

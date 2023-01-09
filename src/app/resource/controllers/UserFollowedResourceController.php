@@ -172,7 +172,7 @@ class UserFollowedResourceController
 
     public function getBaskets(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['resId'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route resId is not an integer']);
         }
 

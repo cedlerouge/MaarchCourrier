@@ -23,6 +23,7 @@ interface TileView {
     'id': 'list' | 'summary' | 'chart'; // identifier
     'route': string; // router when click on tile
     'viewDocRoute'?: string; // router when view a doc (usefull for list view)
+    'target'?: string; // route target after click
 }
 
 @Injectable()
@@ -152,15 +153,30 @@ export class DashboardService {
                 'delete'
             ],
             views: [
+                // Maarch Parapheur views
                 {
                     id: 'list',
-                    route: ':maarchParapheurUrl/dist/documents/:resId',
+                    route: ':externalSignatoryBookUrl/dist/#/documents/:resId',
+                    target: 'maarchParapheur',
                     viewDocRoute: null
                 },
                 {
                     id: 'summary',
-                    route: ':maarchParapheurUrl/dist/home'
-                }
+                    route: ':externalSignatoryBookUrl/dist/#/home',
+                    target: 'maarchParapheur',
+                },
+                /* Fast Parapheur views
+                {
+                    id: 'list',
+                    route: ':externalSignatoryBookUrl/parapheur/showDoc.action?documentid=:resId',
+                    target: 'fastParapheur',
+                    viewDocRoute: null
+                },
+                {
+                    id: 'summary',
+                    route: ':externalSignatoryBookUrl/parapheur/showDoc.action',
+                    target: 'fastParapheur',
+                } */
             ]
         },
         shortcut: {

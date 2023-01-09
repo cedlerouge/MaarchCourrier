@@ -59,6 +59,22 @@
                 <button *ngIf="downloadActions.length === 0" mat-icon-button (click)="downloadConvertedFile()" [matTooltip]="(resId !== null ? 'lang.downloadFile' : 'lang.downloadOriginalFile') | translate">
                     <mat-icon class="fa fa-download"></mat-icon>
                 </button>
+                <div class="divider"></div>
+                <!-- Rotation buttons -->
+                <ng-container *ngIf="!isNewVersion && file.src !== null">
+                    <button mat-icon-button
+                        style="margin-right: -15px;"
+                        [title]="'lang.leftRotation' | translate"
+                        (click)="$event.stopPropagation(); rotateDocument('left')">
+                        <mat-icon class="fa fa-rotate-left"></mat-icon>
+                    </button>
+                    <button mat-icon-button
+                        [title]="'lang.rightRotation' | translate"
+                        (click)="$event.stopPropagation(); rotateDocument('right')">
+                        <mat-icon class="fa fa-rotate-right"></mat-icon>
+                    </button>
+                </ng-container>
+                <!-- / -->
                 <ng-container *ngIf="editMode && resId !== null && !noConvertedFound">
                     <div class="divider"></div>
                     <button [disabled]="!functions.empty(file.subinfos) && file.subinfos.signedDocVersions" [class.disabledButton]="!functions.empty(file.subinfos) && file.subinfos.signedDocVersions" mat-button (click)="editResource()"
@@ -116,7 +132,7 @@
             </div>
             <div>
                 <pdf-viewer *ngIf="file.src!==null" [src]="file.src" [render-text]="true" [autoresize]="true"
-                    [original-size]="false" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;display: contents;">
+                    [original-size]="false" [rotation]="rotation" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;display: contents;">
                 </pdf-viewer>
             </div>
 

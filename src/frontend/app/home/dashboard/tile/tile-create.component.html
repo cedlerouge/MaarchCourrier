@@ -15,7 +15,10 @@
             </mat-menu>
             <mat-label>{{'lang.tileType' | translate}}</mat-label>
             <mat-select [(ngModel)]="selectedTileType" (selectionChange)="getViews()">
-                <mat-option *ngFor="let tileType of tileTypes | sortBy : 'label'" [value]="tileType.id">
+                <mat-option *ngFor="let tileType of tileTypes | sortBy : 'label'"
+                    [value]="tileType.id"
+                    [disabled]="!canDisplayType(tileType)"
+                    [title]="getTitle(tileType)">
                     {{tileType.label}}
                 </mat-option>
             </mat-select>
@@ -55,6 +58,13 @@
             [class]="''" [label]="'lang.model' | translate" [datas]="searchTemplates" [formControlSelect]="searchTemplatesControl"  [returnValue]="'object'" [dataKey]="'id'"
             (afterSelected)="setSearchTemplate($event)">
         </app-plugin-select-search>
+        <!-- Display of enabled signatory book
+            <mat-form-field appearance="outline" *ngIf="views.length > 0 && selectedTileType === 'externalSignatoryBook'">
+                <mat-label>{{ 'lang.enabledSignatoryBook' | translate }}</mat-label>
+                <input matInput [(ngModel)]="enabledSignatoryBook" readonly
+                    [title]="'lang.' + authService.externalSignatoryBook.id | translate">
+            </mat-form-field> 
+        -->
         <mat-form-field appearance="outline" *ngIf="views.length > 0">
             <mat-label>{{'lang.chartView' | translate}}</mat-label>
             <mat-select [(ngModel)]="selectedView" (selectionChange)="resetExtraParams()">

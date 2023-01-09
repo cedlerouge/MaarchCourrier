@@ -180,16 +180,10 @@ class AutoCompleteController
         }
         $search = $queryParams['search'];
 
-        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
-            return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return $response->withStatus($config['code'])->withJson(['errors' => $config['errors']]);
         }
-
-        $config = $loadedXml->xpath('/root/signatoryBook[id=\'fastParapheur\']')[0] ?? null;
-        if (empty($config)) {
-            return $response->withStatus(500)->withJson(['errors' => 'no configuration found for fastParapheur']);
-        }
-        $config = (array)$config;
 
         $fpUsers = [];
         $excludedEmails = [];
@@ -209,15 +203,15 @@ class AutoCompleteController
         $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
 
         if (empty($subscriberIds)) {
-            $fpUsers = array_merge($fpUsers, FastParapheurController::getUsers(['config' => $config]));
+            $fpUsers = FastParapheurController::getUsers(['config' => $config]);
             if (!empty($fpUsers['errors'])) {
                 return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
             }
         } else {
             foreach ($subscriberIds as $subscriberId) {
                 $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
-                if (!empty($fpUsers['errors'])) {
-                    return $response->withStatus(400)->withJson(['errors' => $fpUsers['errors']]);
+                if (!empty($subscriberUsers['errors'])) {
+                    return $response->withStatus(400)->withJson(['errors' => $subscriberUsers['errors']]);
                 }
                 $fpUsers = array_merge($fpUsers, $subscriberUsers);
             }

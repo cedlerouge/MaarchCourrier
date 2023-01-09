@@ -112,15 +112,15 @@ export class ExternalSignatoryBookManagerService {
     }
 
     setExternalInformation(item: any) {
-        return this.serviceInjected.setExternalInformation(item);
+        return this.serviceInjected?.setExternalInformation(item);
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
-        return this.serviceInjected.isValidParaph(additionalsInfos, workflow, resourcesToSign, userOtps);
+        return this.serviceInjected?.isValidParaph(additionalsInfos, workflow, resourcesToSign, userOtps);
     }
 
     getRessources(additionalsInfos: any): any[] {
-        return this.serviceInjected.getRessources(additionalsInfos);
+        return this.serviceInjected?.getRessources(additionalsInfos);
     }
 
     getDatas(workflow: any[] = [], resourcesToSign: any[] = [], workflowType: any): any {
@@ -154,22 +154,41 @@ export class ExternalSignatoryBookManagerService {
     }
 
     canCreateUser(): boolean {
-        return this.serviceInjected.canCreateUser;
+        return this.serviceInjected?.canCreateUser;
     }
 
     async synchronizeSignatures(data: any) {
-        await this.serviceInjected.synchronizeSignatures(data);
+        await this.serviceInjected?.synchronizeSignatures(data);
     }
 
     canSynchronizeSignatures(): boolean {
-        return this.serviceInjected.canSynchronizeSignatures;
+        return this.serviceInjected?.canSynchronizeSignatures;
     }
 
     canManageSignaturesPositions(): boolean {
-        return this.serviceInjected.canManageSignaturesPositions;
+        return this.serviceInjected?.canManageSignaturesPositions;
     }
 
     canViewWorkflow(): boolean {
-        return this.serviceInjected.canViewWorkflow;
+        return this.serviceInjected?.canViewWorkflow;
+    }
+
+    canCreateTile(): boolean {
+        return this.serviceInjected?.canCreateTile;
+    }
+
+    isLinkedToExternalSignatoryBook(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/home').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }

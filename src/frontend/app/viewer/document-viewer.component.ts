@@ -97,6 +97,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     @Input() newPjVersion: boolean = false;
 
+    @Input() isNewVersion: boolean = false;
+
     /**
       * Event emitter
       */
@@ -175,7 +177,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     status: string = '';
 
-    isNewVersion: boolean = false;
+
+    rotation: number = null;
 
     constructor(
         public translate: TranslateService,
@@ -261,6 +264,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         if (this.intervalLockFile) {
             this.cancelTemplateEdition();
         }
+        this.rotation = null;
     }
 
     loadFileFromBase64() {
@@ -1511,5 +1515,13 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     canSaveModifications(currentMode: string) {
         const commonConditions: boolean = this.isDocModified && this.mode === currentMode && this.editor.mode !== 'office365sharepoint' && !this.loading;
         return currentMode === 'mainDocument' ? commonConditions && this.resId !== null : commonConditions;
+    }
+
+    rotateDocument(side: string) {
+        if (side === 'left') {
+            this.rotation = this.rotation - 90;
+        } else if (side === 'right') {
+            this.rotation = this.rotation + 90;
+        }
     }
 }

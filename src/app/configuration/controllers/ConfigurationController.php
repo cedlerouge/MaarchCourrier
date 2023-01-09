@@ -470,7 +470,7 @@ class ConfigurationController
         }
 
         foreach (['posX', 'posY', 'angle', 'opacity', 'size'] as $value) {
-            if (!Validator::numeric()->validate($body[$value] ?? null)) {
+            if (!Validator::numericVal()->validate($body[$value] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body '.$value.' is not an integer']);
             }
         }

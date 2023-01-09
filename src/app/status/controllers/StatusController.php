@@ -46,7 +46,7 @@ class StatusController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!empty($aArgs['identifier']) && Validator::numeric()->validate($aArgs['identifier'])) {
+        if (!empty($aArgs['identifier']) && Validator::numericVal()->validate($aArgs['identifier'])) {
             $obj = StatusModel::getByIdentifier(['identifier' => $aArgs['identifier']]);
 
             if (empty($obj)) {
@@ -144,7 +144,7 @@ class StatusController
 
         $statusDeleted = StatusModel::getByIdentifier(['identifier' => $aArgs['identifier']]);
 
-        if (Validator::notEmpty()->validate($aArgs['identifier']) && Validator::numeric()->validate($aArgs['identifier']) && !empty($statusDeleted)) {
+        if (Validator::notEmpty()->validate($aArgs['identifier']) && Validator::numericVal()->validate($aArgs['identifier']) && !empty($statusDeleted)) {
             StatusModel::delete(['identifier' => $aArgs['identifier']]);
 
             HistoryController::add([
