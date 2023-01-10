@@ -25,8 +25,8 @@ use IndexingModel\models\IndexingModelModel;
 use MessageExchange\controllers\ReceiveMessageExchangeController;
 use Priority\models\PriorityModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\PasswordModel;
 use Status\models\StatusModel;
@@ -470,7 +470,7 @@ class ConfigurationController
         }
 
         foreach (['posX', 'posY', 'angle', 'opacity', 'size'] as $value) {
-            if (!Validator::numeric()->validate($body[$value] ?? null)) {
+            if (!Validator::numericVal()->validate($body[$value] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body '.$value.' is not an integer']);
             }
         }

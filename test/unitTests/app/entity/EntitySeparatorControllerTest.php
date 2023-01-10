@@ -7,68 +7,69 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\entity;
 
-class EntitySeparatorControllerTest extends TestCase
+use Entity\controllers\EntitySeparatorController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+
+class EntitySeparatorControllerTest extends CourrierTestCase
 {
     public function testCreate()
     {
-        $entityController = new \Entity\controllers\EntitySeparatorController();
+        $entityController = new EntitySeparatorController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $aArgs = [
+        $args = [
             'type'      => 'qrcode',
             'entities'  => ['PJS']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody);
 
-        $aArgs = [
+        $args = [
             'type'      => 'barcode',
             'target'    => 'generic'
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertNotEmpty($responseBody);
 
         // ERRORS
-        $aArgs = [
+        $args = [
             'type'      => 'barcode',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body entities is not set or empty', $responseBody['errors']);
 
-        $aArgs = [
+        $args = [
             'type'      => 'code',
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body type value must be qrcode or barcode', $responseBody['errors']);
 
-        $fullRequest = \httpRequestCustom::addContentInBody([], $request);
+        $fullRequest = $this->createRequestWithBody('POST', []);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);
@@ -79,9 +80,9 @@ class EntitySeparatorControllerTest extends TestCase
         $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $fullRequest = \httpRequestCustom::addContentInBody([], $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $entityController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $entityController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
 
         $responseBody = json_decode((string)$response->getBody(), true);

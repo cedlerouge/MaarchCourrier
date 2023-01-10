@@ -12,11 +12,13 @@ import { ColorEvent } from 'ngx-color';
 import { PrivilegeService } from '@service/privileges.service';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { UntypedFormControl } from '@angular/forms';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'tile-create.component.html',
     styleUrls: ['tile-create.component.scss'],
-    providers: [DashboardService, SortPipe]
+    providers: [DashboardService, SortPipe, ExternalSignatoryBookManagerService]
 })
 export class TileCreateComponent implements OnInit {
 
@@ -42,16 +44,20 @@ export class TileCreateComponent implements OnInit {
     selectedColor: string = '#90caf9';
     extraParams: any = {};
 
+    enabledSignatoryBook: string = '';
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        @Inject(MAT_DIALOG_DATA) public data: any,
         public dialogRef: MatDialogRef<TileCreateComponent>,
         public dashboardService: DashboardService,
         public functionsService: FunctionsService,
-        private notify: NotificationService,
         public headerService: HeaderService,
         public privilegeService: PrivilegeService,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        public authService: AuthService,
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private notify: NotificationService,
         private sortPipe: SortPipe,
     ) { }
 
@@ -68,13 +74,9 @@ export class TileCreateComponent implements OnInit {
         }));
     }
 
-    getViews() {
+    async getViews() {
         this.tileLabel = this.translate.instant('lang.' + this.selectedTileType);
-        const tmpViews = this.dashboardService.getViewsByTileType(this.selectedTileType);
-        this.views = tmpViews.map((view: any) => ({
-            ...view,
-            label: this.translate.instant('lang.' + view.id)
-        }));
+        this.getRelatedViews();
         this.selectedView = this.views.length > 0 ? this.views[0].id : null;
 
         if (this.selectedTileType === 'basket') {
@@ -84,7 +86,7 @@ export class TileCreateComponent implements OnInit {
         } else if (this.selectedTileType === 'shortcut') {
             this.getAdminMenu();
         } else if (this.selectedTileType === 'externalSignatoryBook') {
-            this.getMPInfos();
+            await this.checkLink();
         } else if (this.selectedTileType === 'searchTemplate') {
             this.getSearchTemplates();
         }
@@ -128,23 +130,19 @@ export class TileCreateComponent implements OnInit {
         }
     }
 
-    getMPInfos() {
-        this.http.get('../rest/home').pipe(
-            tap((data: any) => {
-                if (!data.isLinkedToMaarchParapheur) {
-                    this.notify.error(this.translate.instant('lang.acountNotLinkedTomaarchParapheur'));
-                    this.resetData();
-                } else {
-                    this.tileOtherInfos = {
-                        maarchParapheurUrl: data.maarchParapheurUrl
-                    };
-                }
-            }),
-            catchError((err: any) => {
-                this.notify.handleErrors(err);
-                return of(false);
-            })
-        ).subscribe();
+    async checkLink() {
+        const result: any = await this.externalSignatoryBook.checkInfoExternalSignatoryBookAccount(this.headerService.user.id);
+        if (!this.functionsService.empty(result)) {
+            const data: any = await this.externalSignatoryBook.isLinkedToExternalSignatoryBook();
+            if (!this.functionsService.empty(data)) {
+                this.tileOtherInfos = {
+                    maarchParapheurUrl: data.externalSignatoryBookUrl
+                };
+            }
+        } else {
+            this.notify.error(this.translate.instant('lang.acountNotLinkedToExternalSignatoryBook'));
+            this.resetData();
+        }
     }
 
     getSearchTemplates() {
@@ -338,5 +336,29 @@ export class TileCreateComponent implements OnInit {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    getRelatedViews() {
+        const tmpViews: any[] = this.dashboardService.getViewsByTileType(this.selectedTileType);
+        this.views = tmpViews.map((view: any) => ({
+            ...view,
+            label: this.translate.instant('lang.' + view.id)
+        }));
+        if (this.selectedTileType === 'externalSignatoryBook') {
+            // Get the views linked to the enabled external signatory book
+            this.views = this.views.filter((item: any) => item.target === this.authService?.externalSignatoryBook?.id);
+            this.enabledSignatoryBook = this.translate.instant(`lang.${this.authService?.externalSignatoryBook?.id}`);
+        }
+    }
+
+    canDisplayType(tile: any) {
+        if (tile.id === 'externalSignatoryBook') {
+            return this.externalSignatoryBook.canCreateTile();
+        }
+        return true;
+    }
+
+    getTitle(tile: any) {
+        return this.canDisplayType(tile) ? tile.label : this.translate.instant('lang.cannotCreateTile');
     }
 }

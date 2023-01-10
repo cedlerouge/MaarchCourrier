@@ -19,8 +19,8 @@ use RegisteredMail\models\IssuingSiteEntitiesModel;
 use RegisteredMail\models\IssuingSiteModel;
 use RegisteredMail\models\RegisteredMailModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class IssuingSiteController
 {

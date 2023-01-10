@@ -18,12 +18,21 @@ use Attachment\models\AttachmentModel;
 use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use Exception;
 use History\controllers\HistoryController;
-use Noxxie\PdfParser\Parser;
 use Resource\controllers\StoreController;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use Smalot\PdfParser\Element\ElementArray;
+use Smalot\PdfParser\Element\ElementMissing;
+use Smalot\PdfParser\Element\ElementNull;
+use Smalot\PdfParser\Element\ElementXRef;
+use Smalot\PdfParser\Font;
+use Smalot\PdfParser\Header;
+use Smalot\PdfParser\Page;
+use Smalot\PdfParser\Parser;
+use Smalot\PdfParser\PDFObject;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use User\models\UserModel;
@@ -172,7 +181,7 @@ class XParaphController
 
         foreach ($pages as $page) {
             $pageCount++;
-            foreach ($page->GetTextArrayWithCoordinates() as $text) {
+            foreach (XParaphController::getTextArrayWithCoordinates($page) as $text) {
                 if (XParaphController::strposa($text['text'], $searchableArray) !== false) {
                     $detailText = '';
                     $originalYDetail = null;
@@ -665,5 +674,231 @@ class XParaphController
         ]);
 
         return $response->withStatus(204);
+    }
+
+    /**
+     * Copied the function used in the old library, to work with the new version of smalot/pdfparser
+     *
+     * If we can test XParaph, we should maybe refactor this code
+     *
+     * @param Page|null $page
+     * @return array
+     * @throws Exception
+     */
+    public static function getTextArrayWithCoordinates(Page $page = null)
+    {
+        if ($contents = $page->get('Contents')) {
+
+            if ($contents instanceof ElementMissing) {
+                return array();
+            } elseif ($contents instanceof ElementNull) {
+                return array();
+            } elseif ($contents instanceof PDFObject) {
+                $elements = $contents->getHeader()->getElements();
+
+                if (is_numeric(key($elements))) {
+                    $new_content = '';
+
+                    /** @var PDFObject $element */
+                    foreach ($elements as $element) {
+                        if ($element instanceof ElementXRef) {
+                            $new_content .= $element->getObject()->getContent();
+                        } else {
+                            $new_content .= $element->getContent();
+                        }
+                    }
+
+                    $header   = new Header(array(), $page->getDocument());
+                    $contents = new PDFObject($page->getDocument(), $header, $new_content);
+                }
+            } elseif ($contents instanceof ElementArray) {
+                // Create a virtual global content.
+                $new_content = '';
+
+                /** @var PDFObject $content */
+                foreach ($contents->getContent() as $content) {
+                    $new_content .= $content->getContent() . "\n";
+                }
+
+                $header   = new Header(array(), $page->getDocument());
+                $contents = new PDFObject($page->getDocument(), $header, $new_content);
+            }
+
+            return XParaphController::getTextArrayWithCoordinatesOnPdf($page, $contents);
+        }
+
+        return array();
+    }
+
+    /**
+     * Copied the function used in the old library, to work with the new version of smalot/pdfparser
+     *
+     * If we can test XParaph, we should maybe refactor this code
+     *
+     * @param Page|null $page
+     * @param PDFObject|null $pdfObject
+     * @return array
+     * @throws Exception
+     */
+    public static function getTextArrayWithCoordinatesOnPdf(Page $page = null, PDFObject $pdfObject = null)
+    {
+        $text                = array();
+        $sections            = $pdfObject->getSectionsText($pdfObject->getContent());
+        $current_font        = new Font($pdfObject->getDocument());
+
+        $current_position_td = array('x' => false, 'y' => false);
+        $current_position_tm = array('x' => false, 'y' => false);
+
+        foreach ($sections as $section) {
+
+            $commands = $pdfObject->getCommandsText($section);
+
+            foreach ($commands as $command) {
+
+                switch ($command[PDFObject::OPERATOR]) {
+                    // set character spacing
+                    case 'Tc':
+                        break;
+
+                    // move text current point
+                    case 'Td':
+                        $args = preg_split('/\s/s', $command[PDFObject::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+
+                        $current_position_tm = array('x' => $x, 'y' => $y);
+                        break;
+
+                    // move text current point and set leading
+                    case 'TD':
+                        break;
+
+                    case 'Tf':
+                        list($id,) = preg_split('/\s/s', $command[PDFObject::COMMAND]);
+                        $id           = trim($id, '/');
+                        $current_font = $page->getFont($id);
+                        break;
+
+                    case "'":
+                    case 'Tj':
+                    $command[PDFObject::COMMAND] = array($command);
+                    case 'TJ':
+                        // Skip if not previously defined, should never happened.
+                        if (is_null($current_font)) {
+                            // Fallback
+                            // TODO : Improve
+                            //$text[] = $command[\Smalot\PdfParser\PDFObject::COMMAND][0][\Smalot\PdfParser\PDFObject::COMMAND];
+                            throw new Exception('Unknown font detected while decoding PDF string.');
+                            continue;
+                        }
+
+                        $sub_text = $current_font->decodeText($command[PDFObject::COMMAND]);
+
+                        if (isset($text[$current_position_tm['y']])) {
+                            $text[$current_position_tm['y']]['text'] .= $sub_text;
+                            $text[$current_position_tm['y']]['details'][] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y']
+                            ];
+                        } else {
+                            $text[$current_position_tm['y']] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y'],
+                                'details' => []
+                            ];
+
+                            $text[$current_position_tm['y']]['details'][] = [
+                                'text' => $sub_text,
+                                'x' =>  $current_position_tm['x'],
+                                'y' =>  $current_position_tm['y']
+                            ];
+                        }
+                        break;
+
+                    // set leading
+                    case 'TL':
+                        break;
+
+                    case 'Tm':
+                        $args = preg_split('/\s/s', $command[PDFObject::COMMAND]);
+                        $y    = array_pop($args);
+                        $x    = array_pop($args);
+
+                        $current_position_tm = array('x' => $x, 'y' => $y);
+                        break;
+
+                    // set super/subscripting text rise
+                    case 'Ts':
+                        break;
+
+                    // set word spacing
+                    case 'Tw':
+                        break;
+
+                    // set horizontal scaling
+                    case 'Tz':
+                        //$text .= "\n";
+                        break;
+
+                    // move to start of next line
+                    case 'T*':
+                        //$text .= "\n";
+                        break;
+
+                    case 'Da':
+                        break;
+
+                    case 'Do':
+                        /* if (!is_null($page)) {
+                            $args = preg_split('/\s/s', $command[self::COMMAND]);
+                            $id   = trim(array_pop($args), '/ ');
+                            if ($xobject = $page->getXObject($id)) {
+                                $text[] = $xobject->getText($page);
+                            }
+                        } */
+                        break;
+
+                    case 'rg':
+                    case 'RG':
+                        break;
+
+                    case 're':
+                        break;
+
+                    case 'co':
+                        break;
+
+                    case 'cs':
+                        break;
+
+                    case 'gs':
+                        break;
+
+                    case 'en':
+                        break;
+
+                    case 'sc':
+                    case 'SC':
+                        break;
+
+                    case 'g':
+                    case 'G':
+                        break;
+
+                    case 'V':
+                        break;
+
+                    case 'vo':
+                    case 'Vo':
+                        break;
+
+                    default:
+                }
+            }
+        }
+
+        return $text;
     }
 }

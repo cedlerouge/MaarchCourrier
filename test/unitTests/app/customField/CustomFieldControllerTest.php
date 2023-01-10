@@ -7,29 +7,30 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\customField;
 
-class CustomFieldControllerTest extends TestCase
+use CustomField\controllers\CustomFieldController;
+use SrcCore\http\Response;
+use MaarchCourrier\Tests\CourrierTestCase;
+
+class CustomFieldControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testCreate()
     {
-        $customFieldController = new \CustomField\controllers\CustomFieldController();
+        $customFieldController = new CustomFieldController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'label'     => 'mon custom',
             'type'      => 'select',
             'mode'      => 'form',
             'values'    => ['one', 'two']
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $customFieldController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $customFieldController->create($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -38,18 +39,7 @@ class CustomFieldControllerTest extends TestCase
         self::$id = $responseBody->customFieldId;
 
         //  Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
-        $args = [
-            'label'     => 'mon custom',
-            'type'      => 'select',
-            'mode'      => 'form',
-            'values'    => ['one', 'two']
-        ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
-
-        $response     = $customFieldController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $customFieldController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -58,11 +48,10 @@ class CustomFieldControllerTest extends TestCase
 
     public function testReadList()
     {
-        $environment  = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request      = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $customFieldController = new \CustomField\controllers\CustomFieldController();
-        $response         = $customFieldController->get($request, new \Slim\Http\Response());
+        $customFieldController = new CustomFieldController();
+        $response         = $customFieldController->get($request, new Response());
         $responseBody     = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->customFields);
@@ -70,20 +59,17 @@ class CustomFieldControllerTest extends TestCase
 
     public function testUpdate()
     {
-        $customFieldController = new \CustomField\controllers\CustomFieldController();
+        $customFieldController = new CustomFieldController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $args = [
             'label'     => 'mon custom22',
             'mode'      => 'form',
             'values'    => [['key' => 0, 'label' => 'one'], ['key' => 1, 'label' => 'two'], ['key' => 2, 'label' => 'trois']]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $customFieldController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $customFieldController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(200, $response->getStatusCode());
 
         //  Errors
@@ -92,17 +78,17 @@ class CustomFieldControllerTest extends TestCase
             'mode'      => 'form',
             'values'    => [['key' => 0, 'label' => 'one']]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $customFieldController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $customFieldController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Not enough values sent', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
         unset($args['label']);
-        $fullRequest = \httpRequestCustom::addContentInBody($args, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $customFieldController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $customFieldController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -111,14 +97,12 @@ class CustomFieldControllerTest extends TestCase
 
     public function testDelete()
     {
-        $customFieldController = new \CustomField\controllers\CustomFieldController();
+        $customFieldController = new CustomFieldController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-
-        $response     = $customFieldController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $customFieldController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
     }
 }

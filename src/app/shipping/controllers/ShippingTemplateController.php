@@ -18,10 +18,9 @@ use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingTemplateModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\PasswordModel;
 
 class ShippingTemplateController
@@ -154,6 +153,7 @@ class ShippingTemplateController
 
         $body['options']  = json_encode($body['options']);
         $body['fee']      = json_encode($body['fee']);
+        $body['entities'] = $body['entities'] ?? [];
         foreach ($body['entities'] as $key => $entity) {
             $body['entities'][$key] = (string)$entity;
         }
@@ -235,11 +235,12 @@ class ShippingTemplateController
         if (!empty($aArgs['entities'])) {
             if (!Validator::arrayType()->validate($aArgs['entities'])) {
                 $errors[] = 'entities must be an array';
-            }
-            foreach ($aArgs['entities'] as $entity) {
-                $info = EntityModel::getById(['id' => $entity, 'select' => ['id']]);
-                if (empty($info)) {
-                    $errors[] = $entity . ' does not exists';
+            } else {
+                foreach ($aArgs['entities'] as $entity) {
+                    $info = EntityModel::getById(['id' => $entity, 'select' => ['id']]);
+                    if (empty($info)) {
+                        $errors[] = $entity . ' does not exists';
+                    }
                 }
             }
         }

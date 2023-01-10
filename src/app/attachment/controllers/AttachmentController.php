@@ -35,8 +35,8 @@ use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SignatureBook\controllers\SignatureBookController;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\CoreController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
@@ -1137,13 +1137,13 @@ class AttachmentController
         $body = $args['body'];
 
         if (!empty($body['validationDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['validationDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['validationDate'])) {
                 return ['errors' => "Body validationDate is not a date"];
             }
         }
 
         if (!empty($body['effectiveDate'])) {
-            if (!Validator::date()->notEmpty()->validate($body['effectiveDate'])) {
+            if (!Validator::dateTime()->notEmpty()->validate($body['effectiveDate'])) {
                 return ['errors' => "Body effectiveDate is not a date"];
             }
         }

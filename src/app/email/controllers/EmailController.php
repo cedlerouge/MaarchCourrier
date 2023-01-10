@@ -36,8 +36,8 @@ use Resource\controllers\ResourceListController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\PasswordModel;
 use SrcCore\models\TextFormatModel;
@@ -46,11 +46,6 @@ use User\models\UserModel;
 
 class EmailController
 {
-    private const SMTP_ERRORS_SENDER_REJECTED = [
-        'Client does not have permissions to send as this sender',
-        'Sender address rejected'
-    ];
-
     public function send(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'sendmail', 'userId' => $GLOBALS['id']])) {
@@ -78,6 +73,16 @@ class EmailController
         $check = EmailController::controlCreateEmail(['userId' => $args['userId'], 'data' => $args['data'], 'isAcknowledgementReceipt' => !empty($args['options']['acknowledgementReceiptId'])]);
         if (!empty($check['errors'])) {
             return ['errors' => $check['errors'], 'code' => $check['code']];
+        }
+
+        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+        $configuration = json_decode($configuration['value'], true);
+        if (empty($configuration)) {
+            return ['errors' => 'Configuration is missing'];
+        }
+
+        if (!empty($configuration['useSMTPAuth'])) {
+            $args['data']['sender']['email'] = $configuration['from'];
         }
 
         $id = EmailModel::create([
@@ -121,12 +126,18 @@ class EmailController
                 exec("php src/app/email/scripts/sendEmail.php {$customId} {$id} {$args['userId']} '{$encryptKey}' '{$options}' > /dev/null &");
             }
             if (!empty($isSent)) {
+                $info = _EMAIL_ADDED ;
+                
+                if (!empty($configuration['useSMTPAuth'])) {
+                    $info .= ' : ' . _SENDER_EMAIL_REPLACED_SMTP_SENDER;
+                }
+
                 HistoryController::add([
                     'tableName' => 'emails',
                     'recordId'  => $id,
                     'eventType' => 'ADD',
                     'eventId'   => 'emailCreation',
-                    'info'      => _EMAIL_ADDED
+                    'info'      => $info
                 ]);
 
                 if (!empty($args['data']['document']['id'])) {
@@ -135,7 +146,7 @@ class EmailController
                         'recordId'  => $args['data']['document']['id'],
                         'eventType' => 'ADD',
                         'eventId'   => 'emailCreation',
-                        'info'      => _EMAIL_ADDED
+                        'info'      => $info
                     ]);
                 }
             }
@@ -289,6 +300,16 @@ class EmailController
             return $response->withStatus($check['code'])->withJson(['errors' => $check['errors']]);
         }
 
+        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+        $configuration = json_decode($configuration['value'], true);
+        if (empty($configuration)) {
+            return ['errors' => 'Configuration is missing'];
+        }
+
+        if (!empty($configuration['useSMTPAuth'])) {
+            $body['sender']['email'] = $configuration['from'];
+        }
+
         EmailModel::update([
             'set' => [
                 'sender'      => empty($body['sender']) ? '{}' : json_encode($body['sender']),
@@ -331,12 +352,18 @@ class EmailController
                 ]);
             }
         } else {
+            $info = _EMAIL_UPDATED ;
+            
+            if (!empty($configuration['useSMTPAuth'])) {
+                $info .= ' : ' . _SENDER_EMAIL_REPLACED_SMTP_SENDER;
+            }
+
             HistoryController::add([
                 'tableName'    => 'emails',
                 'recordId'     => $args['id'],
                 'eventType'    => 'UP',
                 'eventId'      => 'emailModification',
-                'info'         => _EMAIL_UPDATED
+                'info'         => $info
             ]);
 
             if (!empty($args['data']['document']['id'])) {
@@ -345,7 +372,7 @@ class EmailController
                     'recordId'  => $args['data']['document']['id'],
                     'eventType' => 'UP',
                     'eventId'   => 'emailModification',
-                    'info'      => _EMAIL_UPDATED
+                    'info'      => $info
                 ]);
             }
         }
@@ -760,26 +787,6 @@ class EmailController
             ]);
 
             $errors = !empty($history[0]['info']) ? $history[0]['info'] : $phpmailer->ErrorInfo;
-
-            // If we cannot override from with the sender email address, we try sending the email with the from in the configuration
-            if ($email['sender']['email'] != $configuration['from']) {
-                $tryWithConfigFrom = false;
-                foreach (EmailController::SMTP_ERRORS_SENDER_REJECTED as $errorCandidate) {
-                    if (stripos($errors, $errorCandidate) !== false) {
-                        $tryWithConfigFrom = true;
-                        break;
-                    }
-                }
-                if ($tryWithConfigFrom) {
-                    $sender = [
-                        'email'    => $configuration['from'],
-                        'entityId' => $email['sender']['entityId'] ?? null
-                    ];
-                    EmailModel::update(['set' => ['sender' => json_encode($sender)], 'where' => ['id = ?'], 'data' => [$args['emailId']]]);
-
-                    return EmailController::sendEmail(['emailId' => $args['emailId'], 'userId' => $args['userId']]);
-                }
-            }
 
             return ['errors' => $errors];
         }

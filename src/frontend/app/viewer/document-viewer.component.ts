@@ -97,6 +97,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     @Input() newPjVersion: boolean = false;
 
+    @Input() isNewVersion: boolean = false;
+
     /**
       * Event emitter
       */
@@ -175,7 +177,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     status: string = '';
 
-    isNewVersion: boolean = false;
+
+    rotation: number = null;
 
     constructor(
         public translate: TranslateService,
@@ -261,6 +264,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         if (this.intervalLockFile) {
             this.cancelTemplateEdition();
         }
+        this.rotation = null;
     }
 
     loadFileFromBase64() {
@@ -381,7 +385,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
             autoFocus: false,
             disableClose: true,
-            panelClass: 'maarch-full-height-modal',
+            panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
             data: {
                 title: file.name,
                 filename: file.name,
@@ -395,8 +399,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 if (data === 'createNewVersion' && this.mode === 'mainDocument') {
                     const objToSend: any = {
                         resId: this.resId,
-                        encodedFile: file.base64,
-                        format: 'pdf',
+                        encodedFile: file.content,
+                        format: file.format
                     };
                     this.http.put(`../rest/resources/${this.resId}?onlyDocument=true`, objToSend).pipe(
                         tap(() => {
@@ -735,7 +739,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     openPdfInTab() {
-        let src = '';
+        const src = '';
         if (this.file.contentMode === 'route'){
             this.http.get(this.file.content, { responseType: 'json' }).pipe(
                 tap((data: any) => {
@@ -1389,7 +1393,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             tap((data: any) => {
                 const dialogRef = this.dialog.open(DocumentViewerModalComponent, {
                     autoFocus: false,
-                    panelClass: 'maarch-full-height-modal',
+                    panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
                     data: {
                         title: `${title}`,
                         base64: data.encodedDocument,
@@ -1511,5 +1515,13 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     canSaveModifications(currentMode: string) {
         const commonConditions: boolean = this.isDocModified && this.mode === currentMode && this.editor.mode !== 'office365sharepoint' && !this.loading;
         return currentMode === 'mainDocument' ? commonConditions && this.resId !== null : commonConditions;
+    }
+
+    rotateDocument(side: string) {
+        if (side === 'left') {
+            this.rotation = this.rotation - 90;
+        } else if (side === 'right') {
+            this.rotation = this.rotation + 90;
+        }
     }
 }

@@ -43,8 +43,8 @@ use Search\controllers\SearchController;
 use Search\models\SearchModel;
 use Search\models\SearchTemplateModel;
 use Shipping\models\ShippingTemplateModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -325,7 +325,10 @@ class TileController
             }
             $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
-                $tile['maarchParapheurUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
+                $tile['externalSignatoryBookUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
+            } else if ($enabledExternalSignatoryBook == 'fastParapheur') {
+                $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', (string)($loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']/url')[0]));
+                $tile['externalSignatoryBookUrl'] = rtrim($fastParapheurUrl, "/");
             }
         } elseif ($tile['type'] == 'searchTemplate') {
             $searchTemplate = SearchTemplateModel::get(['select' => ['label'], 'where' => ['id = ?', 'user_id = ?'], 'data' => [$tile['parameters']['searchTemplateId'], $GLOBALS['id']]]);
@@ -371,7 +374,8 @@ class TileController
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
                 $control = TileController::getMaarchParapheurDetails($tile);
             } elseif ($enabledExternalSignatoryBook == 'fastParapheur') {
-                $control = TileController::getFastParapheurDetails($tile);
+                // $control = TileController::getFastParapheurDetails($tile);
+                return ['errors' => 'Cannot create a tile for Fast Parapheur'];
             }
             if (!empty($control['errors'])) {
                 return ['errors' => $control['errors']];

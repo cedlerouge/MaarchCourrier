@@ -28,8 +28,8 @@ use Parameter\models\ParameterModel;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use Template\models\TemplateAssociationModel;
 use User\models\UserEntityModel;
 use User\models\UserModel;
@@ -594,7 +594,7 @@ class EntityController
             }
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['method']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);

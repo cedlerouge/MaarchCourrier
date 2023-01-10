@@ -146,9 +146,40 @@ body {
     }
 }
 
-.fm.mat-icon, .fa.mat-icon, .far.mat-icon, .fas.mat-icon {
+.mat-icon {
+    overflow: initial !important;
+}
+.fm.mat-icon,
+.fa.mat-icon,
+.far.mat-icon,
+.fas.mat-icon,
+.mat-form-field-appearance-legacy .mat-form-field-prefix .fa.mat-icon, 
+.mat-form-field-appearance-legacy .mat-form-field-suffix .fa.mat-icon {
     height: auto;
     width: auto;
+}
+
+.mat-tab-label .mat-tab-label-content {
+    gap: 10px;
+    align-items: center;
+}
+
+.mat-list-base .mat-list-item .mat-list-icon {
+    border-radius: 0px;
+    align-items: center;
+    display: flex;
+    overflow: initial;
+}
+
+.mat-list-base .mat-list-item .mat-list-icon {
+    border-radius: 0px;
+    align-items: center;
+    display: flex;
+    overflow: initial;
+}
+
+.mat-icon-button .mat-icon {
+    overflow: initial;
 }
 
 .badgePipe_accent {

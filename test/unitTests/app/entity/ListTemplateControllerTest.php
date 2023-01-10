@@ -7,20 +7,23 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\entity;
 
-class ListTemplateControllerTest extends TestCase
+use Entity\controllers\ListTemplateController;
+use Entity\models\ListTemplateModel;
+use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class ListTemplateControllerTest extends CourrierTestCase
 {
     private static $id = null;
 
     public function testCreate()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         //  CREATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'type'              => 'visaCircuit',
             'title'             => 'TEST-LISTTEMPLATE123-TITLE',
@@ -43,22 +46,21 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsInt($responseBody->id);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $listTemplateController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         foreach ($responseBody->listTemplates as $listTemplate) {
@@ -73,7 +75,7 @@ class ListTemplateControllerTest extends TestCase
         $this->assertNotEmpty(self::$id);
 
         //  READ
-        $response       = $listTemplateController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-LISTTEMPLATE123-TITLE', $responseBody->listTemplate->title);
@@ -96,9 +98,6 @@ class ListTemplateControllerTest extends TestCase
         $this->assertSame('sign', $responseBody->listTemplate->items[2]->item_mode);
 
         // Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-
         $body = [
             'type'        => 'raceCircuit',
             'title'       => 'TEST-LISTTEMPLATE123-TITLE',
@@ -121,9 +120,9 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Body type is empty or not an allowed types', $responseBody['errors']);
@@ -151,18 +150,20 @@ class ListTemplateControllerTest extends TestCase
             ],
             'entityId' => 6
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+
+        $response     = $listTemplateController->create($fullRequest, new Response());
+
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity is already linked to this type of template', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -188,18 +189,18 @@ class ListTemplateControllerTest extends TestCase
             ],
             'entityId' => 6
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -224,18 +225,18 @@ class ListTemplateControllerTest extends TestCase
             ],
             'entityId' => 6
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('type is empty', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Mode not admin
@@ -261,67 +262,65 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $body['type'] = 'diffusionList';
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $body['type'] = 'opinionCircuit';
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         // Mode admin
         $body['entityId'] =  21;
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         unset($body['entityId']);
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
         $queryParams = [
             'admin'  => true
         ];
         $fullRequest = $fullRequest->withQueryParams($queryParams);
 
-        $response     = $listTemplateController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $listTemplateController->create($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testUpdate()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         //  UPDATE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $aArgs = [
+        $args = [
             'title'             => 'TEST-LISTTEMPLATE123-TITLE-UPDATED',
             'description'       => 'TEST LISTTEMPLATE123 DESCRIPTION UPDATED',
             'items'             => [
@@ -337,16 +336,14 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ],
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->get($request, new \Slim\Http\Response());
+        $request = $this->createRequest('GET');
+        $response       = $listTemplateController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
         self::$id = null;
@@ -361,9 +358,8 @@ class ListTemplateControllerTest extends TestCase
         $this->assertNotEmpty(self::$id);
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $listTemplateController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('TEST-LISTTEMPLATE123-TITLE-UPDATED', $responseBody->listTemplate->title);
@@ -383,7 +379,7 @@ class ListTemplateControllerTest extends TestCase
         $this->assertSame(null, $responseBody->listTemplate->items[2]);
 
         // Errors
-        $aArgs = [
+        $args = [
             'title'             => '',
             'description'       => 'TEST LISTTEMPLATE123 DESCRIPTION UPDATED',
             'items'             => [
@@ -399,19 +395,18 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ],
         ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
-
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $aArgs = [
+        $args = [
             'title'             => 'TEST',
             'description'       => 'TEST LISTTEMPLATE123 DESCRIPTION UPDATED',
             'items'             => [
@@ -427,46 +422,46 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ],
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($aArgs, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => 6],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bblier';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('List template not found', $responseBody['errors']);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity out of perimeter', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => null],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // test control items
@@ -492,9 +487,9 @@ class ListTemplateControllerTest extends TestCase
             ],
             'entityId' => 6
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('id is empty', $responseBody['errors']);
@@ -520,9 +515,9 @@ class ListTemplateControllerTest extends TestCase
             ],
             'entityId' => 6
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('mode is empty', $responseBody['errors']);
@@ -549,14 +544,14 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Dest user is not present in this entity', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => 4, 'type' => 'opinionCircuit'],
             'where' => ['id = ?'],
             'data'  => [self::$id]
@@ -579,14 +574,14 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('item has not enough privileges', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['type' => 'visaCircuit'],
             'where' => ['id = ?'],
             'data'  => [self::$id]
@@ -609,14 +604,14 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('item has not enough privileges', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => 1],
             'where' => ['id = ?'],
             'data'  => [self::$id]
@@ -644,14 +639,14 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
 
-        $response     = $listTemplateController->update($fullRequest, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $listTemplateController->update($fullRequest, new Response(), ['id' => self::$id]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('More than one dest not allowed', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => null],
             'where' => ['id = ?'],
             'data'  => [self::$id]
@@ -660,13 +655,12 @@ class ListTemplateControllerTest extends TestCase
 
     public function testGetByEntityId()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         // Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
-        $response       = $listTemplateController->getByEntityId($request, new \Slim\Http\Response(), ['entityId' => 1000]);
+        $response       = $listTemplateController->getByEntityId($request, new Response(), ['entityId' => 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity does not exist', $responseBody['errors']);
@@ -675,7 +669,7 @@ class ListTemplateControllerTest extends TestCase
             'type' => 'toto'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getByEntityId($fullRequest, new \Slim\Http\Response(), ['entityId' => 6]);
+        $response = $listTemplateController->getByEntityId($fullRequest, new Response(), ['entityId' => 6]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
 
@@ -710,7 +704,7 @@ class ListTemplateControllerTest extends TestCase
             'type' => 'visaCircuit'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getByEntityId($fullRequest, new \Slim\Http\Response(), ['entityId' => 6]);
+        $response = $listTemplateController->getByEntityId($fullRequest, new Response(), ['entityId' => 6]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
 
@@ -720,23 +714,22 @@ class ListTemplateControllerTest extends TestCase
 
     public function testUpdateByUserWithEntityDest()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         // Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listTemplateController->updateByUserWithEntityDest($request, new \Slim\Http\Response(), []);
+        $response = $listTemplateController->updateByUserWithEntityDest($request, new Response(), []);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         $body = [
@@ -747,8 +740,8 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listTemplateController->updateByUserWithEntityDest($fullRequest, new \Slim\Http\Response(), ['item_id' => $GLOBALS['id']]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listTemplateController->updateByUserWithEntityDest($fullRequest, new Response(), ['item_id' => $GLOBALS['id']]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('User not found or not active', $responseBody['errors']);
@@ -762,33 +755,32 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listTemplateController->updateByUserWithEntityDest($fullRequest, new \Slim\Http\Response(), ['item_id' => $GLOBALS['id']]);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listTemplateController->updateByUserWithEntityDest($fullRequest, new Response(), ['item_id' => $GLOBALS['id']]);
         $this->assertSame(204, $response->getStatusCode());
     }
 
     public function testUpdateTypeRoles()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         // Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'PUT']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('PUT');
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listTemplateController->updateTypeRoles($request, new \Slim\Http\Response(), []);
+        $response = $listTemplateController->updateTypeRoles($request, new Response(), []);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response = $listTemplateController->updateTypeRoles($request, new \Slim\Http\Response(), []);
+        $response = $listTemplateController->updateTypeRoles($request, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Bad Request', $responseBody['errors']);
@@ -811,8 +803,8 @@ class ListTemplateControllerTest extends TestCase
                 ]
             ]
         ];
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-        $response = $listTemplateController->updateTypeRoles($fullRequest, new \Slim\Http\Response(), ['typeId' => 'entity_id']);
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listTemplateController->updateTypeRoles($fullRequest, new Response(), ['typeId' => 'entity_id']);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('success', $responseBody['success']);
@@ -820,16 +812,15 @@ class ListTemplateControllerTest extends TestCase
 
     public function testGetRoles()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $queryParams = [
             'context' => 'indexation'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getRoles($fullRequest, new \Slim\Http\Response());
+        $response = $listTemplateController->getRoles($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -855,7 +846,7 @@ class ListTemplateControllerTest extends TestCase
             'context' => 'process'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getRoles($fullRequest, new \Slim\Http\Response());
+        $response = $listTemplateController->getRoles($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -885,7 +876,7 @@ class ListTemplateControllerTest extends TestCase
             'context' => 'details'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getRoles($fullRequest, new \Slim\Http\Response());
+        $response = $listTemplateController->getRoles($fullRequest, new Response());
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -914,14 +905,13 @@ class ListTemplateControllerTest extends TestCase
 
     public function testGetAvailableCircuits()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $queryParams = [];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getAvailableCircuits($fullRequest, new \Slim\Http\Response());
+        $response = $listTemplateController->getAvailableCircuits($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Query params circuit is empty', $responseBody['errors']);
@@ -930,7 +920,7 @@ class ListTemplateControllerTest extends TestCase
             'circuit' => 'visaCircuit'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getAvailableCircuits($fullRequest, new \Slim\Http\Response());
+        $response = $listTemplateController->getAvailableCircuits($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody['circuits']);
@@ -944,14 +934,13 @@ class ListTemplateControllerTest extends TestCase
 
     public function testGetDefaultCircuitByResId()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         $queryParams = [];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new \Slim\Http\Response(), []);
+        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new Response(), []);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Query params circuit is empty', $responseBody['errors']);
@@ -960,18 +949,18 @@ class ListTemplateControllerTest extends TestCase
             'circuit' => 'visa'
         ];
         $fullRequest = $request->withQueryParams($queryParams);
-        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(null, $responseBody['circuit']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => 6],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
-        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new \Slim\Http\Response(), ['resId' => $GLOBALS['resources'][0]]);
+        $response = $listTemplateController->getDefaultCircuitByResId($fullRequest, new Response(), ['resId' => $GLOBALS['resources'][0]]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
@@ -1005,51 +994,50 @@ class ListTemplateControllerTest extends TestCase
 
     public function testDelete()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
         // Errors
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('DELETE');
 
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('List template not found', $responseBody['errors']);
 
         $GLOBALS['login'] = 'ddur';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => 6],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'bblier', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'bblier', 'select' => ['id']]);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['owner' => $userInfo['id']],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Service forbidden', $responseBody['errors']);
 
-        $response       = $listTemplateController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Cannot access private model', $responseBody['errors']);
@@ -1057,32 +1045,30 @@ class ListTemplateControllerTest extends TestCase
         $GLOBALS['login'] = 'bblier';
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody   = json_decode((string)$response->getBody(), true);
         $this->assertSame('Entity out of perimeter', $responseBody['errors']);
 
-        \Entity\models\ListTemplateModel::update([
+        ListTemplateModel::update([
             'set'   => ['entity_id' => null, 'owner' => null],
             'where' => ['id = ?'],
             'data'  => [self::$id]
         ]);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
         //  DELETE
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'DELETE']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->delete($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('DELETE');
+        $response       = $listTemplateController->delete($request, new Response(), ['id' => self::$id]);
         $this->assertSame(204, $response->getStatusCode());
 
         //  READ
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $request = $this->createRequest('GET');
+        $response       = $listTemplateController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody   = json_decode((string)$response->getBody());
 
         $this->assertSame('List template not found', $responseBody->errors);
@@ -1090,11 +1076,10 @@ class ListTemplateControllerTest extends TestCase
 
     public function testGetTypesRoles()
     {
-        $listTemplateController = new \Entity\controllers\ListTemplateController();
+        $listTemplateController = new ListTemplateController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'GET']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
-        $response       = $listTemplateController->getTypeRoles($request, new \Slim\Http\Response(), ['typeId' => 'entity_id']);
+        $request = $this->createRequest('GET');
+        $response       = $listTemplateController->getTypeRoles($request, new Response(), ['typeId' => 'entity_id']);
         $responseBody   = json_decode((string)$response->getBody());
 
         foreach ($responseBody->roles as $value) {

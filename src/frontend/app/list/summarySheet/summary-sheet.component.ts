@@ -8,10 +8,12 @@ import { FunctionsService } from '@service/functions.service';
 import { tap } from 'rxjs/operators';
 import { DomSanitizer } from '@angular/platform-browser';
 import { PrivilegeService } from '@service/privileges.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 
 @Component({
     templateUrl: 'summary-sheet.component.html',
-    styleUrls: ['summary-sheet.component.scss']
+    styleUrls: ['summary-sheet.component.scss'],
+    providers: [ExternalSignatoryBookManagerService]
 })
 export class SummarySheetComponent implements OnInit {
 
@@ -167,12 +169,14 @@ export class SummarySheetComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<SummarySheetComponent>,
+        public externalSignatoryBook: ExternalSignatoryBookManagerService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
         private privilegeService: PrivilegeService,
-        private sanitizer: DomSanitizer) { }
+        private notify: NotificationService,
+        private sanitizer: DomSanitizer
+    ) { }
 
     ngOnInit(): void {
         this.paramMode = !this.functions.empty(this.data.paramMode);
@@ -192,13 +196,11 @@ export class SummarySheetComponent implements OnInit {
             })
         ).subscribe();
 
-        this.http.get('../rest/externalSignatureBooks/enabled').pipe(
-            tap((data: any) => {
-                if (data.enabledSignatureBook !== 'maarchParapheur') {
-                    this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
-                }
-            })
-        ).subscribe();
+        if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
+            if (!this.externalSignatoryBook.canViewWorkflow()) {
+                this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'visaWorkflowMaarchParapheur');
+            }
+        }
 
         if (!this.privilegeService.hasCurrentUserPrivilege('view_doc_history') && !this.privilegeService.hasCurrentUserPrivilege('view_full_history')) {
             this.dataAvailable = this.dataAvailable.filter((item: any) => item.id !== 'workflowHistory');

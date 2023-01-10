@@ -7,24 +7,32 @@
 *
 */
 
-use PHPUnit\Framework\TestCase;
+namespace MaarchCourrier\Tests\app\acknowledgementReceipt;
 
-class AcknowledgementReceiptControllerTest extends TestCase
+use AcknowledgementReceipt\controllers\AcknowledgementReceiptController;
+use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
+use Convert\controllers\ConvertPdfController;
+use Docserver\controllers\DocserverController;
+use MaarchCourrier\Tests\CourrierTestCase;
+use Resource\controllers\ResController;
+use Resource\models\ResModel;
+use SrcCore\http\Response;
+use User\models\UserModel;
+
+class AcknowledgementReceiptControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $resId = null;
 
+    // TODO change to setUpBeforeClass
     public function testInit()
     {
-        $resController = new \Resource\controllers\ResController();
+        $resController = new ResController();
 
         //  CREATE
         $GLOBALS['login'] = 'cchaplin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
@@ -54,23 +62,23 @@ class AcknowledgementReceiptControllerTest extends TestCase
             ]
         ];
 
-        $fullRequest = httpRequestCustom::addContentInBody($argsMailNew, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $argsMailNew);
 
-        $response     = $resController->create($fullRequest, new \Slim\Http\Response());
+        $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertIsInt($responseBody['resId']);
         self::$resId = $responseBody['resId'];
 
-        $encodedDocument = \Convert\controllers\ConvertPdfController::convertFromEncodedResource(['encodedResource' => base64_encode($encodedFile), 'extension' => 'txt']);
+        $encodedDocument = ConvertPdfController::convertFromEncodedResource(['encodedResource' => base64_encode($encodedFile), 'extension' => 'txt']);
 
-        $storeResult = \Docserver\controllers\DocserverController::storeResourceOnDocServer([
+        $storeResult = DocserverController::storeResourceOnDocServer([
             'collId'            => 'letterbox_coll',
             'docserverTypeId'   => 'ACKNOWLEDGEMENT_RECEIPTS',
             'encodedResource'   => $encodedDocument['encodedResource'],
             'format'            => 'pdf'
         ]);
 
-        self::$id = \AcknowledgementReceipt\models\AcknowledgementReceiptModel::create([
+        self::$id = AcknowledgementReceiptModel::create([
             'resId'             => self::$resId,
             'type'              => 'simple',
             'format'            => 'pdf',
@@ -83,25 +91,21 @@ class AcknowledgementReceiptControllerTest extends TestCase
         ]);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
     }
 
     public function testCreatePaperAcknowledgement()
     {
-        $acknowledgementReceiptController = new \AcknowledgementReceipt\controllers\AcknowledgementReceiptController();
-
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $acknowledgementReceiptController = new AcknowledgementReceiptController();
 
         // Fail
         $body = [
 
         ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
-
-        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new \Slim\Http\Response());
+        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Resources is not set or empty', $responseBody['errors']);
@@ -110,9 +114,9 @@ class AcknowledgementReceiptControllerTest extends TestCase
             'resources' => [self::$id * 1000]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new \Slim\Http\Response());
+        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new Response());
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Documents out of perimeter', $responseBody['errors']);
@@ -122,9 +126,9 @@ class AcknowledgementReceiptControllerTest extends TestCase
             'resources' => [self::$id]
         ];
 
-        $fullRequest = \httpRequestCustom::addContentInBody($body, $request);
+        $fullRequest = $this->createRequestWithBody('POST', $body);
 
-        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new \Slim\Http\Response());
+        $response     = $acknowledgementReceiptController->createPaperAcknowledgement($fullRequest, new Response());
         $headers = $response->getHeaders();
 
         $this->assertSame('inline; filename=maarch.pdf', $headers['Content-Disposition'][0]);
@@ -133,25 +137,24 @@ class AcknowledgementReceiptControllerTest extends TestCase
 
     public function testGetByResId()
     {
-        $acknowledgementReceiptController = new \AcknowledgementReceipt\controllers\AcknowledgementReceiptController();
+        $acknowledgementReceiptController = new AcknowledgementReceiptController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('POST');
 
         // Fail
-        $response     = $acknowledgementReceiptController->getByResId($request, new \Slim\Http\Response(), ['resId' => 'wrong format']);
+        $response     = $acknowledgementReceiptController->getByResId($request, new Response(), ['resId' => 'wrong format']);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         // Success
-        $response     = $acknowledgementReceiptController->getByResId($request, new \Slim\Http\Response(), ['resId' => self::$resId]);
+        $response     = $acknowledgementReceiptController->getByResId($request, new Response(), ['resId' => self::$resId]);
         $this->assertSame(200, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
 
         $this->assertIsArray($responseBody);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
 
         $this->assertSame(self::$id, $responseBody[0]['id']);
         $this->assertSame(self::$resId, $responseBody[0]['resId']);
@@ -166,43 +169,42 @@ class AcknowledgementReceiptControllerTest extends TestCase
 
     public function testGetById()
     {
-        $acknowledgementReceiptController = new \AcknowledgementReceipt\controllers\AcknowledgementReceiptController();
+        $acknowledgementReceiptController = new AcknowledgementReceiptController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Fail
-        $response     = $acknowledgementReceiptController->getById($request, new \Slim\Http\Response(), ['id' => 'wrong format']);
+        $response     = $acknowledgementReceiptController->getById($request, new Response(), ['id' => 'wrong format']);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Route param id is not an integer', $responseBody['errors']);
 
-        $response     = $acknowledgementReceiptController->getById($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $acknowledgementReceiptController->getById($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Acknowledgement receipt does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $acknowledgementReceiptController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $acknowledgementReceiptController->getById($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response     = $acknowledgementReceiptController->getById($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $acknowledgementReceiptController->getById($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
 
         $this->assertIsArray($responseBody['acknowledgementReceipt']);
 
-        $userInfo = \User\models\UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => 'cchaplin', 'select' => ['id']]);
 
         $this->assertSame(self::$id, $responseBody['acknowledgementReceipt']['id']);
         $this->assertSame(self::$resId, $responseBody['acknowledgementReceipt']['resId']);
@@ -217,32 +219,31 @@ class AcknowledgementReceiptControllerTest extends TestCase
 
     public function testGetAcknowledgementReceipt()
     {
-        $acknowledgementReceiptController = new \AcknowledgementReceipt\controllers\AcknowledgementReceiptController();
+        $acknowledgementReceiptController = new AcknowledgementReceiptController();
 
-        $environment    = \Slim\Http\Environment::mock(['REQUEST_METHOD' => 'POST']);
-        $request        = \Slim\Http\Request::createFromEnvironment($environment);
+        $request = $this->createRequest('GET');
 
         // Fail
-        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new \Slim\Http\Response(), ['id' => self::$id * 1000]);
+        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new Response(), ['id' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Acknowledgement receipt does not exist', $responseBody['errors']);
 
         $GLOBALS['login'] = 'bbain';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new Response(), ['id' => self::$id]);
         $this->assertSame(403, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document out of perimeter', $responseBody['errors']);
 
         $GLOBALS['login'] = 'superadmin';
-        $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
         // Success
-        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new \Slim\Http\Response(), ['id' => self::$id]);
+        $response     = $acknowledgementReceiptController->getAcknowledgementReceipt($request, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame(200, $response->getStatusCode());
 
@@ -252,20 +253,21 @@ class AcknowledgementReceiptControllerTest extends TestCase
         $this->assertIsString($responseBody['encodedDocument']);
     }
 
+    // TODO change to tearDownAfterClass
     public function testClean()
     {
-        \AcknowledgementReceipt\models\AcknowledgementReceiptModel::delete([
+        AcknowledgementReceiptModel::delete([
             'where' => ['id = ?'],
             'data'  => [self::$resId]
         ]);
 
         // Delete resource
-        \Resource\models\ResModel::delete([
+        ResModel::delete([
             'where' => ['res_id = ?'],
             'data' => [self::$resId]
         ]);
 
-        $res = \Resource\models\ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
+        $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
     }

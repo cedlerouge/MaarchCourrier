@@ -38,6 +38,10 @@ before_script:
   - cp modules/visa/xml/remoteSignatoryBooks.xml.default modules/visa/xml/remoteSignatoryBooks.xml
   - apt-get install -yqq openjdk-11-jdk > /dev/null
   - sed -i 's/rights="none" pattern="PDF"/rights="read | write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml
+  - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+  - php composer-setup.php
+  - php -r "unlink('composer-setup.php');"
+  - mv composer.phar /usr/local/bin/composer
 
 job_e2e:
   image: php:7.4-apache
@@ -46,6 +50,7 @@ job_e2e:
     - name: postgres:10.1
       command: [ "-c", "datestyle=iso,dmy" ]
   script:
+    - composer install
     - apt-get install -yqq libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
     - service apache2 start
     - touch installed.lck
@@ -83,6 +88,7 @@ job_php-8.1:
     - name: postgres:10.1
       command: [ "-c", "datestyle=iso,dmy" ]
   script:
+    - composer install
     - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
@@ -91,7 +97,7 @@ job_php-8.1:
   # except:
   #   - schedules
   rules:
-  - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+  - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
 
   artifacts:
     paths:
@@ -106,6 +112,7 @@ job_php-8.0:
     - name: postgres:10.1
       command: [ "-c", "datestyle=iso,dmy" ]
   script:
+    - composer install
     - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
@@ -114,7 +121,7 @@ job_php-8.0:
   # except:
   #   - schedules
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
   artifacts:
     paths:
       - test/unitTests/build/
@@ -128,6 +135,7 @@ job_php-7.4:
     - name: postgres:10.1
       command: [ "-c", "datestyle=iso,dmy" ]
   script:
+    - composer install
     - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
@@ -136,7 +144,7 @@ job_php-7.4:
   # except:
   #   - schedules
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/develop/'
+    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
 
   artifacts:
     paths:

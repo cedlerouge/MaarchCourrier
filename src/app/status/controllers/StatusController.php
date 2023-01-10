@@ -19,8 +19,8 @@ use History\controllers\HistoryController;
 use Respect\Validation\Validator;
 use Status\models\StatusModel;
 use Status\models\StatusImagesModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 class StatusController
 {
@@ -46,7 +46,7 @@ class StatusController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!empty($aArgs['identifier']) && Validator::numeric()->validate($aArgs['identifier'])) {
+        if (!empty($aArgs['identifier']) && Validator::numericVal()->validate($aArgs['identifier'])) {
             $obj = StatusModel::getByIdentifier(['identifier' => $aArgs['identifier']]);
 
             if (empty($obj)) {
@@ -82,7 +82,7 @@ class StatusController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $request = $request->getParams();
+        $request = $request->getParsedBody();
         $aArgs   = StatusController::manageValue($request);
         $errors  = $this->control($aArgs, 'create');
 
@@ -111,7 +111,7 @@ class StatusController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $request = $request->getParams();
+        $request = $request->getParsedBody();
         $request = array_merge($request, $aArgs);
 
         $aArgs   = StatusController::manageValue($request);
@@ -144,7 +144,7 @@ class StatusController
 
         $statusDeleted = StatusModel::getByIdentifier(['identifier' => $aArgs['identifier']]);
 
-        if (Validator::notEmpty()->validate($aArgs['identifier']) && Validator::numeric()->validate($aArgs['identifier']) && !empty($statusDeleted)) {
+        if (Validator::notEmpty()->validate($aArgs['identifier']) && Validator::numericVal()->validate($aArgs['identifier']) && !empty($statusDeleted)) {
             StatusModel::delete(['identifier' => $aArgs['identifier']]);
 
             HistoryController::add([

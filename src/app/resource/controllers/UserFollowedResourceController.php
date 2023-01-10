@@ -21,8 +21,8 @@ use Resource\models\ResModel;
 use Resource\models\ResourceListModel;
 use Resource\models\UserFollowedResourceModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\PreparedClauseController;
 
 class UserFollowedResourceController
@@ -172,7 +172,7 @@ class UserFollowedResourceController
 
     public function getBaskets(Request $request, Response $response, array $args)
     {
-        if (!Validator::numeric()->notEmpty()->validate($args['resId'])) {
+        if (!Validator::numericVal()->notEmpty()->validate($args['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route resId is not an integer']);
         }
 

@@ -41,8 +41,8 @@ use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Resource\models\UserFollowedResourceModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\PasswordController;
 use SrcCore\controllers\UrlController;
@@ -149,9 +149,9 @@ class UserController
         $user['assignedBaskets']    = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
         $user['redirectedBaskets']  = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
         $user['history']            = HistoryModel::get(['select' => ['record_id', 'event_date', 'info', 'remote_ip'], 'where' => ['user_id = ?'], 'data' => [$args['id']], 'orderBy' => ['event_date DESC'], 'limit' => 500]);
-        $user['canModifyPassword']              = false;
-        $user['canSendActivationNotification']  = false;
-        $user['canCreateMaarchParapheurUser']   = false;
+        $user['canModifyPassword']                      = false;
+        $user['canSendActivationNotification']          = false;
+        $user['canLinkToExternalSignatoryBook']         = false;
 
         if ($user['mode'] == 'rest') {
             $user['canModifyPassword'] = true;
@@ -162,8 +162,16 @@ class UserController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        if ((string)$loadedXml->signatoryBookEnabled == 'maarchParapheur' && $user['mode'] != 'rest' && empty($user['external_id']['maarchParapheur'])) {
-            $user['canCreateMaarchParapheurUser'] = true;
+        $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
+        if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
+            if ($signatoryBookEnabled == 'fastParapheur') {
+                $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+                if (!empty($fastParapheurBlock)) {
+                    $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                }
+            } else {
+                $user['canLinkToExternalSignatoryBook'] = true;
+            }
         }
 
         return $response->withJson($user);
@@ -973,7 +981,7 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['base64', 'name', 'label']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
@@ -1033,7 +1041,7 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['label']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
@@ -1071,7 +1079,7 @@ class UserController
 
     public function createCurrentUserEmailSignature(Request $request, Response $response)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['title', 'htmlBody']])) {
             return $response->withJson(['errors' => 'Bad Request']);
@@ -1090,7 +1098,7 @@ class UserController
 
     public function updateCurrentUserEmailSignature(Request $request, Response $response, array $aArgs)
     {
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
 
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['title', 'htmlBody']])) {
             return $response->withJson(['errors' => 'Bad Request']);
@@ -1125,7 +1133,7 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['groupId']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -1188,7 +1196,7 @@ class UserController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (empty($data['role'])) {
             $data['role'] = '';
         }
@@ -1270,7 +1278,7 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (!$this->checkNeededParameters(['data' => $data, 'needed' => ['entityId']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -1315,7 +1323,7 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Entity not found']);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (empty($data['user_role'])) {
             $data['user_role'] = '';
         }
@@ -1361,7 +1369,7 @@ class UserController
 
         $user = UserModel::getById(['id' => $aArgs['id'], 'select' => ['user_id']]);
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         if (!empty($data['mode'])) {
             $templateLists = ListTemplateModel::get(['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$entityInfo['id']]]);
             if (!empty($templateLists)) {
@@ -1474,7 +1482,7 @@ class UserController
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $data = $request->getParams();
+        $data = $request->getParsedBody();
         $check = Validator::arrayType()->notEmpty()->validate($data['baskets']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);

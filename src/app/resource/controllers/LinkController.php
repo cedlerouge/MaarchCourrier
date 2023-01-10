@@ -24,8 +24,8 @@ use History\controllers\HistoryController;
 use Resource\models\ResModel;
 use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use Status\models\StatusModel;
 use User\models\UserModel;
 

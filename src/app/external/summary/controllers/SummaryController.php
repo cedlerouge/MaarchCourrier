@@ -19,8 +19,8 @@ use Email\models\EmailModel;
 use MessageExchange\models\MessageExchangeModel;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use User\models\UserModel;
 
 class SummaryController
