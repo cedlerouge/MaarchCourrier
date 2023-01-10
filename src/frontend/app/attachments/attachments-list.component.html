@@ -42,9 +42,9 @@
                         </mat-checkbox>
                         {{'lang.putInSendAttach' | translate}}
                     </button>
-                    <ng-container *ngIf="externalSignatoryBook.canViewWorkflow() && attachment.status === 'FRZ'">
+                    <ng-container *ngIf="attachment.status === 'FRZ'">
                         <mat-divider></mat-divider>
-                        <button mat-menu-item (click)="openExternalSignatoryBookWorkflow(attachment)">
+                        <button mat-menu-item (click)="openExternalSignatoryBookWorkflow(attachment)" [disabled]="!externalSignatoryBook.canViewWorkflow()">
                             {{'lang.' + externalSignatoryBook.signatoryBookEnabled + 'Workflow' | translate}}
                         </button>
                     </ng-container>
