@@ -285,7 +285,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             'encodedFile'       => $value['log'],
             'status'            => 'TRA'
         ]);
-        if ($return) {
+        if ($return !== false) {
             Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of attachment created : {$return['id']}"]);
         }
     }
@@ -317,7 +317,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
                 'originId'        => $resId,
                 'signatory_user_serial_id' => $value['signatory_user_serial_id'] ?? null
             ]);
-            if ($return) {
+            if ($return !== false) {
                 Bt_writeLog(['level' => 'INFO', 'message' => "Signed attachment created : {$return['id']}"]);
             } else {
                 continue;
@@ -375,7 +375,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
                     'encodedFile'     => $value['encodedFile'],
                     'inSignatureBook' => false
                 ]);
-                if ($return) {
+                if ($return !== false) {
                     Bt_writeLog(['level' => 'INFO', 'message' => "Refused attachment created : {$return['id']}"]);
                 } else {
                     continue;
@@ -443,7 +443,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             'encodedFile'       => $value['log'],
             'status'            => 'TRA'
         ]);
-        if ($return) {
+        if ($return !== false) {
             Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of main document created : {$return['id']}"]);
         }
     }
