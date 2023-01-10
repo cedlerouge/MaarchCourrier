@@ -551,7 +551,7 @@ class FastParapheurController
 
         foreach ($documentPathToZip as $document) {
             if(file_exists($document['path']) && filesize($document['path']) > 0) {
-                // unlink($document['path']);
+                unlink($document['path']);
             }
         }
 
