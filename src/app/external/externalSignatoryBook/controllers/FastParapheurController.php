@@ -1162,8 +1162,8 @@ class FastParapheurController
             return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
         } elseif (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'integratedWorkflow not found for FastParapheur'];
-        } elseif (!array_key_exists('workflowType', $fastParapheurBlock)) {
-            return ['code' => 500, 'errors' => 'workflowType not found for FastParapheur'];
+        } elseif (!array_key_exists('workflowTypes', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'workflowTypes not found for FastParapheur'];
         } elseif (!array_key_exists('subscriberId', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'subscriberId not found for FastParapheur'];
         } elseif (!array_key_exists('url', $fastParapheurBlock)) {
