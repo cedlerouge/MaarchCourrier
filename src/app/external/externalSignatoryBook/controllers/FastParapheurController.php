@@ -22,20 +22,21 @@ use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
-use Resource\controllers\StoreController;
+use History\controllers\HistoryController;
 use Resource\controllers\ResController;
+use Resource\controllers\StoreController;
 use Resource\models\ResModel;
+use Respect\Validation\Validator;
+use Slim\Http\Request;
+use Slim\Http\Response;
+use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\DatabaseModel;
-use User\models\UserModel;
-use SrcCore\models\ValidatorModel;
-use Respect\Validation\Validator;
-use User\controllers\UserController;
-use History\controllers\HistoryController;
-use Slim\Http\Request;
-use Slim\Http\Response;
 use SrcCore\models\TextFormatModel;
+use SrcCore\models\ValidatorModel;
+use User\controllers\UserController;
+use User\models\UserModel;
 
 /**
 * @codeCoverageIgnore
@@ -277,9 +278,25 @@ class FastParapheurController
         $version = $args['version'];
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             if (empty($value['res_id_master'])) {
-                Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve main document resId: ${resId}"]);
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['batchName'],
+                    'level'     => 'INFO',
+                    'tableName' => '',
+                    'recordId'  => '',
+                    'eventType' => '',
+                    'eventId'   => "Retrieve main document resId: ${resId}"
+                ]);
             } else {
-                Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve attachment resId: ${resId}"]);
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['batchName'],
+                    'level'     => 'INFO',
+                    'tableName' => '',
+                    'recordId'  => '',
+                    'eventType' => '',
+                    'eventId'   => "Retrieve main document resId: ${resId}"
+                ]);
             }
             if (empty(trim($value['external_id']))) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
@@ -293,7 +310,15 @@ class FastParapheurController
                 if ($fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
                     $newDate = $fetchDate->modify('+30 minutes');
 
-                    Bt_writeLog(['level' => 'INFO', 'message' => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"]);
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['batchName'],
+                        'level'     => 'INFO',
+                        'tableName' => '',
+                        'recordId'  => '',
+                        'eventType' => '',
+                        'eventId'   => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"
+                    ]);
 
                     unset($args['idsToRetrieve'][$version][$resId]);
                     continue;
@@ -308,21 +333,45 @@ class FastParapheurController
                 'resId' => $value['res_id']
             ]);
             if (!empty($updateHistoryFetchDate['errors'])) {
-                Bt_writeLog(['level' => 'ERROR', 'message' => "{$updateHistoryFetchDate['errors']}"]);
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['batchName'],
+                    'level'     => 'ERROR',
+                    'tableName' => '',
+                    'recordId'  => '',
+                    'eventType' => '',
+                    'eventId'   => "{$updateHistoryFetchDate['errors']}"
+                ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
 
             // Check for $historyResponse error
             if (!empty($historyResponse['errors'])) {
-                Bt_writeLog(['level' => 'ERROR', 'message' => "[fastParapheur api] {$historyResponse['errors']}"]);
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['batchName'],
+                    'level'     => 'ERROR',
+                    'tableName' => '',
+                    'recordId'  => '',
+                    'eventType' => '',
+                    'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
+                ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
 
             foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
                 if ($valueResponse['stateName'] == $args['config']['data']['validatedState']) {
-                    Bt_writeLog(['level' => 'INFO', 'message' => "Circuit ended ! Retrieve file from fastParapheur"]);
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['batchName'],
+                        'level'     => 'INFO',
+                        'tableName' => '',
+                        'recordId'  => '',
+                        'eventType' => '',
+                        'eventId'   => "Circuit ended ! Retrieve file from fastParapheur"
+                    ]);
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
@@ -337,10 +386,26 @@ class FastParapheurController
                         'signEncodedFile' => $response['b64FileContent']
                     ]);
                     if (!empty($proofDocument['errors'])) {
-                        Bt_writeLog(['level' => 'ERROR', 'message' => "{$proofDocument['errors']}"]);
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['batchName'],
+                            'level'     => 'ERROR',
+                            'tableName' => '',
+                            'recordId'  => '',
+                            'eventType' => '',
+                            'eventId'   => "{$proofDocument['errors']}"
+                        ]);
                         continue;
                     } elseif (!empty($proofDocument['encodedProofDocument'])) {
-                        Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve proof from fastParapheur"]);
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['batchName'],
+                            'level'     => 'INFO',
+                            'tableName' => '',
+                            'recordId'  => '',
+                            'eventType' => '',
+                            'eventId'   => "Retrieve proof from fastParapheur"
+                        ]);
                         $args['idsToRetrieve'][$version][$resId]['log']       = $proofDocument['encodedProofDocument'];
                         $args['idsToRetrieve'][$version][$resId]['logFormat'] = $proofDocument['format'];
                         $args['idsToRetrieve'][$version][$resId]['logTitle']  = '[Faisceau de preuve]';
@@ -352,7 +417,15 @@ class FastParapheurController
                             'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
                     }
-                    Bt_writeLog(['level' => 'INFO', 'message' => "Done!"]);
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['batchName'],
+                        'level'     => 'INFO',
+                        'tableName' => '',
+                        'recordId'  => '',
+                        'eventType' => '',
+                        'eventId'   => "Done!"
+                    ]);
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
@@ -371,7 +444,15 @@ class FastParapheurController
                     } else {
                         $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['name'] . ' : ' . $response];
                     }
-                    Bt_writeLog(['level' => 'INFO', 'message' => "Done!"]);
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['batchName'],
+                        'level'     => 'INFO',
+                        'tableName' => '',
+                        'recordId'  => '',
+                        'eventType' => '',
+                        'eventId'   => "Done!"
+                    ]);
                     break;
                 } else {
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
