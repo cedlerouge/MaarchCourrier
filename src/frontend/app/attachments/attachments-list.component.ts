@@ -234,4 +234,8 @@ export class AttachmentsListComponent implements OnInit {
             }
         });
     }
+
+    getTitle(): string {
+        return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
+    }
 }
