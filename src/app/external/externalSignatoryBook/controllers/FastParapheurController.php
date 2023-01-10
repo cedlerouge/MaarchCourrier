@@ -276,6 +276,9 @@ class FastParapheurController
     public static function retrieveSignedMails(array $args)
     {
         $version = $args['version'];
+
+        $GLOBALS['batchName'] = $GLOBALS['batchName'] ?? 'script';
+
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             if (empty($value['res_id_master'])) {
                 LogsController::add([
