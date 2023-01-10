@@ -56,7 +56,7 @@ class FastParapheurController
         }
 
         return $response->withJson([
-            'workflowTypes'  => $config['config']['workflowTypes']['type'],
+            'workflowTypes'  => $config['workflowTypes']['type'],
             'signatureModes' => $signatureModes['signatureModes']
         ]);
     }
@@ -1192,15 +1192,15 @@ class FastParapheurController
             return ['code' => $config['code'], 'errors' => $config['errors']];
         }
 
-        if (empty($config['config']['signatureModes']['mode'])) {
+        if (empty($config['signatureModes']['mode'])) {
             return ['code' => 400, 'errors' => "signatureModes not found in config file"];
         }
         
         //map sign to signature or others
-        $modes = $config['config']['signatureModes']['mode'];
+        $modes = $config['signatureModes']['mode'];
         if (!empty($args['mapping'])) {
             $modes = [];
-            foreach ($config['config']['signatureModes']['mode'] as $key => $value) {
+            foreach ($config['signatureModes']['mode'] as $key => $value) {
                 $value['id'] = FastParapheurController::getSignatureModeById(['signatureModeId' => $value['id']]);
                 $modes[] = $value;
             }
