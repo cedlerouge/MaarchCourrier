@@ -188,18 +188,18 @@ function Bt_createAttachment($args = [])
     $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     if ($code == 404) {
         Bt_writeLog(['level' => 'ERROR', 'message' => 'Create attachment failed : maarchUrl is not correct']);
-        $return = false;
+        return false;
     }
 
     if (!empty($error)) {
-        Bt_writeLog(['level' => 'ERROR', 'message' => "Create attachment failed : ${error}"]);
-        $return = false;
+        Bt_writeLog(['level' => 'ERROR', 'message' => "Create attachment failed : {$error}"]);
+        return false;
     }
 
     $return = json_decode($rawResponse, true);
     if (!empty($return['errors'])) {
-        Bt_writeLog(['level' => 'ERROR', 'message' => "Create attachment failed : ${return['errors']}"]);
-        $return = false;
+        Bt_writeLog(['level' => 'ERROR', 'message' => "Create attachment failed : {$return['errors']}"]);
+        return false;
     }
 
     return $return;

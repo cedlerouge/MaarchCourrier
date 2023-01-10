@@ -181,7 +181,7 @@ if (file_exists($GLOBALS['errorLckFile'])) {
 
 Bt_getWorkBatch();
 
-Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated attachments from ${configRemoteSignatoryBook['id']}"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated attachments from {$configRemoteSignatoryBook['id']}"]);
 $attachments = \Attachment\models\AttachmentModel::get([
     'select' => ['res_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'external_id->>\'signatureBookId\' as external_id', 'external_id->>\'xparaphDepot\' as xparaphdepot', 'format', 'res_id_master', 'title', 'identifier', 'attachment_type', 'recipient_id', 'recipient_type', 'typist', 'origin_id', 'relation'],
     'where' => ['status = ?', 'external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\''],
@@ -190,7 +190,7 @@ $attachments = \Attachment\models\AttachmentModel::get([
 
 $nbAttachments = count($attachments);
 
-Bt_writeLog(['level' => 'INFO', 'message' => "${nbAttachments} attachments to analyze"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "{$nbAttachments} attachments to analyze"]);
     
 $idsToRetrieve = ['noVersion' => [], 'resLetterbox' => []];
 
@@ -213,13 +213,13 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
     $retrievedMails = \ExternalSignatoryBook\controllers\XParaphController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 }
 
-Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated documents from ${configRemoteSignatoryBook['id']}"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated documents from {$configRemoteSignatoryBook['id']}"]);
 $resources = \Resource\models\ResModel::get([
     'select' => ['res_id', 'external_id->>\'signatureBookId\' as external_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'subject', 'typist', 'version', 'alt_identifier'],
     'where' => ['external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\'']
 ]);
 $nbResources = count($resources);
-Bt_writeLog(['level' => 'INFO', 'message' => "${nbResources} documents to analyze"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "{$nbResources} documents to analyze"]);
 
 foreach ($resources as $value) {
     if (!empty(trim($value['external_id']))) {
@@ -265,10 +265,10 @@ $nbDocRetrieved = 0;
 
 $nbRetrievedMailsAttach = count($retrievedMails['noVersion']);
 
-Bt_writeLog(['level' => 'INFO', 'message' => "${nbRetrievedMailsAttach} attachments to process"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "{$nbRetrievedMailsAttach} attachments to process"]);
 
 foreach ($retrievedMails['noVersion'] as $resId => $value) {
-    Bt_writeLog(['level' => 'INFO', 'message' => "Attachment : ${resId} (${configRemoteSignatoryBook['id']} : ${value['external_id']})"]);
+    Bt_writeLog(['level' => 'INFO', 'message' => "Attachment : {$resId} ({$configRemoteSignatoryBook['id']} : {$value['external_id']})"]);
 
     $historyIdentifier = $value['identifier'] ?? $resId . ' (res_attachments)';
     if (!empty($value['log'])) {
@@ -286,7 +286,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             'status'            => 'TRA'
         ]);
         if ($return) {
-            Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of attachment created : ${return['id']}"]);
+            Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of attachment created : {$return['id']}"]);
         }
     }
     $additionalHistoryInfo = '';
@@ -318,7 +318,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
                 'signatory_user_serial_id' => $value['signatory_user_serial_id'] ?? null
             ]);
             if ($return) {
-                Bt_writeLog(['level' => 'INFO', 'message' => "Signed attachment created : ${return['id']}"]);
+                Bt_writeLog(['level' => 'INFO', 'message' => "Signed attachment created : {$return['id']}"]);
             } else {
                 continue;
             }
@@ -376,7 +376,7 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
                     'inSignatureBook' => false
                 ]);
                 if ($return) {
-                    Bt_writeLog(['level' => 'INFO', 'message' => "Refused attachment created : ${return['id']}"]);
+                    Bt_writeLog(['level' => 'INFO', 'message' => "Refused attachment created : {$return['id']}"]);
                 } else {
                     continue;
                 }
@@ -425,10 +425,10 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
 
 $nbRetrievedMailsDoc = count($retrievedMails['resLetterbox']);
 
-Bt_writeLog(['level' => 'INFO', 'message' => "${nbRetrievedMailsDoc} documents to process"]);
+Bt_writeLog(['level' => 'INFO', 'message' => "{$nbRetrievedMailsDoc} documents to process"]);
 
 foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
-    Bt_writeLog(['level' => 'INFO', 'message' => "Main document : ${resId} (${configRemoteSignatoryBook['id']} : ${value['external_id']})"]);
+    Bt_writeLog(['level' => 'INFO', 'message' => "Main document : {$resId} ({$configRemoteSignatoryBook['id']} : {$value['external_id']})"]);
     $historyIdentifier = $value['alt_identifier'] ?? $resId . ' (res_letterbox)';
 
     if (!empty($value['log'])) {
@@ -444,7 +444,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             'status'            => 'TRA'
         ]);
         if ($return) {
-            Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of main document created : ${return['id']}"]);
+            Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of main document created : {$return['id']}"]);
         }
     }
 
@@ -469,9 +469,9 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
         ]);
 
         if (empty($storeResult['errors'])) {
-            Bt_writeLog(['level' => 'INFO', 'message' => "Signed main document created : ${return['id']}"]);
+            Bt_writeLog(['level' => 'INFO', 'message' => "Signed main document created : {$return['id']}"]);
         } else {
-            Bt_writeLog(['level' => 'ERROR', 'message' => "Create Signed main document failed : ${storeResult['errors']}"]);
+            Bt_writeLog(['level' => 'ERROR', 'message' => "Create Signed main document failed : {$storeResult['errors']}"]);
             continue;
         }
         \SrcCore\models\DatabaseModel::insert([
