@@ -545,10 +545,12 @@ if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($validateVisaW
 }
 Bt_writeLog(['level' => 'INFO', 'message' => $nbAttachRetrieved.' attachment(s) retrieved']);
 Bt_writeLog(['level' => 'INFO', 'message' => $nbDocRetrieved.' document(s) retrieved']);
+Bt_logInDataBase($nbAttachRetrieved, 0, $nbAttachRetrieved.' attachment(s) retrieved from ' . $configRemoteSignatoryBook['id']);
+Bt_logInDataBase($nbDocRetrieved, 0, $nbDocRetrieved.' document(s) retrieved from ' . $configRemoteSignatoryBook['id']);
+
+Bt_updateWorkBatch();
+
 Bt_writeLog(['level' => 'INFO', 'message' => 'End of process']);
 print("End of process, see technique.log" . PHP_EOL);
-
-Bt_logInDataBase($nbMailsRetrieved, 0, $nbMailsRetrieved.' mail(s) retrieved from signatory book');
-Bt_updateWorkBatch();
 
 exit(0);
