@@ -174,30 +174,29 @@ class LogsController
                 '%REMOTE_IP%'
             ],
             [
-                $args['lineData']['tableName'] ?? '',
-                $args['lineData']['recordId'] ?? '',
-                $args['lineData']['eventType'] ?? '',
-                $GLOBALS['login'] ?? '',
-                $args['lineData']['eventId'] ?? '',
-                $args['lineData']['moduleId'] ?? '',
-                $_SERVER['REMOTE_ADDR'] ?? ''
+                $args['lineData']['tableName'] ?? ':noTableName',
+                $args['lineData']['recordId'] ?? ':noRecordId',
+                $args['lineData']['eventType'] ?? ':noEventType',
+                $GLOBALS['login'] ?? ':noUser',
+                $args['lineData']['eventId'] ?? ':noEventId',
+                $args['lineData']['moduleId'] ?? ':noModuleId',
+                $_SERVER['REMOTE_ADDR'] ?? gethostbyname(gethostname())
             ],
             "[%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
         );
         if (!empty($args['lineData']['isSql'])) {
-            $logLine  = empty($args['lineData']['sqlQuery']) ? '[]' : "[" . $args['lineData']['sqlQuery'] . "]";
+            $logLine  = empty($args['lineData']['sqlQuery']) ? '[:noSqlQuery]' : "[" . $args['lineData']['sqlQuery'] . "]";
             if (empty($args['lineData']['sqlData'])) {
-                $logLine .= "[]";
+                $logLine .= "[:noSqlData]";
             } elseif (is_array($args['lineData']['sqlData'])) {
                 $logLine .= "[" . json_encode($args['lineData']['sqlData']) . "]";
             } else {
                 $logLine .= "[" . $args['lineData']['sqlData'] . "]";
             }
-            $logLine .= empty($args['lineData']['sqlException']) ? '[]' : "[" . $args['lineData']['sqlException'] . "]";
+            $logLine .= empty($args['lineData']['sqlException']) ? '[:noSqlException]' : "[" . $args['lineData']['sqlException'] . "]";
         }
         $logLine = TextFormatModel::htmlWasher($logLine);
         $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
-        $logLine = str_replace('[]', '', $logLine);
         return $logLine;
     }
 

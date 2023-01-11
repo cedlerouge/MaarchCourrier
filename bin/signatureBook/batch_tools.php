@@ -131,11 +131,10 @@ function Bt_writeLog($args = [])
 {
     \SrcCore\controllers\LogsController::add([
         'isTech'    => true,
-        'moduleId'  => $GLOBALS['batchName'],
+        'moduleId'  => $GLOBALS['moduleId'],
         'level'     => $args['level'],
-        'tableName' => '',
-        'recordId'  => '',
-        'eventType' => '',
+        'tableName' => $GLOBALS['batchName'],
+        'eventType' => 'script',
         'eventId'   => $args['message']
     ]);
 }

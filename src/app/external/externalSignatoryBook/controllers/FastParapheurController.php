@@ -320,27 +320,23 @@ class FastParapheurController
     {
         $version = $args['version'];
 
-        $GLOBALS['batchName'] = $GLOBALS['batchName'] ?? 'script';
-
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             if (empty($value['res_id_master'])) {
                 LogsController::add([
                     'isTech'    => true,
-                    'moduleId'  => $GLOBALS['batchName'],
+                    'moduleId'  => $GLOBALS['moduleId'],
                     'level'     => 'INFO',
-                    'tableName' => '',
-                    'recordId'  => '',
-                    'eventType' => '',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
                     'eventId'   => "Retrieve main document resId: ${resId}"
                 ]);
             } else {
                 LogsController::add([
                     'isTech'    => true,
-                    'moduleId'  => $GLOBALS['batchName'],
+                    'moduleId'  => $GLOBALS['moduleId'],
                     'level'     => 'INFO',
-                    'tableName' => '',
-                    'recordId'  => '',
-                    'eventType' => '',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
                     'eventId'   => "Retrieve main document resId: ${resId}"
                 ]);
             }
@@ -358,11 +354,10 @@ class FastParapheurController
 
                     LogsController::add([
                         'isTech'    => true,
-                        'moduleId'  => $GLOBALS['batchName'],
+                        'moduleId'  => $GLOBALS['moduleId'],
                         'level'     => 'INFO',
-                        'tableName' => '',
-                        'recordId'  => '',
-                        'eventType' => '',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
                         'eventId'   => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"
                     ]);
 
@@ -381,11 +376,10 @@ class FastParapheurController
             if (!empty($updateHistoryFetchDate['errors'])) {
                 LogsController::add([
                     'isTech'    => true,
-                    'moduleId'  => $GLOBALS['batchName'],
+                    'moduleId'  => $GLOBALS['moduleId'],
                     'level'     => 'ERROR',
-                    'tableName' => '',
-                    'recordId'  => '',
-                    'eventType' => '',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
                     'eventId'   => "{$updateHistoryFetchDate['errors']}"
                 ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
@@ -396,11 +390,10 @@ class FastParapheurController
             if (!empty($historyResponse['errors'])) {
                 LogsController::add([
                     'isTech'    => true,
-                    'moduleId'  => $GLOBALS['batchName'],
+                    'moduleId'  => $GLOBALS['moduleId'],
                     'level'     => 'ERROR',
-                    'tableName' => '',
-                    'recordId'  => '',
-                    'eventType' => '',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
                     'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
                 ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
@@ -411,11 +404,10 @@ class FastParapheurController
                 if ($valueResponse['stateName'] == $args['config']['data']['validatedState']) {
                     LogsController::add([
                         'isTech'    => true,
-                        'moduleId'  => $GLOBALS['batchName'],
+                        'moduleId'  => $GLOBALS['moduleId'],
                         'level'     => 'INFO',
-                        'tableName' => '',
-                        'recordId'  => '',
-                        'eventType' => '',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
                         'eventId'   => "Circuit ended ! Retrieve file from fastParapheur"
                     ]);
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
@@ -434,22 +426,20 @@ class FastParapheurController
                     if (!empty($proofDocument['errors'])) {
                         LogsController::add([
                             'isTech'    => true,
-                            'moduleId'  => $GLOBALS['batchName'],
+                            'moduleId'  => $GLOBALS['moduleId'],
                             'level'     => 'ERROR',
-                            'tableName' => '',
-                            'recordId'  => '',
-                            'eventType' => '',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
                             'eventId'   => "{$proofDocument['errors']}"
                         ]);
                         continue;
                     } elseif (!empty($proofDocument['encodedProofDocument'])) {
                         LogsController::add([
                             'isTech'    => true,
-                            'moduleId'  => $GLOBALS['batchName'],
+                            'moduleId'  => $GLOBALS['moduleId'],
                             'level'     => 'INFO',
-                            'tableName' => '',
-                            'recordId'  => '',
-                            'eventType' => '',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
                             'eventId'   => "Retrieve proof from fastParapheur"
                         ]);
                         $args['idsToRetrieve'][$version][$resId]['log']       = $proofDocument['encodedProofDocument'];
@@ -465,11 +455,10 @@ class FastParapheurController
                     }
                     LogsController::add([
                         'isTech'    => true,
-                        'moduleId'  => $GLOBALS['batchName'],
+                        'moduleId'  => $GLOBALS['moduleId'],
                         'level'     => 'INFO',
-                        'tableName' => '',
-                        'recordId'  => '',
-                        'eventType' => '',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
                         'eventId'   => "Done!"
                     ]);
                     break;
@@ -492,11 +481,10 @@ class FastParapheurController
                     }
                     LogsController::add([
                         'isTech'    => true,
-                        'moduleId'  => $GLOBALS['batchName'],
+                        'moduleId'  => $GLOBALS['moduleId'],
                         'level'     => 'INFO',
-                        'tableName' => '',
-                        'recordId'  => '',
-                        'eventType' => '',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
                         'eventId'   => "Done!"
                     ]);
                     break;

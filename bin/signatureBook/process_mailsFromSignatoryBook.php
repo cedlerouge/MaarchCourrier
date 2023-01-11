@@ -27,6 +27,7 @@ class IncludeFileError extends Exception
 
 // Globals variables definition
 $GLOBALS['batchName']    = 'retrieveMailsFromSignatoryBook';
+$GLOBALS['moduleId']     = 'externalSignatoryBook';
 $GLOBALS['wb']           = '';
 $totalProcessedResources = 0;
 
