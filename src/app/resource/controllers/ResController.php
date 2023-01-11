@@ -1485,8 +1485,12 @@ class ResController extends ResourceControlController
         $allowedFiles = StoreController::getAllowedFiles();
         $allowedFiles = array_column($allowedFiles, 'canConvert', 'extension');
 
-        $format = strtoupper($resource['format']);
-        $resource['canConvert'] = !empty($allowedFiles[$format]);
+        $resource['canConvert'] = false;
+
+        if (!empty($resource['format'])) {
+            $format = strtoupper($resource['format']);
+            $resource['canConvert'] = !empty($allowedFiles[$format]);
+        }
 
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
             $resource = [

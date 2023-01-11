@@ -59,7 +59,7 @@ class NoteController
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $note['user_id'], 'select' => ['entities.entity_label']]);
             $notes[$key]['firstname']    = $user['firstname'];
             $notes[$key]['lastname']     = $user['lastname'];
-            $notes[$key]['entity_label'] = $primaryEntity['entity_label'];
+            $notes[$key]['entity_label'] = $primaryEntity['entity_label'] ?? null;
 
             $notes[$key]['value'] = $note['note_text'];
             unset($notes[$key]['note_text']);

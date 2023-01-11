@@ -139,7 +139,7 @@ class ResourceListController
             ]);
 
             $defaultAction['component'] = $groupBasket[0]['list_event'];
-            $defaultAction['data'] = json_decode($groupBasket[0]['list_event_data'], true);
+            $defaultAction['data'] = json_decode($groupBasket[0]['list_event_data'] ?? '{}', true);
 
             if (in_array('getFolders', array_column($listDisplay, 'value'))) {
                 $displayFolderTags = true;

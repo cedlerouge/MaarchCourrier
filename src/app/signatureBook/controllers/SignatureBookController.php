@@ -230,7 +230,7 @@ class SignatureBookController
                 if ($value['recipient_type'] == 'user') {
                     $attachments[$key]['recipient'] = UserModel::getLabelledUserById(['id' => $value['recipient_id']]);
                 } elseif ($value['recipient_type'] == 'contact') {
-                    $contactRaw = ContactModel::getById(['select' => ['firstname', 'lastname', 'company'], 'id' => $value['recipient_id']]);
+                    $contactRaw = ContactModel::getById(['select' => ['id', 'firstname', 'lastname', 'company'], 'id' => $value['recipient_id']]);
                     $attachments[$key]['recipient'] = ContactController::getFormattedOnlyContact(['contact' => $contactRaw]);
                 }
             }
@@ -250,10 +250,10 @@ class SignatureBookController
             }
 
             $attachments[$key]['creation_date'] = date(DATE_ATOM, strtotime($attachments[$key]['creation_date']));
-            if ($attachments[$key]['validation_date']) {
+            if (!empty($attachments[$key]['validation_date'])) {
                 $attachments[$key]['validation_date'] = date(DATE_ATOM, strtotime($attachments[$key]['validation_date']));
             }
-            if ($attachments[$key]['doc_date']) {
+            if (!empty($attachments[$key]['doc_date'])) {
                 $attachments[$key]['doc_date'] = date(DATE_ATOM, strtotime($attachments[$key]['doc_date']));
             }
             $attachments[$key]['isConverted']     = ConvertPdfController::canConvert(['extension' => $attachments[$key]['format']]);
