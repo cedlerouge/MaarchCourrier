@@ -195,6 +195,8 @@ class CurlModel
         $headers  = explode("\r\n", $headers);
         $response = substr($rawResponse, $headerSize);
 
+        $formatedResponse = $response;
+
         if ($args['isXml']) {
             $formatedResponse = simplexml_load_string($response);
         } elseif (in_array('Accept: application/zip', $args['headers'])) {
