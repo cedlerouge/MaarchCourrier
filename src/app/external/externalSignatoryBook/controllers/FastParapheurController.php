@@ -524,7 +524,7 @@ class FastParapheurController
         $tmpPath            = CoreConfigModel::getTmpPath();
         $proof              = ['history' => $args['historyData']];
 
-        $signDocumentPath   = $tmpPath . 'fastSignDoc' . $GLOBALS['id'] . "_" . rand() . '.pdf';
+        $signDocumentPath   = $tmpPath . 'fastSignDoc' . "_" . rand() . '.pdf';
         file_put_contents($signDocumentPath, base64_decode($args['signEncodedFile']));
 
         $filename = TextFormatModel::formatFilename(['filename' => $args['filename']]);
@@ -543,7 +543,7 @@ class FastParapheurController
         if (!empty($fdc['errors'])) {
             return ['errors' => $fdc['errors']];
         }
-        $fdcPath = $tmpPath . 'ficheDeCirculation' . $GLOBALS['id'] . "_" . rand() . '.pdf';
+        $fdcPath = $tmpPath . 'ficheDeCirculation' . "_" . rand() . '.pdf';
         file_put_contents($fdcPath, $fdc['response']);
 
         $documentPathToZip[] = ['path' => $fdcPath, 'filename' => 'ficheDeCirculation.pdf'];
@@ -555,7 +555,7 @@ class FastParapheurController
 
 
         $proofJson = json_encode($proof, JSON_PRETTY_PRINT);
-        $proofJsonPath = $tmpPath . 'maarchProof' . $GLOBALS['id'] . "_" . rand() . '.json';
+        $proofJsonPath = $tmpPath . 'maarchProof' . "_" . rand() . '.json';
         $proofCreation = file_put_contents($proofJsonPath, $proofJson);
         if (empty($proofCreation)) {
             return ['errors' => 'Cannot create proof json'];
@@ -565,7 +565,7 @@ class FastParapheurController
 
         $zipFileContent = null;
         $zip = new \ZipArchive();
-        $zipFilename = $tmpPath . 'archivedProof' . $GLOBALS['id'] . '_' . rand() . '.zip';
+        $zipFilename = $tmpPath . 'archivedProof' . '_' . rand() . '.zip';
 
         if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
             foreach ($documentPathToZip as $document) {
