@@ -299,7 +299,7 @@ class AlfrescoController
 
         if (!Validator::stringType()->notEmpty()->validate($body['login'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body login is empty or not a string']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['password']) && !Validator::stringType()->notEmpty()->validate($body['accountId'])) {
+        } elseif (!Validator::stringType()->notEmpty()->validate($body['password'] ?? '') && !Validator::stringType()->notEmpty()->validate($body['accountId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body password is empty or not a string']);
         }
 

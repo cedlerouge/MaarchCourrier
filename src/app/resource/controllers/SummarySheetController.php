@@ -531,7 +531,7 @@ class SummarySheetController
                                     $customFieldsValues[$customFieldsId] = $rawValues[$customFieldsValues[$customFieldsId]];
                                 }
                             }
-                            if (is_array($customFieldsValues[$customFieldsId])) {
+                            if (is_array($customFieldsValues[$customFieldsId] ?? null)) {
                                 $customValue = "";
                                 if (!empty($customFieldsValues[$customFieldsId])) {
                                     if ($fieldsType[$customFieldsId] == 'banAutocomplete') {
@@ -551,7 +551,7 @@ class SummarySheetController
                                 }
                                 $value = !empty($customValue) ? '<b>' . $customValue . '</b>' : '<i>' . _UNDEFINED . '</i>';
                             } else {
-                                $value = $customFieldsValues[$customFieldsId] ? '<b>' . $customFieldsValues[$customFieldsId] . '</b>' : '<i>' . _UNDEFINED . '</i>';
+                                $value = isset($customFieldsValues[$customFieldsId]) ? '<b>' . $customFieldsValues[$customFieldsId] . '</b>' : '<i>' . _UNDEFINED . '</i>';
                             }
     
                             $nextLine = ($nextLine + 1) % 2;
