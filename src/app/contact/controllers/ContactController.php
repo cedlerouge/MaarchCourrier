@@ -339,7 +339,7 @@ class ContactController
             return $response->withStatus(400)->withJson(['errors' => 'Contact does not exist']);
         }
 
-        $contact['communication_means'] = json_decode($contact['communication_means'], true);
+        $contact['communication_means'] = json_decode($contact['communication_means'] ?? '{}', true);
         $contactBody = [];
         if (!empty($contact['communication_means']['password'])) {
             $contactBody['password'] = $contact['communication_means']['password'];
@@ -732,7 +732,7 @@ class ContactController
                 ],
                 'id'        => $aArgs['contactId']
             ]);
-            $customFields = json_decode($contactRaw['custom_fields'], true);
+            $customFields = json_decode($contactRaw['custom_fields'] ?? '{}', true);
 
             $percent = 0;
             foreach ($contactsParameters as $ratingColumn) {

@@ -446,11 +446,16 @@ class EmailController
             }
         }
 
+        $limit = null;
+        if (!empty($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+
         $emails = EmailModel::get([
             'select' => ['*'],
             'where'  => $where,
             'data'   => [$args['resId'], $GLOBALS['id']],
-            'limit'  => (int)$queryParams['limit']
+            'limit'  => $limit
         ]);
 
         foreach ($emails as $key => $email) {
@@ -896,7 +901,7 @@ class EmailController
             }
         }
 
-        if (!empty($args['data']['document'] && !empty($args['data']['document']['id']))) {
+        if (!empty($args['data']['document']) && !empty($args['data']['document']['id'])) {
             $check = Validator::intVal()->notEmpty()->validate($args['data']['document']['id']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['isLinked']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['original']);

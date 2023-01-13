@@ -78,8 +78,8 @@ class IndexingModelController
         $fields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
         $destination = '';
         foreach ($fields as $key => $value) {
-            $fields[$key]['default_value'] = json_decode($value['default_value'], true);
-            $fields[$key]['allowedValues'] = json_decode($value['allowed_values'], true);
+            $fields[$key]['default_value'] = json_decode($value['default_value'] ?? '{}', true);
+            $fields[$key]['allowedValues'] = json_decode($value['allowed_values'] ?? '{}', true);
             unset($fields[$key]['allowed_values']);
             if ($value['identifier'] == 'destination') {
                 $destination = $value['default_value'];
@@ -183,7 +183,9 @@ class IndexingModelController
 
             $fieldsMaster = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled'], 'where' => ['model_id = ?'], 'data' => [$body['master']]]);
             foreach ($fieldsMaster as $key => $value) {
-                $fieldsMaster[$key]['default_value'] = json_decode($value['default_value'], true);
+                if (!empty($value['default_value'])) {
+                    $fieldsMaster[$key]['default_value'] = json_decode($value['default_value'], true);
+                }
             }
 
             // Look for fields in master model

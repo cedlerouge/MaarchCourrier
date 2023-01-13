@@ -256,9 +256,9 @@ class ResController extends ResourceControlController
             $formattedData['followed'] = !empty($followed);
 
             $registeredMail = RegisteredMailModel::getByResId(['select' => ['deposit_id', 'received_date', 'return_reason'], 'resId' => $args['resId']]);
-            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'];
-            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'];
-            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'];
+            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'] ?? null;
+            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'] ?? null;
+            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'] ?? null;
         }
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
@@ -1179,8 +1179,13 @@ class ResController extends ResourceControlController
             return $args['resources'];
         }
 
+        $mode = null;
+        if (!empty($args['mode'])) {
+            $mode = $args['mode'];
+        }
+
         $user = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
-        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $args['mode']]);
+        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $mode]);
 
         $data = [$args['resources']];
         $data = array_merge($data, $userDataClause['searchData']);
@@ -1480,8 +1485,12 @@ class ResController extends ResourceControlController
         $allowedFiles = StoreController::getAllowedFiles();
         $allowedFiles = array_column($allowedFiles, 'canConvert', 'extension');
 
-        $format = strtoupper($resource['format']);
-        $resource['canConvert'] = !empty($allowedFiles[$format]);
+        $resource['canConvert'] = false;
+
+        if (!empty($resource['format'])) {
+            $format = strtoupper($resource['format']);
+            $resource['canConvert'] = !empty($allowedFiles[$format]);
+        }
 
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
             $resource = [

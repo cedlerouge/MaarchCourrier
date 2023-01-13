@@ -139,7 +139,7 @@ class ResourceListController
             ]);
 
             $defaultAction['component'] = $groupBasket[0]['list_event'];
-            $defaultAction['data'] = json_decode($groupBasket[0]['list_event_data'], true);
+            $defaultAction['data'] = json_decode($groupBasket[0]['list_event_data'] ?? '{}', true);
 
             if (in_array('getFolders', array_column($listDisplay, 'value'))) {
                 $displayFolderTags = true;
@@ -472,7 +472,7 @@ class ResourceListController
         $resourcesForAction = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
@@ -591,7 +591,7 @@ class ResourceListController
         $lockersId = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
@@ -695,7 +695,7 @@ class ResourceListController
         $lockersId = [];
         foreach ($resources as $resource) {
             $lock = true;
-            if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+            if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                 $lock = false;
             } elseif ($resource['locker_user_id'] == $GLOBALS['id']) {
                 $lock = false;
@@ -912,17 +912,17 @@ class ResourceListController
         foreach ($resources as $key => $resource) {
             $formattedResources[$key]['resId']              = $resource['res_id'];
             $formattedResources[$key]['chrono']             = $resource['alt_identifier'];
-            $formattedResources[$key]['barcode']            = $resource['barcode'];
+            $formattedResources[$key]['barcode']            = $resource['barcode'] ?? null;
             $formattedResources[$key]['subject']            = $resource['subject'];
-            $formattedResources[$key]['confidentiality']    = $resource['confidentiality'];
+            $formattedResources[$key]['confidentiality']    = $resource['confidentiality'] ?? null;
             $formattedResources[$key]['statusLabel']        = $resource['status.label_status'];
             $formattedResources[$key]['statusImage']        = $resource['status.img_filename'];
             $formattedResources[$key]['priorityColor']      = $resource['priorities.color'];
-            $formattedResources[$key]['closing_date']       = $resource['closing_date'];
+            $formattedResources[$key]['closing_date']       = $resource['closing_date'] ?? null;
             $formattedResources[$key]['countAttachments']   = 0;
             $formattedResources[$key]['hasDocument']        = $resource['res_filename'] != null;
             $formattedResources[$key]['mailTracking']       = in_array($resource['res_id'], $args['trackedMails']);
-            $formattedResources[$key]['integrations']       = json_decode($resource['integrations'], true);
+            $formattedResources[$key]['integrations']       = !empty($resource['integrations']) ? json_decode($resource['integrations'], true) : [];
             $formattedResources[$key]['retentionFrozen']    = $resource['retention_frozen'];
             $formattedResources[$key]['binding']            = $resource['binding'];
             foreach ($attachments as $attachment) {
@@ -956,7 +956,7 @@ class ResourceListController
 
             if (!empty($args['checkLocked'])) {
                 $isLocked = true;
-                if (empty($resource['locker_user_id'] || empty($resource['locker_time']))) {
+                if (empty($resource['locker_user_id']) || empty($resource['locker_time'])) {
                     $isLocked = false;
                 } elseif ($resource['locker_user_id'] == $args['userId']) {
                     $isLocked = false;
@@ -976,103 +976,105 @@ class ResourceListController
                     || in_array('getRegisteredMailIssuingSite', $listDisplayValues)) {
                     $registeredMail = RegisteredMailModel::getByResId(['resId' => $resource['res_id'], 'select' => ['issuing_site', 'recipient', 'reference']]);
                 }
-                foreach ($args['listDisplay'] as $value) {
-                    $value = (array)$value;
-                    if ($value['value'] == 'getPriority') {
-                        $value['displayValue'] = $resource['priorities.label'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getCategory') {
-                        $value['displayValue'] = $resource['category_id'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getDoctype') {
-                        $value['displayValue'] = $resource['doctypes.description'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getAssignee') {
-                        $value['displayValue'] = ResourceListController::getAssignee(['resId' => $resource['res_id']]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getSenders') {
-                        $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'sender', 'onlyContact' => true]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getRecipients') {
-                        $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getVisaWorkflow') {
-                        $value['displayValue'] = ResourceListController::getVisaWorkflow(['resId' => $resource['res_id']]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getSignatories') {
-                        $value['displayValue'] = ResourceListController::getSignatories(['resId' => $resource['res_id']]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getParallelOpinionsNumber') {
-                        $value['displayValue'] = ResourceListController::getParallelOpinionsNumber(['resId' => $resource['res_id']]);
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getCreationAndProcessLimitDates') {
-                        $value['displayValue'] = ['creationDate' => $resource['creation_date'], 'processLimitDate' => $resource['process_limit_date']];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getCreationDate') {
-                        $value['displayValue'] = $resource['creation_date'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getProcessLimitDate') {
-                        $value['displayValue'] = $resource['process_limit_date'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getModificationDate') {
-                        $value['displayValue'] = $resource['modification_date'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getOpinionLimitDate') {
-                        $value['displayValue'] = $resource['opinion_limit_date'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getResId') {
-                        $value['displayValue'] = $resource['res_id'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getBarcode') {
-                        $value['displayValue'] = $resource['barcode'];
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getRegisteredMailRecipient') {
-                        if (!empty($registeredMail)) {
-                            $recipient = json_decode($registeredMail['recipient'], true);
-                            if (!empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
-                                $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'] . ' (' . $recipient['company'] . ')';
-                            } elseif (empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
-                                $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'];
-                            } elseif (!empty($recipient['company']) && empty($recipient['firstname']) && empty($recipient['lastname'])) {
-                                $recipient = $recipient['company'];
+                if ($args['listDisplay'][0] !== 'folders') {
+                    foreach ($args['listDisplay'] as $value) {
+                        $value = (array)$value;
+                        if ($value['value'] == 'getPriority') {
+                            $value['displayValue'] = $resource['priorities.label'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getCategory') {
+                            $value['displayValue'] = $resource['category_id'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getDoctype') {
+                            $value['displayValue'] = $resource['doctypes.description'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getAssignee') {
+                            $value['displayValue'] = ResourceListController::getAssignee(['resId' => $resource['res_id']]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getSenders') {
+                            $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'sender', 'onlyContact' => true]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getRecipients') {
+                            $value['displayValue'] = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'recipient', 'onlyContact' => true]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getVisaWorkflow') {
+                            $value['displayValue'] = ResourceListController::getVisaWorkflow(['resId' => $resource['res_id']]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getSignatories') {
+                            $value['displayValue'] = ResourceListController::getSignatories(['resId' => $resource['res_id']]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getParallelOpinionsNumber') {
+                            $value['displayValue'] = ResourceListController::getParallelOpinionsNumber(['resId' => $resource['res_id']]);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getCreationAndProcessLimitDates') {
+                            $value['displayValue'] = ['creationDate' => $resource['creation_date'], 'processLimitDate' => $resource['process_limit_date']];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getCreationDate') {
+                            $value['displayValue'] = $resource['creation_date'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getProcessLimitDate') {
+                            $value['displayValue'] = $resource['process_limit_date'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getModificationDate') {
+                            $value['displayValue'] = $resource['modification_date'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getOpinionLimitDate') {
+                            $value['displayValue'] = $resource['opinion_limit_date'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getResId') {
+                            $value['displayValue'] = $resource['res_id'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getBarcode') {
+                            $value['displayValue'] = $resource['barcode'];
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getRegisteredMailRecipient') {
+                            if (!empty($registeredMail)) {
+                                $recipient = json_decode($registeredMail['recipient'], true);
+                                if (!empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
+                                    $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'] . ' (' . $recipient['company'] . ')';
+                                } elseif (empty($recipient['company']) && (!empty($recipient['firstname']) || !empty($recipient['lastname']))) {
+                                    $recipient = $recipient['firstname'] . ' ' . $recipient['lastname'];
+                                } elseif (!empty($recipient['company']) && empty($recipient['firstname']) && empty($recipient['lastname'])) {
+                                    $recipient = $recipient['company'];
+                                }
+                                $value['displayValue'] = $recipient;
+                            } else {
+                                $value['displayValue'] = '';
                             }
-                            $value['displayValue'] = $recipient;
-                        } else {
-                            $value['displayValue'] = '';
-                        }
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getRegisteredMailReference') {
-                        $value['displayValue'] = !empty($registeredMail) ? $registeredMail['reference'] : '';
-                        $display[] = $value;
-                    } elseif ($value['value'] == 'getRegisteredMailIssuingSite') {
-                        if (!empty($registeredMail)) {
-                            $site = IssuingSiteModel::getById(['id' => $registeredMail['issuing_site'], 'select' => ['label']]);
-                            $value['displayValue'] = $site['label'];
-                        } else {
-                            $value['displayValue'] = '';
-                        }
-                        $display[] = $value;
-                    } elseif (strpos($value['value'], 'indexingCustomField_') !== false) {
-                        $customId = explode('_', $value['value'])[1];
-                        $customValue = json_decode($resource['custom_fields'], true);
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getRegisteredMailReference') {
+                            $value['displayValue'] = !empty($registeredMail) ? $registeredMail['reference'] : '';
+                            $display[] = $value;
+                        } elseif ($value['value'] == 'getRegisteredMailIssuingSite') {
+                            if (!empty($registeredMail)) {
+                                $site = IssuingSiteModel::getById(['id' => $registeredMail['issuing_site'], 'select' => ['label']]);
+                                $value['displayValue'] = $site['label'];
+                            } else {
+                                $value['displayValue'] = '';
+                            }
+                            $display[] = $value;
+                        } elseif (strpos($value['value'], 'indexingCustomField_') !== false) {
+                            $customId = explode('_', $value['value'])[1];
+                            $customValue = json_decode($resource['custom_fields'], true);
 
-                        $value['displayLabel'] = $customFieldsLabels[$customId] ?? '';
-                        if ($customFields[$customId] == 'contact' && !empty($customValue[$customId])) {
-                            $value['displayValue'] = ContactController::getContactCustomField(['contacts' => $customValue[$customId], 'onlyContact' => true]);
-                        } elseif ($customFields[$customId] == 'banAutocomplete' && !empty($customValue[$customId])) {
-                            $value['displayValue'] = $customValue[$customId][0]['addressNumber'] ?? '';
-                            $value['displayValue'] .= ' ';
-                            $value['displayValue'] .= $customValue[$customId][0]['addressStreet'] ?? '';
-                            $value['displayValue'] .= ' ';
-                            $value['displayValue'] .= $customValue[$customId][0]['addressTown'] ?? '';
-                        } elseif ($customFields[$customId] == 'date' && !empty($customValue[$customId])) {
-                            $value['displayValue'] = TextFormatModel::formatDate($customValue[$customId], 'd-m-Y');
-                        } elseif ($customFields[$customId] == 'checkbox' && !empty($customValue[$customId])) {
-                            $value['displayValue'] = implode(', ', $customValue[$customId]);
-                        } else {
-                            $value['displayValue'] = $customValue[$customId] ?? '';
+                            $value['displayLabel'] = $customFieldsLabels[$customId] ?? '';
+                            if ($customFields[$customId] == 'contact' && !empty($customValue[$customId])) {
+                                $value['displayValue'] = ContactController::getContactCustomField(['contacts' => $customValue[$customId], 'onlyContact' => true]);
+                            } elseif ($customFields[$customId] == 'banAutocomplete' && !empty($customValue[$customId])) {
+                                $value['displayValue'] = $customValue[$customId][0]['addressNumber'] ?? '';
+                                $value['displayValue'] .= ' ';
+                                $value['displayValue'] .= $customValue[$customId][0]['addressStreet'] ?? '';
+                                $value['displayValue'] .= ' ';
+                                $value['displayValue'] .= $customValue[$customId][0]['addressTown'] ?? '';
+                            } elseif ($customFields[$customId] == 'date' && !empty($customValue[$customId])) {
+                                $value['displayValue'] = TextFormatModel::formatDate($customValue[$customId], 'd-m-Y');
+                            } elseif ($customFields[$customId] == 'checkbox' && !empty($customValue[$customId])) {
+                                $value['displayValue'] = implode(', ', $customValue[$customId]);
+                            } else {
+                                $value['displayValue'] = $customValue[$customId] ?? '';
+                            }
+                            $display[] = $value;
                         }
-                        $display[] = $value;
                     }
                 }
                 $formattedResources[$key]['folders'] = ResourceListController::getFolders(['resId' => $resource['res_id'], 'userId' => $args['userId']]);

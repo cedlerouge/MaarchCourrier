@@ -153,7 +153,7 @@ class ListTemplateController
             }
         }
 
-        $control = ListTemplateController::controlItems(['items' => $body['items'], 'type' => $body['type'], 'entityId' => $body['entityId']]);
+        $control = ListTemplateController::controlItems(['items' => $body['items'], 'type' => $body['type'], 'entityId' => $body['entityId'] ?? null]);
         if (!empty($control['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $control['errors'], 'lang' => $control['lang']]);
         }
@@ -539,29 +539,31 @@ class ListTemplateController
         $canUpdateDiffusionRoles = false;
         $triggerContext = false;
 
-        if ($data['context'] == 'indexation') {
-            $serviceRecipient = 'update_diffusion_indexing';
-            $serviceRoles = 'update_diffusion_except_recipient_indexing';
-            $triggerContext = true;
-        } elseif ($data['context'] == 'process') {
-            $serviceRecipient = 'update_diffusion_process';
-            $serviceRoles = 'update_diffusion_except_recipient_process';
-            $triggerContext = true;
-        } elseif ($data['context'] == 'details') {
-            $serviceRecipient = 'update_diffusion_details';
-            $serviceRoles = 'update_diffusion_except_recipient_details';
-            $triggerContext = true;
-        }
-
-        if ($data['context'] == 'redirect') {
-            $triggerContext = true;
-            $canUpdateDiffusionRecipient = true;
-        } elseif ($triggerContext) {
-            if (PrivilegeController::hasPrivilege(['privilegeId' => $serviceRecipient, 'userId' => $GLOBALS['id']])) {
-                $canUpdateDiffusionRecipient = true;
+        if (!empty($data['context'])) {
+            if ($data['context'] == 'indexation') {
+                $serviceRecipient = 'update_diffusion_indexing';
+                $serviceRoles = 'update_diffusion_except_recipient_indexing';
+                $triggerContext = true;
+            } elseif ($data['context'] == 'process') {
+                $serviceRecipient = 'update_diffusion_process';
+                $serviceRoles = 'update_diffusion_except_recipient_process';
+                $triggerContext = true;
+            } elseif ($data['context'] == 'details') {
+                $serviceRecipient = 'update_diffusion_details';
+                $serviceRoles = 'update_diffusion_except_recipient_details';
+                $triggerContext = true;
             }
-            if (!$canUpdateDiffusionRecipient && PrivilegeController::hasPrivilege(['privilegeId' => $serviceRoles, 'userId' => $GLOBALS['id']])) {
-                $canUpdateDiffusionRoles = true;
+    
+            if ($data['context'] == 'redirect') {
+                $triggerContext = true;
+                $canUpdateDiffusionRecipient = true;
+            } elseif ($triggerContext) {
+                if (PrivilegeController::hasPrivilege(['privilegeId' => $serviceRecipient, 'userId' => $GLOBALS['id']])) {
+                    $canUpdateDiffusionRecipient = true;
+                }
+                if (!$canUpdateDiffusionRecipient && PrivilegeController::hasPrivilege(['privilegeId' => $serviceRoles, 'userId' => $GLOBALS['id']])) {
+                    $canUpdateDiffusionRoles = true;
+                }
             }
         }
 
