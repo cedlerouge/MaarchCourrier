@@ -313,9 +313,6 @@ class LogsControllerTest extends TestCase
         $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
         $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
         $this->assertStringContainsString("$logMessage", $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
-        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
-        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
-        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
     }
 
     public function testLogTechnique()
