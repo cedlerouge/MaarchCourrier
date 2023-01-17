@@ -2695,5 +2695,6 @@
     "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante",
     "cannotCreateTile": "Indisponible pour le parapheur externe actif",
     "rightRotation": "Pivoter à droite",
-    "leftRotation": "Pivoter à gauche"
+    "leftRotation": "Pivoter à gauche",
+    "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>"
 }

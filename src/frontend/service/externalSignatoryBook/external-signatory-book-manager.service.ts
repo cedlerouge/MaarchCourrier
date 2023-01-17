@@ -69,8 +69,19 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.getUserAvatar(externalId);
     }
 
-    getOtpConfig() {
-        return this.serviceInjected?.getOtpConfig();
+    getOtpConfig(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/maarchParapheurOtp').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     getAutocompleteUsersRoute(): string {
@@ -163,10 +174,6 @@ export class ExternalSignatoryBookManagerService {
 
     canSynchronizeSignatures(): boolean {
         return this.serviceInjected?.canSynchronizeSignatures;
-    }
-
-    canManageSignaturesPositions(): boolean {
-        return this.serviceInjected?.canManageSignaturesPositions;
     }
 
     canViewWorkflow(): boolean {

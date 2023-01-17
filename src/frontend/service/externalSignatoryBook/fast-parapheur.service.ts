@@ -16,7 +16,6 @@ export class FastParapheurService {
 
     canCreateUser: boolean = false;
     canSynchronizeSignatures: boolean = false;
-    canManageSignaturesPositions: boolean = false;
     canViewWorkflow: boolean = false;
     canCreateTile: boolean = false;
 

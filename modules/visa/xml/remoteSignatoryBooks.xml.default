@@ -41,10 +41,10 @@
                 <id>signature</id>
                 <label>Signataire</label>
             </mode>
-            <mode>
+            <!-- <mode>
                 <id>serverSignature</id>
                 <label>Signature Serveur</label>
-            </mode>
+            </mode> -->
         </signatureModes>
         <workflowTypes>
             <type>
