@@ -40,7 +40,6 @@ use MessageExchange\controllers\AnnuaryController;
 use Parameter\models\ParameterModel;
 use Contact\models\ContactAddressSectorModel;
 use ExternalSignatoryBook\controllers\FastParapheurController;
-use Contact\models\ContactAddressSectorModel;
 
 class AutoCompleteController
 {

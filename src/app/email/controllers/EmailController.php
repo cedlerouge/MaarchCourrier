@@ -46,11 +46,6 @@ use User\models\UserModel;
 
 class EmailController
 {
-    private const SMTP_ERRORS_SENDER_REJECTED = [
-        'Client does not have permissions to send as this sender',
-        'Sender address rejected'
-    ];
-
     public function send(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'sendmail', 'userId' => $GLOBALS['id']])) {
@@ -797,26 +792,6 @@ class EmailController
             ]);
 
             $errors = !empty($history[0]['info']) ? $history[0]['info'] : $phpmailer->ErrorInfo;
-
-            // If we cannot override from with the sender email address, we try sending the email with the from in the configuration
-            if ($email['sender']['email'] != $configuration['from']) {
-                $tryWithConfigFrom = false;
-                foreach (EmailController::SMTP_ERRORS_SENDER_REJECTED as $errorCandidate) {
-                    if (stripos($errors, $errorCandidate) !== false) {
-                        $tryWithConfigFrom = true;
-                        break;
-                    }
-                }
-                if ($tryWithConfigFrom) {
-                    $sender = [
-                        'email'    => $configuration['from'],
-                        'entityId' => $email['sender']['entityId'] ?? null
-                    ];
-                    EmailModel::update(['set' => ['sender' => json_encode($sender)], 'where' => ['id = ?'], 'data' => [$args['emailId']]]);
-
-                    return EmailController::sendEmail(['emailId' => $args['emailId'], 'userId' => $args['userId']]);
-                }
-            }
 
             return ['errors' => $errors];
         }
