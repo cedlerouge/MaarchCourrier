@@ -199,7 +199,7 @@ class WatermarkController
                 'moduleId'  => 'attachments',
                 'level'     => 'ERROR',
                 'tableName' => 'res_attachments',
-                'recordId'  => $args['resId'],
+                'recordId'  => $args['attachmentId'],
                 'eventType' => 'watermark',
                 'eventId'   => $e->getMessage()
             ]);

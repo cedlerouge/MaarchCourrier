@@ -614,7 +614,7 @@ class AttachmentController
                     'moduleId'  => 'attachments',
                     'level'     => 'ERROR',
                     'tableName' => 'res_attachments',
-                    'recordId'  => $args['resId'],
+                    'recordId'  => $args['id'],
                     'eventType' => 'thumbnail',
                     'eventId'   => $e->getMessage()
                 ]);

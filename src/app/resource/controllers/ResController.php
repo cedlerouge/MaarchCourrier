@@ -16,6 +16,7 @@ namespace Resource\controllers;
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Action\models\ActionModel;
+use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
@@ -48,9 +49,10 @@ use Search\controllers\SearchController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingModel;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
-use SrcCore\controllers\PreparedClauseController;
 use SrcCore\controllers\CoreController;
+use SrcCore\controllers\LogsController;
+use SrcCore\controllers\PreparedClauseController;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
@@ -58,7 +60,6 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
-use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {
