@@ -29,7 +29,6 @@ use Action\models\ActionModel;
 use Status\models\StatusModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
-use Shipping\models\ShippingTemplateModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\PasswordModel;
@@ -379,7 +378,8 @@ class ShippingTemplateController
         $minIAT = new \DateTime($shippingTemplate['token_min_iat']);
         $minIAT = $minIAT->format('U');
 
-        $authToken = $request->getQueryParam('auth_token');
+        $authToken = $request->getQueryParams();
+        $authToken = $authToken['auth_token'] ?? null;
         $payload = ShippingTemplateController::checkToken([
             'token'                 => $authToken,
             'shippingApiDomainName' => $shippingApiDomainName,
@@ -654,7 +654,7 @@ class ShippingTemplateController
             $errors[] = 'account id or password is empty';
         }
 
-        if (!Validator::notEmpty()->length(1, 64)->validate($args['label'])) {
+        if (!Validator::notEmpty()->length(1, 64)->validate($args['label'] ?? '')) {
             $errors[] = 'label is empty or too long';
         }
         if (!Validator::notEmpty()->length(1, 255)->validate($args['description'])) {
@@ -664,11 +664,12 @@ class ShippingTemplateController
         if (!empty($args['entities'])) {
             if (!Validator::arrayType()->validate($args['entities'])) {
                 $errors[] = 'entities must be an array';
-            }
-            foreach ($args['entities'] as $entity) {
-                $info = EntityModel::getById(['id' => $entity, 'select' => ['id']]);
-                if (empty($info)) {
-                    $errors[] = $entity . ' does not exists';
+            } else {
+                foreach ($args['entities'] as $entity) {
+                    $info = EntityModel::getById(['id' => $entity, 'select' => ['id']]);
+                    if (empty($info)) {
+                        $errors[] = $entity . ' does not exists';
+                    }
                 }
             }
         }

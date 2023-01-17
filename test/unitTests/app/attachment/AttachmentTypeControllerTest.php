@@ -240,7 +240,7 @@ class AttachmentTypeControllerTest extends CourrierTestCase
         $this->assertSame('Type is used in attachments', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
 
-        $response     = $attachmentTypeController->delete($request, new \Slim\Http\Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
+        $response     = $attachmentTypeController->delete($request, new Response(), ['id' => 3]); // 3: 'signed_response' in data_fr.sql
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('This attachment type cannot be deleted', $responseBody['errors']);
         $this->assertSame(400, $response->getStatusCode());
