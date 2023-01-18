@@ -163,38 +163,54 @@ class LogsController
      */
     public static function prepareLogLine(array $args)
     {
-        $logLine = str_replace(
-            [
-                '%WHERE%',
-                '%ID%',
-                '%HOW%',
-                '%USER%',
-                '%WHAT%',
-                '%ID_MODULE%',
-                '%REMOTE_IP%'
-            ],
-            [
-                $args['lineData']['tableName'] ?? ':noTableName',
-                $args['lineData']['recordId'] ?? ':noRecordId',
-                $args['lineData']['eventType'] ?? ':noEventType',
-                $GLOBALS['login'] ?? ':noUser',
-                $args['lineData']['eventId'] ?? ':noEventId',
-                $args['lineData']['moduleId'] ?? ':noModuleId',
-                $_SERVER['REMOTE_ADDR'] ?? gethostbyname(gethostname())
-            ],
-            "[%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
-        );
-        if (!empty($args['lineData']['isSql'])) {
-            $logLine  = empty($args['lineData']['sqlQuery']) ? '[:noSqlQuery]' : "[" . $args['lineData']['sqlQuery'] . "]";
+        $logLine = '';
+        if (empty($args['lineData']['isSql']) && !empty($args['logConfig']['lineMessageFormat'])) {
+            $logLine = str_replace(
+                [
+                    '%WHERE%',
+                    '%ID%',
+                    '%HOW%',
+                    '%USER%',
+                    '%WHAT%',
+                    '%ID_MODULE%',
+                    '%REMOTE_IP%'
+                ],
+                [
+                    $args['lineData']['tableName'] ?? ':noTableName',
+                    $args['lineData']['recordId'] ?? ':noRecordId',
+                    $args['lineData']['eventType'] ?? ':noEventType',
+                    $GLOBALS['login'] ?? ':noUser',
+                    $args['lineData']['eventId'] ?? ':noEventId',
+                    $args['lineData']['moduleId'] ?? ':noModuleId',
+                    $_SERVER['REMOTE_ADDR'] ?? gethostbyname(gethostname())
+                ],
+                $args['logConfig']['lineMessageFormat']
+            );
+        } elseif (!empty($args['lineData']['isSql']) && !empty($args['logConfig']['queries']['lineMessageFormat'])) {
+            $sqlData = ':noSqlData';
             if (empty($args['lineData']['sqlData'])) {
-                $logLine .= "[:noSqlData]";
+                $sqlData = "[:noSqlData]";
             } elseif (is_array($args['lineData']['sqlData'])) {
-                $logLine .= "[" . json_encode($args['lineData']['sqlData']) . "]";
+                $sqlData = json_encode($args['lineData']['sqlData']);
             } else {
-                $logLine .= "[" . $args['lineData']['sqlData'] . "]";
+                $sqlData = $args['lineData']['sqlData'];
             }
-            $logLine .= empty($args['lineData']['sqlException']) ? '[:noSqlException]' : "[" . $args['lineData']['sqlException'] . "]";
-        }
+
+            $logLine = str_replace(
+                [
+                    '%QUERY%',
+                    '%DATA%',
+                    '%EXCEPTION%'
+                ],
+                [
+                    $args['lineData']['sqlQuery'] ?? ':noSqlQuery',
+                    $sqlData,
+                    $args['lineData']['sqlException'] ?? ':noSqlException'
+                ],
+                $args['logConfig']['queries']['lineMessageFormat']
+            );
+        } 
+
         $logLine = TextFormatModel::htmlWasher($logLine);
         $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
         return $logLine;
