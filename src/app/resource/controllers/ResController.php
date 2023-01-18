@@ -16,6 +16,7 @@ namespace Resource\controllers;
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Action\models\ActionModel;
+use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
@@ -48,9 +49,10 @@ use Search\controllers\SearchController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingModel;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
-use SrcCore\controllers\PreparedClauseController;
 use SrcCore\controllers\CoreController;
+use SrcCore\controllers\LogsController;
+use SrcCore\controllers\PreparedClauseController;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
@@ -58,7 +60,6 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
-use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {
@@ -842,16 +843,29 @@ class ResController extends ResourceControlController
         $pathToPdf = $docserver['path_template'] . $adrPdf[0]['path'] . $adrPdf[0]['filename'];
         $pathToPdf = str_replace('#', '/', $pathToPdf);
 
-        $libDir = CoreConfigModel::getLibrariesDirectory();
-        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
-            require_once($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php');
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+        if (!empty($libPath)) {
+            require_once($libPath);
 
             $document = \SetaPDF_Core_Document::loadByFilename($pathToPdf);
             $pages = $document->getCatalog()->getPages();
             $pageCount = count($pages);
         } else {
-            $pdf = new Fpdi('P', 'pt');
-            $pageCount = $pdf->setSourceFile($pathToPdf);
+            try {
+                $pdf = new Fpdi('P', 'pt');
+                $pageCount = $pdf->setSourceFile($pathToPdf);
+            } catch (\Exception $e) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'resources',
+                    'level'     => 'ERROR',
+                    'tableName' => 'res_letterbox',
+                    'recordId'  => $args['resId'],
+                    'eventType' => 'thumbnail',
+                    'eventId'   => $e->getMessage()
+                ]);
+                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
+            }
         }
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);

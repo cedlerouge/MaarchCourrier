@@ -206,6 +206,22 @@ class CoreConfigModel
         return $librariesDirectory;
     }
 
+    public static function getSetaSignFormFillerLibrary()
+    {
+        $libDir = CoreConfigModel::getLibrariesDirectory();
+        $libPath = null;
+
+        if (!empty($libDir)) {
+            // old way (before use internal source)
+            if (is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
+                $libPath = $libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php';
+            } else if (is_file($libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php')) {
+                $libPath = $libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php';
+            }
+        }
+        return $libPath;
+    }    
+
     public static function getLoggingMethod()
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/login_method.xml']);
