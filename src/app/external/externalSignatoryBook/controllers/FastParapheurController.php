@@ -22,21 +22,23 @@ use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
-use Resource\controllers\StoreController;
+use History\controllers\HistoryController;
 use Resource\controllers\ResController;
+use Resource\controllers\StoreController;
 use Resource\models\ResModel;
+use Respect\Validation\Validator;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
+use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\DatabaseModel;
-use User\models\UserModel;
-use SrcCore\models\ValidatorModel;
-use Respect\Validation\Validator;
-use User\controllers\UserController;
-use History\controllers\HistoryController;
-use Slim\Psr7\Request;
-use SrcCore\http\Response;
 use SrcCore\models\TextFormatModel;
+use SrcCore\models\ValidatorModel;
+use User\controllers\UserController;
+use User\models\UserModel;
 use Contact\controllers\ContactController;
+
 
 /**
 * @codeCoverageIgnore
@@ -317,43 +319,133 @@ class FastParapheurController
     public static function retrieveSignedMails(array $args)
     {
         $version = $args['version'];
+
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
+            if (empty($value['res_id_master'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'INFO',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "Retrieve main document resId: ${resId}"
+                ]);
+            } else {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'INFO',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "Retrieve main document resId: ${resId}"
+                ]);
+            }
             if (empty(trim($value['external_id']))) {
                 $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                 continue;
             }
 
-            $curlReturn = CurlModel::exec([
-                'url'           => $args['config']['data']['url'] . '/documents/v2/' . $value['external_id'] . '/history',
-                'method'        => 'GET',
-                'options'       => [
-                    CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
-                    CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                    CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
-                ]
-            ]);           
+            if (!empty($value['external_state_fetch_date'])) {
+                $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
+                $timeAgo = new \DateTimeImmutable('-30 minutes');
 
-            if ($curlReturn['code'] == 404) {
-                return ['error' => 'Erreur 404 : ' . $curlReturn['raw']];
+                if ($fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
+                    $newDate = $fetchDate->modify('+30 minutes');
+
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'INFO',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"
+                    ]);
+
+                    unset($args['idsToRetrieve'][$version][$resId]);
+                    continue;
+                }
             }
 
-            if (!empty($curlReturn['response']['developerMessage']) && !empty($value['res_id_master'])) {
-                echo "PJ n° $resId et document original n° {$value['res_id_master']} : {$curlReturn['response']['developerMessage']} " . PHP_EOL;
+            $historyResponse = FastParapheurController::getDocumentHistory(['config' => $args['config'], 'documentId' => $value['external_id']]);
+
+            // Update external_state_fetch_date event if $historyResponse return an error. To avoid spamming the API endpoint.
+            $updateHistoryFetchDate = FastParapheurController::updateFetchHistoryDateByExternalId([
+                'type' => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
+                'resId' => $value['res_id']
+            ]);
+            if (!empty($updateHistoryFetchDate['errors'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'ERROR',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "{$updateHistoryFetchDate['errors']}"
+                ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
-                continue;
-            } elseif (!empty($curlReturn['response']['developerMessage'])) {
-                unset($args['idsToRetrieve'][$version][$resId]);
-                echo "Document principal n° $resId : {$curlReturn['response']['developerMessage']} " . PHP_EOL;
                 continue;
             }
 
-            foreach ($curlReturn['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
+            // Check for $historyResponse error
+            if (!empty($historyResponse['errors'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'ERROR',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
+                ]);
+                unset($args['idsToRetrieve'][$version][$resId]);
+                continue;
+            }
+
+            foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
                 if ($valueResponse['stateName'] == $args['config']['data']['validatedState']) {
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'INFO',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "Circuit ended ! Retrieve file from fastParapheur"
+                    ]);
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
+
+                    $proofDocument = FastParapheurController::makeHistoryProof([
+                        'documentId'      => $value['external_id'],
+                        'config'          => $args['config'],
+                        'historyData'     => $historyResponse['response'],
+                        'filename'        => ($args['idsToRetrieve'][$version][$resId]['title'] ?? $args['idsToRetrieve'][$version][$resId]['subject']) . '.pdf',
+                        'signEncodedFile' => $response['b64FileContent']
+                    ]);
+                    if (!empty($proofDocument['errors'])) {
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['moduleId'],
+                            'level'     => 'ERROR',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
+                            'eventId'   => "{$proofDocument['errors']}"
+                        ]);
+                        continue;
+                    } elseif (!empty($proofDocument['encodedProofDocument'])) {
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['moduleId'],
+                            'level'     => 'INFO',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
+                            'eventId'   => "Retrieve proof from fastParapheur"
+                        ]);
+                        $args['idsToRetrieve'][$version][$resId]['log']       = $proofDocument['encodedProofDocument'];
+                        $args['idsToRetrieve'][$version][$resId]['logFormat'] = $proofDocument['format'];
+                        $args['idsToRetrieve'][$version][$resId]['logTitle']  = '[Faisceau de preuve]';
+                    }
 
                     if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
                         $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
@@ -361,6 +453,14 @@ class FastParapheurController
                             'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
                     }
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'INFO',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "Done!"
+                    ]);
                     break;
                 } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
@@ -379,6 +479,14 @@ class FastParapheurController
                     } else {
                         $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['name'] . ' : ' . $response];
                     }
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'INFO',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "Done!"
+                    ]);
                     break;
                 } else {
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
@@ -387,6 +495,123 @@ class FastParapheurController
         }
         
         return $args['idsToRetrieve'];
+    }
+
+    /**
+     * Create proof from history data, get proof from fast (Fiche de Circulation)
+     * 
+     * @param   array   $args   documentId, config, historyData, filename, signEncodedFile
+     */
+    public static function makeHistoryProof(array $args)
+    {
+        if (!Validator::stringType()->notEmpty()->validate($args['documentId'])) {
+            return ['errors' => 'documentId is not an array'];
+        }
+        if (!Validator::arrayType()->notEmpty()->validate($args['config'])) {
+            return ['errors' => 'config is not an array'];
+        }
+        if (!Validator::arrayType()->notEmpty()->validate($args['historyData'])) {
+            return ['errors' => 'historyData is not an array'];
+        }
+        if (!Validator::stringType()->notEmpty()->validate($args['filename'])) {
+            return ['errors' => 'filename is not a string'];
+        }
+        if (!Validator::stringType()->notEmpty()->validate($args['signEncodedFile'])) {
+            return ['errors' => 'signEncodedFile is not a string'];
+        }
+
+        $documentPathToZip  = [];
+        $tmpPath            = CoreConfigModel::getTmpPath();
+        $proof              = ['history' => $args['historyData']];
+
+        $signDocumentPath   = $tmpPath . 'fastSignDoc' . "_" . rand() . '.pdf';
+        file_put_contents($signDocumentPath, base64_decode($args['signEncodedFile']));
+
+        $filename = TextFormatModel::formatFilename(['filename' => $args['filename']]);
+        if (file_exists($signDocumentPath) && filesize($signDocumentPath) > 0) {
+            $proof = [
+                'signedDocument'    => [
+                    'filename'      => $filename,
+                    'filenameSize'  => filesize($signDocumentPath)
+                ]
+            ];
+            $documentPathToZip[] = ['path' => $signDocumentPath, 'filename' => $filename];
+        }
+
+        
+        $fdc = FastParapheurController::getProof(['documentId' => $args['documentId'], 'config' => $args['config']]);
+        if (!empty($fdc['errors'])) {
+            return ['errors' => $fdc['errors']];
+        }
+        $fdcPath = $tmpPath . 'ficheDeCirculation' . "_" . rand() . '.pdf';
+        file_put_contents($fdcPath, $fdc['response']);
+
+        $documentPathToZip[] = ['path' => $fdcPath, 'filename' => 'ficheDeCirculation.pdf'];
+        $proof['proof'] = [
+            'filename' => 'ficheDeCirculation.pdf',
+            'filenameSize' => filesize($fdcPath)
+        ];
+        $proof['history'] = $args['historyData'];
+
+
+        $proofJson = json_encode($proof, JSON_PRETTY_PRINT);
+        $proofJsonPath = $tmpPath . 'maarchProof' . "_" . rand() . '.json';
+        $proofCreation = file_put_contents($proofJsonPath, $proofJson);
+        if (empty($proofCreation)) {
+            return ['errors' => 'Cannot create proof json'];
+        }
+        $documentPathToZip[] = ['path' => $proofJsonPath, 'filename' => 'maarchProof.json'];
+
+
+        $zipFileContent = null;
+        $zip = new \ZipArchive();
+        $zipFilename = $tmpPath . 'archivedProof' . '_' . rand() . '.zip';
+
+        if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
+            foreach ($documentPathToZip as $document) {
+                if(file_exists($document['path']) && filesize($document['path']) > 0) {
+                    $zip->addFile($document['path'], $document['filename']);
+                }
+            }
+            $zip->close();
+            $zipFileContent = file_get_contents($zipFilename);
+            $documentPathToZip[] = ['path' => $zipFilename];
+        } else {
+            return ['errors' => 'Cannot create archive zip'];
+        }
+
+        foreach ($documentPathToZip as $document) {
+            if(file_exists($document['path']) && filesize($document['path']) > 0) {
+                unlink($document['path']);
+            }
+        }
+
+        return ['format' => 'zip','encodedProofDocument' => base64_encode($zipFileContent)];
+    }
+
+    public static function getProof(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['documentId', 'config']);
+        ValidatorModel::stringType($args, ['documentId']);
+        ValidatorModel::arrayType($args, ['config']);
+
+        $curlReturn = CurlModel::exec([
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/getFdc',
+            'method'        => 'GET',
+            'options'       => [
+                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+            ],
+            'fileResponse'  => true
+        ]);
+
+        if ($curlReturn['code'] == 404) {
+            return ['code' => 400, 'errors' => "Erreur 404 : {$curlReturn['raw']}"];
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            return ['code' => 500, 'errors' => $curlReturn['response']['developerMessage']];
+        }
+        return ['response' => $curlReturn['response']];
     }
 
     public static function getSignatoryUserInfo(array $args = [])
@@ -1014,6 +1239,104 @@ class FastParapheurController
                 'label'         => $redactor['short_label']
             ]);
         }
+    }
+
+    /**
+     * Recommandations minimales Fast à respecter
+     * Espacement minimum de 30 minutes pour le même document
+     * 
+     * @param   $args:
+     *  - documentId : 'externalid' of res_letterbox
+     *  - config : FastParapheur configuration
+     */
+    public static function getDocumentHistory(array $args)
+    {
+        if (!Validator::notEmpty()->validate($args['documentId'])) {
+            return ['errors' => 'documentId not found'];
+        }
+        if (!Validator::arrayType()->notEmpty()->validate($args['config'])) {
+            return ['errors' => 'config is not an array'];
+        }
+
+        $curlReturn = CurlModel::exec([
+            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/history',
+            'method'        => 'GET',
+            'options'       => [
+                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
+                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+            ]
+        ]);
+
+        if ($curlReturn['code'] == 404) {
+            return ['code' => $curlReturn['code'], 'errors' => $curlReturn['raw']];
+        } elseif (!empty($curlReturn['response']['developerMessage'])) {
+            return ['code' => $curlReturn['code'], 'errors' => $curlReturn['response']['developerMessage']];
+        }
+
+        return ['response' => $curlReturn['response']];
+    }
+
+    public static function updateFetchHistoryDateByExternalId(array $args)
+    {
+        $tag = "[updateFetchHistoryDateByExternalId] ";
+        if (!Validator::stringType()->notEmpty()->validate($args['type'])) {
+            return ['errors' => $tag . 'type is not a string'];
+        }
+        if (!Validator::notEmpty()->validate($args['resId'])) {
+            return ['errors' => $tag . 'resId is not found'];
+        }
+
+        if (!empty($args['type']) && $args['type'] == 'resource') {
+            $resource = ResModel::get([
+                'select' => ['res_id', 'external_id', 'external_state'],
+                'where' => ["res_id = ?"],
+                'data'  => [$args['resId']]
+            ]);
+            if (empty($resource)) {
+                return ['errors' => $tag . 'Resource (' . $args['resId'] .') does not exist'];
+            }
+        } else {
+            $resource = AttachmentModel::get([
+                'select' => ['res_id', 'res_id_master', 'external_id', 'external_state'],
+                'where' => ["res_id = ?"],
+                'data'  => [$args['resId']]
+            ]);
+            if (empty($resource)) {
+                return ['errors' => $tag . 'Attachment (' . $args['resId'] .') does not exist'];
+            }
+        }
+
+        $resource = $resource[0];
+
+        $externalId = json_decode($resource['external_id'], true);
+        if (empty($externalId['signatureBookId'])) {
+            return ['errors' => $tag . 'Resource is not linked to Fast Parapheur'];
+        }
+
+        $externalState = json_decode($resource['external_state'], true);
+
+        $currentDate = new \DateTimeImmutable();
+        $externalState['signatureBookWorkflow']['fetchDate'] = $currentDate->format('c');
+        if (!empty($args['type']) && $args['type'] == 'resource') {
+            ResModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$resource['res_id']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
+        } else {
+            AttachmentModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$resource['res_id']],
+                'postSet' => [
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                ]
+            ]);
+        }
+
+        return true;
     }
 
     public static function getRefusalMessage(array $args)

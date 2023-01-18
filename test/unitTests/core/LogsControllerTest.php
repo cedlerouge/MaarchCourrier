@@ -249,7 +249,7 @@ class LogsControllerTest extends TestCase
         
         $logLine = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
         $this->assertNotEmpty($logLine);
-        $this->assertSame("[SELECT * FROM logsController][][]", $logLine);
+        $this->assertSame("[SELECT * FROM logsController][:noSqlData][:noSqlException]", $logLine);
     }
 
     public function testPrepareLogLineSqlWithParamsData()
@@ -266,7 +266,7 @@ class LogsControllerTest extends TestCase
         
         $logLine = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
         $this->assertNotEmpty($logLine);
-        $this->assertSame("[SELECT * FROM logsController WHERE id = ? AND moduleTest = ?][[10,\"LogModuleId\"]][]", $logLine);
+        $this->assertSame("[SELECT * FROM logsController WHERE id = ? AND moduleTest = ?][[10,\"LogModuleId\"]][:noSqlException]", $logLine);
     }
 
     public function testPrepareLogLineSqlWithException()
