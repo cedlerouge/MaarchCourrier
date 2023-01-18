@@ -83,7 +83,8 @@
             "level": "ERROR",
             "file": "./queries.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": 10
+            "maxBackupFiles": 10,
+            "lineMessageFormat": "[%QUERY%][%DATA%][%EXCEPTION%]",
         }
     }
 }
