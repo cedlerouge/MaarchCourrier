@@ -34,7 +34,7 @@ class ShippingControllerTest extends CourrierTestCase
                 'shaping'    => ['color', 'duplexPrinting', 'addressPage'],
                 'sendMode'   => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
+            'fee'             => ['firstPagePrice' => 0, 'nextPagePrice' => 2, 'postagePrice' => 12],
             'entities'        => [1, 2],
             'account'         => ['id' => 'toto', 'password' => '1234']
         ];
@@ -120,7 +120,7 @@ class ShippingControllerTest extends CourrierTestCase
         $this->assertSame('duplexPrinting', $responseBody->shipping->options->shaping[1]);
         $this->assertSame('addressPage', $responseBody->shipping->options->shaping[2]);
         $this->assertSame('fast', $responseBody->shipping->options->sendMode);
-        $this->assertSame(1, $responseBody->shipping->fee->firstPagePrice);
+        $this->assertSame(0, $responseBody->shipping->fee->firstPagePrice);
         $this->assertSame(2, $responseBody->shipping->fee->nextPagePrice);
         $this->assertSame(12, $responseBody->shipping->fee->postagePrice);
         $this->assertNotNull($responseBody->shipping->entities);
