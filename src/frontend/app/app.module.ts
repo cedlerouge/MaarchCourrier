@@ -306,8 +306,6 @@ export class MyHammerConfig extends HammerGestureConfig {
         ContactSearchModalComponentComponent,
         ShippingModalComponent,
         IndexingModelValuesSelectorComponent
-        ShippingModalComponent,
-        IndexingModelValuesSelectorComponent
     ],
     exports: [
         SharedModule

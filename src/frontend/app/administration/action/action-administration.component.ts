@@ -54,7 +54,7 @@ export class ActionAdministrationComponent implements OnInit {
     selectStatusId = new UntypedFormControl();
     selectSuccessStatusId = new UntypedFormControl();
     selectErrorStatusId = new UntypedFormControl();
-    selectIntermidiateStatusId = new FormControl();
+    selectIntermidiateStatusId = new UntypedFormControl();
 
     intermediateStatusActions = ['sendToRecordManagement', 'sendToExternalSignatureBook', 'send_to_visa', 'visa_workflow', 'send_shipping'];
 
