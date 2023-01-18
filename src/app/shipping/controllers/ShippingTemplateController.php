@@ -674,9 +674,9 @@ class ShippingTemplateController
             }
         }
 
-        if (!empty($args['fee']) && !Validator::each(Validator::floatVal()->positive())->validate($args['fee'])) {
-            $errors[] = 'fee must be an array with positive values';
-        }
+//        if (!empty($args['fee']) && !Validator::each(Validator::floatVal()->positive())->validate($args['fee'])) {
+//            $errors[] = 'fee must be an array with positive values';
+//        }
 
         return $errors;
     }

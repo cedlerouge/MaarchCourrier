@@ -537,6 +537,8 @@ $app->get('/administration/shippings/{id}', \Shipping\controllers\ShippingTempla
 $app->post('/administration/shippings', \Shipping\controllers\ShippingTemplateController::class . ':create');
 $app->put('/administration/shippings/{id}', \Shipping\controllers\ShippingTemplateController::class . ':update');
 $app->delete('/administration/shippings/{id}', \Shipping\controllers\ShippingTemplateController::class . ':delete');
+$app->get('/shippings/{shippingId}/attachments', \Shipping\controllers\ShippingController::class . ':getShippingAttachmentsList');
+$app->get('/shippings/{shippingId}/history', \Shipping\controllers\ShippingController::class . ':getHistory');
 
 //SignatureBook
 $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources', \SignatureBook\controllers\SignatureBookController::class . ':getResources');

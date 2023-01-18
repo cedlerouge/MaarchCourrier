@@ -222,6 +222,8 @@ export class SentResourceListComponent implements OnInit {
                 tap((data: any) => {
                     data.forEach((element: any) => {
                         element.recipients.forEach((el: any, index: number) => {
+                            // convert object to array to use filter function
+                            el = Object.values(el);
                             element.recipients[index] = el.filter((item: any) => item !== '');
                         });
                     });
@@ -286,7 +288,8 @@ export class SentResourceListComponent implements OnInit {
                     filter((data: any) => data.state === 'success' || data === 'success'),
                     tap(() => {
                         this.refreshEmailList();
-                        this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);setTimeout(() => {
+                        this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
+                        setTimeout(() => {
                             this.refreshWaitingElements(1);
                             setTimeout(() => {
                                 this.dataSource = new MatTableDataSource(this.sentResources);
@@ -308,25 +311,6 @@ export class SentResourceListComponent implements OnInit {
                     shippingData: row
                 }
             });
-
-            dialogRef.afterClosed().pipe(
-                filter((data: any) => data.state === 'success' || data === 'success'),
-                tap(() => {
-                    this.refreshEmailList();
-                    this.reloadBadgeSentResource.emit(`${this.sentResources.length}`);
-                    setTimeout(() => {
-                        this.refreshWaitingElements(1);
-                        setTimeout(() => {
-                            this.dataSource = new MatTableDataSource(this.sentResources);
-                            this.dataSource.sort = this.sort;
-                        }, 0);
-                    }, 5000);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
         }
     }
 

@@ -86,6 +86,7 @@ class ShippingController
         if (!Validator::intVal()->validate($args['shippingId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route shippingId is not an integer']);
         }
+
         $shipping = ShippingModel::get([
             'select' => ['id', 'document_id', 'document_type', 'attachments'],
             'where'  => ['id = ?'],
@@ -132,7 +133,12 @@ class ShippingController
         return $response->withJson(['attachments' => $attachments]);
     }
 
-    public function getHistory(Request $request, Response $response, array $args) {
+    public function getHistory(Request $request, Response $response, array $args)
+    {
+        if (!Validator::intVal()->validate($args['shippingId'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Route shippingId is not an integer']);
+        }
+
         $shipping = ShippingModel::get([
             'select' => ['id', 'document_id', 'document_type', 'history'],
             'where'  => ['id = ?'],
