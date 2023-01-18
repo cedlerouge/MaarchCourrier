@@ -108,7 +108,7 @@ class AuthenticationController
             'authMode'              => $loggingMethod['id'],
             'authUri'               => $authUri,
             'lang'                  => CoreConfigModel::getLanguage(),
-            'mailServerOnline'      => $emailConfiguration['online'],
+            'mailServerOnline'      => $emailConfiguration['online'] ?? false,
             'maarchUrl'             => $maarchUrl,
             'externalSignatoryBook'  => $externalSignatoryBook,
         ];

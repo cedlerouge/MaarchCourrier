@@ -1055,7 +1055,7 @@ class ResourceListController
                             $display[] = $value;
                         } elseif (strpos($value['value'], 'indexingCustomField_') !== false) {
                             $customId = explode('_', $value['value'])[1];
-                            $customValue = json_decode($resource['custom_fields'], true);
+                            $customValue = json_decode($resource['custom_fields'] ?? '{}', true);
 
                             $value['displayLabel'] = $customFieldsLabels[$customId] ?? '';
                             if ($customFields[$customId] == 'contact' && !empty($customValue[$customId])) {

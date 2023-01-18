@@ -1859,7 +1859,7 @@ class SearchController
                 $rawFolders[$folders['id']] = [
                     'id'    => $folders['id'],
                     'label' => $folders['label'],
-                    'count' => $folders['count'] + $rawFolders[$folders['id']]['count']
+                    'count' => $folders['count'] + ($rawFolders[$folders['id']]['count'] ?? 0)
                 ];
             }
         }

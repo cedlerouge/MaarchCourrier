@@ -1996,7 +1996,7 @@ class UserController
                     return ['status' => 403, 'error' => 'UserId out of perimeter'];
                 }
             }
-        } elseif ($args['delete'] && $GLOBALS['id'] == $user['id']) {
+        } elseif (!empty($args['delete']) && $GLOBALS['id'] == $user['id']) {
             return ['status' => 403, 'error' => 'Can not delete yourself'];
         }
 
