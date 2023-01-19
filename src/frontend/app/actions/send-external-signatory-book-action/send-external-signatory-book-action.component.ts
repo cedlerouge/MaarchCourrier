@@ -209,7 +209,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     hasEmptyOtpSignaturePosition(): boolean {
         if (this.authService.externalSignatoryBook.integratedWorkflow && this.externalSignatoryBook.allowedSignatoryBook.indexOf(this.authService.externalSignatoryBook?.id) > -1) {
-            const externalUsers: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign');
+            const externalUsers: any[] = this.externalSignatoryBookComponent.appExternalVisaWorkflow.visaWorkflow.items.filter((user: any) => user.item_id === null && user.role === 'sign' && user.externalInformations.type !== 'fast');
             if (externalUsers.length > 0) {
                 let state: boolean = false;
                 this.resourcesToSign.forEach((resource: any) => {
