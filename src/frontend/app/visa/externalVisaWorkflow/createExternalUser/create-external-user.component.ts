@@ -61,6 +61,8 @@ export class CreateExternalUserComponent implements OnInit {
 
     searchMode: boolean = false;
 
+    sourceTypes: string[] = [];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -86,6 +88,7 @@ export class CreateExternalUserComponent implements OnInit {
         const data: any = await this.externalSignatoryBookManagerService.getOtpConfig();
         if (!this.functions.empty(data)) {
             this.sources = data.otp;
+            this.sourceTypes = [... new Set(this.sources.map((item: any) => item.type))];
             this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
             if (this.data.otpInfo === null) {
                 this.userOTP.sourceId = this.sources[0].id;
@@ -98,6 +101,10 @@ export class CreateExternalUserComponent implements OnInit {
             this.dialogRef.close();
         }
         this.loading = false;
+    }
+
+    getSources(type: string): any[] {
+        return this.sources.filter((item: any) => item.type === type);
     }
 
     addOtpUser() {
@@ -119,6 +126,11 @@ export class CreateExternalUserComponent implements OnInit {
         this.userOTP.type = selectedSource.type;
         this.currentSource = [... new Set(selectedSource.securityModes)];
         this.userOTP.security = this.currentSource[0];
+        if (this.userOTP.type === 'fast') {
+            this.userOTP.availableRoles = this.availableRoles.filter((role: any) => role.id !== 'visa');
+        } else if (this.userOTP.type === 'yousign') {
+            this.userOTP.availableRoles = this.availableRoles;
+        }
     }
 
     getContact(item: any) {

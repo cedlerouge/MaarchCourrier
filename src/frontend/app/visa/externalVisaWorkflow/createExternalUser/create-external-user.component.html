@@ -7,11 +7,14 @@
         <div *ngIf="!loading" class="userForm">
             <mat-form-field *ngIf="sources.length > 1" appearance="fill">
                 <mat-label>{{ 'lang.source' | translate }}</mat-label>
-                <mat-select #source [(ngModel)]="userOTP.sourceId" (selectionChange)="setCurrentSource($event.value)"
-                    required>
-                    <mat-option *ngFor="let source of sources" [value]="source.id" [title]="source.label">
-                        {{ source.label }}
-                    </mat-option>
+                <mat-select #source
+                    [(ngModel)]="userOTP.sourceId"
+                    (selectionChange)="setCurrentSource($event.value)" required>
+                    <mat-optgroup *ngFor="let source of sourceTypes" [label]="(source === 'yousign' ? 'lang.youSign' : 'lang.fastParapheur') | translate">
+                        <mat-option *ngFor="let item of getSources(source)"[value]="item.id" [title]="item.label" role="option">
+                            {{ item.label }}
+                        </mat-option>
+                    </mat-optgroup>
                 </mat-select>
             </mat-form-field>
             <div style="display: flex;margin-bottom: 10px;" *ngIf="searchMode">
@@ -76,8 +79,7 @@
                 <mat-label>{{'lang.role' | translate}}</mat-label>
                 <input matInput style="display: none;">
                 <mat-radio-group #role style="display: flex" [(ngModel)]="userOTP.role" required>
-                    <mat-radio-button *ngFor="let role of availableRoles" [value]="role.id" style="flex:1"
-                        color="primary">
+                    <mat-radio-button *ngFor="let role of userOTP.availableRoles" [value]="role.id" style="flex:1" color="primary">
                         {{ role.label }}
                     </mat-radio-button>
                 </mat-radio-group>
