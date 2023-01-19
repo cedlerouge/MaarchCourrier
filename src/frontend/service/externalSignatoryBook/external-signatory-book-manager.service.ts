@@ -198,4 +198,8 @@ export class ExternalSignatoryBookManagerService {
             ).subscribe();
         });
     }
+
+    canAddExternalUser(): boolean {
+        return this.serviceInjected?.canAddExternalUser;
+    }
 }

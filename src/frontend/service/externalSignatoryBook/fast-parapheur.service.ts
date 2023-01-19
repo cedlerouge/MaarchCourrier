@@ -18,6 +18,7 @@ export class FastParapheurService {
     canSynchronizeSignatures: boolean = false;
     canViewWorkflow: boolean = false;
     canCreateTile: boolean = false;
+    canAddExternalUser: boolean = false;
 
     userWorkflow = new UserWorkflow();
     signatureModes: string[] = [];

@@ -64,9 +64,12 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<any> {
-        const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
-        if (!this.functions.empty(data)) {
-            this.otpConfig = data.otp.length;
+        this.workflowDetails();
+        if (this.externalSignatoryBookManagerService.canAddExternalUser()) {
+            const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
+            if (!this.functions.empty(data)) {
+                this.otpConfig = data.otp.length;
+            }
         }
     }
 
@@ -105,14 +108,18 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         return this.externalSignatoryBookManagerService.isValidExtWorkflow(workflow);
     }
 
-    async loadListModel(entityId: number) {
-        this.loading = true;
-        this.visaWorkflow.items = [];
+    async workflowDetails() {
         const workflow = await this.getWorkflowDetails();
         if (!this.functions.empty(workflow?.types)) {
             this.workflowTypes = workflow.types;
             this.workflowType = workflow.types[0].id;
         }
+    }
+
+    async loadListModel(entityId: number) {
+        this.loading = true;
+        this.visaWorkflow.items = [];
+        this.workflowDetails();
         const listModel: any = await this.externalSignatoryBookManagerService?.loadListModel(entityId);
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
