@@ -124,6 +124,10 @@ class LogsController
         if (empty($logConfig)) {
             return ['code' => 400, 'errors' => "Log config not found!"];
         }
+        if (empty($logConfig['enable'])) {
+            return ['code' => 400, 'errors' => "LogController disable. Check log config -> enable."];
+        }
+
         $logLine   = LogsController::prepareLogLine(['logConfig' => $logConfig, 'lineData' => $args]);
 
         if (!empty($args['isSql'])) {
