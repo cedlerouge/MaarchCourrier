@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# for test 
-CI_COMMIT_BRANCH='2301'
-
 FIRST_TAG=0
 
 TAGS=()
 
-RESPONSE=$(curl --write-out '%{url_effective} [%{response_code}]' --silent --output /dev/null --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$CI_COMMIT_BRANCH")
+RESPONSE=$(curl --write-out '%{url_effective} [%{response_code}]' --silent --output /dev/null --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$TAG_BASE")
 RESPONSE_CODE=$(echo $RESPONSE | grep -o '\[[0-9]*\]$')
 
 if [ $RESPONSE_CODE != '[200]' ]; then
@@ -15,7 +12,16 @@ if [ $RESPONSE_CODE != '[200]' ]; then
     exit 1
 fi
 
-for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$CI_COMMIT_BRANCH" | jq -r '.[] | @base64'); do
+
+MR_ID=`echo $CI_OPEN_MERGE_REQUESTS | grep -oP "!(.)*" | tr -d "!"`
+content=$(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_ID")
+STATUS=$(jq -r '.detailed_merge_status' <<<"$content")
+if [ $STATUS != 'mergeable' ]; then
+    echo "2301_releases cannot be merge ! Tag Abort"
+    exit 1
+fi
+
+for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$TAG_BASE" | jq -r '.[] | @base64'); do
     _jq() {
         echo ${row} | base64 --decode | jq -r ${1}
     }
@@ -34,11 +40,11 @@ done
 if [ ${#TAGS[@]} -eq 0 ]; then
     echo "No Tags available, create de first tag !"
     FIRST_TAG=1
-    LATEST_TAG="$CI_COMMIT_BRANCH.0.0"
-    BRANCH_TAG_VERSION=$CI_COMMIT_BRANCH
+    LATEST_TAG="$TAG_BASE.0.0"
+    BRANCH_TAG_VERSION=$TAG_BASE
     MAJOR_TAG_VERSION='0'
     MINOR_TAG_VERSION='0'
-    NEXT_TAG="$CI_COMMIT_BRANCH.0.0"
+    NEXT_TAG="$TAG_BASE.0.0"
 else
     SORTED_TAGS=($(echo ${TAGS[*]} | tr " " "\n" | sort -Vr))
     LATEST_TAG=$(echo ${SORTED_TAGS[0]})
@@ -75,24 +81,21 @@ if [[ -z $BRANCH_TAG_VERSION ]] || [[ -z $MAJOR_TAG_VERSION ]] || [[ -z $MINOR_T
 fi
 
 if [ $FIRST_TAG == 0 ]; then
-    if [ $TAG_MODE == 'major' ]; then
-        VERSION=$((MAJOR_TAG_VERSION + 1))
-        NEXT_TAG="$BRANCH_TAG_VERSION.$VERSION.0"
-    fi
-    if [ $TAG_MODE == 'minor' ]; then
-        VERSION=$((MINOR_TAG_VERSION + 1))
-        NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION"
-    fi
+    VERSION=$((MINOR_TAG_VERSION + 1))
+    VERSION_NEXT=$((MINOR_TAG_VERSION + 2))
+    NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION"
+    NEXT_NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION_NEXT"
+
     echo "NEXT TAG : $NEXT_TAG"
 fi
 
 ## CREATE TAG
-curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=$CI_COMMIT_BRANCH"
+curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=$RELEASE_BRANCH"
 
 
 if [ $FIRST_TAG == 0 ]; then
     ## CLOSE MILESTONE
-    for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones?search=$LATEST_TAG" | jq -r '.[] | @base64'); do
+    for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones?search=$NEXT_TAG" | jq -r '.[] | @base64'); do
         _jq() {
             echo ${row} | base64 --decode | jq -r ${1}
         }
@@ -108,7 +111,7 @@ if [ $FIRST_TAG == 0 ]; then
     done
 fi
 
-BODY="{\"id\":\"$CI_PROJECT_ID\",\"title\":\"$NEXT_TAG\"}"
+BODY="{\"id\":\"$CI_PROJECT_ID\",\"title\":\"$NEXT_NEXT_TAG\"}"
 
 # CREATE NEXT TAG MILESTONE
 curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones
@@ -125,34 +128,30 @@ if [ $FIRST_TAG == 0 ]; then
 
     git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
 
-    git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GILAB_URL}/${CI_PROJECT_PATH}"
+    git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GITLAB_URL}/${CI_PROJECT_PATH}.git"
 
     git fetch
-    git branch -D $CI_COMMIT_BRANCH
-    git pull origin $CI_COMMIT_BRANCH
-    git checkout $CI_COMMIT_BRANCH
+    git branch -D $RELEASE_BRANCH
+    git pull origin $RELEASE_BRANCH
+    git checkout $RELEASE_BRANCH
 
-    echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='Update referential' --all-match"
+    TAGS_COMP="$LATEST_TAG..$NEXT_TAG"
 
-    REF_UPDATED=$(git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='Update referential' --all-match)
+    REF_UPDATED=$(git log $TAGS_COMP --pretty=format:'%s' --grep='Update referential' --all-match)
 
-    echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FEAT' --all-match"
-
-    git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FEAT' --all-match >$COMMIT_LOG_FILE
+    git log $TAGS_COMP --pretty=format:'%s' --grep='feat' --grep='Merge' --all-match >$COMMIT_LOG_FILE
     echo '' >>$COMMIT_LOG_FILE
 
     while IFS= read -r line; do
-        ISSUE_ID=$(echo $line | grep -o 'FEAT #[0-9]*' | grep -o '[0-9]*')
+        ISSUE_ID=$(echo $line | grep -o 'feat/[0-9]*' | grep -o '[0-9]*')
         echo "$ISSUE_ID" >>$ISSUES_IDS_FILE
     done <"$COMMIT_LOG_FILE"
 
-    echo "git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FIX' --all-match"
-
-    git log $LATEST_TAG..$NEXT_TAG --pretty=format:'%s' --grep='FIX' --all-match >$COMMIT_LOG_FILE
+    git log $TAGS_COMP --pretty=format:'%s' --grep='fix' --grep='Merge' --all-match >$COMMIT_LOG_FILE
     echo '' >>$COMMIT_LOG_FILE
 
     while IFS= read -r line; do
-        ISSUE_ID=$(echo $line | grep -o 'FIX #[0-9]*' | grep -o '[0-9]*')
+        ISSUE_ID=$(echo $line | grep -o 'fix/[0-9]*' | grep -o '[0-9]*')
         echo "$ISSUE_ID" >>$ISSUES_IDS_FILE
     done <"$COMMIT_LOG_FILE"
 
@@ -194,23 +193,16 @@ if [ $FIRST_TAG == 0 ]; then
 
     curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/releases
 
-    # Update files version
-    cp package.json tmp_package.json
-
-    jq -r ".version |= \"$NEXT_TAG\"" tmp_package.json >package.json
-
-    rm tmp_package.json
-
-    git add -f package.json
-
     mkdir -p ci/build/
     mv $COMMIT_LOG_FILE ci/build/
     mv $ISSUES_IDS_FILE ci/build/
     mv $SORTED_UNIQUE_ISSUES_IDS ci/build/
     mv $FINAL_LOG ci/build/
+fi
 
-    git commit -m "Update next tag version files : $NEXT_TAG"
-
-    git push origin $CI_COMMIT_BRANCH
-
+RESPONSE=$(curl --write-out '%{url_effective} [%{response_code}]' --silent --output /dev/null --header "PRIVATE-TOKEN: $TOKEN_GITLAB" -X PUT "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_ID/merge?squash=false")
+RESPONSE_CODE=$(echo $RESPONSE | grep -o '\[[0-9]*\]$')
+if [ $RESPONSE_CODE != '[200]' ]; then
+    echo "Error ! $RESPONSE"
+    exit 1
 fi

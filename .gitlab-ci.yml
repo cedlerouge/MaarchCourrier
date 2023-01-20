@@ -7,6 +7,7 @@ stages:
   - sync
   - test
   - deploy
+  - after_deploy
 
 before_script:
   - apt-get update -yqq > /dev/null
@@ -155,12 +156,25 @@ end_merge_request:
     - chmod +x ./ci/end_mr.sh
     - ./ci/end_mr.sh
 
+check_branch_releases:
+  image: debian:10-slim
+  stage: after_deploy
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "minor"'
+  before_script:
+    - apt-get update -yqq > /dev/null
+    - apt install -y curl
+    - apt install -y jq
+    - apt install -y git
+  script:
+    - chmod +x ./ci/check_releases.sh
+    - ./ci/check_releases.sh
 
-new_tag:
+create_minor_tag:
   image: debian:10-slim
   stage: deploy
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE != null'
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "minor"'
   before_script:
     - apt-get update -yqq > /dev/null
     - 'which ssh-agent || ( apt-get install openssh-client -y )'
@@ -175,5 +189,27 @@ new_tag:
     - apt install -y curl
     - apt install -y jq
   script:
-    - chmod +x ./ci/new_tag.sh
-    - ./ci/new_tag.sh
+    - chmod +x ./ci/new_minor_tag.sh
+    - ./ci/new_minor_tag.sh
+
+create_major_tag:
+  image: debian:10-slim
+  stage: deploy
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "major"'
+  before_script:
+    - apt-get update -yqq > /dev/null
+    - 'which ssh-agent || ( apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan "$GITLAB_URL" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" >> ~/.ssh/config'
+    - apt install -y git
+    - apt install -y curl
+    - apt install -y jq
+  script:
+    - chmod +x ./ci/new_major_tag.sh
+    - ./ci/new_major_tag.sh
