@@ -36,6 +36,11 @@ use History\controllers\HistoryController;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\TextFormatModel;
+use Note\models\NoteModel;
+use Entity\models\EntityModel;
+use IndexingModel\models\IndexingModelFieldModel;
+use Resource\controllers\SummarySheetController;
+use setasign\Fpdi\Tcpdf\Fpdi;
 use Contact\controllers\ContactController;
 
 /**
@@ -756,7 +761,7 @@ class FastParapheurController
 
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
-            'select' => ['res_id', 'subject', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
+            'select' => ['res_id', 'subject', 'typist', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id']
         ]);
         if (empty($resource)) {
             return ['error' => 'resource does not exist', 'code' => 400];
@@ -875,6 +880,22 @@ class FastParapheurController
                 ];
             }
         }
+
+        $user = UserModel::getById(['id' => $resource['typist'], 'select' => ['user_id']]);
+        $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
+            'mainResource' => $resource,
+            'login' => $user['user_id']
+        ]);
+        $appendices[] = [
+            'isFile'   => true,
+            'content'  => file_get_contents($summarySheetFilePath),
+            'filename' => TextFormatModel::formatFilename([
+                'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
+                'maxLength' => 50
+            ])
+        ];
+        unlink($summarySheetFilePath);
+
         if (empty($uploads)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
         }
@@ -890,7 +911,7 @@ class FastParapheurController
                 'appendices' => $appendices
             ]);
             if (!empty($result['error'])) {
-                return ['code' => $result['code'], 'error' => $result['error']];
+                return ['code' => $result['code'], 'error' => $result['error'] . ' |||| ' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION)];
             }
             
             $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
@@ -939,6 +960,7 @@ class FastParapheurController
                 'circuit' => json_encode($args['circuit'])
             ]
         ]);
+
         if ($curlReturn['code'] != 200) {
             return ['code' => $curlReturn['code'], 'error' => $curlReturn['errors']];
         }
@@ -1181,6 +1203,89 @@ class FastParapheurController
         }
         
         return $fastParapheurBlock;
+    }
+
+    public static function getSummarySheetFile(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['mainResource', 'login']);
+        ValidatorModel::arrayType($args, ['mainResource']);
+
+        $units = [];
+        $units[] = ['unit' => 'primaryInformations'];
+        $units[] = ['unit' => 'secondaryInformations',       'label' => _SECONDARY_INFORMATION];
+        $units[] = ['unit' => 'senderRecipientInformations', 'label' => _DEST_INFORMATION];
+        $units[] = ['unit' => 'diffusionList',               'label' => _DIFFUSION_LIST];
+        $units[] = ['unit' => 'visaWorkflow',                'label' => _VISA_WORKFLOW];
+        $units[] = ['unit' => 'opinionWorkflow',             'label' => _AVIS_WORKFLOW];
+        $units[] = ['unit' => 'notes',                       'label' => _NOTES_COMMENT];
+
+        // Data for resources
+        $tmpIds = [$args['mainResource']['res_id']];
+        $data   = [];
+        foreach ($units as $unit) {
+            if ($unit['unit'] == 'notes') {
+                $data['notes'] = NoteModel::get([
+                    'select'   => ['id', 'note_text', 'user_id', 'creation_date', 'identifier'],
+                    'where'    => ['identifier in (?)'],
+                    'data'     => [$tmpIds],
+                    'order_by' => ['identifier']]);
+
+                $userEntities = EntityModel::getByUserId(['userId' => $GLOBALS['id'], 'select' => ['entity_id']]);
+                $data['userEntities'] = [];
+                foreach ($userEntities as $userEntity) {
+                    $data['userEntities'][] = $userEntity['entity_id'];
+                }
+            } elseif ($unit['unit'] == 'opinionWorkflow') {
+                $data['listInstancesOpinion'] = ListInstanceModel::get([
+                    'select'    => ['item_id', 'process_date', 'res_id'],
+                    'where'     => ['difflist_type = ?', 'res_id in (?)'],
+                    'data'      => ['AVIS_CIRCUIT', $tmpIds],
+                    'orderBy'   => ['listinstance_id']
+                ]);
+            } elseif ($unit['unit'] == 'visaWorkflow') {
+                $data['listInstancesVisa'] = ListInstanceModel::get([
+                    'select'    => ['item_id', 'requested_signature', 'process_date', 'res_id'],
+                    'where'     => ['difflist_type = ?', 'res_id in (?)'],
+                    'data'      => ['VISA_CIRCUIT', $tmpIds],
+                    'orderBy'   => ['listinstance_id']
+                ]);
+            } elseif ($unit['unit'] == 'diffusionList') {
+                $data['listInstances'] = ListInstanceModel::get([
+                    'select'  => ['item_id', 'item_type', 'item_mode', 'res_id'],
+                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
+                    'data'    => ['entity_id', $tmpIds],
+                    'orderBy' => ['listinstance_id']
+                ]);
+            }
+        }
+
+        $modelId = ResModel::getById([
+            'select' => ['model_id'],
+            'resId'  => $args['mainResource']['res_id']
+        ]);
+        $indexingFields = IndexingModelFieldModel::get([
+            'select' => ['identifier', 'unit'],
+            'where'  => ['model_id = ?'],
+            'data'   => [$modelId['model_id']]
+        ]);
+        $fieldsIdentifier = array_column($indexingFields, 'identifier');
+
+        $pdf = new Fpdi('P', 'pt');
+        $pdf->setPrintHeader(false);
+
+        SummarySheetController::createSummarySheet($pdf, [
+            'resource'         => $args['mainResource'],
+            'units'            => $units,
+            'login'            => $args['login'],
+            'data'             => $data,
+            'fieldsIdentifier' => $fieldsIdentifier
+        ]);
+
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $summarySheetFilePath = $tmpPath . "summarySheet_".$args['mainResource']['res_id'] . "_" . $args['login'] ."_".rand().".pdf";
+        $pdf->Output($summarySheetFilePath, 'F');
+
+        return $summarySheetFilePath;
     }
 
     public static function getSignatureModes(array $args)
