@@ -89,9 +89,32 @@ if [ $FIRST_TAG == 0 ]; then
     echo "NEXT TAG : $NEXT_TAG"
 fi
 
-## CREATE TAG
-curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=$RELEASE_BRANCH"
+curl --request POST --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?branch=tmp_$RELEASE_BRANCH&ref=$RELEASE_BRANCH"
 
+git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
+git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GITLAB_URL}/${CI_PROJECT_PATH}.git"
+git fetch
+git branch -D tmp_$RELEASE_BRANCH
+git pull origin tmp_$RELEASE_BRANCH
+git checkout tmp_$RELEASE_BRANCH
+
+composer install
+npm run reload-packages
+npm run build-prod
+npm run reload-packages-prod
+
+git add -f dist/
+git add -f node_modules/
+git add -f vendor/
+
+git commit -m "Add packages dependencies"
+
+git push
+
+## CREATE TAG
+curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=tmp_$RELEASE_BRANCH"
+
+curl --request DELETE --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches/tmp_$RELEASE_BRANCH"
 
 if [ $FIRST_TAG == 0 ]; then
     ## CLOSE MILESTONE
@@ -124,13 +147,6 @@ if [ $FIRST_TAG == 0 ]; then
     FINAL_LOG="tmp4.txt"
     CONTENT=""
 
-    echo "Set user git : $GITLAB_USER_NAME <$GITLAB_USER_EMAIL>"
-
-    git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
-
-    git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GITLAB_URL}/${CI_PROJECT_PATH}.git"
-
-    git fetch
     git branch -D $RELEASE_BRANCH
     git pull origin $RELEASE_BRANCH
     git checkout $RELEASE_BRANCH
