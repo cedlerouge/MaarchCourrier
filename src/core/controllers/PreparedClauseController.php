@@ -312,7 +312,7 @@ class PreparedClauseController
         }
 
         try {
-            ResModel::getOnView(['select' => $aArgs['select'], 'where' => [$clause, '1=1'], 'orderBy' => $aArgs['orderBy'], 'limit' => $aArgs['limit']]);
+            ResModel::getOnView(['select' => $aArgs['select'], 'where' => [$clause, '1=1'], 'orderBy' => $aArgs['orderBy'] ?? [], 'limit' => $aArgs['limit'] ?? null]);
         } catch (\Exception $e) {
             return false;
         }

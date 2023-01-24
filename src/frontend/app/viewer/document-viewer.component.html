@@ -97,9 +97,12 @@
                         <mat-icon color="primary" class="fas fa-file-upload"></mat-icon>
                         <span style="white-space: pre-wrap;">{{'lang.uploadNewVersion' | translate}}</span>
                     </button>
-                    <button mat-menu-item *ngIf="(file.contentView !== undefined || base64 !== null) && resId != null && mode !== 'attachment' && externalId.signatureBookId && externalSignatoryBook.canViewWorkflow()" (click)="openExternalSignatoryBookWorkflow()">
+                    <button mat-menu-item *ngIf="(file.contentView !== undefined || base64 !== null) && resId != null && mode !== 'attachment' && externalId.signatureBookId && !functions.empty(externalSignatoryBook.signatoryBookEnabled)"
+                        [disabled]="!externalSignatoryBook.canViewWorkflow()"
+                        [title]="getTitle()"
+                        (click)="openExternalSignatoryBookWorkflow()">
                         <mat-icon color="primary" class="fas fa-list-ol"></mat-icon>
-                        <span>{{'lang.maarchParapheurWorkflow' | translate}}</span>
+                        <span>{{('lang.' + externalSignatoryBook.signatoryBookEnabled + 'Workflow') | translate}}</span>
                     </button>
                     <button mat-menu-item *ngIf="editMode && resId === null" (click)="docToUpload.click()">
                         <mat-icon color="primary" class="fa fa-file-upload"></mat-icon>

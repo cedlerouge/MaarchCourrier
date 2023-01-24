@@ -111,7 +111,7 @@ abstract class BasketModelAbstract
         DatabaseModel::update([
             'table'     => 'baskets',
             'set'       => $args['set'],
-            'postSet'   => $args['postSet'],
+            'postSet'   => $args['postSet'] ?? [],
             'where'     => $args['where'],
             'data'      => $args['data']
         ]);

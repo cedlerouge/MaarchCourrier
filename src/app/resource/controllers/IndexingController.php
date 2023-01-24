@@ -414,7 +414,7 @@ class IndexingController
             }
         } else {
             // Calendar or empty delay
-            if ($args['sub']) {
+            if (!empty($args['sub'])) {
                 $date->sub(new \DateInterval("P{$args['delay']}D"));
             } else {
                 $date->add(new \DateInterval("P{$args['delay']}D"));

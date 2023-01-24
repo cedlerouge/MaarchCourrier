@@ -2693,7 +2693,7 @@
     "badConfiguration": "Problème de paramètrage dans le fichier de configuration",
     "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
     "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante",
-    "cannotCreateTile": "Indisponible pour le parapheur externe actif",
+    "unavailableForSignatoryBook": "Indisponible pour le parapheur externe actif",
     "rightRotation": "Pivoter à droite",
     "leftRotation": "Pivoter à gauche",
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>"

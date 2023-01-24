@@ -18,6 +18,7 @@ use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Resource\models\ResModel;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 
@@ -55,9 +56,9 @@ class WatermarkController
             $text = str_replace("[{$value}]", $tmp, $text);
         }
 
-        $libDir = CoreConfigModel::getLibrariesDirectory();
-        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
-            require_once($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php');
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+        if (!empty($libPath)) {
+            require_once($libPath);
 
             $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .rand(). "_watermark.pdf";
             $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
@@ -88,6 +89,15 @@ class WatermarkController
             }
             $fileContent = $pdf->Output('', 'S');
         } catch (\Exception $e) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'resources',
+                'level'     => 'ERROR',
+                'tableName' => 'res_letterbox',
+                'recordId'  => $args['resId'],
+                'eventType' => 'watermark',
+                'eventId'   => $e->getMessage()
+            ]);
             $fileContent = null;
         }
 
@@ -151,9 +161,9 @@ class WatermarkController
             $position = count($rawPosition) == 4 ? $rawPosition : $position;
         }
 
-        $libDir = CoreConfigModel::getLibrariesDirectory();
-        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
-            require_once($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php');
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+        if (!empty($libPath)) {
+            require_once($libPath);
 
             $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .rand(). "_watermark.pdf";
             $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
@@ -184,6 +194,15 @@ class WatermarkController
             }
             $fileContent = $pdf->Output('', 'S');
         } catch (\Exception $e) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'attachments',
+                'level'     => 'ERROR',
+                'tableName' => 'res_attachments',
+                'recordId'  => $args['attachmentId'],
+                'eventType' => 'watermark',
+                'eventId'   => $e->getMessage()
+            ]);
             $fileContent = null;
         }
 

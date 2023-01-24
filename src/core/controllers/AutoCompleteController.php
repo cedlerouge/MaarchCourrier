@@ -613,7 +613,7 @@ class AutoCompleteController
                 'type'          => 'user',
                 'id'            => $value['id'],
                 'idToDisplay'   => "{$value['firstname']} {$value['lastname']}",
-                'otherInfo'     => $entity['short_label']
+                'otherInfo'     => $entity['short_label'] ?? null
             ];
         }
 

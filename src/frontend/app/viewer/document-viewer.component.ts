@@ -1524,4 +1524,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
             this.rotation = this.rotation + 90;
         }
     }
+
+    getTitle(): string {
+        return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
+    }
 }

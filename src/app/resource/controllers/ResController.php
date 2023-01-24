@@ -16,6 +16,7 @@ namespace Resource\controllers;
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Action\models\ActionModel;
+use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
@@ -48,9 +49,10 @@ use Search\controllers\SearchController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingModel;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
-use SrcCore\controllers\PreparedClauseController;
 use SrcCore\controllers\CoreController;
+use SrcCore\controllers\LogsController;
+use SrcCore\controllers\PreparedClauseController;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
@@ -58,7 +60,6 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
-use Attachment\controllers\AttachmentTypeController;
 
 class ResController extends ResourceControlController
 {
@@ -256,9 +257,9 @@ class ResController extends ResourceControlController
             $formattedData['followed'] = !empty($followed);
 
             $registeredMail = RegisteredMailModel::getByResId(['select' => ['deposit_id', 'received_date', 'return_reason'], 'resId' => $args['resId']]);
-            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'];
-            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'];
-            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'];
+            $formattedData['registeredMail_returnDate']   = $registeredMail['received_date'] ?? null;
+            $formattedData['registeredMail_returnReason'] = $registeredMail['return_reason'] ?? null;
+            $formattedData['registeredMail_deposit_id']   = $registeredMail['deposit_id'] ?? null;
         }
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
@@ -842,16 +843,29 @@ class ResController extends ResourceControlController
         $pathToPdf = $docserver['path_template'] . $adrPdf[0]['path'] . $adrPdf[0]['filename'];
         $pathToPdf = str_replace('#', '/', $pathToPdf);
 
-        $libDir = CoreConfigModel::getLibrariesDirectory();
-        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
-            require_once($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php');
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+        if (!empty($libPath)) {
+            require_once($libPath);
 
             $document = \SetaPDF_Core_Document::loadByFilename($pathToPdf);
             $pages = $document->getCatalog()->getPages();
             $pageCount = count($pages);
         } else {
-            $pdf = new Fpdi('P', 'pt');
-            $pageCount = $pdf->setSourceFile($pathToPdf);
+            try {
+                $pdf = new Fpdi('P', 'pt');
+                $pageCount = $pdf->setSourceFile($pathToPdf);
+            } catch (\Exception $e) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'resources',
+                    'level'     => 'ERROR',
+                    'tableName' => 'res_letterbox',
+                    'recordId'  => $args['resId'],
+                    'eventType' => 'thumbnail',
+                    'eventId'   => $e->getMessage()
+                ]);
+                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
+            }
         }
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
@@ -1179,8 +1193,13 @@ class ResController extends ResourceControlController
             return $args['resources'];
         }
 
+        $mode = null;
+        if (!empty($args['mode'])) {
+            $mode = $args['mode'];
+        }
+
         $user = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
-        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $args['mode']]);
+        $userDataClause = SearchController::getUserDataClause(['userId' => $args['userId'], 'login' => $user['user_id'], 'mode' => $mode]);
 
         $data = [$args['resources']];
         $data = array_merge($data, $userDataClause['searchData']);
@@ -1480,8 +1499,12 @@ class ResController extends ResourceControlController
         $allowedFiles = StoreController::getAllowedFiles();
         $allowedFiles = array_column($allowedFiles, 'canConvert', 'extension');
 
-        $format = strtoupper($resource['format']);
-        $resource['canConvert'] = !empty($allowedFiles[$format]);
+        $resource['canConvert'] = false;
+
+        if (!empty($resource['format'])) {
+            $format = strtoupper($resource['format']);
+            $resource['canConvert'] = !empty($allowedFiles[$format]);
+        }
 
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_technical_infos', 'userId' => $GLOBALS['id']])) {
             $resource = [

@@ -36,8 +36,9 @@ use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use SignatureBook\controllers\SignatureBookController;
 use Slim\Psr7\Request;
-use SrcCore\http\Response;
 use SrcCore\controllers\CoreController;
+use SrcCore\controllers\LogsController;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
@@ -333,6 +334,11 @@ class AttachmentController
 
         $excludeAttachmentTypes = ['signed_response', 'summary_sheet'];
 
+        $limit = null;
+        if (!empty($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+
         $attachments = AttachmentModel::get([
             'select'    => [
                 'res_id as "resId"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
@@ -341,7 +347,7 @@ class AttachmentController
             'where'     => ['res_id_master = ?', 'status not in (?)', 'attachment_type not in (?)'],
             'data'      => [$args['resId'], ['DEL', 'OBS'], $excludeAttachmentTypes],
             'orderBy'   => ['modification_date DESC'],
-            'limit'     => (int)$queryParams['limit'] ?? 0
+            'limit'     => $limit
         ]);
 
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'label']]);
@@ -597,16 +603,29 @@ class AttachmentController
         $pathToPdf = $docserver['path_template'] . $adrPdf[0]['path'] . $adrPdf[0]['filename'];
         $pathToPdf = str_replace('#', '/', $pathToPdf);
 
-        $libDir = CoreConfigModel::getLibrariesDirectory();
-        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
-            require_once($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php');
-
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+        if (!empty($libPath)) {
+            require_once($libPath);
             $document = \SetaPDF_Core_Document::loadByFilename($pathToPdf);
             $pages = $document->getCatalog()->getPages();
             $pageCount = count($pages);
         } else {
-            $pdf = new Fpdi('P', 'pt');
-            $pageCount = $pdf->setSourceFile($pathToPdf);
+            try {
+                $pdf = new Fpdi('P', 'pt');
+                $pageCount = $pdf->setSourceFile($pathToPdf);
+            } catch (\Exception $e) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'attachments',
+                    'level'     => 'ERROR',
+                    'tableName' => 'res_attachments',
+                    'recordId'  => $args['id'],
+                    'eventType' => 'thumbnail',
+                    'eventId'   => $e->getMessage()
+                ]);
+                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
+            }
+            
         }
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
@@ -691,6 +710,7 @@ class AttachmentController
         $filename = TextFormatModel::formatFilename(['filename' => $attachment['title'], 'maxLength' => 250]);
 
         if ($data['mode'] == 'base64') {
+            $signatoryId = null;
             if ($attachment['attachment_type'] == 'signed_response') {
                 if (!empty($attachment['signatory_user_serial_id'])) {
                     $signatoryId = $attachment['signatory_user_serial_id'];

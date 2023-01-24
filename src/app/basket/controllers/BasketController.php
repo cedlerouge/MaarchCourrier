@@ -262,7 +262,9 @@ class BasketController
                 }
             }
             $groups[$key]['list_display'] = json_decode($group['list_display'], true);
-            $groups[$key]['list_event_data'] = json_decode($group['list_event_data'], true);
+            if (!empty($group['list_event_data'])) {
+                $groups[$key]['list_event_data'] = json_decode($group['list_event_data'], true);
+            }
             $actionsForGroup = $allActions;
             $actions = ActionGroupBasketModel::get([
                 'select'    => ['id_action', 'where_clause', 'used_in_basketlist', 'used_in_action_page', 'default_action_list'],

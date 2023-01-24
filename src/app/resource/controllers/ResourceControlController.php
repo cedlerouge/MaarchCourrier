@@ -383,7 +383,7 @@ class ResourceControlController
 
         $indexingModelFields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$body['modelId']]]);
         foreach ($indexingModelFields as $indexingModelField) {
-            $indexingModelField['allowed_values'] = json_decode($indexingModelField['allowed_values'], true);
+            $indexingModelField['allowed_values'] = !empty($indexingModelField['allowed_values']) ? json_decode($indexingModelField['allowed_values'], true) : null;
             if ($indexingModelField['allowed_values'] == IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES) {
                 $indexingModelField['allowed_values'] = null; // setting to null so it is ignored in the rest of this function
             }

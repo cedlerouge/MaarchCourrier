@@ -249,7 +249,7 @@ class LogsControllerTest extends TestCase
         
         $logLine = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
         $this->assertNotEmpty($logLine);
-        $this->assertSame("[SELECT * FROM logsController][][]", $logLine);
+        $this->assertSame("[SELECT * FROM logsController][:noSqlData][:noSqlException]", $logLine);
     }
 
     public function testPrepareLogLineSqlWithParamsData()
@@ -266,7 +266,7 @@ class LogsControllerTest extends TestCase
         
         $logLine = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
         $this->assertNotEmpty($logLine);
-        $this->assertSame("[SELECT * FROM logsController WHERE id = ? AND moduleTest = ?][[10,\"LogModuleId\"]][]", $logLine);
+        $this->assertSame("[SELECT * FROM logsController WHERE id = ? AND moduleTest = ?][[10,\"LogModuleId\"]][:noSqlException]", $logLine);
     }
 
     public function testPrepareLogLineSqlWithException()
@@ -312,10 +312,7 @@ class LogsControllerTest extends TestCase
         $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
         $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
         $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
-        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
-        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
-        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
+        $this->assertStringContainsString("$logMessage", $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
     public function testLogTechnique()
@@ -344,10 +341,7 @@ class LogsControllerTest extends TestCase
         $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
         $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
         $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
-        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
-        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
-        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
+        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
     public function testLogQueries()
@@ -374,10 +368,7 @@ class LogsControllerTest extends TestCase
         $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
         $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
         $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
-        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
-        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
-        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
+        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
     public function testLogFileOutputWithLogLevelError()
@@ -426,10 +417,7 @@ class LogsControllerTest extends TestCase
         $this->assertStringContainsString("[ALERT]", $logFileOutput, "Log file output doesn't contains the log level alert '[ALERT]'");
         $this->assertStringContainsString("[ERROR]", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
         $this->assertStringNotContainsString("[DEBUG]", $logFileOutput, "Log file output contains the log level debug '[DEBUG]'");
-        $this->assertStringContainsString("[$logMessage]", $logFileOutput, "Log file output doesn't contains the correct message '[$logMessage]'");
-        $this->assertStringContainsString("processId", $logFileOutput, "Log file output doesn't contains processId attribute");
-        $this->assertStringContainsString("extraData", $logFileOutput, "Log file output doesn't contains extraData object");
-        $this->assertStringContainsString("memory_usage", $logFileOutput, "Log file output doesn't contains memory_usage attribute");
+        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
     /**

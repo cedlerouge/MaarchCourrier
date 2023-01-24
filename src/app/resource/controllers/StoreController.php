@@ -167,7 +167,11 @@ class StoreController
             'data'   => [$args['modelId'], 'false', 'true']
         ]);
         foreach ($fields as $field) {
-            $defaultValue = json_decode($field['default_value'], true);
+            $defaultValue = null;
+            if (!empty($field['default_value'])) {
+                $defaultValue = json_decode($field['default_value'], true);
+            }
+
             if ($defaultValue == "_TODAY") {
                 $defaultValue = date('d-m-Y');
             } elseif ($defaultValue == "#myPrimaryEntity") {

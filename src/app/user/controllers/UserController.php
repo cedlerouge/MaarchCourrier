@@ -129,7 +129,9 @@ class UserController
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname', 'status', 'phone', 'mail', 'initials', 'mode', 'authorized_api', 'external_id', 'absence']]);
         $user['external_id']        = json_decode($user['external_id'], true);
         $user['authorizedApi']      = json_decode($user['authorized_api'], true);
-        $user['absence']            = json_decode($user['absence'], true);
+        if (!empty($user['absence'])) {
+            $user['absence'] = json_decode($user['absence'], true);
+        }
         unset($user['authorized_api']);
 
         if ($GLOBALS['id'] == $args['id'] || PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])) {
@@ -610,7 +612,9 @@ class UserController
         $user['lockAdvancedPrivileges'] = PrivilegeController::isAdvancedPrivilegesLocked();
         $userFollowed = UserFollowedResourceModel::get(['select' => ['count(1) as nb'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
         $user['nbFollowedResources'] = $userFollowed[0]['nb'];
-        $user['absence'] = json_decode($user['absence'], true);
+        if (!empty($user['absence'])) {
+            $user['absence'] = json_decode($user['absence'], true);
+        }
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if (in_array($loggingMethod['id'], self::ALTERNATIVES_CONNECTIONS_METHODS)) {
@@ -1992,7 +1996,7 @@ class UserController
                     return ['status' => 403, 'error' => 'UserId out of perimeter'];
                 }
             }
-        } elseif ($args['delete'] && $GLOBALS['id'] == $user['id']) {
+        } elseif (!empty($args['delete']) && $GLOBALS['id'] == $user['id']) {
             return ['status' => 403, 'error' => 'Can not delete yourself'];
         }
 

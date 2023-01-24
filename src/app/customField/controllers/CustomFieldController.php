@@ -48,6 +48,11 @@ class CustomFieldController
                         $customFields[$key]['values']['resId'] = $queryParams['resId'];
                     }
                     $customFields[$key]['values'] = CustomFieldModel::getValuesSQL($customFields[$key]['values']);
+
+                    if (empty($customFields[$key]['values'])) {
+                        continue;
+                    }
+
                     if (in_array($customField['type'], ['select', 'radio', 'checkbox'])) {
                         foreach ($customFields[$key]['values'] as $iKey => $sValue) {
                             $customFields[$key]['values'][$iKey]['key'] = (string)$sValue['key'];

@@ -359,6 +359,6 @@ export class TileCreateComponent implements OnInit {
     }
 
     getTitle(tile: any) {
-        return this.canDisplayType(tile) ? tile.label : this.translate.instant('lang.cannotCreateTile');
+        return this.canDisplayType(tile) ? tile.label : this.translate.instant('lang.unavailableForSignatoryBook');
     }
 }

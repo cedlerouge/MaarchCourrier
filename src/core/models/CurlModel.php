@@ -195,6 +195,8 @@ class CurlModel
         $headers  = explode("\r\n", $headers);
         $response = substr($rawResponse, $headerSize);
 
+        $formatedResponse = $response;
+
         if ($args['isXml']) {
             $formatedResponse = simplexml_load_string($response);
         } elseif (in_array('Accept: application/zip', $args['headers'])) {
@@ -222,7 +224,7 @@ class CurlModel
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'curl',
-                'level'     => ($code >= 400 ? 'ERROR' : 'INFO'),
+                'level'     => ($code >= 400 ? 'ERROR' : 'DEBUG'),
                 'tableName' => 'curl',
                 'recordId'  => 'curl_exec',
                 'eventType' => "Url : {$args['url']} HttpCode : {$code} Errors : {$errors}",

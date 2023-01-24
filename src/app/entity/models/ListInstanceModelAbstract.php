@@ -55,8 +55,8 @@ abstract class ListInstanceModelAbstract
                 'added_by_user'             => $args['added_by_user'],
                 'viewed'                    => $args['viewed'] ?? 0,
                 'difflist_type'             => $args['difflist_type'],
-                'process_date'              => $args['process_date'],
-                'process_comment'           => $args['process_comment'],
+                'process_date'              => $args['process_date'] ?? null,
+                'process_comment'           => $args['process_comment'] ?? null,
                 'requested_signature'       => empty($args['requested_signature']) ? 'false' : 'true',
                 'delegate'                  => $args['delegate'] ?? null,
                 'signatory'                 => empty($args['signatory']) ? 'false' : 'true'

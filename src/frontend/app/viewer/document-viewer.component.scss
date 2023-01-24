@@ -235,3 +235,7 @@
 .originalVersion {
   font-weight: bold;
 }
+
+.mat-menu-item[disabled] {
+  cursor: not-allowed;
+}
