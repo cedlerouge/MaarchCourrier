@@ -667,15 +667,38 @@ class MaarchParapheurController
                 foreach ($state['notes'] as $note) {
                     $tmpNote = [];
                     $tmpNote['content'] = $note['content'];
-                    $userInfos = UserModel::getByExternalId([
-                        'select'       => ['id', 'firstname', 'lastname'],
-                        'externalId'   => $note['creatorId'],
-                        'externalName' => 'maarchParapheur'
-                    ]);
-                    if (!empty($userInfos)) {
-                        $tmpNote['creatorId'] = $userInfos['id'];
+
+                    $creatorName = '';
+                    if (!empty($note['creatorName'])) {
+                        $creatorName = $note['creatorName'] . ' (Maarch Parapheur) : ';
                     }
-                    $tmpNote['creatorName'] = $note['creatorName'];
+
+                    if (!empty($note['creatorId'])) {
+                        $userInfos = UserModel::getByExternalId([
+                            'select'       => ['id', 'firstname', 'lastname'],
+                            'externalId'   => $note['creatorId'],
+                            'externalName' => 'maarchParapheur'
+                        ]);
+                        if (!empty($userInfos)) {
+                            $tmpNote['creatorId']   = $userInfos['id'];
+                            $tmpNote['creatorName'] = $userInfos['lastname'] . ' ' . $userInfos['firstname'];
+                        }
+                    } else {
+                        $userWS = UserModel::getByLogin(['login' => $GLOBALS['userWS'] ?? null, 'select' => ['id']]);
+                        if (empty($userWS['id'])) {
+                            continue;
+                        }
+                        $tmpNote['creatorId']   = $userWS['id'];
+                        $tmpNote['creatorName'] = $note['creatorName'];
+                        $tmpNote['content']     = $note['content'];
+
+                        NoteModel::create([
+                            'resId'     => $resId,
+                            'user_id'   => $tmpNote['creatorId'],
+                            'note_text' => $tmpNote['content'],
+                        ]);
+                    }
+
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = $tmpNote;
                 }
                 if (!empty($state['signatoryUserId'])) {
