@@ -41,6 +41,7 @@ use Entity\models\EntityModel;
 use IndexingModel\models\IndexingModelFieldModel;
 use Resource\controllers\SummarySheetController;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use Convert\models\AdrModel;
 use Contact\controllers\ContactController;
 
 /**
@@ -785,12 +786,19 @@ class FastParapheurController
         $attachmentTypeSignable = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypeSignable = array_column($attachmentTypeSignable, 'signable', 'type_id');
 
+        $mainDocumentSigned = AdrModel::getConvertedDocumentById([
+            'select' => [1],
+            'resId'  => $args['resIdMaster'],
+            'collId' => 'letterbox_coll',
+            'type'   => 'SIGN'
+        ]);
+
         if (!empty($docservers[$resource['docserver_id']])) {
             $resource['integrations'] = json_decode($resource['integrations'], true);
-            if ($resource['integrations']['inSignatureBook']) {
+            if (!empty($resource['integrations']['inSignatureBook'])) {
                 $sentMainDocument = [
                     'comment'  => $resource['subject'],
-                    'signable' => empty($resource['external_id']['signatureBookId']),
+                    'signable' => empty($mainDocumentSigned),
                     'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
                 ];
             }
@@ -842,7 +850,8 @@ class FastParapheurController
                 ];
             } else {
                 $appendices[] = [
-                    'path'     => $sentMainDocument['path'],
+                    'isFile'   => true,
+                    'content'  => file_get_contents($sentMainDocument['path']),
                     'filename' => TextFormatModel::formatFilename([
                         'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
                         'maxLength' => 50
