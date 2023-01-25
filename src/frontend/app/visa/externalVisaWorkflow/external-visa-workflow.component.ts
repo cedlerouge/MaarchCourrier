@@ -160,8 +160,13 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                     role: element.mode !== 'visa' ? element.signatureMode : 'visa',
                     status: element.status
                 };
+                let externalId: string | number = element.userId;
+                if (this.functions.empty(element.userId) && !this.functions.empty(element.externalInformations)) {
+                    user['role'] = element.mode;
+                    externalId = element.externalInformations.type;
+                }
                 this.visaWorkflow.items.push(user);
-                this.getUserAvatar(element.userId, key);
+                this.getUserAvatar(externalId, key);
             });
         }
         this.loading = false;
