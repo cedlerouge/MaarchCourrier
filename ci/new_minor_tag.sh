@@ -16,6 +16,9 @@ fi
 MR_ID=`echo $CI_OPEN_MERGE_REQUESTS | grep -oP "!(.)*" | tr -d "!"`
 content=$(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_ID")
 STATUS=$(jq -r '.detailed_merge_status' <<<"$content")
+
+echo $STATUS
+
 if [ $STATUS != 'mergeable' ]; then
     echo "2301_releases cannot be merge ! Tag Abort"
     exit 1
