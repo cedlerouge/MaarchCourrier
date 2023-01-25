@@ -1115,9 +1115,9 @@ class FastParapheurController
             }
         }
 
-        $user = UserModel::getById(['id' => $resource['typist'], 'select' => ['user_id']]);
+        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
         $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
-            'mainResource' => $resource,
+            'docResId' => $args['resIdMaster'],
             'login' => $user['user_id']
         ]);
         $appendices[] = [
@@ -1539,8 +1539,17 @@ class FastParapheurController
 
     public static function getSummarySheetFile(array $args)
     {
-        ValidatorModel::notEmpty($args, ['mainResource', 'login']);
-        ValidatorModel::arrayType($args, ['mainResource']);
+        ValidatorModel::notEmpty($args, ['docResId', 'login']);
+        ValidatorModel::intVal($args, ['docResId']);
+
+        $mainResource = ResModel::getOnView([
+            'select' => ['*'],
+            'where'  => ['res_id = ?'],
+            'data'   => [$args['docResId']]
+        ]);
+        if (empty($mainResource)) {
+            return ['error' => 'Mail does not exist'];
+        }
 
         $units = [];
         $units[] = ['unit' => 'primaryInformations'];
@@ -1552,7 +1561,7 @@ class FastParapheurController
         $units[] = ['unit' => 'notes',                       'label' => _NOTES_COMMENT];
 
         // Data for resources
-        $tmpIds = [$args['mainResource']['res_id']];
+        $tmpIds = [$mainResource[0]['res_id']];
         $data   = [];
         foreach ($units as $unit) {
             if ($unit['unit'] == 'notes') {
@@ -1593,7 +1602,7 @@ class FastParapheurController
 
         $modelId = ResModel::getById([
             'select' => ['model_id'],
-            'resId'  => $args['mainResource']['res_id']
+            'resId'  => $mainResource[0]['res_id']
         ]);
         $indexingFields = IndexingModelFieldModel::get([
             'select' => ['identifier', 'unit'],
@@ -1606,7 +1615,7 @@ class FastParapheurController
         $pdf->setPrintHeader(false);
 
         SummarySheetController::createSummarySheet($pdf, [
-            'resource'         => $args['mainResource'],
+            'resource'         => $mainResource[0],
             'units'            => $units,
             'login'            => $args['login'],
             'data'             => $data,
@@ -1614,7 +1623,7 @@ class FastParapheurController
         ]);
 
         $tmpPath = CoreConfigModel::getTmpPath();
-        $summarySheetFilePath = $tmpPath . "summarySheet_".$args['mainResource']['res_id'] . "_" . $args['login'] ."_".rand().".pdf";
+        $summarySheetFilePath = $tmpPath . "summarySheet_" . $args['docResId'] . "_" . $args['login'] . "_" . rand() . ".pdf";
         $pdf->Output($summarySheetFilePath, 'F');
 
         return $summarySheetFilePath;
