@@ -100,6 +100,8 @@ curl --request POST --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch
 git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
 git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GITLAB_URL}/${CI_PROJECT_PATH}.git"
 git fetch
+git branch -D tmp_$RELEASE_BRANCH
+git pull origin tmp_$RELEASE_BRANCH
 git checkout tmp_$RELEASE_BRANCH
 
 composer install
