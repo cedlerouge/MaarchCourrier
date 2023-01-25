@@ -171,45 +171,33 @@ check_branch_releases:
     - ./ci/check_releases.sh
 
 create_minor_tag:
-  image: debian:10-slim
+  image: php:8.1.14-cli
   stage: deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "minor"'
   before_script:
     - apt-get update -yqq > /dev/null
-    - 'which ssh-agent || ( apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan "$GITLAB_URL" >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" >> ~/.ssh/config'
     - apt install -y git
     - apt install -y curl
     - apt install -y jq
+    - chmod +x ./ci/generate_app_dependencies.sh
+    - ./ci/generate_app_dependencies.sh
   script:
     - chmod +x ./ci/new_minor_tag.sh
     - ./ci/new_minor_tag.sh
 
 create_major_tag:
-  image: debian:10-slim
+  image: php:8.1.14-cli
   stage: deploy
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "major"'
   before_script:
     - apt-get update -yqq > /dev/null
-    - 'which ssh-agent || ( apt-get install openssh-client -y )'
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan "$GITLAB_URL" >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" >> ~/.ssh/config'
     - apt install -y git
     - apt install -y curl
     - apt install -y jq
+    - chmod +x ./ci/generate_app_dependencies.sh
+    - ./ci/generate_app_dependencies.sh
   script:
     - chmod +x ./ci/new_major_tag.sh
     - ./ci/new_major_tag.sh
