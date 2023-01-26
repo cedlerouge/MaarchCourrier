@@ -175,12 +175,12 @@ class MergeController
                 'barcode'               => $args['barcode'] ?? null,
                 'origin'                => $args['origin'] ?? null
             ];
-            $senders = $args['senders'];
-            $recipients = $args['recipients'];
+            $senders = $args['senders'] ?? [];
+            $recipients = $args['recipients'] ?? [];
         }
         $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date', 'creation_date'];
         foreach ($allDates as $date) {
-            $resource[$date] = TextFormatModel::formatDate($resource[$date], 'd-m-Y');
+            $resource[$date] = TextFormatModel::formatDate($resource[$date] ?? null, 'd-m-Y');
         }
         $resource['category_id'] = ResModel::getCategoryLabel(['categoryId' => $resource['category_id']]);
 
@@ -215,9 +215,9 @@ class MergeController
         ];
 
         //Sender
-        $sender = MergeController::formatPerson(['id' => $senders[0]['id'], 'type' => $senders[0]['type']]);
+        $sender = MergeController::formatPerson(['id' => $senders[0]['id'] ?? null, 'type' => $senders[0]['type'] ?? null]);
         //Recipient
-        $recipient = MergeController::formatPerson(['id' => $recipients[0]['id'], 'type' => $recipients[0]['type']]);
+        $recipient = MergeController::formatPerson(['id' => $recipients[0]['id'] ?? null, 'type' => $recipients[0]['type'] ?? null]);
 
         //User
         $currentUser = UserModel::getById(['id' => $args['userId'], 'select' => ['firstname', 'lastname', 'phone', 'mail', 'initials']]);
@@ -463,7 +463,7 @@ class MergeController
         $dataToBeMerge['datetime']              = $datetime;
         $dataToBeMerge['transmissions']         = $transmissions;
         if (empty($args['inMailing'])) {
-            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson(['id' => $args['recipientId'], 'type' => $args['recipientType']]);
+            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson(['id' => $args['recipientId'] ?? null, 'type' => $args['recipientType'] ?? null]);
         }
 
         return $dataToBeMerge;
