@@ -16,11 +16,13 @@ export class FastParapheurService {
 
     canCreateUser: boolean = false;
     canSynchronizeSignatures: boolean = false;
-    canManageSignaturesPositions: boolean = false;
     canViewWorkflow: boolean = false;
     canCreateTile: boolean = false;
+    canAddExternalUser: boolean = false;
 
     userWorkflow = new UserWorkflow();
+    signatureModes: string[] = [];
+    workflowTypes: any[] = [];
 
     constructor(
         private http: HttpClient,
@@ -28,6 +30,32 @@ export class FastParapheurService {
         private translate: TranslateService,
         private functions: FunctionsService
     ) { }
+
+    getWorkflowDetails(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/fastParapheurWorkflowDetails').pipe(
+                tap(async (data: any) => {
+                    if (!this.functions.empty(data?.workflowTypes) && !this.functions.empty(data?.signatureModes)) {
+                        this.workflowTypes = Array.isArray(data.workflowTypes) ? data.workflowTypes : [data.workflowTypes];
+                        const signatureModes: any[] = Array.isArray(data.signatureModes) ? data.signatureModes : [data.signatureModes];
+                        const objToSend: any = {
+                            types: this.workflowTypes,
+                            modes: signatureModes
+                        };
+                        this.signatureModes = signatureModes.map((item: any) => item.id);
+                        resolve(objToSend);
+                    } else {
+                        resolve(null);
+                    }
+                }),
+                catchError(err => {
+                    this.notify.handleErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
 
     getUserAvatar(externalId: any = null): Promise<any> {
         return new Promise((resolve) => {
@@ -159,17 +187,18 @@ export class FastParapheurService {
         });
     }
 
-    setExternalInformation(item: any): UserWorkflow {
+    setExternalInformation(item: any): Promise<UserWorkflow> {
         const label = item.labelToDisplay;
         delete item.labelToDisplay;
         const objeToSend: any = {
             ... item,
             id: item.email ?? item?.externalId?.fastParapheur ?? null,
             labelToDisplay: !this.functions.empty(item.externalId?.fastParapheur) ? `${label} (${item.externalId.fastParapheur})` : label,
-            signatureModes: item.signatureModes ?? this.userWorkflow.signatureModes,
             role: item.role ?? this.userWorkflow.signatureModes[this.userWorkflow.signatureModes.length - 1],
             isValid: true,
             hasPrivilege: true,
+            signatureModes: this.signatureModes,
+            availableRoles: this.signatureModes
         };
         if (item?.id !== undefined && item?.externalId?.fastParapheur === undefined) {
             objeToSend.externalId = null;
@@ -186,7 +215,7 @@ export class FastParapheurService {
     }
 
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
-        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0;
+        return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0 && this.workflowTypes.length > 0 && this.signatureModes.length > 0;
     }
 
     synchronizeSignatures(data: any) {

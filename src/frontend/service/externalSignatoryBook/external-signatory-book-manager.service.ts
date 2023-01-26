@@ -53,6 +53,10 @@ export class ExternalSignatoryBookManagerService {
         });
     }
 
+    getWorkflowDetails(): Promise<any> {
+        return this.serviceInjected?.getWorkflowDetails();
+    }
+
     loadListModel(entityId: number) {
         return this.serviceInjected?.loadListModel(entityId);
     }
@@ -65,8 +69,19 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.getUserAvatar(externalId);
     }
 
-    getOtpConfig() {
-        return this.serviceInjected?.getOtpConfig();
+    getOtpConfig(): Promise<any> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/maarchParapheurOtp').pipe(
+                tap((data: any) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     getAutocompleteUsersRoute(): string {
@@ -119,7 +134,7 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.getRessources(additionalsInfos);
     }
 
-    getDatas(workflow: any[] = [], resourcesToSign: any[] = []): any {
+    getDatas(workflow: any[] = [], resourcesToSign: any[] = [], workflowType: any): any {
         const formatedData: any = { steps: [] };
         resourcesToSign.forEach((resource: any) => {
             workflow.forEach((element: any, index: number) => {
@@ -137,6 +152,9 @@ export class ExternalSignatoryBookManagerService {
                 formatedData['steps'].push(step);
             });
         });
+        if (this.signatoryBookEnabled === 'fastParapheur') {
+            formatedData['workflowType'] = workflowType;
+        }
         return formatedData;
     }
 
@@ -156,10 +174,6 @@ export class ExternalSignatoryBookManagerService {
 
     canSynchronizeSignatures(): boolean {
         return this.serviceInjected?.canSynchronizeSignatures;
-    }
-
-    canManageSignaturesPositions(): boolean {
-        return this.serviceInjected?.canManageSignaturesPositions;
     }
 
     canViewWorkflow(): boolean {
@@ -183,5 +197,9 @@ export class ExternalSignatoryBookManagerService {
                 })
             ).subscribe();
         });
+    }
+
+    canAddExternalUser(): boolean {
+        return this.serviceInjected?.canAddExternalUser;
     }
 }

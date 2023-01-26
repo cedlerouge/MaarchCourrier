@@ -16,9 +16,10 @@ export class MaarchParapheurService {
 
     canCreateUser: boolean = true;
     canSynchronizeSignatures: boolean = true;
-    canManageSignaturesPositions: boolean = true;
     canViewWorkflow: boolean = true;
     canCreateTile: boolean = true;
+    canAddExternalUser: boolean = true;
+
 
     constructor(
         public functions: FunctionsService,
@@ -26,6 +27,12 @@ export class MaarchParapheurService {
         private http: HttpClient,
         private notify: NotificationService
     ) { }
+
+    getWorkflowDetails(): Promise<any> {
+        return new Promise((resolve) => {
+            resolve(null);
+        });
+    }
 
     loadListModel(entityId: number): Promise<any> {
         return new Promise((resolve) => {

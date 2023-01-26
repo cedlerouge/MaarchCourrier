@@ -49,6 +49,9 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     visaWorkflow = new VisaWorkflow();
 
+    workflowTypes: any[] = [];
+    workflowType: string = 'BUREAUTIQUE_PDF';
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -61,10 +64,17 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<any> {
-        const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
-        if (!this.functions.empty(data)) {
-            this.otpConfig = data.otp.length;
+        this.workflowDetails();
+        if (this.externalSignatoryBookManagerService.canAddExternalUser()) {
+            const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
+            if (!this.functions.empty(data)) {
+                this.otpConfig = data.otp.length;
+            }
         }
+    }
+
+    async getWorkflowDetails(): Promise<any> {
+        return await this.externalSignatoryBookManagerService?.getWorkflowDetails();
     }
 
     drop(event: CdkDragDrop<string[]>) {
@@ -98,9 +108,18 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         return this.externalSignatoryBookManagerService.isValidExtWorkflow(workflow);
     }
 
+    async workflowDetails() {
+        const workflow = await this.getWorkflowDetails();
+        if (!this.functions.empty(workflow?.types)) {
+            this.workflowTypes = workflow.types;
+            this.workflowType = workflow.types[0].id;
+        }
+    }
+
     async loadListModel(entityId: number) {
         this.loading = true;
         this.visaWorkflow.items = [];
+        this.workflowDetails();
         const listModel: any = await this.externalSignatoryBookManagerService?.loadListModel(entityId);
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
@@ -463,15 +482,21 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     getRouteDatas(): string[] {
         return [this.externalSignatoryBookManagerService.getAutocompleteUsersRoute()];
     }
+
+    getWorkflowTypeLabel(workflowType: string) {
+        return this.workflowTypes.find((item: any) => item.id === workflowType).label;
+    }
 }
 
 export interface VisaWorkflow {
+    type: string;
     roles: string[];
     items: UserWorkflow[];
 }
 
 export class VisaWorkflow implements VisaWorkflow {
     constructor() {
+        this.type = null;
         this.roles = ['visa', 'sign'];
         this.items = [];
     }

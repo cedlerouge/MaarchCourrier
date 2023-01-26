@@ -15,27 +15,31 @@
                     <div>
                         <mat-chip-list>
                             <ng-container *ngFor="let sign of signList">
-                                <mat-chip *ngIf="sign.sequence === i" color="primary" style="font-size: 10px;
-                            padding-top: 0px;
-                            padding-bottom: 0px;
-                            min-height: 20px;cursor: pointer;" (click)="goToSignUserPage(i,sign.page)"
+                                <mat-chip *ngIf="sign.sequence === i" color="primary"
+                                    style="font-size: 10px; padding-top: 0px; padding-bottom: 0px; min-height: 20px;cursor: pointer;"
+                                    (click)="goToSignUserPage(i,sign.page)"
                                     [selected]="currentUser == i && currentPage === sign.page">
                                     {{'lang.page' | translate}}
-                                    {{sign.page}}</mat-chip>
+                                    {{sign.page}}
+                                </mat-chip>
                             </ng-container>
                             <ng-container *ngFor="let date of dateList">
-                                <mat-chip *ngIf="!hasSign(i, date.page) && date.sequence === i" color="primary" style="font-size: 10px;
-                            padding-top: 0px;
-                            padding-bottom: 0px;
-                            min-height: 20px;cursor: pointer;" (click)="goToSignUserPage(i,date.page)"
+                                <mat-chip *ngIf="!hasSign(i, date.page) && date.sequence === i" color="primary"
+                                    style="font-size: 10px; padding-top: 0px; padding-bottom: 0px; min-height: 20px; cursor: pointer;"
+                                    (click)="goToSignUserPage(i,date.page)"
                                     [selected]="currentUser == i && currentPage === date.page">
                                     {{'lang.page' | translate}}
-                                    {{date.page}}</mat-chip>
+                                    {{date.page}}
+                                </mat-chip>
                             </ng-container>
                         </mat-chip-list>
                     </div>
                 </a>
             </nav>
+            <app-maarch-message *ngIf="!loading && !checkExternalUser()"
+                [mode]="'info'" 
+                [content]="'lang.cannotManageSignature' | translate">
+            </app-maarch-message>
             <div class="signatureContainer">
                 <div id="myBounds" #myBounds style="position: absolute;"
                     [style.width.px]="workingAreaWidth" [style.height.px]="workingAreaHeight">
@@ -81,11 +85,12 @@
                     </ng-container>
                 </div>
                 <button mat-mini-fab color="primary" style="position: fixed;margin-top: 10px;margin-left: 10px;"
-                    [matMenuTriggerFor]="actionPosMenu" [disabled]="!emptySign() && !emptyDate()">
+                    [matMenuTriggerFor]="actionPosMenu"
+                    [disabled]="!emptySign() && !emptyDate()">
                     <mat-icon class="fas fa-plus" style="height: auto"></mat-icon>
                 </button>
                 <mat-menu #actionPosMenu="matMenu">
-                    <button mat-menu-item [disabled]="!emptyDate() || !checkExternalUser()"
+                    <button mat-menu-item [disabled]="!emptyDate() || data.workflow[this.currentUser].item_id === null"
                         (click)="initDateBlock()">{{'lang.addDateBlock' | translate}}</button>
                     <button mat-menu-item [disabled]="!emptySign()"
                         (click)="initSign()">{{'lang.addSignaturePosition' | translate}}</button>

@@ -2688,10 +2688,13 @@
     "iParapheur": "IParapheur",
     "xParaph": "XParaph",
     "fastParapheurWorkflow": "Circuit de visa Fast Parapheur",
+    "workflowType": "Type de circuit",
+    "serverSignature": "Signature Serveur",
     "badConfiguration": "Problème de paramètrage dans le fichier de configuration",
     "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
     "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour toutes les emails sortante",
     "unavailableForSignatoryBook": "Indisponible pour le parapheur externe actif",
     "rightRotation": "Pivoter à droite",
-    "leftRotation": "Pivoter à gauche"
+    "leftRotation": "Pivoter à gauche",
+    "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>"
 }
