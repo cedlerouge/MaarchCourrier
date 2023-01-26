@@ -274,8 +274,8 @@ class ContactController
 
             $contact['civility'] = [
                 'id'           => $rawContact['civility'],
-                'label'        => $civilities[$rawContact['civility']]['label'],
-                'abbreviation' => $civilities[$rawContact['civility']]['abbreviation']
+                'label'        => $civilities[$rawContact['civility']]['label'] ?? null,
+                'abbreviation' => $civilities[$rawContact['civility']]['abbreviation'] ?? null
             ];
         }
         if (!empty($rawContact['communication_means'])) {
@@ -285,7 +285,7 @@ class ContactController
             } elseif (!empty($communicationMeans['email'])) {
                 $contact['communicationMeans']['email'] = $communicationMeans['email']; 
             }
-            $contact['communicationMeans']['login'] = $communicationMeans['login'];
+            $contact['communicationMeans']['login'] = $communicationMeans['login'] ?? null;
         }
 
         $filling = ContactController::getFillingRate(['contactId' => $rawContact['id']]);
@@ -606,7 +606,7 @@ class ContactController
             if (strpos($parameter['identifier'], 'contactCustomField_') !== false) {
                 $contactCustomId = str_replace("contactCustomField_", "", $parameter['identifier']);
                 $customField = ContactCustomFieldListModel::getById(['select' => ['label'], 'id' => $contactCustomId]);
-                $contactParameters[$key]['label'] = $customField['label'];
+                $contactParameters[$key]['label'] = $customField['label'] ?? null;
             } else {
                 $contactParameters[$key]['label'] = null;
             }
@@ -1057,7 +1057,7 @@ class ContactController
 
         $set = [];
         foreach ($fields as $field) {
-            if ($field == 'custom_fields' || $field == 'external_id') {
+            if (($field == 'custom_fields' || $field == 'external_id') && !empty($master[$field])) {
                 $master[$field] = json_decode($master[$field], true);
                 $masterCustomsKeys = array_keys($master[$field]);
                 $set[$field] = $master[$field];

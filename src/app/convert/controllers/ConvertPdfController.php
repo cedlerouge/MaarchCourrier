@@ -358,8 +358,7 @@ class ConvertPdfController
             } elseif (!$canConvert) {
                 return $response->withStatus(400)->withJson(['errors' => 'File accepted but can not be converted in pdf']);
             }
-
-            $convertion = ConvertPdfController::convertFromEncodedResource(['encodedResource' => $body['base64'], 'context' => $body['context'], 'extension' => $ext]);
+            $convertion = ConvertPdfController::convertFromEncodedResource(['encodedResource' => $body['base64'], 'context' => $body['context'] ?? null, 'extension' => $ext]);
             if (empty($convertion['errors'])) {
                 return $response->withJson($convertion);
             } else {
