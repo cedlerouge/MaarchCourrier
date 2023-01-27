@@ -576,11 +576,15 @@ class TemplateController
             'data'    => $dataToMerge
         ]);
         $mergedDocument = base64_decode($mergedDocument['encodedDocument']);
-        $mergedSubject = MergeController::mergeDocument([
-            'content' => $template['subject'],
-            'data'    => $dataToMerge
-        ]);
-        $mergedSubject = base64_decode($mergedSubject['encodedDocument']);
+
+        $mergedSubject = null;
+        if (!empty($template['subject'])) {
+            $mergedSubject = MergeController::mergeDocument([
+                'content' => $template['subject'],
+                'data'    => $dataToMerge
+            ]);
+            $mergedSubject = base64_decode($mergedSubject['encodedDocument']);
+        }
 
         return $response->withJson(['mergedDocument' => $mergedDocument, 'mergedSubject' => $mergedSubject]);
     }
