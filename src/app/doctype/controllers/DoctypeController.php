@@ -185,8 +185,8 @@ class DoctypeController
             'data'   => [$aArgs['id']]
         ]);
 
-        $doctypeTree = [];
-        $doctypes = [];
+        $doctypeTree = null;
+        $doctypes = null;
         if ($count[0]['count'] == 0) {
             DoctypeController::deleteAllDoctypeData(['type_id' => $aArgs['id']]);
             $deleted     = 0;
