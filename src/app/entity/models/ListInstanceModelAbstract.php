@@ -74,7 +74,7 @@ abstract class ListInstanceModelAbstract
         DatabaseModel::update([
             'table'     => 'listinstance',
             'set'       => $aArgs['set'],
-            'postSet'   => $aArgs['postSet'],
+            'postSet'   => $aArgs['postSet'] ?? null,
             'where'     => $aArgs['where'],
             'data'      => $aArgs['data']
         ]);
