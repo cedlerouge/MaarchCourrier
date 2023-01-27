@@ -223,7 +223,7 @@ class IndexingModelController
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
             $body['private'] = empty($body['private']) ? 'false' : 'true';
-            if ($body['default']) {
+            if (!empty($body['default'])) {
                 IndexingModelModel::update(['set' => ['"default"' => 'false'], 'where' => ['"default" = ?'], 'data' => ['true']]);
             }
             $body['default'] = empty($body['default']) ? 'false' : 'true';
@@ -268,7 +268,7 @@ class IndexingModelController
                 'model_id'      => $modelId,
                 'identifier'    => $field['identifier'],
                 'mandatory'     => empty($field['mandatory']) ? 'false' : 'true',
-                'enabled'       => $field['enabled'] === false ? 'false' : 'true',
+                'enabled'       => empty($field['enabled']) ? 'false' : 'true',
                 'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
                 'unit'          => $field['unit'],
                 'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
