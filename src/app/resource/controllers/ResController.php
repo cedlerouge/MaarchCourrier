@@ -518,6 +518,7 @@ class ResController extends ResourceControlController
         $mimeType = $mimeAndSize['mime'];
         $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
+        $data['mode'] = $data['mode'] ?? null;
         if ($data['mode'] == 'base64') {
             $listInstance = ListInstanceModel::get([
                 'select'    => ['listinstance_id', 'item_id'],
