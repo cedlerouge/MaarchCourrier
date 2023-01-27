@@ -125,7 +125,7 @@ abstract class EntityModelAbstract
         DatabaseModel::update([
             'table'     => 'entities',
             'set'       => $args['set'],
-            'postSet'   => $args['postSet'],
+            'postSet'   => $args['postSet'] ?? null,
             'where'     => $args['where'],
             'data'      => $args['data']
         ]);

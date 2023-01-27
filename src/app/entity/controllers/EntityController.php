@@ -106,7 +106,7 @@ class EntityController
             'producerService'       => $entity['producer_service'],
             'business_id'           => $entity['business_id'],
             'external_id'           => $entity['external_id'],
-            'fastParapheurSubscriberId' => json_decode($entity['external_id'], true)['fastParapheurSubscriberId'],
+            'fastParapheurSubscriberId' => json_decode($entity['external_id'], true)['fastParapheurSubscriberId'] ?? null,
         ];
 
         $aEntities = EntityModel::getAllowedEntitiesByUserId(['userId' => $GLOBALS['login']]);
@@ -343,7 +343,7 @@ class EntityController
                 'business_id'           => $body['business_id'],
                 'parent_entity_id'      => $body['parent_entity_id'],
                 'entity_type'           => $body['entity_type'],
-                'ldap_id'               => $body['ldap_id'],
+                'ldap_id'               => $body['ldap_id'] ?? null,
                 'entity_full_name'      => $body['entity_full_name'],
                 'producer_service'      => $body['producerService'],
                 'external_id'           => !empty($externalId) ? json_encode($externalId) : '{}',
