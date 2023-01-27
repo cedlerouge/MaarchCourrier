@@ -122,7 +122,7 @@ export class UserAdministrationComponent implements OnInit {
         }
     ];
 
-    appVersion: string = environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1];
+    docApiUrl: string = this.functions.getDocBaseUrl() + '/guat/guat_architecture/API_REST/home.html';
 
     // Redirect Baskets
     selectionBaskets = new SelectionModel<Element>(true, []);

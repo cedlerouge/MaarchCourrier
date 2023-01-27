@@ -3,6 +3,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { LatinisePipe } from 'ngx-pipes';
 import { HeaderService } from './header.service';
 import { DatePipe } from '@angular/common';
+import { environment } from '../environments/environment';
+
 
 @Injectable({
     providedIn: 'root'
@@ -150,5 +152,9 @@ export class FunctionsService {
         } else {
             return bytes;
         }
+    }
+
+    getDocBaseUrl() {
+        return `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.BASE_VERSION}`;
     }
 }

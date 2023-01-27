@@ -27,7 +27,6 @@ export class LoginComponent implements OnInit {
     environment: any;
     applicationName: string = '';
     loginMessage: string = '';
-    applicationVersion: string = '';
     hidePassword: boolean = true;
 
     constructor(
@@ -45,13 +44,6 @@ export class LoginComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        const appVersion: string = environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1];
-        if (!this.functionsService.empty(environment.VERSION.split(' ')[1])) {
-            const mode: string = (environment.VERSION.split(' ')[1]).concat(' ', environment.VERSION.split(' ')[2]);
-            this.applicationVersion = appVersion.concat(' ', mode);
-        } else {
-            this.applicationVersion = appVersion;
-        }
         this.headerService.hideSideBar = true;
         this.loginForm = this.formBuilder.group({
             login: [null, Validators.required],

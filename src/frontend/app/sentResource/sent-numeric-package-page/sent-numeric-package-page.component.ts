@@ -79,7 +79,7 @@ export class SentNumericPackagePageComponent implements OnInit {
     reference: string = null;
     messageReview: any[] = [];
 
-    maarch2maarchUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guat/guat_exploitation/maarch2maarch.html`;
+    maarch2maarchUrl: string = this.functions.getDocBaseUrl() + '/guat/guat_exploitation/maarch2maarch.html';
 
     constructor(
         public translate: TranslateService,
