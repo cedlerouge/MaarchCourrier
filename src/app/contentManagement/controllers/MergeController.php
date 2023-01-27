@@ -834,7 +834,7 @@ class MergeController
                 } else {
                     $person['civility'] = '';
                 }
-                $customFields = json_decode($person['custom_fields'], true);
+                $customFields = json_decode($person['custom_fields'] ?? '[]', true);
                 unset($person['custom_fields']);
                 if (!empty($customFields)) {
                     foreach ($customFields as $key => $customField) {

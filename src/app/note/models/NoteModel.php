@@ -163,6 +163,10 @@ class NoteModel
 
         $userEntities = array_column($rawUserEntities, 'entity_id');
 
+        if (!in_array('id', $aArgs['select'])) {
+            $aArgs['select'][] = 'id';
+        }
+
         $allNotes = NoteModel::get([
             'select'    => $aArgs['select'],
             'where'     => ['identifier = ?'],

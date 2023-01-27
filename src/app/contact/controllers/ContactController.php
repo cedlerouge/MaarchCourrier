@@ -809,8 +809,8 @@ class ContactController
         }
 
         // Ligne 6
-        $args['address_postcode'] = strtoupper($args['address_postcode']);
-        $args['address_town'] = strtoupper($args['address_town']);
+        $args['address_postcode'] = strtoupper($args['address_postcode'] ?? '');
+        $args['address_town'] = strtoupper($args['address_town'] ?? '');
         $afnorAddress[6] = trim(substr($args['address_postcode'].' '.$args['address_town'], 0, 38));
 
         // Ligne 7
@@ -826,7 +826,7 @@ class ContactController
         $civilities = ContactCivilityModel::get(['select' => ['*']]);
         $civilities = array_column($civilities, null, 'id');
 
-        if (strlen($civilities[$args['civility']]['label'].' '.$args['fullName']) > $args['strMaxLength']) {
+        if (strlen(($civilities[$args['civility']]['label'] ?? '').' '.$args['fullName']) > $args['strMaxLength']) {
             $args['civility'] = $civilities[$args['civility']]['abbreviation'];
         } else {
             $args['civility'] = $civilities[$args['civility']]['label'];
@@ -1470,11 +1470,11 @@ class ContactController
                 $civilities = ContactCivilityModel::get(['select' => ['*']]);
                 $civilities = array_column($civilities, null, 'id');
 
-                $xmlCivility = $civilities[$contactRaw['civility']];
+                $xmlCivility = $civilities[$contactRaw['civility']] ?? null;
                 $civility = [
-                    'id'           => $contactRaw['civility'],
-                    'label'        => $xmlCivility['label'],
-                    'abbreviation' => $xmlCivility['abbreviation']
+                    'id'           => $contactRaw['civility'] ?? null,
+                    'label'        => $xmlCivility['label'] ?? null,
+                    'abbreviation' => $xmlCivility['abbreviation'] ?? null
                 ];
 
                 $contact = [
