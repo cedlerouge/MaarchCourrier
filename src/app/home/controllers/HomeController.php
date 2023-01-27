@@ -135,7 +135,7 @@ class HomeController
             'homeMessage'                               => $homeMessage,
             'isLinkedToExternalSignatoryBook'           => $isExternalSignatoryBookConnected,
             'externalSignatoryBookUrl'                  => $externalSignatoryBookUrl,
-            'signatoryBookEnabled'                      => $signatoryBookEnabled,
+            'signatoryBookEnabled'                      => $signatoryBookEnabled ?? null,
         ]);
     }
 
