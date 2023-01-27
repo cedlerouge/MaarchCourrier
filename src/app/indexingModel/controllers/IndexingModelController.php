@@ -139,11 +139,11 @@ class IndexingModelController
         $categories = ResModel::getCategories();
         $categories = array_column($categories, 'id');
 
-        if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'])) {
+        if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string or more than 256 characters']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['category']) || !in_array($body['category'], $categories)) {
+        } elseif (!Validator::stringType()->notEmpty()->validate($body['category'] ?? null) || !in_array($body['category'], $categories)) {
             return $response->withStatus(400)->withJson(['errors' => "Body category is empty, not a string or not a valid category"]);
-        } elseif (!Validator::arrayType()->notEmpty()->validate($body['fields'])) {
+        } elseif (!Validator::arrayType()->notEmpty()->validate($body['fields'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => "Body fields is empty or not an array"]);
         }
 
@@ -170,7 +170,7 @@ class IndexingModelController
         }
 
         $master = null;
-        if (Validator::intVal()->notEmpty()->validate($body['master'])) {
+        if (Validator::intVal()->notEmpty()->validate($body['master'] ?? null)) {
             $masterModel = IndexingModelModel::getById(['id' => $body['master']]);
             if (empty($masterModel)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Master model not found']);
@@ -264,11 +264,15 @@ class IndexingModelController
             if ($field['identifier'] == 'doctype' && !empty($body['allDoctypes'])) {
                 $field['allowedValues'] = IndexingModelController::ALLOWED_VALUES_ALL_DOCTYPES;
             }
+            $enabled = true;
+            if (isset($field['enabled']) && $field['enabled'] === false) {
+                $enabled = false;
+            }
             IndexingModelFieldModel::create([
                 'model_id'      => $modelId,
                 'identifier'    => $field['identifier'],
                 'mandatory'     => empty($field['mandatory']) ? 'false' : 'true',
-                'enabled'       => empty($field['enabled']) ? 'false' : 'true',
+                'enabled'       => !$enabled ? 'false' : 'true',
                 'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
                 'unit'          => $field['unit'],
                 'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
@@ -298,7 +302,7 @@ class IndexingModelController
         if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param id is empty or not an integer']);
         }
-        if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'])) {
+        if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body label is empty or not a string or more than 256 characters']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['category'])) {
             return $response->withStatus(400)->withJson(['errors' => "Body category is empty or not a string"]);
