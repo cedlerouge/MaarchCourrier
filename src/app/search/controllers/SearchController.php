@@ -154,8 +154,9 @@ class SearchController
         if (!empty($queryParams['offset']) && is_numeric($queryParams['offset'])) {
             $offset = (int)$queryParams['offset'];
         }
-        if (!empty($queryParams['orderDir'])) {
-            $order   = !in_array($queryParams['orderDir'], ['ASC', 'DESC']) ? '' : $queryParams['orderDir'];
+        $order = '';
+        if (!empty($queryParams['orderDir']) && in_array($queryParams['orderDir'], ['ASC', 'DESC'])) {
+            $order   = $queryParams['orderDir'];
         }
         $orderBy = str_replace(['chrono', 'typeLabel', 'creationDate', 'category', 'destUser', 'processLimitDate', 'entityLabel'], ['order_alphanum(alt_identifier)', 'type_label', 'creation_date', 'category_id', '(lastname, firstname)', 'process_limit_date', 'entity_label'], $queryParams['order']);
         $orderBy = !in_array($orderBy, ['order_alphanum(alt_identifier)', 'status', 'subject', 'type_label', 'creation_date', 'category_id', '(lastname, firstname)', 'process_limit_date', 'entity_label', 'priority']) ? ['creation_date'] : ["{$orderBy} {$order}"];

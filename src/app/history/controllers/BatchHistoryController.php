@@ -74,8 +74,9 @@ class BatchHistoryController
             $where = $requestData['where'];
             $data = $requestData['data'];
         }
-        if (!empty($queryParams['order'])) {
-            $order = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
+        $order = '';
+        if (!empty($queryParams['order']) && in_array($queryParams['order'], ['asc', 'desc'])) {
+            $order = $queryParams['order'];
         }
         if (!empty($queryParams['orderBy'])) {
             $orderBy = !in_array($queryParams['orderBy'], ['event_date', 'module_name', 'total_processed', 'total_errors', 'info']) ? ['event_date DESC'] : ["{$queryParams['orderBy']} {$order}"];
