@@ -116,10 +116,13 @@
                                 <div>
                                     <button mat-raised-button class="extensionButton" color="primary"
                                         *ngIf="attach.status !== 'SIGN'"
-                                        (click)="toggleAttachMail(attach,keyVal.key,'original');">.{{attach.format}}</button><br />
+                                        (click)="toggleAttachMail(attach,keyVal.key,'original');">.{{attach.format}}
+                                    </button><br/>
                                     <button mat-raised-button class="extensionButton" color="primary"
-                                        *ngIf="!functions.empty(attach.convertedDocument)"
-                                        (click)="toggleAttachMail(attach,keyVal.key,'pdf');">.pdf</button>
+                                        *ngIf="!functions.empty(attach.convertedDocument) && attach.format !== 'pdf'"
+                                        (click)="toggleAttachMail(attach,keyVal.key,'pdf');">
+                                        .pdf
+                                    </button>
                                 </div>
                                 <div>
                                     <span [title]="attach.label">
