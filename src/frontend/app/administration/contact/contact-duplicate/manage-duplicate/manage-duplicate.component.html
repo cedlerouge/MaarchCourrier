@@ -5,7 +5,7 @@
             <app-contact-detail #appContactDetail
                 [class.merged]="contactSelected!==i && contactSelected!==null && contactsExcluded.indexOf(contact.id) === -1"
                 [contact]="contact" [selectable]="contactSelected===i || contactSelected===null"
-                (afterSelectedEvent)="mergeContact(i)" (afterDeselectedEvent)="resetContact($event, i)"
+                (afterSelectedEvent)="mergeContact($event, i)" (afterDeselectedEvent)="resetContact($event, i)"
                 style="height: 100%">
             </app-contact-detail>
             <button mat-raised-button mat-button

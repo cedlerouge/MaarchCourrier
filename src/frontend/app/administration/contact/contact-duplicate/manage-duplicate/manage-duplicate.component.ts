@@ -35,8 +35,7 @@ export class ManageDuplicateComponent implements OnInit {
 
     ngOnInit(): void { }
 
-    mergeContact(index: number = this.contactSelected) {
-
+    mergeContact(selectedContact: any = this.appContactDetail.toArray()[this.contactSelected].contact, index: any = this.contactSelected) {
         this.appContactDetail.toArray()[index].resetContact();
         this.appContactDetail.toArray()[index].contact.selected = true;
 
@@ -53,7 +52,7 @@ export class ManageDuplicateComponent implements OnInit {
                                 this.appContactDetail.toArray()[index].setContactInfo(element, custom);
                             }
                         });
-                    } else if (element === 'civility' && !this.functionsService.empty(this.appContactDetail.toArray()[indexContact].getContactInfo()[element].id)) {
+                    } else if (element === 'civility' && !this.functionsService.empty(this.appContactDetail.toArray()[indexContact].getContactInfo()[element].id) && this.functionsService.empty(selectedContact?.civility)) {
                         this.appContactDetail.toArray()[index].setContactInfo(element, this.appContactDetail.toArray()[indexContact].getContactInfo()[element]);
                     } else if (
                         this.functionsService.empty(this.appContactDetail.toArray()[index].getContactInfo()[element]) &&
@@ -102,5 +101,10 @@ export class ManageDuplicateComponent implements OnInit {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    showContact(contact: any) {
+        console.log('contact', contact);
+
     }
 }
