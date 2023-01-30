@@ -128,7 +128,7 @@ class TemplateController
             'template_label'            => $body['label'],
             'template_comment'          => $body['description'],
             'template_type'             => $body['type'],
-            'template_style'            => $body['style'],
+            'template_style'            => $body['style'] ?? null,
             'template_datasource'       => $body['datasource'],
             'template_target'           => $body['target'],
             'template_attachment_type'  => $body['template_attachment_type']
@@ -576,12 +576,12 @@ class TemplateController
             'data'    => $dataToMerge
         ]);
         $mergedDocument = base64_decode($mergedDocument['encodedDocument']);
-
+        
         $mergedSubject = null;
         if (!empty($template['subject'])) {
             $mergedSubject = MergeController::mergeDocument([
-                'content' => $template['subject'],
-                'data'    => $dataToMerge
+            'content' => $template['subject'],
+            'data'    => $dataToMerge
             ]);
             $mergedSubject = base64_decode($mergedSubject['encodedDocument']);
         }
