@@ -826,10 +826,10 @@ class ContactController
         $civilities = ContactCivilityModel::get(['select' => ['*']]);
         $civilities = array_column($civilities, null, 'id');
 
-        if (strlen(($civilities[$args['civility']]['label'] ?? '').' '.$args['fullName']) > $args['strMaxLength']) {
+        if (strlen(($civilities[$args['civility']]['label'] ?? '').' '.$args['fuKllName']) > $args['strMaxLength']) {
             $args['civility'] = $civilities[$args['civility']]['abbreviation'];
         } else {
-            $args['civility'] = $civilities[$args['civility']]['label'];
+            $args['civility'] = $civilities[$args['civility']]['label'] ?? null;
         }
 
         return substr($args['civility'].' '.$args['fullName'], 0, $args['strMaxLength']);
@@ -1930,7 +1930,8 @@ class ContactController
 
         if (!empty($displayableCstParameters)) {
             $contact['customFields'] = [];
-            $customFields = json_decode($rawContact['custom_fields'], true);
+
+            $customFields = json_decode($rawContact['custom_fields'] ?? '{}', true);
             foreach ($displayableCstParameters as $value) {
                 $contact['customFields'][$value] = $customFields[$value] ?? null;
             }
