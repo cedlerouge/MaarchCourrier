@@ -66,16 +66,20 @@ export class MaarchParapheurService {
 
     getUserAvatar(externalId: any): Promise<any> {
         return new Promise((resolve) => {
-            this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
-                tap((data: any) => {
-                    resolve(data.picture);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    resolve(null);
-                    return of(false);
-                })
-            ).subscribe();
+            if (!this.functions.empty(externalId)) {
+                this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
+                    tap((data: any) => {
+                        resolve(data.picture);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        resolve(null);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else {
+                resolve(null);
+            }
         });
     }
 

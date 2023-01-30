@@ -75,24 +75,29 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<void> {
-        this.loading = true;
-        await this.checkExternalSignatureBook();
-        this.showToggle = this.data.additionalInfo.showToggle;
-        this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
-        this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
-        if (this.data.resource.integrations['inSignatureBook']) {
-            this.http.get(`../rest/resources/${this.data.resource.resId}/versionsInformations`).pipe(
-                tap((data: any) => {
-                    this.mainDocumentSigned = data.SIGN.length !== 0;
-                    if (!this.mainDocumentSigned) {
-                        this.toggleDocToSign(true, this.data.resource, true);
-                    }
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+        if (!this.functions.empty(this.authService?.externalSignatoryBook)) {
+            this.loading = true;
+            await this.checkExternalSignatureBook();
+            this.showToggle = this.data.additionalInfo.showToggle;
+            this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
+            this.inLocalStorage = this.data.additionalInfo.inLocalStorage;
+            if (this.data.resource.integrations['inSignatureBook']) {
+                this.http.get(`../rest/resources/${this.data.resource.resId}/versionsInformations`).pipe(
+                    tap((data: any) => {
+                        this.mainDocumentSigned = data.SIGN.length !== 0;
+                        if (!this.mainDocumentSigned) {
+                            this.toggleDocToSign(true, this.data.resource, true);
+                        }
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            }
+        } else {
+            this.dialogRef.close();
+            this.loading = false;
         }
     }
 
@@ -222,5 +227,9 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         } else {
             return false;
         }
+    }
+
+    getTitle(): string {
+        return this.authService.externalSignatoryBook !== null ? this.translate.instant('lang.' + this.authService.externalSignatoryBook.id) : this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 }
