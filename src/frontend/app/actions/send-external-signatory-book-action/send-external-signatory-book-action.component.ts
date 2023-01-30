@@ -75,8 +75,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     ) { }
 
     async ngOnInit(): Promise<void> {
+        this.loading = true;
         if (!this.functions.empty(this.authService?.externalSignatoryBook)) {
-            this.loading = true;
             await this.checkExternalSignatureBook();
             this.showToggle = this.data.additionalInfo.showToggle;
             this.canGoToNextRes = this.data.additionalInfo.canGoToNextRes;
