@@ -167,7 +167,7 @@
                         </mat-expansion-panel>
                     </div>
                 </ng-container>
-                <mat-tab-group [selectedIndex]="selectedIndex" class="pjList" *ngIf="!loading" animationDuration="0" style="height: 100%" (selectedTabChange)="selectedIndex = $event.index">
+                <mat-tab-group [selectedIndex]="selectedIndex" class="pjList" *ngIf="!loading" animationDuration="0" style="height: 100%">
                         <mat-tab label="{{'lang.mainDocument' | translate}}" *ngIf="attachment.res_id_master !== null">
                             <ng-template matTabContent>
                                 <app-document-viewer #appDocumentViewer style="display:block;height:100%;width:100%;overflow: auto;" [editMode]="false"
@@ -205,7 +205,7 @@
                             </ng-template>
                         </mat-tab>
                     </mat-tab-group>
-                    <div *ngIf="selectedIndex !== 0 && !loading" style="position: absolute;right: 16px;top: 4px;width:40px;height:40px;">
+                    <div *ngIf="!loading" style="position: absolute;right: 16px;top: 4px;width:40px;height:40px;">
                         <app-tools-informations style="position:fixed;z-index:1;text-align: left;" [resId]="attachment['resIdMaster'].value"></app-tools-informations>
                     </div>
     </mat-dialog-content>
