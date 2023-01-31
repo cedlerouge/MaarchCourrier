@@ -279,9 +279,6 @@ class NotificationController
         if (!Validator::length(0, 254)->validate($aArgs['event_id'])) {
             $errors[] = 'event_id is too long';
         }
-        if (!Validator::length(0, 30)->validate($aArgs['notification_mode'])) {
-            $errors[] = 'notification_mode is too long';
-        }
         if (!Validator::intType()->notEmpty()->validate($aArgs['template_id'])) {
             $errors[] = 'wrong format for template_id';
         }
