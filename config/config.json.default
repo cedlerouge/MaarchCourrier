@@ -66,8 +66,7 @@
     "log": {
         "enable": true,
         "dateTimeFormat" : "d/m/Y H:i:s",
-        "lineFormat": "[%datetime%][%extra.process_id%][%channel%][%level_name%][%message%][%extra%]\n",
-        "lineMessageFormat": "[%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]",
+        "lineFormat": "[%datetime%] %level_name% [%extra.process_id%][%channel%] [%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n",
         "logFonctionnel": {
             "level": "ERROR",
             "file": "./fonctionnel.log",
@@ -85,7 +84,7 @@
             "file": "./queries.log",
             "maxFileSize": "10MB",
             "maxBackupFiles": 10,
-            "lineMessageFormat": "[%QUERY%][%DATA%][%EXCEPTION%]",
+            "lineMessageFormat": "[%datetime%] %level_name% [%extra.process_id%][%channel%] [%QUERY%][%DATA%][%EXCEPTION%]\n"
         }
     }
 }
