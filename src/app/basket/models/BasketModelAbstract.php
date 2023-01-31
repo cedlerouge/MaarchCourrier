@@ -94,7 +94,7 @@ abstract class BasketModelAbstract
                 'basket_clause'     => $aArgs['clause'],
                 'is_visible'        => $aArgs['isVisible'],
                 'flag_notif'        => $aArgs['flagNotif'],
-                'color'             => $aArgs['color'],
+                'color'             => $aArgs['color'] ?? null,
                 'coll_id'           => 'letterbox_coll',
                 'basket_res_order'  => $aArgs['basket_res_order'],
             ]
