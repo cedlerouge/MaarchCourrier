@@ -97,6 +97,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             }
         } else {
             this.dialogRef.close();
+            this.notify.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
             this.loading = false;
         }
     }
