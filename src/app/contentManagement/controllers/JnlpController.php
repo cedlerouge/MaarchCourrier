@@ -135,12 +135,13 @@ class JnlpController
         $newAttribute->value = 'com.maarch.MaarchCM';
         $tagApplication->appendChild($newAttribute);
 
+        $cookie = $_COOKIE['maarchCourrierAuth'] ?? '';
         $tagArg1 = $jnlpDocument->createElement('argument', $coreUrl . 'rest/jnlp/' . $jnlpUniqueId); //ProcessJnlp
         $tagArg2 = $jnlpDocument->createElement('argument', $body['objectType']); //Type
         $tagArg3 = $jnlpDocument->createElement('argument', base64_encode(json_encode($body['data'])));
         $tagArg4 = $jnlpDocument->createElement('argument', $body['objectId']); //ObjectId
         $tagArg5 = $jnlpDocument->createElement('argument', 0); //Useless
-        $tagArg6 = $jnlpDocument->createElement('argument', "maarchCourrierAuth={$_COOKIE['maarchCourrierAuth']}"); //MaarchCookie
+        $tagArg6 = $jnlpDocument->createElement('argument', "maarchCourrierAuth={$cookie}"); //MaarchCookie
         $tagArg7 = $jnlpDocument->createElement('argument', htmlentities($allCookies)); //AllCookies
         $tagArg8 = $jnlpDocument->createElement('argument', $jnlpFileName); //JnlpFileName
         $tagArg9 = $jnlpDocument->createElement('argument', $GLOBALS['id']); //CurrentUser //Useless
@@ -346,7 +347,7 @@ class JnlpController
                 return $response->withHeader('Content-Type', 'application/xml');
             }
 
-            $fileContent = file_get_contents($tmpPath . $newFileOnTmp, FILE_BINARY);
+            $fileContent = file_get_contents($tmpPath . $newFileOnTmp);
 
             $result = [
                 'STATUS'            => 'ok',
