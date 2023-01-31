@@ -102,9 +102,4 @@ export class ManageDuplicateComponent implements OnInit {
             })
         ).subscribe();
     }
-
-    showContact(contact: any) {
-        console.log('contact', contact);
-
-    }
 }
