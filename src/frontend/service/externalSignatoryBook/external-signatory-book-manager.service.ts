@@ -32,8 +32,6 @@ export class ExternalSignatoryBookManagerService {
                 this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
-        } else if (this.functions.empty(this.authService.externalSignatoryBook?.id)) {
-            this.notifications.handleSoftErrors(this.translate.instant('lang.externalSignoryBookNotEnabled'));
         }
     }
 
