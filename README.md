@@ -11,7 +11,7 @@ Gestionnaire Électronique de Correspondances – Libre et Open Source
 ## Notes de version
 [Voir la page](https://community.maarch.org/c/maarch-courrier/changelogs)
 
-## Demonstration
+## Démonstration
 [Accéder à l'application de démo](http://demo.maarchcourrier.com/)
 
 ## Pré-requis techniques
