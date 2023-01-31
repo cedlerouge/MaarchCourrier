@@ -34,8 +34,8 @@
             </form>
         </div>
         <footer style="padding: 8px; backdrop-filter: blur(8px)">
-            <p style="color: white;cursor: default" [title]="'lang.applicationVersion' | translate : {version: applicationVersion, author: environment.AUTHOR}"
-                [innerHTML]="'lang.applicationVersion' | translate : {version: applicationVersion, author: environment.AUTHOR}">
+            <p style="color: white;cursor: default" [title]="'lang.applicationVersion' | translate : {version: environment.BASE_VERSION, author: environment.AUTHOR}"
+                [innerHTML]="'lang.applicationVersion' | translate : {version: environment.BASE_VERSION, author: environment.AUTHOR}">
             </p>
         </footer>
     </div>

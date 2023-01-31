@@ -61,7 +61,7 @@ export class ContactsFormComponent implements OnInit {
 
     loading: boolean = false;
 
-    maarch2maarchUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guat/guat_exploitation/maarch2maarch.html`;
+    maarch2maarchUrl: string = this.functions.getDocBaseUrl() + '/guat/guat_exploitation/maarch2maarch.html';
 
     contactUnit = [
         {

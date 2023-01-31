@@ -56,7 +56,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
             }
         ]
     };
-    maarch2maarchUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guat/guat_exploitation/maarch2maarch.html`;
+    maarch2maarchUrl: string = this.functionsService.getDocBaseUrl() + '/guat/guat_exploitation/maarch2maarch.html';
 
     passwordAlreadyExists: boolean = false;
 

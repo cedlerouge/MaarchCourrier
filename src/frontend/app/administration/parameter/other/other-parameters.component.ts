@@ -296,7 +296,7 @@ export class OtherParametersComponent implements OnInit {
     loading: boolean = false;
     hasError: boolean = false;
 
-    exportSedaUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guat/guat_exploitation/Seda_send.html`;
+    exportSedaUrl: string = this.functions.getDocBaseUrl() + '/guat/guat_exploitation/Seda_send.html';
 
 
     constructor(

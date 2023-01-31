@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { MatDialog } from '@angular/material/dialog';
-import { environment } from '../../../environments/environment';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'organization-email-signatures-administration.component.html',
@@ -16,7 +16,7 @@ export class OrganizationEmailSignaturesAdministrationComponent implements OnIni
 
     loading: boolean = false;
 
-    docUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guaf/guaf_organization_email_signatures/home.html`;
+    docUrl: string = this.functionsService.getDocBaseUrl() + '/guaf/guaf_organization_email_signatures/home.html';
 
     constructor(
         public translate: TranslateService,
@@ -24,7 +24,8 @@ export class OrganizationEmailSignaturesAdministrationComponent implements OnIni
         private headerService: HeaderService,
         public appService: AppService,
         public dialog: MatDialog,
-        private viewContainerRef: ViewContainerRef
+        private viewContainerRef: ViewContainerRef,
+        private functionsService: FunctionsService
     ) { }
 
     ngOnInit(): void {
