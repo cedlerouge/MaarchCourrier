@@ -472,7 +472,7 @@ export class DoctypesAdministrationComponent implements OnInit {
 
     toggleProcessDelay(value: boolean) {
         this.hideProcessDelay = !value;
-        const processDelay: number = this.currentTypeClone.process_delay !== -1 ? this.currentTypeClone.process_delay : 0;
+        const processDelay: number = this.currentTypeClone?.process_delay !== -1 ? this.currentTypeClone?.process_delay : 0;
         this.currentType.process_delay = !this.hideProcessDelay ? -1 : processDelay;
     }
 }
