@@ -1,5 +1,5 @@
-[![pipeline status](https://labs.maarch.org/%{project_path}/badges/%{default_branch}/pipeline.svg)](https://labs.maarch.org/%{project_path}/-/commits/main)
-[![coverage report](https://labs.maarch.org/maarch/MaarchCourrier/badges/develop/coverage.svg)](https://labs.maarch.org/%{project_path}/-/commits/main)
+[![pipeline status](https://labs.maarch.org/maarch/MaarchCourrier/badges/main/pipeline.svg)](https://labs.maarch.org/maarch/MaarchCourrier/-/commits/main)
+[![coverage report](https://labs.maarch.org/maarch/MaarchCourrier/badges/main/coverage.svg)](https://labs.maarch.org/maarch/MaarchCourrier/-/commits/main)
 
 
 # Maarch Courrier 2301
@@ -7,6 +7,9 @@ Gestionnaire Électronique de Correspondances – Libre et Open Source
 
 ## Breaking changes
 [Voir la page](https://docs.maarch.org/gitbook/html/MaarchCourrier/2301/guat/guat_migration/home.html)
+
+## Notes de version
+[Voir la page](https://community.maarch.org/c/maarch-courrier/changelogs)
 
 ## Demonstration
 [Accéder à l'application de démo](http://demo.maarchcourrier.com/)
