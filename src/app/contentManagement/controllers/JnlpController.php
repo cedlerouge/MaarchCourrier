@@ -136,9 +136,10 @@ class JnlpController
         $tagApplication->appendChild($newAttribute);
 
         $cookie = $_COOKIE['maarchCourrierAuth'] ?? '';
+        $bodyData = $body['data'] ?? null;
         $tagArg1 = $jnlpDocument->createElement('argument', $coreUrl . 'rest/jnlp/' . $jnlpUniqueId); //ProcessJnlp
         $tagArg2 = $jnlpDocument->createElement('argument', $body['objectType']); //Type
-        $tagArg3 = $jnlpDocument->createElement('argument', base64_encode(json_encode($body['data'])));
+        $tagArg3 = $jnlpDocument->createElement('argument', base64_encode(json_encode($bodyData)));
         $tagArg4 = $jnlpDocument->createElement('argument', $body['objectId']); //ObjectId
         $tagArg5 = $jnlpDocument->createElement('argument', 0); //Useless
         $tagArg6 = $jnlpDocument->createElement('argument', "maarchCourrierAuth={$cookie}"); //MaarchCookie
