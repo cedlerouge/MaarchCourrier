@@ -42,15 +42,18 @@ trait AcknowledgementReceiptTrait
         if (empty($resource) || $resource['category_id'] != 'incoming') {
             return [];
         }
-        if ($args['data']['manual'] && $args['action']['parameters']['mode'] == 'auto') {
+
+        $args['data']['manual'] = $args['data']['manual'] ?? null;
+
+        if ($args['data']['manual'] != null && $args['action']['parameters']['mode'] == 'auto') {
             return [];
-        } elseif (!$args['data']['manual'] && $args['action']['parameters']['mode'] == 'manual') {
+        } elseif ($args['data']['manual'] == null && $args['action']['parameters']['mode'] == 'manual') {
             return [];
         }
 
         $subjectResource = $resource['subject'] ?? '';
 
-        if ($args['data']['manual']) {
+        if ($args['data']['manual'] != null) {
             $contentToSend = $args['data']['content'] ?? null;
             $subjectToSend = !empty($args['data']['subject']) ? $args['data']['subject'] : '[AR] ' . $subjectResource;
         } else {
@@ -90,7 +93,7 @@ trait AcknowledgementReceiptTrait
             'data'      => ['acknowledgementReceipt', $templateAttachmentType, $resource['destination']]
         ]);
         $acknowledgementOptions = !empty($template[0]) ? json_decode($template[0]['options'], true) : null;
-        if (!$args['data']['manual']) {
+        if ($args['data']['manual'] == null) {
             if (empty($template[0])) {
                 return [];
             }
@@ -127,7 +130,7 @@ trait AcknowledgementReceiptTrait
                 }
                 $format = 'html';
             } else {
-                if (!$args['data']['manual']) {
+                if ($args['data']['manual'] == null) {
                     if (!file_exists($pathToDocument) || !is_file($pathToDocument)) {
                         DatabaseModel::rollbackTransaction();
                         return [];
