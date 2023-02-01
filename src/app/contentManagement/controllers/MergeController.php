@@ -241,6 +241,7 @@ class MergeController
             foreach ($visaWorkflow as $value) {
                 $userLabel = UserModel::getLabelledUserById(['id' => $value['item_id']]);
                 $primaryEntity = UserModel::getPrimaryEntityById(['id' => $value['item_id'], 'select' => ['entities.entity_label', 'users_entities.user_role as role']]);
+                $value['process_comment'] = $value['process_comment'] ?? '';
 
                 if (!empty($value['process_date']) && strpos($value['process_comment'], _INTERRUPTED_WORKFLOW) === false) {
                     $modeLabel = ($value['signatory'] ? _SIGNATORY : _VISA_USER_MIN) . ', ' . TextFormatModel::formatDate($value['process_date']);
@@ -314,6 +315,7 @@ class MergeController
                 $opinion['entity'.$opinionCount] = $primaryEntity['entity_label'];
                 $opinion['note'.$opinionCount] = [];
                 foreach ($visibleNotes as $visibleNote) {
+                    $visibleNote['note_text'] = $visibleNote['note_text'] ?? '';
                     if ($visibleNote['user_id'] === $valueUserId && strpos($visibleNote['note_text'], _AVIS_NOTE_PREFIX) === 0) {
                         $opinion['note'.$opinionCount][] = trim(str_replace(_AVIS_NOTE_PREFIX, '', $visibleNote['note_text']));
                     }
