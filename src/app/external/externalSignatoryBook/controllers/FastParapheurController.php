@@ -1235,8 +1235,19 @@ class FastParapheurController
 
         if (!empty($config['data']['integratedWorkflow']) && $config['data']['integratedWorkflow'] == 'true') {
             $steps = [];
+            // TODO rework steps mechanic, will not work for signaturePositions !
+            if (empty($args['steps'])) {
+                return ['error' => 'steps is empty'];
+            }
+            $resId = $args['steps'][0]['resId'] ?? null;
+            if ($resId === null) {
+                return ['error' => 'no resId found in steps'];
+            }
             foreach ($args['steps'] as $step) {
-                $steps[] = [
+                if ($step['resId'] !== $resId) {
+                    continue;
+                }
+                $steps[$step['sequence']] = [
                     'mode' => $step['signatureMode'],
                     'type' => 'fastParapheurUserEmail',
                     'id'   => $step['externalId']
