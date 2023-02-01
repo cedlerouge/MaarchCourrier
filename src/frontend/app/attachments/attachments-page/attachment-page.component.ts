@@ -48,6 +48,8 @@ export class AttachmentPageComponent implements OnInit {
 
     resourceContacts: any = [];
 
+    selectedIndex: number = 1;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
