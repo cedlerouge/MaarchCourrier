@@ -402,7 +402,7 @@ class ShippingTemplateController
             $error = 'Body event_type is not an allowed value';
         } elseif (!Validator::stringType()->in(ShippingTemplateController::MAILEVA_EVENT_RESOURCES[$body['event_type']])->validate($body['resource_type'])) {
             $error = 'Body resource_type is not an allowed value';
-        } elseif (!Validator::date()->validate($body['event_date'])) {
+        } elseif (!Validator::dateTime()->validate($body['event_date'])) {
             $error = 'Body event_date is not a valid date';
         } elseif (!empty($body['event_location']) && !Validator::equals('FR')->validate($body['event_location'])) {
             $error = 'Body event_location is not FR';
