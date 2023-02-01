@@ -70,7 +70,10 @@ class TemplateController
         if (empty($template)) {
             return $response->withStatus(400)->withJson(['errors' => 'Template does not exist']);
         }
-        $template['options'] = json_decode($template['options'], true);
+
+        if (!empty($template['options'])) {
+            $template['options'] = json_decode($template['options'], true);
+        }
 
         $rawLinkedEntities = TemplateAssociationModel::get(['select' => ['value_field'], 'where' => ['template_id = ?'], 'data' => [$template['template_id']]]);
         $linkedEntities = [];
