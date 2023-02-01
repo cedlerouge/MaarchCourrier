@@ -340,7 +340,7 @@ class CollaboraOnlineController
             'id'     => $body['resId'],
             'type'   => $body['type'],
             'format' => $body['format'],
-            'path'   => $body['path']
+            'path'   => $body['path'] ?? ''
         ]);
 
         if (!empty($document['errors'])) {
