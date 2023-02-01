@@ -228,7 +228,7 @@ class StatusController
             array_push($errors, 'Invalid img_filename value');
         }
 
-        if (Validator::notEmpty()->validate($request['maarch_module']) &&
+        if (Validator::notEmpty()->validate($request['maarch_module'] ?? null) &&
             !Validator::length(null, 255)->validate($request['maarch_module'])
         ) {
             array_push($errors, 'Invalid maarch_module value');
