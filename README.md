@@ -1,42 +1,30 @@
-[![build status](https://labs.maarch.org/maarch/MaarchCourrier/badges/develop/build.svg)](https://labs.maarch.org/maarch/MaarchCourrier/commits/develop)
-[![coverage report](https://labs.maarch.org/maarch/MaarchCourrier/badges/develop/coverage.svg)](https://labs.maarch.org/maarch/MaarchCourrier/commits/develop)
+[![pipeline status](https://labs.maarch.org/maarch/MaarchCourrier/badges/main/pipeline.svg)](https://labs.maarch.org/maarch/MaarchCourrier/-/commits/main)
+[![coverage report](https://labs.maarch.org/maarch/MaarchCourrier/badges/main/coverage.svg)](https://labs.maarch.org/maarch/MaarchCourrier/-/commits/main)
 
 
-# Maarch Courrier
-Gestionnaire Électronique de Correspondances – Libre et Open Source –
+# Maarch Courrier 2301
+Gestionnaire Électronique de Correspondances – Libre et Open Source
 
-**Dernière version stable V2301** 
+## Breaking changes
+[Voir la page](https://docs.maarch.org/gitbook/html/MaarchCourrier/2301/guat/guat_migration/home.html)
 
-Démonstration : http://demo.maarchcourrier.com/
+## Notes de version
+[Voir la page](https://community.maarch.org/c/maarch-courrier/changelogs)
 
-Documentation : https://docs.maarch.org/
+## Démonstration
+[Accéder à l'application de démo](http://demo.maarchcourrier.com/)
 
+## Pré-requis techniques
+[Voir la documentation](https://docs.maarch.org/MaarchCourrier/2301/guat/guat_prerequisites/home.html)
 
 ## Installation
-1. Vérifiez que vous avez l'ensemble des [pré-requis](https://docs.maarch.org/gitbook/html/MaarchCourrier/develop/guat/guat_prerequisites/home.html)
-2. Décompressez *MaarchCourrier-develop.tar.gz* dans votre zone web
-3. Vérifiez votre vhost Apache
-4. Laissez-vous guider par notre installeur à [http://IP.ouDomaine.tld/MaarchCourrier/install/](https://docs.maarch.org/gitbook/html/MaarchCourrier/develop/guat/guat_installation/online_install.html)
+[Suivre le guide](https://docs.maarch.org/MaarchCourrier/2301/guat/guat_installation/debian.html)
 
+## Documentation
+[Accéder à la documentation](https://docs.maarch.org/MaarchCourrier/2301)
 
-## Requis techniques
+## Contribution
+[Voir le guide de contribution](https://labs.maarch.org/maarch/MaarchCourrier/blob/main/CONTRIBUTING.md)
 
-* Apache2.x
-* PostgreSQL >= 9.6
-* PHP 7.3, 7.4
-   * Extensions PHP (adaptées à votre version de PHP) : PHP-[XSL](http://php.net/manual/en/book.xsl.php), PHP-[XML-RPC](http://php.net/manual/en/book.xmlrpc.php), PHP-[Gettext](http://php.net/manual/en/b$
-* [ImageMagick](http://imagemagick.org/), avec PHP-[ImageMagick](http://php.net/manual/en/book.imagick.php)
-* [Ghostscript](https://www.ghostscript.com/)
-* [wkhtmltopdf et wkhtmltoimage](http://wkhtmltopdf.org/downloads.html)
-* [LibreOffice](http://libreoffice.org/) pour la conversion de documents
-* [unoconv](https://packages.debian.org/jessie/unoconv) pour la conversion de documents
-* Java Runtime Environment >= 8
-
-
-###  Recommandations pour le php.ini
-
-error_reporting = E_ALL & ~E_NOTICE  
-display_errors = On
-
-## Le coin des developpeurs
-[Maarch Developer handbook](https://labs.maarch.org/maarch/MaarchCourrier/blob/master/CONTRIBUTING.md)
+## Licence
+Licence sous [GNU GENERAL PUBLIC LICENSE](https://labs.maarch.org/maarch/MaarchCourrier/blob/main/LICENSE.txt) 

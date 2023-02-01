@@ -259,7 +259,7 @@
                                                 <textarea matInput name="authorizedApi" [(ngModel)]="user.authorizedApi"
                                                     placeholder="Ex : PUT/attachments/{id}"></textarea>
                                                 <mat-hint>{{'lang.authorizedRoutesInformations' | translate}} <a
-                                                        href="https://docs.maarch.org/gitbook/html/MaarchCourrier/{{appVersion}}/guat/guat_architecture/API_REST/home.html"
+                                                        [href]="docApiUrl"
                                                         target="_blank">{{'lang.here' | translate}}</a></mat-hint>
                                             </mat-form-field>
                                         </div>

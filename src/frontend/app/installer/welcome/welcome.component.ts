@@ -20,7 +20,7 @@ export class WelcomeComponent implements OnInit {
 
     langs: string[] = [];
 
-    appVersion: string = environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1];
+    appVersion: string = environment.BASE_VERSION;
 
     steps: any[] = [
         {

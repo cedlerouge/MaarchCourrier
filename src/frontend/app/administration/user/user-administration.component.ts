@@ -122,7 +122,7 @@ export class UserAdministrationComponent implements OnInit {
         }
     ];
 
-    appVersion: string = environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1];
+    docApiUrl: string = this.functions.getDocBaseUrl() + '/guat/guat_architecture/API_REST/home.html';
 
     // Redirect Baskets
     selectionBaskets = new SelectionModel<Element>(true, []);
@@ -236,7 +236,7 @@ export class UserAdministrationComponent implements OnInit {
             this.externalSignatoryBookLink.login = data.link;
             this.loading = false;
             if (this.externalSignatoryBookLink.login !== '') {
-                this.getUserAvatar(this.user.external_id[this.authService.externalSignatoryBook.id]);
+                this.getUserAvatar(this.user.external_id[this.authService?.externalSignatoryBook?.id]);
             } else {
                 this.externalSignatoryBookConnectionStatus = false;
             }

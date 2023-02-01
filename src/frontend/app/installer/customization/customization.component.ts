@@ -12,6 +12,7 @@ import { InstallerService } from '../installer.service';
 import { of } from 'rxjs';
 import { DatabaseComponent } from '../database/database.component';
 import { WelcomeComponent } from '../welcome/welcome.component';
+import { FunctionsService } from '@service/functions.service';
 
 declare let tinymce: any;
 
@@ -38,16 +39,19 @@ export class CustomizationComponent implements OnInit {
         private sanitizer: DomSanitizer,
         private scanPipe: ScanPipe,
         public http: HttpClient,
-        private installerService: InstallerService
+        private installerService: InstallerService,
+        private functionsService: FunctionsService
     ) {
         const valIdentifier: ValidatorFn[] = [Validators.pattern(/^[a-z0-9_\-]*$/), Validators.required, Validators.minLength(3)];
+
+        const docUrl: string = this.functionsService.getDocBaseUrl();
 
         this.stepFormGroup = this._formBuilder.group({
             firstCtrl: ['success', Validators.required],
             customId: [null, valIdentifier],
-            appName: [`Maarch Courrier ${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}`, Validators.required],
-            loginMessage: [`<span style="color:#24b0ed"><strong>Découvrez votre application via</strong></span>&nbsp;<a title="le guide de visite" href="https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guu/home.html" target="_blank"><span style="color:#f99830;"><strong>le guide de visite en ligne</strong></span></a>`],
-            homeMessage: ['<p>D&eacute;couvrez <strong>Maarch Courrier 2301</strong> avec <a title="notre guide de visite" href="https://docs.maarch.org/" target="_blank"><span style="color:#f99830;"><strong>notre guide de visite en ligne</strong></span></a>.</p>'],
+            appName: [`Maarch Courrier ${environment.BASE_VERSION}`, Validators.required],
+            loginMessage: [`<span style="color:#24b0ed"><strong>Découvrez votre application via</strong></span>&nbsp;<a title="le guide de visite" href="${docUrl}/guu/home.html" target="_blank"><span style="color:#f99830;"><strong>le guide de visite en ligne</strong></span></a>`],
+            homeMessage: [`<p>D&eacute;couvrez <strong>Maarch Courrier ${environment.BASE_VERSION}</strong> avec <a title="notre guide de visite" href="${docUrl}" target="_blank"><span style="color:#f99830;"><strong>notre guide de visite en ligne</strong></span></a>.</p>`],
             bodyLoginBackground: ['assets/bodylogin.jpg'],
             uploadedLogo: ['../rest/images?image=logo'],
         });

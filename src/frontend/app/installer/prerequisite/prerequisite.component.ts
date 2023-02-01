@@ -4,8 +4,8 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { of } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
-import { environment } from '../../../environments/environment';
 import { catchError, tap } from 'rxjs/operators';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     selector: 'app-prerequisite',
@@ -103,13 +103,14 @@ export class PrerequisiteComponent implements OnInit {
         ],
     };
 
-    docMaarchUrl: string = `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.VERSION.split('.')[0] + '.' + environment.VERSION.split('.')[1]}/guat/guat_prerequisites/home.html`;
+    docMaarchUrl: string = this.functionsService.getDocBaseUrl() + '/guat/guat_prerequisites/home.html';
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private _formBuilder: UntypedFormBuilder
+        private _formBuilder: UntypedFormBuilder,
+        private functionsService: FunctionsService
     ) { }
 
     ngOnInit(): void {
