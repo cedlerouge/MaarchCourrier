@@ -386,8 +386,12 @@ class FastParapheurController
                 continue;
             }
 
+            $validatedState = $args['config']['data']['validatedState'] ?? null;
+            $validatedVisaState = $args['config']['data']['validatedVisaState'] ?? null;
+            $refusedState = $args['config']['data']['refusedState'] ?? null;
+            $refusedVisaState = $args['config']['data']['refusedVisaState'] ?? null;
             foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
-                if ($valueResponse['stateName'] == $args['config']['data']['validatedState']) {
+                if ($valueResponse['stateName'] == $validatedState || $valueResponse['stateName'] == $validatedVisaState) {
                     LogsController::add([
                         'isTech'    => true,
                         'moduleId'  => $GLOBALS['moduleId'],
@@ -448,7 +452,7 @@ class FastParapheurController
                         'eventId'   => "Done!"
                     ]);
                     break;
-                } elseif ($valueResponse['stateName'] == $args['config']['data']['refusedState']) {
+                } elseif ($valueResponse['stateName'] == $refusedState || $valueResponse['stateName'] == $refusedVisaState) {
                     $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
                         'config'        => $args['config'],
                         'valueResponse' => $valueResponse,
@@ -456,7 +460,7 @@ class FastParapheurController
                     $response = FastParapheurController::getRefusalMessage([
                         'config'        => $args['config'],
                         'documentId'    => $value['external_id'],
-                        'res_id'         => $resId,
+                        'res_id'        => $resId,
                         'version'       => $version
                     ]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'refused';
@@ -1514,8 +1518,6 @@ class FastParapheurController
         $fastParapheurBlock = json_decode(json_encode($fastParapheurBlock), true);
         if (empty($fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
-        } elseif (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
-            return ['code' => 500, 'errors' => 'integratedWorkflow not found for FastParapheur'];
         } elseif (!array_key_exists('workflowTypes', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'workflowTypes not found for FastParapheur'];
         } elseif (!array_key_exists('subscriberId', $fastParapheurBlock)) {
@@ -1532,6 +1534,10 @@ class FastParapheurController
             return ['code' => 500, 'errors' => 'validatedState not found for FastParapheur'];
         } elseif (!array_key_exists('refusedState', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'refusedState not found for FastParapheur'];
+        }
+
+        if (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
+            $fastParapheurBlock['integratedWorkflow'] = 'false';
         }
         
         return $fastParapheurBlock;

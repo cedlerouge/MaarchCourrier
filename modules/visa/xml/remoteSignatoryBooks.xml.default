@@ -70,6 +70,8 @@
         <certType>P12</certType>
         <validatedState>Signé</validatedState>
         <refusedState>Refusé</refusedState>
+        <validatedVisaState>Visa approuvé</validatedVisaState>
+        <refusedVisaState>Visa désapprouvé</refusedVisaState>
     </signatoryBook>
     <signatoryBook>
         <id>xParaph</id>
