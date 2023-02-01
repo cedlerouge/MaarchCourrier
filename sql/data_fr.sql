@@ -1,5 +1,5 @@
 ------------
--- DATA SAMPLE 22.x.0
+-- DATA SAMPLE 2301
 -- (Launch the application to update data to the last tag)
 ------------
 
@@ -993,7 +993,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (908, '[CLOTURE] Clôture AUTRE', 'Clôture AUTRE', 'Clôture pour ce motif : ', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (909, '[REJET] Erreur affectation', 'Erreur affectation', 'Ce courrier ne semble pas concerner mon service', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (910, '[REJET] Anomalie de numérisation', 'Anomalie de numérisation', 'Le courrier présente des anomalies de numérisation', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
-INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1033, 'AR EN MASSE TYPE SIMPLE', 'Cas d’une demande n’impliquant pas de décision implicite de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
+INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject, options) VALUES (1033, 'AR EN MASSE TYPE SIMPLE', 'Cas d’une demande n’impliquant pas de décision implicite de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception</strong></span></p>
 <p>Service instructeur : <strong>[userPrimaryEntity.entity_label]</strong> <br />Courriel : [userPrimaryEntity.email]</p>
@@ -1012,8 +1012,8 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p>[userPrimaryEntity.entity_label]</p>
 <p>Ville de Maarch-les-Bains</p>
 <p>&nbsp;</p>
-</div>', 'OFFICE_HTML', '2021/03/0001/', '0011_1443263267.docx', '', 'letterbox_attachment', 'acknowledgementReceipt', 'simple', NULL);
-INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1034, 'AR EN MASSE TYPE SVA', 'Cas d’une demande impliquant une décision implicite d''acceptation de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
+</div>', 'OFFICE_HTML', '2021/03/0001/', '0011_1443263267.docx', '', 'letterbox_attachment', 'acknowledgementReceipt', 'simple', NULL, '{"acknowledgementReceiptFrom": "destination"}');
+INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject, options) VALUES (1034, 'AR EN MASSE TYPE SVA', 'Cas d’une demande impliquant une décision implicite d''acceptation de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite d''acceptation<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
@@ -1030,7 +1030,7 @@ Le pr&eacute;sent accus&eacute; de r&eacute;ception atteste de la r&eacute;cepti
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;">Ville de Maarch-les-Bains</span><br />[userPrimaryEntity.entity_label]</p>
 <p>Courriel : [userPrimaryEntity.email]<br />T&eacute;l&eacute;phone : [user.phone]</p>
-</div>', 'OFFICE_HTML', NULL, NULL, 'DOCX: AR_Masse_SVA', 'letterbox_attachment', 'acknowledgementReceipt', 'sva', NULL);
+</div>', 'OFFICE_HTML', NULL, NULL, 'DOCX: AR_Masse_SVA', 'letterbox_attachment', 'acknowledgementReceipt', 'sva', NULL, '{"acknowledgementReceiptFrom": "destination"}');
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1045, 'AR TYPE SVR - Courriel Manuel', 'A utiliser avec l''action "Générer les AR"', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite de rejet<br /></strong></span></p>
@@ -1049,7 +1049,7 @@ Le pr&eacute;sent accus&eacute; de r&eacute;ception atteste de la r&eacute;cepti
 <p><span style="color: #236fa1;">Ville de Maarch-les-Bains</span><br />[userPrimaryEntity.entity_label]</p>
 <p>Courriel : [userPrimaryEntity.email]<br />T&eacute;l&eacute;phone : [user.phone]</p>
 </div>', 'HTML', NULL, NULL, NULL, 'letterbox_attachment', 'sendmail', 'all', NULL);
-INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1035, 'AR EN MASSE TYPE SVR', 'Cas d’une demande impliquant une décision implicite de rejet de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
+INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject, options) VALUES (1035, 'AR EN MASSE TYPE SVR', 'Cas d’une demande impliquant une décision implicite de rejet de l’administration', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;"><strong>Accus&eacute; de r&eacute;ception de votre demande intervenant<br />dans le cadre d''une d&eacute;cision implicite de rejet<br /></strong></span></p>
 <p>Num&eacute;ro d''enregistrement :<strong> [res_letterbox.alt_identifier]</strong></p>
@@ -1066,7 +1066,7 @@ Le pr&eacute;sent accus&eacute; de r&eacute;ception atteste de la r&eacute;cepti
 <p>&nbsp;</p>
 <p><span style="color: #236fa1;">Ville de Maarch-les-Bains</span><br />[userPrimaryEntity.entity_label]</p>
 <p>Courriel : [userPrimaryEntity.email]<br />T&eacute;l&eacute;phone : [user.phone]</p>
-</div>', 'OFFICE_HTML', NULL, NULL, 'DOCX: AR_Masse_SVR', 'letterbox_attachment', 'acknowledgementReceipt', 'svr', NULL);
+</div>', 'OFFICE_HTML', NULL, NULL, 'DOCX: AR_Masse_SVR', 'letterbox_attachment', 'acknowledgementReceipt', 'svr', NULL, '{"acknowledgementReceiptFrom": "destination"}');
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (1036, 'SVE - Courriel de réorientation', 'Modèle de courriel de réorientation d''une saisine SVE', '<div id="write" class="is-node"><br /><hr /><span style="color: #236fa1;">H&ocirc;tel de ville</span><br /><span style="color: #236fa1;">Place de la Libert&eacute;</span><br /><span style="color: #236fa1;">99000 Maarch-les-bains</span>
 <p>[destination.entity_label]<br /><br />T&eacute;l&eacute;phone : &nbsp;&nbsp; &nbsp;[user.phone]<br />Courriel : &nbsp;&nbsp;&nbsp; [destination.email]</p>
 <p>[destination.address_town], le [datetime.date;frm=dddd dd mmmm yyyy (locale)]</p>
