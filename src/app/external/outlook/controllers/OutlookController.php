@@ -180,7 +180,7 @@ class OutlookController
         }
 
         $preferences = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['preferences']]);
-        $preferences = json_decode($preferences, true);
+        $preferences = json_decode($preferences['preferences'], true);
 
         $preferences['outlookPassword'] = PasswordModel::encrypt(['password' => $body['outlookPassword']]);
 
