@@ -396,12 +396,13 @@ class ResController extends ResourceControlController
             $data['historyMessage'] = _UPDATE_STATUS;
             $data['historyMessage'] = str_replace("{2}", $statusInfo['label_status'], $data['historyMessage']);
 
+            $data['admin'] = $data['admin'] ?? null;
             if ($data['admin'] == 'true') {
                 $data['historyMessage'] = '[' . _ADMINISTRATION . '] ' . $data['historyMessage'];
             }
         }
 
-        $check = Validator::arrayType()->notEmpty()->validate($data['chrono']) || Validator::arrayType()->notEmpty()->validate($data['resId']);
+        $check = Validator::arrayType()->notEmpty()->validate($data['chrono'] ?? []) || Validator::arrayType()->notEmpty()->validate($data['resId'] ?? []);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['status']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['historyMessage']);
         if (!$check) {
@@ -518,6 +519,7 @@ class ResController extends ResourceControlController
         $mimeType = $mimeAndSize['mime'];
         $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
+        $data['mode'] = $data['mode'] ?? null;
         if ($data['mode'] == 'base64') {
             $listInstance = ListInstanceModel::get([
                 'select'    => ['listinstance_id', 'item_id'],

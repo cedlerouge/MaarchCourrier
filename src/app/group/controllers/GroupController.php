@@ -76,7 +76,7 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => _INVALID_CLAUSE]);
         }
 
-        GroupModel::create(['groupId' => $data['group_id'], 'description' => $data['group_desc'], 'clause' => $data['security']['where_clause'], 'comment' => $data['security']['maarch_comment']]);
+        GroupModel::create(['groupId' => $data['group_id'], 'description' => $data['group_desc'], 'clause' => $data['security']['where_clause'], 'comment' => $data['security']['maarch_comment'] ?? null]);
 
         $group = GroupModel::getByGroupId(['groupId' => $data['group_id'], 'select' => ['id']]);
         if (empty($group)) {

@@ -66,7 +66,7 @@ abstract class GroupModelAbstract
             'data'      => [$aArgs['groupId']]
         ]);
 
-        return $aGroups[0];
+        return $aGroups[0] ?? null;
     }
 
     public static function create(array $aArgs)

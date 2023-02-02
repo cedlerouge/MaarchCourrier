@@ -2229,17 +2229,19 @@ class UserController
         $body = $request->getParsedBody();
 
         $userAbsence = UserModel::getById(['id' => $args['id'], 'select' => ['absence']]);
-        $userAbsence = json_decode($userAbsence['absence'], true);
+        if (!empty($userAbsence['absence'])) {
+            $userAbsence = json_decode($userAbsence['absence'], true);
+            if (!empty($userAbsence['absenceDate']['startDate'])) {
+                $absenceStartDate = new \DateTime($userAbsence['absenceDate']['startDate']);
+                $today = new \DateTime();
 
-        if (!empty($userAbsence['absenceDate']['startDate'])) {
-            $absenceStartDate = new \DateTime($userAbsence['absenceDate']['startDate']);
-            $today = new \DateTime();
-
-            if ($today < $absenceStartDate && empty($body['absenceDate']['startDate']) && empty($body['absenceDate']['endDate']) && empty($body['redirectedBaskets'])) {
-                UserModel::update(['set' => ['absence' => null], 'where' => ['id = ?'], 'data' => [$args['id']]]);
-                return $response->withStatus(204);
+                if ($today < $absenceStartDate && empty($body['absenceDate']['startDate']) && empty($body['absenceDate']['endDate']) && empty($body['redirectedBaskets'])) {
+                    UserModel::update(['set' => ['absence' => null], 'where' => ['id = ?'], 'data' => [$args['id']]]);
+                    return $response->withStatus(204);
+                }
             }
         }
+
 
         if (!Validator::arrayType()->notEmpty()->validate($body['absenceDate'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body absenceDate is empty or not an array']);

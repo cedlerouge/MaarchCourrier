@@ -90,9 +90,9 @@ class DoctypeController
             'doctypes_first_level_id'       => $data['doctypes_first_level_id'],
             'doctypes_second_level_id'      => $data['doctypes_second_level_id'],
             'duration_current_use'          => $data['duration_current_use'],
-            'action_current_use'            => $data['action_current_use'],
-            'retention_rule'                => $data['retention_rule'],
-            'retention_final_disposition'   => $data['retention_final_disposition'],
+            'action_current_use'            => $data['action_current_use'] ?? null,
+            'retention_rule'                => $data['retention_rule'] ?? null,
+            'retention_final_disposition'   => $data['retention_final_disposition'] ?? null,
             "process_delay"                 => $data['process_delay'],
             "delay1"                        => $data['delay1'],
             "delay2"                        => $data['delay2'],
@@ -185,6 +185,8 @@ class DoctypeController
             'data'   => [$aArgs['id']]
         ]);
 
+        $doctypeTree = null;
+        $doctypes = null;
         if ($count[0]['count'] == 0) {
             DoctypeController::deleteAllDoctypeData(['type_id' => $aArgs['id']]);
             $deleted     = 0;
@@ -260,15 +262,17 @@ class DoctypeController
     protected function deleteAllDoctypeData(array $aArgs = [])
     {
         $doctypeInfo = DoctypeModel::getById(['id' => $aArgs['type_id']]);
-        DoctypeModel::delete(['type_id' => $aArgs['type_id']]);
+        if (!empty($doctypeInfo)) {
+            DoctypeModel::delete(['type_id' => $aArgs['type_id']]);
 
-        HistoryController::add([
-            'tableName' => 'doctypes',
-            'recordId'  => $doctypeInfo['type_id'],
-            'eventType' => 'DEL',
-            'eventId'   => 'typesdel',
-            'info'      => _DOCTYPE_DELETED. ' : ' . $doctypeInfo['description']
-        ]);
+            HistoryController::add([
+                'tableName' => 'doctypes',
+                'recordId'  => $doctypeInfo['type_id'],
+                'eventType' => 'DEL',
+                'eventId'   => 'typesdel',
+                'info'      => _DOCTYPE_DELETED . ' : ' . $doctypeInfo['description']
+            ]);
+        }
     }
 
     protected static function control($aArgs, $mode)
@@ -308,9 +312,9 @@ class DoctypeController
             (!Validator::intVal()->validate($aArgs['delay2']) || $aArgs['delay2'] < 0)) {
             $errors[]= 'Invalid delay2 value';
         }
-        if (Validator::notEmpty()->validate($aArgs['duration_current_use']) &&
-            (!Validator::intVal()->validate($aArgs['duration_current_use']) ||
-            $aArgs['duration_current_use'] < 0)) {
+        if (Validator::notEmpty()->validate($aArgs['duration_current_use'] ?? null) &&
+            (!Validator::intVal()->validate($aArgs['duration_current_use'] ?? null) ||
+            ($aArgs['duration_current_use'] ?? 0) < 0)) {
             $errors[]= 'Invalid duration_current_use value';
         }
 

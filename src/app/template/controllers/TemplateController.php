@@ -70,7 +70,10 @@ class TemplateController
         if (empty($template)) {
             return $response->withStatus(400)->withJson(['errors' => 'Template does not exist']);
         }
-        $template['options'] = json_decode($template['options'], true);
+
+        if (!empty($template['options'])) {
+            $template['options'] = json_decode($template['options'], true);
+        }
 
         $rawLinkedEntities = TemplateAssociationModel::get(['select' => ['value_field'], 'where' => ['template_id = ?'], 'data' => [$template['template_id']]]);
         $linkedEntities = [];
@@ -128,7 +131,7 @@ class TemplateController
             'template_label'            => $body['label'],
             'template_comment'          => $body['description'],
             'template_type'             => $body['type'],
-            'template_style'            => $body['style'],
+            'template_style'            => $body['style'] ?? null,
             'template_datasource'       => $body['datasource'],
             'template_target'           => $body['target'],
             'template_attachment_type'  => $body['template_attachment_type']
@@ -576,11 +579,14 @@ class TemplateController
             'data'    => $dataToMerge
         ]);
         $mergedDocument = base64_decode($mergedDocument['encodedDocument']);
-        $mergedSubject = MergeController::mergeDocument([
-            'content' => $template['subject'],
-            'data'    => $dataToMerge
-        ]);
-        $mergedSubject = base64_decode($mergedSubject['encodedDocument']);
+        $mergedSubject = null;
+        if (!empty($template['subject'])) {
+            $mergedSubject = MergeController::mergeDocument([
+                'content' => $template['subject'],
+                'data'    => $dataToMerge
+            ]);
+            $mergedSubject = base64_decode($mergedSubject['encodedDocument']);
+        }
 
         return $response->withJson(['mergedDocument' => $mergedDocument, 'mergedSubject' => $mergedSubject]);
     }

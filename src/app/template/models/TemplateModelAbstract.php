@@ -97,18 +97,18 @@ abstract class TemplateModelAbstract
             'table'         => 'templates',
             'columnsValues' => [
                 'template_id'              => $nextSequenceId,
-                'template_label'           => $args['template_label'],
-                'template_comment'         => $args['template_comment'],
-                'template_content'         => $args['template_content'],
-                'template_type'            => $args['template_type'],
-                'template_style'           => $args['template_style'],
-                'template_datasource'      => $args['template_datasource'],
-                'template_target'          => $args['template_target'],
-                'template_attachment_type' => $args['template_attachment_type'],
-                'template_path'            => $args['template_path'],
-                'template_file_name'       => $args['template_file_name'],
-                'subject'                  => $args['subject'],
-                'options'                  => $args['options']
+                'template_label'           => $args['template_label'] ?? null,
+                'template_comment'         => $args['template_comment'] ?? null,
+                'template_content'         => $args['template_content'] ?? null,
+                'template_type'            => $args['template_type'] ?? null,
+                'template_style'           => $args['template_style'] ?? null,
+                'template_datasource'      => $args['template_datasource'] ?? null,
+                'template_target'          => $args['template_target'] ?? null,
+                'template_attachment_type' => $args['template_attachment_type'] ?? null,
+                'template_path'            => $args['template_path'] ?? null,
+                'template_file_name'       => $args['template_file_name'] ?? null,
+                'subject'                  => $args['subject'] ?? null,
+                'options'                  => $args['options'] ?? null
             ]
         ]);
 

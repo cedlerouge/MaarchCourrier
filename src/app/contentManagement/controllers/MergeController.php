@@ -175,12 +175,12 @@ class MergeController
                 'barcode'               => $args['barcode'] ?? null,
                 'origin'                => $args['origin'] ?? null
             ];
-            $senders = $args['senders'];
-            $recipients = $args['recipients'];
+            $senders = $args['senders'] ?? [];
+            $recipients = $args['recipients'] ?? [];
         }
         $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date', 'creation_date'];
         foreach ($allDates as $date) {
-            $resource[$date] = TextFormatModel::formatDate($resource[$date], 'd-m-Y');
+            $resource[$date] = TextFormatModel::formatDate($resource[$date] ?? null, 'd-m-Y');
         }
         $resource['category_id'] = ResModel::getCategoryLabel(['categoryId' => $resource['category_id']]);
 
@@ -215,9 +215,9 @@ class MergeController
         ];
 
         //Sender
-        $sender = MergeController::formatPerson(['id' => $senders[0]['id'], 'type' => $senders[0]['type']]);
+        $sender = MergeController::formatPerson(['id' => $senders[0]['id'] ?? null, 'type' => $senders[0]['type'] ?? null]);
         //Recipient
-        $recipient = MergeController::formatPerson(['id' => $recipients[0]['id'], 'type' => $recipients[0]['type']]);
+        $recipient = MergeController::formatPerson(['id' => $recipients[0]['id'] ?? null, 'type' => $recipients[0]['type'] ?? null]);
 
         //User
         $currentUser = UserModel::getById(['id' => $args['userId'], 'select' => ['firstname', 'lastname', 'phone', 'mail', 'initials']]);
@@ -241,6 +241,7 @@ class MergeController
             foreach ($visaWorkflow as $value) {
                 $userLabel = UserModel::getLabelledUserById(['id' => $value['item_id']]);
                 $primaryEntity = UserModel::getPrimaryEntityById(['id' => $value['item_id'], 'select' => ['entities.entity_label', 'users_entities.user_role as role']]);
+                $value['process_comment'] = $value['process_comment'] ?? '';
 
                 if (!empty($value['process_date']) && strpos($value['process_comment'], _INTERRUPTED_WORKFLOW) === false) {
                     $modeLabel = ($value['signatory'] ? _SIGNATORY : _VISA_USER_MIN) . ', ' . TextFormatModel::formatDate($value['process_date']);
@@ -314,6 +315,7 @@ class MergeController
                 $opinion['entity'.$opinionCount] = $primaryEntity['entity_label'];
                 $opinion['note'.$opinionCount] = [];
                 foreach ($visibleNotes as $visibleNote) {
+                    $visibleNote['note_text'] = $visibleNote['note_text'] ?? '';
                     if ($visibleNote['user_id'] === $valueUserId && strpos($visibleNote['note_text'], _AVIS_NOTE_PREFIX) === 0) {
                         $opinion['note'.$opinionCount][] = trim(str_replace(_AVIS_NOTE_PREFIX, '', $visibleNote['note_text']));
                     }
@@ -463,7 +465,7 @@ class MergeController
         $dataToBeMerge['datetime']              = $datetime;
         $dataToBeMerge['transmissions']         = $transmissions;
         if (empty($args['inMailing'])) {
-            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson(['id' => $args['recipientId'], 'type' => $args['recipientType']]);
+            $dataToBeMerge['attachmentRecipient'] = MergeController::formatPerson(['id' => $args['recipientId'] ?? null, 'type' => $args['recipientType'] ?? null]);
         }
 
         return $dataToBeMerge;
@@ -834,7 +836,7 @@ class MergeController
                 } else {
                     $person['civility'] = '';
                 }
-                $customFields = json_decode($person['custom_fields'], true);
+                $customFields = json_decode($person['custom_fields'] ?? '[]', true);
                 unset($person['custom_fields']);
                 if (!empty($customFields)) {
                     foreach ($customFields as $key => $customField) {
