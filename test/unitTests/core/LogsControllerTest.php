@@ -122,7 +122,7 @@ class LogsControllerTest extends CourrierTestCase
         $loggerConfiguration = ["lineFormat" => "test"];
         
         // Act
-        $logger = LogsController::initMonologLogger($logConfig, []);
+        $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
         
         // Assert
         $this->assertNotEmpty($logger);
