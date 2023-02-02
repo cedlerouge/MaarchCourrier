@@ -97,11 +97,12 @@ class LogsControllerTest extends CourrierTestCase
     public function testInitMonologLoggerHasFilterHandlerWithPath(): void
     {
         // Arrange
-        $logConfig = [
-            "dateTimeFormat" => "d/m/Y H:i:s", 
-            "lineFormat"     => "test",
+        $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
+        $loggerConfiguration = [
+            "file"       => "test/test",
+            "level"      => "INFO",
+            "lineFormat" => "test",
         ];
-        $loggerConfiguration = ["file" => "test/test", "level" => "INFO"];
         
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
@@ -117,10 +118,8 @@ class LogsControllerTest extends CourrierTestCase
     public function testInitMonologLoggerTechniqueLogFileNotFound(): void
     {
         // Arrange
-        $logConfig = [
-            "dateTimeFormat" => "d/m/Y H:i:s", 
-            "lineFormat"     => "test",
-        ];
+        $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
+        $loggerConfiguration = ["lineFormat" => "test"];
         
         // Act
         $logger = LogsController::initMonologLogger($logConfig, []);
@@ -134,11 +133,11 @@ class LogsControllerTest extends CourrierTestCase
     public function testInitMonologLoggerTechniqueLogLevelNotFound(): void
     {
         // Arrange
-        $logConfig = [
-            "dateTimeFormat" => "d/m/Y H:i:s", 
-            "lineFormat"     => "test"
+        $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
+        $loggerConfiguration = [
+            "file"       => "test/test",
+            "lineFormat" => "test"
         ];
-        $loggerConfiguration = ["file" => "test/test"];
         
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
@@ -153,11 +152,12 @@ class LogsControllerTest extends CourrierTestCase
     public function testInitMonologLoggerHasProcessors(): void
     {
         // Arrange
-        $logConfig = [
-            "dateTimeFormat" => "d/m/Y H:i:s", 
-            "lineFormat"     => "test"
+        $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
+        $loggerConfiguration = [
+            "file"       => "test/test", 
+            "level"      => "INFO",
+            "lineFormat" => "test"
         ];
-        $loggerConfiguration = ["file" => "test/test", "level" => "INFO"];
         
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
