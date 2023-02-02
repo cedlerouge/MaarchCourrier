@@ -107,7 +107,7 @@ abstract class NotificationModelAbstract
                 'template_id'          => $aArgs['template_id'],
                 'diffusion_type'       => $aArgs['diffusion_type'],
                 'diffusion_properties' => $aArgs['diffusion_properties'],
-                'attachfor_type'       => $aArgs['attachfor_type'],
+                'attachfor_type'       => $aArgs['attachfor_type'] ?? null,
                 'attachfor_properties' => $aArgs['attachfor_properties'],
             ],
         ]);
