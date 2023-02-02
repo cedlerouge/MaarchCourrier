@@ -117,7 +117,7 @@ class DatasourceController
                 'data'  => [$res['res_id']],
                 'limit' => 1
             ]);
-            $resourceContacts = $resourceContacts[0];
+            $resourceContacts = $resourceContacts[0] ?? null;
         
             $contact = [];
             if (!empty($resourceContacts)) {

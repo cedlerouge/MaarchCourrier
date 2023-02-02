@@ -318,6 +318,9 @@ class Office365SharepointController
             ]
         ]);
 
+        if (!empty($accessToken['errors'])) {
+            return ['errors' => $accessToken['errors']];
+        }
         $args['siteUrl'] = str_replace('https://', '', $args['siteUrl']);
         $args['siteUrl'] = str_replace('http://', '', $args['siteUrl']);
         $explodedSite =  explode('/', $args['siteUrl']);

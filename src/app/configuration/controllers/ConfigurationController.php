@@ -170,12 +170,16 @@ class ConfigurationController
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['siteUrl'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]);
                     }
-                    $data[$key]['siteId'] = Office365SharepointController::getSiteId([
+                    if (!empty($siteId['errors'])) {
+                        return $response->withStatus(400)->withJson(['errors' => "office365sharepoint['SiteId'] is not found" . $siteId['errors']]);
+                    }
+                    $siteId = Office365SharepointController::getSiteId([
                         'tenantId'     => $editor['tenantId'],
                         'clientId'     => $editor['clientId'],
                         'clientSecret' => $editor['clientSecret'],
                         'siteUrl'      => $editor['siteUrl']
                     ]);
+                    $data[$key]['siteId'] = $siteId;
                 }
             }
         } elseif ($args['privilege'] == 'admin_shippings') {
