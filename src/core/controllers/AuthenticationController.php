@@ -523,9 +523,10 @@ class AuthenticationController
             return ['errors' => 'Cas version not supported'];
         }
         $logConfig = LogsController::getLogConfig();
-        $logger = LogsController::initMonologLogger($logConfig);
-        \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
+        $logger = LogsController::initMonologLogger($logConfig, $logTypeInfo);
+
+        \phpCAS::setLogger($logger);
 
         if (!empty($logTypeInfo['errors'])) {
             return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
@@ -570,10 +571,10 @@ class AuthenticationController
 
 
         $logConfig = LogsController::getLogConfig();
-        $logger = LogsController::initMonologLogger($logConfig);
-        \phpCAS::setLogger($logger);
         $logTypeInfo = LogsController::getLogType('logTechnique');
-        
+        $logger = LogsController::initMonologLogger($logConfig, $logTypeInfo);
+        \phpCAS::setLogger($logger);
+
         if (!empty($logTypeInfo['errors'])) {
             return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
         }

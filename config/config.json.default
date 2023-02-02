@@ -66,24 +66,26 @@
     "log": {
         "enable": true,
         "dateTimeFormat" : "d/m/Y H:i:s",
-        "lineFormat": "[%datetime%][%extra.process_id%][%channel%][%level_name%]%message%\n",
         "logFonctionnel": {
             "level": "ERROR",
             "file": "./fonctionnel.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": 10
+            "maxBackupFiles": 10,
+            "lineFormat": "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n"
         },
         "logTechnique": {
             "level": "ERROR",
             "file": "./technique.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": 10
+            "maxBackupFiles": 10,
+            "lineFormat": "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n"
         },
         "queries": {
             "level": "ERROR",
             "file": "./queries.log",
             "maxFileSize": "10MB",
-            "maxBackupFiles": 10
+            "maxBackupFiles": 10,
+            "lineFormat": "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n"
         }
     }
 }

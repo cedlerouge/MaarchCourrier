@@ -15,7 +15,6 @@
 
 namespace SrcCore\controllers;
 
-use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\processors\LogProcessor;
@@ -30,48 +29,48 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
+    public const DEFAULT_LOG_FORMAT     = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
+    public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n";
 
     /**
      * @param array $logConfig
-     * @return Logger $logger
+     * @param array $loggerConfig
+     * @return Logger|array $logger
      */
-    public static function initMonologLogger(array $logConfig)
+    public static function initMonologLogger(array $logConfig, array $loggerConfig)
     {
-        
         if (empty($logConfig)) {
             return ['code' => 400, 'errors' => "Log config is empty !"];
         }
 
         $dateFormat = $logConfig['dateTimeFormat'] ?? null;
         if (empty($dateFormat)) {
-            return ['code' => 400, 'errors' => "dateTimeFormat is empty !"];
+            return ['code' => 400, 'errors' => "Log configuration 'dateTimeFormat' is empty"];
         }
-        $output = $logConfig['lineFormat'] ?? null;
+        $output = $loggerConfig['lineFormat'] ?? null;
         if (empty($output)) {
-            return ['code' => 400, 'errors' => "lineFormat is empty !"];
+            return ['code' => 400, 'errors' => "Log configuration 'lineFormat' is empty"];
         }
-        if (empty($logConfig['logTechnique']['file'])) {
-            return ['code' => 400, 'errors' => "file path of LogTechnique is empty !"];
+        if (empty($loggerConfig['file'])) {
+            return ['code' => 400, 'errors' => "Logger configuration 'file' path is empty"];
         }
-        if (empty($logConfig['customId'])) {
-            return ['code' => 400, 'errors' => "customId not found !"];
+        if (empty($loggerConfig['level'])) {
+            return ['code' => 400, 'errors' => "Logger configuration 'level' is empty"];
         }
-        if (empty($logConfig['logTechnique']['level'])) {
-            return ['code' => 400, 'errors' => "level of LogTechnique is empty !"];
-        }
-
 
         $formatter = new LineFormatter($output, $dateFormat);
 
-        $streamHandler = new StreamHandler($logConfig['logTechnique']['file']);
+        $streamHandler = new StreamHandler($loggerConfig['file']);
         $streamHandler->setFormatter($formatter);
 
-        $logger = new Logger($logConfig['customId']);
-        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($logConfig['logTechnique']['level']));
+        $customId = CoreConfigModel::getCustomId() ?: 'SCRIPT';
+        $logger = new Logger($customId);
+        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($loggerConfig['level']));
         $logger->pushHandler($filterHandler);
 
         $logger->pushProcessor(new ProcessIdProcessor());
         $logger->pushProcessor(new MemoryUsageProcessor());
+
         return $logger;
     }
 
@@ -80,12 +79,14 @@ class LogsController
      * @param   string  $logType    logFonctionnel | logTechnique | queries
      * @return  array
      */
-    public static function getLogType(string $logType) 
+    public static function getLogType(string $logType): array
     {
         $logConfig = LogsController::getLogConfig();
+
         if (empty($logConfig[$logType])) {
-            return ['code' => 400, 'errors' => "Log config of type '$logType' is empty !"];
+            return ['code' => 400, 'errors' => "Log config of type '$logType' does not exist"];
         }
+
         return $logConfig[$logType];
     }
 
@@ -93,30 +94,22 @@ class LogsController
      * @description Get log config
      * @return  array
      */
-    public static function getLogConfig()
+    public static function getLogConfig(): ?array
     {
-        $path = null;
-        $customId = CoreConfigModel::getCustomId() ?: null;
-        if (!empty($customId) && file_exists("custom/{$customId}/config/config.json")) {
-            $path = "custom/{$customId}/config/config.json";
-        } elseif (file_exists('config/config.json')) {
-            $path = 'config/config.json';
-        } else {
-            $path = 'config/config.json.default';
-        }
+        $logConfig = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
 
-        $logConfig = CoreConfigModel::getJsonLoaded(['path' => $path]);
         if (empty($logConfig['log'])) {
             return null;
         }
-        $logConfig['log']['customId'] = $customId;
+
         return $logConfig['log'];
     }
 
     /**
      * @description Add log line
-     * @param   array   $args
-     * @return  void
+     * @param array $args
+     * @return  array|bool
+     * @throws \Exception
      */
     public static function add(array $args)
     {
@@ -124,116 +117,63 @@ class LogsController
         if (empty($logConfig)) {
             return ['code' => 400, 'errors' => "Log config not found!"];
         }
-        $logLine   = LogsController::prepareLogLine(['logConfig' => $logConfig, 'lineData' => $args]);
-
-        if (!empty($args['isSql'])) {
-            LogsController::logWithMonolog([
-                'lineFormat'        => $logConfig['lineFormat'],
-                'dateTimeFormat'   => $logConfig['dateTimeFormat'],
-                'levelConfig'       => $logConfig['queries']['level'],
-                'name'              => $logConfig['customId'] ?? 'SCRIPT',
-                'path'              => $logConfig['queries']['file'],
-                'level'             => $args['level'],
-                'maxSize'           => LogsController::calculateFileSizeToBytes( $logConfig['queries']['maxFileSize']),
-                'maxFiles'          => $logConfig['queries']['maxBackupFiles'],
-                'line'              => $logLine,
-                'extraData'         => $args['extraData'] ?? []
-            ]);
-            return;
+        if (empty($logConfig['enable'])) {
+            return ['code' => 400, 'errors' => "LogController disabled. Check log configuration -> enable."];
         }
+
+        $loggerType = 'logTechnique';
+        $defaultLogFormat = self::DEFAULT_LOG_FORMAT;
+        if (empty($args['isTech']) && empty($args['isSql'])) {
+            $loggerType = 'logFonctionnel';
+        } elseif (!empty($args['isSql'])) {
+            $defaultLogFormat = self::DEFAULT_SQL_LOG_FORMAT;
+            $loggerType = 'queries';
+        }
+
+        $loggerConfig = LogsController::getLogType($loggerType);
+
+        if (Logger::toMonologLevel($args['level']) < Logger::toMonologLevel($loggerConfig['level'])) {
+            return false;
+        }
+
+        $maxSize = LogsController::calculateFileSizeToBytes($loggerConfig['maxFileSize']);
+        LogsController::rotateLogFileBySize([
+            'path'      => $loggerConfig['file'],
+            'maxSize'   => $maxSize,
+            'maxFiles'  => $loggerConfig['maxBackupFiles']
+        ]);
 
         LogsController::logWithMonolog([
-            'lineFormat'        => $logConfig['lineFormat'],
-            'dateTimeFormat'   => $logConfig['dateTimeFormat'],
-            'levelConfig'       => empty($args['isTech']) ? $logConfig['logFonctionnel']['level'] : $logConfig['logTechnique']['level'],
-            'name'              => $logConfig['customId'] ?? 'SCRIPT',
-            'path'              => empty($args['isTech']) ? $logConfig['logFonctionnel']['file'] : $logConfig['logTechnique']['file'],
-            'level'             => $args['level'],
-            'maxSize'           => LogsController::calculateFileSizeToBytes(empty($args['isTech']) ? $logConfig['logFonctionnel']['maxFileSize'] : $logConfig['logTechnique']['maxFileSize']),
-            'maxFiles'          => empty($args['isTech']) ? $logConfig['logFonctionnel']['maxBackupFiles'] : $logConfig['logTechnique']['maxBackupFiles'],
-            'line'              => $logLine,
-            'extraData'         => $args['extraData'] ?? []
+            'lineFormat'     => $loggerConfig['lineFormat'] ?? $defaultLogFormat,
+            'dateTimeFormat' => $logConfig['dateTimeFormat'],
+            'levelConfig'    => $loggerConfig['level'],
+            'path'           => $loggerConfig['file'],
+            'level'          => $args['level'],
+            'logData'        => $args,
+            'isSql'          => !empty($args['isSql'])
         ]);
-    }
-
-    /**
-     * @description Make log line
-     * @param   array   $args
-     * @return  string
-     */
-    public static function prepareLogLine(array $args)
-    {
-        $logLine = str_replace(
-            [
-                '%WHERE%',
-                '%ID%',
-                '%HOW%',
-                '%USER%',
-                '%WHAT%',
-                '%ID_MODULE%',
-                '%REMOTE_IP%'
-            ],
-            [
-                $args['lineData']['tableName'] ?? ':noTableName',
-                $args['lineData']['recordId'] ?? ':noRecordId',
-                $args['lineData']['eventType'] ?? ':noEventType',
-                $GLOBALS['login'] ?? ':noUser',
-                $args['lineData']['eventId'] ?? ':noEventId',
-                $args['lineData']['moduleId'] ?? ':noModuleId',
-                $_SERVER['REMOTE_ADDR'] ?? gethostbyname(gethostname())
-            ],
-            "[%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]"
-        );
-        if (!empty($args['lineData']['isSql'])) {
-            $logLine  = empty($args['lineData']['sqlQuery']) ? '[:noSqlQuery]' : "[" . $args['lineData']['sqlQuery'] . "]";
-            if (empty($args['lineData']['sqlData'])) {
-                $logLine .= "[:noSqlData]";
-            } elseif (is_array($args['lineData']['sqlData'])) {
-                $logLine .= "[" . json_encode($args['lineData']['sqlData']) . "]";
-            } else {
-                $logLine .= "[" . $args['lineData']['sqlData'] . "]";
-            }
-            $logLine .= empty($args['lineData']['sqlException']) ? '[:noSqlException]' : "[" . $args['lineData']['sqlException'] . "]";
-        }
-        $logLine = TextFormatModel::htmlWasher($logLine);
-        $logLine = TextFormatModel::removeAccent(['string' => $logLine]);
-        return $logLine;
+        return true;
     }
 
     /**
      * @description     Write prepare log line with monolog
-     * @param   array   $log
+     * @param array $log
      * @return  void
+     * @throws \Exception
      */
     private static function logWithMonolog(array $log)
     {
-        ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormat', 'levelConfig', 'name', 'path', 'level', 'line']);
-        ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormat', 'name', 'path', 'line']);
-        ValidatorModel::intVal($log, ['maxSize', 'maxFiles']);
+        ValidatorModel::notEmpty($log, ['lineFormat', 'dateTimeFormat', 'path', 'level']);
+        ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormat', 'path']);
 
-        if (Logger::toMonologLevel($log['level']) < Logger::toMonologLevel($log['levelConfig'])) {
-            return;
-        }
-        LogsController::rotateLogFileBySize([
-            'path'      => $log['path'],
-            'maxSize'   => $log['maxSize'],
-            'maxFiles'  => $log['maxFiles']
-        ]);
+        $logger = LogsController::initMonologLogger(
+            ['dateTimeFormat' => $log['dateTimeFormat']],
+            ['lineFormat' => $log['lineFormat'], 'file' => $log['path'], 'level' => $log['levelConfig']]
+        );
 
-        $dateFormat = $log['dateTimeFormat'];
-        $output = $log['lineFormat'];
-        $formatter = new LineFormatter($output, $dateFormat);
+        $log['line'] = null;
 
-        $streamHandler = new StreamHandler($log['path']);
-        $streamHandler->setFormatter($formatter);
-
-        $logger = new Logger($log['name']);
-        $filterHandler = new FilterHandler($streamHandler, $logger->toMonologLevel($log['level']));
-        $logger->pushHandler($filterHandler);
-
-        $logger->pushProcessor(new ProcessIdProcessor());
-        $logger->pushProcessor(new MemoryUsageProcessor());
-        $logger->pushProcessor(new LogProcessor($log['extraData']));
+        $logger->pushProcessor(new LogProcessor($log['logData'], !empty($log['isSql'])));
 
         switch ($log['level']) {
             case 'DEBUG':
@@ -269,13 +209,15 @@ class LogsController
                 $logger->emergency($log['line']);
                 break;
         }
+
         $logger->close();
     }
 
     /**
      * @description Create new log file based on size and number of files to keep, when file size is exceeded
-     * @param   array   $file
+     * @param array $file
      * @return  void
+     * @throws \Exception
      */
     public static function rotateLogFileBySize(array $file)
     {
@@ -306,10 +248,10 @@ class LogsController
 
     /**
      * @description Convert File size to KB
-     * @param   string   $value     The size + prefix (of 2 characters)
+     * @param string $value     The size + prefix (of 2 characters)
      * @return  int
      */
-    public static function calculateFileSizeToBytes($value)
+    public static function calculateFileSizeToBytes(string $value): ?int
     {
 		$maxFileSize = null;
 		$numpart = substr($value,0, strlen($value) -2);

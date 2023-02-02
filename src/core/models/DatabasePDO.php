@@ -145,12 +145,11 @@ class DatabasePDO
                 $db = new DatabasePDO();
                 $query = $db->query($queryString, $data);
             } else {
-                $param = implode(', ', $data);
                 LogsController::add([
                     'isSql'         => true,
                     'level'         => 'ERROR',
                     'sqlQuery'      => $queryString . PHP_EOL,
-                    'sqlData'       => $param,
+                    'sqlData'       => $data,
                     'sqlException'  => $PDOException->getMessage()
                 ]);
 
