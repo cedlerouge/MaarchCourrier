@@ -29,8 +29,8 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
-    public const DEFAULT_LOG_FORMAT     = "[%datetime%] %level_name% [%extra.process_id%][%channel%] [%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
-    public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%][%channel%] [%QUERY%][%DATA%][%EXCEPTION%]\n";
+    public const DEFAULT_LOG_FORMAT     = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
+    public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n";
 
     /**
      * @param array $logConfig
@@ -47,7 +47,7 @@ class LogsController
         if (empty($dateFormat)) {
             return ['code' => 400, 'errors' => "Log configuration 'dateTimeFormat' is empty"];
         }
-        $output = $logConfig['lineFormat'] ?? null;
+        $output = $loggerConfig['lineFormat'] ?? null;
         if (empty($output)) {
             return ['code' => 400, 'errors' => "Log configuration 'lineFormat' is empty"];
         }
@@ -144,7 +144,7 @@ class LogsController
         ]);
 
         LogsController::logWithMonolog([
-            'lineFormat'     => $logConfig['lineFormat'] ?? $defaultLogFormat,
+            'lineFormat'     => $loggerConfig['lineFormat'] ?? $defaultLogFormat,
             'dateTimeFormat' => $logConfig['dateTimeFormat'],
             'levelConfig'    => $loggerConfig['level'],
             'path'           => $loggerConfig['file'],
@@ -152,7 +152,6 @@ class LogsController
             'logData'        => $args,
             'isSql'          => !empty($args['isSql'])
         ]);
-
         return true;
     }
 
@@ -168,8 +167,8 @@ class LogsController
         ValidatorModel::stringType($log, ['lineFormat', 'dateTimeFormat', 'path']);
 
         $logger = LogsController::initMonologLogger(
-            ['lineFormat' => $log['lineFormat'], 'dateTimeFormat' => $log['dateTimeFormat']],
-            ['file' => $log['path'], 'level' => $log['levelConfig']]
+            ['dateTimeFormat' => $log['dateTimeFormat']],
+            ['lineFormat' => $log['lineFormat'], 'file' => $log['path'], 'level' => $log['levelConfig']]
         );
 
         $log['line'] = null;
