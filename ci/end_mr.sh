@@ -2,7 +2,9 @@
 
 BRANCH=`echo $CI_COMMIT_MESSAGE | grep -oP "'(.*?)'" | head -1 | tr -d "'"`
 
-ISSUE_ID=`echo $BRANCH | grep -oP "/[0-9]*/" | head -1 | tr -d "/"`
+ISSUE_ID=`echo $BRANCH | grep -oP "[0-9]*"`
+
+IT=0
 
 if [[ ! -z $ISSUE_ID ]]
 then
@@ -12,12 +14,19 @@ then
         echo ${row} | base64 --decode | jq -r ${1}
         }
 
-        URL=$(_jq '.web_url')
+        if [ $IT = 0 ]; then
+            URL=$(_jq '.web_url')
+            AUTHOR=$(_jq '.merge_user.name')
+            SOURCE_BRANCH=$(_jq '.source_branch')
+            TARGET_BRANCH=$(_jq '.target_branch')
 
-        NOTE_MESSAGE="[MERGE REQUEST] Mergé sur **$CI_COMMIT_REF_NAME** ($URL)"
+            NOTE="[**CLOTURE**] MR sur **$TARGET_BRANCH** (**$SOURCE_BRANCH**) par $AUTHOR\n\n$URL"
+        fi
+
+        IT=$((IT+1))
     done
 
-    BODY="{\"issue\":{\"notes\":\"$NOTE_MESSAGE\",\"private_notes\":false}}"
+    BODY="{\"issue\":{\"notes\":\"$NOTE\",\"private_notes\":false}}"
     
     echo $BODY
     
