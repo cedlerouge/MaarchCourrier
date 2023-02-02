@@ -23,7 +23,7 @@ import { AuthService } from '@service/auth.service';
 })
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
-    @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
 
     @ViewChild('xParaph', { static: false }) xParaph: XParaphComponent;
     @ViewChild('externalSignatoryBookComponent', { static: false }) externalSignatoryBookComponent: MaarchParaphComponent;
