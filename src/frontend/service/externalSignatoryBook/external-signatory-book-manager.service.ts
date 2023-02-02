@@ -16,6 +16,8 @@ export class ExternalSignatoryBookManagerService {
     serviceInjected: MaarchParapheurService | FastParapheurService;
     signatoryBookEnabled: string = '';
 
+    private cache = new Map<string, any>();
+
     constructor(
         private injector: Injector,
         private http: HttpClient,
@@ -74,7 +76,9 @@ export class ExternalSignatoryBookManagerService {
                     resolve(data);
                 }),
                 catchError((err: any) => {
-                    this.notifications.handleSoftErrors(err);
+                    if (err.status !== 400) {
+                        this.notifications.handleSoftErrors(err);
+                    }
                     resolve(null);
                     return of(false);
                 })
