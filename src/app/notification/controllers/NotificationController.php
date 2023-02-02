@@ -103,7 +103,8 @@ class NotificationController
         }
 
         $data = $request->getParsedBody();
-
+        $data['notification_mode'] = 'EMAIL';
+        
         $errors = $this->control($data, 'create');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
@@ -115,7 +116,7 @@ class NotificationController
             return $response->withStatus(400)->withJson(['errors' => _NOTIFICATION_ALREADY_EXIST]);
         }
 
-        $data['notification_mode'] = 'EMAIL';
+        
 
         if ($data['diffusion_properties']) {
             $data['diffusion_properties'] = implode(',', $data['diffusion_properties']);
