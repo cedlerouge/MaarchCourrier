@@ -23,13 +23,13 @@ class CoreConfigModel
     {
         static $customId;
 
-        if ($customId !== null) {
-            return $customId;
-        }
-
         // Use for script
         if (!empty($GLOBALS['customId'])) {
             $customId = $GLOBALS['customId'];
+            return $customId;
+        }
+
+        if ($customId !== null) {
             return $customId;
         }
 
