@@ -35,11 +35,10 @@ class LogProcessor
         $record['extra']['processId'] = getmypid();
         $record['extra']['extraData'] = $this->extraData;
 
+        $record = $this->prepareRecord($record);
+
         if ($this->isSql) {
-            $record = $this->prepareRecord($record);
             $record = $this->prepareSqlRecord($record);
-        } else {
-            $record = $this->prepareRecord($record);
         }
 
         return $record;
