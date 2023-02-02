@@ -66,7 +66,7 @@ class InstallerController
 
         $displayErrors = (ini_get('display_errors') == '1');
         $errorReporting = CoreController::getErrorReportingFromPhpIni();
-        $errorReporting = !in_array(8, $errorReporting);
+        $errorReporting = !in_array(8192, $errorReporting);
 
         $prerequisites = [
             'phpVersion'        => $phpVersion,
