@@ -483,6 +483,14 @@ class FastParapheurController
                             'config'        => $args['config'],
                             'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
+                    } elseif (!empty($valueResponse['userFastId'])){
+                        $maarchUser = UserModel::get([
+                            'select' => ['id'],
+                            'where'  => ['external_id->>\'fastParapheur\' = ?'],
+                            'data'   => [$valueResponse['userFastId']]
+                        ]);
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $maarchUser[0]['id'] ?? null;
+                        $args['idsToRetrieve'][$version][$resId]['typist'] = ($maarchUser[0]['id'] ?? $args['idsToRetrieve'][$version][$resId]['typist']) ?? null;
                     }
                     LogsController::add([
                         'isTech'    => true,
@@ -1904,6 +1912,7 @@ class FastParapheurController
 
         foreach ($documentHistory as $historyStep) {
             if ($historyStep['userFullname'] == $knownWorkflow[$current]['name']) {
+                $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
                 // If the document has been refused, then the workflow has ended and the last step is the refused step
                 if (in_array($historyStep['stateName'], [$config['refusedState'], $config['refusedVisaState']])) {
                     $lastStep = $historyStep;
