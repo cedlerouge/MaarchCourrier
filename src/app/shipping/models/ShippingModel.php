@@ -21,9 +21,9 @@ class ShippingModel
 {
     public static function create(array $args)
     {
-        ValidatorModel::notEmpty($args, ['userId', 'documentId', 'documentType', 'accountId', 'recipients']);
-        ValidatorModel::intVal($args, ['userId', 'documentId', 'recipientEntityId']);
-        ValidatorModel::stringType($args, ['accountId', 'documentType', 'recipients']);
+        ValidatorModel::notEmpty($args, ['userId', 'sendingId', 'documentId', 'documentType', 'accountId', 'recipients', 'actionId']);
+        ValidatorModel::intVal($args, ['userId', 'documentId', 'recipientEntityId', 'actionId']);
+        ValidatorModel::stringType($args, ['sendingId', 'accountId', 'documentType', 'recipients']);
 
         DatabaseModel::insert([
             'table'         => 'shippings',
