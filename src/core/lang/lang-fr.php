@@ -460,3 +460,6 @@ define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberI
 define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun 'Type de circuit' fourni. vérifiez votre configuration FastParapheur");
 define('_DB_UPDATED_WITH_FILE', 'Base de données mise à jour avec le fichier');
 define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
+
+define('_SHIPPING_ATTACH_DEPOSIT_PROOF', 'Preuve de dépôt Maileva');
+define('_SHIPPING_ATTACH_ACKNOWLEDGEMENT_OF_RECEIPT', 'Accusé de réception Maileva');

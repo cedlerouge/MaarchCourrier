@@ -127,7 +127,7 @@ class EmailController
             }
             if (!empty($isSent)) {
                 $info = _EMAIL_ADDED ;
-                
+
                 if (!empty($configuration['useSMTPAuth'])) {
                     $info .= ' : ' . _SENDER_EMAIL_REPLACED_SMTP_SENDER;
                 }
@@ -353,7 +353,7 @@ class EmailController
             }
         } else {
             $info = _EMAIL_UPDATED ;
-            
+
             if (!empty($configuration['useSMTPAuth'])) {
                 $info .= ' : ' . _SENDER_EMAIL_REPLACED_SMTP_SENDER;
             }

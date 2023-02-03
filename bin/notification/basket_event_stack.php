@@ -89,8 +89,8 @@ foreach ($baskets as $basket) {
         if ($notification['diffusion_type'] == 'entity' && !empty($diffusionParams)) {
 
             $usersOfEntities = \Entity\models\EntityModel::getWithUserEntities([
-                'select'    => ['user_id as id'], 
-                'where'     => ['entities.entity_id in (?)'], 
+                'select'    => ['user_id as id'],
+                'where'     => ['entities.entity_id in (?)'],
                 'data'      => [$diffusionParams]
             ]);
             $users = array_filter(array_unique($usersOfEntities, SORT_REGULAR), function ($userOfEntities) use ($users) {
@@ -155,7 +155,7 @@ foreach ($baskets as $basket) {
                                     'data'      => [array_column($usersOfEntity, 'id')]
                                 ]);
                                 foreach ($usersFromEntity as $userFromEntity) {
-    
+
                                     if(!in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
                                         $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
                                         continue;
@@ -234,7 +234,7 @@ foreach ($baskets as $basket) {
                 }
             }
         }
-    }        
+    }
 }
 
 writeLog(['message' => "Scanning events for notification {$notification['notification_sid']}", 'level' => 'INFO']);

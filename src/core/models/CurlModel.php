@@ -145,7 +145,7 @@ class CurlModel
             foreach ($args['options'] as $key => $option) {
                 $opts[$key] = $option;
             }
-        }          
+        }
 
         //QueryParams
         if (!empty($args['queryParams'])) {

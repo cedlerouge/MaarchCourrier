@@ -157,6 +157,7 @@ import { AcknowledgementReceptionComponent } from './registeredMail/acknowledgem
 import { DatePipe } from '@angular/common';
 import { CheckSaeInterconnectionComponent } from './administration/parameter/other/checkSaeInterconnection/check-sae-interconnection.component';
 import { ContactSearchModalComponentComponent } from './administration/contact/page/form/contactSearchModal/contact-search-modal.component';
+import { ShippingModalComponent } from './sentResource/shippingModal/shipping-modal.component';
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -303,6 +304,7 @@ export class MyHammerConfig extends HammerGestureConfig {
         CreateExternalUserComponent,
         CheckSaeInterconnectionComponent,
         ContactSearchModalComponentComponent,
+        ShippingModalComponent,
         IndexingModelValuesSelectorComponent
     ],
     exports: [

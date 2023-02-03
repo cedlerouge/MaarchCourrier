@@ -34,7 +34,7 @@ class ShippingControllerTest extends CourrierTestCase
                 'shaping'    => ['color', 'duplexPrinting', 'addressPage'],
                 'sendMode'   => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
+            'fee'             => ['firstPagePrice' => 0, 'nextPagePrice' => 2, 'postagePrice' => 12],
             'entities'        => [1, 2],
             'account'         => ['id' => 'toto', 'password' => '1234']
         ];
@@ -120,7 +120,7 @@ class ShippingControllerTest extends CourrierTestCase
         $this->assertSame('duplexPrinting', $responseBody->shipping->options->shaping[1]);
         $this->assertSame('addressPage', $responseBody->shipping->options->shaping[2]);
         $this->assertSame('fast', $responseBody->shipping->options->sendMode);
-        $this->assertSame(1, $responseBody->shipping->fee->firstPagePrice);
+        $this->assertSame(0, $responseBody->shipping->fee->firstPagePrice);
         $this->assertSame(2, $responseBody->shipping->fee->nextPagePrice);
         $this->assertSame(12, $responseBody->shipping->fee->postagePrice);
         $this->assertNotNull($responseBody->shipping->entities);
@@ -189,8 +189,9 @@ class ShippingControllerTest extends CourrierTestCase
                 'shaping'    => ['color', 'address_page'],
                 'sendMode'   => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
-            'account'         => ['id' => 'toto', 'password' => '1234']
+            'fee'        => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto', 'password' => '1234'],
+            'subscribed' => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -224,9 +225,10 @@ class ShippingControllerTest extends CourrierTestCase
                 'shaping'  => ['color', 'duplexPrinting', 'addressPage'],
                 'sendMode' => 'fast'
             ],
-            'fee'         => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
-            'account'     => ['id' => 'toto', 'password' => '1234'],
-            'entities'    => 'wrong format'
+            'fee'        => ['firstPagePrice' => 1, 'nextPagePrice' => 2, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto', 'password' => '1234'],
+            'entities'   => 'wrong format',
+            'subscribed' => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -234,20 +236,21 @@ class ShippingControllerTest extends CourrierTestCase
         $this->assertSame(500, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
-        $this->assertSame('Id is not a numeric', $responseBody->errors[0]);
+        $this->assertSame('id is not an integer', $responseBody->errors[0]);
         $this->assertSame('Shipping does not exist', $responseBody->errors[1]);
         $this->assertSame('label is empty or too long', $responseBody->errors[2]);
         $this->assertSame('entities must be an array', $responseBody->errors[3]);
 
         $args = [
-            'label'           => 'TEST 2',
-            'description'     => 'description du test 2',
-            'options'         => [
-                'shaping'    => ['color', 'address_page'],
-                'sendMode'   => 'fast'
+            'label'       => 'TEST 2',
+            'description' => 'description du test 2',
+            'options'     => [
+                'shaping'  => ['color', 'address_page'],
+                'sendMode' => 'fast'
             ],
-            'fee'             => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
-            'account'         => ['id' => 'toto']
+            'fee'        => ['firstPagePrice' => 10, 'nextPagePrice' => 20, 'postagePrice' => 12],
+            'account'    => ['id' => 'toto'],
+            'subscribed' => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -389,7 +392,9 @@ class ShippingControllerTest extends CourrierTestCase
             'fee'               => 2,
             'recipientEntityId' => 13,
             'accountId'         => 'toto',
-            'recipients'        => json_encode(['Recipient', 'contact'])
+            'recipients'        => json_encode(['Recipient', 'contact']),
+            'actionId'          => 1,
+            'sendingId'         => 'sending-id'
         ]);
 
         $request = $this->createRequest('GET');
