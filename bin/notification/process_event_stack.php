@@ -181,7 +181,6 @@ foreach ($tmpNotifs as $user_id => $tmpNotif) {
 
     if (!empty($recipient_mail)) {
         $html = str_replace("&#039;", "'", $html);
-        $html = pg_escape_string($html);
         $html = str_replace('&amp;', '&', $html);
         $html = str_replace('&', '#and#', $html);
 
