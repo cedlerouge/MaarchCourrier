@@ -177,7 +177,7 @@ class ConfigurationController
                         'siteUrl'      => $editor['siteUrl']
                     ]);
                     if (!empty($siteId['errors'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "office365sharepoint['SiteId'] is not found" . $siteId['errors']]);
+                        return $response->withStatus(400)->withJson(['errors' => "Error while finding siteId : " . $siteId['errors']]);
                     }
                     $data[$key]['siteId'] = $siteId;
                 }
