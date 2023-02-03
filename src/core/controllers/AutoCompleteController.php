@@ -149,7 +149,7 @@ class AutoCompleteController
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }
 
-            foreach ($curlResponse['response'] as $key => $value) {
+            foreach ($curlResponse['response'] ?? [] as $key => $value) {
                 if (!empty($data['exludeAlreadyConnected']) && in_array($value['id'], $excludedUsers)) {
                     unset($curlResponse['response'][$key]);
                     continue;

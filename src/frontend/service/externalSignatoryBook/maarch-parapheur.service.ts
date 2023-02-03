@@ -65,8 +65,8 @@ export class MaarchParapheurService {
     }
 
     getUserAvatar(externalId: any): Promise<any> {
-        return new Promise((resolve) => {
-            if (!this.functions.empty(externalId)) {
+        if (typeof externalId === 'number') {
+            return new Promise((resolve) => {
                 this.http.get(`../rest/maarchParapheur/user/${externalId}/picture`).pipe(
                     tap((data: any) => {
                         resolve(data.picture);
@@ -77,10 +77,24 @@ export class MaarchParapheurService {
                         return of(false);
                     })
                 ).subscribe();
-            } else {
-                resolve(null);
-            }
-        });
+            });
+        } else if (typeof externalId === 'string') {
+            return new Promise((resolve) => {
+                this.http.get(`assets/${externalId}.png`, { responseType: 'blob' }).pipe(
+                    tap((response: any) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(response);
+                        reader.onloadend = () => {
+                            resolve(reader.result as any);
+                        };
+                    }),
+                    catchError(err => {
+                        this.notify.handleErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            });
+        }
     }
 
     getOtpConfig(): Promise<any> {

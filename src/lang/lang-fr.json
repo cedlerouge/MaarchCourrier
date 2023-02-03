@@ -2710,5 +2710,6 @@
     "rightRotation": "Pivoter à droite",
     "leftRotation": "Pivoter à gauche",
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>",
-    "sendToExternalSignatoryBook": "Envoyer au parapheur externe"
+    "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
+    "eidas_metasign": "Cachet Metasign"
 }

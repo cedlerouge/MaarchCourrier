@@ -214,12 +214,14 @@ class CurlModel
         $code = !empty($code) ? $code : 500;
 
         if (empty($args['noLogs'])) {
+            $logResponse = '';
+
             if (in_array('Accept: application/zip', $args['headers'])) {
                 $logResponse = 'Zip file content';
             } elseif (!empty($args['fileResponse'])) {
                 $logResponse = 'File content';
             } else {
-                $logResponse = $response;
+                $logResponse = json_encode($formatedResponse ?? '{}');
             }
             LogsController::add([
                 'isTech'    => true,

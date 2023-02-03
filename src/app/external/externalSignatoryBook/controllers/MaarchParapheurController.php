@@ -639,7 +639,7 @@ class MaarchParapheurController
                 continue;
             }
             $documentWorkflow = MaarchParapheurController::getDocumentWorkflow(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
-            if (!is_array($documentWorkflow)) {
+            if (!is_array($documentWorkflow) || empty($documentWorkflow)) {
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
                 continue;
             }
@@ -667,15 +667,19 @@ class MaarchParapheurController
                 foreach ($state['notes'] as $note) {
                     $tmpNote = [];
                     $tmpNote['content'] = $note['content'];
-                    $userInfos = UserModel::getByExternalId([
-                        'select'       => ['id', 'firstname', 'lastname'],
-                        'externalId'   => $note['creatorId'],
-                        'externalName' => 'maarchParapheur'
-                    ]);
-                    if (!empty($userInfos)) {
-                        $tmpNote['creatorId'] = $userInfos['id'];
+
+                    if (!empty($note['creatorId'])) {
+                        $userInfos = UserModel::getByExternalId([
+                            'select'       => ['id', 'firstname', 'lastname'],
+                            'externalId'   => $note['creatorId'],
+                            'externalName' => 'maarchParapheur'
+                        ]);
+                        if (!empty($userInfos)) {
+                            $tmpNote['creatorId'] = $userInfos['id'];
+                        }
                     }
                     $tmpNote['creatorName'] = $note['creatorName'];
+
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = $tmpNote;
                 }
                 if (!empty($state['signatoryUserId'])) {
@@ -742,8 +746,8 @@ class MaarchParapheurController
             if (!empty($step['note'])) {
                 $state['notes'][] = [
                     'content'     => $step['note'],
-                    'creatorId'   => $step['userId'],
-                    'creatorName' => $step['userDisplay']
+                    'creatorId'   => $step['userId'] ?? null,
+                    'creatorName' => $step['userDisplay'] ?? null
                 ];
             }
             if ($step['status'] == 'VAL' && $step['mode'] == 'sign') {
@@ -1244,6 +1248,9 @@ class MaarchParapheurController
         ]);
 
         if ($curlResponse['code'] != '200') {
+            if ($curlResponse['code'] === 404) {
+                return $response->withJson(['otp' => []]);
+            }
             if (!empty($curlResponse['response']['errors'])) {
                 $errors =  $curlResponse['response']['errors'];
             } else {
