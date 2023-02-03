@@ -108,6 +108,9 @@ export class CreateExternalUserComponent implements OnInit {
     }
 
     addOtpUser() {
+        if (this.userOTP.type === 'fast') {
+            this.userOTP.availableRoles = this.userOTP.availableRoles.filter((item: any) => item !== 'visa');
+        }
         this.dialogRef.close({otp: this.userOTP});
     }
 
@@ -126,11 +129,6 @@ export class CreateExternalUserComponent implements OnInit {
         this.userOTP.type = selectedSource.type;
         this.currentSource = [... new Set(selectedSource.securityModes)];
         this.userOTP.security = this.currentSource[0];
-        if (this.userOTP.type === 'fast') {
-            this.userOTP.availableRoles = this.availableRoles.filter((role: any) => role.id !== 'visa');
-        } else if (this.userOTP.type === 'yousign') {
-            this.userOTP.availableRoles = this.availableRoles;
-        }
     }
 
     getContact(item: any) {

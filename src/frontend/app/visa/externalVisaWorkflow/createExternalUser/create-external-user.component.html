@@ -79,7 +79,7 @@
                 <mat-label>{{'lang.role' | translate}}</mat-label>
                 <input matInput style="display: none;">
                 <mat-radio-group #role style="display: flex" [(ngModel)]="userOTP.role" required>
-                    <mat-radio-button *ngFor="let role of userOTP.availableRoles" [value]="role.id" style="flex:1" color="primary">
+                    <mat-radio-button *ngFor="let role of availableRoles" [value]="role.id" style="flex:1" color="primary" [disabled]="role.id === 'visa' && userOTP.type === 'fast'">
                         {{ role.label }}
                     </mat-radio-button>
                 </mat-radio-group>

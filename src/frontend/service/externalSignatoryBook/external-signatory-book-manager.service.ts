@@ -16,8 +16,6 @@ export class ExternalSignatoryBookManagerService {
     serviceInjected: MaarchParapheurService | FastParapheurService;
     signatoryBookEnabled: string = '';
 
-    private cache = new Map<string, any>();
-
     constructor(
         private injector: Injector,
         private http: HttpClient,
