@@ -41,7 +41,7 @@ class CoreController
             return $response->withJson(['hash' => null]);
         }
         preg_match('#^ref:(.+)$#', $head, $matches);
-        $currentHead = trim($matches[1]);
+        $currentHead = trim($matches[1] ?? '');
 
         if (empty($currentHead)) {
             return $response->withJson(['hash' => null]);
