@@ -1248,6 +1248,9 @@ class MaarchParapheurController
         ]);
 
         if ($curlResponse['code'] != '200') {
+            if ($curlResponse['code'] === 404) {
+                return $response->withJson(['otp' => []]);
+            }
             if (!empty($curlResponse['response']['errors'])) {
                 $errors =  $curlResponse['response']['errors'];
             } else {
