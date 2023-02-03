@@ -98,10 +98,10 @@ class RegisteredNumberRangeController
         if (!Validator::stringType()->notEmpty()->validate($body['trackerNumber'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is empty or not a string']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['rangeStart'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['rangeStart'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart is empty or not an integer']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['rangeEnd'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['rangeEnd'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body rangeEnd is empty or not an integer']);
         }
         if ($body['rangeStart'] >= $body['rangeEnd']) {
@@ -172,10 +172,10 @@ class RegisteredNumberRangeController
         if (!Validator::stringType()->notEmpty()->validate($body['trackerNumber'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body trackerNumber is empty or not a string']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['rangeStart'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['rangeStart'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body rangeStart is empty or not an integer']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['rangeEnd'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['rangeEnd'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body rangeEnd is empty or not an integer']);
         }
         if ($body['rangeStart'] >= $body['rangeEnd']) {

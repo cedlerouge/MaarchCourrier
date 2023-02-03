@@ -92,7 +92,7 @@ class NoteController
 
         if (!Validator::stringType()->notEmpty()->validate($body['value'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body value is empty or not a string']);
-        } elseif (!Validator::intVal()->notEmpty()->validate($body['resId'])) {
+        } elseif (!Validator::notEmpty()->intVal()->validate($body['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resId is empty or not an integer']);
         }
 

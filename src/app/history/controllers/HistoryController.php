@@ -34,7 +34,7 @@ class HistoryController
         $queryParams = $request->getQueryParams();
 
         if (!empty($queryParams['resId'])) {
-            if (!Validator::intVal()->notEmpty()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
+            if (!Validator::notEmpty()->intVal()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
             } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])) {
                 if (empty($queryParams['onlyActions']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])) {
@@ -216,7 +216,7 @@ class HistoryController
         $queryParams = $request->getQueryParams();
 
         if (!empty($queryParams['resId'])) {
-            if (!Validator::intVal()->notEmpty()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
+            if (!Validator::notEmpty()->intVal()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
             } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])) {
                 if (empty($queryParams['onlyActions']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])) {

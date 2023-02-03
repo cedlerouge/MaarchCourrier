@@ -103,7 +103,7 @@ class InstallerController
 
         if (!Validator::stringType()->notEmpty()->validate($queryParams['server'])) {
             return $response->withStatus(400)->withJson(['errors' => 'QueryParams server is empty or not a string']);
-        } elseif (!Validator::intVal()->notEmpty()->validate($queryParams['port'])) {
+        } elseif (!Validator::notEmpty()->intVal()->validate($queryParams['port'])) {
             return $response->withStatus(400)->withJson(['errors' => 'QueryParams port is empty or not an integer']);
         } elseif (!Validator::stringType()->notEmpty()->validate($queryParams['user'])) {
             return $response->withStatus(400)->withJson(['errors' => 'QueryParams user is empty or not a string']);
@@ -349,7 +349,7 @@ class InstallerController
 
         if (!Validator::stringType()->notEmpty()->validate($body['server'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body server is empty or not a string']);
-        } elseif (!Validator::intVal()->notEmpty()->validate($body['port'])) {
+        } elseif (!Validator::notEmpty()->intVal()->validate($body['port'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body port is empty or not an integer']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['user'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body user is empty or not a string']);

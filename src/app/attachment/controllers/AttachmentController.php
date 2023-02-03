@@ -238,7 +238,7 @@ class AttachmentController
 
     public function delete(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
         }
 
@@ -1054,7 +1054,7 @@ class AttachmentController
             return ['errors' => 'Body encodedFile is empty'];
         } elseif (!Validator::stringType()->notEmpty()->validate($body['format'])) {
             return ['errors' => 'Body format is empty or not a string'];
-        } elseif (!Validator::intVal()->notEmpty()->validate($body['resIdMaster'])) {
+        } elseif (!Validator::notEmpty()->intVal()->validate($body['resIdMaster'])) {
             return ['errors' => 'Body resIdMaster is empty or not an integer'];
         } elseif (!Validator::stringType()->notEmpty()->validate($body['type'])) {
             return ['errors' => 'Body type is empty or not a string'];
@@ -1105,7 +1105,7 @@ class AttachmentController
             return ['errors' => 'Body type is signed_response and body originId is empty'];
         }
         if (!empty($body['originId'])) {
-            if (!Validator::intVal()->notEmpty()->validate($body['originId'])) {
+            if (!Validator::notEmpty()->intVal()->validate($body['originId'])) {
                 return ['errors' => 'Body originId is not an integer'];
             }
             $origin = AttachmentModel::getById(['id' => $body['originId'], 'select' => ['res_id_master', 'origin_id', 'status']]);
@@ -1133,7 +1133,7 @@ class AttachmentController
         $body = $args['body'];
 
         if (!empty($body['recipientId'])) {
-            if (!Validator::intVal()->notEmpty()->validate($body['recipientId'])) {
+            if (!Validator::notEmpty()->intVal()->validate($body['recipientId'])) {
                 return ['errors' => 'Body recipientId is not an integer'];
             }
             if (empty($body['recipientType']) || !in_array($body['recipientType'], ['user', 'contact'])) {

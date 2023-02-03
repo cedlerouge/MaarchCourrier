@@ -59,7 +59,7 @@ class IndexingController
     {
         $body = $request->getParsedBody();
 
-        if (!Validator::intVal()->notEmpty()->validate($body['resource'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['resource'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resource is empty or not an integer']);
         }
 
@@ -136,7 +136,7 @@ class IndexingController
 
     public function getIndexingActions(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['groupId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['groupId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param groupId must be an integer val']);
         }
 
@@ -172,7 +172,7 @@ class IndexingController
 
     public function getIndexingEntities(Request $request, Response $response, array $aArgs)
     {
-        if (!Validator::intVal()->notEmpty()->validate($aArgs['groupId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($aArgs['groupId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param groupId must be an integer val']);
         }
 

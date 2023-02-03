@@ -170,12 +170,16 @@ class ConfigurationController
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['siteUrl'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]);
                     }
-                    $data[$key]['siteId'] = Office365SharepointController::getSiteId([
+                    $siteId = Office365SharepointController::getSiteId([
                         'tenantId'     => $editor['tenantId'],
                         'clientId'     => $editor['clientId'],
                         'clientSecret' => $editor['clientSecret'],
                         'siteUrl'      => $editor['siteUrl']
                     ]);
+                    if (!empty($siteId['errors'])) {
+                        return $response->withStatus(400)->withJson(['errors' => "Error while finding siteId : " . $siteId['errors']]);
+                    }
+                    $data[$key]['siteId'] = $siteId;
                 }
             }
         } elseif ($args['privilege'] == 'admin_shippings') {
@@ -237,7 +241,7 @@ class ConfigurationController
 
         if (in_array($args['type'], ['smtp', 'mail'])) {
             $check = Validator::stringType()->notEmpty()->validate($args['host']);
-            $check = $check && Validator::intVal()->notEmpty()->validate($args['port']);
+            $check = $check && Validator::notEmpty()->intVal()->validate($args['port']);
             $check = $check && Validator::boolType()->validate($args['auth']);
             if ($args['auth']) {
                 $check = $check && Validator::stringType()->notEmpty()->validate($args['user']);
@@ -321,7 +325,7 @@ class ConfigurationController
         }
 
         foreach (['attachmentTypeId', 'indexingModelId', 'statusId', 'typeId'] as $value) {
-            if (!Validator::intVal()->notEmpty()->validate($body['metadata'][$value] ?? null)) {
+            if (!Validator::notEmpty()->intVal()->validate($body['metadata'][$value] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body[metadata] ' . $value . ' is empty, not a string']);
             }
         }

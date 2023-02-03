@@ -29,7 +29,7 @@ class PrivilegeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($args['privilegeId'])) {
@@ -78,7 +78,7 @@ class PrivilegeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($args['privilegeId'])) {
@@ -105,7 +105,7 @@ class PrivilegeController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($args['privilegeId'])) {
@@ -132,7 +132,7 @@ class PrivilegeController
 
     public static function getParameters(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($args['privilegeId'])) {

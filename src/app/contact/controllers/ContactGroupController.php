@@ -491,7 +491,7 @@ class ContactGroupController
         }
 
         foreach ($body['correspondents'] as $correspondent) {
-            if (!Validator::intVal()->notEmpty()->validate($correspondent['id'] ?? null) || !Validator::stringType()->notEmpty()->validate($correspondent['type'] ?? null)) {
+            if (!Validator::notEmpty()->intVal()->validate($correspondent['id'] ?? null) || !Validator::stringType()->notEmpty()->validate($correspondent['type'] ?? null)) {
                 continue;
             }
             if (!in_array($correspondent['id'], $correspondents[$correspondent['type']]) && in_array($correspondent['type'], ['contact', 'user', 'entity'])) {
@@ -597,7 +597,7 @@ class ContactGroupController
     {
         $queryParams = $request->getQueryParams();
 
-        if (!Validator::intVal()->notEmpty()->validate($queryParams['correspondentId'] ?? null)) {
+        if (!Validator::notEmpty()->intVal()->validate($queryParams['correspondentId'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'QueryParams correspondentId is empty or not an integer']);
         } elseif (!Validator::stringType()->notEmpty()->validate($queryParams['correspondentType'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'QueryParams correspondentType is empty or not a string']);

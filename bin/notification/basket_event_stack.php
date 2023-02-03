@@ -315,7 +315,6 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
         $recipient_mail     = $tmpNotif['recipient']['mail'];
         if (!empty($recipient_mail)) {
             $html = str_replace("&#039;", "'", $html);
-            $html = pg_escape_string($html);
             $html = str_replace('&amp;', '&', $html);
             $html = str_replace('&', '#and#', $html);
 

@@ -42,7 +42,7 @@ class Office365SharepointController
         $configuration = $configuration['office365sharepoint'];
 
         $body = $request->getParsedBody();
-        if (!Validator::intVal()->notEmpty()->validate($body['resId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resId is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($body['type'])) {
@@ -291,7 +291,7 @@ class Office365SharepointController
         }
 
         $body = $request->getParsedBody();
-        if (!Validator::intVal()->notEmpty()->validate($body['resId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resId is empty or not an integer']);
         }
 
@@ -318,6 +318,9 @@ class Office365SharepointController
             ]
         ]);
 
+        if (!empty($accessToken['errors'])) {
+            return ['errors' => $accessToken['errors']];
+        }
         $args['siteUrl'] = str_replace('https://', '', $args['siteUrl']);
         $args['siteUrl'] = str_replace('http://', '', $args['siteUrl']);
         $explodedSite =  explode('/', $args['siteUrl']);

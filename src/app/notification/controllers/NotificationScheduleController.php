@@ -107,10 +107,11 @@ class NotificationScheduleController
 
         $returnValue = false;
         foreach ($crontabToSave as $id => $cronValue) {
-            if ($cronValue['state'] != 'hidden' && $crontabBeforeSave[$id]['state'] == 'hidden') {
+            $crontabBeforeSave[$id] = $crontabBeforeSave[$id] ?? null;
+            if ($cronValue['state'] != 'hidden' && $crontabBeforeSave[$id] != null && $crontabBeforeSave[$id]['state'] == 'hidden') {
                 $returnValue = false;
                 break;
-            } elseif ($cronValue['state'] == 'hidden' && $crontabBeforeSave[$id]['state'] != 'hidden') {
+            } elseif ($cronValue['state'] == 'hidden' && $crontabBeforeSave[$id] != null && $crontabBeforeSave[$id]['state'] != 'hidden') {
                 $returnValue = false;
                 break;
             } elseif ($cronValue['state'] == 'new' || $cronValue['state'] == 'normal') {
