@@ -639,7 +639,7 @@ class MaarchParapheurController
                 continue;
             }
             $documentWorkflow = MaarchParapheurController::getDocumentWorkflow(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
-            if (!is_array($documentWorkflow)) {
+            if (!is_array($documentWorkflow) || empty($documentWorkflow)) {
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
                 continue;
             }
@@ -668,11 +668,6 @@ class MaarchParapheurController
                     $tmpNote = [];
                     $tmpNote['content'] = $note['content'];
 
-                    $creatorName = '';
-                    if (!empty($note['creatorName'])) {
-                        $creatorName = $note['creatorName'] . ' (Maarch Parapheur) : ';
-                    }
-
                     if (!empty($note['creatorId'])) {
                         $userInfos = UserModel::getByExternalId([
                             'select'       => ['id', 'firstname', 'lastname'],
@@ -680,24 +675,10 @@ class MaarchParapheurController
                             'externalName' => 'maarchParapheur'
                         ]);
                         if (!empty($userInfos)) {
-                            $tmpNote['creatorId']   = $userInfos['id'];
-                            $tmpNote['creatorName'] = $userInfos['lastname'] . ' ' . $userInfos['firstname'];
+                            $tmpNote['creatorId'] = $userInfos['id'];
                         }
-                    } else {
-                        $userWS = UserModel::getByLogin(['login' => $GLOBALS['userWS'] ?? null, 'select' => ['id']]);
-                        if (empty($userWS['id'])) {
-                            continue;
-                        }
-                        $tmpNote['creatorId']   = $userWS['id'];
-                        $tmpNote['creatorName'] = $note['creatorName'];
-                        $tmpNote['content']     = $note['content'];
-
-                        NoteModel::create([
-                            'resId'     => $resId,
-                            'user_id'   => $tmpNote['creatorId'],
-                            'note_text' => $tmpNote['content'],
-                        ]);
                     }
+                    $tmpNote['creatorName'] = $note['creatorName'];
 
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = $tmpNote;
                 }
@@ -765,8 +746,8 @@ class MaarchParapheurController
             if (!empty($step['note'])) {
                 $state['notes'][] = [
                     'content'     => $step['note'],
-                    'creatorId'   => $step['userId'],
-                    'creatorName' => $step['userDisplay']
+                    'creatorId'   => $step['userId'] ?? null,
+                    'creatorName' => $step['userDisplay'] ?? null
                 ];
             }
             if ($step['status'] == 'VAL' && $step['mode'] == 'sign') {
