@@ -59,8 +59,8 @@
                         <mat-tab [label]="'lang.indexingForm' | translate">
                             <app-indexing-form #indexingForm [indexingFormId]="indexingModel.id" [adminMode]="true">
                             </app-indexing-form>
-                            <div class="col-md-12 text-center">
-                                <button mat-raised-button color="primary" (click)="onSubmit()"
+                            <div style="position: fixed; bottom: 0px; z-index: 1; background-color: white; width: 100%;">
+                                <button mat-raised-button color="primary" (click)="onSubmit()" style="left: 20%;"
                                     [disabled]="(!indexingForm.isModified() && !isModified()) || indexingModel.label === ''">{{creationMode ? ('lang.save' | translate) : ('lang.update' | translate)}}</button>
                             </div>
                         </mat-tab>
