@@ -74,9 +74,7 @@ export class ExternalSignatoryBookManagerService {
                     resolve(data);
                 }),
                 catchError((err: any) => {
-                    if (err.status !== 400) {
-                        this.notifications.handleSoftErrors(err);
-                    }
+                    this.notifications.handleSoftErrors(err);
                     resolve(null);
                     return of(false);
                 })
