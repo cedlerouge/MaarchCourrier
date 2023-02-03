@@ -392,7 +392,9 @@ class ShippingControllerTest extends CourrierTestCase
             'fee'               => 2,
             'recipientEntityId' => 13,
             'accountId'         => 'toto',
-            'recipients'        => json_encode(['Recipient', 'contact'])
+            'recipients'        => json_encode(['Recipient', 'contact']),
+            'actionId'          => 1,
+            'sendingId'         => 'sending-id'
         ]);
 
         $request = $this->createRequest('GET');
