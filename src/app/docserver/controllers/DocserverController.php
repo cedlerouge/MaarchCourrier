@@ -92,7 +92,7 @@ class DocserverController
         $check = Validator::stringType()->notEmpty()->validate($data['docserver_id']) && preg_match("/^[\w-]*$/", $data['docserver_id']) && (strlen($data['docserver_id']) <= 32);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['docserver_type_id']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['device_label']);
-        $check = $check && Validator::intVal()->notEmpty()->validate($data['size_limit_number']);
+        $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['coll_id']);
         if (!$check) {
@@ -144,7 +144,7 @@ class DocserverController
         $data = $request->getParsedBody();
 
         $check = Validator::stringType()->notEmpty()->validate($data['device_label']);
-        $check = $check && Validator::intVal()->notEmpty()->validate($data['size_limit_number']);
+        $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::boolType()->validate($data['is_readonly']);
         if (!$check) {

@@ -317,7 +317,7 @@ class CollaboraOnlineController
         }
 
         $body = $request->getParsedBody();
-        if (!Validator::intVal()->notEmpty()->validate($body['resId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resId is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->validate($body['type'])) {
@@ -442,7 +442,7 @@ class CollaboraOnlineController
         if (!Validator::stringType()->notEmpty()->validate($body['format'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body format is empty or not a string']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['key'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['key'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body key is empty or not an integer']);
         }
 

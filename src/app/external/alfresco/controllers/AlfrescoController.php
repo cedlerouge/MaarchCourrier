@@ -172,7 +172,7 @@ class AlfrescoController
         }
 
         foreach ($body['entities'] as $entity) {
-            if (!Validator::intVal()->notEmpty()->validate($entity)) {
+            if (!Validator::notEmpty()->intVal()->validate($entity)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body entities contains non integer values']);
             }
         }
@@ -224,7 +224,7 @@ class AlfrescoController
         }
 
         foreach ($body['entities'] as $entity) {
-            if (!Validator::intVal()->notEmpty()->validate($entity)) {
+            if (!Validator::notEmpty()->intVal()->validate($entity)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body entities contains non integer values']);
             }
         }

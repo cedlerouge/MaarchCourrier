@@ -636,8 +636,8 @@ class ContactController
         $check = Validator::arrayType()->validate($data['contactsParameters']);
         $check = $check && Validator::arrayType()->validate($data['contactsFilling']);
         $check = $check && Validator::boolType()->validate($data['contactsFilling']['enable']);
-        $check = $check && Validator::intVal()->notEmpty()->validate($data['contactsFilling']['first_threshold']) && $data['contactsFilling']['first_threshold'] > 0 && $data['contactsFilling']['first_threshold'] < 99;
-        $check = $check && Validator::intVal()->notEmpty()->validate($data['contactsFilling']['second_threshold']) && $data['contactsFilling']['second_threshold'] > 1 && $data['contactsFilling']['second_threshold'] < 100;
+        $check = $check && Validator::notEmpty()->intVal()->validate($data['contactsFilling']['first_threshold']) && $data['contactsFilling']['first_threshold'] > 0 && $data['contactsFilling']['first_threshold'] < 99;
+        $check = $check && Validator::notEmpty()->intVal()->validate($data['contactsFilling']['second_threshold']) && $data['contactsFilling']['second_threshold'] > 1 && $data['contactsFilling']['second_threshold'] < 100;
         $check = $check && $data['contactsFilling']['first_threshold'] < $data['contactsFilling']['second_threshold'];
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
@@ -691,7 +691,7 @@ class ContactController
 
     public function getLightFormattedContact(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Query params id is not an integer']);
         }
 

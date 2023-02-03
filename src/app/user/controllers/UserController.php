@@ -1494,7 +1494,7 @@ class UserController
 
         foreach ($data['baskets'] as $basketContainer) {
             $check = Validator::stringType()->notEmpty()->validate($basketContainer['basketId']);
-            $check = $check && Validator::intVal()->notEmpty()->validate($basketContainer['groupSerialId']);
+            $check = $check && Validator::notEmpty()->intVal()->validate($basketContainer['groupSerialId']);
             $check = $check && Validator::boolType()->validate($basketContainer['allowed']);
             if (!$check) {
                 return $response->withStatus(400)->withJson(['errors' => 'Element is missing']);

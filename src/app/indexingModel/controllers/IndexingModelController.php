@@ -170,7 +170,7 @@ class IndexingModelController
         }
 
         $master = null;
-        if (Validator::intVal()->notEmpty()->validate($body['master'] ?? null)) {
+        if (Validator::notEmpty()->intVal()->validate($body['master'] ?? null)) {
             $masterModel = IndexingModelModel::getById(['id' => $body['master']]);
             if (empty($masterModel)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Master model not found']);
@@ -299,7 +299,7 @@ class IndexingModelController
 
         $body = $request->getParsedBody();
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param id is empty or not an integer']);
         }
         if (!Validator::stringType()->notEmpty()->length(1, 256)->validate($body['label'] ?? null)) {
@@ -504,7 +504,7 @@ class IndexingModelController
 
     public function delete(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Param id is empty or not an integer']);
         }
         $model = IndexingModelModel::getById(['select' => ['owner', 'private', '"default"', 'label', 'master'], 'id' => $args['id']]);
@@ -530,7 +530,7 @@ class IndexingModelController
             $body = $request->getParsedBody();
 
             // No targetId provided, trying to delete without redirection
-            if (!Validator::intVal()->notEmpty()->validate($body['targetId'])) {
+            if (!Validator::notEmpty()->intVal()->validate($body['targetId'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Model is used by at least one resource', 'lang' => 'modelUsedByResources']);
             }
 
@@ -604,7 +604,7 @@ class IndexingModelController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
 
@@ -633,7 +633,7 @@ class IndexingModelController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
         }
 

@@ -401,7 +401,7 @@ class SignatureBookController
         }
 
         $body = $request->getParsedBody();
-        if (!Validator::intVal()->notEmpty()->validate($body['signatureId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['signatureId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body signatureId is empty or not an integer']);
         }
 
@@ -592,7 +592,7 @@ class SignatureBookController
         }
 
         $body = $request->getParsedBody();
-        if (!Validator::intVal()->notEmpty()->validate($body['signatureId'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['signatureId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body signatureId is empty or not an integer']);
         }
 

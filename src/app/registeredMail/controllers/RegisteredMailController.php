@@ -313,7 +313,7 @@ class RegisteredMailController
         $warnings = [];
         $errors = [];
         foreach ($body['registeredMails'] as $key => $registeredMail) {
-            if (!Validator::intVal()->notEmpty()->validate($registeredMail['modelId'])) {
+            if (!Validator::notEmpty()->intVal()->validate($registeredMail['modelId'])) {
                 $errors[] = ['error' => "Argument modelId is empty or not an integer for registered mail {$key}", 'index' => $key, 'lang' => 'argumentModelIdEmpty'];
                 continue;
             } elseif (!Validator::dateTime()->notEmpty()->validate($registeredMail['departureDate'])) {
@@ -328,7 +328,7 @@ class RegisteredMailController
             } elseif ($registeredMail['registeredMail_type'] == 'RW' && $registeredMail['registeredMail_warranty'] == 'R3') {
                 $errors[] = ['error' => "Argument registeredMail_warranty is not allowed for type RW for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailWarrantyNotAllowed'];
                 continue;
-            } elseif (!Validator::intVal()->notEmpty()->validate($registeredMail['registeredMail_issuingSite'])) {
+            } elseif (!Validator::notEmpty()->intVal()->validate($registeredMail['registeredMail_issuingSite'])) {
                 $errors[] = ['error' => "Argument registeredMail_issuingSite is empty or not an integer for registered mail {$key}", 'index' => $key, 'lang' => 'argumentRegisteredMailIssuingSiteEmpty'];
                 continue;
             } elseif ((empty($registeredMail['company']) && (empty($registeredMail['lastname']) || empty($registeredMail['firstname']))) || empty($registeredMail['addressStreet']) || empty($registeredMail['addressPostcode']) || empty($registeredMail['addressTown'])) {

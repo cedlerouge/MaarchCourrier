@@ -468,11 +468,11 @@ class SearchController
             $args['searchData'][] = "%{$body['barcode']['values']}%";
         }
         if (!empty($body['resId']) && !empty($body['resId']['values']) && is_array($body['resId']['values'])) {
-            if (Validator::intVal()->notEmpty()->validate($body['resId']['values']['start'])) {
+            if (Validator::notEmpty()->intVal()->validate($body['resId']['values']['start'])) {
                 $args['searchWhere'][] = 'res_id >= ?';
                 $args['searchData'][] = $body['resId']['values']['start'];
             }
-            if (Validator::intVal()->notEmpty()->validate($body['resId']['values']['end'])) {
+            if (Validator::notEmpty()->intVal()->validate($body['resId']['values']['end'])) {
                 $args['searchWhere'][] = 'res_id <= ?';
                 $args['searchData'][] = $body['resId']['values']['end'];
             }
@@ -1037,11 +1037,11 @@ class SearchController
                     }
                 } elseif ($customField['type'] == 'integer') {
                     if (!empty($value) && !empty($value['values']) && is_array($value['values'])) {
-                        if (Validator::intVal()->notEmpty()->validate($value['values']['start'])) {
+                        if (Validator::notEmpty()->intVal()->validate($value['values']['start'])) {
                             $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::int >= ?";
                             $args['searchData'][] = $value['values']['start'];
                         }
-                        if (Validator::intVal()->notEmpty()->validate($value['values']['end'])) {
+                        if (Validator::notEmpty()->intVal()->validate($value['values']['end'])) {
                             $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::int <= ?";
                             $args['searchData'][] = $value['values']['end'];
                         }

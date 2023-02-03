@@ -48,7 +48,7 @@ class PriorityController
         $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['label']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['color']);
-        $check = $check && (Validator::intVal()->notEmpty()->validate($data['delays']) || $data['delays'] == 0);
+        $check = $check && (Validator::notEmpty()->intVal()->validate($data['delays']) || $data['delays'] == 0);
 
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Body (label, color or delays) is empty or type is incorrect']);
@@ -81,7 +81,7 @@ class PriorityController
         $data = $request->getParsedBody();
         $check = Validator::stringType()->notEmpty()->validate($data['label']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['color']);
-        $check = $check && (Validator::intVal()->notEmpty()->validate($data['delays']) || $data['delays'] == 0);
+        $check = $check && (Validator::notEmpty()->intVal()->validate($data['delays']) || $data['delays'] == 0);
 
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Body (label, color or delays) is empty or type is incorrect']);

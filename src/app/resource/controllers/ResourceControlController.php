@@ -48,7 +48,7 @@ class ResourceControlController
             return ['errors' => 'Body is not set or empty'];
         } elseif (!empty($body['doctype']) && !Validator::intVal()->validate($body['doctype'])) {
             return ['errors' => 'Body doctype is not an integer'];
-        } elseif (!Validator::intVal()->notEmpty()->validate($body['modelId'])) {
+        } elseif (!Validator::notEmpty()->intVal()->validate($body['modelId'])) {
             return ['errors' => 'Body modelId is empty or not an integer'];
         } elseif ($isWebServiceUser && !Validator::stringType()->notEmpty()->validate($body['status'])) {
             return ['errors' => 'Body status is empty or not a string'];
@@ -302,7 +302,7 @@ class ResourceControlController
             foreach ($body['senders'] as $key => $sender) {
                 if (!Validator::arrayType()->notEmpty()->validate($sender)) {
                     return ['errors' => "Body senders[{$key}] is not an array"];
-                } elseif (!Validator::intVal()->notEmpty()->validate($sender['id'])) {
+                } elseif (!Validator::notEmpty()->intVal()->validate($sender['id'])) {
                     return ['errors' => "Body senders[{$key}][id] is empty or not an integer"];
                 }
                 if ($sender['type'] == 'contact') {
@@ -326,7 +326,7 @@ class ResourceControlController
             foreach ($body['recipients'] as $key => $recipient) {
                 if (!Validator::arrayType()->notEmpty()->validate($recipient)) {
                     return ['errors' => "Body recipients[{$key}] is not an array"];
-                } elseif (!Validator::intVal()->notEmpty()->validate($recipient['id'])) {
+                } elseif (!Validator::notEmpty()->intVal()->validate($recipient['id'])) {
                     return ['errors' => "Body recipients[{$key}][id] is empty or not an integer"];
                 }
                 if ($recipient['type'] == 'contact') {
@@ -351,7 +351,7 @@ class ResourceControlController
             foreach ($body['diffusionList'] as $key => $diffusion) {
                 if (!Validator::arrayType()->notEmpty()->validate($diffusion)) {
                     return ['errors' => "Body diffusionList[{$key}] is not an array"];
-                } elseif (!Validator::intVal()->notEmpty()->validate($diffusion['id'])) {
+                } elseif (!Validator::notEmpty()->intVal()->validate($diffusion['id'])) {
                     return ['errors' => "Body diffusionList[{$key}][id] is empty or not an integer"];
                 }
                 if ($diffusion['mode'] == 'dest') {

@@ -56,7 +56,7 @@ class TagController
 
     public function getById(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
         }
 
@@ -175,7 +175,7 @@ class TagController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
         }
 
@@ -281,7 +281,7 @@ class TagController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!Validator::intVal()->notEmpty()->validate($args['id'])) {
+        if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
         }
 
@@ -347,10 +347,10 @@ class TagController
 
         $body = $request->getParsedBody();
 
-        if (!Validator::intVal()->notEmpty()->validate($body['idMaster'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['idMaster'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body idMaster must be an integer val']);
         }
-        if (!Validator::intVal()->notEmpty()->validate($body['idMerge'])) {
+        if (!Validator::notEmpty()->intVal()->validate($body['idMerge'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body idMerge must be an integer val']);
         }
         if ($body['idMaster'] == $body['idMerge']) {

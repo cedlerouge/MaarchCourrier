@@ -902,7 +902,7 @@ class EmailController
         }
 
         if (!empty($args['data']['document']) && !empty($args['data']['document']['id'])) {
-            $check = Validator::intVal()->notEmpty()->validate($args['data']['document']['id']);
+            $check = Validator::notEmpty()->intVal()->validate($args['data']['document']['id']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['isLinked']);
             $check = $check && Validator::boolType()->validate($args['data']['document']['original']);
             if (!$check) {
@@ -919,7 +919,7 @@ class EmailController
                     return ['errors' => 'Data document[attachments] is not an array', 'code' => 400];
                 }
                 foreach ($args['data']['document']['attachments'] as $attachment) {
-                    $check = Validator::intVal()->notEmpty()->validate($attachment['id']);
+                    $check = Validator::notEmpty()->intVal()->validate($attachment['id']);
                     $check = $check && Validator::boolType()->validate($attachment['original']);
                     if (!$check) {
                         return ['errors' => 'Data document[attachments] errors', 'code' => 400];
@@ -935,7 +935,7 @@ class EmailController
                     return ['errors' => 'Data document[notes] is not an array', 'code' => 400];
                 }
                 foreach ($args['data']['document']['notes'] as $note) {
-                    if (!Validator::intVal()->notEmpty()->validate($note)) {
+                    if (!Validator::notEmpty()->intVal()->validate($note)) {
                         return ['errors' => 'Data document[notes] errors', 'code' => 400];
                     }
                     $checkNote = NoteModel::getById(['id' => $note, 'select' => ['identifier', 'user_id']]);

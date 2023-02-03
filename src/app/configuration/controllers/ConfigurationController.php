@@ -241,7 +241,7 @@ class ConfigurationController
 
         if (in_array($args['type'], ['smtp', 'mail'])) {
             $check = Validator::stringType()->notEmpty()->validate($args['host']);
-            $check = $check && Validator::intVal()->notEmpty()->validate($args['port']);
+            $check = $check && Validator::notEmpty()->intVal()->validate($args['port']);
             $check = $check && Validator::boolType()->validate($args['auth']);
             if ($args['auth']) {
                 $check = $check && Validator::stringType()->notEmpty()->validate($args['user']);
@@ -325,7 +325,7 @@ class ConfigurationController
         }
 
         foreach (['attachmentTypeId', 'indexingModelId', 'statusId', 'typeId'] as $value) {
-            if (!Validator::intVal()->notEmpty()->validate($body['metadata'][$value] ?? null)) {
+            if (!Validator::notEmpty()->intVal()->validate($body['metadata'][$value] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body[metadata] ' . $value . ' is empty, not a string']);
             }
         }
