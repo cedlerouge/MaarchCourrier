@@ -1035,7 +1035,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     }
 
     openEmailAttach(type: string, attach: any): void {
-        if (type === 'attachments') {
+        if (type === 'attachments' && !this.functions.empty(attach.convertedDocument)) {
             this.http.get(`../rest/attachments/${attach.id}/content?mode=base64`).pipe(
                 tap((data: any) => {
                     this.dialog.open(DocumentViewerModalComponent,
@@ -1045,7 +1045,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                             data: {
                                 title: `${attach.label}`,
                                 base64: data.encodedDocument,
-                                filename: data.filename
+                                filename: data.filename,
+                                source: 'mailEditor',
+                                contentMode: 'route',
+                                content: `../rest/attachments/${attach.id}/originalContent?mode=base64`
                             }
                         }
                     );
