@@ -706,7 +706,7 @@ class MergeController
 
         $pathInfo = pathinfo($pathToDocument);
         $extension = $pathInfo['extension'];
-        $filename = $pathInfo['fullFilename'];
+        $filename = $pathInfo['filename'];
 
         if ($extension == 'odt') {
             $tbs->LoadTemplate($pathToDocument, OPENTBS_ALREADY_UTF8);

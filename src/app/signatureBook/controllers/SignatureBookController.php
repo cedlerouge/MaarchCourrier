@@ -99,7 +99,7 @@ class SignatureBookController
         $datas['canSign']               = PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $GLOBALS['id']]);
         $datas['canUpdateDocuments']    = SignatureBookController::isResourceInSignatureBook(['resId' => $resId, 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true]);
 
-        $datas['isCurrentWorkflowUser'] = $datas['listinstance']['item_id'] == $GLOBALS['login'];
+        $datas['isCurrentWorkflowUser'] = ($datas['listinstance']['item_id'] ?? null) == $GLOBALS['login'];
 
         return $response->withJson($datas);
     }
