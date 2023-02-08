@@ -43,13 +43,16 @@ class CoreController
         preg_match('#^ref:(.+)$#', $head, $matches);
         $currentHead = trim($matches[1] ?? '');
 
-        if (empty($currentHead)) {
+        if (empty($currentHead) && empty($head)) {
             return $response->withJson(['hash' => null]);
         }
 
-        $hash = file_get_contents('.git/' . $currentHead);
-        if ($hash === false) {
-            return $response->withJson(['hash' => null]);
+        $hash = $head;
+        if (!empty($currentHead)) {
+            $hash = file_get_contents('.git/' . $currentHead);
+            if ($hash === false) {
+                return $response->withJson(['hash' => null]);
+            }
         }
 
         $hash = explode("\n", $hash)[0];
