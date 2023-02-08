@@ -1,12 +1,12 @@
 {
     "config": {
         "lang": "fr",
-        "applicationName": "MAARCH DEV",
+        "applicationName": "COURRIER DEMO",
         "cookieTime": 10080,
         "timezone": "Europe/Paris",
         "maarchDirectory" : "/var/www/html/MaarchCourrier/",
         "customID" : "",
-        "maarchUrl" : "https://preview.maarchcourrier.com/",
+        "maarchUrl" : "https://demo.maarchcourrier.com/",
         "lockAdvancedPrivileges" : true
     },
     "database": [
