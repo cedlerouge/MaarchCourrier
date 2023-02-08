@@ -403,12 +403,19 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         return this.allowedExtension.filter(ext => ext.toLowerCase() === extension.toLowerCase()).length > 0;
     }
 
-    formatAppToolsCss(mode: string) {
+    formatAppToolsCss(mode: string, hide: boolean = false) {
         const appTools: HTMLElement = $('app-tools-informations')[0];
         if (!this.functions.empty(appTools)) {
             if (mode === 'fullscreen') {
                 appTools.style.top = '10px';
                 appTools.style.right = '160px';
+                if (hide) {
+                    appTools.style.display = 'none';
+                    appTools.style.transition =  'all 0.5s';
+                } else {
+                    appTools.style.transition =  'all 0.5s';
+                    appTools.style.display = 'flex';
+                }
             } else {
                 appTools.style.top = 'auto';
                 appTools.style.right = 'auto';

@@ -10,7 +10,7 @@
 </button>
 <button class="collaboraOnlineButton_hide" [disabled]="loading" [class.buttonsHide]="hideButtons" [class.fullScreen]="fullscreenMode" mat-mini-fab color="default"
         [title]="!hideButtons ? ('lang.hideTool' | translate) : ('lang.showTool' | translate)" [ngStyle]="{'z-index': fullscreenMode && router.url.includes('indexing') ? '3' : ''}"
-        (click)="hideButtons = !hideButtons">
+        (click)="hideButtons = !hideButtons; formatAppToolsCss(fullscreenMode ? 'fullscreen' : 'default', hideButtons)">
     <mat-icon class="fa fa-arrow-right" style="height:auto;"></mat-icon>
 </button>
 
