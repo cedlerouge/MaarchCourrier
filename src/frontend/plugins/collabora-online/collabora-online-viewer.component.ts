@@ -8,6 +8,8 @@ import { HeaderService } from '@service/header.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NotificationService } from '@service/notification/notification.service';
 import { of, Subject } from 'rxjs';
+import { Router } from '@angular/router';
+import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
 
@@ -64,9 +66,12 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
         public translate: TranslateService,
         public http: HttpClient,
         public dialog: MatDialog,
+        public router: Router,
         private notify: NotificationService,
         private sanitizer: DomSanitizer,
-        public headerService: HeaderService) { }
+        public headerService: HeaderService,
+        public functions: FunctionsService
+    ) { }
 
     @HostListener('window:message', ['$event'])
     onMessage(e: any) {
@@ -330,12 +335,14 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
 
     formatAppToolsCss(mode: string) {
         const appTools: HTMLElement = $('app-tools-informations')[0];
-        if (mode === 'fullscreen') {
-            appTools.style.top = '14px';
-            appTools.style.right = '160px';
-        } else {
-            appTools.style.top = 'auto';
-            appTools.style.right = 'auto';
+        if (!this.functions.empty(appTools)) {
+            if (mode === 'fullscreen') {
+                appTools.style.top = '10px';
+                appTools.style.right = '160px';
+            } else {
+                appTools.style.top = 'auto';
+                appTools.style.right = 'auto';
+            }
         }
     }
 }

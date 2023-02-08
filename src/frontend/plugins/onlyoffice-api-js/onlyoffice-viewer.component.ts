@@ -18,6 +18,8 @@ import { HeaderService } from '@service/header.service';
 import { of, Subject } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ScriptInjectorService } from '@service/script-injector.service';
+import { Router } from '@angular/router';
+import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
 declare let DocsAPI: any;
@@ -77,11 +79,13 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private renderer: Renderer2,
         public dialog: MatDialog,
+        public router: Router,
+        private renderer: Renderer2,
         private notify: NotificationService,
         public headerService: HeaderService,
-        private scriptInjectorService: ScriptInjectorService,
+        public functions: FunctionsService,
+        private scriptInjectorService: ScriptInjectorService
     ) { }
 
     @HostListener('window:message', ['$event'])
@@ -401,12 +405,14 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
     formatAppToolsCss(mode: string) {
         const appTools: HTMLElement = $('app-tools-informations')[0];
-        if (mode === 'fullscreen') {
-            appTools.style.top = '10px';
-            appTools.style.right = '160px';
-        } else {
-            appTools.style.top = 'auto';
-            appTools.style.right = 'auto';
+        if (!this.functions.empty(appTools)) {
+            if (mode === 'fullscreen') {
+                appTools.style.top = '10px';
+                appTools.style.right = '160px';
+            } else {
+                appTools.style.top = 'auto';
+                appTools.style.right = 'auto';
+            }
         }
     }
 }
