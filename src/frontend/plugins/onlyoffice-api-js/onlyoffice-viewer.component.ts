@@ -377,7 +377,6 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         $('iframe[name=\'frameEditor\']').css('top', '0px');
         $('iframe[name=\'frameEditor\']').css('left', '0px');
 
-        const appTools: HTMLElement = $('app-tools-informations')[0];
         if (!this.fullscreenMode) {
             this.formatAppToolsCss('fullscreen');
             if (this.headerService.sideNavLeft !== null) {

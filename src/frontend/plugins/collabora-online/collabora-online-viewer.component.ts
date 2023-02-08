@@ -100,6 +100,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
             filter((data: string) => data === 'ok'),
             tap(() => {
                 this.closeEditor();
+                this.formatAppToolsCss('default');
             })
         ).subscribe();
     }
@@ -306,12 +307,14 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
         iframe.css('left', '0px');
 
         if (!this.fullscreenMode) {
+            this.formatAppToolsCss('fullscreen');
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
             iframe.css('position', 'fixed');
             iframe.css('z-index', '2');
         } else {
+            this.formatAppToolsCss('default');
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }
@@ -323,5 +326,16 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
 
     isAllowedEditExtension(extension: string) {
         return this.allowedExtension.filter(ext => ext.toLowerCase() === extension.toLowerCase()).length > 0;
+    }
+
+    formatAppToolsCss(mode: string) {
+        const appTools: HTMLElement = $('app-tools-informations')[0];
+        if (mode === 'fullscreen') {
+            appTools.style.top = '14px';
+            appTools.style.right = '160px';
+        } else {
+            appTools.style.top = 'auto';
+            appTools.style.right = 'auto';
+        }
     }
 }
