@@ -101,8 +101,9 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             tap(() => {
-                this.docEditor.destroyEditor();
+                this.docEditor?.destroyEditor();
                 this.closeEditor();
+                this.formatAppToolsCss('default');
             })
         ).subscribe();
     }
@@ -376,13 +377,16 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         $('iframe[name=\'frameEditor\']').css('top', '0px');
         $('iframe[name=\'frameEditor\']').css('left', '0px');
 
+        const appTools: HTMLElement = $('app-tools-informations')[0];
         if (!this.fullscreenMode) {
+            this.formatAppToolsCss('fullscreen');
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
             $('iframe[name=\'frameEditor\']').css('position', 'fixed');
             $('iframe[name=\'frameEditor\']').css('z-index', '2');
         } else {
+            this.formatAppToolsCss('default');
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }
@@ -394,5 +398,16 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
     isAllowedEditExtension(extension: string) {
         return this.allowedExtension.filter(ext => ext.toLowerCase() === extension.toLowerCase()).length > 0;
+    }
+
+    formatAppToolsCss(mode: string) {
+        const appTools: HTMLElement = $('app-tools-informations')[0];
+        if (mode === 'fullscreen') {
+            appTools.style.top = '10px';
+            appTools.style.right = '160px';
+        } else {
+            appTools.style.top = 'auto';
+            appTools.style.right = 'auto';
+        }
     }
 }

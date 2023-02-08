@@ -205,8 +205,8 @@
                             </ng-template>
                         </mat-tab>
                     </mat-tab-group>
-                    <div *ngIf="!loading" style="position: absolute;right: 16px;top: 4px;width:40px;height:40px;">
-                        <app-tools-informations style="position:fixed;z-index:1;text-align: left;" [resId]="attachment['resIdMaster'].value"></app-tools-informations>
+                    <div *ngIf="!loading" id="appToolsInformations" style="position: absolute;right: 16px;top: 4px;width:40px;height:40px;">
+                        <app-tools-informations style="position: fixed; z-index:3; text-align: left; display: contents;" [resId]="attachment['resIdMaster'].value"></app-tools-informations>
                     </div>
     </mat-dialog-content>
     <div mat-dialog-actions class="actions">
