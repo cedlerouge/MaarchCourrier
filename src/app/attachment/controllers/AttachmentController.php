@@ -565,7 +565,10 @@ class AttachmentController
             'data'    => [$args['id'], 'TNL' . $args['page']]
         ]);
 
-        $pathToThumbnail = $docserver['path_template'] . $adr[0]['path'] . $adr[0]['filename'];
+        $pathToThumbnail = '';
+        if (!empty($adr[0])) {
+            $pathToThumbnail = $docserver['path_template'] . $adr[0]['path'] . $adr[0]['filename'];
+        }
         if (!is_file($pathToThumbnail) || !is_readable($pathToThumbnail)) {
             $control = ConvertThumbnailController::convertOnePage(['type' => 'attachment', 'resId' => $args['id'], 'page' => $args['page']]);
             if (!empty($control['errors'])) {
