@@ -8,6 +8,8 @@ import { HeaderService } from '@service/header.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NotificationService } from '@service/notification/notification.service';
 import { of, Subject } from 'rxjs';
+import { Router } from '@angular/router';
+import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
 
@@ -26,6 +28,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
     @Output() triggerAfterUpdatedDoc = new EventEmitter<string>();
     @Output() triggerCloseEditor = new EventEmitter<string>();
     @Output() triggerModifiedDocument = new EventEmitter<string>();
+    @Output() triggerModeModified = new EventEmitter<boolean>();
 
     @ViewChild('collaboraFrame', { static: false }) collaboraFrame: any;
 
@@ -64,9 +67,12 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
         public translate: TranslateService,
         public http: HttpClient,
         public dialog: MatDialog,
+        public router: Router,
         private notify: NotificationService,
         private sanitizer: DomSanitizer,
-        public headerService: HeaderService) { }
+        public headerService: HeaderService,
+        public functions: FunctionsService
+    ) { }
 
     @HostListener('window:message', ['$event'])
     onMessage(e: any) {
@@ -100,6 +106,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
             filter((data: string) => data === 'ok'),
             tap(() => {
                 this.closeEditor();
+                this.formatAppToolsCss('default');
             })
         ).subscribe();
     }
@@ -306,12 +313,16 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
         iframe.css('left', '0px');
 
         if (!this.fullscreenMode) {
+            this.formatAppToolsCss('fullscreen');
+            this.triggerModeModified.emit(true);
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
             iframe.css('position', 'fixed');
             iframe.css('z-index', '2');
         } else {
+            this.formatAppToolsCss('default');
+            this.triggerModeModified.emit(false);
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }
@@ -323,5 +334,25 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
 
     isAllowedEditExtension(extension: string) {
         return this.allowedExtension.filter(ext => ext.toLowerCase() === extension.toLowerCase()).length > 0;
+    }
+
+    formatAppToolsCss(mode: string, hide: boolean = false) {
+        const appTools: HTMLElement = $('app-tools-informations')[0];
+        if (!this.functions.empty(appTools)) {
+            if (mode === 'fullscreen') {
+                appTools.style.top = '10px';
+                appTools.style.right = '160px';
+                if (hide) {
+                    appTools.style.transition =  'all 0.5s';
+                    appTools.style.display = 'none';
+                } else {
+                    appTools.style.transition =  'all 0.5s';
+                    appTools.style.display = 'flex';
+                }
+            } else {
+                appTools.style.top = 'auto';
+                appTools.style.right = 'auto';
+            }
+        }
     }
 }
