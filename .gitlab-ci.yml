@@ -83,7 +83,7 @@ job_php-8.1:
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
   rules:
-  - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
   artifacts:
     paths:
@@ -103,7 +103,7 @@ job_php-8.0:
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   artifacts:
     paths:
       - test/unitTests/build/
@@ -122,7 +122,7 @@ job_php-7.4:
     - chmod +x /usr/local/bin/phpunit
     - phpunit --coverage-text --colors=never
   rules:
-    - if: '$CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]{4,5}\/(develop|remove-vendor)/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
   artifacts:
     paths:
@@ -134,7 +134,7 @@ create_merge_request:
   image: debian:10-slim
   stage: sync
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]*/ && $CI_OPEN_MERGE_REQUESTS == null'
+    - if: '$CI_COMMIT_BRANCH =~ /(feat|fix)\/[0-9]*/ && $CI_OPEN_MERGE_REQUESTS == null && $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"'
   before_script:
     - apt-get update -yqq > /dev/null
     - apt install -y curl
@@ -147,7 +147,7 @@ end_merge_request:
   image: debian:10-slim
   stage: sync
   rules:
-    - if: '$CI_COMMIT_MESSAGE =~ /^Merge branch/ && $CI_PIPELINE_SOURCE != "schedule" && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != null'
+    - if: '$CI_COMMIT_MESSAGE =~ /^Merge branch/ && $CI_PIPELINE_SOURCE != "schedule" && ($CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "2301_releases")'
   before_script:
     - apt-get update -yqq > /dev/null
     - apt install -y curl

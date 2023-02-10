@@ -1922,23 +1922,21 @@ class FastParapheurController
         $lastStep = [];
 
         foreach ($documentHistory as $historyStep) {
-            if ($historyStep['userFullname'] == $knownWorkflow[$current]['name']) {
-                $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
-                // If the document has been refused, then the workflow has ended and the last step is the refused step
-                if (in_array($historyStep['stateName'], [$config['refusedState'], $config['refusedVisaState']])) {
+            $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
+            // If the document has been refused, then the workflow has ended and the last step is the refused step
+            if (in_array($historyStep['stateName'], [$config['refusedState'], $config['refusedVisaState']])) {
+                $lastStep = $historyStep;
+                break;
+            }
+
+            // If the state is sign or an approved visa, the workflow is continuing
+            if (in_array($historyStep['stateName'], [$config['validatedState'], $config['validatedVisaState']])) {
+                $current++;
+
+                // If we have as many steps in history as the workflow, then the workflow is over and the last step is the last sign/visa
+                if ($current === $totalStepsInWorkflow) {
                     $lastStep = $historyStep;
                     break;
-                }
-
-                // If the state is sign or an approved visa, the workflow is continuing
-                if (in_array($historyStep['stateName'], [$config['validatedState'], $config['validatedVisaState']])) {
-                    $current++;
-
-                    // If we have as many steps in history as the workflow, then the workflow is over and the last step is the last sign/visa
-                    if ($current === $totalStepsInWorkflow) {
-                        $lastStep = $historyStep;
-                        break;
-                    }
                 }
             }
         }

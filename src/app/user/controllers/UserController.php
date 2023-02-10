@@ -164,15 +164,17 @@ class UserController
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
-        $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled;
-        if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
-            if ($signatoryBookEnabled == 'fastParapheur') {
-                $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
-                if (!empty($fastParapheurBlock)) {
-                    $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+        if (!empty($loadedXml)) {
+            $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled ?? null;
+            if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
+                if ($signatoryBookEnabled == 'fastParapheur') {
+                    $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+                    if (!empty($fastParapheurBlock)) {
+                        $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                    }
+                } else {
+                    $user['canLinkToExternalSignatoryBook'] = true;
                 }
-            } else {
-                $user['canLinkToExternalSignatoryBook'] = true;
             }
         }
 

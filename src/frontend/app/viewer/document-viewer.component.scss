@@ -239,3 +239,14 @@
 .mat-menu-item[disabled] {
   cursor: not-allowed;
 }
+
+.defaultMode {
+  bottom: 40px;
+  right: 60px;
+}
+
+.fullscreenMode {
+  position: fixed !important;
+  bottom: 70px;
+  right: 50px;
+}

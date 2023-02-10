@@ -180,8 +180,8 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
                 this.addMode = false;
                 this.signaturesClone = JSON.parse(JSON.stringify(this.signatures));
                 this.newSignature = {
-                    label: '',
-                    content: ''
+                    title: '',
+                    htmlBody: ''
                 };
                 this.notify.success(this.translate.instant('lang.signatureAdded'));
             }),
@@ -223,11 +223,13 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
 
     savePrivateSignature(index: number) {
         this.signatures[index].content = tinymce.get('emailSignature' + this.signatures[index].id).getContent();
+        const formatedSignatures = this.signatures.filter((signature: any) => signature.id === this.signatures[index].id).map((sign: any) => this.formatSignature(sign))[0];
 
-        const formatedSignatures = this.signatures.map((sign: any) => this.formatSignature(sign));
-
-        this.http.put(this.route + this.signatures[index].id, formatedSignatures).pipe(
+        this.http.put(`../rest/currentUser/emailSignature/${this.signatures[index].id}`, formatedSignatures).pipe(
             tap(() => {
+                this.notify.success(this.translate.instant('lang.signatureUpdated'));
+                tinymce.remove('textarea#emailSignature' + this.signatures[index].id);
+                this.signatures[index].editMode = false;
                 this.signaturesClone = JSON.parse(JSON.stringify(this.signatures));
             }),
             catchError((err: any) => {
@@ -251,7 +253,7 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
         const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')} "${this.signatures[index].label}"`, msg: this.translate.instant('lang.confirmAction') } });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
-            // exhaustMap(() => this.http.delete(`../rest/???/${this.signatures[index].id}`)),
+            exhaustMap(() => this.http.delete(`../rest/currentUser/emailSignature/${this.signatures[index].id}`)),
             tap(() => {
                 this.signatures.splice(index, 1);
                 this.signaturesClone.splice(index, 1);
@@ -285,9 +287,16 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
     }
 
     formatSignature(signature: any) {
-        return {
-            label: signature.label,
-            content: signature.content
-        };
+        if (this.mode === 'private') {
+            return {
+                title: signature.label,
+                htmlBody: signature.content
+            };
+        } else {
+            return {
+                label: signature.label,
+                content: signature.content
+            };
+        }
     }
 }
