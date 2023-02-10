@@ -28,6 +28,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
     @Output() triggerAfterUpdatedDoc = new EventEmitter<string>();
     @Output() triggerCloseEditor = new EventEmitter<string>();
     @Output() triggerModifiedDocument = new EventEmitter<string>();
+    @Output() triggerModeModified = new EventEmitter<boolean>();
 
     @ViewChild('collaboraFrame', { static: false }) collaboraFrame: any;
 
@@ -313,6 +314,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
 
         if (!this.fullscreenMode) {
             this.formatAppToolsCss('fullscreen');
+            this.triggerModeModified.emit(true);
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
@@ -320,6 +322,7 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
             iframe.css('z-index', '2');
         } else {
             this.formatAppToolsCss('default');
+            this.triggerModeModified.emit(false);
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }

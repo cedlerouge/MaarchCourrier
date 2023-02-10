@@ -180,6 +180,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     rotation: number = null;
 
+    isFullScreen: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
