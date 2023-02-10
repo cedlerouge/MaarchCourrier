@@ -57,13 +57,12 @@ class Office365SharepointController
         if (!empty($body['data']) && !Validator::arrayType()->validate($body['data'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body data is not a string']);
         }
-
         if (empty($body['encodedContent'])) {
             $document = CollaboraOnlineController::getDocument([
                 'id'     => $body['resId'],
                 'type'   => $body['type'],
                 'format' => $body['format'],
-                'path'   => $body['path']
+                'path'   => $body['path'] ?? null
             ]);
 
             if (!empty($document['errors'])) {
