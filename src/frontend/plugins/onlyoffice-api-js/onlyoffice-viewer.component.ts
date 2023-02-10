@@ -40,6 +40,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     @Output() triggerAfterUpdatedDoc = new EventEmitter<string>();
     @Output() triggerCloseEditor = new EventEmitter<string>();
     @Output() triggerModifiedDocument = new EventEmitter<string>();
+    @Output() triggerModeModified = new EventEmitter<boolean>();
 
     editorConfig: any;
     docEditor: any;
@@ -383,6 +384,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
         if (!this.fullscreenMode) {
             this.formatAppToolsCss('fullscreen');
+            this.triggerModeModified.emit(true);
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
@@ -390,6 +392,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
             $('iframe[name=\'frameEditor\']').css('z-index', '2');
         } else {
             this.formatAppToolsCss('default');
+            this.triggerModeModified.emit(false);
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }
