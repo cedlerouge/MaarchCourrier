@@ -19,7 +19,7 @@ export class MaarchParapheurService {
     canViewWorkflow: boolean = true;
     canCreateTile: boolean = true;
     canAddExternalUser: boolean = true;
-
+    canManageSignaturesPositions: boolean = true;
 
     constructor(
         public functions: FunctionsService,
