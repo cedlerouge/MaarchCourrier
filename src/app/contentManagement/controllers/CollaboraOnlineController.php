@@ -554,7 +554,7 @@ class CollaboraOnlineController
             $convertedDocument = AdrModel::getDocuments([
                 'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
                 'where'  => ['res_id = ?', 'type = ?', 'version = ?'],
-                'data'   => [$args['resId'], 'SIGN', $document['version']],
+                'data'   => [$args['id'], 'SIGN', $document['version']],
                 'limit'  => 1
             ]);
             if (!empty($convertedDocument[0])) {
