@@ -2,7 +2,7 @@
 
 BRANCH=`echo $CI_COMMIT_MESSAGE | grep -oP "'(.*?)'" | head -1 | tr -d "'"`
 
-ISSUE_ID=`echo $BRANCH | grep -oP "[0-9]*"`
+ISSUE_ID=`echo $BRANCH | grep -oP "[0-9]*" | head -1`
 
 IT=0
 

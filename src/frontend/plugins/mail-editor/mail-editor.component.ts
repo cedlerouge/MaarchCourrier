@@ -1045,7 +1045,10 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                             data: {
                                 title: `${attach.label}`,
                                 base64: data.encodedDocument,
-                                filename: data.filename
+                                filename: data.filename,
+                                source: 'mailEditor',
+                                contentMode: 'route',
+                                content: `../rest/attachments/${attach.id}/originalContent?mode=base64`
                             }
                         }
                     );

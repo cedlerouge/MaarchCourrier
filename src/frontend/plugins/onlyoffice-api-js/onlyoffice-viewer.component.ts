@@ -18,6 +18,8 @@ import { HeaderService } from '@service/header.service';
 import { of, Subject } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ScriptInjectorService } from '@service/script-injector.service';
+import { Router } from '@angular/router';
+import { FunctionsService } from '@service/functions.service';
 
 declare let $: any;
 declare let DocsAPI: any;
@@ -38,6 +40,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     @Output() triggerAfterUpdatedDoc = new EventEmitter<string>();
     @Output() triggerCloseEditor = new EventEmitter<string>();
     @Output() triggerModifiedDocument = new EventEmitter<string>();
+    @Output() triggerModeModified = new EventEmitter<boolean>();
 
     editorConfig: any;
     docEditor: any;
@@ -77,11 +80,13 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private renderer: Renderer2,
         public dialog: MatDialog,
+        public router: Router,
+        private renderer: Renderer2,
         private notify: NotificationService,
         public headerService: HeaderService,
-        private scriptInjectorService: ScriptInjectorService,
+        public functions: FunctionsService,
+        private scriptInjectorService: ScriptInjectorService
     ) { }
 
     @HostListener('window:message', ['$event'])
@@ -101,8 +106,9 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             tap(() => {
-                this.docEditor.destroyEditor();
+                this.docEditor?.destroyEditor();
                 this.closeEditor();
+                this.formatAppToolsCss('default');
             })
         ).subscribe();
     }
@@ -377,12 +383,16 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         $('iframe[name=\'frameEditor\']').css('left', '0px');
 
         if (!this.fullscreenMode) {
+            this.formatAppToolsCss('fullscreen');
+            this.triggerModeModified.emit(true);
             if (this.headerService.sideNavLeft !== null) {
                 this.headerService.sideNavLeft.close();
             }
             $('iframe[name=\'frameEditor\']').css('position', 'fixed');
             $('iframe[name=\'frameEditor\']').css('z-index', '2');
         } else {
+            this.formatAppToolsCss('default');
+            this.triggerModeModified.emit(false);
             if (this.headerService.sideNavLeft !== null && !this.headerService.hideSideBar) {
                 this.headerService.sideNavLeft.open();
             }
@@ -394,5 +404,25 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
     isAllowedEditExtension(extension: string) {
         return this.allowedExtension.filter(ext => ext.toLowerCase() === extension.toLowerCase()).length > 0;
+    }
+
+    formatAppToolsCss(mode: string, hide: boolean = false) {
+        const appTools: HTMLElement = $('app-tools-informations')[0];
+        if (!this.functions.empty(appTools)) {
+            if (mode === 'fullscreen') {
+                appTools.style.top = '10px';
+                appTools.style.right = '160px';
+                if (hide) {
+                    appTools.style.display = 'none';
+                    appTools.style.transition =  'all 0.5s';
+                } else {
+                    appTools.style.transition =  'all 0.5s';
+                    appTools.style.display = 'flex';
+                }
+            } else {
+                appTools.style.top = 'auto';
+                appTools.style.right = 'auto';
+            }
+        }
     }
 }
