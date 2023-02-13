@@ -141,7 +141,7 @@ export class ExternalSignatoryBookManagerService {
                     'mainDocument': resource.mainDocument,
                     'externalId': element.externalId[this.signatoryBookEnabled],
                     'sequence': index,
-                    'action': element.role === 'visa' ? 'visa' : 'sign',
+                    'action': this.getWorkflowAction(element.role),
                     'signatureMode': element.role,
                     'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
                     'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
@@ -154,6 +154,13 @@ export class ExternalSignatoryBookManagerService {
             formatedData['workflowType'] = workflowType;
         }
         return formatedData;
+    }
+
+    getWorkflowAction(role: string): string {
+        if (role === 'note') {
+            return 'note';
+        }
+        return role === 'visa' ? 'visa' : 'sign';
     }
 
     formatPositions(position: any): any {
