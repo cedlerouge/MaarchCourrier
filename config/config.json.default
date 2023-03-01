@@ -3,6 +3,7 @@
         "lang": "fr",
         "applicationName": "COURRIER DEMO",
         "cookieTime": 10080,
+        "idleTime": 10,
         "timezone": "Europe/Paris",
         "maarchDirectory" : "/var/www/html/MaarchCourrier/",
         "customID" : "",
