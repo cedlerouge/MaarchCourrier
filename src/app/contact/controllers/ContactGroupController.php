@@ -369,9 +369,16 @@ class ContactGroupController
             $where[] = 'correspondent_type in (?)';
             $data[] = $queryParams['types'];
         }
+        $order = '';
+        $orderBy = ['name'];
+        if (!empty($queryParams['order'])) {
+            $order   = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
+        }
 
-        $order   = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
-        $orderBy = !in_array($queryParams['orderBy'], ['type', 'name']) ? ['name'] : [$queryParams['orderBy']];
+        if (!empty($queryParams['orderBy'])) {
+            $orderBy = !in_array($queryParams['orderBy'], ['type', 'name']) ? ['name'] : [$queryParams['orderBy']];
+        }
+
         $orderBy = str_replace(['type', 'name'], ["correspondent_type {$order}", "contacts.lastname {$order}, users.lastname {$order}, entities.entity_label {$order}"], $orderBy);
 
         if (!empty($queryParams['search'])) {
