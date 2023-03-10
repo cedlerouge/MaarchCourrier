@@ -119,7 +119,7 @@
                                         (click)="toggleAttachMail(attach,keyVal.key,'original');">.{{attach.format}}
                                     </button><br/>
                                     <button mat-raised-button class="extensionButton" color="primary"
-                                        *ngIf="!functions.empty(attach.convertedDocument) && attach.format !== 'pdf'"
+                                        *ngIf="(!functions.empty(attach.convertedDocument) && attach.format !== 'pdf') || attach.status === 'SIGN'"
                                         (click)="toggleAttachMail(attach,keyVal.key,'pdf');">
                                         .pdf
                                     </button>
