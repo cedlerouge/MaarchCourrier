@@ -81,6 +81,8 @@ class EmailController
             return ['errors' => 'Configuration is missing'];
         }
 
+        $args['data']['sender']['replyTo'] = $args['data']['sender']['email'];
+
         if (!empty($configuration['useSMTPAuth'])) {
             $args['data']['sender']['email'] = $configuration['from'];
         }
@@ -305,6 +307,8 @@ class EmailController
         if (empty($configuration)) {
             return ['errors' => 'Configuration is missing'];
         }
+
+        $body['sender']['replyTo'] = $body['sender']['email'];
 
         if (!empty($configuration['useSMTPAuth'])) {
             $body['sender']['email'] = $configuration['from'];
@@ -674,7 +678,7 @@ class EmailController
             $phpmailer->isQmail();
         }
 
-        $phpmailer->addReplyTo($email['sender']['email']);
+        $phpmailer->addReplyTo($email['sender']['replyTo']);
         $phpmailer->CharSet = $configuration['charset'];
 
         foreach ($email['recipients'] as $recipient) {
