@@ -52,7 +52,9 @@ else
 
     SUBJECT=`cat issue_$US.json | jq -r '.issue.subject'`
 
-    BODY="{\"id\":\"$CI_PROJECT_ID\",\"source_branch\":\"$CI_COMMIT_REF_NAME\",\"target_branch\":\"$TARGET_BRANCH\",\"title\":\"Draft: [$US] $SUBJECT\",\"description\":\"$SUBJECT\n=> https://forge.maarch.org/issues/$US\",\"remove_source_branch\":\"true\",\"squash\":\"false\"}"
+    MR_DESCRIPTION=$(awk 'BEGIN{RS="\n";ORS="\\n"}1' .gitlab/merge_request_templates/mr_template.md | sed -e "s/{US_ID}/$US/g" | sed -e "s/{US_TITLE}/$SUBJECT/g")
+
+    BODY="{\"id\":\"$CI_PROJECT_ID\",\"source_branch\":\"$CI_COMMIT_REF_NAME\",\"target_branch\":\"$TARGET_BRANCH\",\"title\":\"Draft: [$US] $SUBJECT\",\"description\":\"$MR_DESCRIPTION\",\"remove_source_branch\":\"true\",\"squash\":\"false\"}"
 
     echo $BODY
 
