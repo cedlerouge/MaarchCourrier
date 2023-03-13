@@ -102,7 +102,7 @@ class AuthenticationController
         }
 
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
-        $idleTime = 10; // minutes
+        $idleTime = 10080; // minutes
         if (!empty($file['config']['idleTime'])) {
             $idleTime = (int) $file['config']['idleTime'];
         }
