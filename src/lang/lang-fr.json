@@ -2713,5 +2713,7 @@
     "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
     "eidas_metasign": "Cachet Metasign",
     "keepLogin": "Rester connecté",
-    "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !"
+    "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !",
+    "zoomIn": "Agrandir",
+    "zoomOut": "Réduire"
 }

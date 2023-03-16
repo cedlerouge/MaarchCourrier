@@ -179,6 +179,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
 
     rotation: number = null;
+    zoom: number = 1;
 
     isFullScreen: boolean = false;
 
@@ -1529,5 +1530,13 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     getTitle(): string {
         return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
+    }
+
+    zoomDocument(type: string) {
+        if (type === 'in') {
+            this.zoom = this.zoom + 0.5;
+        } else if (type === 'out' && this.zoom >= 0) {
+            this.zoom = this.zoom - 0.5;
+        }
     }
 }
