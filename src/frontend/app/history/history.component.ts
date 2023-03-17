@@ -101,8 +101,6 @@ export class HistoryComponent implements OnInit {
     }
 
     initHistoryMode() {
-        this.resetFilter();
-
         if (this.fullHistoryMode) {
             this.extraParamUrl = this.resId !== null ? `&resId=${this.resId}` : '';
             this.filterListUrl = this.resId !== null ? `../rest/history/availableFilters?resId=${this.resId}` : '../rest/history/availableFilters';
@@ -165,8 +163,6 @@ export class HistoryComponent implements OnInit {
 
         if (this.filterList === null) {
             this.filterList = {};
-            this.filterUsed = {};
-            this.filterUrl = '';
             this.loadingFilters = true;
             this.http.get(this.filterListUrl).pipe(
                 map((data: any) => {
