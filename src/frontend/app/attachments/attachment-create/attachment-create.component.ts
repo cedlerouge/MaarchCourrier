@@ -25,7 +25,7 @@ import { ContactAutocompleteComponent } from '../../contact/autocomplete/contact
 
 export class AttachmentCreateComponent implements OnInit {
 
-    @Input('resId') resId: number = null;
+    @Input() resId: number = null;
 
     @ViewChildren('appDocumentViewer') appDocumentViewer: QueryList<DocumentViewerComponent>;
     @ViewChildren('contactAutocomplete') contactAutocomplete: ContactAutocompleteComponent;
@@ -518,8 +518,10 @@ export class AttachmentCreateComponent implements OnInit {
                 this.sendMassMode = !this.sendMassMode;
                 this.selectedContact.disable();
                 this.appDocumentViewer?.toArray()[0]?.setDatas({inMailing: true});
-                if (!this.appDocumentViewer?.toArray()[0]?.isExtensionAllowed(this.appDocumentViewer?.toArray()[0]?.file)) {
-                    this.appDocumentViewer?.toArray()[0]?.cleanFile(false);
+                if (!this.functions.empty(this.appDocumentViewer?.toArray()[0]?.file.content)) {
+                    if (!this.appDocumentViewer?.toArray()[0]?.isExtensionAllowed(this.appDocumentViewer?.toArray()[0]?.file)) {
+                        this.appDocumentViewer?.toArray()[0]?.cleanFile(false);
+                    }
                 }
             } else {
                 this.notify.error(this.translate.instant('lang.mustDeleteOtherTabsBeforeSendMassMode'));
