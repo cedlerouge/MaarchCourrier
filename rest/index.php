@@ -341,10 +341,12 @@ $app->get('/groups/{id}/privileges/{privilegeId}/parameters', \Group\controllers
 $app->get('/history', \History\controllers\HistoryController::class . ':get');
 $app->get('/history/availableFilters', \History\controllers\HistoryController::class . ':getAvailableFilters');
 $app->get('/history/users/{userSerialId}', \History\controllers\HistoryController::class . ':getByUserId');
+$app->put('/history/export', \History\controllers\HistoryController::class . ':exportHistory');
 
 //BatchHistory
 $app->get('/batchHistory', \History\controllers\BatchHistoryController::class . ':get');
 $app->get('/batchHistory/availableFilters', \History\controllers\BatchHistoryController::class . ':getAvailableFilters');
+$app->put('/batchHistory/export', \History\controllers\BatchHistoryController::class . ':exportBatchHistory');
 
 //Header
 $app->get('/header', \SrcCore\controllers\CoreController::class . ':getHeader');
