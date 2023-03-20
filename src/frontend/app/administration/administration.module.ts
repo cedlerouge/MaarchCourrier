@@ -88,6 +88,7 @@ import { OtherParametersComponent } from '@appRoot/administration/parameter/othe
 import { MaarchToMaarchParametersComponent } from '@appRoot/administration/parameter/maarchToMaarch/maarch-to-maarch-parameters.component';
 import { MultigestAdministrationComponent } from './multigest/multigest-administration.component';
 import { MultigestListAdministrationComponent } from './multigest/multigest-list-administration.component';
+import { HistoryExportComponent } from './history/export/history-export.component';
 
 @NgModule({
     imports: [
@@ -181,7 +182,8 @@ import { MultigestListAdministrationComponent } from './multigest/multigest-list
         OtherParametersComponent,
         MaarchToMaarchParametersComponent,
         MultigestAdministrationComponent,
-        MultigestListAdministrationComponent
+        MultigestListAdministrationComponent,
+        HistoryExportComponent
     ],
     providers: [
         AdministrationService

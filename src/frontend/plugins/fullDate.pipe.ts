@@ -14,7 +14,7 @@ export class FullDatePipe implements PipeTransform {
     transform(value: string) {
         if (!this.functions.empty(value)) {
             const date = new Date(value);
-            const options: Intl.DateTimeFormatOptions = { 
+            const options: Intl.DateTimeFormatOptions = {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
