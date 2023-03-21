@@ -17,6 +17,7 @@ import { of, Subscription } from 'rxjs';
 import { DocumentViewerComponent } from './viewer/document-viewer.component';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { NotesListComponent } from './notes/notes-list.component';
+import { FiltersListService } from '@service/filtersList.service';
 
 declare let $: any;
 
@@ -70,6 +71,8 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     rightContentWidth: string = '44%';
     dialogRef: MatDialogRef<any>;
 
+    listProperties: any = null;
+
     processTool: any[] = [
         {
             id: 'notes',
@@ -100,16 +103,17 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private appService: AppService,
-        private route: ActivatedRoute,
-        private router: Router,
-        private zone: NgZone,
-        private notify: NotificationService,
         public privilegeService: PrivilegeService,
         public dialog: MatDialog,
         public functions: FunctionsService,
         public actionService: ActionsService,
         public headerService: HeaderService,
+        public filtersListService: FiltersListService,
+        private appService: AppService,
+        private route: ActivatedRoute,
+        private router: Router,
+        private zone: NgZone,
+        private notify: NotificationService
     ) {
         (<any>window).pdfWorkerSrc = 'pdfjs/pdf.worker.min.js';
 
@@ -411,11 +415,15 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                 this.rightContentWidth = '44%';
                 this.leftContentWidth = '44%';
                 if (this.signatureBook.resList.length === 0 || typeof this.signatureBook.resList[0].creation_date === 'undefined') {
-                    this.http.get('../rest/signatureBook/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources')
-                        .subscribe((data: any) => {
+                    this.listProperties = this.filtersListService.initListsProperties(this.userId, this.groupId, this.basketId, 'basket');
+                    const offset: number =  this.listProperties.page * this.listProperties.pageSize;
+                    const limit: number = this.listProperties.pageSize;
+                    const filters: string = this.filtersListService.getUrlFilters();
+                    this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources?limit=${limit}&offset=${offset}${filters}`).pipe(
+                        tap((data: any) => {
                             this.signatureBook.resList = data.resources;
                             this.signatureBook.resList.forEach((value: any, index: number) => {
-                                if (value.res_id == this.resId) {
+                                if (value.res_id === this.resId) {
                                     this.signatureBook.resListIndex = index;
                                 }
                             });
@@ -424,7 +432,12 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                                 $('#resListContent').scrollTop(0);
                                 $('#resListContent').scrollTop($('.resListContentFrameSelected').offset().top - 42);
                             }, 0);
-                        });
+                        }),
+                        catchError((err: any) => {
+                            this.notify.handleSoftErrors(err);
+                            return of(false);
+                        })
+                    ).subscribe();
                 }
             }
         } else if (panel === 'MIDDLE') {
