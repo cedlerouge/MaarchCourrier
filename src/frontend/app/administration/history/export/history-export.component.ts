@@ -85,8 +85,8 @@ export class HistoryExportComponent implements OnInit {
             let realIndex = event.previousIndex;
             if (event.container.id === 'selectedElements') {
                 realIndex = 0;
-                if ($j('.available-data .columns')[event.previousIndex] !== undefined) {
-                    const fakeIndex = $j('.available-data .columns')[event.previousIndex].id;
+                if ($('.available-data .columns')[event.previousIndex] !== undefined) {
+                    const fakeIndex = $('.available-data .columns')[event.previousIndex].id;
                     realIndex = this.dataAvailable.map((dataAv: any) => (dataAv.value)).indexOf(fakeIndex);
                 }
             }
@@ -126,7 +126,7 @@ export class HistoryExportComponent implements OnInit {
                 if (data.type !== 'text/html') {
                     const downloadLink = document.createElement('a');
                     downloadLink.href = window.URL.createObjectURL(data);
-                    let today: any, dd: any, mm: any; // yyyy: any;
+                    let today: any, dd: any, mm: any;
 
                     today = new Date();
                     dd = today.getDate();
