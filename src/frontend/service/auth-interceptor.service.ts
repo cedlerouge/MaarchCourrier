@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpHandler, HttpInterceptor, HttpRequest, HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpHandler, HttpInterceptor, HttpRequest, HttpClient, HttpErrorResponse, HttpEvent } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { catchError, filter, switchMap, take } from 'rxjs/operators';
+import { catchError, filter, switchMap, take, tap } from 'rxjs/operators';
 import { NotificationService } from './notification/notification.service';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
@@ -125,5 +125,42 @@ export class AuthInterceptor implements HttpInterceptor {
                 })
             );
         }
+    }
+}
+
+@Injectable()
+export class InactivityInterceptor implements HttpInterceptor {
+    bypassTimerByRequests: any[] = [
+        {
+            route: '/lock',
+            method: ['PUT']
+        },
+    ];
+    constructor (
+        private authService: AuthService,
+        private router: Router,
+    ) {}
+
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        if (this.authService.canLogOut()) {
+            if (['/', '/login'].indexOf(this.router.url) > -1) {
+                this.authService?.userActivitySubscription?.unsubscribe();
+                this.authService?.inactivitySubscription?.unsubscribe();
+                return next.handle(request);
+            } else if (this.bypassTimerByRequests.filter((item: any) => request.url.includes(item.route)).length === 0) {
+                return next.handle(request).pipe(
+                    tap(() => {
+                        this.resetTimer();
+                    }));
+            } else {
+                return next.handle(request);
+            }
+        } else {
+            return next.handle(request);
+        }
+    }
+
+    resetTimer() {
+        this.authService.resetTimer();
     }
 }

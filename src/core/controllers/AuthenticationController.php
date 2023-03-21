@@ -100,18 +100,25 @@ class AuthenticationController
                 }
             }
         }
+
+        $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $idleTime = 10080; // minutes
+        if (!empty($file['config']['idleTime'])) {
+            $idleTime = (int) $file['config']['idleTime'];
+        }
         
         $return = [
-            'instanceId'            => $hashedPath,
-            'applicationName'       => $appName,
-            'loginMessage'          => $parameter['param_value_string'] ?? null,
-            'changeKey'             => $encryptKey == 'Security Key Maarch Courrier #2008',
-            'authMode'              => $loggingMethod['id'],
-            'authUri'               => $authUri,
-            'lang'                  => CoreConfigModel::getLanguage(),
-            'mailServerOnline'      => $emailConfiguration['online'] ?? false,
-            'maarchUrl'             => $maarchUrl,
-            'externalSignatoryBook'  => $externalSignatoryBook,
+            'instanceId'                => $hashedPath,
+            'applicationName'           => $appName,
+            'loginMessage'              => $parameter['param_value_string'] ?? null,
+            'changeKey'                 => $encryptKey == 'Security Key Maarch Courrier #2008',
+            'authMode'                  => $loggingMethod['id'],
+            'authUri'                   => $authUri,
+            'lang'                      => CoreConfigModel::getLanguage(),
+            'mailServerOnline'          => $emailConfiguration['online'] ?? false,
+            'maarchUrl'                 => $maarchUrl,
+            'externalSignatoryBook'     => $externalSignatoryBook,
+            'idleTime'                  => $idleTime
         ];
 
         if (!empty($keycloakState)) {
