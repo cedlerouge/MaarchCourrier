@@ -413,7 +413,11 @@ class FastParapheurController
                 }
                 $externalState = json_decode($resource['external_state'] ?? '{}', true);
                 $knownWorkflow = array_map(function ($step) use ($fastUsers) {
-                    $step['name'] = $fastUsers[$step['id']];
+                    if($step['type'] == 'externalOTP') {
+                        $step['name'] = $step['lastname'] . " " . $step['firstname'];
+                    } else {
+                        $step['name'] = $fastUsers[$step['id']];
+                    }
                     return $step;
                 }, $externalState['signatureBookWorkflow']['workflow'] ?? []);
 
@@ -1934,7 +1938,9 @@ class FastParapheurController
         $lastStep = [];
 
         foreach ($documentHistory as $historyStep) {
-            $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
+            if (!empty($knownWorkflow[$current]['id'])) {
+                $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
+            }
             // If the document has been refused, then the workflow has ended and the last step is the refused step
             if (in_array($historyStep['stateName'], [$config['refusedState'], $config['refusedVisaState']])) {
                 $lastStep = $historyStep;
