@@ -1315,15 +1315,27 @@ class FastParapheurController
             if ($resId === null) {
                 return ['error' => 'no resId found in steps'];
             }
+
             foreach ($args['steps'] as $step) {
                 if ($step['resId'] !== $resId) {
                     continue;
                 }
-                $steps[$step['sequence']] = [
-                    'mode' => $step['signatureMode'],
-                    'type' => 'fastParapheurUserEmail',
-                    'id'   => $step['externalId']
-                ];
+                if (!empty($step['externalInformations'])) {
+                    $steps[$step['sequence']] = [
+                        'mode' => $step['signatureMode'],
+                        'type' => 'externalOTP',
+                        'phone'     => $step['externalInformations']['phone'] ?? null,
+                        'email'     => $step['externalInformations']['email'] ?? null,
+                        'firstname' => $step['externalInformations']['firstname'] ?? null,
+                        'lastname'  => $step['externalInformations']['lastname'] ?? null
+                    ];
+                } else {
+                    $steps[$step['sequence']] = [
+                        'mode' => $step['signatureMode'],
+                        'type' => 'fastParapheurUserEmail',
+                        'id'   => $step['externalId']
+                    ];
+                }
             }
             return FastParapheurController::uploadWithSteps([
                 'config'      => $config['data'],
