@@ -986,7 +986,8 @@ class FastParapheurController
             'type'  => $args['workflowType'],
             'steps' => []
         ];
-        //$otpInfo = [];
+
+        $otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
             $stepMode = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
 
@@ -1006,11 +1007,11 @@ class FastParapheurController
                         'members' => [$step['id']]
                     ];
                 }
-            } /*elseif ($step['type'] == 'externalOTP'
-                      && Validator::notEmpty()->phone()->validate($step['phone'])
-                      && Validator::notEmpty()->email()->validate($step['email'])
-                      && Validator::notEmpty()->stringType()->validate($step['firstname'])
-                      && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+            } elseif ($step['type'] == 'externalOTP'
+                    && Validator::notEmpty()->phone()->validate($step['phone'])
+                    && Validator::notEmpty()->email()->validate($step['email'])
+                    && Validator::notEmpty()->stringType()->validate($step['firstname'])
+                    && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
                 $circuit['steps'][] = [
                     'step'    => 'OTPSignature',
                     'members' => [$step['email']]
@@ -1019,7 +1020,7 @@ class FastParapheurController
                 $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
                 $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
                 $otpInfo['OTP_email_' . $index]       = $step['email'];
-            } */ else {
+            } else {
                 return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
         }
@@ -1027,7 +1028,6 @@ class FastParapheurController
             return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
-        /*
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
             $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
@@ -1036,7 +1036,6 @@ class FastParapheurController
                 $metadataElement->addAttribute($name, $value);
             }
         }
-        */
 
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
@@ -1211,7 +1210,7 @@ class FastParapheurController
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
         foreach ($uploads as $upload) {
-            
+
             $result = FastParapheurController::onDemandUploadFilesToFast([
                 'config'     => $args['config'],
                 'upload'     => $upload,
@@ -1221,28 +1220,27 @@ class FastParapheurController
             if (!empty($result['error'])) {
                 return ['code' => $result['code'], 'error' => $result['error'] . ' |||| ' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION)];
             }
-            
-            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
 
-            /*
             if (!empty($otpInfoXML)) {
                 $curlReturn = CurlModel::exec([
                     'method'  => 'PUT',
-                    'url'     => $args['config']['url'] . '/documents/v2/otp/' . $fastParapheurDocId . '/metadata/define',
+                    'url'     => $args['config']['url'] . '/documents/v2/otp/' . $result['response'] . '/metadata/define',
                     'options' => [
                         CURLOPT_SSLCERT       => $args['config']['certPath'],
                         CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
                         CURLOPT_SSLCERTTYPE   => $args['config']['certType']
                     ],
                     'multipartBody' => [
-                        'otpinformation' => ['isFile' => true, 'filename' => 'otpinfo.xml', 'content' => $otpInfoXML->asXML()]
+                        'otpinformation' => ['isFile' => true, 'filename' => 'METAS_API.xml', 'content' => $otpInfoXML->asXML()]
                     ]
                 ]);
                 if ($curlReturn['code'] != 200) {
                     return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
                 }
             }
-            */
+
+            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
+
         }
 
         return $returnIds;
