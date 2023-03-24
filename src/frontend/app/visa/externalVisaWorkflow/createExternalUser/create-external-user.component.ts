@@ -87,7 +87,7 @@ export class CreateExternalUserComponent implements OnInit {
     async getConfig() {
         const data: any = await this.externalSignatoryBookManagerService.getOtpConfig();
         if (!this.functions.empty(data)) {
-            this.sources = data.otp;
+            this.sources = data;
             this.sourceTypes = [... new Set(this.sources.map((item: any) => item.type))];
             this.setCurrentSource(this.data.otpInfo !== null ? this.data.otpInfo.sourceId : this.sources[0].id);
             if (this.data.otpInfo === null) {

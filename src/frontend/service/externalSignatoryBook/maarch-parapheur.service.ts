@@ -21,6 +21,8 @@ export class MaarchParapheurService {
     canAddExternalUser: boolean = true;
     canManageSignaturesPositions: boolean = true;
 
+    otpConnectors: any [] = [];
+
     constructor(
         public functions: FunctionsService,
         public translate: TranslateService,
@@ -101,7 +103,8 @@ export class MaarchParapheurService {
         return new Promise((resolve) => {
             this.http.get('../rest/maarchParapheurOtp').pipe(
                 tap((data: any) => {
-                    resolve(data);
+                    this.otpConnectors = data.otp;
+                    resolve(this.otpConnectors);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);

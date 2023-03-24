@@ -68,7 +68,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         if (this.externalSignatoryBookManagerService.canAddExternalUser()) {
             const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
             if (!this.functions.empty(data)) {
-                this.otpConfig = data.otp.length;
+                this.otpConfig = data.length;
             }
         }
     }
