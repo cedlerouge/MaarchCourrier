@@ -2712,6 +2712,8 @@
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>",
     "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
     "eidas_metasign": "Cachet Metasign",
+    "exportHistory": "Exporter l'historique",
+    "applyFilters": "Les filtres seront appliqués à l'exportation des données pour une limite de 1000 lignes.",
     "keepLogin": "Rester connecté",
     "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !",
     "zoomIn": "Agrandir",

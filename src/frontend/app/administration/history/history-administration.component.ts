@@ -6,6 +6,8 @@ import { FunctionsService } from '@service/functions.service';
 import { HistoryComponent } from '../../history/history.component';
 import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
+import { HistoryExportComponent } from './export/history-export.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
     selector: 'app-admin-history',
@@ -35,14 +37,39 @@ export class HistoryAdministrationComponent implements OnInit {
         }
     ];
 
+    history: any[] = [
+        {
+            value: 'event_date',
+            label: this.translate.instant('lang.event')
+        },
+        {
+            value: 'record_id',
+            label: this.translate.instant('lang.technicalId')
+        },
+        {
+            value: 'userLabel',
+            label: this.translate.instant('lang.contact_user')
+        },
+        {
+            value: 'info',
+            label: this.translate.instant('lang.information')
+        },
+        {
+            value: 'remote_ip',
+            label: this.translate.instant('lang.ip')
+        }
+    ];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
         public appService: AppService,
         public functions: FunctionsService,
+        public dialog: MatDialog,
         private privilegeService: PrivilegeService,
         private headerService: HeaderService,
-        private viewContainerRef: ViewContainerRef) { }
+        private viewContainerRef: ViewContainerRef
+    ) { }
 
     ngOnInit(): void {
         this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.history').toLowerCase(), '', '');
@@ -74,5 +101,24 @@ export class HistoryAdministrationComponent implements OnInit {
                 }
             ];
         }
+    }
+
+    openHistoryExport() {
+        const parameters: any = {
+            filterUsed : this.appHistoryList.filterUsed,
+            startDate: this.functions.empty(this.appHistoryList.startDateFilter) ? '' : this.functions.formatDateObjectToDateString(this.appHistoryList.startDateFilter),
+            endDate: this.functions.empty(this.appHistoryList.endDateFilter) ? '' : this.functions.formatDateObjectToDateString(this.appHistoryList.endDateFilter)
+        };
+        this.dialog.open(HistoryExportComponent,
+            {
+                panelClass: 'maarch-modal',
+                width: '800px',
+                autoFocus: false,
+                data: {
+                    origin: 'history',
+                    dataAvailable: this.history,
+                    parameters: parameters
+                }
+            });
     }
 }
