@@ -210,7 +210,7 @@ class ContactController
         }
         if (!empty($historyInfoContact) && !empty($body['company'])) {
             $historyInfoContact .= ' (' . $body['company'] . ')';
-        } else {
+        } else if (!empty($body['company'])) {
             $historyInfoContact .= $body['company'];
         }
 
