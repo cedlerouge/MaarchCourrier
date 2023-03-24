@@ -1030,10 +1030,12 @@ class FastParapheurController
 
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
-            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
-            foreach ($otpInfo as $name => $value) {
-                $metadataElement = $otpInfoXML->addChild('meta-data');
-                $metadataElement->addAttribute($name, $value);
+            $otpInfoXML = FastParapheurController::generateOtpXml([
+                'prettyPrint'   => true,
+                'otpInfo'       => $otpInfo
+            ]);
+            if (!empty($otpInfoXML['errors'])) {
+                return ['error' => $$otpInfoXML['errors']];
             }
         }
 
@@ -1218,10 +1220,10 @@ class FastParapheurController
                 'appendices' => $appendices
             ]);
             if (!empty($result['error'])) {
-                return ['code' => $result['code'], 'error' => $result['error'] . ' |||| ' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION)];
+                return ['code' => $result['code'], 'error' => $result['error']];
             }
 
-            if (!empty($otpInfoXML)) {
+            if (!empty($otpInfoXML['content'])) {
                 $curlReturn = CurlModel::exec([
                     'method'  => 'PUT',
                     'url'     => $args['config']['url'] . '/documents/v2/otp/' . $result['response'] . '/metadata/define',
@@ -1231,11 +1233,11 @@ class FastParapheurController
                         CURLOPT_SSLCERTTYPE   => $args['config']['certType']
                     ],
                     'multipartBody' => [
-                        'otpinformation' => ['isFile' => true, 'filename' => 'METAS_API.xml', 'content' => $otpInfoXML->asXML()]
+                        'otpinformation' => ['isFile' => true, 'filename' => 'METAS_API.xml', 'content' => $otpInfoXML['content']]
                     ]
                 ]);
                 if ($curlReturn['code'] != 200) {
-                    return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+                    return ['error' => $curlReturn, 'code' => $curlReturn['code']];
                 }
             }
 
@@ -1952,5 +1954,33 @@ class FastParapheurController
         }
 
         return $lastStep;
+    }
+
+    public static function generateOtpXml(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['otpInfo']);
+        ValidatorModel::arrayType($args, ['otpInfo']);
+        ValidatorModel::boolType($args, ['prettyPrint']);
+
+        $xmlData = null;
+        try {
+            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            foreach ($args['otpInfo'] as $name => $value) {
+                $metaDataElement = $otpInfoXML->addChild('meta-data');
+                $metaDataElement->addAttribute('name', $name);
+                $metaDataElement->addAttribute('value', $value);
+            }
+
+            $xmlData = $otpInfoXML->asXML();
+            if (!empty($args['prettyPrint'])) {
+                $dom = dom_import_simplexml($otpInfoXML)->ownerDocument;
+                $dom->formatOutput = true;
+                $xmlData = $dom->saveXML();
+            }
+        } catch (\Exception $e) {
+            return ['errors' => '[FastParapheur][generateOtpXml] : ' . $e->getMessage()];
+        }
+
+        return ['content' => $xmlData];
     }
 }
