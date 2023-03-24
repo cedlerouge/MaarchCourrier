@@ -327,7 +327,7 @@ class FastParapheurController
                     'level'     => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve main document resId: ${resId}"
+                    'eventId'   => "Retrieve main document resId: $resId"
                 ]);
             } else {
                 LogsController::add([
@@ -336,7 +336,7 @@ class FastParapheurController
                     'level'     => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve attachment resId: ${resId}"
+                    'eventId'   => "Retrieve attachment resId: $resId"
                 ]);
             }
             if (empty(trim($value['external_id']))) {
