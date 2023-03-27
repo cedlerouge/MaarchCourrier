@@ -212,7 +212,7 @@ class StoreController
         }
         $chrono = null;
         if (!empty($args['chrono'])) {
-            $chrono = ChronoModel::getChrono(['id' => $indexingModel['category'], 'entityId' => $args['destination'], 'typeId' => $args['doctype'], 'resId' => $args['resId']]);
+            $chrono = ChronoModel::getChrono(['id' => $indexingModel['category'], 'entityId' => $args['destination'] ?? null, 'typeId' => $args['doctype'], 'resId' => $args['resId']]);
         }
 
         if (!empty($args['processLimitDate']) && !empty($args['priority'])) {
