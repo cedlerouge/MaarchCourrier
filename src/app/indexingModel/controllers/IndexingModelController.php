@@ -57,6 +57,7 @@ class IndexingModelController
 
         $models = IndexingModelModel::get(['where' => $where, 'data' => [$GLOBALS['id'], 'false']]);
         foreach ($models as $key => $model) {
+            $models[$key]['entities'] = json_decode($model[$key]['entities'] ?? '[]', true);
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
             unset($models[$key]['mandatory_file']);
         }
@@ -74,6 +75,8 @@ class IndexingModelController
         } elseif ($model['private'] && $model['owner'] != $GLOBALS['id']) {
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
         }
+
+        $model['entities'] = json_decode($model['entities'] ?? '[]', true);
 
         $fields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
         $destination = '';
@@ -242,7 +245,8 @@ class IndexingModelController
             'owner'         => $GLOBALS['id'],
             'private'       => $body['private'],
             'mandatoryFile' => $body['mandatoryFile'],
-            'master'        => $master
+            'master'        => $master,
+            'entities'      => !isset($body['entities']) ? '[]' : json_encode($body['entities'])
         ]);
 
         foreach ($body['fields'] as $field) {
@@ -349,10 +353,11 @@ class IndexingModelController
 
         IndexingModelModel::update([
             'set'   => [
-                'label'     => $body['label'],
-                'category'  => $body['category'],
-                '"default"' => $body['default'] ? 'true' : 'false',
-                'mandatory_file' => empty($body['mandatoryFile']) ? 'false' : 'true'
+                'label'             => $body['label'],
+                'category'          => $body['category'],
+                '"default"'         => $body['default'] ? 'true' : 'false',
+                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true',
+                'entities'          => !isset($body['entities']) ? '[]' : json_encode($body['entities'])
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
