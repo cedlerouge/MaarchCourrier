@@ -107,7 +107,7 @@ export class EntitiesAdministrationComponent implements OnInit {
     applyFilterIndexingModels(filterValue: string) {
         filterValue = filterValue.trim();
         filterValue = filterValue.toLowerCase();
-        this.dataSourceTemplates.filter = filterValue;
+        this.dataSourceIndexingModels.filter = filterValue;
     }
 
 
