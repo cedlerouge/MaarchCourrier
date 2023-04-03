@@ -33,8 +33,10 @@ export class EntitiesAdministrationComponent implements OnInit {
     @ViewChild('appInputCorrespondentGroup', { static: false }) appInputCorrespondentGroup: InputCorrespondentGroupComponent;
     @ViewChild('paginatorUsers', { static: false }) paginatorUsers: MatPaginator;
     @ViewChild('paginatorTemplates', { static: false }) paginatorTemplates: MatPaginator;
+    @ViewChild('paginatorIndexingModels', { static: false }) paginatorIndexingModels: MatPaginator;
     @ViewChild('tableUsers', { static: false }) sortUsers: MatSort;
     @ViewChild('tableTemplates', { static: false }) sortTemplates: MatSort;
+    @ViewChild('tableIndexingModels', { static: false }) sortIndexingModels: MatSort;
     @ViewChild('appDiffusionsList', { static: false }) appDiffusionsList: DiffusionsListComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
     @ViewChild('appAvisWorkflow', { static: false }) appAvisWorkflow: AvisWorkflowComponent;
@@ -62,8 +64,11 @@ export class EntitiesAdministrationComponent implements OnInit {
 
     dataSourceUsers = new MatTableDataSource(this.currentEntity.users);
     dataSourceTemplates = new MatTableDataSource(this.currentEntity.templates);
+    dataSourceIndexingModels = new MatTableDataSource(this.currentEntity.indexingModels);
+
     displayedColumnsUsers = ['firstname', 'lastname'];
     displayedColumnsTemplates = ['template_label', 'template_target'];
+    displayedColumnsIndexingModels = ['indexing_model_label', 'indexing_model_category'];
 
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
@@ -94,6 +99,12 @@ export class EntitiesAdministrationComponent implements OnInit {
     }
 
     applyFilterTemplates(filterValue: string) {
+        filterValue = filterValue.trim();
+        filterValue = filterValue.toLowerCase();
+        this.dataSourceTemplates.filter = filterValue;
+    }
+
+    applyFilterIndexingModels(filterValue: string) {
         filterValue = filterValue.trim();
         filterValue = filterValue.toLowerCase();
         this.dataSourceTemplates.filter = filterValue;
@@ -284,6 +295,10 @@ export class EntitiesAdministrationComponent implements OnInit {
                 this.dataSourceTemplates = new MatTableDataSource(this.currentEntity.templates);
                 this.dataSourceTemplates.paginator = this.paginatorTemplates;
                 this.dataSourceTemplates.sort = this.sortTemplates;
+
+                this.dataSourceIndexingModels = new MatTableDataSource(this.currentEntity.indexingModels);
+                this.dataSourceIndexingModels.paginator = this.paginatorIndexingModels;
+                this.dataSourceIndexingModels.sort = this.sortIndexingModels;
 
                 if (!this.currentEntity.listTemplate.items) {
                     this.currentEntity.listTemplate.items = [];
@@ -805,6 +820,12 @@ export class EntitiesAdministrationComponent implements OnInit {
     showTemplate(templateId: any) {
         if (this.currentEntity.canAdminTemplates) {
             this.router.navigate(['/administration/templates/' + templateId]);
+        }
+    }
+
+    showIndexingModel(modelId: any) {
+        if (this.currentEntity.canAdminIndexingModels) {
+            this.router.navigate(['/administration/indexingModels/' + modelId]);
         }
     }
 

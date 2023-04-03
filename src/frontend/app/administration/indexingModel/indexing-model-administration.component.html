@@ -72,6 +72,9 @@
     <mat-sidenav #snav2 [mode]="appService.getViewMode() ? 'over' : 'side'" [fixedInViewport]="appService.getViewMode()"
         fixedTopGap="56" position='end' opened class="col-md-4 col-sm-12">
         <mat-tab-group>
+            <mat-tab [label]="'lang.entities' | translate">
+                <app-maarch-flat-tree #maarchTree></app-maarch-flat-tree>
+            </mat-tab>
             <mat-tab [label]="'lang.availableFields' | translate">
                 <app-field-list *ngIf="indexingForm !== undefined" [dataFields]="indexingForm.getAvailableFields()">
                 </app-field-list>

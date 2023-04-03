@@ -11,6 +11,7 @@ import { SortPipe } from '../../../plugins/sorting.pipe';
 import { IndexingFormComponent } from '../../indexation/indexing-form/indexing-form.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
 
 @Component({
     templateUrl: 'indexing-model-administration.component.html',
@@ -26,6 +27,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
     @ViewChild('snav2', { static: true }) public sidenavRight: MatSidenav;
 
     @ViewChild('indexingForm', { static: false }) indexingForm: IndexingFormComponent;
+
+    @ViewChild('maarchTree', { static: true }) maarchTree: MaarchFlatTreeComponent;
 
     loading: boolean = true;
 
@@ -96,6 +99,10 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
                         this.indexingModelClone = JSON.parse(JSON.stringify(this.indexingModel));
 
+                        this.maarchTree.initData(this.indexingModel?.entities?.map(ent => ({
+                            ...ent,
+                            id : ent.serialId,
+                        })));
                     }),
                     exhaustMap(() => this.http.get('../rest/categories')),
                     tap((data: any) => {
@@ -109,8 +116,6 @@ export class IndexingModelAdministrationComponent implements OnInit {
                 ).subscribe();
             }
         });
-
-
     }
 
     onSubmit() {
@@ -124,7 +129,11 @@ export class IndexingModelAdministrationComponent implements OnInit {
             delete fields[key].values;
         });
         this.indexingModel.fields = fields;
-        this.indexingModel = {...this.indexingModel, allDoctypes: this.indexingForm.allDoctypes};
+        this.indexingModel = {
+            ...this.indexingModel,
+            allDoctypes: this.indexingForm.allDoctypes,
+            entities: this.maarchTree.getSelectedNodes().map((ent: any) => ent.entity_id)
+        };
 
         if (this.creationMode) {
             this.http.post('../rest/indexingModels', this.indexingModel).pipe(

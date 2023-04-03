@@ -498,6 +498,53 @@
                             [ngStyle]="{'cursor': !currentEntity.canAdminTemplates ? 'position' : 'pointer'}"></mat-row>
                     </mat-table>
                 </mat-tab>
+                <!--  -->
+                <mat-tab label="{{'lang.indexingModels' | translate}}" *ngIf="!creationMode">
+                    <div class="row" style="margin:0px;">
+                        <div class="col-md-4 col-xs-4">
+                            <mat-form-field>
+                                <input matInput #filterIndexingModels (keyup)="applyFilterTemplates($event.target.value)"
+                                    placeholder="{{'lang.filterBy' | translate}}">
+                                <button mat-button *ngIf="filterIndexingModels.value" matSuffix mat-icon-button
+                                    aria-label="Clear" (click)="applyFilterIndexingModels(''); filterIndexingModels.value = ''"
+                                    [title]="'lang.clearFilter' | translate">
+                                    <mat-icon class="fas fa-times" style="color:#B3B3B3"></mat-icon>
+                                </button>
+                            </mat-form-field>
+                        </div>
+                        <div class="col-md-8 col-xs-8">
+                            <div class="table-head table-head-tool">
+                                <span style="position: relative;">
+                                    <mat-paginator #paginatorIndexingModels [length]="100" [pageSize]="10" [pageSizeOptions]="[10, 25, 50, 100, 150]"></mat-paginator>
+                                    <app-select-page [paginator]="paginatorIndexingModels"></app-select-page>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <mat-table #tableIndexingModels="matSort" [dataSource]="dataSourceIndexingModels" matSort
+                        matSortActive="indexing_model_label" matSortDirection="asc">
+                        <ng-container matColumnDef="indexing_model_label">
+                            <mat-header-cell *matHeaderCellDef mat-sort-header style="flex:2;">
+                                {{'lang.modelName' | translate}}
+                            </mat-header-cell>
+                            <mat-cell *matCellDef="let element" style="flex:2;"
+                                matTooltip="{{element.template_comment}}"> {{element.indexing_model_label}} </mat-cell>
+                        </ng-container>
+                        <ng-container matColumnDef="indexing_model_category">
+                            <mat-header-cell *matHeaderCellDef mat-sort-header style="flex:1;">
+                                {{'lang.categoryId' | translate}}
+                            </mat-header-cell>
+                            <mat-cell *matCellDef="let element" style="flex:1;">
+                                {{'lang.' + element.indexing_model_category | translate}}
+                            </mat-cell>
+                        </ng-container>
+                        <mat-header-row *matHeaderRowDef="displayedColumnsIndexingModels"></mat-header-row>
+                        <mat-row *matRowDef="let row; columns: displayedColumnsIndexingModels;"
+                            (click)="showIndexingModel(row.indexing_model_id);"
+                            [ngStyle]="{'cursor': !currentEntity.canAdminIndexingModels ? 'position' : 'pointer'}"></mat-row>
+                    </mat-table>
+                </mat-tab>
+                <!--  -->
             </mat-tab-group>
         </mat-nav-list>
     </mat-sidenav>
