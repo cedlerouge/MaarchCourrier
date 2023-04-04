@@ -2712,7 +2712,7 @@
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>",
     "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
     "eidas_metasign": "Cachet Metasign",
-    "viewAttachment": "Visualisation seulement",
-    "updateDeleteAttachment": "Modification et suppression",
-    "updateAttachment": "Modification"
+    "viewAttachments": "Visualisation seulement",
+    "updateDeleteAttachments": "Modification et suppression",
+    "updateAttachments": "Modification"
 }

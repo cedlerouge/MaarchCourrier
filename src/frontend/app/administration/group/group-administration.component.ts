@@ -128,13 +128,13 @@ export class GroupAdministrationComponent implements OnInit {
                                     }
                                 ];
                             } else if (element === 'attachments') {
-                                const privileges: string[] = ['view_attachment', 'update_attachment', 'update_delete_attachment'];
+                                const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments'];
                                 const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
                                 services = [
                                     {
                                         'id': 'manageAttachments',
                                         'label': this.translate.instant('lang.manageAttachments'),
-                                        'current': !this.functions.empty(current) ? current : 'view_attachment',
+                                        'current': !this.functions.empty(current) ? current : 'view_attachments',
                                         'services': this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
@@ -261,7 +261,7 @@ export class GroupAdministrationComponent implements OnInit {
     }
 
     changeAttachmentPrivilege(event: any) {
-        const privileges: string[] = ['view_attachment', 'update_attachment', 'update_delete_attachment'];
+        const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments'];
         const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
         this.manageServices([event.value, current]);
     }

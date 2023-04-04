@@ -527,21 +527,21 @@ export class PrivilegeService {
             'unit': 'application'
         },
         {
-            'id': 'view_attachment',
-            'label': 'lang.viewAttachment',
-            'comment': 'lang.viewAttachment',
+            'id': 'view_attachments',
+            'label': 'lang.viewAttachments',
+            'comment': 'lang.viewAttachments',
             'unit': 'attachments'
         },
         {
-            'id': 'update_attachment',
-            'label': 'lang.updateAttachment',
-            'comment': 'lang.updateAttachment',
+            'id': 'update_attachments',
+            'label': 'lang.updateAttachments',
+            'comment': 'lang.updateAttachments',
             'unit': 'attachments'
         },
         {
-            'id': 'update_delete_attachment',
-            'label': 'lang.updateDeleteAttachment',
-            'comment': 'editDeleteAttachment',
+            'id': 'update_delete_attachments',
+            'label': 'lang.updateDeleteAttachments',
+            'comment': 'lang.updateDeleteAttachments',
             'unit': 'attachments'
         }
     ];

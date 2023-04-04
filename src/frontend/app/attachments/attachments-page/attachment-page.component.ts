@@ -107,7 +107,7 @@ export class AttachmentPageComponent implements OnInit {
 
                     if (!this.functions.empty(this.data.editMode)) {
                         this.editMode = this.data.editMode;
-                    } else if ((this.privilegeService.hasCurrentUserPrivilege('update_attachment') || this.privilegeService.hasCurrentUserPrivilege('update_delete_attachment') || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
+                    } else if ((this.privilegeService.hasCurrentUserPrivilege('update_attachments') || this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
                         this.editMode = true;
                     }
 
@@ -374,7 +374,7 @@ export class AttachmentPageComponent implements OnInit {
             tap(() => {
                 this.attachment.status.setValue('A_TRA');
                 this.attachment.signedResponse.setValue(null);
-                if (this.privilegeService.hasCurrentUserPrivilege('update_delete_attachment') || this.headerService.user.id === this.attachment['typist'].value) {
+                if (this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === this.attachment['typist'].value) {
                     this.editMode = true;
                     this.enableForm(this.editMode);
                 }
