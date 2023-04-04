@@ -946,7 +946,7 @@
     "makeActionOn": "Voulez-vous effectuer cette action sur",
     "makeUpdate": "Mettre à jour",
     "manageAbsences": "Rediriger mes bannettes",
-    "manageAttachments": "Modifier ou supprimer des pièces jointes",
+    "manageAttachments": "Accès aux pièces jointes (hors créateur)",
     "manageCreateContacts": "Créer des contacts",
     "manageCreateContactsDesc": "Créer des contacts depuis les pages d'indexation/traitement/détaillée",
     "manageNumericPackage": "Envoyer et enregistrer un pli numérique",
@@ -2711,5 +2711,8 @@
     "leftRotation": "Pivoter à gauche",
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>",
     "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
-    "eidas_metasign": "Cachet Metasign"
+    "eidas_metasign": "Cachet Metasign",
+    "viewAttachment": "Visualisation seulement",
+    "updateDeleteAttachment": "Modification et suppression",
+    "updateAttachment": "Modification"
 }

@@ -15,6 +15,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { of } from 'rxjs';
 import { AuthService } from '@service/auth.service';
+import { log } from 'console';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'group-administration.component.html',
@@ -59,6 +61,7 @@ export class GroupAdministrationComponent implements OnInit {
         public appService: AppService,
         public privilegeService: PrivilegeService,
         public authService: AuthService,
+        public functions: FunctionsService,
         private dialog: MatDialog
     ) { }
 
@@ -122,6 +125,17 @@ export class GroupAdministrationComponent implements OnInit {
                                         'label': this.translate.instant('lang.personalDataMsg'),
                                         'current': priv,
                                         'services': this.privilegeService.getPrivileges(['view_personal_data', 'manage_personal_data'])
+                                    }
+                                ];
+                            } else if (element === 'attachments') {
+                                const privileges: string[] = ['view_attachment', 'update_attachment', 'update_delete_attachment'];
+                                const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
+                                services = [
+                                    {
+                                        'id': 'manageAttachments',
+                                        'label': this.translate.instant('lang.manageAttachments'),
+                                        'current': !this.functions.empty(current) ? current : 'view_attachment',
+                                        'services': this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
                             }
@@ -244,6 +258,12 @@ export class GroupAdministrationComponent implements OnInit {
             this.manageServices(['view_personal_data', 'manage_personal_data'], 'deleteAll');
         }
 
+    }
+
+    changeAttachmentPrivilege(event: any) {
+        const privileges: string[] = ['view_attachment', 'update_attachment', 'update_delete_attachment'];
+        const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
+        this.manageServices([event.value, current]);
     }
 
     async resfreshShortcut() {

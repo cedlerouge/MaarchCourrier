@@ -485,12 +485,6 @@ export class PrivilegeService {
             'unit': 'application'
         },
         {
-            'id': 'manage_attachments',
-            'label': 'lang.manageAttachments',
-            'comment': 'lang.manageAttachments',
-            'unit': 'application'
-        },
-        {
             'id': 'view_personal_data',
             'label': 'lang.viewPersonalData',
             'comment': 'lang.viewPersonalData',
@@ -532,6 +526,24 @@ export class PrivilegeService {
             'comment': 'lang.createPublicIndexingModels',
             'unit': 'application'
         },
+        {
+            'id': 'view_attachment',
+            'label': 'lang.viewAttachment',
+            'comment': 'lang.viewAttachment',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'update_attachment',
+            'label': 'lang.updateAttachment',
+            'comment': 'lang.updateAttachment',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'update_delete_attachment',
+            'label': 'lang.updateDeleteAttachment',
+            'comment': 'editDeleteAttachment',
+            'unit': 'attachments'
+        }
     ];
 
     private menus: Menu[] = [
