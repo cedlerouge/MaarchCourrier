@@ -713,15 +713,12 @@ class IndexingModelController
 
         $modelLinkedEntities = json_decode($model['entities'] ?? '[]', true);
 
-        $entities = [];
-        if(!empty($modelLinkedEntities)) {
-            $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
+        $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
 
-            foreach ($entities as $key => $entity) {
-                $entities[$key]['state']['selected'] = false;
-                if (in_array($entity['entity_id'], $modelLinkedEntities)) {
-                    $entities[$key]['state']['selected'] = true;
-                }
+        foreach ($entities as $key => $entity) {
+            $entities[$key]['state']['selected'] = false;
+            if (in_array($entity['entity_id'], $modelLinkedEntities)) {
+                $entities[$key]['state']['selected'] = true;
             }
         }
 
