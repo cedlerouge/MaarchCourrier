@@ -57,7 +57,6 @@ class IndexingModelController
 
         $models = IndexingModelModel::get(['where' => $where, 'data' => [$GLOBALS['id'], 'false']]);
         foreach ($models as $key => $model) {
-            $models[$key]['entities'] = json_decode($model[$key]['entities'] ?? '[]', true);
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
             unset($models[$key]['mandatory_file']);
         }
@@ -76,7 +75,11 @@ class IndexingModelController
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
         }
 
-        $model['entities'] = json_decode($model['entities'] ?? '[]', true);
+        $entities = IndexingModelController::getModelEntities(['id' => $args['id']]);
+        if(!empty($entities['error'])) {
+            return $response->withJson(['errors' => $entities['error']]);
+        }
+        $model['entities'] = $entities['entities'];
 
         $fields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
         $destination = '';
@@ -693,5 +696,35 @@ class IndexingModelController
         }
 
         return $response->withJson(['entities' => $entities]);
+    }
+
+    public static function getModelEntities(array $args)
+    {
+        if (!Validator::notEmpty()->validate($args['id'] ?? null)) {
+            return ['error' => 'Id parameter is empty'];
+        }
+
+        $model = IndexingModelModel::getById(['id' => $args['id']]);
+        if (empty($model)) {
+            return ['error' => 'Model not found'];
+        } elseif ($model['private'] && $model['owner'] != $GLOBALS['id']) {
+            return ['error' => 'Model out of perimeter'];
+        }
+
+        $modelLinkedEntities = json_decode($model['entities'] ?? '[]', true);
+
+        $entities = [];
+        if(!empty($modelLinkedEntities)) {
+            $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
+
+            foreach ($entities as $key => $entity) {
+                $entities[$key]['state']['selected'] = false;
+                if (in_array($entity['entity_id'], $modelLinkedEntities)) {
+                    $entities[$key]['state']['selected'] = true;
+                }
+            }
+        }
+
+        return ['entities' => $entities];
     }
 }
