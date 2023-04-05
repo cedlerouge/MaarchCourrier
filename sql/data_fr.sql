@@ -1603,7 +1603,9 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COUR
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'admin_registered_mail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'manage_attachments', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_delete_attachment', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'add_new_version', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_version_letterbox', NULL);
@@ -1623,7 +1625,9 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGEN
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'sendmail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'manage_attachments', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'view_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'update_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'update_delete_attachment', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'add_new_version', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'view_version_letterbox', NULL);
@@ -1667,7 +1671,9 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'sendmail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'manage_attachments', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'view_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_delete_attachment', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'add_new_version', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'view_version_letterbox', NULL);
@@ -1720,7 +1726,9 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'include_folders_and_followed_resources_perimeter', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_alfresco', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_search', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'manage_attachments', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'view_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'update_attachment', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'update_delete_attachment', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'add_new_version', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'view_version_letterbox', NULL);
