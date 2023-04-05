@@ -43,7 +43,12 @@ class IndexingModelController
     public function get(Request $request, Response $response)
     {
         $query = $request->getQueryParams();
-        $where = ['(owner = ? OR private = ?)'];
+
+        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?)))'];
+        $data  = [$GLOBALS['id'], $GLOBALS['id']];
+
+        $where[] = 'private = ?';
+        $data[]  = 'false';
 
         $showDisabled = false;
         if (Validator::notEmpty()->validate($query['showDisabled'] ?? false)) {
@@ -51,11 +56,13 @@ class IndexingModelController
         }
 
         if (!$showDisabled) {
-            $where[] = 'enabled = TRUE';
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
         } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
-            $where[] = 'enabled = TRUE';
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
         }
-        $models = IndexingModelModel::get(['where' => $where, 'data' => [$GLOBALS['id'], 'false']]);
+        $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
         foreach ($models as $key => $model) {
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
             unset($models[$key]['mandatory_file']);
