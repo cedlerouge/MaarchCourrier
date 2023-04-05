@@ -680,8 +680,15 @@ class IndexingModelController
 
     public function getEntities(Request $request, Response $response)
     {
+        $queryParams = $request->getQueryParams();
+
+        $select = ['id', 'entity_label', 'entity_id'];
+        if (!empty($queryParams['allEntities']) && $queryParams['allEntities'] == 'true') {
+            $select = ['*'];
+        }
+
         $entitiesTmp = EntityModel::get([
-            'select'   => ['id', 'entity_label', 'entity_id'],
+            'select'   => $select,
             'where'    => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
             'data'     => ['Y'],
             'orderBy'  => ['entity_label']
