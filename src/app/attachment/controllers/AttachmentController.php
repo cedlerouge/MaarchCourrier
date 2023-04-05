@@ -108,6 +108,11 @@ class AttachmentController
             return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter']);
         }
 
+        if ($GLOBALS['id'] != $attachment['typist'] && 
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'view_attachment', 'userId' => $GLOBALS['id']]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
+        }
+
         if ($attachment['modificationDate'] == $attachment['creationDate']) {
             $attachment['modificationDate'] = null;
         }
@@ -163,7 +168,7 @@ class AttachmentController
         if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter']);
         }
-        if ($GLOBALS['id'] != $attachment['typist'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_attachments', 'userId' => $GLOBALS['id']]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+        if ($GLOBALS['id'] != $attachment['typist'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachment', 'userId' => $GLOBALS['id']]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
             return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
         }
 
@@ -252,7 +257,7 @@ class AttachmentController
         if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
-        if ($GLOBALS['id'] != $attachment['typist'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_attachments', 'userId' => $GLOBALS['id']]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+        if ($GLOBALS['id'] != $attachment['typist'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachment', 'userId' => $GLOBALS['id']]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
             return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
         }
 
