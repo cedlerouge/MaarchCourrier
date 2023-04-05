@@ -61,7 +61,6 @@ class IndexingModelModel
         ValidatorModel::notEmpty($args, ['label', 'category', 'default', 'owner', 'private', 'mandatoryFile']);
         ValidatorModel::stringType($args, ['label', 'category', 'default', 'private']);
         ValidatorModel::intVal($args, ['owner', 'master']);
-        ValidatorModel::arrayType($args, ['entities']);
 
         $nextSequenceId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'indexing_models_id_seq']);
 
@@ -75,8 +74,7 @@ class IndexingModelModel
                 'owner'             => $args['owner'],
                 'private'           => $args['private'],
                 'mandatory_file'    => $args['mandatoryFile'],
-                'master'            => $args['master'],
-                'entities'          => $args['entities']
+                'master'            => $args['master']
             ]
         ]);
 
