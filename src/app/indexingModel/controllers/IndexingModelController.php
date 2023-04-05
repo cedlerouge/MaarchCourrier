@@ -21,6 +21,7 @@ use CustomField\models\CustomFieldModel;
 use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
+use IndexingModel\models\IndexingModelsEntitiesModel;
 use IndexingModel\models\IndexingModelFieldModel;
 use IndexingModel\models\IndexingModelModel;
 use Doctype\models\DoctypeModel;
@@ -248,8 +249,7 @@ class IndexingModelController
             'owner'         => $GLOBALS['id'],
             'private'       => $body['private'],
             'mandatoryFile' => $body['mandatoryFile'],
-            'master'        => $master,
-            'entities'      => !isset($body['entities']) ? '[]' : json_encode($body['entities'])
+            'master'        => $master
         ]);
 
         foreach ($body['fields'] as $field) {
@@ -283,6 +283,13 @@ class IndexingModelController
                 'default_value' => !isset($field['default_value']) ? null : json_encode($field['default_value']),
                 'unit'          => $field['unit'],
                 'allowed_values' => !isset($field['allowedValues']) ? null : json_encode($field['allowedValues']),
+            ]);
+        }
+
+        foreach($body['entities'] as $entity) {
+            IndexingModelsEntitiesModel::create([
+                'model_id'  => $modelId,
+                'entity_id' => $entity,
             ]);
         }
 
@@ -359,8 +366,7 @@ class IndexingModelController
                 'label'             => $body['label'],
                 'category'          => $body['category'],
                 '"default"'         => $body['default'] ? 'true' : 'false',
-                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true',
-                'entities'          => !isset($body['entities']) ? '[]' : json_encode($body['entities'])
+                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true'
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
@@ -498,6 +504,15 @@ class IndexingModelController
             ]);
         }
 
+        IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
+
+        foreach($body['entities'] as $entity) {
+            IndexingModelsEntitiesModel::create([
+                'model_id'  => $args['id'],
+                'entity_id' => $entity,
+            ]);
+        }
+
         HistoryController::add([
             'tableName' => 'indexing_models',
             'recordId'  => $args['id'],
@@ -593,6 +608,8 @@ class IndexingModelController
         ]);
 
         IndexingModelFieldModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
+
+        IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
         HistoryController::add([
             'tableName' => 'indexing_models',
@@ -704,20 +721,14 @@ class IndexingModelController
             return ['error' => 'Id parameter is empty'];
         }
 
-        $model = IndexingModelModel::getById(['id' => $args['id']]);
-        if (empty($model)) {
-            return ['error' => 'Model not found'];
-        } elseif ($model['private'] && $model['owner'] != $GLOBALS['id']) {
-            return ['error' => 'Model out of perimeter'];
-        }
-
-        $modelLinkedEntities = json_decode($model['entities'] ?? '[]', true);
+        $indexingModelsEntities = IndexingModelsEntitiesModel::getByModelId(['model_id' => $args['id']]);
+        $entityIds = array_column($indexingModelsEntities ?? [], 'entity_id');
 
         $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
 
         foreach ($entities as $key => $entity) {
             $entities[$key]['state']['selected'] = false;
-            if (in_array($entity['entity_id'], $modelLinkedEntities)) {
+            if (in_array($entity['entity_id'], $entityIds)) {
                 $entities[$key]['state']['selected'] = true;
             }
         }
