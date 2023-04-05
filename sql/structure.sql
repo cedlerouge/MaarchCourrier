@@ -1433,6 +1433,15 @@ CREATE TABLE indexing_models_fields
 )
 WITH (OIDS=FALSE);
 
+CREATE TABLE IF NOT EXISTS indexing_models_entities
+(
+    id SERIAL NOT NULL,
+    model_id INTEGER NOT NULL,
+    entity_id text NOT NULL,
+    CONSTRAINT indexing_models_entities_pkey PRIMARY KEY (id)
+)
+WITH (OIDS=FALSE);
+
 CREATE TABLE contacts_custom_fields_list
 (
     id serial NOT NULL,
