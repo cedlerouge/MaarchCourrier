@@ -96,7 +96,7 @@ class IndexingModelsEntitiesModel
     public static function getByEntitylId(array $args)
     {
         ValidatorModel::notEmpty($args, ['entity_id']);
-        ValidatorModel::intVal($args, ['entity_id']);
+        ValidatorModel::stringType($args, ['entity_id']);
         ValidatorModel::arrayType($args, ['select']);
 
         $model = DatabaseModel::select([

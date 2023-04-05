@@ -36,6 +36,8 @@ use User\models\UserModel;
 use Template\models\TemplateModel;
 use SrcCore\models\TextFormatModel;
 use BroadcastList\models\BroadcastListRoleModel;
+use IndexingModel\models\IndexingModelsEntitiesModel;
+use IndexingModel\models\IndexingModelModel;
 
 class EntityController
 {
@@ -179,6 +181,21 @@ class EntityController
             'entities'  => [$args['id']]
         ]);
 
+        $entity['indexingModels'] = [];
+        $indexingModelIds = IndexingModelsEntitiesModel::getByEntitylId([
+            'select'    => ['model_id'],
+            'entity_id' => $args['id']
+        ]);
+        $indexingModelIds = array_column($indexingModelIds ?? [], 'model_id');
+
+        if (!empty($indexingModelIds)) {
+            $entity['indexingModels'] = IndexingModelModel::get([
+                'select' => ['id as indexing_model_id', 'label as indexing_model_label', 'category as indexing_model_category'],
+                'where'  => ['private = ?', 'enabled = ?', 'id IN (?)'],
+                'data'   => ['FALSE', 'TRUE', $indexingModelIds]
+            ]);
+        }
+
         $entity['users'] = EntityModel::getUsersById(['id' => $entity['entity_id'], 'select' => ['users.id','users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
         $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$args['id']]]);
         $entity['contact'] = $this->getContactLinkCount($entity['id']);
@@ -193,6 +210,7 @@ class EntityController
         $entity['canAdminTemplates'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']]);
         $siret = ParameterModel::getById(['id' => 'siret', 'select' => ['param_value_string']]);
         $entity['canSynchronizeSiret'] = !empty($siret['param_value_string']);
+        $entity['canAdminIndexingModels'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']]);
 
         return $response->withJson(['entity' => $entity]);
     }
