@@ -55,7 +55,6 @@ class IndexingModelController
         } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
             $where[] = 'enabled = TRUE';
         }
-
         $models = IndexingModelModel::get(['where' => $where, 'data' => [$GLOBALS['id'], 'false']]);
         foreach ($models as $key => $model) {
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
@@ -682,13 +681,13 @@ class IndexingModelController
     {
         $queryParams = $request->getQueryParams();
 
-        $select = ['id', 'entity_label', 'entity_id'];
         if (!empty($queryParams['allEntities']) && $queryParams['allEntities'] == 'true') {
-            $select = ['*'];
+            $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
+            return $response->withJson(['entities' => $entities]);
         }
 
         $entitiesTmp = EntityModel::get([
-            'select'   => $select,
+            'select'   => ['id', 'entity_label', 'entity_id'],
             'where'    => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
             'data'     => ['Y'],
             'orderBy'  => ['entity_label']
