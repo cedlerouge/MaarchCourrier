@@ -12,7 +12,7 @@
 -- with the group_id column set to the group_id value from the usergroups_services table, and the service_id column set to the service_id value from the usergroups_services table.
 INSERT INTO usergroups_services (group_id, service_id) 
 (SELECT us.group_id, privilege as service_id 
-FROM usergroups_services as us CROSS JOIN UNNEST(ARRAY['view_attachment', 'update_attachment', 'update_delete_attachment']) as privilege 
+FROM usergroups_services as us CROSS JOIN UNNEST(ARRAY['view_attachments', 'update_attachments', 'update_delete_attachments']) as privilege 
 WHERE us.service_id = 'manage_attachments');
 
 -- Remove old attachment privilege
