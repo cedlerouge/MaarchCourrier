@@ -279,4 +279,105 @@ class HistoryController
 
         return $response->withJson(['actions' => $actions, 'systemActions' => $systemActions, 'users' => $users]);
     }
+
+    public function exportHistory(Request $request, Response $response)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
+
+        $body = $request->getParsedBody();
+        $queryParams = $request->getQueryParams();
+
+        if (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array($body['delimiter'], [',', ';', 'TAB'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']);
+        } elseif (!Validator::stringType()->notEmpty()->validate($body['format'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Format data is empty or not an array']);
+        } elseif (!Validator::arrayType()->notEmpty()->validate($body['data'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Data data is empty or not an array']);
+        } elseif (!Validator::arrayType()->notEmpty()->validate($body['parameters'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Parameters data is empty or not an array']);
+        }
+
+        $limit = 1000;
+        if (!empty($queryParams['limit']) && is_numeric($queryParams['limit']) && (int)$queryParams['limit'] != $limit) {
+            $limit = (int)$queryParams['limit'];
+        }
+
+        $where = [];
+        $data = [];
+        if (!empty($body['parameters']['filterUsed']['users']) && is_array($body['parameters']['filterUsed']['users'])) {
+            $userLogins = [];
+            foreach ($body['parameters']['filterUsed']['users'] as $user) {
+                $userLogins[] = $user['login'];
+            }
+            $where[] = 'user_id in (?)';
+            $data[]  = $userLogins;
+        }
+        if (!empty($body['parameters']['startDate'])) {
+            $where[] = 'event_date > ?';
+            $data[]  = $body['parameters']['startDate'];
+        }
+        if (!empty($body['parameters']['endDate'])) {
+            $where[] = 'event_date < ?';
+            $data[]  = $body['parameters']['endDate'];
+        }
+
+        $eventTypes = [];
+        if (!empty($body['parameters']['filterUsed']['actions']) && is_array($body['parameters']['filterUsed']['actions'])) {
+            foreach ($body['parameters']['filterUsed']['actions'] as $action) {
+                $eventTypes[] = "ACTION#{$action['id']}";
+            }
+        }
+        if (!empty($body['parameters']['filterUsed']['systemActions']) && is_array($body['parameters']['filterUsed']['systemActions'])) {
+            foreach ($body['parameters']['filterUsed']['systemActions'] as $systemAction) {
+                $eventTypes[] = $systemAction['id'];
+            }
+        }
+        if (!empty($eventTypes)) {
+            $where[] = 'event_type in (?)';
+            $data[] = $eventTypes;
+        }
+
+        $orderBy = ['event_date DESC'];
+
+        $fields = [];
+        $csvHead = [];
+        foreach ($body['data'] as $field) {
+            if ($field['value'] === 'userLabel') {
+                $fields[] = "(SELECT concat(firstname, ' ', lastname) from users where users.id = history.user_id) as userLabel";
+            } else {
+                $fields[] = $field['value'];
+            }
+            $csvHead[] = $field['label'];
+        }
+
+        ini_set('memory_limit', -1);
+
+        $file = fopen('php://temp', 'w');
+        $delimiter = ($body['delimiter'] == 'TAB' ? "\t" : $body['delimiter']);
+
+        fputcsv($file, $csvHead, $delimiter);
+
+        $histories = HistoryModel::get([
+            'select'    => $fields,
+            'where'     => $where,
+            'data'      => $data,
+            'orderBy'   => $orderBy,
+            'limit'     => $limit
+        ]);
+
+        foreach ($histories as $history) {
+            fputcsv($file, $history, $delimiter);
+        }
+
+        rewind($file);
+
+        $response->write(stream_get_contents($file));
+        $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
+        $contentType = 'application/vnd.ms-excel';
+        fclose($file);
+
+        return $response->withHeader('Content-Type', $contentType);
+    }
 }

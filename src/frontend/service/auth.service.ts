@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { LocalStorageService } from './local-storage.service';
 import { NotificationService } from './notification/notification.service';
 import { HeaderService } from './header.service';
-import { Observable, of, Subject } from 'rxjs';
-import { catchError, finalize, map, tap } from 'rxjs/operators';
+import { Observable, of, Subject, Subscription, timer } from 'rxjs';
+import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { PrivilegeService } from './privileges.service';
 import { AlertComponent } from '@plugins/modal/alert.component';
 import { FunctionsService } from './functions.service';
@@ -28,6 +28,12 @@ export class AuthService {
     maarchUrl: string = '';
     noInstall: boolean = false;
     externalSignatoryBook: any = null;
+    idleTime: number; // Inactivity time
+
+    public userActivitySubscription: Subscription;
+    public inactivitySubscription: Subscription;
+    private warningTime: number; // warning time before disconnection in milliseconds
+    private inactivityTime: number; // inactivity time in milliseconds
 
     private eventAction = new Subject<any>();
 
@@ -143,6 +149,12 @@ export class AuthService {
                 this.redirectAfterLogout(cleanUrl);
             }
         }
+        if (this.canLogOut()) {
+            this.userActivitySubscription?.unsubscribe();
+            this.inactivitySubscription?.unsubscribe();
+        }
+        this.dialog.closeAll();
+        return new Observable<void>();
     }
 
     SsoLogout(cleanUrl: boolean = true) {
@@ -260,6 +272,7 @@ export class AuthService {
                         this.authMode = data.authMode;
                         this.authUri = data.authUri;
                         this.maarchUrl = data.maarchUrl;
+                        this.idleTime = data.idleTime;
 
                         if (this.authMode === 'keycloak') {
                             const keycloakState = this.localStorage.get('keycloakState');
@@ -332,5 +345,46 @@ export class AuthService {
     clearFilters() {
         this.adminService.filters = {};
         this.adminService.searchTerm.setValue('');
+    }
+
+    canLogOut(): boolean {
+        return ['sso', 'azure_saml'].indexOf(this.authMode) > -1 && this.functionsService.empty(this.authUri) ? false : true;
+    }
+
+    resetTimer() {
+        this.inactivityTime = this.idleTime * 60 * 1000; // convert to milliseconds
+        this.warningTime = (this.idleTime * 60 * 1000) - (10 * 1000); // subtract 10 seconds from the remaining time
+        if (this.userActivitySubscription) {
+            this.userActivitySubscription.unsubscribe();
+        }
+
+        if (this.inactivitySubscription) {
+            this.inactivitySubscription.unsubscribe();
+        }
+        this.userActivitySubscription = timer(this.warningTime).subscribe(() => {
+            const dialogRef = this.dialog.open(AlertComponent, {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: this.translate.instant('lang.warning') + ' !',
+                    isCounter: true,
+                    buttonValidate: this.translate.instant('lang.keepLogin'),
+                }
+            });
+
+            dialogRef.afterClosed().pipe(
+                tap((data: any) => {
+                    if (data === 'resetTimer') {
+                        this.inactivitySubscription.unsubscribe();
+                        this.resetTimer();
+                    }
+                })
+            ).subscribe();
+        });
+        this.inactivitySubscription = timer(this.inactivityTime)
+            .pipe(
+                switchMap(() => this.logout()),
+            ).subscribe();
     }
 }

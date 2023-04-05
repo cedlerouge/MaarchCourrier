@@ -2714,5 +2714,11 @@
     "eidas_metasign": "Cachet Metasign",
     "viewAttachments": "Visualisation seulement",
     "updateDeleteAttachments": "Modification et suppression",
-    "updateAttachments": "Modification"
+    "updateAttachments": "Modification",
+    "exportHistory": "Exporter l'historique",
+    "applyFilters": "Les filtres seront appliqués à l'exportation des données pour une limite de 1000 lignes.",
+    "keepLogin": "Rester connecté",
+    "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !",
+    "zoomIn": "Agrandir",
+    "zoomOut": "Réduire"
 }

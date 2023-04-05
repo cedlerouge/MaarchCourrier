@@ -22,12 +22,13 @@ abstract class ResModelAbstract
     public static function getOnView(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['select']);
-        ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy', 'groupBy']);
+        ValidatorModel::arrayType($aArgs, ['select', 'table', 'leftJoin', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($aArgs, ['limit', 'offset']);
 
         $aResources = DatabaseModel::select([
             'select'    => $aArgs['select'],
-            'table'     => ['res_view_letterbox'],
+            'table'     => array_merge(['res_view_letterbox'], $aArgs['table'] ?? []),
+            'left_join' => empty($aArgs['leftJoin']) ? [] : $aArgs['leftJoin'],
             'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
             'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
             'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
