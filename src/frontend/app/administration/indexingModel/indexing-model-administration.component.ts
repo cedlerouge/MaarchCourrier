@@ -64,9 +64,11 @@ export class IndexingModelAdministrationComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.route.params.subscribe((params) => {
+        this.route.params.subscribe(async (params) => {
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
+
+                await this.getEntities();
 
                 this.headerService.setHeader(this.translate.instant('lang.indexingModelCreation'));
 
@@ -99,7 +101,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
                         this.indexingModelClone = JSON.parse(JSON.stringify(this.indexingModel));
 
-                        this.maarchTree.initData(this.indexingModel?.entities?.map(ent => ({
+                        this.maarchTree.initData(this.indexingModel.entities.map(ent => ({
                             ...ent,
                             id : ent.serialId,
                         })));
@@ -187,5 +189,23 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
     changeCategory(ev: any) {
         this.indexingForm.changeCategory(ev.value);
+    }
+
+    getEntities() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/indexingModels/entities?allEntities=true').pipe(
+                tap((data: any) => {
+                    this.maarchTree.initData(data.entities.map(ent => ({
+                        ...ent,
+                        id : ent.serialId,
+                    })));
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }
