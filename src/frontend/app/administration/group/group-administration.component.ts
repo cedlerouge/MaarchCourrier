@@ -94,22 +94,22 @@ export class GroupAdministrationComponent implements OnInit {
                             if (element === 'diffusionList') {
                                 services = [
                                     {
-                                        'id': 'indexing_diffList',
-                                        'label': this.translate.instant('lang.diffListPrivilegeMsgIndexing'),
-                                        'current': this.group.privileges.filter((priv: any) => ['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'].indexOf(priv) > -1)[0] : '',
-                                        'services': this.privilegeService.getPrivileges(['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'])
+                                        id: 'indexing_diffList',
+                                        label: this.translate.instant('lang.diffListPrivilegeMsgIndexing'),
+                                        current: this.group.privileges.filter((priv: any) => ['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'].indexOf(priv) > -1)[0] : '',
+                                        services: this.privilegeService.getPrivileges(['update_diffusion_indexing', 'update_diffusion_except_recipient_indexing'])
                                     },
                                     {
-                                        'id': 'process_diffList',
-                                        'label': this.translate.instant('lang.diffListPrivilegeMsgProcess'),
-                                        'current': this.group.privileges.filter((priv: any) => ['update_diffusion_process', 'update_diffusion_except_recipient_process'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_process', 'update_diffusion_except_recipient_process'].indexOf(priv) > -1)[0] : '',
-                                        'services': this.privilegeService.getPrivileges(['update_diffusion_process', 'update_diffusion_except_recipient_process'])
+                                        id: 'process_diffList',
+                                        label: this.translate.instant('lang.diffListPrivilegeMsgProcess'),
+                                        current: this.group.privileges.filter((priv: any) => ['update_diffusion_process', 'update_diffusion_except_recipient_process'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_process', 'update_diffusion_except_recipient_process'].indexOf(priv) > -1)[0] : '',
+                                        services: this.privilegeService.getPrivileges(['update_diffusion_process', 'update_diffusion_except_recipient_process'])
                                     },
                                     {
-                                        'id': 'details_diffList',
-                                        'label': this.translate.instant('lang.diffListPrivilegeMsgDetails'),
-                                        'current': this.group.privileges.filter((priv: any) => ['update_diffusion_details', 'update_diffusion_except_recipient_details'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_details', 'update_diffusion_except_recipient_details'].indexOf(priv) > -1)[0] : '',
-                                        'services': this.privilegeService.getPrivileges(['update_diffusion_details', 'update_diffusion_except_recipient_details'])
+                                        id: 'details_diffList',
+                                        label: this.translate.instant('lang.diffListPrivilegeMsgDetails'),
+                                        current: this.group.privileges.filter((priv: any) => ['update_diffusion_details', 'update_diffusion_except_recipient_details'].indexOf(priv) > -1)[0] !== undefined ? this.group.privileges.filter((priv: any) => ['update_diffusion_details', 'update_diffusion_except_recipient_details'].indexOf(priv) > -1)[0] : '',
+                                        services: this.privilegeService.getPrivileges(['update_diffusion_details', 'update_diffusion_except_recipient_details'])
                                     }
                                 ];
                             } else if (element === 'confidentialityAndSecurity') {
@@ -121,10 +121,10 @@ export class GroupAdministrationComponent implements OnInit {
                                 }
                                 services = [
                                     {
-                                        'id': 'confidentialityAndSecurity_personal_data',
-                                        'label': this.translate.instant('lang.personalDataMsg'),
-                                        'current': priv,
-                                        'services': this.privilegeService.getPrivileges(['view_personal_data', 'manage_personal_data'])
+                                        id: 'confidentialityAndSecurity_personal_data',
+                                        label: this.translate.instant('lang.personalDataMsg'),
+                                        current: priv,
+                                        services: this.privilegeService.getPrivileges(['view_personal_data', 'manage_personal_data'])
                                     }
                                 ];
                             } else if (element === 'attachments') {
@@ -132,10 +132,10 @@ export class GroupAdministrationComponent implements OnInit {
                                 const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
                                 services = [
                                     {
-                                        'id': 'manageAttachments',
-                                        'label': this.translate.instant('lang.manageAttachments'),
-                                        'current': !this.functions.empty(current) ? current : 'view_attachments',
-                                        'services': this.privilegeService.getPrivileges(privileges)
+                                        id: 'manageAttachments',
+                                        label: this.translate.instant('lang.manageAttachments'),
+                                        current: !this.functions.empty(current) ? current : 'view_attachments',
+                                        services: this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
                             }
