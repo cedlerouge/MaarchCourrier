@@ -176,11 +176,13 @@ class ListTemplateController
             ]);
         }
 
+        $description = $body['description'] ?? '';
+
         HistoryController::add([
             'tableName' => 'list_templates',
             'recordId'  => $listTemplateId,
             'eventType' => 'ADD',
-            'info'      => _LIST_TEMPLATE_CREATION . " : {$body['title']} {$body['description']}",
+            'info'      => _LIST_TEMPLATE_CREATION . " : {$body['title']} {$description}",
             'moduleId'  => 'listTemplate',
             'eventId'   => 'listTemplateCreation',
         ]);
