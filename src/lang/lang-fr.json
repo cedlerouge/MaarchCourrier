@@ -946,7 +946,7 @@
     "makeActionOn": "Voulez-vous effectuer cette action sur",
     "makeUpdate": "Mettre à jour",
     "manageAbsences": "Rediriger mes bannettes",
-    "manageAttachments": "Accès aux pièces jointes (hors créateur)",
+    "manageAttachments": "Permissions d'accès aux pièces jointes (pour les non-créateurs)",
     "manageCreateContacts": "Créer des contacts",
     "manageCreateContactsDesc": "Créer des contacts depuis les pages d'indexation/traitement/détaillée",
     "manageNumericPackage": "Envoyer et enregistrer un pli numérique",
