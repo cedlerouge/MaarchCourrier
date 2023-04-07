@@ -1800,9 +1800,55 @@ class UserController
         $csvHead = array_map(function ($field) { return $field; }, array_column($fields, 'label'));
         fputcsv($file, $csvHead, $delimiter);
 
+        $userAccountTypes = [
+            'standard'          => _STANDARD_,
+            'rest'              => _REST_,
+            'root_visible'      => _ROOT_VISIBLE_,
+            'root_invisible'    => _ROOT_INVISIBLE_
+        ];
+
+        $userStatus = [
+            'OK'    => _OK_,
+            'SPD'   => _SPD_,
+            'ABS'   => _ABS_
+        ];
+
         foreach ($users as $user) {
             $csvContent = [];
             foreach ($fields as $field) {
+                if ($field['value'] == 'accountType') {
+                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' . $userAccountTypes[$user[$allowedFields[$field['value']]]] . ')';
+                }
+
+                if ($field['value'] == 'status') {
+                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' . $userStatus[$user[$allowedFields[$field['value']]]] . ')';
+                }
+
+                if ($field['value'] == 'baskets' || $field['value'] == 'redirectedBaskets' || $field['value'] == 'assignedBaskets') {
+                    $array = explode("\n", $user[$allowedFields[$field['value']]]);
+                    sort($array);
+                    $user[$allowedFields[$field['value']]] = implode("\n", $array);
+                }
+
+                if ($field['value'] == 'entities') {
+                    $array = explode("\n", $user[$allowedFields[$field['value']]]);
+                    $searchTerm = _PRIMARY_ENTITY;
+                    $primaryEntity = '';
+                    $index = false;
+                    foreach ($array as $key => $value) {
+                        if (strpos($value, $searchTerm) !== false) {
+                            $primaryEntity  = $value;
+                            $index = $key;
+                            break;
+                        }
+                    }
+
+                    if ($index !== false) {
+                        unset($array[$index]);
+                        array_unshift($array, $primaryEntity);
+                    }
+                    $user[$allowedFields[$field['value']]] = implode("\n", $array);
+                }
                 $csvContent[] = $user[$allowedFields[$field['value']]] ?? '';
             }
             fputcsv($file, $csvContent, $delimiter);
