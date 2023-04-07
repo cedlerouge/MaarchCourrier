@@ -68,18 +68,7 @@ export class ExternalSignatoryBookManagerService {
     }
 
     getOtpConfig(): Promise<any> {
-        return new Promise((resolve) => {
-            this.http.get('../rest/maarchParapheurOtp').pipe(
-                tap((data: any) => {
-                    resolve(data);
-                }),
-                catchError((err: any) => {
-                    this.notifications.handleSoftErrors(err);
-                    resolve(null);
-                    return of(false);
-                })
-            ).subscribe();
-        });
+        return this.serviceInjected?.getOtpConfig();
     }
 
     getAutocompleteUsersRoute(): string {
@@ -210,5 +199,9 @@ export class ExternalSignatoryBookManagerService {
 
     canManageSignaturesPositions(): boolean {
         return this.serviceInjected?.canManageSignaturesPositions;
+    }
+
+    getOtpConnectors(): any[] {
+        return this.serviceInjected?.otpConnectors;
     }
 }
