@@ -255,7 +255,7 @@ class AttachmentController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
         if ($GLOBALS['id'] != $attachment['typist'] 
-            && (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])) 
+            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) 
             && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
             return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
         }
