@@ -1603,8 +1603,6 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COUR
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'admin_registered_mail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_attachments', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_delete_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'add_new_version', NULL);
@@ -1625,8 +1623,6 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGEN
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'sendmail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'view_attachments', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'update_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'update_delete_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'add_new_version', NULL);
@@ -1671,8 +1667,6 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'sendmail', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'use_mail_services', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'include_folders_and_followed_resources_perimeter', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'view_attachments', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_delete_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'add_new_version', NULL);
@@ -1726,8 +1720,6 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'include_folders_and_followed_resources_perimeter', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_alfresco', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_search', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'view_attachments', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'update_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'update_delete_attachments', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'view_documents_with_notes', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'add_new_version', NULL);
@@ -1774,6 +1766,12 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'manage_personal_data', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'edit_resource', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_diffusion_process', NULL);
+
+-- Set privilege view_attachments to other groups without update_delete_attachments privilege
+INSERT INTO usergroups_services (group_id, service_id) 
+(SELECT distinct (us.group_id), 'view_attachments' as service_id 
+FROM usergroups_services as us 
+WHERE us.group_id NOT IN (SELECT group_id FROM usergroups_services WHERE service_id = 'update_delete_attachments'));
 
 INSERT INTO users (id, user_id, password, firstname, lastname, phone, mail, initials, preferences, status, password_modification_date, mode, refresh_token, reset_token, failed_authentication, locked_until, authorized_api, external_id, feature_tour) VALUES (5, 'ddur', '$2y$10$C.QSslBKD3yNMfRPuZfcaubFwPKiCkqqOUyAdOr5FSGKPaePwuEjG', 'Dominique', 'DUR', NULL, 'yourEmail@domain.com', NULL, '{"documentEdition": "onlyoffice"}', 'OK', '2021-03-24 10:17:02.66594', 'standard', '["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTcyOTMxNjMsInVzZXIiOnsiaWQiOjV9fQ.-xHs1HNXaF04o5inFZeCOSOuodW8vrsPcVqsaiPnNww", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTcyOTMzMzgsInVzZXIiOnsiaWQiOjV9fQ.jY7jDCHyojZScH2FEDst825Rk3-M1ZspQXg0P5ZwQfQ"]', NULL, 0, NULL, '[]', '{}', '[]');
 INSERT INTO users (id, user_id, password, firstname, lastname, phone, mail, initials, preferences, status, password_modification_date, mode, refresh_token, reset_token, failed_authentication, locked_until, authorized_api, external_id, feature_tour) VALUES (1, 'rrenaud', '$2y$10$C.QSslBKD3yNMfRPuZfcaubFwPKiCkqqOUyAdOr5FSGKPaePwuEjG', 'Robert', 'RENAUD', NULL, 'yourEmail@domain.com', NULL, '{"documentEdition": "onlyoffice"}', 'OK', '2021-03-24 10:17:02.66594', 'standard', '[]', NULL, 0, NULL, '[]', '{}', '[]');
