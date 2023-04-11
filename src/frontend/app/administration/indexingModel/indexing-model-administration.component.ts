@@ -242,4 +242,36 @@ export class IndexingModelAdministrationComponent implements OnInit {
             ).subscribe();
         });
     }
+
+    toggleEntities(isDefault: boolean) {
+        /**
+         * If the model is default: all entities are selected and modification is not possible
+         */
+        if (isDefault) {
+            this.allEntities.forEach((entity: any) => {
+                entity.state.disabled = true;
+                entity.state.selected = true;
+            });
+        } else {
+            this.allEntities.forEach((entity: any) => {
+                entity.state.disabled = false;
+            });
+        }
+
+        /**
+         * if you are editing
+         * we keep the initial selection of entities for the model when 'isDefault' is false
+         */
+        if (!this.creationMode && !isDefault) {
+            this.maarchTree.initData(this.allEntitiesClone.map(ent => ({
+                ...ent,
+                id : ent.serialId,
+            })));
+        } else {
+            this.maarchTree.initData(this.allEntities.map(ent => ({
+                ...ent,
+                id : ent.serialId,
+            })));
+        }
+    }
 }
