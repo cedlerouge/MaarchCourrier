@@ -50,6 +50,21 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
     categoriesList: any[];
 
+    allEntities: any[] = [];
+
+    allEntitiesClone: any[] = [];
+
+    keywordAllEntities: any = {
+        id: 'ALL_ENTITIES',
+        keyword: 'ALL_ENTITIES',
+        entity_id: 'ALL_ENTITIES',
+        parent: '#',
+        icon: 'fa fa-hashtag',
+        allowed: true,
+        text: this.translate.instant('lang.allEntities'),
+        state: {selected: false}
+    };
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -101,7 +116,20 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
                         this.indexingModelClone = JSON.parse(JSON.stringify(this.indexingModel));
 
-                        this.maarchTree.initData(this.indexingModel.entities.map(ent => ({
+                        this.indexingModel.entities.push(this.keywordAllEntities);
+
+                        this.allEntities = this.indexingModel.entities;
+
+                        this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
+
+                        if (this.indexingModel.default === true) {
+                            (this.allEntities as any []).forEach((entity: any) => {
+                                entity.state.selected = true;
+                                entity.state.disabled = true;
+                            });
+                        }
+
+                        this.maarchTree.initData(this.allEntities.map(ent => ({
                             ...ent,
                             id : ent.serialId,
                         })));
@@ -195,11 +223,17 @@ export class IndexingModelAdministrationComponent implements OnInit {
         return new Promise((resolve) => {
             this.http.get('../rest/indexingModels/entities?allEntities=true').pipe(
                 tap((data: any) => {
-                    this.maarchTree.initData(data.entities.map(ent => ({
+                    this.allEntities = data.entities;
+                    this.allEntities.push(this.keywordAllEntities);
+                    this.allEntities.forEach((entity: any) => {
+                        entity.state.selected = true;
+                    });
+                    this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
+                    this.maarchTree.initData(this.allEntities.map(ent => ({
                         ...ent,
                         id : ent.serialId,
                     })));
-                    resolve(true);
+                    resolve(this.allEntities);
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
