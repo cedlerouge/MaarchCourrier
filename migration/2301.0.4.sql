@@ -1,7 +1,7 @@
 -- *************************************************************************--
 --                                                                          --
 --                                                                          --
--- Model migration script - 2301.0.2 to 2301.0.3                            --
+-- Model migration script - 2301.0.3 to 2301.0.4                            --
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
@@ -26,4 +26,4 @@ INSERT INTO indexing_models_entities (model_id, entity_id) SELECT models.id AS m
 INSERT INTO indexing_models_entities (model_id, entity_id) (SELECT models.id as model_id, 'ALL_ENTITIES' as entity_id FROM indexing_models as models);
 
 
-UPDATE parameters SET param_value_string = '2301.0.3' WHERE id = 'database_version';
+UPDATE parameters SET param_value_string = '2301.0.4' WHERE id = 'database_version';

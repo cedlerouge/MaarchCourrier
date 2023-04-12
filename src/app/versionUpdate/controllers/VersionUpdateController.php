@@ -24,6 +24,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
+use SrcCore\controllers\AuthenticationController;
 
 class VersionUpdateController
 {
@@ -273,6 +274,13 @@ class VersionUpdateController
                 }
                 $targetedSqlFiles[] = "migration/{$file}"; 
             }
+        }
+
+        // From this route global id is undefined
+        $route = $_SERVER['REQUEST_METHOD'] . explode('/rest', $_SERVER['REQUEST_URI'])[1];
+        if (empty($GLOBALS['id'] ?? null) && in_array($route, AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
+            $user = \User\models\UserModel::get(['select' => ['id'],'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
+            $GLOBALS['id'] = $user[0]['id'];
         }
 
         if (!empty($targetedSqlFiles)) {
