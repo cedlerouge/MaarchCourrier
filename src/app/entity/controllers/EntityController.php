@@ -282,6 +282,23 @@ class EntityController
             'eventId'   => 'entityCreation',
         ]);
 
+        if (!empty($body['parent_entity_id']) ) {
+            $indexingModelIds = IndexingModelsEntitiesModel::getModelIdsFromEntityWithKeyword([
+                'entity_id' => $body['parent_entity_id'],
+                'keyword'   => 'ALL_ENTITIES'
+            ]);
+            $indexingModelIds = array_column($indexingModelIds ?? [], 'id');
+
+            if (!empty($indexingModelIds)) {
+                foreach($indexingModelIds as $modelId) {
+                    IndexingModelsEntitiesModel::create([
+                        'model_id'  => $modelId,
+                        'entity_id' => $body['entity_id'],
+                    ]);
+                }
+            }
+        }
+
         if (empty($body['parent_entity_id'])) {
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => [1]]);
             $pEntity = 'N';
@@ -460,6 +477,8 @@ class EntityController
         ]);
 
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+
+        IndexingModelsEntitiesModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
 
         HistoryController::add([
             'tableName' => 'entities',

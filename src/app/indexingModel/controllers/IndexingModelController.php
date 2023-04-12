@@ -293,11 +293,6 @@ class IndexingModelController
             ]);
         }
 
-        $body['entities'] = $body['entities'] ?? [];
-        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
-            $body['entities'] = array_column(EntityModel::get(['select' => ['entity_id']]), 'entity_id');
-        }
-
         foreach($body['entities'] as $entity) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $modelId,
@@ -518,10 +513,6 @@ class IndexingModelController
 
         IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
-        $body['entities'] = $body['entities'] ?? [];
-        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
-            $body['entities'] = array_column(EntityModel::get(['select' => ['entity_id']]), 'entity_id');
-        }
         foreach($body['entities'] as $entity) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $args['id'],
@@ -750,15 +741,21 @@ class IndexingModelController
         $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
 
         if (in_array(IndexingModelController::ALL_ENTITIES, $entityIds)) {
-            foreach ($entities as $key => $entity) {
+            $entities[] = [
+                'id' => 'ALL_ENTITIES',
+                'entity_id' => 'ALL_ENTITIES',
+                'parent' => '#',
+                'icon' => 'fa fa-hashtag',
+                'allowed' => true,
+                'text' => ALL_ENTITIES_TEXT,
+                'state' => ['selected' => true]
+            ];
+        }
+
+        foreach ($entities as $key => $entity) {
+            $entities[$key]['state']['selected'] = false;
+            if (in_array($entity['entity_id'], $entityIds)) {
                 $entities[$key]['state']['selected'] = true;
-            }
-        } else {
-            foreach ($entities as $key => $entity) {
-                $entities[$key]['state']['selected'] = false;
-                if (in_array($entity['entity_id'], $entityIds)) {
-                    $entities[$key]['state']['selected'] = true;
-                }
             }
         }
 

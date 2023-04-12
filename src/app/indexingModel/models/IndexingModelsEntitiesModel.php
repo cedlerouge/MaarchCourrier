@@ -109,6 +109,22 @@ class IndexingModelsEntitiesModel
         return $model;
     }
 
+    public static function getModelIdsFromEntityWithKeyword(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['entity_id', 'keyword']);
+        ValidatorModel::stringType($args, ['entity_id', 'keyword']);
+
+        $model = DatabaseModel::select([
+            'select'    => ['distinct(IM.id)'],
+            'table'     => ['indexing_models_entities as IME', 'indexing_models as IM'],
+            'left_join' => ['IME.model_id = IM.id AND IM.private = false and IM.enabled = true and IM.id in (select model_id from indexing_models_entities where entity_id = ?)'],
+            'where'     => ['IME.entity_id = ? AND IM.id IS NOT NULL'],
+            'data'      => [$args['entity_id'], $args['keyword']]
+        ]);
+
+        return $model;
+    }
+
     public static function update(array $args)
     {
         ValidatorModel::notEmpty($args, ['set', 'where', 'data']);
