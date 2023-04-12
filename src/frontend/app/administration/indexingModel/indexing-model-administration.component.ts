@@ -12,6 +12,7 @@ import { IndexingFormComponent } from '../../indexation/indexing-form/indexing-f
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'indexing-model-administration.component.html',
@@ -68,12 +69,13 @@ export class IndexingModelAdministrationComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public dialog: MatDialog,
+        public appService: AppService,
+        public functions: FunctionsService,
+        private headerService: HeaderService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
-        public dialog: MatDialog,
-        private headerService: HeaderService,
-        public appService: AppService,
     ) {
 
     }
@@ -116,10 +118,11 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
                         this.indexingModelClone = JSON.parse(JSON.stringify(this.indexingModel));
 
-                        this.indexingModel.entities.push(this.keywordAllEntities);
-
                         this.allEntities = this.indexingModel.entities;
 
+                        if (this.functions.empty(this.allEntities.find((entity: any) => entity.entity_id === 'ALL_ENTITIES'))) {
+                            this.indexingModel.entities.push(this.keywordAllEntities);
+                        }
                         this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
 
                         if (this.indexingModel.default === true) {
