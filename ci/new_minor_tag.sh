@@ -106,7 +106,12 @@ npm run reload-packages
 npm run build-prod
 npm run reload-packages-prod
 
+npm run reload-packages-addin-outlook
+npm run build-prod-addin-outlook
+npm run reload-packages-prod-addin-outlook
+
 git add -f dist/
+git add -f dist-addin/
 git add -f node_modules/
 git add -f vendor/
 
@@ -150,6 +155,7 @@ if [ $FIRST_TAG == 0 ]; then
     FINAL_LOG="tmp4.txt"
     CONTENT=""
 
+    git fetch --tags
     git branch -D $RELEASE_BRANCH
     git pull origin $RELEASE_BRANCH
     git checkout $RELEASE_BRANCH
