@@ -155,6 +155,7 @@ if [ $FIRST_TAG == 0 ]; then
     FINAL_LOG="tmp4.txt"
     CONTENT=""
 
+    git fetch --tags
     git branch -D $RELEASE_BRANCH
     git pull origin $RELEASE_BRANCH
     git checkout $RELEASE_BRANCH
