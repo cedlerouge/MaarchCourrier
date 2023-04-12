@@ -264,7 +264,7 @@ class EntityController
             'address_postcode'      => $body['addressPostcode'] ?? null,
             'address_town'          => $body['addressTown'] ?? null,
             'address_country'       => $body['addressCountry'] ?? null,
-            'email'                 => $body['email'],
+            'email'                 => $body['email'] ?? null,
             'business_id'           => $body['business_id'] ?? null,
             'parent_entity_id'      => $body['parent_entity_id'],
             'entity_type'           => $body['entity_type'],
