@@ -39,6 +39,7 @@ class IndexingModelController
 {
     const INDEXABLE_DATES = ['documentDate', 'departureDate', 'arrivalDate', 'processLimitDate'];
     const ALLOWED_VALUES_ALL_DOCTYPES = '_ALL_DOCTYPES_';
+    const ALL_ENTITIES = 'ALL_ENTITIES';
 
     public function get(Request $request, Response $response)
     {
@@ -292,6 +293,11 @@ class IndexingModelController
             ]);
         }
 
+        $body['entities'] = $body['entities'] ?? [];
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
+            $body['entities'] = array_column(EntityModel::get(['select' => ['entity_id']]), 'entity_id');
+        }
+
         foreach($body['entities'] as $entity) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $modelId,
@@ -512,6 +518,10 @@ class IndexingModelController
 
         IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
+        $body['entities'] = $body['entities'] ?? [];
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
+            $body['entities'] = array_column(EntityModel::get(['select' => ['entity_id']]), 'entity_id');
+        }
         foreach($body['entities'] as $entity) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $args['id'],
@@ -739,10 +749,16 @@ class IndexingModelController
 
         $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
 
-        foreach ($entities as $key => $entity) {
-            $entities[$key]['state']['selected'] = false;
-            if (in_array($entity['entity_id'], $entityIds)) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $entityIds)) {
+            foreach ($entities as $key => $entity) {
                 $entities[$key]['state']['selected'] = true;
+            }
+        } else {
+            foreach ($entities as $key => $entity) {
+                $entities[$key]['state']['selected'] = false;
+                if (in_array($entity['entity_id'], $entityIds)) {
+                    $entities[$key]['state']['selected'] = true;
+                }
             }
         }
 
