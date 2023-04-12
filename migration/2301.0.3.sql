@@ -22,5 +22,8 @@ SELECT setval('indexing_models_entities_id_seq', (SELECT max(id)+1 FROM indexing
 -- with the model_id column set to the id value from the indexing_models table, and the entity_id column set to the entity_id value from the entities table.
 INSERT INTO indexing_models_entities (model_id, entity_id) SELECT models.id AS model_id, entity.entity_id FROM indexing_models as models CROSS JOIN entities as entity;
 
+-- Set 'ALL_ENTITIES' keyword for every indexing model in indexing_models_entities
+INSERT INTO indexing_models_entities (model_id, entity_id) (SELECT models.id as model_id, 'ALL_ENTITIES' as entity_id FROM indexing_models as models);
+
 
 UPDATE parameters SET param_value_string = '2301.0.3' WHERE id = 'database_version';
