@@ -134,7 +134,7 @@ export class GroupAdministrationComponent implements OnInit {
                                     {
                                         id: 'manageAttachments',
                                         label: this.translate.instant('lang.manageAttachments'),
-                                        current: current,
+                                        current: !this.functions.empty(current) ? current : 'view_attachments',
                                         services: this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
