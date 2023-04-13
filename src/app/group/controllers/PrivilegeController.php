@@ -206,7 +206,7 @@ class PrivilegeController
         }
 
         $privilegesStoredInDB = PrivilegeModel::getByUser(['id' => $args['userId']]);
-        $privilegesStoredInDB = array_column($privilegesStoredInDB, 'service_id');
+        // $privilegesStoredInDB = array_column($privilegesStoredInDB, 'service_id');
 
         $file   = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $isLock = !empty($file['config']['lockAdvancedPrivileges']);
