@@ -13,6 +13,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { FunctionsService } from '@service/functions.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-attachment-page',
@@ -57,11 +58,13 @@ export class AttachmentPageComponent implements OnInit {
         public dialog: MatDialog,
         public dialogRef: MatDialogRef<AttachmentPageComponent>,
         public appService: AppService,
-        private notify: NotificationService,
-        private sortPipe: SortPipe,
         public headerService: HeaderService,
         public privilegeService: PrivilegeService,
-        public functions: FunctionsService) {
+        public functions: FunctionsService,
+        private notify: NotificationService,
+        private sortPipe: SortPipe,
+        private route: ActivatedRoute
+    ) {
     }
 
     async ngOnInit(): Promise<void> {
@@ -104,10 +107,9 @@ export class AttachmentPageComponent implements OnInit {
             this.http.get(`../rest/attachments/${this.data.resId}`).pipe(
                 tap((data: any) => {
                     let contact: any = null;
-
                     if (!this.functions.empty(this.data.editMode)) {
                         this.editMode = this.data.editMode;
-                    } else if ((this.privilegeService.hasCurrentUserPrivilege('update_attachments') || this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
+                    } else if ((this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_attachments', this.data.groupId) || this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_delete_attachments', this.data.groupId) || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
                         this.editMode = true;
                     }
 
