@@ -13,6 +13,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { LatinisePipe } from 'ngx-pipes';
 import { PrivilegeService } from '@service/privileges.service';
+import { HistoryExportComponent } from '../export/history-export.component';
 
 @Component({
     templateUrl: 'history-batch-administration.component.html',
@@ -25,7 +26,28 @@ export class HistoryBatchAdministrationComponent implements OnInit {
     @ViewChild('tableHistoryListSort', { static: true }) sort: MatSort;
     @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
 
-    loading: boolean = false;
+    historyBatch: any[] = [
+        {
+            value: 'event_date',
+            label: this.translate.instant('lang.event')
+        },
+        {
+            value: 'total_processed',
+            label: this.translate.instant('lang.totalProcessed')
+        },
+        {
+            value: 'total_errors',
+            label: this.translate.instant('lang.totalErrors')
+        },
+        {
+            value: 'info',
+            label: this.translate.instant('lang.information')
+        },
+        {
+            value: 'module_name',
+            label: this.translate.instant('lang.module')
+        }
+    ];
 
     filtersChange = new EventEmitter();
 
@@ -54,6 +76,7 @@ export class HistoryBatchAdministrationComponent implements OnInit {
     };
 
     loadingFilters: boolean = true;
+    loading: boolean = false;
 
     subMenus: any[] = [];
 
@@ -273,6 +296,29 @@ export class HistoryBatchAdministrationComponent implements OnInit {
 
     handlePageEvent(event: PageEvent) {
         this.pageSize = event.pageSize;
+    }
+
+    openHistoryExport() {
+        const parameters: any = {
+            filterUsed : this.filterUsed,
+            startDate: this.functions.empty(this.startDateFilter) ? '' : this.functions.formatDateObjectToDateString(this.startDateFilter),
+            endDate: this.functions.empty(this.endDateFilter) ? '' : this.functions.formatDateObjectToDateString(this.endDateFilter)
+        };
+
+        delete parameters.filterUsed.startDate;
+        delete parameters.filterUsed.endDate;
+
+        this.dialog.open(HistoryExportComponent,
+            {
+                panelClass: 'maarch-modal',
+                width: '800px',
+                autoFocus: false,
+                data: {
+                    origin: 'batchHistory',
+                    dataAvailable: this.historyBatch,
+                    parameters: parameters
+                }
+            });
     }
 
     private filter(value: string, type: string): any[] {

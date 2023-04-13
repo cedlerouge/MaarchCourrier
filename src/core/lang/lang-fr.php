@@ -260,7 +260,7 @@ define('_RECIPIENT', 'Destinataire');
 define('_CHRONO_NUMBER', 'Numéro chrono');
 define('_INITIATOR_ENTITY', 'Entité initiatrice');
 define('_DESTINATION_ENTITY', 'Entité traitante');
-define('_PRIMARY_ENTITY', 'Entity primaire');
+define('_PRIMARY_ENTITY', 'Entité primaire');
 define('_PRIORITY', 'Priorité');
 define('_STATUS', 'Statut');
 define('_NATURE', 'Nature');
@@ -463,3 +463,12 @@ define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
 
 define('_SHIPPING_ATTACH_DEPOSIT_PROOF', 'Preuve de dépôt Maileva');
 define('_SHIPPING_ATTACH_ACKNOWLEDGEMENT_OF_RECEIPT', 'Accusé de réception Maileva');
+
+define('_OK_', "Actif");
+define('_SPD_', "Suspendu");
+define('_ABS_', "Absent");
+
+define('_STANDARD_', "Par défaut");
+define('_REST_', "Utilisateur WebService (API)");
+define('_ROOT_VISIBLE_', "Compte super administrateur visible dans les workflows (Assignable)");
+define('_ROOT_INVISIBLE_', "Compte super administrateur non visible dans les workflows (Non Assignable)");

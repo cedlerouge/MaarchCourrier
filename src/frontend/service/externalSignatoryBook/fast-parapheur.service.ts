@@ -18,12 +18,13 @@ export class FastParapheurService {
     canSynchronizeSignatures: boolean = false;
     canViewWorkflow: boolean = false;
     canCreateTile: boolean = false;
-    canAddExternalUser: boolean = false;
+    canAddExternalUser: boolean = true;
     canManageSignaturesPositions: boolean = false;
 
     userWorkflow = new UserWorkflow();
     signatureModes: string[] = [];
     workflowTypes: any[] = [];
+    otpConnectors: any[] = [];
 
     constructor(
         private http: HttpClient,
@@ -77,18 +78,15 @@ export class FastParapheurService {
     }
 
     getOtpConfig(): Promise<any> {
-        const otpConfigUrl: string = ''; // To do : set get OTP config URL
         return new Promise((resolve) => {
-            this.http.get(`../rest/${otpConfigUrl}`).pipe(
-                tap((data: any) => {
-                    resolve(data.otp.length ?? null);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    resolve(null);
-                    return of(false);
-                })
-            );
+            this.otpConnectors = [
+                {
+                    id: 1,
+                    label: this.translate.instant('lang.otpFast'),
+                    type: 'fast'
+                }
+            ];
+            resolve(this.otpConnectors);
         });
     }
 

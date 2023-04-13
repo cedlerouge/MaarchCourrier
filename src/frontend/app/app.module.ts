@@ -20,7 +20,7 @@ import { PanelListComponent } from './list/panel/panel-list.component';
 import { DocumentViewerModule } from './viewer/document-viewer.module';
 import { AppListModule } from './app-list.module';
 
-import { AuthInterceptor } from '@service/auth-interceptor.service';
+import { AuthInterceptor, InactivityInterceptor } from '@service/auth-interceptor.service';
 import { FiltersListService } from '@service/filtersList.service';
 import { CriteriaSearchService } from '@service/criteriaSearch.service';
 import { FoldersService } from './folder/folders.service';
@@ -312,6 +312,7 @@ export class MyHammerConfig extends HammerGestureConfig {
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: InactivityInterceptor, multi: true },
         DatePipe,
         FiltersListService,
         CriteriaSearchService,

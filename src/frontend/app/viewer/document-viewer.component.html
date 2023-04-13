@@ -75,6 +75,17 @@
                     </button>
                 </ng-container>
                 <!-- / -->
+                <!-- Zoom buttons -->
+                <ng-container *ngIf="file.src !== null && !noConvertedFound">
+                    <div class="divider"></div>
+                    <button color="light" mat-icon-button (click)="$event.stopPropagation(); zoomDocument('out')" [title]="'lang.zoomOut' | translate">
+                        <mat-icon class="fa fa-minus"></mat-icon>
+                    </button>
+                    <button color="light" mat-icon-button (click)="$event.stopPropagation(); zoomDocument('in')" [title]="'lang.zoomIn' | translate">
+                        <mat-icon class="fa fa-plus"></mat-icon>
+                    </button>
+                </ng-container>
+                <!-- / -->
                 <ng-container *ngIf="editMode && resId !== null && !noConvertedFound">
                     <div class="divider"></div>
                     <button [disabled]="!functions.empty(file.subinfos) && file.subinfos.signedDocVersions" [class.disabledButton]="!functions.empty(file.subinfos) && file.subinfos.signedDocVersions" mat-button (click)="editResource()"
@@ -135,7 +146,7 @@
             </div>
             <div>
                 <pdf-viewer *ngIf="file.src!==null" [src]="file.src" [render-text]="true" [autoresize]="true"
-                    [original-size]="false" [rotation]="rotation" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;display: contents;">
+                    [original-size]="false" [rotation]="rotation" [zoom]="zoom" [show-all]="true" (error)="onError($event)" style="width:100%;font-weight: initial;display: contents;">
                 </pdf-viewer>
             </div>
 

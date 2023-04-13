@@ -327,7 +327,7 @@ class FastParapheurController
                     'level'     => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve main document resId: ${resId}"
+                    'eventId'   => "Retrieve main document resId: $resId"
                 ]);
             } else {
                 LogsController::add([
@@ -336,7 +336,7 @@ class FastParapheurController
                     'level'     => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve attachment resId: ${resId}"
+                    'eventId'   => "Retrieve attachment resId: $resId"
                 ]);
             }
             if (empty(trim($value['external_id']))) {
@@ -413,7 +413,11 @@ class FastParapheurController
                 }
                 $externalState = json_decode($resource['external_state'] ?? '{}', true);
                 $knownWorkflow = array_map(function ($step) use ($fastUsers) {
-                    $step['name'] = $fastUsers[$step['id']];
+                    if($step['type'] == 'externalOTP') {
+                        $step['name'] = $step['lastname'] . " " . $step['firstname'];
+                    } else {
+                        $step['name'] = $fastUsers[$step['id']];
+                    }
                     return $step;
                 }, $externalState['signatureBookWorkflow']['workflow'] ?? []);
 
@@ -986,7 +990,8 @@ class FastParapheurController
             'type'  => $args['workflowType'],
             'steps' => []
         ];
-        //$otpInfo = [];
+
+        $otpInfo = [];
         foreach ($args['steps'] as $index => $step) {
             $stepMode = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
 
@@ -1006,11 +1011,11 @@ class FastParapheurController
                         'members' => [$step['id']]
                     ];
                 }
-            } /*elseif ($step['type'] == 'externalOTP'
-                      && Validator::notEmpty()->phone()->validate($step['phone'])
-                      && Validator::notEmpty()->email()->validate($step['email'])
-                      && Validator::notEmpty()->stringType()->validate($step['firstname'])
-                      && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+            } elseif ($step['type'] == 'externalOTP'
+                    && Validator::notEmpty()->phone()->validate($step['phone'])
+                    && Validator::notEmpty()->email()->validate($step['email'])
+                    && Validator::notEmpty()->stringType()->validate($step['firstname'])
+                    && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
                 $circuit['steps'][] = [
                     'step'    => 'OTPSignature',
                     'members' => [$step['email']]
@@ -1019,7 +1024,7 @@ class FastParapheurController
                 $otpInfo['OTP_lastname_' . $index]    = $step['lastname'];
                 $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
                 $otpInfo['OTP_email_' . $index]       = $step['email'];
-            } */ else {
+            } else {
                 return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
         }
@@ -1027,16 +1032,16 @@ class FastParapheurController
             return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
-        /*
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
-            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
-            foreach ($otpInfo as $name => $value) {
-                $metadataElement = $otpInfoXML->addChild('meta-data');
-                $metadataElement->addAttribute($name, $value);
+            $otpInfoXML = FastParapheurController::generateOtpXml([
+                'prettyPrint'   => true,
+                'otpInfo'       => $otpInfo
+            ]);
+            if (!empty($otpInfoXML['errors'])) {
+                return ['error' => $$otpInfoXML['errors']];
             }
         }
-        */
 
         $resource = ResModel::getById([
             'resId'  => $args['resIdMaster'],
@@ -1211,7 +1216,7 @@ class FastParapheurController
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
         foreach ($uploads as $upload) {
-            
+
             $result = FastParapheurController::onDemandUploadFilesToFast([
                 'config'     => $args['config'],
                 'upload'     => $upload,
@@ -1219,30 +1224,29 @@ class FastParapheurController
                 'appendices' => $appendices
             ]);
             if (!empty($result['error'])) {
-                return ['code' => $result['code'], 'error' => $result['error'] . ' |||| ' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION)];
+                return ['code' => $result['code'], 'error' => $result['error']];
             }
-            
-            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
 
-            /*
-            if (!empty($otpInfoXML)) {
+            if (!empty($otpInfoXML['content'])) {
                 $curlReturn = CurlModel::exec([
                     'method'  => 'PUT',
-                    'url'     => $args['config']['url'] . '/documents/v2/otp/' . $fastParapheurDocId . '/metadata/define',
+                    'url'     => $args['config']['url'] . '/documents/v2/otp/' . $result['response'] . '/metadata/define',
                     'options' => [
                         CURLOPT_SSLCERT       => $args['config']['certPath'],
                         CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
                         CURLOPT_SSLCERTTYPE   => $args['config']['certType']
                     ],
                     'multipartBody' => [
-                        'otpinformation' => ['isFile' => true, 'filename' => 'otpinfo.xml', 'content' => $otpInfoXML->asXML()]
+                        'otpinformation' => ['isFile' => true, 'filename' => 'METAS_API.xml', 'content' => $otpInfoXML['content']]
                     ]
                 ]);
                 if ($curlReturn['code'] != 200) {
-                    return ['error' => $curlReturn['errors'], 'code' => $curlReturn['code']];
+                    return ['error' => $curlReturn, 'code' => $curlReturn['code']];
                 }
             }
-            */
+
+            $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
+
         }
 
         return $returnIds;
@@ -1317,15 +1321,27 @@ class FastParapheurController
             if ($resId === null) {
                 return ['error' => 'no resId found in steps'];
             }
+
             foreach ($args['steps'] as $step) {
                 if ($step['resId'] !== $resId) {
                     continue;
                 }
-                $steps[$step['sequence']] = [
-                    'mode' => $step['signatureMode'],
-                    'type' => 'fastParapheurUserEmail',
-                    'id'   => $step['externalId']
-                ];
+                if (!empty($step['externalInformations'])) {
+                    $steps[$step['sequence']] = [
+                        'mode' => $step['signatureMode'],
+                        'type' => 'externalOTP',
+                        'phone'     => $step['externalInformations']['phone'] ?? null,
+                        'email'     => $step['externalInformations']['email'] ?? null,
+                        'firstname' => $step['externalInformations']['firstname'] ?? null,
+                        'lastname'  => $step['externalInformations']['lastname'] ?? null
+                    ];
+                } else {
+                    $steps[$step['sequence']] = [
+                        'mode' => $step['signatureMode'],
+                        'type' => 'fastParapheurUserEmail',
+                        'id'   => $step['externalId']
+                    ];
+                }
             }
             return FastParapheurController::uploadWithSteps([
                 'config'      => $config['data'],
@@ -1922,7 +1938,9 @@ class FastParapheurController
         $lastStep = [];
 
         foreach ($documentHistory as $historyStep) {
-            $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
+            if (!empty($knownWorkflow[$current]['id'])) {
+                $historyStep['userFastId'] = $knownWorkflow[$current]['id'];
+            }
             // If the document has been refused, then the workflow has ended and the last step is the refused step
             if (in_array($historyStep['stateName'], [$config['refusedState'], $config['refusedVisaState']])) {
                 $lastStep = $historyStep;
@@ -1942,5 +1960,33 @@ class FastParapheurController
         }
 
         return $lastStep;
+    }
+
+    public static function generateOtpXml(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['otpInfo']);
+        ValidatorModel::arrayType($args, ['otpInfo']);
+        ValidatorModel::boolType($args, ['prettyPrint']);
+
+        $xmlData = null;
+        try {
+            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            foreach ($args['otpInfo'] as $name => $value) {
+                $metaDataElement = $otpInfoXML->addChild('meta-data');
+                $metaDataElement->addAttribute('name', $name);
+                $metaDataElement->addAttribute('value', $value);
+            }
+
+            $xmlData = $otpInfoXML->asXML();
+            if (!empty($args['prettyPrint'])) {
+                $dom = dom_import_simplexml($otpInfoXML)->ownerDocument;
+                $dom->formatOutput = true;
+                $xmlData = $dom->saveXML();
+            }
+        } catch (\Exception $e) {
+            return ['errors' => '[FastParapheur][generateOtpXml] : ' . $e->getMessage()];
+        }
+
+        return ['content' => $xmlData];
     }
 }

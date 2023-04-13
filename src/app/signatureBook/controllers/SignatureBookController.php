@@ -340,13 +340,35 @@ class SignatureBookController
             return $response->withStatus($errors['code'])->withJson(['errors' => $errors['errors']]);
         }
 
+        $queryParams = $request->getQueryParams();
+
+        $limit = 25;
+        if (!empty($queryParams['limit']) && is_numeric($queryParams['limit'])) {
+            $limit = (int)$queryParams['limit'];
+        }
+        $offset = 0;
+        if (!empty($queryParams['offset']) && is_numeric($queryParams['offset'])) {
+            $offset = (int)$queryParams['offset'];
+        }
+
         $basket = BasketModel::getById(['id' => $aArgs['basketId'], 'select' => ['basket_clause', 'basket_id', 'basket_name', 'basket_res_order']]);
 
-        $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $aArgs['userId']]);
+        $user   = UserModel::getById(['id' => $aArgs['userId'], 'select' => ['user_id']]);
+
+        $allQueryData = ResourceListController::getResourcesListQueryData(['data' => $queryParams, 'basketClause' => $basket['basket_clause'], 'login' => $user['user_id']]);
+        if (!empty($allQueryData['order'])) {
+            $queryParams['order'] = $allQueryData['order'];
+        }
+
         $resources = ResModel::getOnView([
             'select'    => ['res_id', 'alt_identifier', 'subject', 'creation_date', 'process_limit_date', 'priority'],
-            'where'     => [$whereClause],
-            'orderBy'   => empty($basket['basket_res_order']) ? ['creation_date DESC'] : [$basket['basket_res_order']]
+            'table'     => $allQueryData['table'],
+            'leftJoin'  => $allQueryData['leftJoin'],
+            'where'     => $allQueryData['where'],
+            'data'      => $allQueryData['queryData'],
+            'orderBy'   => empty($queryParams['order']) ? [$basket['basket_res_order']] : [$queryParams['order']],
+            'offset'    => $offset,
+            'limit'     => $limit
         ]);
 
         $resListForAttachments = [];

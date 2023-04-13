@@ -114,13 +114,26 @@ export class FeatureTourService {
                 }
             ).subscribe(
                 step => {
-                    /* Do something*/
-                    this.currentTour = this.tour.filter((item: any) => item.stepId.split('@')[0] === step.name)[0];
-                    const containerElement = document.getElementsByClassName('joyride-step__container') as HTMLCollectionOf<HTMLElement>;
-                    containerElement[0].style.width = 'auto';
-                    containerElement[0].style.height = 'auto';
-                    document.getElementsByClassName('joyride-step__header')[0].innerHTML = `${this.currentTour.title}`;
-                    document.getElementsByClassName('joyride-step__body')[0].innerHTML = `${this.currentTour.description}`;
+                    setTimeout(() => {
+                        /* Do something*/
+                        this.currentTour = this.tour.filter((item: any) => item.stepId.split('@')[0] === step.name)[0];
+                        const containerElement = document.getElementsByClassName('joyride-step__container') as HTMLCollectionOf<HTMLElement>;
+                        if (containerElement && containerElement.length > 0) {
+                            containerElement[0].style.width = 'auto';
+                            containerElement[0].style.height = 'auto';
+                        }
+
+                        const headerElement = document.getElementsByClassName('joyride-step__header') as HTMLCollectionOf<HTMLElement>;
+                        const bodyElement = document.getElementsByClassName('joyride-step__body') as HTMLCollectionOf<HTMLElement>;
+
+                        if (headerElement && headerElement.length > 0) {
+                            headerElement[0].innerHTML = `${this.currentTour.title}`;
+                        }
+
+                        if (bodyElement && bodyElement.length > 0) {
+                            bodyElement[0].innerHTML = `${this.currentTour.description}`;
+                        }
+                    }, 10);
                 },
                 error => {
                     /* handle error*/
