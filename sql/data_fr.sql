@@ -1767,11 +1767,6 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'edit_resource', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_diffusion_process', NULL);
 
--- Set privilege view_attachments to other groups without update_delete_attachments privilege
-INSERT INTO usergroups_services (group_id, service_id) 
-(SELECT distinct (us.group_id), 'view_attachments' as service_id 
-FROM usergroups_services as us 
-WHERE us.group_id NOT IN (SELECT group_id FROM usergroups_services WHERE service_id = 'update_delete_attachments'));
 
 INSERT INTO users (id, user_id, password, firstname, lastname, phone, mail, initials, preferences, status, password_modification_date, mode, refresh_token, reset_token, failed_authentication, locked_until, authorized_api, external_id, feature_tour) VALUES (5, 'ddur', '$2y$10$C.QSslBKD3yNMfRPuZfcaubFwPKiCkqqOUyAdOr5FSGKPaePwuEjG', 'Dominique', 'DUR', NULL, 'yourEmail@domain.com', NULL, '{"documentEdition": "onlyoffice"}', 'OK', '2021-03-24 10:17:02.66594', 'standard', '["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTcyOTMxNjMsInVzZXIiOnsiaWQiOjV9fQ.-xHs1HNXaF04o5inFZeCOSOuodW8vrsPcVqsaiPnNww", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MTcyOTMzMzgsInVzZXIiOnsiaWQiOjV9fQ.jY7jDCHyojZScH2FEDst825Rk3-M1ZspQXg0P5ZwQfQ"]', NULL, 0, NULL, '[]', '{}', '[]');
 INSERT INTO users (id, user_id, password, firstname, lastname, phone, mail, initials, preferences, status, password_modification_date, mode, refresh_token, reset_token, failed_authentication, locked_until, authorized_api, external_id, feature_tour) VALUES (1, 'rrenaud', '$2y$10$C.QSslBKD3yNMfRPuZfcaubFwPKiCkqqOUyAdOr5FSGKPaePwuEjG', 'Robert', 'RENAUD', NULL, 'yourEmail@domain.com', NULL, '{"documentEdition": "onlyoffice"}', 'OK', '2021-03-24 10:17:02.66594', 'standard', '[]', NULL, 0, NULL, '[]', '{}', '[]');
