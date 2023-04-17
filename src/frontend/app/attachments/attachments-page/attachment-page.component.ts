@@ -107,9 +107,16 @@ export class AttachmentPageComponent implements OnInit {
             this.http.get(`../rest/attachments/${this.data.resId}`).pipe(
                 tap((data: any) => {
                     let contact: any = null;
+                    let hasPrivilege: boolean = false;
+                    if (this.functions.empty(this.data.groupId)) {
+                        hasPrivilege = this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_delete_attachments', this.data.groupId) || this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_attachments', this.data.groupId);
+                    } else {
+                        hasPrivilege = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments', 'update_attachments']);
+                    }
+
                     if (!this.functions.empty(this.data.editMode)) {
                         this.editMode = this.data.editMode;
-                    } else if ((this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_attachments', this.data.groupId) || this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_delete_attachments', this.data.groupId) || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
+                    } else if ((hasPrivilege || this.headerService.user.id === data.typist) && data.status !== 'SIGN' && data.status !== 'FRZ') {
                         this.editMode = true;
                     }
 

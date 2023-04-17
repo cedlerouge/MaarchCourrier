@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, ViewChild, EventEmitter, Output, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { DiffusionsListComponent } from '../../diffusions/diffusions-list.component';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
