@@ -360,7 +360,7 @@ class ContactGroupController
         $queryParams = $request->getQueryParams();
 
         $queryParams['offset'] = (empty($queryParams['offset']) || !is_numeric($queryParams['offset']) ? 0 : (int)$queryParams['offset']);
-        $queryParams['limit'] = (empty($queryParams['limit']) || !is_numeric($queryParams['limit']) ? 500 : (int)$queryParams['limit']);
+        $queryParams['limit'] = (empty($queryParams['limit']) || !is_numeric($queryParams['limit']) ? 250 : (int)$queryParams['limit']);
 
         $where = ['contacts_groups_id = ?'];
         $data = [$args['id']];
