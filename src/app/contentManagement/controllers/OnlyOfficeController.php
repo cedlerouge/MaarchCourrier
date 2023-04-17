@@ -303,7 +303,7 @@ class OnlyOfficeController
         }
 
         $uri  = $configuration['onlyoffice']['uri'];
-        $port = (string)$configuration['onlyoffice']['port'];
+        $port = (int)$configuration['onlyoffice']['port'];
 
         $isAvailable = DocumentEditorController::isAvailable(['uri' => $uri, 'port' => $port]);
 
@@ -327,7 +327,7 @@ class OnlyOfficeController
         }
 
         $uri  = $configuration['onlyoffice']['uri'];
-        $port = (string)$configuration['onlyoffice']['port'];
+        $port = (int)$configuration['onlyoffice']['port'];
 
         $isAvailable = DocumentEditorController::isAvailable(['uri' => $uri, 'port' => $port]);
 

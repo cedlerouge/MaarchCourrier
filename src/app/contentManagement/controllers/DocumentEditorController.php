@@ -46,7 +46,13 @@ class DocumentEditorController
     public static function isAvailable(array $args)
     {
         ValidatorModel::notEmpty($args, ['uri', 'port']);
-        ValidatorModel::stringType($args, ['uri', 'port']);
+        ValidatorModel::stringType($args, ['uri']);
+        ValidatorModel::intType($args, ['port']);
+
+        $regex = '/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$|^(https?:\/\/)?((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
+        if (!preg_match($regex, $args['uri'] ?? null)) {
+            return ['errors' => "Argument uri is not a valid URL or IP address"];
+        }
 
         $aUri = explode("/", $args['uri']);
         $exec = shell_exec("nc -vz -w 5 {$aUri[0]} {$args['port']} 2>&1");
