@@ -673,7 +673,12 @@ export class PrivilegeService {
 
     getCurrentUserMenus(ids: string[] = null) {
         let menus: Menu[];
-        const privileges: any[] = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
         if (ids !== null) {
             menus = this.menus.filter(elem => ids.indexOf(elem.id) > -1 && privileges.indexOf(elem.id) > -1);
         } else {
@@ -727,7 +732,12 @@ export class PrivilegeService {
             }
         ];
 
-        const privileges: any[] = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
 
         this.shortcuts = this.shortcuts.concat(this.menus.filter(elem => elem.shortcut === true).filter(elem => privileges.indexOf(elem.id) > -1));
 
@@ -764,7 +774,13 @@ export class PrivilegeService {
     }
 
     getCurrentUserAdministrationsByUnit(unit: string): Array<Administration> {
-        const privileges: any[] = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
+
         if (this.hasCurrentUserPrivilege('view_history') && this.hasCurrentUserPrivilege('view_history_batch')) {
             return this.administrations.filter(elem => elem.unit === unit).filter(elem => privileges.indexOf(elem.id) > -1).filter(priv => priv.id !== 'view_history_batch');
         } else {
@@ -774,7 +790,12 @@ export class PrivilegeService {
     }
 
     hasCurrentUserPrivilege(privilegeId: string) {
-        const privileges: any[] = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
         return privileges.indexOf(privilegeId) > -1;
     }
 
