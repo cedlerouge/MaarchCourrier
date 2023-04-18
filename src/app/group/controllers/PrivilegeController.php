@@ -213,16 +213,14 @@ class PrivilegeController
         foreach (['create_custom', 'admin_update_control'] as $advancedPrivilege) {
             $key = array_search($advancedPrivilege, $serviceIds);
             if ($isLock && $key !== false) {
-                unset($privilegesStoredInDB[$key]['service_id']);
-                unset($privilegesStoredInDB[$key]['groupe_id']);
+                unset($privilegesStoredInDB[$key]);
             }
         }
         $loginMethod = CoreConfigModel::getLoggingMethod();
         if ($loginMethod['id'] != 'standard') {
             $key = array_search('admin_password_rules', $serviceIds);
             if ($key !== false) {
-                unset($privilegesStoredInDB[$key]['service_id']);
-                unset($privilegesStoredInDB[$key]['groupe_id']);
+                unset($privilegesStoredInDB[$key]);
             }
         }
 
