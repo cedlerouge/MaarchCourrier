@@ -1437,7 +1437,8 @@ CREATE TABLE IF NOT EXISTS indexing_models_entities
 (
     id SERIAL NOT NULL,
     model_id INTEGER NOT NULL,
-    entity_id text NOT NULL,
+    entity_id character varying(32),
+    keyword character varying(255),
     CONSTRAINT indexing_models_entities_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);

@@ -2057,10 +2057,8 @@ INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUE
 ------------
 -- INDEXING_MODELS_ENTITIES
 ------------
--- Below the SQL will insert a row into indexing_models_entities for each possible combination of indexing_models rows and entities rows, 
--- with the model_id column set to the id value from the indexing_models table, and the entity_id column set to the entity_id value from the entities table.
-INSERT INTO indexing_models_entities (model_id, entity_id) SELECT models.id AS model_id, entity.entity_id FROM indexing_models as models CROSS JOIN entities as entity;
-
+-- Set 'ALL_ENTITIES' keyword for every indexing model in indexing_models_entities
+INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models);
 ------------
 -- ENTITIES_FOLDERS
 ------------
