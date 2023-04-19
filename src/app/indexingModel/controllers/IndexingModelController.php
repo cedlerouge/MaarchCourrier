@@ -45,8 +45,8 @@ class IndexingModelController
     {
         $query = $request->getQueryParams();
 
-        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?)))'];
-        $data  = [$GLOBALS['id'], $GLOBALS['id']];
+        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
+        $data  = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
 
         $where[] = 'private = ?';
         $data[]  = 'false';
@@ -293,11 +293,18 @@ class IndexingModelController
             ]);
         }
 
-        foreach($body['entities'] as $entity) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $modelId,
-                'entity_id' => $entity,
+                'keyword'   => IndexingModelController::ALL_ENTITIES,
             ]);
+        } else {
+            foreach($body['entities'] as $entity) {
+                IndexingModelsEntitiesModel::create([
+                    'model_id'  => $modelId,
+                    'entity_id' => $entity,
+                ]);
+            }
         }
 
         HistoryController::add([
@@ -513,11 +520,18 @@ class IndexingModelController
 
         IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
-        foreach($body['entities'] as $entity) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $args['id'],
-                'entity_id' => $entity,
+                'keyword'   => IndexingModelController::ALL_ENTITIES,
             ]);
+        } else {
+            foreach($body['entities'] as $entity) {
+                IndexingModelsEntitiesModel::create([
+                    'model_id'  => $args['id'],
+                    'entity_id' => $entity,
+                ]);
+            }
         }
 
         HistoryController::add([
@@ -737,10 +751,11 @@ class IndexingModelController
 
         $indexingModelsEntities = IndexingModelsEntitiesModel::getByModelId(['model_id' => $args['id']]);
         $entityIds = array_column($indexingModelsEntities ?? [], 'entity_id');
+        $keywords = array_column($indexingModelsEntities ?? [], 'keyword');
 
         $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
 
-        if (in_array(IndexingModelController::ALL_ENTITIES, $entityIds)) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $keywords)) {
             $entities[] = [
                 'id' => 'ALL_ENTITIES',
                 'entity_id' => 'ALL_ENTITIES',
@@ -750,12 +765,12 @@ class IndexingModelController
                 'text' => ALL_ENTITIES_TEXT,
                 'state' => ['selected' => true]
             ];
-        }
-
-        foreach ($entities as $key => $entity) {
-            $entities[$key]['state']['selected'] = false;
-            if (in_array($entity['entity_id'], $entityIds)) {
-                $entities[$key]['state']['selected'] = true;
+        } else {
+            foreach ($entities as $key => $entity) {
+                $entities[$key]['state']['selected'] = false;
+                if (in_array($entity['entity_id'], $entityIds)) {
+                    $entities[$key]['state']['selected'] = true;
+                }
             }
         }
 

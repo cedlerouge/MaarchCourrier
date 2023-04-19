@@ -19,10 +19,12 @@ use SrcCore\models\DatabaseModel;
 
 class IndexingModelsEntitiesModel
 {
+    const ALL_ENTITIES = 'ALL_ENTITIES';
+    
     public static function create(array $args)
     {
-        ValidatorModel::notEmpty($args, ['model_id', 'entity_id']);
-        ValidatorModel::stringType($args, ['entity_id']);
+        ValidatorModel::notEmpty($args, ['model_id']);
+        ValidatorModel::stringType($args, ['entity_id', 'keyword']);
         ValidatorModel::intVal($args, ['model_id']);
 
 
@@ -33,7 +35,8 @@ class IndexingModelsEntitiesModel
             'columnsValues' => [
                 'id'        => $nextSequenceId,
                 'model_id'  => $args['model_id'],
-                'entity_id' => $args['entity_id']
+                'entity_id' => $args['entity_id'] ?? '',
+                'keyword'   => $args['keyword'] ?? ''
             ]
         ]);
 
@@ -93,7 +96,7 @@ class IndexingModelsEntitiesModel
         return $model;
     }
 
-    public static function getByEntitylId(array $args)
+    public static function getByEntityId(array $args)
     {
         ValidatorModel::notEmpty($args, ['entity_id']);
         ValidatorModel::stringType($args, ['entity_id']);
@@ -109,6 +112,22 @@ class IndexingModelsEntitiesModel
         return $model;
     }
 
+    public static function getByEntityIdOrKeyword(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['entity_id', 'keyword']);
+        ValidatorModel::stringType($args, ['entity_id', 'keyword']);
+        ValidatorModel::arrayType($args, ['select']);
+
+        $model = DatabaseModel::select([
+            'select'    => empty($args['select']) ? ['*'] : $args['select'],
+            'table'     => ['indexing_models_entities'],
+            'where'     => ['entity_id = ? OR keyword = ?'],
+            'data'      => [$args['entity_id'], $args['keyword']],
+        ]);
+
+        return $model;
+    }
+
     public static function getModelIdsFromEntityWithKeyword(array $args)
     {
         ValidatorModel::notEmpty($args, ['entity_id', 'keyword']);
@@ -117,8 +136,8 @@ class IndexingModelsEntitiesModel
         $model = DatabaseModel::select([
             'select'    => ['distinct(IM.id)'],
             'table'     => ['indexing_models_entities as IME', 'indexing_models as IM'],
-            'left_join' => ['IME.model_id = IM.id AND IM.private = false and IM.enabled = true and IM.id in (select model_id from indexing_models_entities where entity_id = ?)'],
-            'where'     => ['IME.entity_id = ? AND IM.id IS NOT NULL'],
+            'left_join' => ['IME.model_id = IM.id AND IM.private = false and IM.enabled = true and IM.id in (select model_id from indexing_models_entities where entity_id = ?  OR keyword = ?)'],
+            'where'     => ['IM.id IS NOT NULL'],
             'data'      => [$args['entity_id'], $args['keyword']]
         ]);
 

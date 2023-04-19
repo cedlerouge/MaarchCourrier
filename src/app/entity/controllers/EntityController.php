@@ -182,9 +182,10 @@ class EntityController
         ]);
 
         $entity['indexingModels'] = [];
-        $indexingModelIds = IndexingModelsEntitiesModel::getByEntitylId([
+        $indexingModelIds = IndexingModelsEntitiesModel::getByEntityIdOrKeyword([
             'select'    => ['model_id'],
-            'entity_id' => $args['id']
+            'entity_id' => $args['id'],
+            'keyword'   => IndexingModelsEntitiesModel::ALL_ENTITIES
         ]);
         $indexingModelIds = array_column($indexingModelIds ?? [], 'model_id');
 
