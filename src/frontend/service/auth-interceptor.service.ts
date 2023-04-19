@@ -136,6 +136,9 @@ export class InactivityInterceptor implements HttpInterceptor {
             method: ['PUT']
         },
     ];
+
+    bypassUserActivityByRoutes: string[] = ['/', '/login', '/forgot-password', '/reset-password'];
+
     constructor (
         private authService: AuthService,
         private router: Router,
@@ -143,7 +146,7 @@ export class InactivityInterceptor implements HttpInterceptor {
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         if (this.authService.canLogOut()) {
-            if (['/', '/login'].indexOf(this.router.url) > -1) {
+            if (this.bypassUserActivityByRoutes.indexOf(this.removeQueryParamsFromUrl(this.router.url)) > -1) {
                 this.authService?.userActivitySubscription?.unsubscribe();
                 this.authService?.inactivitySubscription?.unsubscribe();
                 return next.handle(request);
@@ -162,5 +165,17 @@ export class InactivityInterceptor implements HttpInterceptor {
 
     resetTimer() {
         this.authService.resetTimer();
+    }
+
+    removeQueryParamsFromUrl(url: string): string {
+        // Check if the URL contains query parameters
+        if (url.indexOf('?') !== -1) {
+            // Split the URL into two parts: the base URL and the query parameters
+            const [baseUrl, queryParams] = url.split('?');
+            // Replace the URL with query parameters with the base URL
+            url = baseUrl;
+        }
+
+        return url;
     }
 }
