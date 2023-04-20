@@ -98,6 +98,14 @@ export class RedirectActionComponent implements OnInit {
                         this.userListRedirect.push(this.formatUser());
                     }
                     this.entities = data['entities'];
+                    /**
+                     * browse the array of entities to check if entity_parent_id of children is defined
+                     */
+                    this.entities.forEach((entity: any, index: number) => {
+                        if (!this.functionsService.empty(entity.parent_entity_id) && this.functionsService.empty(this.entities.find((item: any) => item.entity_id === entity.parent_entity_id))) {
+                            delete this.entities[index];
+                        }
+                    });
                     this.keepDestForRedirection = data.keepDestForRedirection;
                     this.injectDatasParam.keepDestForRedirection = data.keepDestForRedirection;
                     resolve(true);
