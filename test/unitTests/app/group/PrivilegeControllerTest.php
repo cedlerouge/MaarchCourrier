@@ -291,8 +291,6 @@ class PrivilegeControllerTest extends CourrierTestCase
 
         $response = $privilegeController::getPrivilegesByUser(['userId' => $GLOBALS['id']]);
 
-        $response = array_column($response, 'service_id');
-
         $this->assertIsArray($response);
         $this->assertSame(1, count($response));
         $this->assertSame('ALL_PRIVILEGES', $response[0]);
