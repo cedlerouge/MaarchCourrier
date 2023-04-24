@@ -293,7 +293,7 @@ class IndexingModelController
             ]);
         }
 
-        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $modelId,
                 'keyword'   => IndexingModelController::ALL_ENTITIES,
