@@ -520,7 +520,7 @@ class IndexingModelController
 
         IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
-        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'])) {
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
             IndexingModelsEntitiesModel::create([
                 'model_id'  => $args['id'],
                 'keyword'   => IndexingModelController::ALL_ENTITIES,
