@@ -758,6 +758,7 @@ class IndexingModelController
         if (in_array(IndexingModelController::ALL_ENTITIES, $keywords)) {
             $entities[] = [
                 'id' => 'ALL_ENTITIES',
+                'keyword' => 'ALL_ENTITIES',
                 'entity_id' => 'ALL_ENTITIES',
                 'parent' => '#',
                 'icon' => 'fa fa-hashtag',

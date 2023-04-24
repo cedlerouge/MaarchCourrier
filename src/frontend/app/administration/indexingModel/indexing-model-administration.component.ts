@@ -121,13 +121,15 @@ export class IndexingModelAdministrationComponent implements OnInit {
                         this.allEntities = this.indexingModel.entities;
 
                         if (this.functions.empty(this.allEntities.find((entity: any) => entity.entity_id === 'ALL_ENTITIES'))) {
-                            this.indexingModel.entities.push(this.keywordAllEntities);
+                            this.indexingModel.entities.unshift(this.keywordAllEntities);
+                        } else {
+                            this.allEntities.find((entity: any) => entity.entity_id === 'ALL_ENTITIES').text = this.keywordAllEntities.text;
                         }
+
                         this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
 
                         if (this.indexingModel.default === true) {
                             (this.allEntities as any []).forEach((entity: any) => {
-                                entity.state.selected = true;
                                 entity.state.disabled = true;
                             });
                         }
