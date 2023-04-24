@@ -62,7 +62,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
         parent: '#',
         icon: 'fa fa-hashtag',
         allowed: true,
-        text: this.translate.instant('lang.allEntities'),
+        text: '- ' + this.translate.instant('lang.allEntities'),
         state: {selected: false}
     };
 
@@ -227,9 +227,11 @@ export class IndexingModelAdministrationComponent implements OnInit {
             this.http.get('../rest/indexingModels/entities?allEntities=true').pipe(
                 tap((data: any) => {
                     this.allEntities = data.entities;
-                    this.allEntities.push(this.keywordAllEntities);
+                    this.allEntities.unshift(this.keywordAllEntities);
                     this.allEntities.forEach((entity: any) => {
-                        entity.state.selected = true;
+                        if (entity?.keyword === 'ALL_ENTITIES') {
+                            entity.state.selected = true;
+                        }
                     });
                     this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
                     this.maarchTree.initData(this.allEntities.map(ent => ({
@@ -252,8 +254,13 @@ export class IndexingModelAdministrationComponent implements OnInit {
          */
         if (isDefault) {
             this.allEntities.forEach((entity: any) => {
-                entity.state.disabled = true;
-                entity.state.selected = true;
+                if (entity?.keyword !== 'ALL_ENTITIES') {
+                    entity.state.disabled = true;
+                    entity.state.selected = false;
+                } else {
+                    entity.state.disabled = true;
+                    entity.state.selected = true;
+                }
             });
         } else {
             this.allEntities.forEach((entity: any) => {
