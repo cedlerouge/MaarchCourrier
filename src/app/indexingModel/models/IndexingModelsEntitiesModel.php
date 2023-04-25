@@ -35,8 +35,8 @@ class IndexingModelsEntitiesModel
             'columnsValues' => [
                 'id'        => $nextSequenceId,
                 'model_id'  => $args['model_id'],
-                'entity_id' => $args['entity_id'] ?? '',
-                'keyword'   => $args['keyword'] ?? ''
+                'entity_id' => $args['entity_id'] ?? null,
+                'keyword'   => $args['keyword'] ?? null
             ]
         ]);
 
