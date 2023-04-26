@@ -51,6 +51,7 @@ export class RedirectActionComponent implements OnInit {
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
     inLocalStorage: boolean = false;
+    orphanEntitySerialIds: number[] = [];
 
     constructor(
         public translate: TranslateService,
@@ -103,9 +104,11 @@ export class RedirectActionComponent implements OnInit {
                      */
                     this.entities.forEach((entity: any, index: number) => {
                         if (!this.functionsService.empty(entity.parent_entity_id) && this.functionsService.empty(this.entities.find((item: any) => item.entity_id === entity.parent_entity_id))) {
-                            delete this.entities[index];
+                            this.orphanEntitySerialIds.push(entity.entity_id);
+                            this.getEntityChildren(entity.entity_id);
                         }
                     });
+                    this.entities = this.entities.filter((entity: any) => this.orphanEntitySerialIds.indexOf(entity.entity_id) === -1);
                     this.keepDestForRedirection = data.keepDestForRedirection;
                     this.injectDatasParam.keepDestForRedirection = data.keepDestForRedirection;
                     resolve(true);
@@ -116,6 +119,17 @@ export class RedirectActionComponent implements OnInit {
                 })
             ).subscribe();
         });
+    }
+
+    getEntityChildren(entityId: string) {
+        const entityChildren = this.entities.filter((entity: any) => entity.parent_entity_id === entityId);
+
+        if (!this.functionsService.empty(entityChildren)) {
+            entityChildren.forEach((entityChild: any) => {
+                this.orphanEntitySerialIds.push(entityChild.entity_id);
+                this.getEntityChildren(entityChild.entity_id);
+            });
+        }
     }
 
     getDefaultEntity() {
