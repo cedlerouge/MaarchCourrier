@@ -46,7 +46,7 @@ class IndexingModelController
     {
         $query = $request->getQueryParams();
 
-        $models = IndexingModelController::getIndexingModels(['showDisabled' => $query['showDisabled']]);
+        $models = IndexingModelController::getIndexingModels(['showDisabled' => $query['showDisabled'] ?? 'false']);
 
         return $response->withJson(['indexingModels' => $models]);
     }
