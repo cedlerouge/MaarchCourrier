@@ -37,7 +37,7 @@ use Template\models\TemplateModel;
 use SrcCore\models\TextFormatModel;
 use BroadcastList\models\BroadcastListRoleModel;
 use IndexingModel\models\IndexingModelsEntitiesModel;
-use IndexingModel\models\IndexingModelModel;
+use IndexingModel\controllers\IndexingModelController;
 
 class EntityController
 {
@@ -181,21 +181,13 @@ class EntityController
             'entities'  => [$args['id']]
         ]);
 
-        $entity['indexingModels'] = [];
-        $indexingModelIds = IndexingModelsEntitiesModel::getByEntityIdOrKeyword([
-            'select'    => ['model_id'],
-            'entity_id' => $args['id'],
-            'keyword'   => IndexingModelsEntitiesModel::ALL_ENTITIES
-        ]);
-        $indexingModelIds = array_column($indexingModelIds ?? [], 'model_id');
-
-        if (!empty($indexingModelIds)) {
-            $entity['indexingModels'] = IndexingModelModel::get([
-                'select' => ['id as indexing_model_id', 'label as indexing_model_label', 'category as indexing_model_category'],
-                'where'  => ['private = ?', 'enabled = ?', 'id IN (?)'],
-                'data'   => ['FALSE', 'TRUE', $indexingModelIds]
-            ]);
+        $models = IndexingModelController::getIndexingModels(['showDisabled' => 'false']);
+        foreach ($models as $key => $model) {
+            $models[$key]['indexing_model_id'] = $model['id'];
+            $models[$key]['indexing_model_label'] = $model['label'];
+            $models[$key]['indexing_model_category'] = $model['category'];
         }
+        $entity['indexingModels'] = $models;
 
         $entity['users'] = EntityModel::getUsersById(['id' => $entity['entity_id'], 'select' => ['users.id','users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
         $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$args['id']]]);
@@ -282,23 +274,6 @@ class EntityController
             'moduleId'  => 'entity',
             'eventId'   => 'entityCreation',
         ]);
-
-        if (!empty($body['parent_entity_id']) ) {
-            $indexingModelIds = IndexingModelsEntitiesModel::getModelIdsFromEntityWithKeyword([
-                'entity_id' => $body['parent_entity_id'],
-                'keyword'   => 'ALL_ENTITIES'
-            ]);
-            $indexingModelIds = array_column($indexingModelIds ?? [], 'id');
-
-            if (!empty($indexingModelIds)) {
-                foreach($indexingModelIds as $modelId) {
-                    IndexingModelsEntitiesModel::create([
-                        'model_id'  => $modelId,
-                        'entity_id' => $body['entity_id'],
-                    ]);
-                }
-            }
-        }
 
         if (empty($body['parent_entity_id'])) {
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => [1]]);

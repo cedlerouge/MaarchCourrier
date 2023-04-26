@@ -32,6 +32,7 @@ use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
+use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use User\models\UserModel;
 
@@ -45,29 +46,7 @@ class IndexingModelController
     {
         $query = $request->getQueryParams();
 
-        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
-        $data  = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
-
-        $where[] = 'private = ?';
-        $data[]  = 'false';
-
-        $showDisabled = false;
-        if (Validator::notEmpty()->validate($query['showDisabled'] ?? false)) {
-            $showDisabled = $query['showDisabled'] == 'true';
-        }
-
-        if (!$showDisabled) {
-            $where[] = 'enabled = ?';
-            $data[] = 'TRUE';
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
-            $where[] = 'enabled = ?';
-            $data[] = 'TRUE';
-        }
-        $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
-        foreach ($models as $key => $model) {
-            $models[$key]['mandatoryFile'] = $model['mandatory_file'];
-            unset($models[$key]['mandatory_file']);
-        }
+        $models = IndexingModelController::getIndexingModels(['showDisabled' => $query['showDisabled']]);
 
         return $response->withJson(['indexingModels' => $models]);
     }
@@ -741,6 +720,34 @@ class IndexingModelController
         }
 
         return $response->withJson(['entities' => $entities]);
+    }
+
+    public static function getIndexingModels(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['showDisabled']);
+        ValidatorModel::stringType($args, ['showDisabled']);
+
+        $where = ['(owner = ? OR private = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
+        $data  = [$GLOBALS['id'], 'false', $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
+
+        $showDisabled = false;
+        if (Validator::notEmpty()->validate($args['showDisabled'] ?? false)) {
+            $showDisabled = $args['showDisabled'] == 'true';
+        }
+
+        if (!$showDisabled) {
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
+        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
+        }
+        $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
+        foreach ($models as $key => $model) {
+            $models[$key]['mandatoryFile'] = $model['mandatory_file'];
+            unset($models[$key]['mandatory_file']);
+        }
+        return $models;
     }
 
     public static function getModelEntities(array $args)
