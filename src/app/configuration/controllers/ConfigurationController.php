@@ -145,7 +145,7 @@ class ConfigurationController
                 } elseif ($key == 'onlyoffice') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is empty or not a string"]);
-                    } elseif (!Validator::notEmpty()->ip()->validate($editor['uri'] ?? null) && !Validator::notEmpty()->url()->validate($editor['uri'] ?? null)) {
+                    } elseif (!Validator::notEmpty()->ip()->validate($editor['uri'] ?? null) && !preg_match('/([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
@@ -159,7 +159,7 @@ class ConfigurationController
                 } elseif ($key == 'collaboraonline') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] is empty or not a string"]);
-                    } elseif (!Validator::notEmpty()->ip()->validate($editor['uri'] ?? null) && !Validator::notEmpty()->url()->validate($editor['uri'] ?? null)) {
+                    } elseif (!Validator::notEmpty()->ip()->validate($editor['uri'] ?? null) && !preg_match('/([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
@@ -177,7 +177,7 @@ class ConfigurationController
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['clientSecret'] is empty or not a string"]);
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['siteUrl'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]);
-                    } elseif (!Validator::notEmpty()->ip()->validate($editor['siteUrl'] ?? null) && !Validator::notEmpty()->url()->validate($editor['siteUrl'] ?? null)) {
+                    } elseif (!Validator::notEmpty()->ip()->validate($editor['siteUrl'] ?? null) && !preg_match('/([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/', $editor['siteUrl'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
