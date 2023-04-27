@@ -744,7 +744,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     openPdfInTab() {
         const src = '';
         if (this.file.contentMode === 'route'){
-            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+            this.http.get(this.file.contentView, { responseType: 'json' }).pipe(
                 tap((data: any) => {
                     const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
                     const fileURL = URL.createObjectURL(contentBlob);
@@ -758,7 +758,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                 })
             ).subscribe();
         } else if (this.file.contentMode === 'base64') {
-            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+            this.http.get(this.file.contentView, { responseType: 'json' }).pipe(
                 tap((data: any) => {
                     const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
                     const fileURL = URL.createObjectURL(contentBlob);
