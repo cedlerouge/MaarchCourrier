@@ -1322,6 +1322,7 @@ class FastParapheurController
                 return ['error' => 'no resId found in steps'];
             }
 
+            $areWeUsingOTP = false;
             foreach ($args['steps'] as $step) {
                 if ($step['resId'] !== $resId) {
                     continue;
@@ -1335,6 +1336,7 @@ class FastParapheurController
                         'firstname' => $step['externalInformations']['firstname'] ?? null,
                         'lastname'  => $step['externalInformations']['lastname'] ?? null
                     ];
+                    $areWeUsingOTP = true;
                 } else {
                     $steps[$step['sequence']] = [
                         'mode' => $step['signatureMode'],
@@ -1343,6 +1345,14 @@ class FastParapheurController
                     ];
                 }
             }
+
+            $optionOTP = FastParapheurController::isOtpActive();
+            if (!empty($optionOTP['error'])) {
+                return $optionOTP['error'];
+            } elseif (!$optionOTP['OTP'] && $areWeUsingOTP) {
+                return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
+            }
+
             return FastParapheurController::uploadWithSteps([
                 'config'      => $config['data'],
                 'resIdMaster' => $args['resIdMaster'],
@@ -1988,5 +1998,18 @@ class FastParapheurController
         }
 
         return ['content' => $xmlData];
+    }
+
+    public static function isOtpActive()
+    {
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return ['code' => $config['code'], 'errors' => $config['errors']];
+        }
+
+        if (filter_var($config['optionOtp'], FILTER_VALIDATE_BOOLEAN)) {
+            return ['OTP' => true];
+        }
+        return ['OTP' => false];
     }
 }
