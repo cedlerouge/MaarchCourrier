@@ -24,8 +24,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
-use SrcCore\controllers\AuthenticationController;
-use SrcCore\controllers\LogsController;
+use User\models\UserModel;
 
 class VersionUpdateController
 {
@@ -278,7 +277,12 @@ class VersionUpdateController
         }
 
         if (empty($GLOBALS['id'] ?? null)) {
-            $user = \User\models\UserModel::get(['select' => ['id'],'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
+            $user = UserModel::get([
+                'select'    => ['id'],
+                'where'     => ['mode = ? OR mode = ?'],
+                'data'      => ['root_visible', 'root_invisible'],
+                'limit'     => 1
+            ]);
             $GLOBALS['id'] = $user[0]['id'];
         }
 
