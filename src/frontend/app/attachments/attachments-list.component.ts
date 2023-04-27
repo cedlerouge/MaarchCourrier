@@ -99,11 +99,7 @@ export class AttachmentsListComponent implements OnInit {
                             }
                             this.groupId = param['groupSerialId'];
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
-                            if (this.functions.empty(this.groupId)) {
-                                element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
-                            } else {
-                                element.canDelete = this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_delete_attachments', +this.groupId) || this.headerService.user.id === element.typist;
-                            }
+                            element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
                         });
                     }),
                     finalize(() => this.loading = false),
@@ -134,11 +130,7 @@ export class AttachmentsListComponent implements OnInit {
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
-                        if (this.functions.empty(param['groupSerialId'])) {
-                            element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
-                        } else {
-                            element.canDelete = this.privilegeService.hasCurrentUserPrivilegeByGroupId('update_delete_attachments', +param['groupSerialId']) || this.headerService.user.id === element.typist;
-                        }
+                        element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
                     });
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';
