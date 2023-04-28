@@ -51,6 +51,15 @@ use Contact\controllers\ContactController;
 */
 class FastParapheurController
 {
+    public function getOtpDetails(Request $request, Response $response)
+    {
+        $optionOTP = FastParapheurController::isOtpActive();
+        if (!empty($optionOTP['error'])) {
+            return $response->withStatus(400)->withJson(['errors' => $optionOTP['errors']]);
+        }
+        return $response->withJson(['otpStatus'  => $optionOTP['OTP']]);
+    }
+
     public function getWorkflowDetails(Request $request, Response $response)
     {
         $config = FastParapheurController::getConfig();
@@ -1030,6 +1039,13 @@ class FastParapheurController
         }
         if (empty($circuit['steps'])) {
             return ['error' => 'steps are empty or invalid', 'code' => 400];
+        }
+
+        $optionOTP = FastParapheurController::isOtpActive();
+        if (!empty($optionOTP['error'])) {
+            return $optionOTP['error'];
+        } elseif (!$optionOTP['OTP'] && !empty($otpInfo)) {
+            return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
         }
 
         $otpInfoXML = null;
