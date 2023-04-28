@@ -54,10 +54,10 @@ class FastParapheurController
     public function getOtpDetails(Request $request, Response $response)
     {
         $optionOTP = FastParapheurController::isOtpActive();
-        if (!empty($optionOTP['error'])) {
+        if (!empty($optionOTP['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $optionOTP['errors']]);
         }
-        return $response->withJson(['otpStatus'  => $optionOTP['OTP']]);
+        return $response->withJson(['otpStatus' => $optionOTP['OTP']]);
     }
 
     public function getWorkflowDetails(Request $request, Response $response)
@@ -1042,8 +1042,8 @@ class FastParapheurController
         }
 
         $optionOTP = FastParapheurController::isOtpActive();
-        if (!empty($optionOTP['error'])) {
-            return $optionOTP['error'];
+        if (!empty($optionOTP['errors'])) {
+            return $optionOTP['errors'];
         } elseif (!$optionOTP['OTP'] && !empty($otpInfo)) {
             return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
         }
@@ -1363,8 +1363,8 @@ class FastParapheurController
             }
 
             $optionOTP = FastParapheurController::isOtpActive();
-            if (!empty($optionOTP['error'])) {
-                return $optionOTP['error'];
+            if (!empty($optionOTP['errors'])) {
+                return $optionOTP['errors'];
             } elseif (!$optionOTP['OTP'] && $areWeUsingOTP) {
                 return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
             }
