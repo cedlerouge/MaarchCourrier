@@ -25,6 +25,7 @@ export class FastParapheurService {
     signatureModes: string[] = [];
     workflowTypes: any[] = [];
     otpConnectors: any[] = [];
+    otpStatus: boolean = false;
 
     constructor(
         private http: HttpClient,
@@ -71,6 +72,23 @@ export class FastParapheurService {
                 }),
                 catchError(err => {
                     this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    getOtpStatus(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/fastParapheurOtpEnabled').pipe(
+                tap(async (data: any) => {
+                    this.canAddExternalUser = data.otpStatus;
+                    this.otpStatus = data.otpStatus;
+                    resolve(this.otpStatus);
+                }),
+                catchError(err => {
+                    this.notify.handleErrors(err);
+                    resolve(false);
                     return of(false);
                 })
             ).subscribe();

@@ -22,6 +22,7 @@ export class MaarchParapheurService {
     canManageSignaturesPositions: boolean = true;
 
     otpConnectors: any [] = [];
+    otpStatus: boolean = false;
 
     constructor(
         public functions: FunctionsService,
@@ -97,6 +98,10 @@ export class MaarchParapheurService {
                 ).subscribe();
             });
         }
+    }
+
+    getOtpStatus(): boolean {
+        return this.otpStatus;
     }
 
     getOtpConfig(): Promise<any> {
