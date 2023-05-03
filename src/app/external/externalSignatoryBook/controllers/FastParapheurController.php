@@ -1634,12 +1634,12 @@ class FastParapheurController
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
+            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing or empty'];
         }
-        
+
         $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
         if (empty($fastParapheurBlock)) {
-            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+            return ['code' => 500, 'errors' => 'FastParapheur configuration is missing'];
         }
 
         $fastParapheurBlock = json_decode(json_encode($fastParapheurBlock), true);
@@ -1661,12 +1661,14 @@ class FastParapheurController
             return ['code' => 500, 'errors' => 'validatedState not found for FastParapheur'];
         } elseif (!array_key_exists('refusedState', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'refusedState not found for FastParapheur'];
+        } elseif (!array_key_exists('optionOtp', $fastParapheurBlock)) {
+            return ['code' => 500, 'errors' => 'optionOtp not found for FastParapheur'];
         }
 
         if (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
             $fastParapheurBlock['integratedWorkflow'] = 'false';
         }
-        
+
         return $fastParapheurBlock;
     }
 
