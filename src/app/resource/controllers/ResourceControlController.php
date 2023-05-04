@@ -389,7 +389,7 @@ class ResourceControlController
             }
             if (strpos($indexingModelField['identifier'], 'indexingCustomField_') !== false) {
                 $customFieldId = explode('_', $indexingModelField['identifier'])[1];
-                if ($indexingModelField['mandatory'] && empty($body['customFields'][$customFieldId])) {
+                if ($indexingModelField['mandatory'] && Validator::intType()->notEmpty()->validate($body['customFields'][$customFieldId])) {
                     return ['errors' => "Body customFields[{$customFieldId}] is empty"];
                 }
                 if (!empty($body['customFields'][$customFieldId])) {
