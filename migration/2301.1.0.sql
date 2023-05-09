@@ -1,7 +1,7 @@
 -- *************************************************************************--
 --                                                                          --
 --                                                                          --
--- Model migration script - 2301.0.3 to 2301.0.4                            --
+-- Model migration script - 2301.0.4 to 2301.1.0                            --
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
@@ -23,4 +23,4 @@ SELECT setval('indexing_models_entities_id_seq', (SELECT max(id)+1 FROM indexing
 INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models);
 
 
-UPDATE parameters SET param_value_string = '2301.0.4' WHERE id = 'database_version';
+UPDATE parameters SET param_value_string = '2301.1.0' WHERE id = 'database_version';
