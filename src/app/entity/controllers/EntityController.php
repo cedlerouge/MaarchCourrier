@@ -183,9 +183,9 @@ class EntityController
 
         $models = IndexingModelController::getIndexingModels(['showDisabled' => 'false']);
         foreach ($models as $key => $model) {
-            $models[$key]['indexing_model_id'] = $model['id'];
-            $models[$key]['indexing_model_label'] = $model['label'];
-            $models[$key]['indexing_model_category'] = $model['category'];
+            $models[$key]['indexingModelId'] = $model['id'];
+            $models[$key]['indexingModelLabel'] = $model['label'];
+            $models[$key]['indexingModelCategory'] = $model['category'];
         }
         $entity['indexingModels'] = $models;
 

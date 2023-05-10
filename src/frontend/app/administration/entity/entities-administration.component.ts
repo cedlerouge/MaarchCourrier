@@ -68,7 +68,7 @@ export class EntitiesAdministrationComponent implements OnInit {
 
     displayedColumnsUsers = ['firstname', 'lastname'];
     displayedColumnsTemplates = ['template_label', 'template_target'];
-    displayedColumnsIndexingModels = ['indexing_model_label', 'indexing_model_category'];
+    displayedColumnsIndexingModels = ['indexingModelLabel', 'indexingModelCategory'];
 
     addressBANInfo: string = '';
     addressBANMode: boolean = true;

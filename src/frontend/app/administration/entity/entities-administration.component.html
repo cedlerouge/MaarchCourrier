@@ -522,25 +522,25 @@
                         </div>
                     </div>
                     <mat-table #tableIndexingModels="matSort" [dataSource]="dataSourceIndexingModels" matSort
-                        matSortActive="indexing_model_label" matSortDirection="asc">
-                        <ng-container matColumnDef="indexing_model_label">
+                        matSortActive="indexingModelLabel" matSortDirection="asc">
+                        <ng-container matColumnDef="indexingModelLabel">
                             <mat-header-cell *matHeaderCellDef mat-sort-header style="flex:2;">
                                 {{'lang.modelName' | translate}}
                             </mat-header-cell>
                             <mat-cell *matCellDef="let element" style="flex:2;"
-                                matTooltip="{{element.template_comment}}"> {{element.indexing_model_label}} </mat-cell>
+                                matTooltip="{{element.template_comment}}"> {{element.indexingModelLabel}} </mat-cell>
                         </ng-container>
-                        <ng-container matColumnDef="indexing_model_category">
+                        <ng-container matColumnDef="indexingModelCategory">
                             <mat-header-cell *matHeaderCellDef mat-sort-header style="flex:1;">
                                 {{'lang.categoryId' | translate}}
                             </mat-header-cell>
                             <mat-cell *matCellDef="let element" style="flex:1;">
-                                {{'lang.' + element.indexing_model_category | translate}}
+                                {{'lang.' + element.indexingModelCategory | translate}}
                             </mat-cell>
                         </ng-container>
                         <mat-header-row *matHeaderRowDef="displayedColumnsIndexingModels"></mat-header-row>
                         <mat-row *matRowDef="let row; columns: displayedColumnsIndexingModels;"
-                            (click)="showIndexingModel(row.indexing_model_id);"
+                            (click)="showIndexingModel(row.indexingModelId);"
                             [ngStyle]="{'cursor': !currentEntity.canAdminIndexingModels ? 'position' : 'pointer'}"></mat-row>
                     </mat-table>
                 </mat-tab>
