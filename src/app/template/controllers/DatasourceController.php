@@ -109,6 +109,11 @@ class DatasourceController
                 $userInfo            = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $res['typist']]);
                 $res['typist_label'] = $userInfo['firstname'] . ' ' . $userInfo['lastname'];
             }
+
+            $res['basketName'] = '';
+            if (!empty($event['basketName'])) {
+                $res['basketName'] = $event['basketName'];
+            }
         
             $datasources['res_letterbox'][] = $res;
         

@@ -94,6 +94,7 @@ abstract class NotificationModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['notification_id', 'description', 'is_enabled', 'event_id', 'notification_mode', 'template_id', 'diffusion_type']);
         ValidatorModel::intVal($aArgs, ['template_id']);
+        ValidatorModel::boolType($aArgs, ['send_as_recap']);
         ValidatorModel::stringType($aArgs, ['notification_id', 'description', 'is_enabled', 'notification_mode']);
 
         DatabaseModel::insert([
@@ -109,6 +110,7 @@ abstract class NotificationModelAbstract
                 'diffusion_properties' => $aArgs['diffusion_properties'],
                 'attachfor_type'       => $aArgs['attachfor_type'] ?? null,
                 'attachfor_properties' => $aArgs['attachfor_properties'],
+                'send_as_recap'        => !empty($aArgs['send_as_recap']) ? 'true' : 'false'
             ],
         ]);
 

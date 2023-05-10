@@ -55,6 +55,7 @@ class NotificationControllerTest extends CourrierTestCase
         $this->assertSame('ADMINISTRATEUR,ARCHIVISTE,DIRECTEUR', $responseBody->diffusion_properties);
         $this->assertSame('entity', $responseBody->attachfor_type);
         $this->assertSame('COU,PJS', $responseBody->attachfor_properties);
+        $this->assertFalse($responseBody->send_as_recap);
     }
 
     public function testCreateFail1()
@@ -104,6 +105,79 @@ class NotificationControllerTest extends CourrierTestCase
         $response = $NotificationController->create($fullRequest, new Response());
         $responseBody = json_decode((string) $response->getBody());
         $this->assertSame('Notification déjà existante', $responseBody->errors);
+    }
+
+    public function testCreateFailWhenSendAsRecapIsNotABoolean()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'baskets',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => 'not a boolean'
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationController->create($fullRequest, new Response());
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertCount(1, $responseBody->errors);
+        $this->assertSame('send_as_recap is not a boolean', $responseBody->errors[0]);
+        $this->assertSame(500, $response->getStatusCode());
+    }
+
+    public function testCreateSendAsRecapCanBeTrueWhenEventIdIsBaskets()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu123',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'baskets',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => true
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationController->create($fullRequest, new Response());
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertTrue($responseBody->send_as_recap);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testCreateSendAsRecapCannotBeTrueWhenEventIdIsNotBaskets()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu456',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'users',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => true
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+        $response = $NotificationController->create($fullRequest, new Response());
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertFalse($responseBody->send_as_recap);
+        $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testRead()
@@ -236,6 +310,79 @@ class NotificationControllerTest extends CourrierTestCase
 
         $this->assertSame('notification_sid is not a numeric', $responseBody->errors[0]);
         $this->assertSame('notification does not exists', $responseBody->errors[1]);
+    }
+
+    public function testUpdateFailWhenSendAsRecapIsNotABoolean()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'baskets',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => 'not a boolean'
+        ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertCount(1, $responseBody->errors);
+        $this->assertSame('send_as_recap is not a boolean', $responseBody->errors[0]);
+        $this->assertSame(500, $response->getStatusCode());
+    }
+
+    public function testUpdateSendAsRecapCanBeTrueWhenEventIdIsBaskets()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu123',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'baskets',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => true
+        ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertTrue($responseBody->notification->send_as_recap);
+        $this->assertSame(200, $response->getStatusCode());
+    }
+
+    public function testUpdateSendAsRecapCannotBeTrueWhenEventIdIsNotBaskets()
+    {
+        $NotificationController = new NotificationController();
+
+        $args = [
+            'notification_id' => 'testcreatetu456',
+            'description' => 'description de la notification',
+            'is_enabled' => 'Y',
+            'event_id' => 'users',
+            'notification_mode' => 'EMAIL',
+            'template_id' => 4,
+            'diffusion_type' => 'user',
+            'diffusion_properties' => 'superadmin',
+            'attachfor_type' => 'zz',
+            'attachfor_properties' => 'cc',
+            'send_as_recap' => true
+        ];
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+        $response = $NotificationController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string) $response->getBody());
+        $this->assertFalse($responseBody->notification->send_as_recap);
+        $this->assertSame(200, $response->getStatusCode());
     }
 
     public function testDelete()
