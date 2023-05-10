@@ -2058,7 +2058,7 @@ INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUE
 -- INDEXING_MODELS_ENTITIES
 ------------
 -- Set 'ALL_ENTITIES' keyword for every indexing model in indexing_models_entities
-INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models);
+INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models WHERE models.private = 'false');
 ------------
 -- ENTITIES_FOLDERS
 ------------

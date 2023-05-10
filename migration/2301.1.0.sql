@@ -20,7 +20,7 @@ WITH (OIDS=FALSE);
 SELECT setval('indexing_models_entities_id_seq', (SELECT max(id)+1 FROM indexing_models_entities), false);
 
 -- Set 'ALL_ENTITIES' keyword for every indexing model in indexing_models_entities
-INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models);
+INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models WHERE models.private = 'false');
 
 
 UPDATE parameters SET param_value_string = '2301.1.0' WHERE id = 'database_version';
