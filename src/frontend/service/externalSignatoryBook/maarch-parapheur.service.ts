@@ -100,10 +100,6 @@ export class MaarchParapheurService {
         }
     }
 
-    getOtpStatus(): boolean {
-        return this.otpStatus;
-    }
-
     getOtpConfig(): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('../rest/maarchParapheurOtp').pipe(

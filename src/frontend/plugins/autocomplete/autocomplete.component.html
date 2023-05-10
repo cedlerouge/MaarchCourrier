@@ -26,7 +26,7 @@
             <mat-option *ngIf="loading" disabled>
                 <mat-spinner diameter="20"></mat-spinner>
             </mat-option>
-            <div *ngIf="fromExternalWorkflow && connectorLength > 0" class="autoCompleteInfoResult create-contact" style="font-size: 11px;">
+            <div *ngIf="fromExternalWorkflow && connectorLength > 0 && otpStatus" class="autoCompleteInfoResult create-contact" style="font-size: 11px;">
                 <a style="cursor: pointer;" (click)="$event.stopPropagation(); createExternalUser()" [title]="'lang.addOtp' | translate">
                     <mat-icon matSuffix class="fas fa-user-plus" style="padding-top: 5px"></mat-icon>
                     {{'lang.addOtp' | translate}}

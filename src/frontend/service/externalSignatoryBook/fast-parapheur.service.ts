@@ -43,8 +43,10 @@ export class FastParapheurService {
                         const signatureModes: any[] = Array.isArray(data.signatureModes) ? data.signatureModes : [data.signatureModes];
                         const objToSend: any = {
                             types: this.workflowTypes,
-                            modes: signatureModes
+                            modes: signatureModes,
+                            otpStatus: data.otpStatus
                         };
+                        this.otpStatus = data.otpStatus;
                         this.signatureModes = signatureModes.map((item: any) => item.id);
                         resolve(objToSend);
                     } else {
@@ -72,23 +74,6 @@ export class FastParapheurService {
                 }),
                 catchError(err => {
                     this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
-    }
-
-    getOtpStatus(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.http.get('../rest/fastParapheurOtpEnabled').pipe(
-                tap(async (data: any) => {
-                    this.canAddExternalUser = data.otpStatus;
-                    this.otpStatus = data.otpStatus;
-                    resolve(this.otpStatus);
-                }),
-                catchError(err => {
-                    this.notify.handleErrors(err);
-                    resolve(false);
                     return of(false);
                 })
             ).subscribe();

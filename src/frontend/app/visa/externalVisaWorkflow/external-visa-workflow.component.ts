@@ -46,6 +46,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     loadedInConstructor: boolean = false;
 
     otpConfig: number = 0;
+    otpStatus: boolean = false;
 
     visaWorkflow = new VisaWorkflow();
 
@@ -65,7 +66,6 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     async ngOnInit(): Promise<any> {
         this.workflowDetails();
-        await this.externalSignatoryBookManagerService.getOtpStatus();
 
         if (this.externalSignatoryBookManagerService.canAddExternalUser()) {
             const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
@@ -115,6 +115,10 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         if (!this.functions.empty(workflow?.types)) {
             this.workflowTypes = workflow.types;
             this.workflowType = workflow.types[0].id;
+        }
+
+        if (!this.functions.empty(workflow?.otpStatus)) {
+            this.otpStatus = workflow.otpStatus;
         }
     }
 

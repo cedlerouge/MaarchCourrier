@@ -89,6 +89,7 @@ export class PluginAutocompleteComponent implements OnInit {
 
     @Input() fromExternalWorkflow: boolean = false;
     @Input() connectorLength: number = 0;
+    @Input() otpStatus: boolean = false;
     @Input() resId: any;
 
     @Output() updateVisaWorkflow = new EventEmitter<any>();

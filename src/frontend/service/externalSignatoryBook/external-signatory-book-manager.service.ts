@@ -71,10 +71,6 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.getOtpConfig();
     }
 
-    getOtpStatus() {
-        return this.serviceInjected?.getOtpStatus();
-    }
-
     getAutocompleteUsersRoute(): string {
         return this.serviceInjected?.autocompleteUsersRoute;
     }

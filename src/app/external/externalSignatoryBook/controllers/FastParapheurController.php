@@ -51,15 +51,6 @@ use Contact\controllers\ContactController;
 */
 class FastParapheurController
 {
-    public function getOtpDetails(Request $request, Response $response)
-    {
-        $optionOTP = FastParapheurController::isOtpActive();
-        if (!empty($optionOTP['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $optionOTP['errors']]);
-        }
-        return $response->withJson(['otpStatus' => $optionOTP['OTP']]);
-    }
-
     public function getWorkflowDetails(Request $request, Response $response)
     {
         $config = FastParapheurController::getConfig();
@@ -72,9 +63,15 @@ class FastParapheurController
             return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
         }
 
+        $optionOtp = false;
+        if (filter_var($config['optionOtp'], FILTER_VALIDATE_BOOLEAN)) {
+            $optionOtp = true;
+        }
+
         return $response->withJson([
-            'workflowTypes'  => $config['workflowTypes']['type'],
-            'signatureModes' => $signatureModes['signatureModes']
+            'workflowTypes'     => $config['workflowTypes']['type'],
+            'otpStatus'         => $optionOtp,
+            'signatureModes'    => $signatureModes['signatureModes']
         ]);
     }
 
