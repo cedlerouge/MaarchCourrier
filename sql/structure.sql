@@ -659,6 +659,7 @@ CREATE TABLE notifications
   diffusion_properties text,
   attachfor_type character varying(50),
   attachfor_properties character varying(2048),
+  send_as_recap boolean default false,
   CONSTRAINT notifications_pkey PRIMARY KEY (notification_sid)
 )
 WITH (
