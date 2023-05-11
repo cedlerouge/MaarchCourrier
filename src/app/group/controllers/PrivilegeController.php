@@ -206,19 +206,19 @@ class PrivilegeController
         }
 
         $privilegesStoredInDB = PrivilegeModel::getByUser(['id' => $args['userId']]);
-        $serviceIds = array_column($privilegesStoredInDB, 'service_id');
+        $privilegesStoredInDB = array_column($privilegesStoredInDB, 'service_id');
 
         $file   = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $isLock = !empty($file['config']['lockAdvancedPrivileges']);
         foreach (['create_custom', 'admin_update_control'] as $advancedPrivilege) {
-            $key = array_search($advancedPrivilege, $serviceIds);
+            $key = array_search($advancedPrivilege, $privilegesStoredInDB);
             if ($isLock && $key !== false) {
                 unset($privilegesStoredInDB[$key]);
             }
         }
         $loginMethod = CoreConfigModel::getLoggingMethod();
         if ($loginMethod['id'] != 'standard') {
-            $key = array_search('admin_password_rules', $serviceIds);
+            $key = array_search('admin_password_rules', $privilegesStoredInDB);
             if ($key !== false) {
                 unset($privilegesStoredInDB[$key]);
             }

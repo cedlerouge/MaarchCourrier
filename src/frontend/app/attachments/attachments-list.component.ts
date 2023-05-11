@@ -99,7 +99,7 @@ export class AttachmentsListComponent implements OnInit {
                             }
                             this.groupId = param['groupSerialId'];
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
-                            element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
+                            element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
                         });
                     }),
                     finalize(() => this.loading = false),
@@ -130,7 +130,7 @@ export class AttachmentsListComponent implements OnInit {
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
-                        element.canDelete = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments']) || this.headerService.user.id === element.typist;
+                        element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
                     });
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';

@@ -107,7 +107,11 @@ export class AttachmentPageComponent implements OnInit {
             this.http.get(`../rest/attachments/${this.data.resId}`).pipe(
                 tap((data: any) => {
                     let contact: any = null;
-                    const hasPrivilege: boolean = this.privilegeService.hasPermessivePrivilegesByGroupIds(['update_delete_attachments', 'update_attachments']);
+                    const isAttachmentUpdateAllowed = this.privilegeService.hasCurrentUserPrivilege('update_attachments');
+                    const isDeleteAttachmentAllowed = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments');
+                    const isTypist = this.headerService.user.id === data.typist;
+                    const isSignOrFrozenStatus = data.status === 'SIGN' || data.status === 'FRZ';
+                    const hasPrivilege: boolean = (isAttachmentUpdateAllowed || isDeleteAttachmentAllowed || isTypist) && !isSignOrFrozenStatus;
 
                     if (!this.functions.empty(this.data.editMode)) {
                         this.editMode = this.data.editMode;
