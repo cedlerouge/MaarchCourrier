@@ -121,7 +121,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => 'not a boolean'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
@@ -146,7 +146,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => true
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
@@ -170,7 +170,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => true
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
@@ -326,7 +326,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => 'not a boolean'
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
@@ -351,7 +351,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => true
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
@@ -375,7 +375,7 @@ class NotificationControllerTest extends CourrierTestCase
             'diffusion_type' => 'user',
             'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
-            'attachfor_properties' => 'cc',
+            'attachfor_properties' => ['COU', 'PJS'],
             'send_as_recap' => true
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
