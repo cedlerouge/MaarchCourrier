@@ -15,6 +15,7 @@ import { VisaWorkflowModalComponent } from '../visa/modal/visa-workflow-modal.co
 import { AppService } from '@service/app.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-attachments-list',
@@ -63,6 +64,7 @@ export class AttachmentsListComponent implements OnInit {
 
     dialogRef: MatDialogRef<any>;
 
+    groupId: any = null;
 
     constructor(
         public translate: TranslateService,
@@ -73,7 +75,8 @@ export class AttachmentsListComponent implements OnInit {
         public functions: FunctionsService,
         private notify: NotificationService,
         private headerService: HeaderService,
-        private privilegeService: PrivilegeService
+        private privilegeService: PrivilegeService,
+        private route: ActivatedRoute
     ) { }
 
     ngOnInit(): void {
@@ -81,8 +84,41 @@ export class AttachmentsListComponent implements OnInit {
             this.createAttachment();
         }
 
-        if (this.resId !== null) {
-            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
+        this.route.params.subscribe((param: any) => {
+            if (this.resId !== null) {
+                this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
+                    tap((data: any) => {
+                        this.mailevaEnabled = data.mailevaEnabled;
+                        this.attachments = data.attachments;
+                        this.attachments.forEach((element: any) => {
+                            if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
+                                this.filterAttachTypes.push({
+                                    id: element.type,
+                                    label: element.typeLabel
+                                });
+                            }
+                            this.groupId = param['groupSerialId'];
+                            element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
+                            element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
+                        });
+                    }),
+                    finalize(() => this.loading = false),
+                    catchError((err: any) => {
+                        this.notify.handleErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            }
+        });
+    }
+
+    loadAttachments(resId: number) {
+        this.route.params.subscribe((param: any) => {
+            const timeStamp = +new Date();
+            this.resId = resId;
+            this.loading = true;
+            this.filterAttachTypes = [];
+            this.http.get('../rest/resources/' + this.resId + '/attachments').pipe(
                 tap((data: any) => {
                     this.mailevaEnabled = data.mailevaEnabled;
                     this.attachments = data.attachments;
@@ -93,46 +129,21 @@ export class AttachmentsListComponent implements OnInit {
                                 label: element.typeLabel
                             });
                         }
-                        element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
-                        element.canDelete = this.privilegeService.hasCurrentUserPrivilege('manage_attachments') || this.headerService.user.id === element.typist;
+                        element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
+                        element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
                     });
+                    if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
+                        this.currentFilter = '';
+                    }
+                    this.reloadBadgeAttachments.emit(`${this.attachments.length}`);
+                    this.loading = false;
                 }),
-                finalize(() => this.loading = false),
                 catchError((err: any) => {
-                    this.notify.handleErrors(err);
+                    this.notify.handleSoftErrors(err.error.errors);
                     return of(false);
                 })
             ).subscribe();
-        }
-    }
-
-    loadAttachments(resId: number) {
-        const timeStamp = +new Date();
-        this.resId = resId;
-        this.loading = true;
-        this.filterAttachTypes = [];
-        this.http.get('../rest/resources/' + this.resId + '/attachments')
-            .subscribe((data: any) => {
-                this.mailevaEnabled = data.mailevaEnabled;
-                this.attachments = data.attachments;
-                this.attachments.forEach((element: any) => {
-                    if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
-                        this.filterAttachTypes.push({
-                            id: element.type,
-                            label: element.typeLabel
-                        });
-                    }
-                    element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
-                    element.canDelete = this.privilegeService.hasCurrentUserPrivilege('manage_attachments') || this.headerService.user.id === element.typist;
-                });
-                if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
-                    this.currentFilter = '';
-                }
-                this.reloadBadgeAttachments.emit(`${this.attachments.length}`);
-                this.loading = false;
-            }, (err: any) => {
-                this.notify.error(err.error.errors);
-            });
+        });
     }
 
     setInSignatureBook(attachment: any) {
@@ -171,18 +182,20 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     showAttachment(attachment: any) {
-        this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : this.canModify } });
+        this.route.params.subscribe((param: any) => {
+            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : this.canModify, groupId: +param['groupSerialId'] } });
 
-        this.dialogRef.afterClosed().pipe(
-            filter((data: string) => data === 'success'),
-            tap(() => {
-                this.loadAttachments(this.resId);
-            }),
-            catchError((err: any) => {
-                this.notify.handleErrors(err);
-                return of(false);
-            })
-        ).subscribe();
+            this.dialogRef.afterClosed().pipe(
+                filter((data: string) => data === 'success'),
+                tap(() => {
+                    this.loadAttachments(this.resId);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     createAttachment() {
