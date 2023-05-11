@@ -119,7 +119,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => 'not a boolean'
@@ -144,7 +144,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => true
@@ -168,7 +168,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => true
@@ -324,7 +324,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => 'not a boolean'
@@ -349,7 +349,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => true
@@ -373,7 +373,7 @@ class NotificationControllerTest extends CourrierTestCase
             'notification_mode' => 'EMAIL',
             'template_id' => 4,
             'diffusion_type' => 'user',
-            'diffusion_properties' => 'superadmin',
+            'diffusion_properties' => ['ADMINISTRATEUR', 'ARCHIVISTE', 'DIRECTEUR'],
             'attachfor_type' => 'zz',
             'attachfor_properties' => 'cc',
             'send_as_recap' => true
