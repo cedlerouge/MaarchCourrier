@@ -179,9 +179,7 @@ class ConfigurationController
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]);
                     } elseif (!Validator::notEmpty()->ip()->validate($editor['siteUrl'] ?? null) && !preg_match('/([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/', $editor['siteUrl'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
-                    } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
-                    } 
+                    }
                     $siteId = Office365SharepointController::getSiteId([
                         'tenantId'     => $editor['tenantId'],
                         'clientId'     => $editor['clientId'],
