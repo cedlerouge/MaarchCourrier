@@ -287,7 +287,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
     $lastBasketToProcess = array_key_last($tmpNotif['baskets']);
     foreach ($tmpNotif['baskets'] as $basketId => $basket_list) {
         $baskets = \Basket\models\BasketModel::getByBasketId(['select' => ['basket_name'], 'basketId' => $basketId]);
-        $subject = $baskets['basket_name']; // TODO what subject for recap ?
+        $subject = $baskets['basket_name'];
 
         // Add the basket name associated with each event -> for the merge variable 'res_letterbox.basketName'
         foreach ($basket_list['events'] as $key => $basketEvent) {
@@ -299,6 +299,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
         } else {
             // If the notification is a recap, we will send only 1 email, so we merge all events
             $events = array_merge($events, $basket_list['events']);
+            $subject = $notification['description'];
 
             if ($basketId !== $lastBasketToProcess) {
                 continue;
