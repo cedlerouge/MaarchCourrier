@@ -1668,7 +1668,7 @@ class PreProcessActionController
 
                 foreach ($actionRequiredFields as $actionRequiredField) {
                     $idCustom = explode("_", $actionRequiredField)[1];
-                    if (in_array($actionRequiredField, $modelFields) && empty($resourceCustomFields[$idCustom])) {
+                    if (in_array($actionRequiredField, $modelFields) && empty($resourceCustomFields[$idCustom]) && $resourceCustomFields[$idCustom] !== '0' && $resourceCustomFields[$idCustom] !== 0) {
                         $emptyList[] = $idCustom;
                     }
                 }
