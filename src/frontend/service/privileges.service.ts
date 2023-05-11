@@ -799,28 +799,6 @@ export class PrivilegeService {
         return privileges.indexOf(privilegeId) > -1;
     }
 
-    hasCurrentUserPrivilegeByGroupId(privilegeId: string, groupId: number): boolean {
-        const hasPrivileges: any = (this.headerService.user.privileges as any[]).find((item: any) => item.service_id === privilegeId && item.group_id === groupId);
-        return !this.functions.empty(hasPrivileges);
-    }
-
-    hasPermessivePrivilegesByGroupIds(privilegeIds: string[]): boolean {
-        let hasPrivilege: boolean = false;
-        const groupIds: number[] = (this.headerService.user.groups as any[]).map((group: any) => group.id);
-        const privilegesByGroupIds: string[] = (this.headerService.user.privileges as any[]).filter((privilege: any) => groupIds.indexOf(privilege.group_id) > -1).map((item: any) => item.service_id);
-        /**
-         * iterate through the privilege array until finding the most permessive privilege
-         * the order of privileges in the array passed as a parameter is very important; most permissive first
-         */
-        for (let i = 0; i < privilegeIds.length; i++) {
-            hasPrivilege = privilegesByGroupIds.indexOf(privilegeIds[i]) > -1;
-            if (hasPrivilege) {
-                break;
-            }
-        }
-        return hasPrivilege;
-    }
-
     private getExcludePrivilege(getLockedPrivilege: boolean, authMode: string) {
         let excludePriv = [];
 
