@@ -4,6 +4,7 @@ FIRST_TAG=0
 
 TAGS=()
 
+### CHECK TAG BASE EXISTANCE
 RESPONSE=$(curl --write-out '%{url_effective} [%{response_code}]' --silent --output /dev/null --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$TAG_BASE")
 RESPONSE_CODE=$(echo $RESPONSE | grep -o '\[[0-9]*\]$')
 
@@ -11,9 +12,16 @@ if [ $RESPONSE_CODE != '[200]' ]; then
     echo "Error ! $RESPONSE"
     exit 1
 fi
+###
 
-
+### CHECK IF THIS MERGE REQUEST IS MERGEABLE
 MR_ID=`echo $CI_OPEN_MERGE_REQUESTS | grep -oP "!(.)*" | tr -d "!"`
+
+if [ $MR_ID == '' ]; then
+    echo "MR ID invalid ! $MR_ID"
+    exit 1
+fi
+
 content=$(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests/$MR_ID")
 STATUS=$(jq -r '.detailed_merge_status' <<<"$content")
 
@@ -23,7 +31,9 @@ if [ $STATUS != 'mergeable' ]; then
     echo "2301_releases cannot be merge ! Tag Abort"
     exit 1
 fi
+###
 
+### RETRIEVE PUBLIC TAGS
 for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$TAG_BASE" | jq -r '.[] | @base64'); do
     _jq() {
         echo ${row} | base64 --decode | jq -r ${1}
@@ -39,7 +49,9 @@ for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.o
         TAGS+=("$NAME")
     fi
 done
+###
 
+### RETRIEVE LAST TAG
 if [ ${#TAGS[@]} -eq 0 ]; then
     echo "No Tags available, create de first tag !"
     FIRST_TAG=1
@@ -77,12 +89,15 @@ fi
 echo "BRANCH : $BRANCH_TAG_VERSION"
 echo "MAJOR TAG : $MAJOR_TAG_VERSION"
 echo "MINOR TAG : $MINOR_TAG_VERSION"
+###
+
 
 if [[ -z $BRANCH_TAG_VERSION ]] || [[ -z $MAJOR_TAG_VERSION ]] || [[ -z $MINOR_TAG_VERSION ]]; then
     echo "Bad tag structure ! $LATEST_TAG"
     exit 1
 fi
 
+### RETRIEVE NEXT TAG TO CREATE
 if [ $FIRST_TAG == 0 ]; then
     VERSION=$((MINOR_TAG_VERSION + 1))
     VERSION_NEXT=$((MINOR_TAG_VERSION + 2))
@@ -91,7 +106,9 @@ if [ $FIRST_TAG == 0 ]; then
 
     echo "NEXT TAG : $NEXT_TAG"
 fi
+###
 
+### CREATE TEMPORARY BRANCH TO BUILD DEPENDENCIES WITH APPLICATION
 curl --request POST --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?branch=tmp_$RELEASE_BRANCH&ref=$RELEASE_BRANCH"
 
 git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
@@ -118,14 +135,16 @@ git add -f vendor/
 git commit -m "Add packages dependencies"
 
 git push
+###
 
-## CREATE TAG
+### CREATE TAG
 curl -w " => %{url_effective} [%{response_code}]" -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -X POST "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?tag_name=$NEXT_TAG&ref=tmp_$RELEASE_BRANCH"
+###
 
 curl --request DELETE --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches/tmp_$RELEASE_BRANCH"
 
 if [ $FIRST_TAG == 0 ]; then
-    ## CLOSE MILESTONE
+    ### CLOSE MILESTONE
     for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones?search=$NEXT_TAG" | jq -r '.[] | @base64'); do
         _jq() {
             echo ${row} | base64 --decode | jq -r ${1}
@@ -133,19 +152,21 @@ if [ $FIRST_TAG == 0 ]; then
 
         ID=$(_jq '.id')
 
-        echo $ID
+        echo "CLOSE CURRENT MILESTONE: $ID"
 
         BODY="{\"id\":\"$ID\",\"state_event\":\"close\"}"
 
         curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X PUT https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones/$ID
 
     done
+    ###
 fi
 
+### CREATE NEXT MILESTONE
 BODY="{\"id\":\"$CI_PROJECT_ID\",\"title\":\"$NEXT_NEXT_TAG\"}"
 
-# CREATE NEXT TAG MILESTONE
 curl -H 'Content-Type:application/json' -H "PRIVATE-TOKEN:$TOKEN_GITLAB" -d "$BODY" -X POST https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/milestones
+###
 
 if [ $FIRST_TAG == 0 ]; then
     # GENERATE RAW CHANGELOG
@@ -194,11 +215,10 @@ if [ $FIRST_TAG == 0 ]; then
         echo "ID : $ID"
         echo "TRACKER : $TRACKER"
         echo "SUBJECT : $SUBJECT"
-        echo "=================="
-
         if [ ! -z $ID ]; then
             echo "* **$TRACKER [#$ID](https://forge.maarch.org/issues/$ID)** - $SUBJECT" >>$FINAL_LOG
         fi
+        echo "=================="
     done <"$SORTED_UNIQUE_ISSUES_IDS"
 
     if [[ ! -z $REF_UPDATED ]]; then
@@ -212,6 +232,9 @@ if [ $FIRST_TAG == 0 ]; then
     done <"changelog.txt"
 
     echo $CONTENT
+
+    # Replace all " by \" in $CONTENT
+    CONTENT=${CONTENT//\"/\\\"}
 
     # Update tag release
     BODY="{\"description\":\"$CONTENT\",\"tag_name\":\"$NEXT_TAG\", \"milestones\": [\"$NEXT_TAG\"]}"
