@@ -48,7 +48,7 @@ export class SelectIndexingModelComponent implements OnInit {
     }
 
     getIndexingModelList() {
-        this.http.get('../rest/indexingModels').pipe(
+        this.http.get('../rest/indexingModels', {params: {showInUserEntity: true}}).pipe(
             tap((data: any) => {
                 this.indexingModels = data.indexingModels;
                 if (this.indexingModels.length > 0) {

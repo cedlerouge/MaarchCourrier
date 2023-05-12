@@ -46,7 +46,10 @@ class IndexingModelController
     {
         $query = $request->getQueryParams();
 
-        $models = IndexingModelController::getIndexingModels(['showDisabled' => $query['showDisabled'] ?? 'false']);
+        $models = IndexingModelController::getIndexingModels([
+            'showDisabled' => $query['showDisabled'] ?? 'false',
+            'showInUserEntity' => $query['showInUserEntity'] ?? 'false'
+        ]);
 
         return $response->withJson(['indexingModels' => $models]);
     }
@@ -726,13 +729,24 @@ class IndexingModelController
     {
         ValidatorModel::notEmpty($args, ['showDisabled']);
         ValidatorModel::stringType($args, ['showDisabled']);
+        ValidatorModel::stringType($args, ['showInUserEntity']);
+
+
+        $showDisabled = false;
+        $showInUserEntity = false;
+        if (Validator::notEmpty()->validate($args['showDisabled'] ?? false)) {
+            $showDisabled = $args['showDisabled'] == 'true';
+        }
+        if (Validator::notEmpty()->validate($args['showInUserEntity'] ?? false)) {
+            $showInUserEntity = $args['showInUserEntity'] == 'true';
+        }
 
         $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
         $data  = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
 
-        $showDisabled = false;
-        if (Validator::notEmpty()->validate($args['showDisabled'] ?? false)) {
-            $showDisabled = $args['showDisabled'] == 'true';
+        if ($showInUserEntity) {
+            $where = ["(id IN (SELECT id FROM indexing_models as models WHERE models.owner = ? AND private = ?) OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))"];
+            $data  = [$GLOBALS['id'], 'true', $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
         }
 
         if (!$showDisabled) {
