@@ -296,7 +296,7 @@ class CollaboraOnlineController
         }
 
         $uri  = $configuration['collaboraonline']['uri'];
-        $port = (string)$configuration['collaboraonline']['port'];
+        $port = (int)$configuration['collaboraonline']['port'];
 
         $isAvailable = DocumentEditorController::isAvailable(['uri' => $uri, 'port' => $port]);
 

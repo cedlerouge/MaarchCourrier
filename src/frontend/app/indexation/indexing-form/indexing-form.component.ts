@@ -1074,10 +1074,7 @@ export class IndexingFormComponent implements OnInit {
                 }
 
                 await this.initElemForm(saveResourceState).then(() => {
-                    if (!this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
-                        this.arrFormControl['processLimitDate'].enable();
-                        this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = true;
-                    } else if (this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+                    if (this.adminMode && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
                         this.arrFormControl['processLimitDate'].disable();
                         this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = false;
                     }

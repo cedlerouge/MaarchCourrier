@@ -851,7 +851,21 @@ class AutoCompleteController
         \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
 
         $index = \Zend_Search_Lucene::open($path);
-        \Zend_Search_Lucene::setResultSetLimit(100);
+        \Zend_Search_Lucene::setResultSetLimit(10);
+
+        foreach ($addressWords as $key => $value) {
+            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
+                unset($addressWords[$key]);
+                continue;
+            }
+            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
+                $addressWords[$key] .= '*';
+            }
+        }
+        $data['address'] = implode(' ', $addressWords);
+        if (empty($data['address'])) {
+            return $response->withJson([]);
+        }
 
         $hits = $index->find($data['address']);
 
@@ -907,13 +921,13 @@ class AutoCompleteController
                 ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
                 ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
                 ldap_set_option($ldap, LDAP_OPT_NETWORK_TIMEOUT, 5);
-    
+
                 $search = @ldap_search($ldap, $annuary['baseDN'], "(ou=*{$data['company']}*)", ['ou', 'postOfficeBox', 'destinationIndicator', 'labeledURI']);
                 if ($search === false) {
                     continue;
                 }
                 $entries = ldap_get_entries($ldap, $search);
-    
+
                 foreach ($entries as $key => $value) {
                     if (!is_numeric($key)) {
                         continue;
@@ -933,11 +947,11 @@ class AutoCompleteController
                         ];
                     }
                 }
-    
+
                 break;
             }
         }
-        
+
         return $response->withJson($unitOrganizations);
     }
 
@@ -980,7 +994,7 @@ class AutoCompleteController
             'limit'     => self::TINY_LIMIT
         ]);
 
-        
+
         foreach ($contacts as $contact) {
             $autoContact = ContactController::getAutocompleteFormat(['id' => $contact['id']]);
 
