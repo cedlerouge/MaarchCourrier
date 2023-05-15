@@ -38,6 +38,7 @@ use SrcCore\models\TextFormatModel;
 use BroadcastList\models\BroadcastListRoleModel;
 use IndexingModel\models\IndexingModelsEntitiesModel;
 use IndexingModel\controllers\IndexingModelController;
+use IndexingModel\models\IndexingModelModel;
 
 class EntityController
 {
@@ -181,8 +182,13 @@ class EntityController
             'entities'  => [$args['id']]
         ]);
 
-        $models = IndexingModelController::getIndexingModels(['showDisabled' => 'false']);
-        foreach ($models as $key => $model) {
+        $models = [];
+        $tmpModels = IndexingModelModel::get([
+            'select'=> ['id', 'label', 'category'],
+            'where' => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'], 
+            'data'  => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
+        ]);
+        foreach ($tmpModels as $key => $model) {
             $models[$key]['indexingModelId'] = $model['id'];
             $models[$key]['indexingModelLabel'] = $model['label'];
             $models[$key]['indexingModelCategory'] = $model['category'];
