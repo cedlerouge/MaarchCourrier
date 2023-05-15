@@ -224,7 +224,8 @@ export class TileCreateComponent implements OnInit {
                 arrMenus = arrMenus.concat(tmpMenus);
             }
 
-            tmpMenus = this.privilegeService.getAdministrations(this.headerService.user.privileges).map((menu: any) => ({
+            const privileges: any[] = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+            tmpMenus = this.privilegeService.getAdministrations(privileges).map((menu: any) => ({
                 ...menu,
                 label: this.translate.instant(menu.label)
             }));

@@ -1633,7 +1633,7 @@ class SearchController
             foreach ($rawPriorities as $value) {
                 $label = null;
                 if (!empty($value['priority'])) {
-                    $label = $prioritiesData[$value['priority']];
+                    $label = $prioritiesData[$value['priority']] ?? '';
                 }
 
                 $priorities[] = [
@@ -1819,7 +1819,7 @@ class SearchController
             foreach ($rawEntities as $value) {
                 $label = null;
                 if (!empty($value['destination'])) {
-                    $label = $entitiesData[$value['destination']];
+                    $label = $entitiesData[$value['destination']] ?? '';
                 }
 
                 $entities[] = [

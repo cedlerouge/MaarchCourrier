@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HeaderService } from './header.service';
+import { FunctionsService } from './functions.service';
 
 interface Menu {
     'id': string; // identifier
@@ -485,12 +486,6 @@ export class PrivilegeService {
             'unit': 'application'
         },
         {
-            'id': 'manage_attachments',
-            'label': 'lang.manageAttachments',
-            'comment': 'lang.manageAttachments',
-            'unit': 'application'
-        },
-        {
             'id': 'view_personal_data',
             'label': 'lang.viewPersonalData',
             'comment': 'lang.viewPersonalData',
@@ -532,6 +527,24 @@ export class PrivilegeService {
             'comment': 'lang.createPublicIndexingModels',
             'unit': 'application'
         },
+        {
+            'id': 'view_attachments',
+            'label': 'lang.viewAttachments',
+            'comment': 'lang.viewAttachments',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'update_attachments',
+            'label': 'lang.updateAttachments',
+            'comment': 'lang.updateAttachments',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'update_delete_attachments',
+            'label': 'lang.updateDeleteAttachments',
+            'comment': 'lang.updateDeleteAttachments',
+            'unit': 'attachments'
+        }
     ];
 
     private menus: Menu[] = [
@@ -602,7 +615,8 @@ export class PrivilegeService {
 
     constructor(
         public translate: TranslateService,
-        public headerService: HeaderService
+        public headerService: HeaderService,
+        public functions: FunctionsService
     ) { }
 
     getAllPrivileges(getLockedPrivilege: boolean, authMode: string = 'standard') {
@@ -659,10 +673,16 @@ export class PrivilegeService {
 
     getCurrentUserMenus(ids: string[] = null) {
         let menus: Menu[];
-        if (ids !== null) {
-            menus = this.menus.filter(elem => ids.indexOf(elem.id) > -1 && this.headerService.user.privileges.indexOf(elem.id) > -1);
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
         } else {
-            menus = this.menus.filter(elem => this.headerService.user.privileges.indexOf(elem.id) > -1);
+            privileges = this.headerService.user.privileges;
+        }
+        if (ids !== null) {
+            menus = this.menus.filter(elem => ids.indexOf(elem.id) > -1 && privileges.indexOf(elem.id) > -1);
+        } else {
+            menus = this.menus.filter(elem => privileges.indexOf(elem.id) > -1);
         }
 
         if (this.headerService.user.groups.filter((group: any) => group.can_index === true).length > 0 && (ids === null || ids.indexOf('indexing') > -1)) {
@@ -712,7 +732,14 @@ export class PrivilegeService {
             }
         ];
 
-        this.shortcuts = this.shortcuts.concat(this.menus.filter(elem => elem.shortcut === true).filter(elem => this.headerService.user.privileges.indexOf(elem.id) > -1));
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
+
+        this.shortcuts = this.shortcuts.concat(this.menus.filter(elem => elem.shortcut === true).filter(elem => privileges.indexOf(elem.id) > -1));
 
         if (this.headerService.user.groups.filter((group: any) => group.can_index === true).length > 0) {
             const indexingGroups: any[] = [];
@@ -747,17 +774,29 @@ export class PrivilegeService {
     }
 
     getCurrentUserAdministrationsByUnit(unit: string): Array<Administration> {
-        if (this.hasCurrentUserPrivilege('view_history') && this.hasCurrentUserPrivilege('view_history_batch')) {
-            return this.administrations.filter(elem => elem.unit === unit).filter(elem => this.headerService.user.privileges.indexOf(elem.id) > -1).filter(priv => priv.id !== 'view_history_batch');
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
         } else {
-            return this.administrations.filter(elem => elem.unit === unit).filter(elem => this.headerService.user.privileges.indexOf(elem.id) > -1);
+            privileges = this.headerService.user.privileges;
+        }
+
+        if (this.hasCurrentUserPrivilege('view_history') && this.hasCurrentUserPrivilege('view_history_batch')) {
+            return this.administrations.filter(elem => elem.unit === unit).filter(elem => privileges.indexOf(elem.id) > -1).filter(priv => priv.id !== 'view_history_batch');
+        } else {
+            return this.administrations.filter(elem => elem.unit === unit).filter(elem => privileges.indexOf(elem.id) > -1);
         }
 
     }
 
     hasCurrentUserPrivilege(privilegeId: string) {
-
-        return this.headerService.user.privileges.indexOf(privilegeId) > -1;
+        let privileges: any[] = [];
+        if (!this.functions.empty(this.headerService.user.privileges[0]?.service_id)) {
+            privileges = this.headerService.user.privileges.map((privilege: any) => privilege.service_id);
+        } else {
+            privileges = this.headerService.user.privileges;
+        }
+        return privileges.indexOf(privilegeId) > -1;
     }
 
     private getExcludePrivilege(getLockedPrivilege: boolean, authMode: string) {

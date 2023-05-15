@@ -116,7 +116,7 @@
                                             </mat-panel-title>
                                         </mat-expansion-panel-header>
                                         <ng-container
-                                            *ngIf="['diffusionList','confidentialityAndSecurity'].indexOf(unit.id) === -1">
+                                            *ngIf="['diffusionList','confidentialityAndSecurity', 'attachments'].indexOf(unit.id) === -1">
                                             <mat-list>
                                                 <mat-list-item
                                                     *ngFor="let privilege of unit.services | sortBy: 'label' | filterList:listFilter.value:'label'">
@@ -137,14 +137,32 @@
                                                     style="width: 250px !important;padding-left: 10px;padding-right: 10px;">
                                                     <mat-select [(ngModel)]="fakePrivilege.current"
                                                         (selectionChange)="changeDifflistPrivilege($event, fakePrivilege.id)">
-                                                        <mat-option value="">{{'lang.noRole' | translate}}</mat-option>
+                                                        <mat-option value="" [title]="'lang.noRole' | translate">{{'lang.noRole' | translate}}</mat-option>
                                                         <mat-option *ngFor="let subservice of fakePrivilege.services"
+                                                            [title]="subservice.label | translate"
+                                                            [value]="subservice.id">{{subservice.label | translate}}
+                                                        </mat-option>
+                                                    </mat-select>
+                                                </mat-form-field>.<br>
+                                            </mat-list-item>
+                                        </ng-container>
+                                        <ng-container *ngIf="unit.id === 'attachments'">
+                                            <mat-list-item *ngFor="let fakePrivilege of unit.services" color="primary"
+                                                style="font-size: 16px;">
+                                                <span [innerHTML]="fakePrivilege.label"></span>
+                                                <mat-form-field
+                                                    style="width: 300px !important;padding-left: 10px;padding-right: 10px;">
+                                                    <mat-select [(ngModel)]="fakePrivilege.current"
+                                                        (selectionChange)="changeAttachmentPrivilege($event)">
+                                                        <mat-option *ngFor="let subservice of fakePrivilege.services"
+                                                            [title]="subservice.label | translate"
                                                             [value]="subservice.id">{{subservice.label | translate}}
                                                         </mat-option>
                                                     </mat-select>
                                                 </mat-form-field>.
                                             </mat-list-item>
                                         </ng-container>
+
                                         <ng-container *ngIf="unit.id === 'confidentialityAndSecurity'">
                                             <mat-list-item *ngFor="let fakePrivilege of unit.services" color="primary"
                                                 style="font-size: 16px;">
@@ -153,9 +171,10 @@
                                                     style="width: 300px !important;padding-left: 10px;padding-right: 10px;">
                                                     <mat-select [(ngModel)]="fakePrivilege.current"
                                                         (selectionChange)="changePersonalDataPrivilege($event)">
-                                                        <mat-option value="">{{'lang.notVisible' | translate}}
+                                                        <mat-option value="" [title]="'lang.notVisible' | translate">{{'lang.notVisible' | translate}}
                                                         </mat-option>
                                                         <mat-option *ngFor="let subservice of fakePrivilege.services"
+                                                            [title]="subservice.label | translate"
                                                             [value]="subservice.id">{{subservice.label | translate}}
                                                         </mat-option>
                                                     </mat-select>
