@@ -2054,6 +2054,12 @@ INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUE
 INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUES (18, 'DSG', 'Superviseur courrier', 'Y');
 INSERT INTO users_entities (user_id, entity_id, user_role, primary_entity) VALUES (4, 'PSO', 'Responsable Pole Social', 'Y');
 
+
+------------
+-- INDEXING_MODELS_ENTITIES
+------------
+-- Set 'ALL_ENTITIES' keyword for every indexing model in indexing_models_entities
+INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as model_id, 'ALL_ENTITIES' as keyword FROM indexing_models as models WHERE models.private = 'false');
 ------------
 -- ENTITIES_FOLDERS
 ------------
@@ -2096,6 +2102,7 @@ SELECT setval('history_batch_id_seq', (SELECT max(batch_id)+1 FROM history_batch
 SELECT setval('history_id_seq', (SELECT max(id)+1 FROM history), false);
 SELECT setval('indexing_models_fields_id_seq', (SELECT max(id)+1 FROM indexing_models_fields), false);
 SELECT setval('indexing_models_id_seq', (SELECT max(id)+1 FROM indexing_models), false);
+SELECT setval('indexing_models_entities_id_seq', (SELECT max(id)+1 FROM indexing_models_entities), false);
 SELECT setval('list_templates_id_seq', (SELECT max(id)+1 FROM list_templates), false);
 SELECT setval('list_templates_items_id_seq', (SELECT max(id)+1 FROM list_templates_items), false);
 SELECT setval('listinstance_history_details_id_seq', (SELECT max(listinstance_history_details_id)+1 FROM listinstance_history_details), false);

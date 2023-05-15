@@ -67,14 +67,14 @@ class IndexingModelModel
         DatabaseModel::insert([
             'table'         => 'indexing_models',
             'columnsValues' => [
-                'id'             => $nextSequenceId,
-                'label'          => $args['label'],
-                'category'       => $args['category'],
-                '"default"'      => $args['default'],
-                'owner'          => $args['owner'],
-                'private'        => $args['private'],
-                'mandatory_file' => $args['mandatoryFile'],
-                'master'         => $args['master']
+                'id'                => $nextSequenceId,
+                'label'             => $args['label'],
+                'category'          => $args['category'],
+                '"default"'         => $args['default'],
+                'owner'             => $args['owner'],
+                'private'           => $args['private'],
+                'mandatory_file'    => $args['mandatoryFile'],
+                'master'            => $args['master']
             ]
         ]);
 

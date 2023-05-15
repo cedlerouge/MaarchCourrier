@@ -11,6 +11,8 @@ import { SortPipe } from '../../../plugins/sorting.pipe';
 import { IndexingFormComponent } from '../../indexation/indexing-form/indexing-form.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
+import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     templateUrl: 'indexing-model-administration.component.html',
@@ -26,6 +28,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
     @ViewChild('snav2', { static: true }) public sidenavRight: MatSidenav;
 
     @ViewChild('indexingForm', { static: false }) indexingForm: IndexingFormComponent;
+
+    @ViewChild('maarchTree', { static: true }) maarchTree: MaarchFlatTreeComponent;
 
     loading: boolean = true;
 
@@ -47,23 +51,41 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
     categoriesList: any[];
 
+    allEntities: any[] = [];
+
+    allEntitiesClone: any[] = [];
+
+    keywordAllEntities: any = {
+        id: 'ALL_ENTITIES',
+        keyword: 'ALL_ENTITIES',
+        entity_id: 'ALL_ENTITIES',
+        parent: '#',
+        icon: 'fa fa-hashtag',
+        allowed: true,
+        text: '- ' + this.translate.instant('lang.allEntities'),
+        state: {selected: false}
+    };
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
+        public dialog: MatDialog,
+        public appService: AppService,
+        public functions: FunctionsService,
+        private headerService: HeaderService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
-        public dialog: MatDialog,
-        private headerService: HeaderService,
-        public appService: AppService,
     ) {
 
     }
 
     ngOnInit(): void {
-        this.route.params.subscribe((params) => {
+        this.route.params.subscribe(async (params) => {
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
+
+                await this.getEntities();
 
                 this.headerService.setHeader(this.translate.instant('lang.indexingModelCreation'));
 
@@ -96,6 +118,26 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
                         this.indexingModelClone = JSON.parse(JSON.stringify(this.indexingModel));
 
+                        this.allEntities = this.indexingModel.entities;
+
+                        if (this.functions.empty(this.allEntities.find((entity: any) => entity.entity_id === 'ALL_ENTITIES'))) {
+                            this.indexingModel.entities.unshift(this.keywordAllEntities);
+                        } else {
+                            this.allEntities.find((entity: any) => entity.entity_id === 'ALL_ENTITIES').text = this.keywordAllEntities.text;
+                        }
+
+                        this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
+
+                        if (this.indexingModel.default === true) {
+                            (this.allEntities as any []).forEach((entity: any) => {
+                                entity.state.disabled = true;
+                            });
+                        }
+
+                        this.maarchTree.initData(this.allEntities.map(ent => ({
+                            ...ent,
+                            id : ent.serialId,
+                        })));
                     }),
                     exhaustMap(() => this.http.get('../rest/categories')),
                     tap((data: any) => {
@@ -109,8 +151,6 @@ export class IndexingModelAdministrationComponent implements OnInit {
                 ).subscribe();
             }
         });
-
-
     }
 
     onSubmit() {
@@ -124,7 +164,11 @@ export class IndexingModelAdministrationComponent implements OnInit {
             delete fields[key].values;
         });
         this.indexingModel.fields = fields;
-        this.indexingModel = {...this.indexingModel, allDoctypes: this.indexingForm.allDoctypes};
+        this.indexingModel = {
+            ...this.indexingModel,
+            allDoctypes: this.indexingForm.allDoctypes,
+            entities: this.maarchTree.getSelectedNodes().map((ent: any) => ent.entity_id)
+        };
 
         if (this.creationMode) {
             this.http.post('../rest/indexingModels', this.indexingModel).pipe(
@@ -178,5 +222,68 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
     changeCategory(ev: any) {
         this.indexingForm.changeCategory(ev.value);
+    }
+
+    getEntities() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/indexingModels/entities?allEntities=true').pipe(
+                tap((data: any) => {
+                    this.allEntities = data.entities;
+                    this.allEntities.unshift(this.keywordAllEntities);
+                    this.allEntities.forEach((entity: any) => {
+                        if (entity?.keyword === 'ALL_ENTITIES') {
+                            entity.state.selected = true;
+                        }
+                    });
+                    this.allEntitiesClone = JSON.parse(JSON.stringify(this.allEntities));
+                    this.maarchTree.initData(this.allEntities.map(ent => ({
+                        ...ent,
+                        id : ent.serialId,
+                    })));
+                    resolve(this.allEntities);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    toggleEntities(isDefault: boolean) {
+        /**
+         * If the model is default: all entities are selected and modification is not possible
+         */
+        if (isDefault) {
+            this.allEntities.forEach((entity: any) => {
+                if (entity?.keyword !== 'ALL_ENTITIES') {
+                    entity.state.disabled = true;
+                    entity.state.selected = false;
+                } else {
+                    entity.state.disabled = true;
+                    entity.state.selected = true;
+                }
+            });
+        } else {
+            this.allEntities.forEach((entity: any) => {
+                entity.state.disabled = false;
+            });
+        }
+
+        /**
+         * if you are editing
+         * we keep the initial selection of entities for the model when 'isDefault' is false
+         */
+        if (!this.creationMode && !isDefault) {
+            this.maarchTree.initData(this.allEntitiesClone.map(ent => ({
+                ...ent,
+                id : ent.serialId,
+            })));
+        } else {
+            this.maarchTree.initData(this.allEntities.map(ent => ({
+                ...ent,
+                id : ent.serialId,
+            })));
+        }
     }
 }
