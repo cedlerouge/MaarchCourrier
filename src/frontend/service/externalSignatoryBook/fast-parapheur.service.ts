@@ -25,7 +25,6 @@ export class FastParapheurService {
     signatureModes: string[] = [];
     workflowTypes: any[] = [];
     otpConnectors: any[] = [];
-    otpStatus: boolean = false;
 
     constructor(
         private http: HttpClient,
@@ -43,10 +42,9 @@ export class FastParapheurService {
                         const signatureModes: any[] = Array.isArray(data.signatureModes) ? data.signatureModes : [data.signatureModes];
                         const objToSend: any = {
                             types: this.workflowTypes,
-                            modes: signatureModes,
-                            otpStatus: data.otpStatus
+                            modes: signatureModes
                         };
-                        this.otpStatus = data.otpStatus;
+                        this.canAddExternalUser = data.otpStatus;
                         this.signatureModes = signatureModes.map((item: any) => item.id);
                         resolve(objToSend);
                     } else {

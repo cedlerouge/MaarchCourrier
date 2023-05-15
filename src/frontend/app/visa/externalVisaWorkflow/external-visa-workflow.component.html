@@ -12,7 +12,7 @@
     <app-plugin-autocomplete *ngIf="adminMode" [labelPlaceholder]="'lang.addPerson' | translate"
         [routeDatas]="getRouteDatas()" [targetSearchKey]="'idToDisplay'"
         [subInfoKey]="'email'" (triggerEvent)="addItemToWorkflow($event)" appearance="outline"
-        [fromExternalWorkflow]="true" [connectorLength]="otpConfig" [otpStatus]="otpStatus" [resId]="resId" (updateVisaWorkflow)="updateVisaWorkflow($event)">
+        [fromExternalWorkflow]="canAddExternalUser()" [connectorLength]="otpConfig" [resId]="resId" (updateVisaWorkflow)="updateVisaWorkflow($event)">
     </app-plugin-autocomplete>
     <div cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="visaWorkflow.items" class="cdk-list"
         (cdkDropListDropped)="drop($event)" [cdkDropListDisabled]="!adminMode">
@@ -76,7 +76,7 @@
                 </div>
                 <div *ngIf="diffusion.hasPrivilege && diffusion.isValid">
                     <ng-container>
-                        <button mat-icon-button *ngIf="canManageUser() && diffusion.item_id === null && otpStatus" 
+                        <button mat-icon-button *ngIf="canManageUser() && diffusion.item_id === null && canAddExternalUser()"
                             (click)="openCreateUserOtp(diffusion)" [title]="'lang.updateOtp' | translate">
                             <mat-icon class="fas fa-edit" color="primary"></mat-icon>
                         </button>
