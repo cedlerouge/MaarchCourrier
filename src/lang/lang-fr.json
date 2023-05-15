@@ -2717,5 +2717,8 @@
     "keepLogin": "Rester connecté",
     "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !",
     "zoomIn": "Agrandir",
-    "zoomOut": "Réduire"
+    "zoomOut": "Réduire",
+    "activeRecap": "Activer le récapitulatif des notifications",
+    "toggleRecapTrue": "L'objet du mail sera la description de la notification.",
+    "toggleRecapFalse": "Une notification par bannette sera envoyée dans le mail."
 }
