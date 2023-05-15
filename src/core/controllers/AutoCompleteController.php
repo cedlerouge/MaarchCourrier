@@ -793,9 +793,6 @@ class AutoCompleteController
                 unset($addressWords[$key]);
                 continue;
             }
-            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
-                $addressWords[$key] .= '*';
-            }
         }
         $data['address'] = implode(' ', $addressWords);
         if (empty($data['address'])) {
@@ -855,6 +852,20 @@ class AutoCompleteController
 
         $index = \Zend_Search_Lucene::open($path);
         \Zend_Search_Lucene::setResultSetLimit(10);
+
+        foreach ($addressWords as $key => $value) {
+            if (mb_strlen($value) <= 2 && !is_numeric($value)) {
+                unset($addressWords[$key]);
+                continue;
+            }
+            if (mb_strlen($value) >= 3 && $value != 'rue' && $value != 'avenue' && $value != 'boulevard') {
+                $addressWords[$key] .= '*';
+            }
+        }
+        $data['address'] = implode(' ', $addressWords);
+        if (empty($data['address'])) {
+            return $response->withJson([]);
+        }
 
         $hits = $index->find($data['address']);
 
