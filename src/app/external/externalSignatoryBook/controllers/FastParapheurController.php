@@ -1052,7 +1052,7 @@ class FastParapheurController
                 'otpInfo'       => $otpInfo
             ]);
             if (!empty($otpInfoXML['errors'])) {
-                return ['error' => $$otpInfoXML['errors']];
+                return ['error' => $otpInfoXML['errors']];
             }
         }
 
