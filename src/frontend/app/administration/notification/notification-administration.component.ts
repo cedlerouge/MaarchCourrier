@@ -21,7 +21,7 @@ export class NotificationAdministrationComponent implements OnInit {
     notification: any = {
         diffusionType_label: null
     };
-
+    notificationClone: any = {};
     loading: boolean = false;
 
     events: any[] = [];
@@ -46,7 +46,6 @@ export class NotificationAdministrationComponent implements OnInit {
 
     ngOnInit(): void {
         this.loading = true;
-
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
 
         this.route.params.subscribe((params: any) => {
@@ -292,7 +291,6 @@ export class NotificationAdministrationComponent implements OnInit {
                 ).subscribe();
         }
     }
-
     toggleNotif() {
         if (this.notification.is_enabled === 'Y') {
             this.notification.is_enabled = 'N';
@@ -313,5 +311,9 @@ export class NotificationAdministrationComponent implements OnInit {
 
     updateDiffusionType(type: any) {
         this.notification.diffusion_properties = [];
+    }
+
+    toggleRecap(notification: any): void {
+        this.notificationClone.send_as_recap = notification.send_as_recap;
     }
 }
