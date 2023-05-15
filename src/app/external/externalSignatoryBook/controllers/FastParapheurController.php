@@ -1659,7 +1659,7 @@ class FastParapheurController
         } elseif (!array_key_exists('refusedState', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'refusedState not found for FastParapheur'];
         } elseif (!array_key_exists('optionOtp', $fastParapheurBlock)) {
-            return ['code' => 500, 'errors' => 'optionOtp not found for FastParapheur'];
+            $fastParapheurBlock['optionOtp'] = 'false';
         }
 
         if (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
