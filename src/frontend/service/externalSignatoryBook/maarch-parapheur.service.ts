@@ -22,7 +22,6 @@ export class MaarchParapheurService {
     canManageSignaturesPositions: boolean = true;
 
     otpConnectors: any [] = [];
-    otpStatus: boolean = false;
 
     constructor(
         public functions: FunctionsService,
