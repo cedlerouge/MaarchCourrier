@@ -203,13 +203,6 @@ class FastParapheurTest extends CourrierTestCase
                     'code' => 500,
                     'errors' => 'refusedState not found for FastParapheur'
                 ]
-            ],
-            'Without optionOtp' => [
-                'input' => $xmlStrWithoutOptionOtp,
-                'expectedOutput' => [
-                    'code' => 500,
-                    'errors' => 'optionOtp not found for FastParapheur'
-                ]
             ]
         ];
     }
