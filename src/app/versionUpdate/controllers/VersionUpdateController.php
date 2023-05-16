@@ -24,6 +24,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
+use User\models\UserModel;
 
 class VersionUpdateController
 {
@@ -273,6 +274,16 @@ class VersionUpdateController
                 }
                 $targetedSqlFiles[] = "migration/{$file}"; 
             }
+        }
+
+        if (empty($GLOBALS['id'] ?? null)) {
+            $user = UserModel::get([
+                'select'    => ['id'],
+                'where'     => ['mode = ? OR mode = ?'],
+                'data'      => ['root_visible', 'root_invisible'],
+                'limit'     => 1
+            ]);
+            $GLOBALS['id'] = $user[0]['id'];
         }
 
         if (!empty($targetedSqlFiles)) {

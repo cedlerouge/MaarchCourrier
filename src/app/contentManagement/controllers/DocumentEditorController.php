@@ -18,6 +18,7 @@ use Configuration\models\ConfigurationModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\ValidatorModel;
+use Respect\Validation\Validator;
 
 class DocumentEditorController
 {
@@ -46,7 +47,14 @@ class DocumentEditorController
     public static function isAvailable(array $args)
     {
         ValidatorModel::notEmpty($args, ['uri', 'port']);
-        ValidatorModel::stringType($args, ['uri', 'port']);
+        ValidatorModel::stringType($args, ['uri']);
+        ValidatorModel::intType($args, ['port']);
+
+        if (!Validator::notEmpty()->ip()->validate($args['uri'] ?? null) && !Validator::notEmpty()->url()->validate($args['uri'] ?? null)) {
+            return ['errors' => "Editor 'uri' is not a valid URL or IP address", 'lang' => 'editorHasNoValidUrlOrIp'];
+        } elseif (!preg_match('/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$|^(https?:\/\/)?((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $args['uri'] ?? null)) {
+            return ['errors' => "Editor 'uri' is not a valid URL or IP address format", 'lang' => 'editorHasNoValidUrlOrIp'];
+        }
 
         $aUri = explode("/", $args['uri']);
         $exec = shell_exec("nc -vz -w 5 {$aUri[0]} {$args['port']} 2>&1");

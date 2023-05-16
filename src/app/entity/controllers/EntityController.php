@@ -36,6 +36,9 @@ use User\models\UserModel;
 use Template\models\TemplateModel;
 use SrcCore\models\TextFormatModel;
 use BroadcastList\models\BroadcastListRoleModel;
+use IndexingModel\models\IndexingModelsEntitiesModel;
+use IndexingModel\controllers\IndexingModelController;
+use IndexingModel\models\IndexingModelModel;
 
 class EntityController
 {
@@ -179,6 +182,19 @@ class EntityController
             'entities'  => [$args['id']]
         ]);
 
+        $models = [];
+        $tmpModels = IndexingModelModel::get([
+            'select'=> ['id', 'label', 'category'],
+            'where' => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'], 
+            'data'  => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
+        ]);
+        foreach ($tmpModels as $key => $model) {
+            $models[$key]['indexingModelId'] = $model['id'];
+            $models[$key]['indexingModelLabel'] = $model['label'];
+            $models[$key]['indexingModelCategory'] = $model['category'];
+        }
+        $entity['indexingModels'] = $models;
+
         $entity['users'] = EntityModel::getUsersById(['id' => $entity['entity_id'], 'select' => ['users.id','users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
         $children = EntityModel::get(['select' => [1], 'where' => ['parent_entity_id = ?'], 'data' => [$args['id']]]);
         $entity['contact'] = $this->getContactLinkCount($entity['id']);
@@ -193,6 +209,7 @@ class EntityController
         $entity['canAdminTemplates'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_templates', 'userId' => $GLOBALS['id']]);
         $siret = ParameterModel::getById(['id' => 'siret', 'select' => ['param_value_string']]);
         $entity['canSynchronizeSiret'] = !empty($siret['param_value_string']);
+        $entity['canAdminIndexingModels'] = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']]);
 
         return $response->withJson(['entity' => $entity]);
     }
@@ -246,7 +263,7 @@ class EntityController
             'address_postcode'      => $body['addressPostcode'] ?? null,
             'address_town'          => $body['addressTown'] ?? null,
             'address_country'       => $body['addressCountry'] ?? null,
-            'email'                 => $body['email'],
+            'email'                 => $body['email'] ?? null,
             'business_id'           => $body['business_id'] ?? null,
             'parent_entity_id'      => $body['parent_entity_id'],
             'entity_type'           => $body['entity_type'],
@@ -442,6 +459,8 @@ class EntityController
         ]);
 
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
+
+        IndexingModelsEntitiesModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
 
         HistoryController::add([
             'tableName' => 'entities',

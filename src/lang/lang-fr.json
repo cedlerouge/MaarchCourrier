@@ -946,7 +946,7 @@
     "makeActionOn": "Voulez-vous effectuer cette action sur",
     "makeUpdate": "Mettre à jour",
     "manageAbsences": "Rediriger mes bannettes",
-    "manageAttachments": "Modifier ou supprimer des pièces jointes",
+    "manageAttachments": "Permissions d'accès aux pièces jointes (pour les non-créateurs)",
     "manageCreateContacts": "Créer des contacts",
     "manageCreateContactsDesc": "Créer des contacts depuis les pages d'indexation/traitement/détaillée",
     "manageNumericPackage": "Envoyer et enregistrer un pli numérique",
@@ -2712,10 +2712,17 @@
     "cannotManageSignature": "<b>Le pré-positionnement des signatures n'est pas pris en compte par le connecteur OTP associé</b>",
     "sendToExternalSignatoryBook": "Envoyer au parapheur externe",
     "eidas_metasign": "Cachet Metasign",
+    "viewAttachments": "Visualisation seulement",
+    "updateDeleteAttachments": "Modification et suppression",
+    "updateAttachments": "Modification",
     "exportHistory": "Exporter l'historique",
     "applyFilters": "Les filtres seront appliqués à l'exportation des données pour une limite de 1000 lignes.",
     "keepLogin": "Rester connecté",
     "inactivityWarning": "En raison d'une période d'inactivité, vous serez déconnecté dans {{counter}} secondes !",
     "zoomIn": "Agrandir",
-    "zoomOut": "Réduire"
+    "zoomOut": "Réduire",
+    "parameterIsNotValidUrlOrIp": "Le paramètre n'est pas une URL ou un format d'adresse IP valide",
+    "parameterUrlOrIpHaveProtocol": "Le paramètre contient un protocole http ou https",
+    "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
+    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide"
 }

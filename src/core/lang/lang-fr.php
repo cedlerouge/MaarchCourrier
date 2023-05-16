@@ -473,3 +473,4 @@ define('_REST_', "Utilisateur WebService (API)");
 define('_ROOT_VISIBLE_', "Compte super administrateur visible dans les workflows (Assignable)");
 define('_ROOT_INVISIBLE_', "Compte super administrateur non visible dans les workflows (Non Assignable)");
 define('_EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE', "Un utilisateur externe a été trouvé mais l'option OTP est désactivée. Voir dans la configuration de SignatoryBooks.");
+define('ALL_ENTITIES_TEXT', "Toutes les entités");

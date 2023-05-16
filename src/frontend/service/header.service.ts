@@ -81,7 +81,7 @@ export class HeaderService {
                             featureTour: data.featureTour
                         };
                         this.nbResourcesFollowed = data.nbFollowedResources;
-                        resolve(true);
+                        resolve(data);
                     })
                 ).subscribe();
         });

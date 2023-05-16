@@ -189,7 +189,8 @@ export class MaarchFlatTreeComponent implements OnInit {
         this.rawData.filter((item: any) => item.state !== undefined && item.state.opened).forEach((item: any) => {
             this.defaultOpenedNodes = this.defaultOpenedNodes.concat(this.getParents([item]));
         });
-        this.defaultOpenedNodes = this.defaultOpenedNodes.map((node: any) => node.id);
+
+        this.defaultOpenedNodes = this.defaultOpenedNodes.filter((item: any) => item !== undefined).map((node: any) => node.id);
     }
 
     getData(id: any) {

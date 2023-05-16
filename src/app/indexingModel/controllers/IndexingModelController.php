@@ -21,6 +21,7 @@ use CustomField\models\CustomFieldModel;
 use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
+use IndexingModel\models\IndexingModelsEntitiesModel;
 use IndexingModel\models\IndexingModelFieldModel;
 use IndexingModel\models\IndexingModelModel;
 use Doctype\models\DoctypeModel;
@@ -31,6 +32,7 @@ use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
+use SrcCore\models\ValidatorModel;
 use Tag\models\ResourceTagModel;
 use User\models\UserModel;
 
@@ -38,28 +40,16 @@ class IndexingModelController
 {
     const INDEXABLE_DATES = ['documentDate', 'departureDate', 'arrivalDate', 'processLimitDate'];
     const ALLOWED_VALUES_ALL_DOCTYPES = '_ALL_DOCTYPES_';
+    const ALL_ENTITIES = 'ALL_ENTITIES';
 
     public function get(Request $request, Response $response)
     {
         $query = $request->getQueryParams();
-        $where = ['(owner = ? OR private = ?)'];
 
-        $showDisabled = false;
-        if (Validator::notEmpty()->validate($query['showDisabled'] ?? false)) {
-            $showDisabled = $query['showDisabled'] == 'true';
-        }
-
-        if (!$showDisabled) {
-            $where[] = 'enabled = TRUE';
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
-            $where[] = 'enabled = TRUE';
-        }
-
-        $models = IndexingModelModel::get(['where' => $where, 'data' => [$GLOBALS['id'], 'false']]);
-        foreach ($models as $key => $model) {
-            $models[$key]['mandatoryFile'] = $model['mandatory_file'];
-            unset($models[$key]['mandatory_file']);
-        }
+        $models = IndexingModelController::getIndexingModels([
+            'showDisabled' => $query['showDisabled'] ?? 'false',
+            'showInUserEntity' => $query['showInUserEntity'] ?? 'false'
+        ]);
 
         return $response->withJson(['indexingModels' => $models]);
     }
@@ -74,6 +64,12 @@ class IndexingModelController
         } elseif ($model['private'] && $model['owner'] != $GLOBALS['id']) {
             return $response->withStatus(400)->withJson(['errors' => 'Model out of perimeter']);
         }
+
+        $entities = IndexingModelController::getModelEntities(['id' => $args['id']]);
+        if(!empty($entities['error'])) {
+            return $response->withJson(['errors' => $entities['error']]);
+        }
+        $model['entities'] = $entities['entities'];
 
         $fields = IndexingModelFieldModel::get(['select' => ['identifier', 'mandatory', 'default_value', 'unit', 'enabled', 'allowed_values'], 'where' => ['model_id = ?'], 'data' => [$args['id']]]);
         $destination = '';
@@ -279,6 +275,20 @@ class IndexingModelController
             ]);
         }
 
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
+            IndexingModelsEntitiesModel::create([
+                'model_id'  => $modelId,
+                'keyword'   => IndexingModelController::ALL_ENTITIES,
+            ]);
+        } else {
+            foreach($body['entities'] as $entity) {
+                IndexingModelsEntitiesModel::create([
+                    'model_id'  => $modelId,
+                    'entity_id' => $entity,
+                ]);
+            }
+        }
+
         HistoryController::add([
             'tableName' => 'indexing_models',
             'recordId'  => $modelId,
@@ -349,10 +359,10 @@ class IndexingModelController
 
         IndexingModelModel::update([
             'set'   => [
-                'label'     => $body['label'],
-                'category'  => $body['category'],
-                '"default"' => $body['default'] ? 'true' : 'false',
-                'mandatory_file' => empty($body['mandatoryFile']) ? 'false' : 'true'
+                'label'             => $body['label'],
+                'category'          => $body['category'],
+                '"default"'         => $body['default'] ? 'true' : 'false',
+                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true'
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
@@ -490,6 +500,22 @@ class IndexingModelController
             ]);
         }
 
+        IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
+
+        if (in_array(IndexingModelController::ALL_ENTITIES, $body['entities'] ?? [])) {
+            IndexingModelsEntitiesModel::create([
+                'model_id'  => $args['id'],
+                'keyword'   => IndexingModelController::ALL_ENTITIES,
+            ]);
+        } else {
+            foreach($body['entities'] as $entity) {
+                IndexingModelsEntitiesModel::create([
+                    'model_id'  => $args['id'],
+                    'entity_id' => $entity,
+                ]);
+            }
+        }
+
         HistoryController::add([
             'tableName' => 'indexing_models',
             'recordId'  => $args['id'],
@@ -586,6 +612,8 @@ class IndexingModelController
 
         IndexingModelFieldModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
 
+        IndexingModelsEntitiesModel::delete(['where' => ['model_id = ?'], 'data' => [$args['id']]]);
+
         HistoryController::add([
             'tableName' => 'indexing_models',
             'recordId'  => $args['id'],
@@ -655,6 +683,13 @@ class IndexingModelController
 
     public function getEntities(Request $request, Response $response)
     {
+        $queryParams = $request->getQueryParams();
+
+        if (!empty($queryParams['allEntities']) && $queryParams['allEntities'] == 'true') {
+            $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
+            return $response->withJson(['entities' => $entities]);
+        }
+
         $entitiesTmp = EntityModel::get([
             'select'   => ['id', 'entity_label', 'entity_id'],
             'where'    => ['enabled = ?', '(parent_entity_id is null OR parent_entity_id = \'\')'],
@@ -688,5 +723,79 @@ class IndexingModelController
         }
 
         return $response->withJson(['entities' => $entities]);
+    }
+
+    public static function getIndexingModels(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['showDisabled']);
+        ValidatorModel::stringType($args, ['showDisabled']);
+        ValidatorModel::stringType($args, ['showInUserEntity']);
+
+
+        $showDisabled = false;
+        $showInUserEntity = false;
+        if (Validator::notEmpty()->validate($args['showDisabled'] ?? false)) {
+            $showDisabled = $args['showDisabled'] == 'true';
+        }
+        if (Validator::notEmpty()->validate($args['showInUserEntity'] ?? false)) {
+            $showInUserEntity = $args['showInUserEntity'] == 'true';
+        }
+
+        $where = ['(owner = ? OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))'];
+        $data  = [$GLOBALS['id'], $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
+
+        if ($showInUserEntity) {
+            $where = ["(id IN (SELECT id FROM indexing_models as models WHERE models.owner = ? AND private = ?) OR id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id IN (SELECT entity_id FROM users_entities WHERE user_id = ?) OR keyword = ?))"];
+            $data  = [$GLOBALS['id'], 'true', $GLOBALS['id'], IndexingModelController::ALL_ENTITIES];
+        }
+
+        if (!$showDisabled) {
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
+        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
+            $where[] = 'enabled = ?';
+            $data[] = 'TRUE';
+        }
+        $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
+        foreach ($models as $key => $model) {
+            $models[$key]['mandatoryFile'] = $model['mandatory_file'];
+            unset($models[$key]['mandatory_file']);
+        }
+        return $models;
+    }
+
+    public static function getModelEntities(array $args)
+    {
+        if (!Validator::notEmpty()->validate($args['id'] ?? null)) {
+            return ['error' => 'Id parameter is empty'];
+        }
+
+        $indexingModelsEntities = IndexingModelsEntitiesModel::getByModelId(['model_id' => $args['id']]);
+        $entityIds = array_column($indexingModelsEntities ?? [], 'entity_id');
+        $keywords = array_column($indexingModelsEntities ?? [], 'keyword');
+
+        $entities = EntityModel::getAllowedEntitiesByUserId(['root' => true]);
+
+        if (in_array(IndexingModelController::ALL_ENTITIES, $keywords)) {
+            $entities[] = [
+                'id' => 'ALL_ENTITIES',
+                'keyword' => 'ALL_ENTITIES',
+                'entity_id' => 'ALL_ENTITIES',
+                'parent' => '#',
+                'icon' => 'fa fa-hashtag',
+                'allowed' => true,
+                'text' => ALL_ENTITIES_TEXT,
+                'state' => ['selected' => true]
+            ];
+        } else {
+            foreach ($entities as $key => $entity) {
+                $entities[$key]['state']['selected'] = false;
+                if (in_array($entity['entity_id'], $entityIds)) {
+                    $entities[$key]['state']['selected'] = true;
+                }
+            }
+        }
+
+        return ['entities' => $entities];
     }
 }
