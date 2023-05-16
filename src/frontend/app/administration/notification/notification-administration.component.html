@@ -74,7 +74,7 @@
                                 </app-select-with-filter>
                             </div>
                         </div>
-                        <div class="form-group" *ngIf="notification.event_id === 'baskets'" [title]="(notification.send_as_recap ? 'lang.ToggleRecapTrue' : 'lang.ToggleRecapFalse') | translate">
+                        <div class="form-group" *ngIf="notification.event_id === 'baskets'" [title]="(notification.send_as_recap ? 'lang.toggleRecapTrue' : 'lang.toggleRecapFalse') | translate">
                             <mat-slide-toggle [(ngModel)]="notification.send_as_recap" name="send_as_recap"
                                               [checked]="notification.send_as_recap"
                                               color="primary"
