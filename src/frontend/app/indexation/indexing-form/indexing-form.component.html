@@ -43,7 +43,7 @@
                                         <span *ngIf="field.mandatory">{{'lang.optionalField' | translate}}</span>
                                     </button>
                                     <mat-divider *ngIf="!field.system"></mat-divider>
-                                    <button mat-menu-item *ngIf="!field.enabled && field.identifier != 'processLimitDate'" (click)="enableField(field, true)">
+                                    <button mat-menu-item *ngIf="!field.enabled" (click)="enableField(field, true)">
                                         <span>{{'lang.enableField' | translate}}</span>
                                     </button>
                                     <button mat-menu-item *ngIf="field.enabled" (click)="enableField(field, false)">
@@ -117,7 +117,6 @@
                                         </mat-icon>
                                     </button>
                                     <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode && field.identifier !== 'processLimitDate' && (!arrFormControl[field.identifier].disabled || field.today)" matPrefix
-                                        [disabled]="!field.enabled"
                                         mat-icon-button (click)="$event.stopPropagation();toggleTodayDate(field);"
                                         [matTooltip]="'lang.todayDate' | translate"
                                         style="position: absolute;left: -40px;">
@@ -139,7 +138,7 @@
                                         </mat-datepicker-toggle>
                                         <mat-datepicker [touchUi]="appService.getViewMode()" #picker></mat-datepicker>
                                         <button mat-button color="warn" matSuffix mat-icon-button
-                                            *ngIf="arrFormControl[field.identifier].value && !arrFormControl[field.identifier].disabled"
+                                            *ngIf="arrFormControl[field.identifier].value && !arrFormControl[field.identifier].disabled && field.identifier != 'processLimitDate'"
                                             (click)="$event.stopPropagation();arrFormControl[field.identifier].reset();"
                                             [title]="'lang.eraseValue' | translate">
                                             <mat-icon color="warn" class="fa fa-calendar-times">
