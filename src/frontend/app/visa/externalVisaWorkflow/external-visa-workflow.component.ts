@@ -65,12 +65,17 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     async ngOnInit(): Promise<any> {
         this.workflowDetails();
+
         if (this.externalSignatoryBookManagerService.canAddExternalUser()) {
             const data: any = await this.externalSignatoryBookManagerService?.getOtpConfig();
             if (!this.functions.empty(data)) {
                 this.otpConfig = data.length;
             }
         }
+    }
+
+    canAddExternalUser(): boolean {
+        return this.externalSignatoryBookManagerService.canAddExternalUser();
     }
 
     async getWorkflowDetails(): Promise<any> {

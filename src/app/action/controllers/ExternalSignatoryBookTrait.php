@@ -153,7 +153,7 @@ trait ExternalSignatoryBookTrait
                 $attachmentToFreeze = $sentInfo['sended'];
             }
 
-            $historyInfo = $sentInfo['historyInfos'];
+            $historyInfo = $sentInfo['historyInfos'] ?? '';
         }
 
         if (!empty($attachmentToFreeze)) {

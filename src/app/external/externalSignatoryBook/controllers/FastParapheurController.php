@@ -63,9 +63,15 @@ class FastParapheurController
             return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
         }
 
+        $optionOtp = false;
+        if (filter_var($config['optionOtp'], FILTER_VALIDATE_BOOLEAN)) {
+            $optionOtp = true;
+        }
+
         return $response->withJson([
-            'workflowTypes'  => $config['workflowTypes']['type'],
-            'signatureModes' => $signatureModes['signatureModes']
+            'workflowTypes'     => $config['workflowTypes']['type'],
+            'otpStatus'         => $optionOtp,
+            'signatureModes'    => $signatureModes['signatureModes']
         ]);
     }
 
@@ -1032,6 +1038,13 @@ class FastParapheurController
             return ['error' => 'steps are empty or invalid', 'code' => 400];
         }
 
+        $optionOTP = FastParapheurController::isOtpActive();
+        if (!empty($optionOTP['errors'])) {
+            return $optionOTP['errors'];
+        } elseif (!$optionOTP['OTP'] && !empty($otpInfo)) {
+            return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
+        }
+
         $otpInfoXML = null;
         if (!empty($otpInfo)) {
             $otpInfoXML = FastParapheurController::generateOtpXml([
@@ -1039,7 +1052,7 @@ class FastParapheurController
                 'otpInfo'       => $otpInfo
             ]);
             if (!empty($otpInfoXML['errors'])) {
-                return ['error' => $$otpInfoXML['errors']];
+                return ['error' => $otpInfoXML['errors']];
             }
         }
 
@@ -1322,6 +1335,7 @@ class FastParapheurController
                 return ['error' => 'no resId found in steps'];
             }
 
+            $areWeUsingOTP = false;
             foreach ($args['steps'] as $step) {
                 if ($step['resId'] !== $resId) {
                     continue;
@@ -1335,6 +1349,7 @@ class FastParapheurController
                         'firstname' => $step['externalInformations']['firstname'] ?? null,
                         'lastname'  => $step['externalInformations']['lastname'] ?? null
                     ];
+                    $areWeUsingOTP = true;
                 } else {
                     $steps[$step['sequence']] = [
                         'mode' => $step['signatureMode'],
@@ -1343,6 +1358,14 @@ class FastParapheurController
                     ];
                 }
             }
+
+            $optionOTP = FastParapheurController::isOtpActive();
+            if (!empty($optionOTP['errors'])) {
+                return $optionOTP['errors'];
+            } elseif (!$optionOTP['OTP'] && $areWeUsingOTP) {
+                return ['error' => _EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE];
+            }
+
             return FastParapheurController::uploadWithSteps([
                 'config'      => $config['data'],
                 'resIdMaster' => $args['resIdMaster'],
@@ -1608,12 +1631,12 @@ class FastParapheurController
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing'];
+            return ['code' => 400, 'errors' => 'SignatoryBooks configuration file missing or empty'];
         }
-        
+
         $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
         if (empty($fastParapheurBlock)) {
-            return ['code' => 500, 'errors' => 'invalid configuration for FastParapheur'];
+            return ['code' => 500, 'errors' => 'FastParapheur configuration is missing'];
         }
 
         $fastParapheurBlock = json_decode(json_encode($fastParapheurBlock), true);
@@ -1635,12 +1658,14 @@ class FastParapheurController
             return ['code' => 500, 'errors' => 'validatedState not found for FastParapheur'];
         } elseif (!array_key_exists('refusedState', $fastParapheurBlock)) {
             return ['code' => 500, 'errors' => 'refusedState not found for FastParapheur'];
+        } elseif (!array_key_exists('optionOtp', $fastParapheurBlock)) {
+            $fastParapheurBlock['optionOtp'] = 'false';
         }
 
         if (!array_key_exists('integratedWorkflow', $fastParapheurBlock)) {
             $fastParapheurBlock['integratedWorkflow'] = 'false';
         }
-        
+
         return $fastParapheurBlock;
     }
 
@@ -1988,5 +2013,18 @@ class FastParapheurController
         }
 
         return ['content' => $xmlData];
+    }
+
+    public static function isOtpActive()
+    {
+        $config = FastParapheurController::getConfig();
+        if (!empty($config['errors'])) {
+            return ['code' => $config['code'], 'errors' => $config['errors']];
+        }
+
+        if (filter_var($config['optionOtp'], FILTER_VALIDATE_BOOLEAN)) {
+            return ['OTP' => true];
+        }
+        return ['OTP' => false];
     }
 }

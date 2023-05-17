@@ -32,6 +32,7 @@
         <id>fastParapheur</id>
         <integratedWorkflow>true</integratedWorkflow>
         <subscriberId></subscriberId>
+        <optionOtp>false</optionOtp>
         <signatureModes>
             <mode>
                 <id>visa</id>

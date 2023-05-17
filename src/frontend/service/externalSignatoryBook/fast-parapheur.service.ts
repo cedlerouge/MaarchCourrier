@@ -44,6 +44,7 @@ export class FastParapheurService {
                             types: this.workflowTypes,
                             modes: signatureModes
                         };
+                        this.canAddExternalUser = data.otpStatus;
                         this.signatureModes = signatureModes.map((item: any) => item.id);
                         resolve(objToSend);
                     } else {
