@@ -2723,7 +2723,7 @@
     "zoomOut": "Réduire",
     "activeRecap": "Activer le récapitulatif des notifications",
     "toggleRecapTrue": "L'objet du mail sera la description de la notification.",
-    "toggleRecapFalse": "Une notification récapitulative pour les bannettes avec l'option active.",
+    "toggleRecapFalse": "Une notification récapitulative pour les bannettes avec l'option 'Activer la notification'.",
     "parameterIsNotValidUrlOrIp": "Le paramètre n'est pas une URL ou un format d'adresse IP valide",
     "parameterUrlOrIpHaveProtocol": "Le paramètre contient un protocole http ou https",
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
