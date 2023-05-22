@@ -27,6 +27,7 @@ export class VisaWorkflowComponent implements OnInit {
     @Input() target: string = '';
     @Input() adminMode: boolean;
     @Input() resId: number = null;
+    @Input() lockVisaCircuit: boolean = false;
 
     @Input() showListModels: boolean = true;
     @Input() showComment: boolean = true;

@@ -37,6 +37,7 @@ export class ActionAdministrationComponent implements OnInit {
     customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
     selectedFieldsValue: Array<any> = [];
     selectedFieldsId: Array<any> = [];
+    lockVisaCircuit: boolean;
 
     availableFillCustomFields: Array<any> = [];
     fillcustomFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
@@ -232,6 +233,7 @@ export class ActionAdministrationComponent implements OnInit {
                             this.selectErrorStatusId.setValue(this.action.parameters.errorStatus);
                             this.errorStatus = this.action.parameters.errorStatus;
                             this.successStatus = this.action.parameters.successStatus;
+                            this.lockVisaCircuit = this.action.parameters.lockVisaCircuit;
                         }
                     });
             }
@@ -502,10 +504,13 @@ export class ActionAdministrationComponent implements OnInit {
                 errorStatus: errorStatus
             };
         } else if (this.intermediateStatusActions.indexOf(this.action.actionPageId) !== -1) {
-            this.action.parameters = { successStatus: this.successStatus, errorStatus: this.errorStatus };
+            this.action.parameters = { successStatus: this.successStatus, errorStatus: this.errorStatus, lockVisaCircuit: this.lockVisaCircuit };
         }
         this.action.action_page = this.action.actionPageId;
         this.action.component = this.actionPagesService.getAllActionPages(this.action.actionPageId).component;
+        if (this.action.actionPageId !== 'send_to_visa') {
+            delete this.action.parameters.lockVisaCircuit;
+        }
 
         if (this.creationMode) {
             this.http.post('../rest/actions', this.action)
@@ -631,5 +636,8 @@ export class ActionAdministrationComponent implements OnInit {
                 this.finalStatusParams.data.find((el: any) => el.id === deselectedItem).disabled = false;
             }
         }
+    }
+    toggleVisaCircuit(action: any){
+        this.lockVisaCircuit = action.parameters.lockVisaCircuit;
     }
 }
