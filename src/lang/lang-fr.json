@@ -2729,5 +2729,5 @@
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
     "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
     "actionLockVisaCircuit": "Verrouiller le circuit de visa",
-    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa"
+    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa afin d'utiliser uniquement le circuit de visa par défaut de l'entité"
    }
