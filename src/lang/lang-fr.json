@@ -2724,5 +2724,6 @@
     "parameterIsNotValidUrlOrIp": "Le paramètre n'est pas une URL ou un format d'adresse IP valide",
     "parameterUrlOrIpHaveProtocol": "Le paramètre contient un protocole http ou https",
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
-    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide"
+    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
+    "processLimitDatetoggleDisableDesc": "L'activation ou la désactivation du champ est appliquée à la fois lors de l'indexation et dans la fiche de traitement du courrier."
 }

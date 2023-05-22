@@ -124,6 +124,13 @@
                                             class="{{field.today ? 'far fa-bell-slash' : 'far fa-bell'}}">
                                         </mat-icon>
                                     </button>
+                                    <button mat-button color="primary" *ngIf="adminMode && !field.SQLMode && field.identifier === 'processLimitDate'" matPrefix mat-icon-button
+                                        [matTooltip]="'lang.processLimitDatetoggleDisableDesc' | translate"
+                                        style="position: absolute;left: -40px; cursor: help;">
+                                        <mat-icon color="primary"
+                                            class="fas fa-circle-info">
+                                        </mat-icon>
+                                    </button>
                                     <mat-form-field class="input-form input-date"
                                         [floatLabel]="appService.getViewMode() ? '' : 'never'" (click)="picker.open()"
                                         style="cursor:pointer;">
