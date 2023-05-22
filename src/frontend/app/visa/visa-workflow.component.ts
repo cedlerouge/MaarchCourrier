@@ -569,7 +569,7 @@ export class VisaWorkflowComponent implements OnInit {
         }
     }
 
-    stringIncludes(source, search) {
+    stringIncludes(source: any, search: any) {
         if (source === undefined || source === null) {
             return false;
         }
