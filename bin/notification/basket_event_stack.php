@@ -283,15 +283,34 @@ writeLog(['message' => "{$totalNotificationsToProcess} notification(s) to proces
 //FOURTH STEP
 $i = 1;
 foreach ($tmpNotifs as $login => $tmpNotif) {
+    $events = [];
+    $lastBasketToProcess = array_key_last($tmpNotif['baskets']);
     foreach ($tmpNotif['baskets'] as $basketId => $basket_list) {
         $baskets = \Basket\models\BasketModel::getByBasketId(['select' => ['basket_name'], 'basketId' => $basketId]);
         $subject = $baskets['basket_name'];
 
-        writeLog(['message' => "Generate e-mail {$i}/{$totalNotificationsToProcess} (TEMPLATE => {$notification['template_id']}, SUBJECT => {$subject}, RECIPIENT => {$login}, DOCUMENT(S) => " . count($basket_list['events']), 'level' => 'INFO']);
+        // Add the basket name associated with each event -> for the merge variable 'res_letterbox.basketName'
+        foreach ($basket_list['events'] as $key => $basketEvent) {
+            $basket_list['events'][$key]['basketName'] = $baskets['basket_name'];
+        }
+
+        if (empty($notification['send_as_recap'])) {
+            $events = $basket_list['events'];
+        } else {
+            // If the notification is a recap, we will send only 1 email, so we merge all events
+            $events = array_merge($events, $basket_list['events']);
+            $subject = $notification['description'];
+
+            if ($basketId !== $lastBasketToProcess) {
+                continue;
+            }
+        }
+
+        writeLog(['message' => "Generate e-mail {$i}/{$totalNotificationsToProcess} (TEMPLATE => {$notification['template_id']}, SUBJECT => {$subject}, RECIPIENT => {$login}, DOCUMENT(S) => " . count($events), 'level' => 'INFO']);
 
         $params = [
             'recipient'    => $tmpNotif['recipient'],
-            'events'       => $basket_list['events'],
+            'events'       => $events,
             'notification' => $notification,
             'maarchUrl'    => $maarchUrl,
             'coll_id'      => 'letterbox_coll',
@@ -322,7 +341,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
             if ($attachMode) {
                 writeLog(['message' => "Adding attachments", 'level' => 'INFO']);
 
-                foreach ($basket_list['events'] as $event) {
+                foreach ($events as $event) {
                     if ($event['res_id'] != '') {
                         $resourceToAttach = \Resource\models\ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
                         if (!empty($resourceToAttach['docserver_id'])) {
@@ -347,7 +366,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
             }
             \Notification\models\NotificationsEmailsModel::create($arrayPDO);
 
-            $notificationSuccess = array_column($basket_list['events'], 'event_stack_sid');
+            $notificationSuccess = array_column($events, 'event_stack_sid');
             if (!empty($notificationSuccess)) {
                 \Notification\models\NotificationsEventsModel::update([
                     'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'SUCCESS'],

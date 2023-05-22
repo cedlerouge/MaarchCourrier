@@ -104,6 +104,10 @@ class NotificationController
 
         $data = $request->getParsedBody();
         $data['notification_mode'] = 'EMAIL';
+
+        if (!empty($data['event_id']) && $data['event_id'] !== 'baskets') {
+            $data['send_as_recap'] = false;
+        }
         
         $errors = $this->control($data, 'create');
         if (!empty($errors)) {
@@ -115,8 +119,6 @@ class NotificationController
         if (Validator::notEmpty()->validate($notificationInDb)) {
             return $response->withStatus(400)->withJson(['errors' => _NOTIFICATION_ALREADY_EXIST]);
         }
-
-        
 
         if ($data['diffusion_properties']) {
             $data['diffusion_properties'] = implode(',', $data['diffusion_properties']);
@@ -160,6 +162,10 @@ class NotificationController
         $data['notification_sid'] = $aArgs['id'];
         unset($data['scriptcreated']);
 
+        if (!empty($data['event_id']) && $data['event_id'] !== 'baskets') {
+            $data['send_as_recap'] = false;
+        }
+
         $errors = $this->control($data, 'update');
 
         if (!empty($errors)) {
@@ -168,6 +174,7 @@ class NotificationController
 
         $data['diffusion_properties'] = implode(',', $data['diffusion_properties']);
         $data['attachfor_properties'] = implode(',', $data['attachfor_properties']);
+        $data['send_as_recap'] = !empty($data['send_as_recap']) ? 'true' : 'false';
 
         NotificationModel::update($data);
 
@@ -288,6 +295,9 @@ class NotificationController
         }
         if (!Validator::notEmpty()->validate($aArgs['is_enabled']) || ($aArgs['is_enabled'] != 'Y' && $aArgs['is_enabled'] != 'N')) {
             $errors[] = 'Invalid is_enabled value';
+        }
+        if ($aArgs['event_id'] === 'baskets' && !Validator::boolType()->validate($aArgs['send_as_recap'])) {
+            $errors[] = 'send_as_recap is not a boolean';
         }
 
         return $errors;
