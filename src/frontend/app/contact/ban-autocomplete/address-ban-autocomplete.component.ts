@@ -39,6 +39,8 @@ export class AddressBanAutocompleteComponent implements OnInit {
     listInfo: string;
     myControl = new UntypedFormControl();
     filteredOptions: Observable<string[]>;
+    addressSectorFilteredResult: Observable<string[]>;
+    addressSectorResult: any[] = [];
     options: any;
     valuesToDisplay: any = {};
     dialogRef: MatDialogRef<any>;
@@ -95,7 +97,9 @@ export class AddressBanAutocompleteComponent implements OnInit {
                     } else {
                         this.listInfo = '';
                     }
-                    this.options = data;
+                    this.addressSectorResult =  data.filter((result: any) => result.indicator === 'sector');
+                    this.options = data.filter((result: any)    => result.indicator === 'ban');
+                    this.addressSectorFilteredResult = of(this.addressSectorResult);
                     this.filteredOptions = of(this.options);
                     this.loading = false;
                 })
@@ -138,6 +142,7 @@ export class AddressBanAutocompleteComponent implements OnInit {
 
     resetAutocomplete() {
         this.options = [];
+        this.addressSectorResult = [];
         this.listInfo = this.translate.instant('lang.autocompleteInfo');
     }
 

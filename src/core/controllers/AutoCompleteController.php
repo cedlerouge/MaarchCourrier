@@ -799,8 +799,6 @@ class AutoCompleteController
             return $response->withJson([]);
         }
 
-        $useSectors = ParameterModel::getById(['id' => 'useSectorsForAddresses', 'select' => ['param_value_int']]);
-        if (!empty($useSectors['param_value_int']) && $useSectors['param_value_int'] == 1) {
             $addressFieldNames = ['address_number', 'address_street', 'address_postcode', 'address_town'];
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest([
                 'fields' => $addressFieldNames
@@ -813,29 +811,36 @@ class AutoCompleteController
                 'data'          => [],
                 'itemMinLength' => 1
             ]);
-            $hits = ContactAddressSectorModel::get([
+        $department = $data['department'];
+        $department = ($department === '2A' || $department === '2B') ? '20' : $department;
+        $requestData['where'][] = 'address_postcode LIKE ?';
+        $requestData['data'][] = $department.'%';
+        $hits = ContactAddressSectorModel::get([
                 'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
                 'where'   => $requestData['where'],
                 'data'    => $requestData['data'],
                 'orderBy' => ['substring(address_number from \'^\d+\')::integer asc', 'length(replace(address_number, \' \', \'\')) asc', 'address_street asc'],
-                'limit'   => 100
+                'limit'   => 10
             ]);
             $addresses = [];
             foreach ($hits as $hit) {
-                $addresses[] = [
-                    'banId'      => $hit['ban_id'],
-                    'lon'        => null,
-                    'lat'        => null,
-                    'number'     => $hit['address_number'],
-                    'afnorName'  => $hit['address_street'],
-                    'postalCode' => $hit['address_postcode'],
-                    'city'       => $hit['address_town'],
-                    'address'    => "{$hit['address_number']} {$hit['address_street']}, {$hit['address_town']} ({$hit['address_postcode']})",
-                    'sector'     => $hit['label']
+                if (count($addresses) >= self::TINY_LIMIT) {
+                    break;
+                }
+                $afnorName = ContactController::getAfnorName($hit['address_street']);
+                $addresses [] = [
+                    'banId'         => $hit['ban_id'],
+                    'lon'           => null,
+                    'lat'           => null,
+                    'number'        => $hit['address_number'],
+                    'afnorName'     => $afnorName,
+                    'postalCode'    => $hit['address_postcode'],
+                    'city'          => $hit['address_town'],
+                    'address'       => mb_strtoupper("{$hit['address_number']} {$afnorName}, {$hit['address_town']} ({$hit['address_postcode']})"),
+                    'sector'        => $hit['label'],
+                    'indicator'     => 'sector'
                 ];
             }
-            return $response->withJson($addresses);
-        }
 
         $customId = CoreConfigModel::getCustomId();
         if (is_dir("custom/{$customId}/referential/ban/indexes/{$data['department']}")) {
@@ -869,8 +874,11 @@ class AutoCompleteController
 
         $hits = $index->find($data['address']);
 
-        $addresses = [];
         foreach ($hits as $key => $hit) {
+            if (count($addresses) >= self::TINY_LIMIT) {
+                break;
+            }
+
             $sector = ContactController::getAddressSector([
                 'addressNumber'   => $hit->streetNumber,
                 'addressStreet'   => $hit->afnorName,
@@ -886,11 +894,21 @@ class AutoCompleteController
                 'postalCode'    => $hit->postalCode,
                 'city'          => $hit->city,
                 'address'       => "{$hit->streetNumber} {$hit->afnorName}, {$hit->city} ({$hit->postalCode})",
-                'sector'        => $sector['label'] ?? null
+                'sector'        => $sector['label'] ?? null,
+                'indicator'     => 'ban'
             ];
         }
 
-        return $response->withJson($addresses);
+        $addresses2 = [];
+        $temp = [];
+        foreach ($addresses as $add) {
+            if (!in_array($add['address'], $temp)) {
+                $addresses2[] = $add;
+                $temp[] = $add['address'];
+            }
+        }
+
+        return $response->withJson($addresses2);
     }
 
     public static function getOuM2MAnnuary(Request $request, Response $response)
