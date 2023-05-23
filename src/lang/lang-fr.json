@@ -2724,5 +2724,8 @@
     "parameterIsNotValidUrlOrIp": "Le paramètre n'est pas une URL ou un format d'adresse IP valide",
     "parameterUrlOrIpHaveProtocol": "Le paramètre contient un protocole http ou https",
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
-    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide"
+    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
+    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour tous les courriels sortants",
+    "labelBAN":  "Base Adresse Nationale",
+    "labelSectors":  "Secteurs"
 }

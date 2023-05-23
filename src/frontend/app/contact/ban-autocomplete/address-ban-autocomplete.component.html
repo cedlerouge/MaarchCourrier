@@ -12,10 +12,20 @@
         <input type="text" #autoCompleteInput [placeholder]="'lang.searchAddressBan' | translate" matInput [formControl]="myControl"
             [matAutocomplete]="auto" (click)="$event.stopPropagation()" (focus)="resetAutocomplete()">
         <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selectOpt($event)">
+            <ng-container *ngIf="addressSectorResult.length > 0 && !loading">
+                <mat-label class="title-ban">{{'lang.labelSectors' | translate | uppercase}}</mat-label>
+                <mat-option class="addressSector"
+                            *ngFor="let addressSectorResult of addressSectorFilteredResult | async | sortBy: key" [value]="addressSectorResult"
+                            [title]="addressSectorResult[key]"
+                            [value]="addressSectorResult">
+                    {{addressSectorResult.address}}
+                </mat-option>
+            </ng-container>
             <ng-container *ngIf="options.length > 0 && !loading">
+                <mat-label class="title-ban">{{'lang.labelBAN' | translate | uppercase}}</mat-label>
                 <mat-option *ngFor="let option of filteredOptions | async | sortBy: key" [value]="option"
                     [title]="option[key]">
-                    <span color="primary">{{option[key]}}</span>
+                    <span >{{option[key]}}</span>
                 </mat-option>
             </ng-container>
             <mat-option class="autoCompleteInfoResult smallInputInfo" *ngIf="options.length === 0 && !loading" disabled
