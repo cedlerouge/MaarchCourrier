@@ -164,7 +164,7 @@ class ContactController
                 $contactBody['login'] = $body['communicationMeans']['login'];
             }
             if (!empty($body['communicationMeans']['password'])) {
-                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);                
+                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);
             }
         }
 
@@ -283,7 +283,7 @@ class ContactController
             if(!empty($communicationMeans['url'])) {
                 $contact['communicationMeans']['url'] = $communicationMeans['url'];
             } elseif (!empty($communicationMeans['email'])) {
-                $contact['communicationMeans']['email'] = $communicationMeans['email']; 
+                $contact['communicationMeans']['email'] = $communicationMeans['email'];
             }
             $contact['communicationMeans']['login'] = $communicationMeans['login'] ?? null;
         }
@@ -356,7 +356,7 @@ class ContactController
                 $contactBody['login'] = $body['communicationMeans']['login'];
             }
             if (!empty($body['communicationMeans']['password'])) {
-                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);                
+                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);
             }
         }
 
@@ -797,9 +797,7 @@ class ContactController
             $args['address_number'] = strtoupper($args['address_number']);
         }
         if (!empty($args['address_street'])) {
-            $args['address_street'] = TextFormatModel::normalize(['string' => $args['address_street']]);
-            $args['address_street'] = preg_replace('/[^\w]/s', ' ', $args['address_street']);
-            $args['address_street'] = strtoupper($args['address_street']);
+            $args['address_street'] = ContactController::getAfnorName($args['address_street']);
         }
         $afnorAddress[4] = trim(substr($args['address_number'].' '.$args['address_street'], 0, 38));
 
@@ -819,6 +817,15 @@ class ContactController
         }
 
         return $afnorAddress;
+    }
+
+    public static function getAfnorName(string $addressStreet)
+    {
+        $addressStreet = TextFormatModel::normalize(['string' => $addressStreet]);
+        $addressStreet = preg_replace('/[^\w]/s', ' ', $addressStreet);
+        $addressStreet = strtoupper($addressStreet);
+
+        return $addressStreet;
     }
 
     public static function controlLengthNameAfnor(array $args)

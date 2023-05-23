@@ -2737,5 +2737,7 @@
     "manageResourcesDesc": "Permissions d'accès aux courriers",
     "viewResources": "Visualisation seulement",
     "resources": "Courriers",
-    "privilegesAttachmentDesc": "Les privilèges de modification et de suppression ne s'appliquent pas au propriétaire du document, sauf dans le cas du circuit du visa."
+    "privilegesAttachmentDesc": "Les privilèges de modification et de suppression ne s'appliquent pas au propriétaire du document, sauf dans le cas du circuit du visa.",
+    "labelBAN":  "Base Adresse Nationale",
+    "labelSectors":  "Secteurs"
 }
