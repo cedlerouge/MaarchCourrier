@@ -43,6 +43,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use Entity\models\ListInstanceModel;
 
 class AttachmentController
 {
@@ -149,6 +150,57 @@ class AttachmentController
                 }
                 $attachment['signDate'] = $signedResponse[0]['creation_date'];
             }
+        }
+
+        $attachment['canModify'] = ($GLOBALS['id'] == $attachment['typist'] 
+        || (
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
+            || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
+        ));
+        $attachment['canDelete'] = $GLOBALS['id'] == $attachment['typist'] || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
+            (
+                PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']]) ||
+                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+            )
+        ) {
+            $circuit = ListInstanceModel::get([
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
+            ]);
+            if (empty($circuit)) {
+                $attachment['canModify'] = false;
+            }
+
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
+            ]);
+            $attachment['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+        }
+
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+        ) {
+            $circuit = ListInstanceModel::get([
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
+            ]);
+            if (empty($circuit)) {
+                $attachment['canDelete'] = false;
+            }
+
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
+            ]);
+            $attachment['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
         }
 
         return $response->withJson($attachment);
@@ -352,7 +404,7 @@ class AttachmentController
 
         $attachments = AttachmentModel::get([
             'select'    => [
-                'res_id as "resId"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
+                'res_id as "resId"', 'res_id_master as "resIdMaster"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
                 'relation', 'status', 'attachment_type as type', 'in_signature_book as "inSignatureBook"', 'in_send_attach as "inSendAttach"', 'format'
             ],
             'where'     => ['res_id_master = ?', 'status not in (?)', 'attachment_type not in (?)'],
@@ -396,6 +448,57 @@ class AttachmentController
 
             $attachments[$key]['canConvert'] = ConvertPdfController::canConvert(['extension' => $attachments[$key]['format']]);
             unset($attachments[$key]['format']);
+
+            $attachments[$key]['canModify'] = ($GLOBALS['id'] == $attachments[$key]['typist'] 
+            || (
+                PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
+                || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
+            ));
+            $attachments[$key]['canDelete'] = $GLOBALS['id'] == $attachments[$key]['typist'] || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+
+            if (
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
+                (
+                    PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']]) ||
+                    PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+                )
+            ) {
+                $circuit = ListInstanceModel::get([
+                    'select' => [1],
+                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
+                    'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
+                ]);
+                if (empty($circuit)) {
+                    $attachments[$key]['canModify'] = false;
+                }
+
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachments[$key]['resIdMaster']
+                ]);
+                $attachments[$key]['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            }
+
+            if (
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
+                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+            ) {
+                $circuit = ListInstanceModel::get([
+                    'select' => [1],
+                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                    'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
+                ]);
+                if (empty($circuit)) {
+                    $attachments[$key]['canDelete'] = false;
+                }
+
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachments[$key]['resIdMaster']
+                ]);
+                $attachments[$key]['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            }
         }
 
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
