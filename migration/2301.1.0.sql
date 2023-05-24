@@ -24,6 +24,8 @@ INSERT INTO indexing_models_entities (model_id, keyword) (SELECT models.id as mo
 
 UPDATE usergroups_services SET service_id = 'update_delete_attachments' WHERE service_id = 'manage_attachments';
 
+UPDATE usergroups_services set service_id = 'update_resources' WHERE service_id = 'edit_resource';
+
 -- New column for notifications
 ALTER TABLE notifications DROP COLUMN IF EXISTS send_as_recap;
 ALTER TABLE notifications ADD COLUMN send_as_recap BOOLEAN DEFAULT FALSE;

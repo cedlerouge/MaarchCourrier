@@ -311,7 +311,7 @@ class PrivilegeController
         ValidatorModel::notEmpty($args, ['userId', 'resId']);
         ValidatorModel::intVal($args, ['userId', 'resId']);
 
-        if (PrivilegeController::hasPrivilege(['privilegeId' => 'edit_resource', 'userId' => $args['userId']])) {
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $args['userId']])) {
             return ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $args['userId']]);
         }
 
