@@ -342,12 +342,6 @@ export class PrivilegeService {
             'unit': 'history'
         },
         {
-            'id': 'edit_resource',
-            'label': 'lang.editResource',
-            'comment': 'lang.editResourceDesc',
-            'unit': 'application'
-        },
-        {
             'id': 'add_links',
             'label': 'lang.addLinks',
             'comment': 'lang.addLinks',
@@ -544,6 +538,37 @@ export class PrivilegeService {
             'label': 'lang.updateDeleteAttachments',
             'comment': 'lang.updateDeleteAttachments',
             'unit': 'attachments'
+        },
+        {
+            'id': 'update_attachments_except_in_visa_workflow',
+            'label': 'lang.updateAttachmentsExceptInVisaWorkflow',
+            'comment': 'lang.updateAttachmentsExceptInVisaWorkflow',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'update_delete_attachments_except_in_visa_workflow',
+            'label': 'lang.updateDeleteAttachmentsExceptInVisaWorkflow',
+            'comment': 'lang.updateDeleteAttachmentsExceptInVisaWorkflow',
+            'unit': 'attachments'
+        },
+        {
+            'id': 'view_resources',
+            'label': 'lang.viewResources',
+            'comment': 'lang.viewResources',
+            'unit': 'resources'
+
+        },
+        {
+            'id': 'update_resources',
+            'label': 'lang.updateResources',
+            'comment': 'lang.updateResources',
+            'unit': 'resources'
+        },
+        {
+            'id': 'update_resources_except_in_visa_workflow',
+            'label': 'lang.updateResourcesExceptInVisaWorkflow',
+            'comment': 'lang.updateResourcesExceptInVisaWorkflow',
+            'unit': 'resources'
         }
     ];
 

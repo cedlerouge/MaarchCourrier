@@ -2729,5 +2729,12 @@
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
     "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
     "actionLockVisaCircuit": "Verrouiller le circuit de visa",
-    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa afin d'utiliser uniquement le circuit de visa par défaut de l'entité"
-   }
+    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa afin d'utiliser uniquement le circuit de visa par défaut de l'entité",
+    "updateAttachmentsExceptInVisaWorkflow": "Modification sauf en circuit de visa",
+    "updateDeleteAttachmentsExceptInVisaWorkflow": "Modification et suppression sauf en circuit de visa",
+    "updateResources": "Modification",
+    "updateResourcesExceptInVisaWorkflow": "Modification sauf en circuit de visa",
+    "manageResourcesDesc": "Permissions d'accès aux courriers",
+    "viewResources": "Visualisation seulement",
+    "resources": "Resources"
+}
