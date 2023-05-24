@@ -313,7 +313,8 @@ class ActionController
             $errors[]= 'Invalid history value';
         }
 
-        if($aArgs['action_page'] == 'send_to_visa' && !Validator::notEmpty()->validate($aArgs['parameters']['lockVisaCircuit']) && !Validator::boolType()->validate($aArgs['parameters']['lockVisaCircuit'])){
+        $lockVisaCircuit = $aArgs['parameters']['lockVisaCircuit'] ?? false;
+        if($aArgs['action_page'] == 'send_to_visa' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)){
             $errors[] = 'lockCircuitVisa is not a boolean';
         }
 
@@ -327,6 +328,7 @@ class ActionController
         $obj['action']['actionPageId']     = 'confirm_status';
         $obj['action']['id_status']        = '_NOSTATUS_';
         $obj['categoriesList']             = ResModel::getCategories();
+        $obj['action']['parameters']['lockVisaCircuit'] = false;
 
         $obj['action']['actionCategories'] = array_column($obj['categoriesList'], 'id');
 
