@@ -49,6 +49,7 @@ export class AttachmentsListComponent implements OnInit {
     @Input() target: string = 'panel';
     @Input() autoOpenCreation: boolean = false;
     @Input() canModify: boolean = null;
+    @Input() canDelete: boolean = null;
     @Output() reloadBadgeAttachments = new EventEmitter<string>();
 
     @Output() afterActionAttachment = new EventEmitter<string>();
@@ -183,7 +184,7 @@ export class AttachmentsListComponent implements OnInit {
 
     showAttachment(attachment: any) {
         this.route.params.subscribe((param: any) => {
-            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : this.canModify, groupId: +param['groupSerialId'] } });
+            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : attachment.canUpdate, groupId: +param['groupSerialId'] } });
 
             this.dialogRef.afterClosed().pipe(
                 filter((data: string) => data === 'success'),
