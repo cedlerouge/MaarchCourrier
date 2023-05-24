@@ -279,15 +279,16 @@ class ResController extends ResourceControlController
                 'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
                 'data'   => [$args['resId'], 'VISA_CIRCUIT']
             ]);
-            if (empty($circuit)) {
-                $formattedData['canUpdate'] = false;
-            }
 
-            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                'select' => ['item_id'],
-                'resId'  => $args['resId']
-            ]);
-            $formattedData['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            if (empty($circuit) || !$formattedData['integrations']['inSignatureBook']) {
+                $formattedData['canUpdate'] = false;
+            } else {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $args['resId']
+                ]);
+                $formattedData['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            }
         }
 
         return $response->withJson($formattedData);
