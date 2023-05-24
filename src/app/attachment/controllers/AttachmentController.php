@@ -172,15 +172,16 @@ class AttachmentController
                 'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
                 'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
             ]);
-            if (empty($circuit)) {
-                $attachment['canUpdate'] = false;
-            }
 
-            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                'select' => ['item_id'],
-                'resId'  => $attachment['resIdMaster']
-            ]);
-            $attachment['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            if (empty($circuit) || !$attachment['inSignatureBook']) {
+                $attachment['canUpdate'] = false;
+            } else {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachment['resIdMaster']
+                ]);
+                $attachment['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            }
         }
 
         if (
@@ -192,15 +193,16 @@ class AttachmentController
                 'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
                 'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
             ]);
-            if (empty($circuit)) {
-                $attachment['canDelete'] = false;
-            }
 
-            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                'select' => ['item_id'],
-                'resId'  => $attachment['resIdMaster']
-            ]);
-            $attachment['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            if (empty($circuit) || !$attachment['inSignatureBook']) {
+                $attachment['canDelete'] = false;
+            } else {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachment['resIdMaster']
+                ]);
+                $attachment['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            }
         }
 
         return $response->withJson($attachment);
@@ -466,18 +468,19 @@ class AttachmentController
             ) {
                 $circuit = ListInstanceModel::get([
                     'select' => [1],
-                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
+                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
                     'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
                 ]);
-                if (empty($circuit)) {
-                    $attachments[$key]['canUpdate'] = false;
-                }
 
-                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                    'select' => ['item_id'],
-                    'resId'  => $attachments[$key]['resIdMaster']
-                ]);
-                $attachments[$key]['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                if (empty($circuit) || !$attachments[$key]['inSignatureBook']) {
+                    $attachments[$key]['canUpdate'] = false;
+                } else {
+                    $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                        'select' => ['item_id'],
+                        'resId'  => $attachments[$key]['resIdMaster']
+                    ]);
+                    $attachments[$key]['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                }
             }
 
             if (
@@ -489,15 +492,16 @@ class AttachmentController
                     'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
                     'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
                 ]);
-                if (empty($circuit)) {
-                    $attachments[$key]['canDelete'] = false;
-                }
 
-                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                    'select' => ['item_id'],
-                    'resId'  => $attachments[$key]['resIdMaster']
-                ]);
-                $attachments[$key]['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                if (empty($circuit) || !$attachments[$key]['inSignatureBook']) {
+                    $attachments[$key]['canDelete'] = false;
+                } else {
+                    $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                        'select' => ['item_id'],
+                        'resId'  => $attachments[$key]['resIdMaster']
+                    ]);
+                    $attachments[$key]['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                }
             }
         }
 
