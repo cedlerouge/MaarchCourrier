@@ -178,6 +178,9 @@ export class ProcessComponent implements OnInit, OnDestroy {
     resourceFreezed: boolean = false;
     resourceBinded: boolean = false;
 
+    canUpdate: boolean = true;
+    canDelete: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -353,6 +356,8 @@ export class ProcessComponent implements OnInit, OnDestroy {
         if (!this.logoutTrigger) {
             this.http.get(`../rest/resources/${this.currentResourceInformations.resId}?light=true`).pipe(
                 tap((data: any) => {
+                    this.canUpdate = data.canUpdate;
+                    this.canDelete = data.canDelete;
                     this.currentResourceInformations = data;
                     this.resourceFollowed = data.followed;
                     this.resourceBinded = data.binding;
@@ -395,10 +400,9 @@ export class ProcessComponent implements OnInit, OnDestroy {
                     })
                 ).subscribe();
             }
-            this.canEditData = this.privilegeService.hasCurrentUserPrivilege('edit_resource') && this.currentResourceInformations.statusAlterable && this.functions.empty(this.currentResourceInformations.registeredMail_deposit_id);
+            this.canEditData = this.canUpdate && this.currentResourceInformations.statusAlterable && this.functions.empty(this.currentResourceInformations.registeredMail_deposit_id);
             if (this.isMailing && this.isToolEnabled('attachments')) {
                 this.currentTool = 'attachments';
-
                 // Avoid auto open if the user click one more time on tab attachments
                 setTimeout(() => {
                     this.isMailing = false;
