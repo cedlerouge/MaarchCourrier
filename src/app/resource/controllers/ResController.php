@@ -27,6 +27,7 @@ use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Email\models\EmailModel;
+use Entity\controllers\ListInstanceController;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Folder\models\FolderModel;
@@ -266,6 +267,28 @@ class ResController extends ResourceControlController
             $formattedData['externalId'] = json_decode($document['external_id'], true);
         }
 
+        $formattedData['canModify'] = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
+        $formattedData['canDelete'] = false;
+
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+        ) {
+            $circuit = ListInstanceModel::get([
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                'data'   => [$args['resId'], 'VISA_CIRCUIT']
+            ]);
+            if (empty($circuit)) {
+                $formattedData['canModify'] = false;
+            }
+
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $args['resId']
+            ]);
+            $formattedData['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+        }
 
         return $response->withJson($formattedData);
     }
