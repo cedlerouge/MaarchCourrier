@@ -2727,5 +2727,12 @@
     "parameterIsNotValidUrlOrIp": "Le paramètre n'est pas une URL ou un format d'adresse IP valide",
     "parameterUrlOrIpHaveProtocol": "Le paramètre contient un protocole http ou https",
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
-    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide"
-   }
+    "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
+    "updateAttachmentsExceptInVisaWorkflow": "Modification sauf en circuit de visa",
+    "updateDeleteAttachmentsExceptInVisaWorkflow": "Modification et suppression sauf en circuit de visa",
+    "updateResources": "Modification",
+    "updateResourcesExceptInVisaWorkflow": "Modification sauf en circuit de visa",
+    "manageResourcesDesc": "Permissions d'accès aux courriers",
+    "viewResources": "Visualisation seulement",
+    "resources": "Resources"
+}
