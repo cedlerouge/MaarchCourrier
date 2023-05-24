@@ -152,7 +152,7 @@ class AttachmentController
             }
         }
 
-        $attachment['canModify'] = ($GLOBALS['id'] == $attachment['typist'] 
+        $attachment['canUpdate'] = ($GLOBALS['id'] == $attachment['typist'] 
         || (
             PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
             || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
@@ -173,14 +173,14 @@ class AttachmentController
                 'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
             ]);
             if (empty($circuit)) {
-                $attachment['canModify'] = false;
+                $attachment['canUpdate'] = false;
             }
 
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $attachment['resIdMaster']
             ]);
-            $attachment['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            $attachment['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
         }
 
         if (
@@ -449,7 +449,7 @@ class AttachmentController
             $attachments[$key]['canConvert'] = ConvertPdfController::canConvert(['extension' => $attachments[$key]['format']]);
             unset($attachments[$key]['format']);
 
-            $attachments[$key]['canModify'] = ($GLOBALS['id'] == $attachments[$key]['typist'] 
+            $attachments[$key]['canUpdate'] = ($GLOBALS['id'] == $attachments[$key]['typist'] 
             || (
                 PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
                 || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
@@ -470,14 +470,14 @@ class AttachmentController
                     'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
                 ]);
                 if (empty($circuit)) {
-                    $attachments[$key]['canModify'] = false;
+                    $attachments[$key]['canUpdate'] = false;
                 }
 
                 $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                     'select' => ['item_id'],
                     'resId'  => $attachments[$key]['resIdMaster']
                 ]);
-                $attachments[$key]['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                $attachments[$key]['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
             }
 
             if (

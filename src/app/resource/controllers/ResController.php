@@ -267,7 +267,7 @@ class ResController extends ResourceControlController
             $formattedData['externalId'] = json_decode($document['external_id'], true);
         }
 
-        $formattedData['canModify'] = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
+        $formattedData['canUpdate'] = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
         $formattedData['canDelete'] = false;
 
         if (
@@ -280,14 +280,14 @@ class ResController extends ResourceControlController
                 'data'   => [$args['resId'], 'VISA_CIRCUIT']
             ]);
             if (empty($circuit)) {
-                $formattedData['canModify'] = false;
+                $formattedData['canUpdate'] = false;
             }
 
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $args['resId']
             ]);
-            $formattedData['canModify'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+            $formattedData['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
         }
 
         return $response->withJson($formattedData);
