@@ -164,7 +164,7 @@ class StoreController
         $fields = IndexingModelFieldModel::get([
             'select' => ['identifier', 'default_value', 'enabled', 'mandatory'],
             'where'  => ['model_id = ?', '(enabled = ? OR mandatory = ?)'],
-            'data'   => [$args['modelId'], 'false', 'true']
+            'data'   => [$args['modelId'] ?? null, 'false', 'true']
         ]);
         foreach ($fields as $field) {
             $defaultValue = null;
