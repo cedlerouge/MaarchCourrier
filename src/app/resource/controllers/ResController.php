@@ -61,6 +61,7 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class ResController extends ResourceControlController
 {
@@ -272,7 +273,7 @@ class ResController extends ResourceControlController
 
         if (
             !PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]) &&
-            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']])
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
         ) {
             $circuit = ListInstanceModel::get([
                 'select' => [1],
@@ -280,7 +281,7 @@ class ResController extends ResourceControlController
                 'data'   => [$args['resId'], 'VISA_CIRCUIT']
             ]);
 
-            if (empty($circuit) || !$formattedData['integrations']['inSignatureBook']) {
+            if (empty($circuit) || !$formattedData['integrations']['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
                 $formattedData['canUpdate'] = false;
             } else {
                 $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
@@ -316,7 +317,32 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
         }
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['alt_identifier', 'filename', 'docserver_id', 'path', 'fingerprint', 'version', 'model_id', 'custom_fields']]);
+        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['alt_identifier', 'filename', 'docserver_id', 'path', 'fingerprint', 'version', 'model_id', 'custom_fields', 'integrations']]);
+        $resource['integrations'] = json_decode($resource['integrations'], true);
+
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
+        ) {
+            $circuit = ListInstanceModel::get([
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                'data'   => [$args['resId'], 'VISA_CIRCUIT']
+            ]);
+
+            if (empty($circuit) || !$resource['integrations']['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+                return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
+            } else {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $args['resId']
+                ]);
+
+                if ($currentStepByResId['item_id'] == $GLOBALS['id']) {
+                    return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
+                }
+            }
+        }
 
         if (!empty($body['modelId']) && $resource['model_id'] != $body['modelId']) {
             $resourceModelFields = IndexingModelFieldModel::get([
