@@ -134,7 +134,7 @@ export class GroupAdministrationComponent implements OnInit {
                                     {
                                         id: 'manageAttachments',
                                         label: this.translate.instant('lang.manageAttachments'),
-                                        current: !this.functions.empty(current) ? current : 'view_attachments',
+                                        current: !this.functions.empty(current) ? current : 'update_attachments',
                                         services: this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
@@ -145,7 +145,7 @@ export class GroupAdministrationComponent implements OnInit {
                                     {
                                         id: 'resources',
                                         label: this.translate.instant('lang.manageResourcesDesc'),
-                                        current: !this.functions.empty(current) ? current : 'view_resources',
+                                        current: !this.functions.empty(current) ? current : 'update_resources',
                                         services: this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
