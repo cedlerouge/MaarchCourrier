@@ -169,7 +169,7 @@ class AttachmentController
             if (
                 empty($currentStepByResId) 
                 || !$attachment['inSignatureBook'] 
-                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
             ) {
                 $attachment['canUpdate'] = false;
             } else {
@@ -186,7 +186,7 @@ class AttachmentController
             if (
                 empty($currentStepByResId) 
                 || !$attachment['inSignatureBook'] 
-                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
             ) {
                 $attachment['canDelete'] = false;
             } else {
