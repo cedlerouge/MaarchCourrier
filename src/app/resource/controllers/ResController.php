@@ -275,7 +275,7 @@ class ResController extends ResourceControlController
         $formattedData['canUpdate'] = $canUpdate;
         $formattedData['canDelete'] = false;
 
-        if ($canUpdateExceptInVisaWorkflow) {
+        if (!$canUpdate && $canUpdateExceptInVisaWorkflow) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $args['resId']

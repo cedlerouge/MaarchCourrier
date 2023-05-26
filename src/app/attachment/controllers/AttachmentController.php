@@ -320,13 +320,15 @@ class AttachmentController
             $canUpdateDeleteExceptInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']]);
             $isResourceInSignatureBook = SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true]);
 
-            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                'select' => ['item_id'],
-                'resId'  => $attachment['res_id_master']
-            ]);
-
-            if ((!empty($currentStepByResId) || $attachment['inSignatureBook']) && $isResourceInSignatureBook) {
-                $canUpdateDeleteExceptInVisaWorkflow = false;
+            if (!$canUpdateDelete && $canUpdateDeleteExceptInVisaWorkflow) {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachment['res_id_master']
+                ]);
+    
+                if ((!empty($currentStepByResId) || $attachment['inSignatureBook']) && $isResourceInSignatureBook) {
+                    $canUpdateDeleteExceptInVisaWorkflow = false;
+                }
             }
 
             if (!$canUpdateDelete && !$canUpdateDeleteExceptInVisaWorkflow) {
