@@ -758,6 +758,10 @@ class SignatureBookControllerTest extends CourrierTestCase
 
         $attachmentController = new AttachmentController();
 
+        $GLOBALS['login'] = 'rrenaud';
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
+
         $response     = $attachmentController->delete($request, new Response(), ['id' => self::$attachmentId]);
         $this->assertSame(204, $response->getStatusCode());
 
@@ -776,5 +780,9 @@ class SignatureBookControllerTest extends CourrierTestCase
         $res = ResModel::getById(['resId' => self::$resId, 'select' => ['*']]);
         $this->assertIsArray($res);
         $this->assertEmpty($res);
+
+        $GLOBALS['login'] = 'superadmin';
+        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
+        $GLOBALS['id'] = $userInfo['id'];
     }
 }
