@@ -540,13 +540,13 @@ export class PrivilegeService {
             'unit': 'attachments'
         },
         {
-            'id': 'update_attachments_only_in_visa_workflow',
+            'id': 'update_attachments_except_in_visa_workflow',
             'label': 'lang.updateAttachmentsOnlyInVisaWorkflow',
             'comment': 'lang.updateAttachmentsOnlyInVisaWorkflow',
             'unit': 'attachments'
         },
         {
-            'id': 'update_delete_attachments_only_in_visa_workflow',
+            'id': 'update_delete_attachments_except_in_visa_workflow',
             'label': 'lang.updateDeleteAttachmentsOnlyInVisaWorkflow',
             'comment': 'lang.updateDeleteAttachmentsOnlyInVisaWorkflow',
             'unit': 'attachments'
@@ -565,9 +565,9 @@ export class PrivilegeService {
             'unit': 'resources'
         },
         {
-            'id': 'update_resources_only_in_visa_workflow',
+            'id': 'update_resources_except_in_visa_workflow',
             'label': 'lang.updateResourcesOnlyInVisaWorkflow',
-            'comment': 'lang.updateResourcesOnlyInVisaWorkflow',
+            'comment': 'lang.updateResourcesOnlyInVisaWorkflowDesc',
             'unit': 'resources'
         }
     ];

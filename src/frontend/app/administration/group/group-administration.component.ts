@@ -128,7 +128,7 @@ export class GroupAdministrationComponent implements OnInit {
                                     }
                                 ];
                             } else if (element === 'attachments') {
-                                const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_only_in_visa_workflow', 'update_delete_attachments_only_in_visa_workflow'];
+                                const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'];
                                 const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
                                 services = [
                                     {
@@ -139,7 +139,7 @@ export class GroupAdministrationComponent implements OnInit {
                                     }
                                 ];
                             } else if (element === 'resources') {
-                                const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_only_in_visa_workflow'];
+                                const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_except_in_visa_workflow'];
                                 const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
                                 services = [
                                     {
@@ -272,13 +272,13 @@ export class GroupAdministrationComponent implements OnInit {
     }
 
     changeAttachmentPrivilege(event: any) {
-        const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_only_in_visa_workflow', 'update_delete_attachments_only_in_visa_workflow'];
+        const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'];
         const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
         this.manageServices([event.value, current]);
     }
 
     changeDocumentPrivilege(event: any) {
-        const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_only_in_visa_workflow'];
+        const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_except_in_visa_workflow'];
         const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
         this.manageServices([event.value, current]);
     }
