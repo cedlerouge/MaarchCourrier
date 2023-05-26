@@ -268,26 +268,25 @@ class ResController extends ResourceControlController
             $formattedData['externalId'] = json_decode($document['external_id'], true);
         }
 
-        $formattedData['canUpdate'] = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
+        $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
+        $canUpdateOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+
+        $formattedData['canUpdate'] = $canUpdate;
         $formattedData['canDelete'] = false;
 
-        if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]) &&
-            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-        ) {
-            $circuit = ListInstanceModel::get([
-                'select' => [1],
-                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                'data'   => [$args['resId'], 'VISA_CIRCUIT']
+        if (!$canUpdate && $canUpdateOnlyInVisaWorkflow) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $args['resId']
             ]);
 
-            if (empty($circuit) || !$formattedData['integrations']['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            if (
+                empty($currentStepByResId) 
+                || !$formattedData['integrations']['inSignatureBook'] 
+                || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+            ) {
                 $formattedData['canUpdate'] = false;
             } else {
-                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                    'select' => ['item_id'],
-                    'resId'  => $args['resId']
-                ]);
                 $formattedData['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
             }
         }

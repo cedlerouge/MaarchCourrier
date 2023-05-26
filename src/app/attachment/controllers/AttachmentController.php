@@ -152,55 +152,44 @@ class AttachmentController
             }
         }
 
-        $attachment['canUpdate'] = ($GLOBALS['id'] == $attachment['typist'] 
-        || (
-            PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
-            || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-        ));
-        $attachment['canDelete'] = $GLOBALS['id'] == $attachment['typist'] || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+        $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]);
+        $canUpdateDelete = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+        $canUpdateOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+        $canUpdateDeleteOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+        
+        $attachment['canUpdate'] = $GLOBALS['id'] == $attachment['typist'] || ($canUpdate || $canUpdateDelete);
+        $attachment['canDelete'] = $GLOBALS['id'] == $attachment['typist'] || $canUpdateDelete;
 
-        if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) &&
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-            (
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]) ||
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-            )
-        ) {
-            $circuit = ListInstanceModel::get([
-                'select' => [1],
-                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
+        if (!$attachment['canUpdate'] && ($canUpdateOnlyInVisaWorkflow || $canUpdateDeleteOnlyInVisaWorkflow)) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
             ]);
 
-            if (empty($circuit) || !$attachment['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            if (
+                empty($currentStepByResId) 
+                || !$attachment['inSignatureBook'] 
+                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+            ) {
                 $attachment['canUpdate'] = false;
             } else {
-                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                    'select' => ['item_id'],
-                    'resId'  => $attachment['resIdMaster']
-                ]);
                 $attachment['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
             }
         }
 
-        if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-            PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-        ) {
-            $circuit = ListInstanceModel::get([
-                'select' => [1],
-                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                'data'   => [$attachment['resIdMaster'], 'VISA_CIRCUIT']
+        if (!$attachment['canUpdate'] && $canUpdateDeleteOnlyInVisaWorkflow) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
             ]);
 
-            if (empty($circuit) || !$attachment['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            if (
+                empty($currentStepByResId) 
+                || !$attachment['inSignatureBook'] 
+                || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+            ) {
                 $attachment['canDelete'] = false;
             } else {
-                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                    'select' => ['item_id'],
-                    'resId'  => $attachment['resIdMaster']
-                ]);
                 $attachment['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
             }
         }
@@ -218,47 +207,35 @@ class AttachmentController
             return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
         }
 
-        $canUpdateAttachmentsOnlyInVisaWorkflow = false;
-        if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) &&
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-            (
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]) ||
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-            )
-        ) {
-            $circuit = ListInstanceModel::get([
-                'select' => [1],
-                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                'data'   => [$attachment['res_id_master'], 'VISA_CIRCUIT']
-            ]);
+        if ($GLOBALS['id'] != $attachment['typist']) {
+            $canUpdateAttachmentsOnlyInVisaWorkflow = false;
+            $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdateDelete = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdateOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+            $canUpdateDeleteOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
 
-            if (empty($circuit) || !$attachment['in_signature_book'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
-                $canUpdateAttachmentsOnlyInVisaWorkflow = false;
-            } else {
+            if (!$canUpdate && !$canUpdateDelete && ($canUpdateOnlyInVisaWorkflow || $canUpdateDeleteOnlyInVisaWorkflow)) {
                 $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                     'select' => ['item_id'],
                     'resId'  => $attachment['res_id_master']
                 ]);
-                $canUpdateAttachmentsOnlyInVisaWorkflow = $currentStepByResId['item_id'] == $GLOBALS['id'];
-            }
-        }
 
-        if ($GLOBALS['id'] != $attachment['typist']) {
-            if (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]) 
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+                if (
+                    empty($currentStepByResId) 
+                    || !$attachment['in_signature_book'] 
+                    || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+                ) {
+                    $canUpdateAttachmentsOnlyInVisaWorkflow = false;
+                } else {
+                    $canUpdateAttachmentsOnlyInVisaWorkflow = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                }
+            }
+
+            if (!$canUpdate && !$canUpdateDelete && !$canUpdateOnlyInVisaWorkflow && !$canUpdateDeleteOnlyInVisaWorkflow) {
                 return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
             }
 
-            if (
-                (
-                    PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]) 
-                    || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-                )
-                && !$canUpdateAttachmentsOnlyInVisaWorkflow
-            ) {
+            if (($canUpdateOnlyInVisaWorkflow || $canUpdateDeleteOnlyInVisaWorkflow) && !$canUpdateAttachmentsOnlyInVisaWorkflow) {
                 return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
             }
         }
@@ -348,39 +325,34 @@ class AttachmentController
         if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
+        
+        if ($GLOBALS['id'] != $attachment['typist']) {
+            $canUpdateAttachmentsOnlyInVisaWorkflow = false;
+            $canUpdateDelete = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdateDeleteOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
 
-        $canUpdateAttachmentsOnlyInVisaWorkflow = false;
-        if (
-            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-            PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-        ) {
-            $circuit = ListInstanceModel::get([
-                'select' => [1],
-                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                'data'   => [$attachment['res_id_master'], 'VISA_CIRCUIT']
-            ]);
-
-            if (empty($circuit) || !$attachment['in_signature_book'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
-                $canUpdateAttachmentsOnlyInVisaWorkflow = false;
-            } else {
+            if (!$canUpdateDelete && $canUpdateDeleteOnlyInVisaWorkflow) {
                 $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                     'select' => ['item_id'],
                     'resId'  => $attachment['res_id_master']
                 ]);
-                $canUpdateAttachmentsOnlyInVisaWorkflow = $currentStepByResId['item_id'] == $GLOBALS['id'];
-            }
-        }
 
-        if ($GLOBALS['id'] != $attachment['typist']) {
-            if (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+                if (
+                    empty($currentStepByResId) 
+                    || !$attachment['in_signature_book'] 
+                    || !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
+                ) {
+                    $canUpdateAttachmentsOnlyInVisaWorkflow = false;
+                } else {
+                    $canUpdateAttachmentsOnlyInVisaWorkflow = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                }
+            }
+
+            if (!$canUpdateDelete && !$canUpdateDeleteOnlyInVisaWorkflow) {
                 return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
             }
 
-            if (
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-                && !$canUpdateAttachmentsOnlyInVisaWorkflow
-            ) {
+            if ($canUpdateDeleteOnlyInVisaWorkflow && !$canUpdateAttachmentsOnlyInVisaWorkflow) {
                 return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
             }
         }
@@ -515,55 +487,36 @@ class AttachmentController
             $attachments[$key]['canConvert'] = ConvertPdfController::canConvert(['extension' => $attachments[$key]['format']]);
             unset($attachments[$key]['format']);
 
-            $attachments[$key]['canUpdate'] = ($GLOBALS['id'] == $attachments[$key]['typist'] 
-            || (
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) 
-                || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-            ));
-            $attachments[$key]['canDelete'] = $GLOBALS['id'] == $attachments[$key]['typist'] || PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdateDelete = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]);
+            $canUpdateOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+            $canUpdateDeleteOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
 
-            if (
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']]) &&
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-                (
-                    PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']]) ||
-                    PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-                )
-            ) {
-                $circuit = ListInstanceModel::get([
-                    'select' => [1],
-                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                    'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
+            $attachments[$key]['canUpdate'] = $GLOBALS['id'] == $attachments[$key]['typist'] || ($canUpdate || $canUpdateDelete);
+            $attachments[$key]['canDelete'] = $GLOBALS['id'] == $attachments[$key]['typist'] || $canUpdateDelete;
+
+            if (!$attachments[$key]['canUpdate'] && ($canUpdateOnlyInVisaWorkflow || $canUpdateDeleteOnlyInVisaWorkflow)) {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachments[$key]['resIdMaster']
                 ]);
 
-                if (empty($circuit) || !$attachments[$key]['inSignatureBook']) {
+                if (empty($currentStepByResId) || !$attachments[$key]['inSignatureBook']) {
                     $attachments[$key]['canUpdate'] = false;
                 } else {
-                    $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                        'select' => ['item_id'],
-                        'resId'  => $attachments[$key]['resIdMaster']
-                    ]);
                     $attachments[$key]['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
                 }
             }
 
-            if (
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']]) &&
-                PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
-            ) {
-                $circuit = ListInstanceModel::get([
-                    'select' => [1],
-                    'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-                    'data'   => [$attachments[$key]['resIdMaster'], 'VISA_CIRCUIT']
+            if (!$attachments[$key]['canDelete'] && $canUpdateDeleteOnlyInVisaWorkflow) {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $attachments[$key]['resIdMaster']
                 ]);
 
-                if (empty($circuit) || !$attachments[$key]['inSignatureBook']) {
+                if (empty($currentStepByResId) || !$attachments[$key]['inSignatureBook']) {
                     $attachments[$key]['canDelete'] = false;
                 } else {
-                    $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
-                        'select' => ['item_id'],
-                        'resId'  => $attachments[$key]['resIdMaster']
-                    ]);
                     $attachments[$key]['canDelete'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
                 }
             }
