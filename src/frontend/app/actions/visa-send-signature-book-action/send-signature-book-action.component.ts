@@ -44,6 +44,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     lastOneIsSign: boolean = true;
     lastOneMustBeSignatory: boolean = false;
     workflowSignatoryRole: string = '';
+    lockVisaCircuit: boolean;
 
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
@@ -246,6 +247,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                     this.lastOneMustBeSignatory = data.workflowEndBySignatory;
                     this.workflowSignatoryRole = data.workflowSignatoryRole;
                     this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
+                    this.lockVisaCircuit = data.lockVisaCircuit;
                     resolve(true);
                 }, (err: any) => {
                     this.notify.handleSoftErrors(err);

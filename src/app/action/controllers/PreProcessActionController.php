@@ -300,7 +300,7 @@ class PreProcessActionController
                     $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' .$entity['entity_label'] ];
                     continue;
                 }
-    
+
                 $docserver = DocserverModel::getByDocserverId(['docserverId' => 'TEMPLATES', 'select' => ['path_template']]);
                 $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template[0]['template_path']) . $template[0]['template_file_name'];
             }
@@ -540,7 +540,7 @@ class PreProcessActionController
                         foreach ($attachments as $value) {
                             $resIdAttachment  = $value['res_id'];
                             $collId = 'attachments_coll';
-                            
+
                             $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resIdAttachment, 'collId' => $collId]);
                             if (empty($adrInfo['docserver_id'])) {
                                 $additionalsInfos['noAttachment'][] = ['alt_identifier' => $noAttachmentsResource['alt_identifier'], 'res_id' => $resIdAttachment, 'reason' => 'noAttachmentConversion'];
@@ -609,14 +609,14 @@ class PreProcessActionController
                         'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP')", "in_signature_book = 'true'"],
                         'data'      => [$resId, ['signed_response']]
                     ]);
-                    
+
                     if (empty($attachments)) {
                         $additionalsInfos['noAttachment'][] = ['alt_identifier' => $noAttachmentsResource['alt_identifier'], 'res_id' => $resId, 'reason' => 'noAttachmentInSignatoryBook'];
                     } else {
                         foreach ($attachments as $value) {
                             $resIdAttachment = $value['res_id'];
                             $collId          = 'attachments_coll';
-                            
+
                             $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resIdAttachment, 'collId' => $collId]);
                             if (empty($adrInfo['docserver_id'])) {
                                 $additionalsInfos['noAttachment'][] = ['alt_identifier' => $noAttachmentsResource['alt_identifier'], 'res_id' => $resIdAttachment, 'reason' => 'noAttachmentConversion'];
@@ -968,7 +968,7 @@ class PreProcessActionController
                     $canNotSend[] = ['resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noDocumentToSend'];
                 }
             }
-    
+
             foreach ($aTemplates as $key => $value) {
                 if (!empty($resources)) {
                     $templateFee = ShippingTemplateController::calculShippingFee([
@@ -1132,6 +1132,10 @@ class PreProcessActionController
             }
         }
 
+        $action = ActionModel::getById(['id' => $args['actionId'], 'select' => ['parameters']]);
+        $action = json_decode($action['parameters'], true);
+        $lockVisaCircuit = $action['lockVisaCircuit'] ?? false;
+
         $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
         $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
         $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
@@ -1143,7 +1147,7 @@ class PreProcessActionController
             $workflowSignatoryRole = SignatureBookController::SIGNATORY_ROLE_DEFAULT;
         }
 
-        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowSignatoryRole' => $workflowSignatoryRole]);
+        return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowSignatoryRole' => $workflowSignatoryRole, 'lockVisaCircuit' => $lockVisaCircuit]);
     }
 
     public function checkContinueVisaCircuit(Request $request, Response $response, array $args)
@@ -1798,7 +1802,7 @@ class PreProcessActionController
     public function checkSendMultigest(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
-        
+
         if (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body resources is empty or not an array']);
         }

@@ -1,6 +1,6 @@
 <mat-list *ngIf="!loading">
-    <mat-form-field appearance="outline" *ngIf="adminMode">
-        <input type="text" #searchVisaSignUserInput matInput placeholder="{{'lang.addUsers' | translate}}"
+    <mat-form-field appearance="outline" *ngIf="adminMode && !lockVisaCircuit">
+        <input  type="text" #searchVisaSignUserInput matInput placeholder="{{'lang.addUsers' | translate}}"
             id="searchVisaSignUserInput" [formControl]="searchVisaSignUser" [matAutocomplete]="autoGroup">
         <mat-autocomplete #autoGroup="matAutocomplete" (optionSelected)="addItemToWorkflow($event.option.value)"
             (opened)="initFilterVisaModelList()">
@@ -43,7 +43,7 @@
     </mat-form-field>
     <!--<div class="alert alert-danger" *ngIf="visaWorkflow.itemRemovedFromVisaTemplate.length > 0" [innerHTML]="('lang.itemRemovedFromVisaTemplate' | translate) + ' : ' + visaWorkflow.itemRemovedFromVisaTemplate.join(', ')"></div>-->
     <div cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="visaWorkflow.items" class="cdk-list"
-        (cdkDropListDropped)="drop($event)" [cdkDropListDisabled]="!adminMode">
+        (cdkDropListDropped)="drop($event)" [cdkDropListDisabled]="!adminMode || lockVisaCircuit">
         <div class="emptyContent" *ngIf="adminMode && visaWorkflow.items.length === 0">
             {{'lang.noVisaWorkflow' | translate}}
         </div>
@@ -52,7 +52,7 @@
         </div>
         <mat-list-item disableRipple *ngFor="let diffusion of visaWorkflow.items;let i=index" cdkDrag
             class="columns workflow" [cdkDragDisabled]="!canManageUser(diffusion, i)"
-            [class.notDraggable]="!canManageUser(diffusion, i)" [class.notEditable]="!adminMode"
+            [class.notDraggable]="!canManageUser(diffusion, i) || lockVisaCircuit" [class.notEditable]="!adminMode"
             [class.processed]="diffusion.process_date != null && (!stringIncludes(diffusion.process_comment, 'lang.hasInterruptedWorkflow' | translate) && !stringIncludes(diffusion.process_comment, 'lang.visaWorkflowInterrupted' | translate))"
             [class.interrupt]="diffusion.process_date != null && (stringIncludes(diffusion.process_comment, 'lang.hasInterruptedWorkflow' | translate) || stringIncludes(diffusion.process_comment, 'lang.visaWorkflowInterrupted' | translate))">
             <mat-icon *ngIf="getCurrentVisaUserIndex() === i && (!adminMode || target === 'signatureBook' || target === 'action')"
@@ -114,7 +114,7 @@
                     <ng-container>
                         <button class="currentRoleButton"
                             [color]="((functions.empty(diffusion.process_date) && diffusion.requested_signature) || diffusion.signatory) ? 'primary': '' "
-                            [disabled]="!canManageUser(diffusion, i)" mat-raised-button
+                            [disabled]="!canManageUser(diffusion, i) || lockVisaCircuit" mat-raised-button
                             title="{{'lang.' + diffusion.currentRole + 'User' | translate}}"
                             (click)="changeRole(i)">{{'lang.' + diffusion.currentRole + 'User' | translate}}</button>
                     </ng-container>
@@ -129,7 +129,7 @@
             <div mat-line class="workflowLine" *ngIf="getCurrentVisaUserIndex() === i && (target === 'signatureBook' || target === 'action') && diffusion.item_id !== headerService.user.id" style="color: red;font-size: 12px;padding-bottom: 5px;">
                 {{'lang.signInsteadOf' | translate}}&nbsp;<b style="overflow: hidden;text-overflow: ellipsis;" [title]="diffusion.labelToDisplay">{{diffusion.labelToDisplay}}</b>
             </div>
-            <button mat-icon-button *ngIf="canManageUser(diffusion, i)" (click)="deleteItem(i)">
+            <button mat-icon-button *ngIf="canManageUser(diffusion, i) && !lockVisaCircuit" (click)="deleteItem(i)">
                 <mat-icon class="fa fa-times" color="warn"></mat-icon>
             </button>
         </mat-list-item>
