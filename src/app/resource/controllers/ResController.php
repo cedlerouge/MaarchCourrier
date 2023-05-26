@@ -126,7 +126,7 @@ class ResController extends ResourceControlController
 
         $queryParams = $request->getQueryParams();
 
-        $select = ['model_id', 'category_id', 'priority', 'status', 'subject', 'alt_identifier', 'process_limit_date', 'closing_date', 'creation_date', 'modification_date', 'integrations', 'retention_frozen', 'binding', 'external_id'];
+        $select = ['model_id', 'category_id', 'priority', 'typist', 'status', 'subject', 'alt_identifier', 'process_limit_date', 'closing_date', 'creation_date', 'modification_date', 'integrations', 'retention_frozen', 'binding', 'external_id'];
         if (empty($queryParams['light'])) {
             $select = array_merge($select, ['type_id', 'typist', 'destination', 'initiator', 'confidentiality', 'doc_date', 'admission_date', 'departure_date', 'barcode', 'custom_fields']);
         }
@@ -142,6 +142,7 @@ class ResController extends ResourceControlController
         $unchangeableData = [
             'resId'             => (int)$args['resId'],
             'modelId'           => $document['model_id'],
+            'typist'            => $document['typist'],
             'categoryId'        => $document['category_id'],
             'chrono'            => $document['alt_identifier'],
             'status'            => $document['status'],
@@ -160,7 +161,6 @@ class ResController extends ResourceControlController
         if (empty($queryParams['light'])) {
             $formattedData = array_merge($formattedData, [
                 'doctype'           => $document['type_id'],
-                'typist'            => $document['typist'],
                 'typistLabel'       => UserModel::getLabelledUserById(['id' => $document['typist']]),
                 'destination'       => $document['destination'],
                 'initiator'         => $document['initiator'],
@@ -272,16 +272,16 @@ class ResController extends ResourceControlController
         $canUpdateExceptInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']]);
         $isResourceInSignatureBook = SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true]);
 
-        $formattedData['canUpdate'] = $canUpdate;
+        $formattedData['canUpdate'] = ($GLOBALS['id'] == $formattedData['typist'] && !$canUpdateExceptInVisaWorkflow) || $canUpdate;
         $formattedData['canDelete'] = false;
 
-        if (!$canUpdate && $canUpdateExceptInVisaWorkflow) {
+        if (!$formattedData['canUpdate'] && $canUpdateExceptInVisaWorkflow) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $args['resId']
             ]);
 
-            if ((empty($currentStepByResId) || !$formattedData['integrations']['inSignatureBook'])  && !$isResourceInSignatureBook) {
+            if ((empty($currentStepByResId) || !$formattedData['integrations']['inSignatureBook']) && !$isResourceInSignatureBook) {
                 $formattedData['canUpdate'] = true;
             } else {
                 $formattedData['canUpdate'] = false;
