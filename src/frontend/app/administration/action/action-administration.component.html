@@ -195,7 +195,7 @@
                                             </mat-form-field>
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'checkbox'">
-                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
                                             <div class="action-admin-input-form action-admin-checkbox-form" style="border-radius: 10px;">
                                                 <button mat-button color="warn" matSuffix mat-icon-button
                                                     [title]="'lang.deleteField' | translate"
@@ -222,7 +222,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;" *ngIf="fieldItemValue.type === 'contact'">
-                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
                                             <div class="action-admin-input-form action-admin-contact-form">
                                                 <app-contact-autocomplete [id]="fieldItemValue.id"
                                                     style="width:100%;"
@@ -239,7 +239,7 @@
                                             </div>
                                         </div>
                                         <div class="col-md-4 col-sm-6" style="margin-bottom: 10px;"  *ngIf="fieldItemValue.type === 'banAutocomplete'">
-                                            <mat-label>{{fieldItemValue.label}}</mat-label> 
+                                            <mat-label>{{fieldItemValue.label}}</mat-label>
                                                 <div class="action-admin-input-form action-admin-banauto-form">
                                                     <app-address-ban-input [id]="fieldItemValue.id"
                                                     style="width:100%;"
@@ -356,11 +356,17 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <div class="col-sm-12" style="text-align:center;">
+                            <div class="col-sm-6" style="text-align:center;">
                                 <mat-slide-toggle name="history" title="{{'lang.actionHistoryDesc' | translate}}"
                                     id="history" color="primary" [(ngModel)]="action.history"
                                     [checked]="action.history == 'Y'">
                                     {{'lang.actionHistory' | translate}}</mat-slide-toggle>
+                            </div>
+                            <div class="col-sm-6" style="text-align:center;" *ngIf="action.actionPageId === 'send_to_visa'">
+                                <mat-slide-toggle name="actionLockVisaCircuit" title="{{'lang.actionLockVisaCircuitDesc' | translate}}"
+                                                  id="actionLockVisaCircuit" color="primary" [(ngModel)]="action.parameters.lockVisaCircuit"
+                                                  [checked]="action.parameters.lockVisaCircuit" (change)="toggleVisaCircuit(action)">
+                                    {{'lang.actionLockVisaCircuit' | translate}}</mat-slide-toggle>
                             </div>
                         </div>
                         <div class="form-group">

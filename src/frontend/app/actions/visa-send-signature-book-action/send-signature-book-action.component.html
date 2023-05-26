@@ -51,7 +51,7 @@
                     </ul>
                 </div>
                 <app-visa-workflow *ngIf="!noResourceToProcess"
-                       [adminMode]="true" (workflowUpdated)="checkWorkflowParameters($event)" #appVisaWorkflow>
+                       [adminMode]="true" (workflowUpdated)="checkWorkflowParameters($event)" #appVisaWorkflow [lockVisaCircuit] = "lockVisaCircuit">
                 </app-visa-workflow>
                 <div *ngIf="!noResourceToProcess" style="padding-top: 10px;">
                     <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>

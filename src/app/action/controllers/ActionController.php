@@ -89,7 +89,7 @@ class ActionController
 
         $body = $request->getParsedBody();
         $body = $this->manageValue($body);
-        
+
         $errors = $this->control($body, 'create');
         if (!empty($errors)) {
             return $response->withStatus(400)->withJson(['errors' => $errors]);
@@ -128,6 +128,9 @@ class ActionController
                 if (empty($status)) {
                     unset($parameters['errorStatus']);
                 }
+            }
+            if(!empty($parameters['lockVisaCircuit']) && $parameters['lockVisaCircuit'] !== false){
+                $parameters['lockVisaCircuit'] = false;
             }
         }
 
@@ -191,6 +194,10 @@ class ActionController
                     }
                 }
                 $parameters['requiredFields'] = $requiredFields;
+            }
+
+            if(!empty($parameters['lockVisaCircuit']) && $body['component'] !== "sendSignatureBookAction"){
+                $parameters['lockVisaCircuit'] = false;
             }
         }
 
@@ -269,7 +276,7 @@ class ActionController
     protected function control($aArgs, $mode)
     {
         $errors = [];
-      
+
         $objs = StatusModel::get();
         $status = array_column($objs, 'id');
         array_unshift($status, '_NOSTATUS_');
@@ -284,12 +291,12 @@ class ActionController
             } else {
                 $obj = ActionModel::getById(['id' => $aArgs['id'], 'select' => [1]]);
             }
-           
+
             if (empty($obj)) {
                 $errors[] = 'Id ' .$aArgs['id']. ' does not exist';
             }
         }
-           
+
         if (!Validator::notEmpty()->validate($aArgs['label_action']) ||
             !Validator::length(1, 255)->validate($aArgs['label_action'])) {
             $errors[] = 'Invalid label action';
@@ -306,6 +313,11 @@ class ActionController
             $errors[]= 'Invalid history value';
         }
 
+        $lockVisaCircuit = $aArgs['parameters']['lockVisaCircuit'] ?? false;
+        if($aArgs['action_page'] == 'send_to_visa' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)){
+            $errors[] = 'lockCircuitVisa is not a boolean';
+        }
+
         return $errors;
     }
 
@@ -316,13 +328,14 @@ class ActionController
         $obj['action']['actionPageId']     = 'confirm_status';
         $obj['action']['id_status']        = '_NOSTATUS_';
         $obj['categoriesList']             = ResModel::getCategories();
+        $obj['action']['parameters']['lockVisaCircuit'] = false;
 
         $obj['action']['actionCategories'] = array_column($obj['categoriesList'], 'id');
 
         $obj['statuses'] = StatusModel::get();
         array_unshift($obj['statuses'], ['id'=>'_NOSTATUS_','label_status'=> _UNCHANGED]);
         $obj['keywordsList'] = ActionModel::getKeywords();
-        
+
         return $response->withJson($obj);
     }
 
