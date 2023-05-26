@@ -217,6 +217,9 @@ if [ $FIRST_TAG == 0 ]; then
 
     echo $CONTENT
 
+    # Replace all " by \" in $CONTENT
+    CONTENT=${CONTENT//\"/\\\"}
+
     # Update tag release
     BODY="{\"description\":\"$CONTENT\",\"tag_name\":\"$NEXT_TAG\", \"milestones\": [\"$NEXT_TAG_MILESTONE\"]}"
 
