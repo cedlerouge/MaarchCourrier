@@ -29,6 +29,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use Respect\Validation\Validator;
 
 class StoreController
 {
@@ -161,33 +162,32 @@ class StoreController
 
     public static function setDisabledAndEmptyMandatoryFields(array $args)
     {
-        ValidatorModel::notEmpty($args, ['modelId']);
-        ValidatorModel::intVal($args, ['modelId']);
+        if (Validator::notEmpty()->intVal()->validate($args['modelId'])) {
+            $fields = IndexingModelFieldModel::get([
+                'select' => ['identifier', 'default_value', 'enabled', 'mandatory'],
+                'where'  => ['model_id = ?', '(enabled = ? OR mandatory = ?)'],
+                'data'   => [$args['modelId'], 'false', 'true']
+            ]);
+            foreach ($fields as $field) {
+                $defaultValue = null;
+                if (!empty($field['default_value'])) {
+                    $defaultValue = json_decode($field['default_value'], true);
+                }
 
-        $fields = IndexingModelFieldModel::get([
-            'select' => ['identifier', 'default_value', 'enabled', 'mandatory'],
-            'where'  => ['model_id = ?', '(enabled = ? OR mandatory = ?)'],
-            'data'   => [$args['modelId'], 'false', 'true']
-        ]);
-        foreach ($fields as $field) {
-            $defaultValue = null;
-            if (!empty($field['default_value'])) {
-                $defaultValue = json_decode($field['default_value'], true);
-            }
-
-            if ($defaultValue == "_TODAY") {
-                $defaultValue = date('d-m-Y');
-            } elseif ($defaultValue == "#myPrimaryEntity") {
-                $entity       = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
-                $defaultValue = $entity['id'];
-            }
-            if (empty($field['enabled']) || (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)) {
-                if (strpos($field['identifier'], 'indexingCustomField_') !== false) {
-                    $idCustom = explode("_", $field['identifier']);
-                    $idCustom = $idCustom[1];
-                    $args['customFields'][$idCustom] = $defaultValue;
-                } elseif ($field['identifier'] != 'initiator') {
-                    $args[$field['identifier']] = $defaultValue;
+                if ($defaultValue == "_TODAY") {
+                    $defaultValue = date('d-m-Y');
+                } elseif ($defaultValue == "#myPrimaryEntity") {
+                    $entity       = UserModel::getPrimaryEntityById(['id' => $GLOBALS['id'], 'select' => ['entities.id']]);
+                    $defaultValue = $entity['id'];
+                }
+                if (empty($field['enabled']) || (!empty($field['mandatory']) && !isset($args[$field['identifier']]) && $defaultValue !== null)) {
+                    if (strpos($field['identifier'], 'indexingCustomField_') !== false) {
+                        $idCustom = explode("_", $field['identifier']);
+                        $idCustom = $idCustom[1];
+                        $args['customFields'][$idCustom] = $defaultValue;
+                    } elseif ($field['identifier'] != 'initiator') {
+                        $args[$field['identifier']] = $defaultValue;
+                    }
                 }
             }
         }
