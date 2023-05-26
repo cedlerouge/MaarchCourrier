@@ -162,7 +162,7 @@ class BasketController
         foreach ($aOrders as $column => $order) {
             $sOrders .= $column . ' ' . $order . ', ';
         }
-        
+
         return rtrim($sOrders, ', ');
     }
 
@@ -525,14 +525,14 @@ class BasketController
             }
         }
         $data['list_display'] = json_encode($data['list_display']);
-        if ($data['list_event'] == 'processDocument') {
+        if ($data['list_event'] ?? null == 'processDocument') {
             $listEventData = [
                 'canUpdateData'     => !empty($data['list_event_data']['canUpdateData']),
                 'canUpdateModel'    => !empty($data['list_event_data']['canUpdateModel']),
                 'canGoToNextRes'    => !empty($data['list_event_data']['canGoToNextRes']),
                 'defaultTab'        => $data['list_event_data']['defaultTab'] ?? 'dashboard'
             ];
-        } elseif ($data['list_event'] == 'signatureBookAction') {
+        } elseif ($data['list_event'] ?? null == 'signatureBookAction') {
             $listEventData = [
                 'canUpdateDocuments' => !empty($data['list_event_data']['canUpdateDocuments']),
                 'goToNextDocument' => !empty($data['list_event_data']['goToNextDocument'])

@@ -16,9 +16,8 @@ declare let $: any;
     styleUrls: ['list-administration.component.scss'],
 })
 export class ListAdministrationComponent implements OnInit {
-
-    @Output() refreshBasketGroup = new EventEmitter<any>();
     @Input('currentBasketGroup') private basketGroup: any;
+    @Output() refreshBasketGroup = new EventEmitter<any>();
 
     loading: boolean = false;
 
@@ -316,15 +315,6 @@ export class ListAdministrationComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get('../rest/customFields').pipe(
                 map((data: any) => {
-                    const customFieldsIds: number[] = data.customFields.map((item: any) => item.id);
-                    // Delete custom field elements from the list if their ids are not present in the custom field list
-                    this.basketGroup.list_display.subInfos.forEach((customField: any) => {
-                        if (customField.value.includes('indexingCustomField_')) {
-                            if (customFieldsIds.indexOf(this.getCustomFieldId(customField.value)) === -1) {
-                                delete this.basketGroup.list_display.subInfos[this.basketGroup.list_display.subInfos.indexOf(customField)];
-                            }
-                        }
-                    });
                     data.customFields = data.customFields.map((info: any) => ({
                         'value': 'indexingCustomField_' + info.id,
                         'label': info.label,
@@ -487,12 +477,6 @@ export class ListAdministrationComponent implements OnInit {
         if (!state) {
             this.selectedProcessTool.canUpdateModel = state;
         }
-    }
-
-    getCustomFieldId(customField: any): number {
-        const indexUnderscore = customField.indexOf('_');
-        const substring = customField.substring(indexUnderscore + 1);
-        return parseInt(substring, 10) ?? null;
     }
 
     private _filterData(value: any): string[] {
