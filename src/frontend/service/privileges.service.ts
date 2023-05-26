@@ -567,7 +567,7 @@ export class PrivilegeService {
         {
             'id': 'update_resources_except_in_visa_workflow',
             'label': 'lang.updateResourcesOnlyInVisaWorkflow',
-            'comment': 'lang.updateResourcesOnlyInVisaWorkflowDesc',
+            'comment': 'lang.updateResourcesOnlyInVisaWorkflow',
             'unit': 'resources'
         }
     ];
