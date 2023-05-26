@@ -266,13 +266,13 @@ class SearchController
                 if ($folder) {
                     $whereClause = '(res_id in (select res_id from users_followed_resources where user_id = ?))';
                     $dataClause[] = $args['userId'];
-        
+
                     $entities = UserModel::getEntitiesById(['id' => $args['userId'], 'select' => ['entities.id']]);
                     $entities = array_column($entities, 'id');
                     if (empty($entities)) {
                         $entities = [0];
                     }
-        
+
                     $foldersClause = 'res_id in (select res_id from folders LEFT JOIN entities_folders ON folders.id = entities_folders.folder_id LEFT JOIN resources_folders ON folders.id = resources_folders.folder_id ';
                     $foldersClause .= "WHERE entities_folders.entity_id in (?) OR folders.user_id = ? OR keyword = 'ALL_ENTITIES')";
                     $whereClause .= " OR ({$foldersClause})";
@@ -286,7 +286,7 @@ class SearchController
                 $whereClause = '1=?';
                 $dataClause  = [0];
             }
-    
+
             if (empty($args['mode']) || $args['mode'] == 'groups') {
                 $groups = UserModel::getGroupsById(['id' => $args['userId']]);
                 $groupsClause = '';
@@ -822,19 +822,19 @@ class SearchController
 
             $rawUserEntities = EntityModel::getByUserId(['userId' => $GLOBALS['id'], 'select' => ['entity_id']]);
             $userEntities    = array_column($rawUserEntities, 'entity_id');
-    
+
             $notesMatch = [];
             foreach ($allNotes as $note) {
                 if ($note['user_id'] == $GLOBALS['id']) {
                     $notesMatch[] = $note['identifier'];
                     continue;
                 }
-    
+
                 $noteEntities = NoteEntityModel::getWithEntityInfo(['select' => ['item_id', 'short_label'], 'where' => ['note_id = ?'], 'data' => [$note['id']]]);
                 if (!empty($noteEntities)) {
                     foreach ($noteEntities as $noteEntity) {
                         $note['entities_restriction'][] = ['short_label' => $noteEntity['short_label'], 'item_id' => [$noteEntity['item_id']]];
-    
+
                         if (in_array($noteEntity['item_id'], $userEntities)) {
                             $notesMatch[] = $note['identifier'];
                             continue 2;
@@ -1038,11 +1038,11 @@ class SearchController
                 } elseif ($customField['type'] == 'integer') {
                     if (!empty($value) && !empty($value['values']) && is_array($value['values'])) {
                         if (Validator::notEmpty()->intVal()->validate($value['values']['start'])) {
-                            $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::int >= ?";
+                            $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::numeric >= ?";
                             $args['searchData'][] = $value['values']['start'];
                         }
                         if (Validator::notEmpty()->intVal()->validate($value['values']['end'])) {
-                            $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::int <= ?";
+                            $args['searchWhere'][] = "(custom_fields->>'{$customFieldId}')::numeric <= ?";
                             $args['searchData'][] = $value['values']['end'];
                         }
                     }
