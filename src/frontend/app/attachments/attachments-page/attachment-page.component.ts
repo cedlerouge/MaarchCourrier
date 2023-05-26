@@ -109,9 +109,8 @@ export class AttachmentPageComponent implements OnInit {
                     let contact: any = null;
                     const isAttachmentUpdateAllowed = data.canUpdate;
                     const isAttachmentDeleteAllowed = data.canDelete;
-                    const isTypist = this.headerService.user.id === data.typist;
                     const isSignOrFrozenStatus = data.status === 'SIGN' || data.status === 'FRZ';
-                    const hasPrivilege: boolean = (isAttachmentUpdateAllowed || isAttachmentDeleteAllowed || isTypist) && !isSignOrFrozenStatus;
+                    const hasPrivilege: boolean = (isAttachmentUpdateAllowed || isAttachmentDeleteAllowed) && !isSignOrFrozenStatus;
                     if (hasPrivilege) {
                         this.editMode = true;
                     }
