@@ -269,25 +269,22 @@ class ResController extends ResourceControlController
         }
 
         $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
-        $canUpdateOnlyInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+        $canUpdateExceptInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']]);
+        $isResourceInSignatureBook = SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true]);
 
         $formattedData['canUpdate'] = $canUpdate;
         $formattedData['canDelete'] = false;
 
-        if (!$canUpdate && $canUpdateOnlyInVisaWorkflow) {
+        if ($canUpdateExceptInVisaWorkflow) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $args['resId']
             ]);
 
-            if (
-                empty($currentStepByResId) 
-                || !$formattedData['integrations']['inSignatureBook'] 
-                || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
-            ) {
-                $formattedData['canUpdate'] = false;
+            if ((empty($currentStepByResId) || !$formattedData['integrations']['inSignatureBook'])  && !$isResourceInSignatureBook) {
+                $formattedData['canUpdate'] = true;
             } else {
-                $formattedData['canUpdate'] = $currentStepByResId['item_id'] == $GLOBALS['id'];
+                $formattedData['canUpdate'] = false;
             }
         }
 
