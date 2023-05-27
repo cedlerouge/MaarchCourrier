@@ -32,7 +32,7 @@
                     <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v"></mat-icon>
                 </button>
                 <mat-menu #menuPjAction="matMenu">
-                    <button mat-menu-item [disabled]="attachment.status === 'FRZ'" (click)="setInSignatureBook(attachment)">
+                    <button mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="setInSignatureBook(attachment)">
                         <mat-checkbox color="primary" [(ngModel)]="attachment.inSignatureBook"></mat-checkbox>
                         {{'lang.putInSignatureBook' | translate}}
                     </button>

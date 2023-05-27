@@ -327,7 +327,7 @@
                         (click)="showAttachment(signatureBook.attachments[rightSelectedThumbnail])">
                         <i class="fa fa-edit fa-2x"></i>
                     </div>
-                    <div [ngClass]="{'visaDisabledButton': !canUpdateDocument}" title="{{'lang.deleteAtt' | translate}}"
+                    <div [ngClass]="{'visaDisabledButton': !canUpdateDocument || signatureBook.attachments[rightSelectedThumbnail]['isResource']}" title="{{'lang.deleteAtt' | translate}}"
                         class="visaPjDel" (click)="delAttachment(signatureBook.attachments[rightSelectedThumbnail])">
                         <i class="fa fa-trash-alt fa-2x"></i>
                     </div>

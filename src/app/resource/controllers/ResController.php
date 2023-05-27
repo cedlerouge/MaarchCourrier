@@ -268,27 +268,45 @@ class ResController extends ResourceControlController
             $formattedData['externalId'] = json_decode($document['external_id'], true);
         }
 
-        $canUpdate = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]);
-        $canUpdateExceptInVisaWorkflow = PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']]);
-        $isResourceInSignatureBook = SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true]);
-
-        $formattedData['canUpdate'] = ($GLOBALS['id'] == $formattedData['typist'] && !$canUpdateExceptInVisaWorkflow) || $canUpdate;
+        $formattedData['canUpdate'] = ResController::canUpdateFile(['resource' => $formattedData]);
         $formattedData['canDelete'] = false;
 
-        if (!$formattedData['canUpdate'] && $canUpdateExceptInVisaWorkflow) {
+        return $response->withJson($formattedData);
+    }
+
+    public function canUpdateFile(array $args) {
+        $resource = $args['resource'];
+    
+        $canUpdate = $GLOBALS['id'] == $resource['typist'];
+
+        $resourcePrivilege = '';
+
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $resourcePrivilege = 'update_resources_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']])) {
+            $resourcePrivilege = 'update_resources';
+        }
+
+        if (in_array($resourcePrivilege, ['update_resources'])) {
+            $canUpdate = true;
+        }
+
+        if (in_array($resourcePrivilege, ['update_resources_except_in_visa_workflow']) && $resource['integrations']['inSignatureBook']) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
-                'resId'  => $args['resId']
+                'resId'  => $resource['resId']
             ]);
 
-            if ((empty($currentStepByResId) || !$formattedData['integrations']['inSignatureBook']) && !$isResourceInSignatureBook) {
-                $formattedData['canUpdate'] = true;
+            if (empty($currentStepByResId)) {
+                $canUpdate = true;
             } else {
-                $formattedData['canUpdate'] = false;
+                $canUpdate = false;
             }
         }
 
-        return $response->withJson($formattedData);
+        return $canUpdate;
+
     }
 
     public function update(Request $request, Response $response, array $args)
