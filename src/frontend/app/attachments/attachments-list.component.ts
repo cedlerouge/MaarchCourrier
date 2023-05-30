@@ -49,6 +49,7 @@ export class AttachmentsListComponent implements OnInit {
     @Input() target: string = 'panel';
     @Input() autoOpenCreation: boolean = false;
     @Input() canModify: boolean = null;
+    @Input() canDelete: boolean = null;
     @Output() reloadBadgeAttachments = new EventEmitter<string>();
 
     @Output() afterActionAttachment = new EventEmitter<string>();
@@ -99,7 +100,7 @@ export class AttachmentsListComponent implements OnInit {
                             }
                             this.groupId = param['groupSerialId'];
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
-                            element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
+                            element.canDelete = element.canDelete;
                         });
                     }),
                     finalize(() => this.loading = false),
@@ -130,7 +131,7 @@ export class AttachmentsListComponent implements OnInit {
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
-                        element.canDelete = this.privilegeService.hasCurrentUserPrivilege('update_delete_attachments') || this.headerService.user.id === element.typist;
+                        element.canDelete = element.canDelete;
                     });
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';
@@ -183,7 +184,7 @@ export class AttachmentsListComponent implements OnInit {
 
     showAttachment(attachment: any) {
         this.route.params.subscribe((param: any) => {
-            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : this.canModify, groupId: +param['groupSerialId'] } });
+            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : attachment.canUpdate, groupId: +param['groupSerialId'] } });
 
             this.dialogRef.afterClosed().pipe(
                 filter((data: string) => data === 'success'),

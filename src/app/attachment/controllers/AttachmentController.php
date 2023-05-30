@@ -43,6 +43,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use Entity\models\ListInstanceModel;
 
 class AttachmentController
 {
@@ -151,27 +152,23 @@ class AttachmentController
             }
         }
 
+        $attachment['canUpdate'] = AttachmentController::canUpdateAttachment(['attachment' => $attachment]);
+        $attachment['canDelete'] = AttachmentController::canDeleteAttachment(['attachment' => $attachment]);
+
         return $response->withJson($attachment);
     }
 
     public function update(Request $request, Response $response, array $args)
     {
-        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'status', 'typist', 'attachment_type']]);
+        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master as "resIdMaster"', 'status', 'typist', 'attachment_type', 'in_signature_book as "inSignatureBook"']]);
         if (empty($attachment) || !in_array($attachment['status'], ['A_TRA', 'TRA', 'SEND_MASS'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
         }
-        if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter']);
+        if (!AttachmentController::canUpdateAttachment(['attachment' => $attachment]) && SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Insufficient privilege']);
         }
-        if (
-            $GLOBALS['id'] != $attachment['typist']
-            && (
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']])
-                || !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-            )
-            && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
-        ) {
-            return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
+        if (!ResController::hasRightByResId(['resId' => [$attachment['resIdMaster']], 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
         }
 
         $body = $request->getParsedBody();
@@ -233,7 +230,7 @@ class AttachmentController
         ]);
         HistoryController::add([
             'tableName' => 'res_letterbox',
-            'recordId'  => $attachment['res_id_master'],
+            'recordId'  => $attachment['resIdMaster'],
             'eventType' => 'UP',
             'info'      => _ATTACHMENT_UPDATED . " : {$body['title']}",
             'moduleId'  => 'attachment',
@@ -249,22 +246,18 @@ class AttachmentController
             return $response->withStatus(400)->withJson(['errors' => 'Route id must be an integer val']);
         }
 
-        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['origin_id', 'res_id_master', 'attachment_type', 'res_id', 'title', 'typist', 'status']]);
+        $attachment = AttachmentModel::getById(['id' => $args['id'], 'select' => ['origin_id', 'res_id_master as "resIdMaster"', 'attachment_type', 'res_id', 'title', 'typist', 'status', 'in_signature_book as "inSignatureBook"']]);
         if (empty($attachment) || $attachment['status'] == 'DEL') {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
         }
         if (in_array($attachment['attachment_type'], ['acknowledgement_record_management', 'reply_record_management'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Can not delete attachment use for record_management']);
         }
-        if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
+        if (!AttachmentController::canDeleteAttachment(['attachment' => $attachment]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Insufficient privilege']);
         }
-        if (
-            $GLOBALS['id'] != $attachment['typist']
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])
-            && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['res_id_master'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])
-        ) {
-            return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter']);
+        if (!ResController::hasRightByResId(['resId' => [$attachment['resIdMaster']], 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
         if (empty($attachment['origin_id'])) {
@@ -280,7 +273,7 @@ class AttachmentController
         $emails = EmailModel::get([
             'select' => ['id', 'document'],
             'where'  => ["status = 'DRAFT'", "document->>'id' = ?::varchar"],
-            'data'   => [$attachment['res_id_master']]
+            'data'   => [$attachment['resIdMaster']]
         ]);
         foreach ($emails as $key => $email) {
             $emails[$key]['document'] = json_decode($email['document'], true);
@@ -322,7 +315,7 @@ class AttachmentController
 
         HistoryController::add([
             'tableName' => 'res_letterbox',
-            'recordId'  => $attachment['res_id_master'],
+            'recordId'  => $attachment['resIdMaster'],
             'eventType' => 'DEL',
             'info'      => _ATTACHMENT_DELETED . " : {$attachment['title']}",
             'moduleId'  => 'attachment',
@@ -352,7 +345,7 @@ class AttachmentController
 
         $attachments = AttachmentModel::get([
             'select'    => [
-                'res_id as "resId"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
+                'res_id as "resId"', 'res_id_master as "resIdMaster"', 'identifier as chrono', 'title', 'typist', 'modified_by as "modifiedBy"', 'creation_date as "creationDate"', 'modification_date as "modificationDate"',
                 'relation', 'status', 'attachment_type as type', 'in_signature_book as "inSignatureBook"', 'in_send_attach as "inSendAttach"', 'format'
             ],
             'where'     => ['res_id_master = ?', 'status not in (?)', 'attachment_type not in (?)'],
@@ -396,6 +389,10 @@ class AttachmentController
 
             $attachments[$key]['canConvert'] = ConvertPdfController::canConvert(['extension' => $attachments[$key]['format']]);
             unset($attachments[$key]['format']);
+
+            $attachments[$key]['canUpdate'] = AttachmentController::canUpdateAttachment(['attachment' => $attachments[$key]]);
+            $attachments[$key]['canDelete'] = AttachmentController::canDeleteAttachment(['attachment' => $attachments[$key]]);
+
         }
 
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
@@ -405,6 +402,116 @@ class AttachmentController
         }
 
         return $response->withJson(['attachments' => $attachments, 'mailevaEnabled' => $mailevaEnabled]);
+    }
+
+    public function canUpdateAttachment(array $args) {
+        $attachment = $args['attachment'];
+    
+        $canUpdate = $GLOBALS['id'] == $attachment['typist'];
+
+        $attachmentPrivilege = '';
+
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_attachments_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_delete_attachments_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_attachments';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_delete_attachments';
+        }
+
+        if (in_array($attachmentPrivilege, ['update_attachments', 'update_delete_attachments'])) {
+            $canUpdate = true;
+        }
+
+        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'])) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
+            ]);
+
+            if (empty($currentStepByResId)) {
+                $canUpdate = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canUpdate = false;
+                } else {
+                    $canUpdate = true;
+                }
+            } else {
+                $canUpdate = false;
+            }
+        }
+
+        return $canUpdate;
+
+    }
+
+    public function canDeleteAttachment(array $args) {
+        $attachment = $args['attachment'];
+    
+        $canDelete = $GLOBALS['id'] == $attachment['typist'];
+
+        $attachmentPrivilege = '';
+
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_attachments_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_delete_attachments_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_delete_attachments', 'userId' => $GLOBALS['id']])) {
+            $attachmentPrivilege = 'update_delete_attachments';
+        }
+
+        if (in_array($attachmentPrivilege, ['update_delete_attachments'])) {
+            $canDelete = true;
+        }
+
+        if (in_array($attachmentPrivilege, ['update_delete_attachments_except_in_visa_workflow'])) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
+            ]);
+
+            if (empty($currentStepByResId)) {
+                $canDelete = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canDelete = false;
+                } else {
+                    $canDelete = true;
+                }
+            } else {
+                $canDelete = false;
+            }
+        }
+
+        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow']) && $GLOBALS['id'] == $attachment['typist']) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $attachment['resIdMaster']
+            ]);
+
+            if (empty($currentStepByResId)) {
+                $canDelete = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canDelete = false;
+                } else {
+                    $canDelete = true;
+                }
+            } else {
+                $canDelete = false;
+            }
+        }
+
+        return $canDelete;
+
     }
 
     public function setInSignatureBook(Request $request, Response $response, array $aArgs)

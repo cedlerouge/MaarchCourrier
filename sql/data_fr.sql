@@ -1595,7 +1595,7 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COUR
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_doc_history', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'view_full_history', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'add_links', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'edit_resource', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_resources', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_diffusion_indexing', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'update_diffusion_details', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('COURRIER', 'entities_print_sep_mlb', NULL);
@@ -1641,7 +1641,7 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'view_doc_history', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'view_full_history', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'add_links', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'edit_resource', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'update_resources', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'update_diffusion_indexing', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'update_diffusion_details', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESP_COURRIER', 'update_diffusion_process', NULL);
@@ -1703,7 +1703,7 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'add_links', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_parameters', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_priorities', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'edit_resource', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'update_resources', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_email_server', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_shippings', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_baskets', NULL);
@@ -1741,7 +1741,7 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMI
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'admin', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'view_doc_history', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'view_full_history', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'edit_resource', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'update_resources', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'include_folders_and_followed_resources_perimeter', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'admin_templates', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N2', 'admin_tag', NULL);
@@ -1764,7 +1764,7 @@ INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('MAAR
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('WEBSERVICE', 'include_folders_and_followed_resources_perimeter', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'admin_users', '{"groups": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}');
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('ADMINISTRATEUR_N1', 'manage_personal_data', NULL);
-INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'edit_resource', NULL);
+INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('AGENT', 'update_resources', NULL);
 INSERT INTO usergroups_services (group_id, service_id, parameters) VALUES ('RESPONSABLE', 'update_diffusion_process', NULL);
 
 

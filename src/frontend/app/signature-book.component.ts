@@ -500,7 +500,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     }
 
     delAttachment(attachment: any) {
-        if (this.canUpdateDocument) {
+        if (this.canUpdateDocument && !attachment['isResource']) {
             const title = this.signatureBook.attachments.length <= 1 ? this.translate.instant('lang.deleteLastAttachmentSignatureBook') : this.translate.instant('lang.deleteAttachmentSignatureBook');
             const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')}`, msg: title } });
             dialogRef.afterClosed().pipe(

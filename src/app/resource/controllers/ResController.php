@@ -27,6 +27,7 @@ use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Email\models\EmailModel;
+use Entity\controllers\ListInstanceController;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Folder\models\FolderModel;
@@ -60,6 +61,7 @@ use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
+use SignatureBook\controllers\SignatureBookController;
 
 class ResController extends ResourceControlController
 {
@@ -124,7 +126,7 @@ class ResController extends ResourceControlController
 
         $queryParams = $request->getQueryParams();
 
-        $select = ['model_id', 'category_id', 'priority', 'status', 'subject', 'alt_identifier', 'process_limit_date', 'closing_date', 'creation_date', 'modification_date', 'integrations', 'retention_frozen', 'binding', 'external_id'];
+        $select = ['model_id', 'category_id', 'priority', 'typist', 'status', 'subject', 'alt_identifier', 'process_limit_date', 'closing_date', 'creation_date', 'modification_date', 'integrations', 'retention_frozen', 'binding', 'external_id'];
         if (empty($queryParams['light'])) {
             $select = array_merge($select, ['type_id', 'typist', 'destination', 'initiator', 'confidentiality', 'doc_date', 'admission_date', 'departure_date', 'barcode', 'custom_fields']);
         }
@@ -140,6 +142,7 @@ class ResController extends ResourceControlController
         $unchangeableData = [
             'resId'             => (int)$args['resId'],
             'modelId'           => $document['model_id'],
+            'typist'            => $document['typist'],
             'categoryId'        => $document['category_id'],
             'chrono'            => $document['alt_identifier'],
             'status'            => $document['status'],
@@ -158,7 +161,6 @@ class ResController extends ResourceControlController
         if (empty($queryParams['light'])) {
             $formattedData = array_merge($formattedData, [
                 'doctype'           => $document['type_id'],
-                'typist'            => $document['typist'],
                 'typistLabel'       => UserModel::getLabelledUserById(['id' => $document['typist']]),
                 'destination'       => $document['destination'],
                 'initiator'         => $document['initiator'],
@@ -266,8 +268,51 @@ class ResController extends ResourceControlController
             $formattedData['externalId'] = json_decode($document['external_id'], true);
         }
 
+        $formattedData['canUpdate'] = ResController::canUpdateFile(['resource' => $formattedData]);
+        $formattedData['canDelete'] = false;
 
         return $response->withJson($formattedData);
+    }
+
+    public function canUpdateFile(array $args) {
+        $resource = $args['resource'];
+    
+        $canUpdate = $GLOBALS['id'] == $resource['typist'];
+
+        $resourcePrivilege = '';
+
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_except_in_visa_workflow', 'userId' => $GLOBALS['id']])) {
+            $resourcePrivilege = 'update_resources_except_in_visa_workflow';
+        }
+        if (PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']])) {
+            $resourcePrivilege = 'update_resources';
+        }
+
+        if (in_array($resourcePrivilege, ['update_resources'])) {
+            $canUpdate = true;
+        }
+
+        if (in_array($resourcePrivilege, ['update_resources_except_in_visa_workflow'])) {
+            $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                'select' => ['item_id'],
+                'resId'  => $resource['resId']
+            ]);
+
+            if (empty($currentStepByResId)) {
+                $canUpdate = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($resource['integrations']['inSignatureBook']) {
+                    $canUpdate = false;
+                } else {
+                    $canUpdate = true;
+                }
+            } else {
+                $canUpdate = false;
+            }
+        }
+
+        return $canUpdate;
+
     }
 
     public function update(Request $request, Response $response, array $args)
@@ -292,7 +337,32 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
         }
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['alt_identifier', 'filename', 'docserver_id', 'path', 'fingerprint', 'version', 'model_id', 'custom_fields']]);
+        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['alt_identifier', 'filename', 'docserver_id', 'path', 'fingerprint', 'version', 'model_id', 'custom_fields', 'integrations']]);
+        $resource['integrations'] = json_decode($resource['integrations'], true);
+
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources', 'userId' => $GLOBALS['id']]) &&
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_resources_only_in_visa_workflow', 'userId' => $GLOBALS['id']])
+        ) {
+            $circuit = ListInstanceModel::get([
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+                'data'   => [$args['resId'], 'VISA_CIRCUIT']
+            ]);
+
+            if (empty($circuit) || !$resource['integrations']['inSignatureBook'] || !SignatureBookController::isResourceInSignatureBook(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+                return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
+            } else {
+                $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
+                    'select' => ['item_id'],
+                    'resId'  => $args['resId']
+                ]);
+
+                if ($currentStepByResId['item_id'] == $GLOBALS['id']) {
+                    return $response->withStatus(403)->withJson(['errors' => 'Attachment out of perimeter', 'lang' => 'documentOutOfPerimeter']);
+                }
+            }
+        }
 
         if (!empty($body['modelId']) && $resource['model_id'] != $body['modelId']) {
             $resourceModelFields = IndexingModelFieldModel::get([

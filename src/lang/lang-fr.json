@@ -946,7 +946,7 @@
     "makeActionOn": "Voulez-vous effectuer cette action sur",
     "makeUpdate": "Mettre à jour",
     "manageAbsences": "Rediriger mes bannettes",
-    "manageAttachments": "Permissions d'accès aux pièces jointes (pour les non-créateurs)",
+    "manageAttachments": "Permissions d'accès aux pièces jointes",
     "manageCreateContacts": "Créer des contacts",
     "manageCreateContactsDesc": "Créer des contacts depuis les pages d'indexation/traitement/détaillée",
     "manageNumericPackage": "Envoyer et enregistrer un pli numérique",
@@ -2729,5 +2729,13 @@
     "parameterIsNotNumber": "Le paramètre n'est pas un nombre",
     "editorHasNoValidUrlOrIp": "L'URI de l'éditeur n'est pas une URL ou un format d'adresse IP valide",
     "actionLockVisaCircuit": "Verrouiller le circuit de visa",
-    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa afin d'utiliser uniquement le circuit de visa par défaut de l'entité"
-   }
+    "actionLockVisaCircuitDesc": "Permet de verrouiller le circuit de visa afin d'utiliser uniquement le circuit de visa par défaut de l'entité",
+    "updateAttachmentsOnlyInVisaWorkflow": "Modification sauf en circuit de visa",
+    "updateDeleteAttachmentsOnlyInVisaWorkflow": "Modification et suppression sauf en circuit de visa",
+    "updateResources": "Modification",
+    "updateResourcesOnlyInVisaWorkflow": "Modification sauf en circuit de visa",
+    "manageResourcesDesc": "Permissions d'accès aux courriers",
+    "viewResources": "Visualisation seulement",
+    "resources": "Courriers",
+    "privilegesAttachmentDesc": "Les privilèges de modification et de suppression ne s'appliquent pas au propriétaire du document, sauf dans le cas du circuit du visa."
+}

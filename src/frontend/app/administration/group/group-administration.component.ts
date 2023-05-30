@@ -128,13 +128,24 @@ export class GroupAdministrationComponent implements OnInit {
                                     }
                                 ];
                             } else if (element === 'attachments') {
-                                const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments'];
+                                const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'];
                                 const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
                                 services = [
                                     {
                                         id: 'manageAttachments',
                                         label: this.translate.instant('lang.manageAttachments'),
-                                        current: !this.functions.empty(current) ? current : 'view_attachments',
+                                        current: !this.functions.empty(current) ? current : 'update_attachments',
+                                        services: this.privilegeService.getPrivileges(privileges)
+                                    }
+                                ];
+                            } else if (element === 'resources') {
+                                const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_except_in_visa_workflow'];
+                                const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
+                                services = [
+                                    {
+                                        id: 'resources',
+                                        label: this.translate.instant('lang.manageResourcesDesc'),
+                                        current: !this.functions.empty(current) ? current : 'update_resources',
                                         services: this.privilegeService.getPrivileges(privileges)
                                     }
                                 ];
@@ -261,7 +272,13 @@ export class GroupAdministrationComponent implements OnInit {
     }
 
     changeAttachmentPrivilege(event: any) {
-        const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments'];
+        const privileges: string[] = ['view_attachments', 'update_attachments', 'update_delete_attachments', 'update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'];
+        const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
+        this.manageServices([event.value, current]);
+    }
+
+    changeDocumentPrivilege(event: any) {
+        const privileges: string[] = ['view_resources', 'update_resources', 'update_resources_except_in_visa_workflow'];
         const current: string = this.group.privileges.filter((privilege: any) => privileges.indexOf(privilege) > -1)[0];
         this.manageServices([event.value, current]);
     }
