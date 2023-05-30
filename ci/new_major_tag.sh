@@ -107,13 +107,20 @@ git checkout tmp_$RELEASE_BRANCH
 composer install
 npm run reload-packages
 npm run build-prod
+
+npm run reload-packages-addin-outlook
+npm run build-prod-addin-outlook
+
+npm run reload-packages-prod-addin-outlook
 npm run reload-packages-prod
 
 git add -f dist/
+git add -f dist-addin/
 git add -f node_modules/
 git add -f vendor/
 
 git commit -m "Add packages dependencies"
+
 
 git push
 
