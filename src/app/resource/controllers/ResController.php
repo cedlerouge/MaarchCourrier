@@ -292,7 +292,7 @@ class ResController extends ResourceControlController
             $canUpdate = true;
         }
 
-        if (in_array($resourcePrivilege, ['update_resources_except_in_visa_workflow']) && $resource['integrations']['inSignatureBook']) {
+        if (in_array($resourcePrivilege, ['update_resources_except_in_visa_workflow'])) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $resource['resId']
@@ -300,6 +300,12 @@ class ResController extends ResourceControlController
 
             if (empty($currentStepByResId)) {
                 $canUpdate = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($resource['integrations']['inSignatureBook']) {
+                    $canUpdate = false;
+                } else {
+                    $canUpdate = true;
+                }
             } else {
                 $canUpdate = false;
             }

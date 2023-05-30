@@ -428,7 +428,7 @@ class AttachmentController
             $canUpdate = true;
         }
 
-        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow']) && $attachment['inSignatureBook']) {
+        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow', 'update_delete_attachments_except_in_visa_workflow'])) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $attachment['resIdMaster']
@@ -436,6 +436,12 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canUpdate = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canUpdate = false;
+                } else {
+                    $canUpdate = true;
+                }
             } else {
                 $canUpdate = false;
             }
@@ -466,7 +472,7 @@ class AttachmentController
             $canDelete = true;
         }
 
-        if (in_array($attachmentPrivilege, ['update_delete_attachments_except_in_visa_workflow']) && $attachment['inSignatureBook']) {
+        if (in_array($attachmentPrivilege, ['update_delete_attachments_except_in_visa_workflow'])) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $attachment['resIdMaster']
@@ -474,12 +480,18 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canDelete = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canDelete = false;
+                } else {
+                    $canDelete = true;
+                }
             } else {
                 $canDelete = false;
             }
         }
 
-        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow']) && $GLOBALS['id'] == $attachment['typist'] && $attachment['inSignatureBook']) {
+        if (in_array($attachmentPrivilege, ['update_attachments_except_in_visa_workflow']) && $GLOBALS['id'] == $attachment['typist']) {
             $currentStepByResId = ListInstanceModel::getCurrentStepByResId([
                 'select' => ['item_id'],
                 'resId'  => $attachment['resIdMaster']
@@ -487,6 +499,12 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canDelete = true;
+            } else if (!empty($currentStepByResId)) {
+                if ($attachment['inSignatureBook']) {
+                    $canDelete = false;
+                } else {
+                    $canDelete = true;
+                }
             } else {
                 $canDelete = false;
             }
