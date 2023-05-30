@@ -280,7 +280,7 @@ class IndexingModelController
                 'model_id'  => $modelId,
                 'keyword'   => IndexingModelController::ALL_ENTITIES,
             ]);
-        } else {
+        } else if (!empty($body['entities'])) {
             foreach($body['entities'] as $entity) {
                 IndexingModelsEntitiesModel::create([
                     'model_id'  => $modelId,
