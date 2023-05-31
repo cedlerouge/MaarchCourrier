@@ -51,6 +51,8 @@ use Contact\controllers\ContactController;
 */
 class FastParapheurController
 {
+    const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+
     public function getWorkflowDetails(Request $request, Response $response)
     {
         $config = FastParapheurController::getConfig();
@@ -401,6 +403,13 @@ class FastParapheurController
                     'eventType' => 'script',
                     'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
                 ]);
+
+                if ($historyResponse['errors'] === FastParapheurController::INVALID_DOC_ID_ERROR) {
+                    FastParapheurController::removeDocumentLink([
+                        'docItem'   => $value,
+                        'type'      => ($version == 'resLetterbox' ? 'resource' : 'attachment')
+                    ]);
+                }
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
@@ -1948,6 +1957,41 @@ class FastParapheurController
         return ['response' => $curlReturn['response']];
     }
 */
+
+    public static function removeDocumentLink(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['docItem', 'type']);
+        ValidatorModel::arrayType($args, ['docItem']);
+        ValidatorModel::stringType($args, ['type']);
+
+        $info = '';
+        $userId = UserModel::get([
+            'select'    => ['id'],
+            'where'     => ['mode = ? OR mode = ?'],
+            'data'      => ['root_visible', 'root_invisible'],
+            'limit'     => 1
+        ])[0]['id'];
+
+        // remove signatureBookId link
+        if ($args['type'] === 'resource') {
+            ResModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => $args['docItem']['external_id']]);
+            $info = _DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY;
+        } elseif ($args['type'] === 'attachment') {
+            AttachmentModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => $args['docItem']['external_id']]);
+            $info = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . "'{$args['docItem']['title']}'" . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
+        }
+
+        HistoryController::add([
+            'tableName' => 'res_letterbox',
+            'recordId'  => $args['docItem']['res_id_master'] ?? $args['docItem']['res_id'],
+            'eventType' => 'ACTION#1',
+            'eventId'   => '1',
+            'userId'    => $userId,
+            'info'      => $info
+        ]);
+
+        return true;
+    }
 
     public static function getLastFastWorkflowAction(array $documentHistory, array $knownWorkflow, array $config): array
     {

@@ -208,4 +208,20 @@ abstract class ResModelAbstract
 
         return '';
     }
+
+    public static function removeSignatureBookId(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['resId', 'externalId']);
+        ValidatorModel::intType($args, ['resId', 'externalId']);
+
+        DatabaseModel::update([
+            'table'   => 'res_letterbox',
+            'set'     => ['status' => 'A_TRA'],
+            'postSet' => ['external_id' => "external_id - 'signatureBookId'"],
+            'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
+            'data'    => [$args['resId'], $args['externalId']]
+        ]);
+
+        return true;
+    }
 }
