@@ -1974,11 +1974,11 @@ class FastParapheurController
 
         // remove signatureBookId link
         if ($args['type'] === 'resource') {
-            ResModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => $args['docItem']['external_id']]);
+            ResModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
             $info = _DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY;
         } elseif ($args['type'] === 'attachment') {
-            AttachmentModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => $args['docItem']['external_id']]);
-            $info = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . "'{$args['docItem']['title']}'" . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
+            AttachmentModel::removeSignatureBookId(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
+            $info = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . " '{$args['docItem']['title']}' " . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
         }
 
         HistoryController::add([
