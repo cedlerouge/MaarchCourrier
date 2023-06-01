@@ -18,6 +18,9 @@
 namespace CustomField\controllers;
 
 use Action\models\ActionModel;
+use Basket\models\BasketModel;
+use Basket\models\GroupBasketModel;
+use Configuration\models\ConfigurationModel;
 use CustomField\models\CustomFieldModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
@@ -301,6 +304,28 @@ class CustomFieldController
             'where' => ['id = ?'],
             'data'  => [$args['id']]
         ]);
+
+        //When customField is deleted, delete from all baskets where it can be found
+        $groups = GroupBasketModel::get(['select' => ['group_id', 'basket_id', 'list_display']]);
+        foreach ($groups as $group){
+            $group_id = $group['group_id'];
+            $basket_id = $group['basket_id'];
+            $subInfos = json_decode($group['list_display'], true)['subInfos'];
+            foreach ($subInfos as $key => $value) {
+                if ($value['value'] === 'indexingCustomField_' . $args['id']) {
+                    unset($subInfos[$key]);
+                    $subInfos = array_values($subInfos);
+                    $templateColumns = json_decode($group['list_display'], true)['templateColumns'];
+                    $group['list_display'] = ['templateColumns' => $templateColumns, 'subInfos' => $subInfos];
+                    $group['list_display'] = json_encode($group['list_display']);
+                    GroupBasketModel::update([
+                        'set' => ['list_display' => $group['list_display']],
+                        'where'     => ['basket_id = ?', 'group_id = ?'],
+                        'data'      => [$basket_id, $group_id]
+                    ]);
+                }
+            }
+        }
 
         HistoryController::add([
             'tableName' => 'custom_fields',
