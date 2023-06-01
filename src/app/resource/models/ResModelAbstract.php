@@ -216,7 +216,6 @@ abstract class ResModelAbstract
 
         DatabaseModel::update([
             'table'   => 'res_letterbox',
-            'set'     => ['status' => 'A_TRA'],
             'postSet' => ['external_id' => "external_id - 'signatureBookId'"],
             'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
             'data'    => [$args['resId'], $args['externalId']]
