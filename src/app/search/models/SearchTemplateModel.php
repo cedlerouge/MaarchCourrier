@@ -14,6 +14,7 @@
 
 namespace Search\models;
 
+use PHPUnit\Util\Xml\Validator;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
@@ -56,6 +57,21 @@ class SearchTemplateModel
         ]);
 
         return $nextSequenceId;
+    }
+
+    public static function update(array $aArgs)
+    {
+        ValidatorModel::notEmpty($aArgs, ['set', 'where', 'data']);
+        ValidatorModel::arrayType($aArgs, ['set', 'where', 'data']);
+
+        DatabaseModel::update([
+            'table' => 'search_templates',
+            'set'   => $aArgs['set'],
+            'where' => $aArgs['where'],
+            'data'  => $aArgs['data']
+        ]);
+
+        return true;
     }
 
     public static function delete(array $args)

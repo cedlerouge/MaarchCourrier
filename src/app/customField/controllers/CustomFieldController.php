@@ -27,6 +27,7 @@ use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelFieldModel;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
+use Search\models\SearchTemplateModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
@@ -319,15 +320,15 @@ class CustomFieldController
                     $group['list_display'] = ['templateColumns' => $templateColumns, 'subInfos' => $subInfos];
                     $group['list_display'] = json_encode($group['list_display']);
                     GroupBasketModel::update([
-                        'set' => ['list_display' => $group['list_display']],
-                        'where'     => ['basket_id = ?', 'group_id = ?'],
-                        'data'      => [$basket_id, $group_id]
+                        'set'   => ['list_display' => $group['list_display']],
+                        'where' => ['basket_id = ?', 'group_id = ?'],
+                        'data'  => [$basket_id, $group_id]
                     ]);
                 }
             }
         }
 
-        //When customField is deleted, delete from research criteria
+        //When customField is deleted, delete from search administration
         $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
         $configuration = json_decode($adminSearch['value'], true);
         $subInfos   = $configuration['listDisplay']['subInfos'];
@@ -338,10 +339,28 @@ class CustomFieldController
                 $configuration['listDisplay']['subInfos'] = $subInfos;
                 $adminSearch['value'] = json_encode($configuration);
                 ConfigurationModel::update([
-                    'set' => ['value' => $adminSearch['value']],
+                    'set'   => ['value' => $adminSearch['value']],
                     'where' => ['privilege = ?'],
-                    'data' => ['admin_search']
+                    'data'  => ['admin_search']
                 ]);
+            }
+        }
+
+        //When customField is deleted, delete from search model
+        $searchTemplates = SearchTemplateModel::get(['select' => ['query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        foreach ($searchTemplates as $searchTemplate){
+            $queries = json_decode($searchTemplate['query'], true);
+            foreach ($queries as $key => $query){
+                if ($query['identifier'] === 'indexingCustomField_' . $args['id']){
+                    unset($queries[$key]);
+                    $queries = array_values($queries);
+                    $queries = json_encode($queries);
+                    SearchTemplateModel::update([
+                        'set'   => ['query' => $queries],
+                        'where' => ['user_id = ?'],
+                        'data'  => [$GLOBALS['id']]
+                    ]);
+                }
             }
         }
 
