@@ -199,6 +199,12 @@ function Bt_createAttachment($args = [])
     if (!empty($return['errors'])) {
         Bt_writeLog(['level' => 'ERROR', 'message' => "Create attachment failed : {$return['errors']}"]);
         return false;
+    } elseif (!empty($return['message']) && strpos($return['message'], 'Slim Application Error') !== false) {
+        foreach ($return['exception'] as $value) {
+            $message = "Create attachment failed : [Type : {$value['type']}][Message : {$value['message']}][File : {$value['file']}][Line : {$value['line']}]";
+            Bt_writeLog(['level' => 'ERROR', 'message' => $message]);
+        }
+        return false;
     }
 
     return $return;
