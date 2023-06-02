@@ -1109,7 +1109,7 @@ export class IndexingFormComponent implements OnInit {
 
     enableField(field: any, enable: boolean) {
         if (enable) {
-            if (!this.isAlwaysDisabledField(field)) {
+            if (!this.isAlwaysDisabledField(field) && field.identifier !== 'processLimitDate') {
                 this.arrFormControl[field.identifier].enable();
             }
             field.enabled = true;
@@ -1254,7 +1254,9 @@ export class IndexingFormComponent implements OnInit {
             this.arrFormControl[field.identifier].setValue(new Date());
         } else {
             this.arrFormControl[field.identifier].setValue('');
-            this.arrFormControl[field.identifier].enable();
+            if (field.identifier !== 'processLimitDate') {
+                this.arrFormControl[field.identifier].enable();
+            }
         }
     }
 
