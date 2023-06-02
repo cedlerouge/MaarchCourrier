@@ -336,10 +336,6 @@ class CustomFieldController
                 unset($subInfos[$key]);
                 $subInfos = array_values($subInfos);
                 $configuration['listDisplay']['subInfos'] = $subInfos;
-                //$configuration = $configuration['listDisplay']['subInfos'];
-                //$listDisplay = $configuration['listDisplay'];
-                //$listEvent = $configuration['listEvent'];
-                //$adminSearch['value'] = ['listEvent' => $listEvent, 'listDisplay' => $listDisplay];
                 $adminSearch['value'] = json_encode($configuration);
                 ConfigurationModel::update([
                     'set' => ['value' => $adminSearch['value']],
