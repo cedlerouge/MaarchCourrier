@@ -708,21 +708,26 @@ class FastParapheurController
                         mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
                         mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) > -1;
                 });
-                $fpUser = array_values($fpUser)[0];
 
-                $alreadyLinkedUsers = UserModel::get([
-                    'select' => [
-                        'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
-                        'trim(concat(firstname, \' \', lastname)) as name'
-                    ],
-                    'where'  => ['external_id->>\'fastParapheur\' is not null']
-                ]);
+                if (!empty($fpUser)) {
+                    $fpUser = array_values($fpUser)[0];
 
-                foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
-                    if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
-                        $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
-                        break;
+                    $alreadyLinkedUsers = UserModel::get([
+                        'select' => [
+                            'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                            'trim(concat(firstname, \' \', lastname)) as name'
+                        ],
+                        'where'  => ['external_id->>\'fastParapheur\' is not null']
+                    ]);
+
+                    foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
+                        if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
+                            $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
+                            break;
+                        }
                     }
+                } else {
+                    $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
                 }
             }
         }
