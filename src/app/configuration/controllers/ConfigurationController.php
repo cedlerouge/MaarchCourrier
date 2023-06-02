@@ -146,7 +146,7 @@ class ConfigurationController
                 } elseif ($key == 'onlyoffice') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is empty or not a string"]);
-                    } elseif (!Validator::notEmpty()->ip()->validate($editor['uri'] ?? null) && !DocumentEditorController::uriIsValid($editor['uri'])) {
+                    } elseif (!DocumentEditorController::uriIsValid($editor['uri'])) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
                         return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);

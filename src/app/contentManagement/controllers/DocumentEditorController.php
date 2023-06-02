@@ -52,11 +52,9 @@ class DocumentEditorController
 
         $uri = $args['uri'] ?? null;
 
-        if (Validator::notEmpty()->ip()->validate($uri) || Validator::notEmpty()->url()->validate($uri)) {
             if (!DocumentEditorController::uriIsValid($uri)) {
                 return ['errors' => "Editor 'uri' is not a valid URL or IP address format", 'lang' => 'editorHasNoValidUrlOrIp'];
             }
-        }
 
         $aUri = explode("/", $args['uri']);
         $exec = shell_exec("nc -vz -w 5 {$aUri[0]} {$args['port']} 2>&1");
@@ -69,7 +67,7 @@ class DocumentEditorController
     }
 
     public static function uriIsValid($args): ?bool {
-        $whitelist = '/^(https?:\/\/)?(([\da-z.-]+)\.([a-z.]{2,6})|((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))([\/\w .-]*)*\/?$/';
+        $whitelist = '/^(?:\w+(?:\/)?|(?:https?:\/\/)?((?:[\da-z.-]+)\.(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})(?:[\/\w .-]*)*\/?)$/i';
         return preg_match($whitelist, $args);
     }
 }

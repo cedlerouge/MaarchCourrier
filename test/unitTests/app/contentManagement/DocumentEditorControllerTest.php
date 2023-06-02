@@ -68,4 +68,61 @@ class DocumentEditorControllerTest extends CourrierTestCase
 
         $this->assertFalse($result);
     }
+
+    public function testSimpleStringIsValidHostname(): void
+    {
+        $ip = "onlyoffice";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertTrue($result);
+    }
+
+    public function testSimpleStringWithDomainIsValidHostname(): void
+    {
+        $ip = "onlyoffice/";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertTrue($result);
+    }
+
+    public function testSimpleStringWithNumberAndDomainIsValidHostname(): void
+    {
+        $ip = "onlyoffice23/";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertTrue($result);
+    }
+
+    /**
+     * @dataProvider simpleStringAndNumberData
+     */
+    public function testSimpleStringWithNumberIsValidHostname($input, $expectedOutput): void
+    {
+
+        $result = DocumentEditorController::uriIsValid($input);
+
+        $this->assertNotEmpty($input);
+        $this->assertSame($expectedOutput, $result);
+    }
+    public function simpleStringAndNumberData()
+    {
+        return [
+            'string with 2 number' => [
+                "input"             => "onlyoffice14",
+                "expectedOutput"    => true
+            ],
+            'string with 3 number' => [
+                "input"             => "onlyoffice100",
+                "expectedOutput"    => true
+            ],
+            'String with number and semicolon' => [
+                "input"             => "onlyoffice19;",
+                "expectedOutput"    => false
+            ]
+        ];
+    }
+
 }
