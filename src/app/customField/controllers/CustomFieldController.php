@@ -327,6 +327,28 @@ class CustomFieldController
             }
         }
 
+        //When customField is deleted, delete from research criteria
+        $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
+        $configuration = json_decode($adminSearch['value'], true);
+        $subInfos   = $configuration['listDisplay']['subInfos'];
+        foreach ($subInfos as $key => $value) {
+            if ($value['value'] === 'indexingCustomField_' . $args['id']) {
+                unset($subInfos[$key]);
+                $subInfos = array_values($subInfos);
+                $configuration['listDisplay']['subInfos'] = $subInfos;
+                //$configuration = $configuration['listDisplay']['subInfos'];
+                //$listDisplay = $configuration['listDisplay'];
+                //$listEvent = $configuration['listEvent'];
+                //$adminSearch['value'] = ['listEvent' => $listEvent, 'listDisplay' => $listDisplay];
+                $adminSearch['value'] = json_encode($configuration);
+                ConfigurationModel::update([
+                    'set' => ['value' => $adminSearch['value']],
+                    'where' => ['privilege = ?'],
+                    'data' => ['admin_search']
+                ]);
+            }
+        }
+
         HistoryController::add([
             'tableName' => 'custom_fields',
             'recordId'  => $args['id'],
