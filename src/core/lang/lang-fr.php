@@ -460,17 +460,20 @@ define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberI
 define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun 'Type de circuit' fourni. vérifiez votre configuration FastParapheur");
 define('_DB_UPDATED_WITH_FILE', 'Base de données mise à jour avec le fichier');
 define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
-
 define('_SHIPPING_ATTACH_DEPOSIT_PROOF', 'Preuve de dépôt Maileva');
 define('_SHIPPING_ATTACH_ACKNOWLEDGEMENT_OF_RECEIPT', 'Accusé de réception Maileva');
-
 define('_OK_', "Actif");
 define('_SPD_', "Suspendu");
 define('_ABS_', "Absent");
-
 define('_STANDARD_', "Par défaut");
 define('_REST_', "Utilisateur WebService (API)");
 define('_ROOT_VISIBLE_', "Compte super administrateur visible dans les workflows (Assignable)");
 define('_ROOT_INVISIBLE_', "Compte super administrateur non visible dans les workflows (Non Assignable)");
 define('_EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE', "Un utilisateur externe a été trouvé mais l'option OTP est désactivée. Voir dans la configuration de SignatoryBooks.");
 define('ALL_ENTITIES_TEXT', "Toutes les entités");
+define('_DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', "Le document principal n'existe plus dans le parapheur externe");
+define('_ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', array(
+    "La pièce jointe",
+    "n'existe plus dans le parapheur externe"
+));
+define('_EXTERNAL_USER', "Utilisateur externe");

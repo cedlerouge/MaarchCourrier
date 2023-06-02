@@ -51,6 +51,8 @@ use Contact\controllers\ContactController;
 */
 class FastParapheurController
 {
+    const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+
     public function getWorkflowDetails(Request $request, Response $response)
     {
         $config = FastParapheurController::getConfig();
@@ -401,6 +403,13 @@ class FastParapheurController
                     'eventType' => 'script',
                     'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
                 ]);
+
+                if ($historyResponse['errors'] === FastParapheurController::INVALID_DOC_ID_ERROR) {
+                    FastParapheurController::removeDocumentLink([
+                        'docItem'   => $value,
+                        'type'      => ($version == 'resLetterbox' ? 'resource' : 'attachment')
+                    ]);
+                }
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
@@ -699,21 +708,26 @@ class FastParapheurController
                         mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
                         mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) > -1;
                 });
-                $fpUser = array_values($fpUser)[0];
 
-                $alreadyLinkedUsers = UserModel::get([
-                    'select' => [
-                        'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
-                        'trim(concat(firstname, \' \', lastname)) as name'
-                    ],
-                    'where'  => ['external_id->>\'fastParapheur\' is not null']
-                ]);
+                if (!empty($fpUser)) {
+                    $fpUser = array_values($fpUser)[0];
 
-                foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
-                    if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
-                        $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
-                        break;
+                    $alreadyLinkedUsers = UserModel::get([
+                        'select' => [
+                            'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                            'trim(concat(firstname, \' \', lastname)) as name'
+                        ],
+                        'where'  => ['external_id->>\'fastParapheur\' is not null']
+                    ]);
+
+                    foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
+                        if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
+                            $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
+                            break;
+                        }
                     }
+                } else {
+                    $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
                 }
             }
         }
@@ -1948,6 +1962,41 @@ class FastParapheurController
         return ['response' => $curlReturn['response']];
     }
 */
+
+    public static function removeDocumentLink(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['docItem', 'type']);
+        ValidatorModel::arrayType($args, ['docItem']);
+        ValidatorModel::stringType($args, ['type']);
+
+        $info = '';
+        $userId = UserModel::get([
+            'select'    => ['id'],
+            'where'     => ['mode = ? OR mode = ?'],
+            'data'      => ['root_visible', 'root_invisible'],
+            'limit'     => 1
+        ])[0]['id'];
+
+        // remove signatureBookId link
+        if ($args['type'] === 'resource') {
+            ResModel::removeExternalLink(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
+            $info = _DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY;
+        } elseif ($args['type'] === 'attachment') {
+            AttachmentModel::removeExternalLink(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
+            $info = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . " '{$args['docItem']['title']}' " . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
+        }
+
+        HistoryController::add([
+            'tableName' => 'res_letterbox',
+            'recordId'  => $args['docItem']['res_id_master'] ?? $args['docItem']['res_id'],
+            'eventType' => 'ACTION#1',
+            'eventId'   => '1',
+            'userId'    => $userId,
+            'info'      => $info
+        ]);
+
+        return true;
+    }
 
     public static function getLastFastWorkflowAction(array $documentHistory, array $knownWorkflow, array $config): array
     {

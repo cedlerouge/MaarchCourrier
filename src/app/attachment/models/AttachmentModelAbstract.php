@@ -201,4 +201,20 @@ abstract class AttachmentModelAbstract
 
         return true;
     }
+
+    public static function removeExternalLink(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['resId', 'externalId']);
+        ValidatorModel::intType($args, ['resId', 'externalId']);
+
+        DatabaseModel::update([
+            'table'   => 'res_attachments',
+            'set'     => ['status' => 'A_TRA'],
+            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "{}"],
+            'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
+            'data'    => [$args['resId'], $args['externalId']]
+        ]);
+
+        return true;
+    }
 }
