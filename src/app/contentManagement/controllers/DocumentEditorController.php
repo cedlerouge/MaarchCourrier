@@ -67,7 +67,7 @@ class DocumentEditorController
     }
 
     public static function uriIsValid($args): ?bool {
-        $whitelist = '/^(?:\w+(?:\/)?|(?:https?:\/\/)?((?:[\da-z.-]+)\.(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})(?:[\/\w .-]*)*\/?)$/i';
+        $whitelist = '/^(?:\w+(?:\/)?|(?:https?:\/\/)?((?:[\da-z.-]+)\.(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})(?:[\/\w.-]*)*\/?)$/i';
         return preg_match($whitelist, $args);
     }
 }
