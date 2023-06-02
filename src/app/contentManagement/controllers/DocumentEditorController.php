@@ -52,9 +52,9 @@ class DocumentEditorController
 
         $uri = $args['uri'] ?? null;
 
-            if (!DocumentEditorController::uriIsValid($uri)) {
-                return ['errors' => "Editor 'uri' is not a valid URL or IP address format", 'lang' => 'editorHasNoValidUrlOrIp'];
-            }
+        if (!DocumentEditorController::uriIsValid($uri)) {
+            return ['errors' => "Editor 'uri' is not a valid URL or IP address format", 'lang' => 'editorHasNoValidUrlOrIp'];
+        }
 
         $aUri = explode("/", $args['uri']);
         $exec = shell_exec("nc -vz -w 5 {$aUri[0]} {$args['port']} 2>&1");

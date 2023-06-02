@@ -51,24 +51,6 @@ class DocumentEditorControllerTest extends CourrierTestCase
         $this->assertTrue($result);
     }
 
-    public function testUrlCharacterIsNotInTheWhiteList(): void
-    {
-        $ip = "exemple.com;";
-
-        $result = DocumentEditorController::uriIsValid($ip);
-
-        $this->assertFalse($result);
-    }
-
-    public function testIpCharacterIsNotInTheWhiteList(): void
-    {
-        $ip = "3.4.5.3;";
-
-        $result = DocumentEditorController::uriIsValid($ip);
-
-        $this->assertFalse($result);
-    }
-
     public function testSimpleStringIsValidHostname(): void
     {
         $ip = "onlyoffice";
@@ -99,30 +81,59 @@ class DocumentEditorControllerTest extends CourrierTestCase
     /**
      * @dataProvider simpleStringAndNumberData
      */
-    public function testSimpleStringWithNumberIsValidHostname($input, $expectedOutput): void
+    public function testSimpleStringWithNumberIsValidHostname($input): void
     {
 
         $result = DocumentEditorController::uriIsValid($input);
 
-        $this->assertNotEmpty($input);
-        $this->assertSame($expectedOutput, $result);
+        $this->assertNotEmpty($result);
+        $this->assertTrue($result);
     }
     public function simpleStringAndNumberData()
     {
         return [
             'string with 2 number' => [
-                "input"             => "onlyoffice14",
-                "expectedOutput"    => true
+                "input"             => "onlyoffice14"
             ],
             'string with 3 number' => [
-                "input"             => "onlyoffice100",
-                "expectedOutput"    => true
-            ],
-            'String with number and semicolon' => [
-                "input"             => "onlyoffice19;",
-                "expectedOutput"    => false
+                "input"             => "onlyoffice100"
             ]
         ];
+    }
+
+    public function testSimpleStringIsNoValidHostname():void
+    {
+        $ip = "onlyoffice!";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertFalse($result);
+    }
+    public function testSimpleStringWithNumberIsNoValidHostname():void
+    {
+        $ip = "onlyoffice23;";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertFalse($result);
+    }
+
+    public function testUrlCharacterIsNotInTheWhiteList(): void
+    {
+        $ip = "exemple.com*";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertFalse($result);
+    }
+
+    public function testIpCharacterIsNotInTheWhiteList(): void
+    {
+        $ip = "3.4.5.3£";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertFalse($result);
     }
 
 }
