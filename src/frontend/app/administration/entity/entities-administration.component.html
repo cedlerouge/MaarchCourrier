@@ -184,7 +184,16 @@
                                                 (focus)="resetAutocompleteAddressBan()" maxlength="128">
                                             <mat-autocomplete #auto="matAutocomplete"
                                                 (optionSelected)="selectAddressBan($event)">
-                                                <ng-container *ngIf="addressBANResult.length > 0 && !addressBANLoading">
+                                                <ng-container *ngIf="addressSectorResult.length > 0 && !addressLoading">
+                                                    <mat-label class="title-ban">{{'lang.labelSectors' | translate | uppercase}}</mat-label>
+                                                    <mat-option
+                                                      *ngFor="let addressSectorResult of addressSectorFilteredResult | async"
+                                                      [value]="addressSectorResult" [title]="addressSectorResult.address">
+                                                        {{addressSectorResult.address}}
+                                                    </mat-option>
+                                                </ng-container>
+                                                <ng-container *ngIf="addressBANResult.length > 0 && !addressLoading">
+                                                    <mat-label class="title-ban">{{'lang.labelBAN' | translate | uppercase}}</mat-label>
                                                     <mat-option
                                                         *ngFor="let addressBANResult of addressBANFilteredResult | async"
                                                         [value]="addressBANResult">
@@ -192,10 +201,10 @@
                                                     </mat-option>
                                                 </ng-container>
                                                 <mat-option class="autoCompleteInfoResult smallInputInfo"
-                                                    *ngIf="addressBANResult.length === 0 && !addressBANLoading" disabled
+                                                    *ngIf="addressBANResult.length === 0 && !addressLoading" disabled
                                                     [innerHTML]="addressBANInfo">
                                                 </mat-option>
-                                                <mat-option *ngIf="addressBANLoading" disabled>
+                                                <mat-option *ngIf="addressLoading" disabled>
                                                     <mat-spinner diameter="20"></mat-spinner>
                                                 </mat-option>
                                             </mat-autocomplete>

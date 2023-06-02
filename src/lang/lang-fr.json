@@ -2705,7 +2705,6 @@
     "serverSignature": "Signature Serveur",
     "badConfiguration": "Problème de paramètrage dans le fichier de configuration",
     "useSMTPAuth": "Utiliser l'adresse d'envoi configurée pour tous les envois de courriels",
-    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour touts les courriels sortants",
     "unavailableForSignatoryBook": "Indisponible pour le parapheur externe actif",
     "rightRotation": "Pivoter à droite",
     "leftRotation": "Pivoter à gauche",
@@ -2738,5 +2737,8 @@
     "viewResources": "Visualisation seulement",
     "resources": "Courriers",
     "privilegesAttachmentDesc": "Les privilèges de modification et de suppression ne s'appliquent pas au propriétaire du document, sauf dans le cas du circuit du visa.",
-    "processLimitDatetoggleDisableDesc": "L'activation ou la désactivation du champ est appliquée à la fois lors de l'indexation et dans la fiche de traitement du courrier."
+    "processLimitDatetoggleDisableDesc": "L'activation ou la désactivation du champ est appliquée à la fois lors de l'indexation et dans la fiche de traitement du courrier.",
+    "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour tous les courriels sortants",
+    "labelBAN":  "Base Adresse Nationale",
+    "labelSectors":  "Secteurs"
 }

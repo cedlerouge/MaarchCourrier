@@ -58,6 +58,8 @@ export class ContactsFormComponent implements OnInit {
     postcodesTownFilteredResult: Observable<string[]>;
     postcodesFilteredResult: Observable<string[]>;
     countryControl = new UntypedFormControl();
+    addressLoading: boolean = false;
+
 
     loading: boolean = false;
 
@@ -348,11 +350,12 @@ export class ContactsFormComponent implements OnInit {
     addressBANInfo: string = '';
     addressBANMode: boolean = true;
     addressBANControl = new UntypedFormControl();
-    addressBANLoading: boolean = false;
     addressBANResult: any[] = [];
     addressBANFilteredResult: Observable<string[]>;
+    addressSectorFilteredResult: Observable<string[]>;
     addressBANCurrentDepartment: string = '75';
     departmentList: any[] = [];
+    addressSectorResult: any[] = [];
 
     fillingParameters: any = null;
     fillingRate: any = {
@@ -1109,23 +1112,26 @@ export class ContactsFormComponent implements OnInit {
                 debounceTime(300),
                 filter(value => value.length > 2),
                 distinctUntilChanged(),
-                tap(() => this.addressBANLoading = true),
+                tap(() => this.addressLoading = true),
                 switchMap((data: any) => this.http.get('../rest/autocomplete/banAddresses', { params: { 'address': data, 'department': this.addressBANCurrentDepartment } })),
-                tap((data: any) => {
+                tap((data: any[]) => {
                     if (data.length === 0) {
                         this.addressBANInfo = this.translate.instant('lang.noAvailableValue');
                     } else {
                         this.addressBANInfo = '';
                     }
-                    this.addressBANResult = data;
+                    this.addressSectorResult =  data.filter((result: any) => result.indicator === 'sector');
+                    this.addressBANResult = data.filter((result: any) => result.indicator === 'ban');
                     this.addressBANFilteredResult = of(this.addressBANResult);
-                    this.addressBANLoading = false;
+                    this.addressSectorFilteredResult = of(this.addressSectorResult);
+                    this.addressLoading = false;
                 })
             ).subscribe();
     }
 
     resetAutocompleteAddressBan() {
         this.addressBANResult = [];
+        this.addressSectorResult = [];
         this.addressBANInfo = this.translate.instant('lang.autocompleteInfo');
     }
 
