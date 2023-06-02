@@ -136,4 +136,13 @@ class DocumentEditorControllerTest extends CourrierTestCase
         $this->assertFalse($result);
     }
 
+    public function testUrlWithASpace(): void
+    {
+        $ip = "exem ple.com";
+
+        $result = DocumentEditorController::uriIsValid($ip);
+
+        $this->assertFalse($result);
+    }
+
 }
