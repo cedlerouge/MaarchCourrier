@@ -58,6 +58,21 @@ class SearchTemplateModel
         return $nextSequenceId;
     }
 
+    public static function update(array $aArgs)
+    {
+        ValidatorModel::notEmpty($aArgs, ['set', 'where', 'data']);
+        ValidatorModel::arrayType($aArgs, ['set', 'where', 'data']);
+
+        DatabaseModel::update([
+            'table' => 'search_templates',
+            'set'   => $aArgs['set'],
+            'where' => $aArgs['where'],
+            'data'  => $aArgs['data']
+        ]);
+
+        return true;
+    }
+
     public static function delete(array $args)
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);

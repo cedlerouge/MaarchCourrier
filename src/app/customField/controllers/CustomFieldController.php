@@ -18,12 +18,16 @@
 namespace CustomField\controllers;
 
 use Action\models\ActionModel;
+use Basket\models\BasketModel;
+use Basket\models\GroupBasketModel;
+use Configuration\models\ConfigurationModel;
 use CustomField\models\CustomFieldModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelFieldModel;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
+use Search\models\SearchTemplateModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
@@ -301,6 +305,64 @@ class CustomFieldController
             'where' => ['id = ?'],
             'data'  => [$args['id']]
         ]);
+
+        //When customField is deleted, delete from all baskets where it can be found
+        $groups = GroupBasketModel::get(['select' => ['group_id', 'basket_id', 'list_display']]);
+        foreach ($groups as $group){
+            $group_id = $group['group_id'];
+            $basket_id = $group['basket_id'];
+            $subInfos = json_decode($group['list_display'], true)['subInfos'];
+            foreach ($subInfos as $key => $value) {
+                if ($value['value'] === 'indexingCustomField_' . $args['id']) {
+                    unset($subInfos[$key]);
+                    $subInfos = array_values($subInfos);
+                    $templateColumns = json_decode($group['list_display'], true)['templateColumns'];
+                    $group['list_display'] = ['templateColumns' => $templateColumns, 'subInfos' => $subInfos];
+                    $group['list_display'] = json_encode($group['list_display']);
+                    GroupBasketModel::update([
+                        'set'   => ['list_display' => $group['list_display']],
+                        'where' => ['basket_id = ?', 'group_id = ?'],
+                        'data'  => [$basket_id, $group_id]
+                    ]);
+                }
+            }
+        }
+
+        //When customField is deleted, delete from search administration
+        $adminSearch = ConfigurationModel::getByPrivilege(['privilege' => 'admin_search', 'select' => ['value']]);
+        $configuration = json_decode($adminSearch['value'], true);
+        $subInfos   = $configuration['listDisplay']['subInfos'];
+        foreach ($subInfos as $key => $value) {
+            if ($value['value'] === 'indexingCustomField_' . $args['id']) {
+                unset($subInfos[$key]);
+                $subInfos = array_values($subInfos);
+                $configuration['listDisplay']['subInfos'] = $subInfos;
+                $adminSearch['value'] = json_encode($configuration);
+                ConfigurationModel::update([
+                    'set'   => ['value' => $adminSearch['value']],
+                    'where' => ['privilege = ?'],
+                    'data'  => ['admin_search']
+                ]);
+            }
+        }
+
+        //When customField is deleted, delete from search model
+        $searchTemplates = SearchTemplateModel::get(['select' => ['query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        foreach ($searchTemplates as $searchTemplate){
+            $queries = json_decode($searchTemplate['query'], true);
+            foreach ($queries as $key => $query){
+                if ($query['identifier'] === 'indexingCustomField_' . $args['id']){
+                    unset($queries[$key]);
+                    $queries = array_values($queries);
+                    $queries = json_encode($queries);
+                    SearchTemplateModel::update([
+                        'set'   => ['query' => $queries],
+                        'where' => ['user_id = ?'],
+                        'data'  => [$GLOBALS['id']]
+                    ]);
+                }
+            }
+        }
 
         HistoryController::add([
             'tableName' => 'custom_fields',

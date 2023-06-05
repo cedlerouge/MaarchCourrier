@@ -16,9 +16,8 @@ declare let $: any;
     styleUrls: ['list-administration.component.scss'],
 })
 export class ListAdministrationComponent implements OnInit {
-
     @Input('currentBasketGroup') private basketGroup: any;
-    @Output('refreshBasketGroup') refreshBasketGroup = new EventEmitter<any>();
+    @Output() refreshBasketGroup = new EventEmitter<any>();
 
     loading: boolean = false;
 
@@ -314,7 +313,6 @@ export class ListAdministrationComponent implements OnInit {
 
     initCustomFields() {
         return new Promise((resolve, reject) => {
-
             this.http.get('../rest/customFields').pipe(
                 map((data: any) => {
                     data.customFields = data.customFields.map((info: any) => ({
@@ -329,7 +327,6 @@ export class ListAdministrationComponent implements OnInit {
                 tap((customs) => {
                     this.availableData = this.availableData.concat(customs);
                     resolve(true);
-
                 }),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
