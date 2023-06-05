@@ -393,35 +393,40 @@
                                         <mat-list>
                                             <ng-container *ngFor="let basket of user.assignedBaskets;let i = index">
                                                 <mat-list-item>
-                                                    <mat-icon mat-list-icon color="primary" style="margin-top:-60px;"
-                                                        class="fa fa-reply">
+                                                    <mat-icon mat-list-icon color="primary"
+                                                        style="margin-top:-60px;" class="fa fa-reply">
                                                     </mat-icon>
-                                                    <h4 mat-line color="primary">{{basket.basket_name}}
+                                                    <h4 mat-line color="primary" (click)="basket.redirectMode = false">{{basket.basket_name}}
                                                         <span class="label label-primary"
                                                             style="font-weight:normal">{{basket.group_desc}}</span>
                                                     </h4>
                                                     <p mat-line>
-                                                        <app-plugin-autocomplete *ngIf="basket.userToDisplay == null"
+                                                        <app-plugin-autocomplete *ngIf="basket.redirectMode"
                                                             [labelPlaceholder]="'lang.redirectBaskets' | translate"
                                                             [routeDatas]="['/rest/autocomplete/users']"
                                                             [targetSearchKey]="'idToDisplay'"
                                                             [subInfoKey]="'descriptionToDisplay'"
                                                             (triggerEvent)="reassignBasketRedirection($event,basket,i)"
-                                                            appearance="outline"></app-plugin-autocomplete>
-                                                        <mat-form-field>
+                                                            appearance="outline">
+                                                        </app-plugin-autocomplete>
+                                                        <mat-form-field *ngIf="!basket.redirectMode">
                                                             <input type="text" color="warn" matInput disabled
                                                                 value="{{'lang.assignBy' | translate}} {{basket.userToDisplay}}">
-                                                            <button mat-button color="warn" matSuffix mat-icon-button
-                                                                aria-label="Clear" (click)="basket.userToDisplay=null"
-                                                                matTooltip="{{'lang.reassign' | translate}}">
+                                                            <button color="warn" aria-label="Clear"
+                                                                matSuffix
+                                                                mat-button
+                                                                mat-icon-button
+                                                                (click)="basket.redirectMode = true"
+                                                                [matTooltip]="'lang.reassign' | translate">
                                                                 <mat-icon color="primary" class="fa fa-edit"></mat-icon>
                                                             </button>
-                                                            <button mat-button color="warn" matSuffix mat-icon-button
-                                                                aria-label="Clear"
+                                                            <button color="warn" aria-label="Clear"
+                                                                mat-button
+                                                                matSuffix
+                                                                mat-icon-button
                                                                 (click)="delBasketAssignRedirection(basket,i)"
-                                                                matTooltip="{{'lang.deleteAssignation' | translate}}">
-                                                                <mat-icon color="warn" class="fa fa-times text-danger">
-                                                                </mat-icon>
+                                                                [matTooltip]="'lang.deleteAssignation' | translate">
+                                                                <mat-icon color="warn" class="fa fa-times text-danger"></mat-icon>
                                                             </button>
                                                         </mat-form-field>
                                                     </p>
