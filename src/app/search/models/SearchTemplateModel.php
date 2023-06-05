@@ -14,7 +14,6 @@
 
 namespace Search\models;
 
-use PHPUnit\Util\Xml\Validator;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
