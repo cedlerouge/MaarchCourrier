@@ -100,6 +100,10 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         }
     ];
 
+    zoomLeft: number = 1;
+
+    zoomRight: number = 1;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -793,5 +797,14 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         } else {
             return true;
         }
+    }
+
+    zoomDocument(type: string, side: string) {
+        if (type === 'in') {
+            this[side] = this[side] + 0.5;
+        } else if (type === 'out' && this[side] >= 0) {
+            this[side] = this[side] - 0.5;
+        }
+
     }
 }
