@@ -58,9 +58,11 @@ class VersionUpdateController
         }
 
         $currentVersionBranch = $versions[0];
-        $currentMinorVersionTag = $versions[2];
+        $currentMinorVersionTag = $versions[1];
+        $currentPatchVersionTag = $versions[2];
 
         $availableMinorVersions = [];
+        $availablePatchVersions = [];
         $availableMajorVersions = [];
 
         foreach ($tags as $value) {
@@ -70,17 +72,22 @@ class VersionUpdateController
             $explodedValue = explode('.', $value['name']);
 
             $branchVersionTag = $explodedValue[0];
-            $minorVersionTag = $explodedValue[2];
+            $minorVersionTag = $explodedValue[1];
+            $patchVersionTag = $explodedValue[2];
+
 
             if ($branchVersionTag > $currentVersionBranch) {
                 $availableMajorVersions[] = $value['name'];
             } else if ($branchVersionTag == $currentVersionBranch && $minorVersionTag > $currentMinorVersionTag) {
                 $availableMinorVersions[] = $value['name'];
+            } else if ($minorVersionTag == $currentMinorVersionTag && $patchVersionTag > $currentPatchVersionTag) {
+                $availablePatchVersions[] = $value['name'];
             }
         }
 
         natcasesort($availableMinorVersions);
         natcasesort($availableMajorVersions);
+        natcasesort($availablePatchVersions);
 
         if (empty($availableMinorVersions)) {
             $lastAvailableMinorVersion = null;
@@ -94,6 +101,12 @@ class VersionUpdateController
             $lastAvailableMajorVersion = end($availableMajorVersions);
         }
 
+        if (empty($availablePatchVersions)) {
+            $lastAvailablePatchVersion = null;
+        } else {
+            $lastAvailablePatchVersion = end($availablePatchVersions);
+        }
+
         $output = [];
 
         exec('git status --porcelain --untracked-files=no 2>&1', $output);
@@ -101,6 +114,7 @@ class VersionUpdateController
         return $response->withJson([
             'lastAvailableMinorVersion' => $lastAvailableMinorVersion,
             'lastAvailableMajorVersion' => $lastAvailableMajorVersion,
+            'lastAvailablePatchVersion' => $lastAvailablePatchVersion,
             'currentVersion'            => $currentVersion,
             'canUpdate'                 => empty($output),
             'diffOutput'                => $output
@@ -193,7 +207,7 @@ class VersionUpdateController
         ValidatorModel::arrayType($args, ['sqlFiles']);
 
         $migrationFolder = DocserverController::getMigrationFolderPath();
-        
+
         if (!empty($migrationFolder['errors'])) {
             return ['errors' => $migrationFolder['errors']];
         }
@@ -253,7 +267,7 @@ class VersionUpdateController
         $parameter = explode('.', $parameter['param_value_string']);
 
         if (count($parameter) < 2) {
-            return $response->withStatus(400)->withJson(['errors' => "Bad format database_version"]); 
+            return $response->withStatus(400)->withJson(['errors' => "Bad format database_version"]);
         }
 
         $dbMinorVersion = (int)$parameter[2];
@@ -272,7 +286,7 @@ class VersionUpdateController
                 if (!is_readable("migration/{$file}")) {
                     return $response->withStatus(400)->withJson(['errors' => "File migration/{$file} is not readable"]);
                 }
-                $targetedSqlFiles[] = "migration/{$file}"; 
+                $targetedSqlFiles[] = "migration/{$file}";
             }
         }
 
