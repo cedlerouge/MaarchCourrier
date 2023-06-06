@@ -369,6 +369,7 @@
 }
 
 .pjDetailsMore {
+    display: flex;
     z-index: 1;
     position: absolute;
     left: 15px;
@@ -1118,4 +1119,18 @@ img:hover.panelSelectedThumbnail {
     i {
         opacity: 0.3;
     }
+}
+
+.zoomBtn {
+    font-size: 15px;
+    margin-left: 21px;
+    margin-right: 5px;
+    margin-top: 6px;
+}
+
+.divider {
+    background: #fff3;
+    padding: 0.02em;
+    margin-top: -2px;
+    margin-bottom: -2px;
 }
