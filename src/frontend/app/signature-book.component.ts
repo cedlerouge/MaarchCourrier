@@ -102,8 +102,6 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
     zoomLeft: number = 1;
 
-    zoomRight: number = 1;
-
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
