@@ -99,8 +99,8 @@
                     <i *ngIf="showTopLeftPanel" class="fa fa-chevron-up" aria-hidden="true"></i>
                 </div>
                 <div class="pjDetailsMore">
-                    <i class="fa fa-minus" style="margin-right: 25px; margin-left: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); zoomDocument('out', 'zoomLeft')"></i>
-                    <i class="fa fa-plus" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); zoomDocument('in', 'zoomLeft')"></i>
+                    <i class="fa fa-minus" style="margin-right: 25px; margin-left: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); zoomLeftDocument('out')"></i>
+                    <i class="fa fa-plus" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); zoomLeftDocument('in')"></i>
                 </div>
                 <pdf-viewer
                     *ngIf="leftViewerLink != '' && (leftSelectedThumbnail == 0 || signatureBook.documents[leftSelectedThumbnail].format == 'pdf' || signatureBook.documents[leftSelectedThumbnail].isConverted)"
@@ -164,7 +164,7 @@
                 <i class="fa fa-chevron-left" aria-hidden="true" *ngIf="showLeftPanel"></i>
                 <i class="fa fa-chevron-right" aria-hidden="true" *ngIf="!showLeftPanel"></i>
             </div>
-            <div class="contentShow" style="overflow: auto">
+            <div class="contentShow" style="overflow: none">
                 <div *ngIf="signatureBook.attachments[rightSelectedThumbnail] && !showAttachmentPanel"
                     style="height:100%;overflow: auto;">
                     <div [ngStyle]="{'display': showTopRightPanel ? 'block' : 'none'}" class="pjDetails">
@@ -223,13 +223,15 @@
                         </div>
                     </div>
                     <div class="pjDetailsMore">
-                        <i *ngIf="!showTopRightPanel" class="fa fa-list-alt fa-2x" aria-hidden="true" style="margin-right: 15px;" [title]="'lang.showDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
+                        <i *ngIf="!showTopRightPanel" class="fa fa-list-alt fa-2x" aria-hidden="true" [title]="'lang.showDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
                         <i *ngIf="showTopRightPanel" class="fa fa-chevron-up" aria-hidden="true" style="margin-top: 5px; font-size: 15px; margin-right: 10px;" [title]="'lang.hideDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
-                        <div class="divider"></div>
-                        <i class="zoomBtn fa fa-minus" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); zoomDocument('out', 'zoomRight')"></i>
-                        <i class="zoomBtn fa fa-plus" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); zoomDocument('in', 'zoomRight')"></i>
+                        <ng-container *ngIf="!appDocumentViewer?.isEditingTemplate()">
+                            <div class="divider" style="margin-left: 15px;"></div>
+                            <i class="zoomBtn fa fa-minus" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('out')"></i>
+                            <i class="zoomBtn fa fa-plus" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('in')"></i>
+                        </ng-container>
                     </div>
-                    <pdf-viewer *ngIf="rightViewerLink !== '' && signatureBook.attachments[rightSelectedThumbnail].isConverted"
+                    <!-- <pdf-viewer *ngIf="rightViewerLink !== '' && signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         #rightPanelShowDocumentIframe id="rightPanelShowDocumentIframe"
                         [src]="rightViewerLink | secureUrl | async"
                         [render-text]="true"
@@ -239,14 +241,14 @@
                         [show-all]="true"
                         [zoom]="zoomRight"
                         (error)="pdfViewerError(rightViewerLink)">
-                    </pdf-viewer>
-                    <!-- <app-document-viewer #appDocumentViewer id="rightPanelShowDocumentIframe"
+                    </pdf-viewer> -->
+                    <app-document-viewer #appDocumentViewer id="rightPanelShowDocumentIframe"
                         *ngIf="signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         style="height:100%;width:100%;" [editMode]="true" [hideTools]="true"
                         [mode]="signatureBook.attachments[rightSelectedThumbnail].isResource ? 'mainDocument' : 'attachment'"
                         [resId]="signatureBook.attachments[rightSelectedThumbnail].signed ? signatureBook.attachments[rightSelectedThumbnail].viewerId : signatureBook.attachments[rightSelectedThumbnail].res_id"
                         [title]="signatureBook.attachments[rightSelectedThumbnail].identifier">
-                    </app-document-viewer> -->
+                    </app-document-viewer>
                     <div *ngIf="signatureBook.attachments[rightSelectedThumbnail].format != 'pdf' && signatureBook.attachments[rightSelectedThumbnail].status != 'TMP' && !signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         [ngStyle]="{'height': showTopRightPanel ? '79%' : '96%'}" class="visaNoPdfWarning">
                         <div style="padding-top: 25%;">
