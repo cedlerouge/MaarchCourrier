@@ -449,47 +449,49 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
         }
     }
 
-    if (!empty($value['encodedFile'])) {
-        Bt_writeLog(['level' => 'INFO', 'message' => 'Create document in res_letterbox']);
-        if ($value['status'] =='validated') {
-            $typeToDelete = ['SIGN', 'TNL'];
-        } else {
-            $typeToDelete = ['NOTE'];
-        }
-        \SrcCore\models\DatabaseModel::delete([
-            'table' => 'adr_letterbox',
-            'where' => ['res_id = ?', 'type in (?)', 'version = ?'],
-            'data'  => [$resId, $typeToDelete, $value['version']]
-        ]);
+    if (in_array($value['status'], ['validatedNote', 'validated'])) {
+        if (!empty($value['encodedFile'])) {
+            Bt_writeLog(['level' => 'INFO', 'message' => 'Create document in res_letterbox']);
+            if ($value['status'] =='validated') {
+                $typeToDelete = ['SIGN', 'TNL'];
+            } else {
+                $typeToDelete = ['NOTE'];
+            }
+            \SrcCore\models\DatabaseModel::delete([
+                'table' => 'adr_letterbox',
+                'where' => ['res_id = ?', 'type in (?)', 'version = ?'],
+                'data'  => [$resId, $typeToDelete, $value['version']]
+            ]);
 
-        $storeResult = \Docserver\controllers\DocserverController::storeResourceOnDocServer([
-            'collId'          => 'letterbox_coll',
-            'docserverTypeId' => 'DOC',
-            'encodedResource' => $value['encodedFile'],
-            'format'          => 'pdf'
-        ]);
+            $storeResult = \Docserver\controllers\DocserverController::storeResourceOnDocServer([
+                'collId'          => 'letterbox_coll',
+                'docserverTypeId' => 'DOC',
+                'encodedResource' => $value['encodedFile'],
+                'format'          => 'pdf'
+            ]);
 
-        if (empty($storeResult['errors'])) {
-            Bt_writeLog(['level' => 'INFO', 'message' => "Signed main document created : {$return['id']}"]);
+            if (empty($storeResult['errors'])) {
+                Bt_writeLog(['level' => 'INFO', 'message' => "Signed main document created : {$return['id']}"]);
+            } else {
+                Bt_writeLog(['level' => 'ERROR', 'message' => "Create Signed main document failed : {$storeResult['errors']}"]);
+                continue;
+            }
+            \SrcCore\models\DatabaseModel::insert([
+                'table'         => 'adr_letterbox',
+                'columnsValues' => [
+                    'res_id'       => $resId,
+                    'type'         => $value['status'] === 'validatedNote' ? 'NOTE' : 'SIGN',
+                    'docserver_id' => $storeResult['docserver_id'],
+                    'path'         => $storeResult['destination_dir'],
+                    'filename'     => $storeResult['file_destination_name'],
+                    'version'      => $value['version'],
+                    'fingerprint'  => empty($storeResult['fingerPrint']) ? null : $storeResult['fingerPrint']
+                ]
+            ]);
         } else {
-            Bt_writeLog(['level' => 'ERROR', 'message' => "Create Signed main document failed : {$storeResult['errors']}"]);
+            Bt_writeLog(['level' => 'ERROR', 'message' => 'Signed file content is missing !']);
             continue;
         }
-        \SrcCore\models\DatabaseModel::insert([
-            'table'         => 'adr_letterbox',
-            'columnsValues' => [
-                'res_id'       => $resId,
-                'type'         => in_array($value['status'], ['refused', 'refusedNote', 'validatedNote']) ? 'NOTE' : 'SIGN',
-                'docserver_id' => $storeResult['docserver_id'],
-                'path'         => $storeResult['destination_dir'],
-                'filename'     => $storeResult['file_destination_name'],
-                'version'      => $value['version'],
-                'fingerprint'  => empty($storeResult['fingerPrint']) ? null : $storeResult['fingerPrint']
-            ]
-        ]);
-    } else {
-        Bt_writeLog(['level' => 'ERROR', 'message' => 'Signed file content is missing !']);
-        continue;
     }
     if (in_array($value['status'], ['validatedNote', 'validated', 'refusedNote', 'refused'])) {
         $additionalHistoryInfo = '';
