@@ -1255,20 +1255,22 @@ class FastParapheurController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
-        $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
-            'docResId' => $args['resIdMaster'],
-            'login' => $user['user_id']
-        ]);
-        $appendices[] = [
-            'isFile'   => true,
-            'content'  => file_get_contents($summarySheetFilePath),
-            'filename' => TextFormatModel::formatFilename([
-                'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
-                'maxLength' => 50
-            ])
-        ];
-        unlink($summarySheetFilePath);
+        if (!empty($otpInfoXML['content'])) {
+            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
+            $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
+                'docResId' => $args['resIdMaster'],
+                'login' => $user['user_id']
+            ]);
+            $appendices[] = [
+                'isFile'   => true,
+                'content'  => file_get_contents($summarySheetFilePath),
+                'filename' => TextFormatModel::formatFilename([
+                    'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
+                    'maxLength' => 50
+                ])
+            ];
+            unlink($summarySheetFilePath);
+        }
 
         if (empty($uploads)) {
             return ['error' => 'resource has nothing to sign', 'code' => 400];
