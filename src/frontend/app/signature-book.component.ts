@@ -787,11 +787,11 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         }
     }
 
-    zoomDocument(type: string, side: string) {
+    zoomLeftDocument(type: string) {
         if (type === 'in') {
-            this[side] = this[side] + 0.5;
-        } else if (type === 'out' && this[side] >= 0) {
-            this[side] = this[side] - 0.5;
+            this.zoomLeft = this.zoomLeft + 0.5;
+        } else if (type === 'out' && this.zoomLeft >= 0) {
+            this.zoomLeft = this.zoomLeft - 0.5;
         }
 
     }
