@@ -712,7 +712,19 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
             if (attachment.isResource) {
                 this.appDocumentViewer.editResource();
             } else {
-                this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.res_id } });
+                this.dialogRef = this.dialog.open(AttachmentPageComponent,
+                    {
+                        height: '99vh',
+                        width: this.appService.getViewMode() ? '99vw' : '90vw',
+                        maxWidth: this.appService.getViewMode() ? '99vw' : '90vw',
+                        panelClass: 'attachment-modal-container',
+                        disableClose: true,
+                        data:
+                        {
+                            resId: attachment.res_id,
+                            editMode: this.canUpdateDocument
+                        }
+                    });
 
                 this.dialogRef.afterClosed().pipe(
                     filter((data: string) => data === 'success'),
