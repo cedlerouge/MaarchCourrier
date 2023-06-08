@@ -228,4 +228,8 @@ export class MaarchParapheurService {
             ).subscribe();
         });
     }
+
+    canAttachSummarySheet(visaWorkflow: any[]): boolean {
+        return true;
+    }
 }

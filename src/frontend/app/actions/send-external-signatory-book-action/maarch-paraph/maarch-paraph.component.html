@@ -1,4 +1,7 @@
 <div class="col-md-12">
+    <app-maarch-message *ngIf="!externalSignatoryBookManagerService.canAttachSummarySheet(appExternalVisaWorkflow.visaWorkflow.items)"
+        [content]="'lang.cannotAttachSummarySheet' | translate">
+    </app-maarch-message>
     <div class="fieldsetdContainer" style="flex:2">
         <h2>{{'lang.visaWorkflow' | translate}} :</h2>
         <div class="fieldsetdContent">
