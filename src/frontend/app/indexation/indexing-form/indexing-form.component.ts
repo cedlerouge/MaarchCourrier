@@ -504,9 +504,9 @@ export class IndexingFormComponent implements OnInit {
                             ).subscribe();
                         }
                     }),
-                    tap(() => {
+                    tap(async () => {
                         if (this.currentResourceValues.find((item: any) => item.identifier === 'doctype').default_value !== this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').default_value) {
-                            this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'), true);
+                            await this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'), true);
                         }
                         this.currentResourceValues = JSON.parse(JSON.stringify(this.getDatas(false)));
                         this.notify.success(this.translate.instant('lang.dataUpdated'));
@@ -717,11 +717,11 @@ export class IndexingFormComponent implements OnInit {
     setPriorityField(elem: any) {
         return new Promise((resolve, reject) => {
             this.http.get('../rest/priorities').pipe(
-                tap((data: any) => {
+                tap(async (data: any) => {
                     elem.values = data.priorities;
                     elem.event = 'calcLimitDateByPriority';
                     if (elem.default_value !== null) {
-                        this.calcLimitDateByPriority(elem, elem.default_value);
+                        await this.calcLimitDateByPriority(elem, elem.default_value);
                     }
                     resolve(true);
                 })
@@ -732,7 +732,7 @@ export class IndexingFormComponent implements OnInit {
     setDoctypeField(elem: any) {
         return new Promise((resolve, reject) => {
             this.http.get('../rest/doctypes').pipe(
-                tap((data: any) => {
+                tap(async (data: any) => {
                     let arrValues: any[] = [];
                     data.structure.forEach((doctype: any) => {
                         if (doctype['doctypes_second_level_id'] === undefined) {
@@ -768,9 +768,9 @@ export class IndexingFormComponent implements OnInit {
                     elem.values = arrValues;
                     elem.event = 'calcLimitDate';
                     if (!this.functions.empty(elem.default_value) && !this.adminMode) {
-                        this.calcLimitDate(elem, elem.default_value);
+                        await this.calcLimitDate(elem, elem.default_value);
                     }
-                    this.setAllowedValues(elem);
+                    await this.setAllowedValues(elem);
                     resolve(true);
                 })
             ).subscribe();
@@ -990,7 +990,7 @@ export class IndexingFormComponent implements OnInit {
                 this.mandatoryFile = data.indexingModel.mandatoryFile;
                 this.allDoctypes = data.indexingModel.allDoctypes;
                 if (data.indexingModel.master !== null) {
-                    this.getAllowedValues(data.indexingModel.master);
+                    await this.getAllowedValues(data.indexingModel.master);
                 }
                 let fieldExist: boolean;
                 if (data.indexingModel.fields.length === 0) {
@@ -1090,21 +1090,24 @@ export class IndexingFormComponent implements OnInit {
     }
 
     getAllowedValues(id: number) {
-        this.http.get(`../rest/indexingModels/${id}`).pipe(
-            tap((data: any) => {
-                this.allowedValues = data.indexingModel.fields.find((item: any) => item.identifier === 'doctype').allowedValues;
-                if (this.functions.empty(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues)) {
-                    this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues = this.allowedValues;
-                    if (this.allowedValues?.length > 0) {
-                        this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'));
+        return new Promise((resolve, reject) => {
+            this.http.get(`../rest/indexingModels/${id}`).pipe(
+                tap(async (data: any) => {
+                    this.allowedValues = data.indexingModel.fields.find((item: any) => item.identifier === 'doctype').allowedValues;
+                    if (this.functions.empty(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues)) {
+                        this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype').allowedValues = this.allowedValues;
+                        if (this.allowedValues?.length > 0) {
+                            await this.setAllowedValues(this['indexingModels_mail'].find((item: any) => item.identifier === 'doctype'));
+                        }
                     }
-                }
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     enableField(field: any, enable: boolean) {
@@ -1285,66 +1288,75 @@ export class IndexingFormComponent implements OnInit {
     }
 
     calcLimitDate(field: any, value: any) {
-        let limitDate: any = null;
-        const objToSend: any = {
-            doctype: value,
-            priority: this.arrFormControl['priority']?.value
-        };
-        if (this.functions.empty(this.arrFormControl['priority']?.value)) {
-            delete objToSend.priority;
-        }
-        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
-                tap((data: any) => {
-                    limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
-                    this.arrFormControl['processLimitDate'].setValue(limitDate);
-                }),
-                filter((data) => this.arrFormControl['priority'] !== undefined && data.processLimitDate !== null),
-                exhaustMap(() => this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } })),
-                tap((data: any) => {
-                    if (!this.functions.empty(this.arrFormControl['priority'])) {
-                        this.arrFormControl['priority'].setValue(data.priority);
-                    }
-                    this.setPriorityColor(null, data.priority);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        }
+        return new Promise((resolve, reject) => {
+            let limitDate: any = null;
+            const objToSend: any = {
+                doctype: value,
+                priority: this.arrFormControl['priority']?.value
+            };
+            if (this.functions.empty(this.arrFormControl['priority']?.value)) {
+                delete objToSend.priority;
+            }
+            if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
+                this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
+                    tap((data: any) => {
+                        limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
+                        this.arrFormControl['processLimitDate'].setValue(limitDate);
+                    }),
+                    filter((data) => this.arrFormControl['priority'] !== undefined && data.processLimitDate !== null),
+                    exhaustMap(() => this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } })),
+                    tap((data: any) => {
+                        if (!this.functions.empty(this.arrFormControl['priority'])) {
+                            this.arrFormControl['priority'].setValue(data.priority);
+                        }
+                        this.setPriorityColor(null, data.priority);
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else {
+                resolve(true);
+            }
+        });
     }
 
     calcLimitDateByPriority(field: any, value: any) {
-        if (this.functions.empty(value) && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
-            this.arrFormControl['processLimitDate'].setValue(null);
-            return;
-        }
-        let limitDate: any = null;
-        const objToSend: any = {
-            priority: value,
-            doctype: this.arrFormControl['doctype']?.value
-        };
-        if (!this.functions.empty(objToSend.priority) && this.functions.empty(this.arrFormControl['doctype']?.value)) {
-            delete objToSend.doctype;
-        } else if (this.functions.empty(objToSend.priority) && !this.functions.empty(this.arrFormControl['doctype']?.value)) {
-            delete objToSend.priority;
-        }
-        if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
-            this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
-                tap((data: any) => {
-                    limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
-                    this.arrFormControl['processLimitDate'].setValue(limitDate);
-                    this.setPriorityColor(field, value);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        } else {
-            this.setPriorityColor(field, value);
-        }
+        return new Promise((resolve, reject) => {
+            if (this.functions.empty(value) && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
+                this.arrFormControl['processLimitDate'].setValue(null);
+                return;
+            }
+            let limitDate: any = null;
+            const objToSend: any = {
+                priority: value,
+                doctype: this.arrFormControl['doctype']?.value
+            };
+            if (!this.functions.empty(objToSend.priority) && this.functions.empty(this.arrFormControl['doctype']?.value)) {
+                delete objToSend.doctype;
+            } else if (this.functions.empty(objToSend.priority) && !this.functions.empty(this.arrFormControl['doctype']?.value)) {
+                delete objToSend.priority;
+            }
+            if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
+                this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
+                    tap((data: any) => {
+                        limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
+                        this.arrFormControl['processLimitDate'].setValue(limitDate);
+                        this.setPriorityColor(field, value);
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else {
+                this.setPriorityColor(field, value);
+                resolve(true);
+            }
+        });
     }
 
     setPriorityColor(field: any, value: any) {
@@ -1387,35 +1399,42 @@ export class IndexingFormComponent implements OnInit {
     }
 
     setAllowedValues(field: any, afterSaveEvent: boolean = false) {
-        if (!this.functions.empty(field.allowedValues)) {
-            field.values.filter((val: any) => !val.isTitle).forEach((item: any) => {
-                item.disabled = field.allowedValues.indexOf(item.id) === -1;
-            });
-        }
-        if (!this.adminMode && field.identifier === 'doctype') {
-            this.checkDisabledValues(field, afterSaveEvent);
-        }
+        return new Promise(async (resolve) => {
+            if (!this.functions.empty(field.allowedValues)) {
+                field.values.filter((val: any) => !val.isTitle).forEach((item: any) => {
+                    item.disabled = field.allowedValues.indexOf(item.id) === -1;
+                });
+            }
+            if (!this.adminMode && field.identifier === 'doctype') {
+                await this.checkDisabledValues(field, afterSaveEvent);
+            }
+            resolve(true);
+        });
     }
 
     checkDisabledValues(field: any, afterSaveEvent: boolean = false) {
-        if (!this.functions.empty(this.resId) && !afterSaveEvent) {
-            this.http.get(`../rest/resources/${this.resId}`).pipe(
-                tap ((data: any) => {
-                    if (!this.functions.empty(data['doctype']) && field.allowedValues?.indexOf(data['doctype']) === -1) {
-                        field.values.find((item: any) => item.id === data['doctype']).disabled = false;
-                    }
-                }),
-                finalize(() => {
-                    this.formatData(field);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        } else {
-            this.formatData(field);
-        }
+        return new Promise((resolve) => {
+            if (!this.functions.empty(this.resId) && !afterSaveEvent) {
+                this.http.get(`../rest/resources/${this.resId}`).pipe(
+                    tap ((data: any) => {
+                        if (!this.functions.empty(data['doctype']) && field.allowedValues?.indexOf(data['doctype']) === -1) {
+                            field.values.find((item: any) => item.id === data['doctype']).disabled = false;
+                        }
+                    }),
+                    finalize(() => {
+                        this.formatData(field);
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else {
+                this.formatData(field);
+                resolve(true);
+            }
+        });
     }
 
     formatData(field: any) {
