@@ -989,12 +989,9 @@ export class IndexingFormComponent implements OnInit {
                 this.currentCategory = data.indexingModel.category;
                 this.mandatoryFile = data.indexingModel.mandatoryFile;
                 this.allDoctypes = data.indexingModel.allDoctypes;
-                if (data.indexingModel.master !== null) {
-                    await this.getAllowedValues(data.indexingModel.master);
-                }
                 let fieldExist: boolean;
                 if (data.indexingModel.fields.length === 0) {
-                    this.initFields();
+                    await this.initFields();
                     this.notify.error(this.translate.instant('lang.noFieldInModelMsg'));
                 } else {
                     data.indexingModel.fields.forEach((field: any) => {
@@ -1026,7 +1023,7 @@ export class IndexingFormComponent implements OnInit {
                                     if (['select', 'radio'].indexOf(field.type) > -1) {
                                         field.default_value = field.values.map((item: any) => item.id).find((elem: any) => elem.indexOf(field.default_value) > -1) ? field.default_value : null;
                                     } else if (field.type === 'checkbox') {
-                                        field.default_value = field.values.map((item: any) => item.id).filter((element: any) => field.default_value.incoming(element));
+                                        field.default_value = field.values.map((item: any) => item.id).filter((element: any) => field.default_value.includes(element));
                                     }
                                 }
                             } else {
@@ -1079,8 +1076,10 @@ export class IndexingFormComponent implements OnInit {
                         this.indexingModelClone.fields.find((field: any) => field.identifier === 'processLimitDate').enabled = false;
                     }
                 });
+                if (data.indexingModel.master !== null) {
+                    await this.getAllowedValues(data.indexingModel.master);
+                }
                 this.createForm();
-
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
