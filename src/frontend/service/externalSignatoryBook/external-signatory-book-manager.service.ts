@@ -204,4 +204,8 @@ export class ExternalSignatoryBookManagerService {
     getOtpConnectors(): any[] {
         return this.serviceInjected?.otpConnectors;
     }
+
+    canAttachSummarySheet(visaWorkflow: any[]): boolean {
+        return this.serviceInjected?.canAttachSummarySheet(visaWorkflow);
+    }
 }

@@ -2740,5 +2740,6 @@
     "processLimitDatetoggleDisableDesc": "L'activation ou la désactivation du champ est appliquée à la fois lors de l'indexation et dans la fiche de traitement du courrier.",
     "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour tous les courriels sortants",
     "labelBAN":  "Base Adresse Nationale",
-    "labelSectors":  "Secteurs"
+    "labelSectors":  "Secteurs",
+    "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>"
 }

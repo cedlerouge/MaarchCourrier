@@ -218,6 +218,16 @@ export class FastParapheurService {
         return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0 && this.workflowTypes.length > 0 && this.signatureModes.length > 0;
     }
 
+    canAttachSummarySheet(visaWorkflow: any[]): boolean {
+        if (visaWorkflow.length > 0) {
+            // If an external OTP FAST user exists, the summary sheet cannot be attached
+            if (visaWorkflow.filter((item: any) => !this.functions.empty(item?.externalInformations)).length > 0 && visaWorkflow.filter((item: any) => item.externalInformations?.type === 'fast').length >= 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     synchronizeSignatures(data: any) {
         /**
          * Synchronize signatures
