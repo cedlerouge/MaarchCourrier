@@ -675,7 +675,13 @@ export class CriteriaToolComponent implements OnInit {
     saveSearchTemplate() {
         const query: any = [];
         this.currentCriteria.forEach((field: any, index: number) => {
-            query.push({ 'identifier': field.identifier, 'values': field.control.value });
+            query.push(
+                {
+                    identifier: field.identifier,
+                    type: field.type,
+                    values: field.control.value
+                }
+            );
         });
 
         query.push({ 'identifier': 'meta', 'values': this.searchTermControl.value });
