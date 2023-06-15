@@ -26,11 +26,13 @@ export class AddSearchTemplateModalComponent {
 
     onSubmit() {
         Object.keys(this.data.searchTemplate.query).map((data: any) => {
-            if (!this.functions.empty(this.data.searchTemplate.query[data].values?.start)) {
-                this.data.searchTemplate.query[data].values.start = this.datePipe.transform(this.data.searchTemplate.query[data].values.start, 'y-MM-dd');
-            }
-            if (!this.functions.empty(this.data.searchTemplate.query[data].values?.end)) {
-                this.data.searchTemplate.query[data].values.end = this.datePipe.transform(this.data.searchTemplate.query[data].values.end, 'y-MM-dd');
+            if (this.data.searchTemplate.query[data].type === 'date') {
+                if (!this.functions.empty(this.data.searchTemplate.query[data].values?.start)) {
+                    this.data.searchTemplate.query[data].values.start = this.datePipe.transform(this.data.searchTemplate.query[data].values.start, 'y-MM-dd');
+                }
+                if (!this.functions.empty(this.data.searchTemplate.query[data].values?.end)) {
+                    this.data.searchTemplate.query[data].values.end = this.datePipe.transform(this.data.searchTemplate.query[data].values.end, 'y-MM-dd');
+                }
             }
         });
         this.http.post('../rest/searchTemplates', this.data.searchTemplate).pipe(
