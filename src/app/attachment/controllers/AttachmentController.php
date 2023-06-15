@@ -170,7 +170,7 @@ class AttachmentController
         if (empty($attachment) || !in_array($attachment['status'], ['A_TRA', 'TRA', 'SEND_MASS'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
         }
-        if (!AttachmentController::canUpdateAttachment(['attachment' => $attachment]) && SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
+        if (!AttachmentController::canUpdateAttachment(['attachment' => $attachment]) && !SignatureBookController::isResourceInSignatureBook(['resId' => $attachment['resIdMaster'], 'userId' => $GLOBALS['id'], 'canUpdateDocuments' => true])) {
             return $response->withStatus(403)->withJson(['errors' => 'Insufficient privilege']);
         }
         if (!ResController::hasRightByResId(['resId' => [$attachment['resIdMaster']], 'userId' => $GLOBALS['id']])) {
@@ -417,7 +417,7 @@ class AttachmentController
 
     public function canUpdateAttachment(array $args) {
         $attachment = $args['attachment'];
-    
+
         $canUpdate = $GLOBALS['id'] == $attachment['typist'];
 
         $attachmentPrivilege = '';
@@ -464,7 +464,7 @@ class AttachmentController
 
     public function canDeleteAttachment(array $args) {
         $attachment = $args['attachment'];
-    
+
         $canDelete = $GLOBALS['id'] == $attachment['typist'];
 
         $attachmentPrivilege = '';
@@ -623,7 +623,7 @@ class AttachmentController
 
         if (empty($tnlAdr)) {
             ConvertThumbnailController::convert(['type' => 'attachment', 'resId' => $args['id']]);
-            
+
             $tnlAdr = AdrModel::getTypedAttachAdrByResId([
                 'select'    => ['docserver_id', 'path', 'filename'],
                 'resId'     => $args['id'],
@@ -757,12 +757,12 @@ class AttachmentController
                 ]);
                 return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
             }
-            
+
         }
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
     }
-    
+
     public function getFileContent(Request $request, Response $response, array $args)
     {
         if (!Validator::intVal()->validate($args['id'])) {
@@ -943,7 +943,7 @@ class AttachmentController
                 $filename .= '_V1';
             }
         }
-        
+
         HistoryController::add([
             'tableName' => 'res_attachments',
             'recordId'  => $args['id'],
@@ -1145,7 +1145,7 @@ class AttachmentController
                     'path'  => $pathToAttachment,
                     'data'  => ['userId' => $args['userId'], 'recipientId' => $recipient['item_id'], 'recipientType' => 'contact']
                 ]);
-    
+
                 $data = [
                     'title'             => $attachment['title'],
                     'encodedFile'       => $mergedDocument['encodedDocument'],
