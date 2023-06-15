@@ -51,7 +51,7 @@ export class ContactAutocompleteComponent implements OnInit {
     @Output() removeContactEvent = new EventEmitter<any>();
     @Output() afterContactSelected = new EventEmitter<any>();
 
-    @ViewChild('autoCompleteInput', { static: true }) autoCompleteInput: ElementRef;
+    @ViewChild('autoCompleteInput', { static: false }) autoCompleteInput: ElementRef;
 
     loading: boolean = false;
     loadingValues: boolean = true;

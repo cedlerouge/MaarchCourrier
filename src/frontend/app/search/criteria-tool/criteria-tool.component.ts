@@ -256,14 +256,14 @@ export class CriteriaToolComponent implements OnInit {
                         type: field.type,
                         values: field.control.value
                     };
-                } else {
-                    if (['recipients', 'senders'].indexOf(field.identifier) > -1 || field.type === 'contact') {
-                        if (!this.functions.empty(this.appContactAutocomplete.toArray().filter((component: any) => component.id === field.identifier)[0].getInputValue())) {
-                            objCriteria[field.identifier] = {
-                                type: field.type,
-                                values: [this.appContactAutocomplete.toArray().filter((component: any) => component.id === field.identifier)[0].getInputValue()]
-                            };
-                        }
+                }
+
+                if (['recipients', 'senders'].indexOf(field.identifier) > -1 || field.type === 'contact') {
+                    if (!this.functions.empty(this.appContactAutocomplete.toArray().filter((component: any) => component.id === field.identifier)[0].getInputValue())) {
+                        objCriteria[field.identifier] = {
+                            type: field.type,
+                            values: [this.appContactAutocomplete.toArray().filter((component: any) => component.id === field.identifier)[0].getInputValue()]
+                        };
                     }
                 }
             }
@@ -675,7 +675,13 @@ export class CriteriaToolComponent implements OnInit {
     saveSearchTemplate() {
         const query: any = [];
         this.currentCriteria.forEach((field: any, index: number) => {
-            query.push({ 'identifier': field.identifier, 'values': field.control.value });
+            query.push(
+                {
+                    identifier: field.identifier,
+                    type: field.type,
+                    values: field.control.value
+                }
+            );
         });
 
         query.push({ 'identifier': 'meta', 'values': this.searchTermControl.value });

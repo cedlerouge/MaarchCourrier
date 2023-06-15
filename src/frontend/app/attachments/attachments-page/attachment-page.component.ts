@@ -111,7 +111,10 @@ export class AttachmentPageComponent implements OnInit {
                     const isAttachmentDeleteAllowed = data.canDelete;
                     const isSignOrFrozenStatus = data.status === 'SIGN' || data.status === 'FRZ';
                     const hasPrivilege: boolean = (isAttachmentUpdateAllowed || isAttachmentDeleteAllowed) && !isSignOrFrozenStatus;
-                    if (hasPrivilege) {
+
+                    if (!this.functions.empty(this.data.editMode)) {
+                        this.editMode = this.data.editMode;
+                    } else if (hasPrivilege) {
                         this.editMode = true;
                     }
 

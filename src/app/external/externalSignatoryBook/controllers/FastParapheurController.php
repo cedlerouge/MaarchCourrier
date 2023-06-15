@@ -451,6 +451,12 @@ class FastParapheurController
             $refusedState = $args['config']['data']['refusedState'] ?? null;
             $refusedVisaState = $args['config']['data']['refusedVisaState'] ?? null;
             foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
+                $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
+                    'config'        => $args['config'],
+                    'valueResponse' => $valueResponse,
+                    'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']
+                ]);
+
                 if ($valueResponse['stateName'] == $validatedState || $valueResponse['stateName'] == $validatedVisaState) {
                     LogsController::add([
                         'isTech'    => true,
@@ -498,18 +504,17 @@ class FastParapheurController
                     }
 
                     if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
-                        $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
-                            'config'        => $args['config'],
-                            'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
-                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
-                    } elseif (!empty($valueResponse['userFastId'])){
-                        $maarchUser = UserModel::get([
-                            'select' => ['id'],
-                            'where'  => ['external_id->>\'fastParapheur\' = ?'],
-                            'data'   => [$valueResponse['userFastId']]
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'] ?? null;
+                    } elseif (!empty($valueResponse['userFastId'] ?? null)) {
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'] ?? null;
+                        $args['idsToRetrieve'][$version][$resId]['typist'] = ($signatoryInfo['id'] ?? $args['idsToRetrieve'][$version][$resId]['typist']) ?? null;
+                    } else {
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
+                        FastParapheurController::updateDocumentExternalStateSignatoryUser([
+                            'id'            => $resId,
+                            'type'          => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
+                            'signatoryUser' => $signatoryInfo['name']
                         ]);
-                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $maarchUser[0]['id'] ?? null;
-                        $args['idsToRetrieve'][$version][$resId]['typist'] = ($maarchUser[0]['id'] ?? $args['idsToRetrieve'][$version][$resId]['typist']) ?? null;
                     }
                     LogsController::add([
                         'isTech'    => true,
@@ -521,10 +526,6 @@ class FastParapheurController
                     ]);
                     break;
                 } elseif ($valueResponse['stateName'] == $refusedState || $valueResponse['stateName'] == $refusedVisaState) {
-                    $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
-                        'config'        => $args['config'],
-                        'valueResponse' => $valueResponse,
-                        'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']]);
                     $response = FastParapheurController::getRefusalMessage([
                         'config'        => $args['config'],
                         'documentId'    => $value['external_id'],
@@ -551,8 +552,35 @@ class FastParapheurController
                 }
             }
         }
-        
+
         return $args['idsToRetrieve'];
+    }
+
+    public static function updateDocumentExternalStateSignatoryUser(array $args)
+    {
+        ValidatorModel::notEmpty($args, ['id', 'type', 'signatoryUser']);
+        ValidatorModel::intType($args, ['id']);
+        ValidatorModel::stringType($args, ['type', 'signatoryUser']);
+
+        $signatoryUser = $args['signatoryUser'];
+
+        if ($args['type'] == 'resource') {
+            ResModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$args['id']],
+                'postSet' => [
+                    'external_state' => "jsonb_set(external_state::jsonb, '{signatoryUser}', '\"$signatoryUser\"')"
+                ]
+            ]);
+        } else {
+            AttachmentModel::update([
+                'where'   => ['res_id = ?'],
+                'data'    => [$args['id']],
+                'postSet' => [
+                    'external_state' => "jsonb_set(external_state::jsonb, '{signatoryUser}', '\"$signatoryUser\"')"
+                ]
+            ]);
+        }
     }
 
     /**
@@ -687,7 +715,13 @@ class FastParapheurController
                 'data'      => [$args['resId'], 'VISA_CIRCUIT']
             ])[0];
         } else {
-            if (!empty($args['valueResponse']['userFullname'])) {
+            if (!empty($args['valueResponse']['userFastId'] ?? null)) {
+                $signatoryInfo = UserModel::get([
+                    'select' => ['id', "CONCAT(firstname, ' ', lastname) as name"],
+                    'where'  => ['external_id->>\'fastParapheur\' = ?'],
+                    'data'   => [$args['valueResponse']['userFastId']]
+                ])[0];
+            } elseif (!empty($args['valueResponse']['userFullname'])) {
                 $search = $args['valueResponse']['userFullname'];
 
                 $fpUsers = FastParapheurController::getUsers([

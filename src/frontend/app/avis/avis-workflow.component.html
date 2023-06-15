@@ -41,7 +41,7 @@
                     </mat-autocomplete>
                 </mat-form-field>
             </div>
-            <div *ngIf="avisWorkflow.items.length > 0 && showListModels" class="col-md-1">
+            <div *ngIf="avisWorkflow.items.length > 0 && showListModels && adminMode" class="col-md-1">
                 <button mat-icon-button color="primary" style="margin-left: -22px"
                     (click)="$event.stopPropagation();openPromptSaveModel()" title="{{'lang.saveAsPrivateModel' | translate}}">
                     <mat-icon class="fa fa-copy" style="font-size: 20px;"></mat-icon>

@@ -40,7 +40,7 @@ export class RedirectActionComponent implements OnInit {
         'serialId': 0,
         'entity_label': ''
     };
-    redirectMode = '';
+    redirectMode: string = '';
     userListRedirect: any[] = [];
     userRedirectCtrl = new UntypedFormControl();
     filteredUserRedirect: Observable<any[]>;
@@ -95,7 +95,6 @@ export class RedirectActionComponent implements OnInit {
                     this.userListRedirect = data.users;
                     if (data.autoRedirectToUser) {
                         this.actionKeyword = 'autoRedirectToUser';
-                    } else {
                         this.userListRedirect.push(this.formatUser());
                     }
                     this.entities = data['entities'];

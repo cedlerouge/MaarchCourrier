@@ -252,6 +252,7 @@ class IxbusController
             }
 
             $bodyData['nom']  = $mainResource['subject'];
+            $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -263,12 +264,16 @@ class IxbusController
                 'config'   => $aArgs['config'],
                 'folderId' => $folderId,
                 'filePath' => $filePath,
-                'fileName' => TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf',
+                'fileName' => $fileName,
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
                 return ['error' => $addedFile['message']];
             }
+
+            $attachmentsData = array_filter($attachmentsData, function ($attachment) use ($filePath, $fileName) {
+                return !($attachment['filePath'] === $filePath && $attachment['fileName'] === $fileName);
+            });
 
             foreach ($attachmentsData as $attachmentData) {
                 $addedFile = IxBusController::addFileToFolder([
