@@ -183,9 +183,6 @@ if [ $FIRST_TAG == 0 ]; then
     git checkout $RELEASE_BRANCH
 
     ### Update app version
-    jq ".version = \"$NEXT_NEXT_TAG\"" "package.json"
-    jq ".version = \"$NEXT_NEXT_TAG\"" "package-lock.json"
-
     sed -i '3s/"version": ".*"/"version": "'"$NEXT_NEXT_TAG"'"/' "package.json"
     sed -i '3s/"version": ".*"/"version": "'"$NEXT_NEXT_TAG"'"/' "package-lock.json"
 
