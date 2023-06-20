@@ -948,7 +948,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
             this.editor.async = false;
             this.editor.options = {
-                objectType: 'attachmentCreation',
+                objectType: this.mode === 'attachment' ? 'attachmentCreation' : 'resourceCreation',
                 objectId: template.id,
                 docUrl: 'rest/onlyOffice/mergedFile',
                 dataToMerge: this.resourceDatas
@@ -974,7 +974,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         } else {
             this.editor.async = true;
             this.editor.options = {
-                objectType: 'attachmentCreation',
+                objectType: this.mode === 'attachment' ? 'attachmentCreation' : 'resourceCreation',
                 objectId: template.id,
                 cookie: document.cookie,
                 authToken: this.authService.getToken(),
