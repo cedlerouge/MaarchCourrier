@@ -182,6 +182,17 @@ if [ $FIRST_TAG == 0 ]; then
     git pull origin $RELEASE_BRANCH
     git checkout $RELEASE_BRANCH
 
+    ### Update app version
+    jq ".version = \"$NEXT_NEXT_TAG\"" "package.json"
+    jq ".version = \"$NEXT_NEXT_TAG\"" "package-lock.json"
+
+    sed -i '3s/"version": ".*"/"version": "'"$NEXT_NEXT_TAG"'"/' "package.json"
+    sed -i '3s/"version": ".*"/"version": "'"$NEXT_NEXT_TAG"'"/' "package-lock.json"
+
+    git add -f package.json package-lock.json
+    git commit -m "Update next tag version to $NEXT_NEXT_TAG"
+    git push
+
     TAGS_COMP="$LATEST_TAG..$NEXT_TAG"
 
     REF_UPDATED=$(git log $TAGS_COMP --pretty=format:'%s' --grep='Update referential' --all-match)
