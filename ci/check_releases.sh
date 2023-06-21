@@ -12,17 +12,7 @@ if [ $EXIST == 1 ]
 then
   echo "2301_releases already exist, skipping ..."
 else
-  echo "2301_releases branch does not exist, creating ..."
-  
-  # Create 2301_releases branche
-  echo "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?branch=2301_releases&ref=main"
-
-  curl --request POST --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?branch=2301_releases&ref=main"
-
-  # Create 2301_releases mr
-  BODY="{\"id\":\"$CI_PROJECT_ID\",\"source_branch\":\"2301_releases\",\"target_branch\":\"main\",\"title\":\"Next tag release\",\"description\":\"\",\"remove_source_branch\":\"true\",\"squash\":\"false\"}"
-
-  curl -v -H "PRIVATE-TOKEN: $TOKEN_GITLAB" -H "Content-Type: application/json" -X POST -d "$BODY" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests"
+  echo "Fetch all tags..."
 
   FIRST_TAG=0
 
@@ -78,25 +68,40 @@ else
       NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION"
       NEXT_NEXT_TAG="$BRANCH_TAG_VERSION.$MAJOR_TAG_VERSION.$VERSION"
   fi
+
+  echo "2301_releases branch does not exist, creating ..."
+
+  # Create 2301_releases branche
+  BRANCH_CREATION_URL="https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?branch=2301_releases&ref=main"
+  echo "$BRANCH_CREATION_URL"
+
+  curl --request POST --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "$BRANCH_CREATION_URL"
+
+  # Create 2301_releases mr
+  MR_CREATION_URL="https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/merge_requests"
+  BODY="{\"id\":\"$CI_PROJECT_ID\",\"source_branch\":\"2301_releases\",\"target_branch\":\"main\",\"title\":\"Next tag release\",\"description\":\"\",\"remove_source_branch\":\"true\",\"squash\":\"false\"}"
+
+  curl -v -H "PRIVATE-TOKEN: $TOKEN_GITLAB" -H "Content-Type: application/json" -X POST -d "$BODY" "$MR_CREATION_URL"
+
   # Update files version
   git config --global user.email "$GITLAB_USER_EMAIL" && git config --global user.name "$GITLAB_USER_NAME" && git config core.fileMode false
-
   git remote set-url origin "https://gitlab-ci-token:${TOKEN_GITLAB}@${GITLAB_URL}/${CI_PROJECT_PATH}.git"
-
   git fetch
   git branch -D $TAG_BASE"_releases"
   git pull origin $TAG_BASE"_releases"
   git checkout $TAG_BASE"_releases"
+
+  # Update app version
   cp package.json tmp_package.json
+  cp package-lock.json tmp_package-lock.json
 
-  jq -r ".version |= \"$NEXT_NEXT_TAG\"" tmp_package.json >package.json
+  jq ".version = \"$NEXT_NEXT_TAG\"" tmp_package.json > package.json
+  jq ".version = \"$NEXT_NEXT_TAG\"" tmp_package-lock.json > package-lock.json
 
-  rm tmp_package.json
+  rm tmp_package.json tmp_package-lock.json
 
-  git add -f package.json
-
+  git add -f package.json package-lock.json
   git commit -m "Update next tag version files : $NEXT_NEXT_TAG"
-
   git push
 fi
 
