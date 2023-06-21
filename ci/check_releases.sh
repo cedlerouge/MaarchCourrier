@@ -3,7 +3,7 @@ TAG_BASE="2301"
 EXIST=0
 for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/branches?search=2301_releases" | jq -r '.[] | @base64'); do
   _jq() {
-    echo ${row} | base64 --decode | jq -r ${1}
+    echo "${row}" | base64 --decode | jq -r "${1}"
   }
   EXIST=$((EXIST + 1))
 done
@@ -18,12 +18,12 @@ else
 
   for row in $(curl --header "PRIVATE-TOKEN: $TOKEN_GITLAB" "https://labs.maarch.org/api/v4/projects/$CI_PROJECT_ID/repository/tags?search=^$TAG_BASE" | jq -r '.[] | @base64'); do
       _jq() {
-          echo ${row} | base64 --decode | jq -r ${1}
+          echo "${row}" | base64 --decode | jq -r "${1}"
       }
 
       NAME=$(_jq '.name')
 
-      IS_TMA=$(echo $NAME | grep -o '[.]*_TMA[.]*')
+      IS_TMA=$(echo "$NAME" | grep -o '[.]*_TMA[.]*')
 
       if [[ -n $IS_TMA ]]; then
           echo "TMA tag branch : $NAME ! Skipping..."
@@ -40,10 +40,10 @@ else
     NEXT_TAG="$TAG_BASE.0.0"
     NEXT_NEXT_TAG="$TAG_BASE.0.1"
   else
-      SORTED_TAGS=($(echo ${TAGS[*]} | tr " " "\n" | sort -Vr))
-      LATEST_TAG=$(echo ${SORTED_TAGS[0]})
+      SORTED_TAGS=($(echo "${TAGS[*]}" | tr " " "\n" | sort -Vr))
+      LATEST_TAG=$(echo "${SORTED_TAGS[0]}")
 
-      structures=$(echo $LATEST_TAG | tr "." "\n")
+      structures=$(echo "$LATEST_TAG" | tr "." "\n")
 
       IT=1
       for item in $structures; do
