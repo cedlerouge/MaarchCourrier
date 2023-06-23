@@ -531,7 +531,7 @@ class MergeController
                     $tbs->MergeField('attachments', ['chronoBarCode' => $barcodeFile, 'chronoQrCode' => $qrcodeFile]);
                 }
                 $tbs->PlugIn(OPENTBS_SELECT_MAIN);
-            } elseif ($extension == 'docx' || $extension == 'doc') {
+            } elseif ($extension == 'docx') {
                 $tbs->LoadTemplate($args['path'], OPENTBS_ALREADY_UTF8);
                 $templates = ['word/header1.xml', 'word/header2.xml', 'word/header3.xml', 'word/footer1.xml', 'word/footer2.xml', 'word/footer3.xml'];
                 foreach ($templates as $template) {
