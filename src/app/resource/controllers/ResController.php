@@ -276,7 +276,7 @@ class ResController extends ResourceControlController
 
     public function canUpdateFile(array $args) {
         $resource = $args['resource'];
-    
+
         $canUpdate = $GLOBALS['id'] == $resource['typist'];
 
         $resourcePrivilege = '';
@@ -600,7 +600,7 @@ class ResController extends ResourceControlController
             ]);
 
             $signatoryId = $listInstance[0]['item_id'] ?? $creatorId;
-    
+
             return $response->withJson([
                 'encodedDocument'   => base64_encode($fileContent),
                 'originalFormat'    => $originalFormat,
@@ -740,9 +740,7 @@ class ResController extends ResourceControlController
         $document = ResModel::getById(['select' => ['docserver_id', 'path', 'filename', 'category_id', 'version', 'fingerprint', 'subject'], 'resId' => $args['resId']]);
         if (empty($document)) {
             return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
-        }
-
-        if (empty($document['filename'])) {
+        } elseif (empty($document['filename'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Document has no file']);
         }
         $subject = $document['subject'];
@@ -779,7 +777,13 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
         }
 
-        $fileContent = file_get_contents($pathToDocument);
+        $pathInfo = pathinfo($pathToDocument);
+        if ($pathInfo['extension'] == 'pdf') {
+            $fileContent = WatermarkController::watermarkResource(['resId' => $args['resId'], 'path' => $pathToDocument]);
+        }
+        if (empty($fileContent)) {
+            $fileContent = file_get_contents($pathToDocument);
+        }
         if ($fileContent === false) {
             return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
         }
@@ -798,7 +802,6 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => $mimeAndSize['errors']]);
         }
         $mimeType = $mimeAndSize['mime'];
-        $pathInfo = pathinfo($pathToDocument);
         $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
         if ($data['mode'] == 'base64') {
