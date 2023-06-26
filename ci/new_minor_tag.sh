@@ -182,6 +182,8 @@ if [ $FIRST_TAG == 0 ]; then
     git pull origin $RELEASE_BRANCH
     git checkout $RELEASE_BRANCH
 
+    touch $FINAL_LOG
+
     TAGS_COMP="$LATEST_TAG..$NEXT_TAG"
 
     REF_UPDATED=$(git log $TAGS_COMP --pretty=format:'%s' --grep='Update referential' --all-match)
