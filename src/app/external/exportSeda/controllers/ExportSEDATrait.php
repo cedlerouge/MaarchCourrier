@@ -445,6 +445,10 @@ trait ExportSEDATrait
         $sender = json_decode($args['data']['sender'], true);
         $data   = "Courriel n°" . $args['data']['id'] . "\nDe : " . $sender['email'] . "\nPour : " . implode(", ", json_decode($args['data']['recipients'], true)) . "\nObjet : " . $args['data']['object'] . "\n\n" . strip_tags(html_entity_decode($body));
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
@@ -511,6 +515,10 @@ trait ExportSEDATrait
         ]);
         $fieldsIdentifier = array_column($indexingFields, 'identifier');
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
 

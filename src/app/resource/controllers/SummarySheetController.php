@@ -73,6 +73,10 @@ class SummarySheetController
             'groupBy' => ['model_id']
         ]);
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
 
@@ -430,7 +434,7 @@ class SummarySheetController
                         $docserverPathFile = str_replace('//', '/', $docserverPathFile);
                         $docserverPathFile = str_replace('#', '/', $docserverPathFile);
                     }
-            
+
                     $typistLabel  = UserModel::getLabelledUserById(['id' => $resource['typist']]);
                     $fulltextInfo = ResModel::getById(['select' => ['fulltext_result'], 'resId' => $resource['res_id']]);
 
@@ -441,13 +445,13 @@ class SummarySheetController
                     $pdf->SetFont('', 'B', 11);
                     $pdf->Cell(0, 15, $unit['label'], 0, 2, 'L', false);
                     $pdf->SetY($pdf->GetY() + 2);
-    
+
                     $pdf->SetFont('', '', 10);
                     $pdf->MultiCell($widthNotes, 30, _TYPIST . " : {$typistLabel}", 1, 'L', false, 0, '', '', true, 0, true);
 
                     $creationDate = TextFormatModel::formatDate($resource['creation_date'], 'd-m-Y');
                     $pdf->MultiCell($widthNotes, 30, _CREATION_DATE . " : {$creationDate}", 1, 'L', false, 1, '', '', true, 0, true);
-    
+
                     $nextLine = 1;
                     if (!empty($resource['filesize'])) {
                         $resource['filesize'] = StoreController::getFormattedSizeFromBytes(['size' => $resource['filesize']]);
@@ -489,16 +493,16 @@ class SummarySheetController
                     // Get all the ids of technical custom fields
                     $customFields    = CustomFieldModel::get(['where' => ['mode = ?'], 'data' => ['technical'], 'orderBy' => ['label']]);
                     $customFieldsIds = array_column($customFields, 'id');
-    
+
                     if (!empty($customFieldsIds)) {
                         $customFieldsRawValues = array_column($customFields, 'values', 'id');
                         $customFieldsRawTypes = array_column($customFields, 'type', 'id');
                         $customFields = array_column($customFields, 'label', 'id');
-    
+
                         $customFieldsValues = $customFieldsValues[0]['custom_fields'] ?? null;
                         $customFieldsValues = json_decode($customFieldsValues, true);
                     }
-    
+
                     $pdf->SetY($pdf->GetY() + 40);
                     if (($pdf->GetY() + 57) > $bottomHeight) {
                         $pdf->AddPage();
@@ -507,12 +511,12 @@ class SummarySheetController
                     $pdf->Cell(0, 15, $unit['label'], 0, 2, 'L', false);
                     $pdf->SetY($pdf->GetY() + 2);
                     $pdf->SetFont('', '', 10);
-    
+
                     $nextLine = 1;
                     if (!empty($customFieldsIds)) {
                         $fieldsType = CustomFieldModel::get(['select' => ['type', 'id'], 'where' => ['id in (?)'], 'data' => [$customFieldsIds]]);
                         $fieldsType = array_column($fieldsType, 'type', 'id');
-    
+
                         foreach ($customFieldsIds as $customFieldsId) {
                             $label = $customFields[$customFieldsId];
                             $rawValues = json_decode($customFieldsRawValues[$customFieldsId], true);
@@ -521,7 +525,7 @@ class SummarySheetController
                                     $rawValues['resId'] = $resource['res_id'];
                                 }
                                 $rawValues = CustomFieldModel::getValuesSQL($rawValues);
-    
+
                                 $rawValues = array_column($rawValues, 'label', 'key');
                                 if (is_array($customFieldsValues[$customFieldsId])) {
                                     foreach ($customFieldsValues[$customFieldsId] as $key => $value) {
@@ -553,7 +557,7 @@ class SummarySheetController
                             } else {
                                 $value = isset($customFieldsValues[$customFieldsId]) ? '<b>' . $customFieldsValues[$customFieldsId] . '</b>' : '<i>' . _UNDEFINED . '</i>';
                             }
-    
+
                             $nextLine = ($nextLine + 1) % 2;
                             $pdf->MultiCell($widthNotes, 30, $label . " : {$value}", 1, 'L', false, $nextLine, '', '', true, 0, true);
                             $pdf->SetFont('', '', 10);
@@ -925,6 +929,10 @@ class SummarySheetController
 
                 $parameter = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'traffic_record_summary_sheet']);
 
+                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+                if (file_exists($libPath)) {
+                    require_once($libPath);
+                }
                 $pdf2 = new Fpdi('P', 'pt');
                 $pdf2->setPrintHeader(false);
                 $pdf2->AddPage();

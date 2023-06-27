@@ -24,6 +24,7 @@ use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 
 class EntitySeparatorController
 {
@@ -61,6 +62,10 @@ class EntitySeparatorController
             }
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
 
@@ -94,10 +99,10 @@ class EntitySeparatorController
                     'black',                    // foreground color
                     [-2, -2, -2, -2]       // padding (use absolute or negative values as multiplication factors)
                 )->setBackgroundColor('white'); // background color
-                
+
                 $pdf->Image('@'.$bobj->getPngData(), 0, 40, 200, '', '', '', '', false, 300, 'C');
             }
-            
+
             $pdf->SetY($pdf->GetY() + 300);
             $pdf->Cell(0, 20, _PRINT_SEP_TITLE, 0, 2, 'C', false);
             $pdf->SetY($pdf->GetY() + 60);

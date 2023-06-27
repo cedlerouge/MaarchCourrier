@@ -305,6 +305,10 @@ class ExportController
             $orientation = 'L';
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi($orientation, 'pt');
         $pdf->setPrintHeader(false);
 

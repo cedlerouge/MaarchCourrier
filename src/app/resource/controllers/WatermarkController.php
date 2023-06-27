@@ -60,7 +60,7 @@ class WatermarkController
         if (!empty($libPath)) {
             require_once($libPath);
 
-            $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .rand(). "_watermark.pdf";
+            $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
             $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
             $document = \SetaPDF_Core_Document::loadByFilename($args['path'], $writer);
 
@@ -72,9 +72,15 @@ class WatermarkController
             $args['path'] = $flattenedFile;
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         try {
+            $watermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
+            file_put_contents($watermarkFile, file_get_contents($args['path']));
             $pdf = new Fpdi('P', 'pt');
-            $nbPages = $pdf->setSourceFile($args['path']);
+            $nbPages = $pdf->setSourceFile($watermarkFile);
             $pdf->setPrintHeader(false);
             for ($i = 1; $i <= $nbPages; $i++) {
                 $page = $pdf->importPage($i, 'CropBox');
@@ -165,7 +171,7 @@ class WatermarkController
         if (!empty($libPath)) {
             require_once($libPath);
 
-            $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .rand(). "_watermark.pdf";
+            $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
             $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
             $document = \SetaPDF_Core_Document::loadByFilename($args['path'], $writer);
 
@@ -177,9 +183,15 @@ class WatermarkController
             $args['path'] = $flattenedFile;
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         try {
+            $watermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
+            file_put_contents($watermarkFile, file_get_contents($args['path']));
             $pdf = new Fpdi('P', 'pt');
-            $nbPages = $pdf->setSourceFile($args['path']);
+            $nbPages = $pdf->setSourceFile($watermarkFile);
             $pdf->setPrintHeader(false);
             for ($i = 1; $i <= $nbPages; $i++) {
                 $page = $pdf->importPage($i, 'CropBox');

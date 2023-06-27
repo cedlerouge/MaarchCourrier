@@ -53,7 +53,7 @@ class NoteController
         }
 
         $notes = NoteModel::getByUserIdForResource(['select' => ['*'], 'resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'limit' => $limit]);
-        
+
         foreach ($notes as $key => $note) {
             $user = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $note['user_id']]);
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $note['user_id'], 'select' => ['entities.entity_label']]);
@@ -115,7 +115,7 @@ class NoteController
             'user_id'   => $GLOBALS['id'],
             'note_text' => $body['value']
         ]);
-    
+
         if (!empty($noteId) && !empty($body['entities'])) {
             foreach ($body['entities'] as $entity) {
                 NoteEntityModel::create(['item_id' => $entity, 'note_id' => $noteId]);
@@ -316,6 +316,10 @@ class NoteController
         ValidatorModel::notEmpty($aArgs, ['ids']);
         ValidatorModel::arrayType($aArgs, ['ids']);
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
