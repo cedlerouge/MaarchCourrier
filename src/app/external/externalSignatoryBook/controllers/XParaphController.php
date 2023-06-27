@@ -76,7 +76,7 @@ class XParaphController
         foreach ($attachments as $value) {
             $resId      = $value['res_id'];
             $collId     = 'attachments_coll';
-            
+
             $adrInfo       = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
             $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
@@ -97,7 +97,7 @@ class XParaphController
 
             $filesize    = filesize($filePath);
             $fileContent = file_get_contents($filePath);
-            
+
             $xmlStep = '';
             foreach ($aArgs['steps'] as $key => $step) {
                 $order = $key + 1;
@@ -155,10 +155,10 @@ class XParaphController
                     'select'    => ['external_id'],
                     'id'        => $resId
                 ]);
-    
+
                 $externalId = json_decode($aAttachment[0]['external_id'], true);
                 $externalId['xparaphDepot'] = ['login' => $aArgs['info']['login'], 'siret' => $aArgs['info']['siret']];
-        
+
                 AttachmentModel::update([
                     'set'       => ['external_id' => json_encode($externalId)],
                     'where'     => ['res_id = ?'],
@@ -256,7 +256,11 @@ class XParaphController
             ]);
             unlink($pathFilename);
             $pdfToSend = $documentConverted['fullFilename'];
-            
+
+            $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+            if (file_exists($libPath)) {
+                require_once($libPath);
+            }
             $pdf = new Fpdi('P', 'pt');
             $pdf->setPrintHeader(false);
             $nbPages = $pdf->setSourceFile($pdfToSend);
@@ -377,7 +381,7 @@ class XParaphController
             foreach ($userWorkflow as $value) {
                 $workflow[] = $value;
             }
-    
+
             return $response->withJson(['workflow' => $workflow]);
         }
     }
@@ -432,7 +436,7 @@ class XParaphController
                     $file      = base64_decode($processedFile['zip']);
                     $unzipName = 'tmp_file_' .rand(). '_xParaph_' .rand();
                     $tmpName   = $unzipName . '.zip';
-            
+
                     file_put_contents($tmpPath . $tmpName, $file);
 
                     $zip = new \ZipArchive();
@@ -459,7 +463,7 @@ class XParaphController
                     $file      = base64_decode($processedFile['zip']);
                     $unzipName = 'tmp_file_' .rand(). '_xParaph_' .rand();
                     $tmpName   = $unzipName . '.zip';
-            
+
                     file_put_contents($tmpPath . $tmpName, $file);
 
                     $zip = new \ZipArchive();
@@ -619,7 +623,7 @@ class XParaphController
         }
 
         $externalId = json_decode($user['external_id'], true);
-        
+
         $accountFound = false;
         foreach ($externalId['xParaph'] as $key => $value) {
             if ($value['login'] == $data['login'] && $value['siret'] == $data['siret']) {
@@ -662,7 +666,7 @@ class XParaphController
 
         $externalId = json_decode($user['external_id'], true);
         $externalId['xParaph'][] = ["login" => $body['login'], "siret" => $body['siret']];
-        
+
         UserModel::updateExternalId(['id' => $user['id'], 'externalId' => json_encode($externalId)]);
 
         HistoryController::add([

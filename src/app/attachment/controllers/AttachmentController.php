@@ -743,6 +743,10 @@ class AttachmentController
             $pageCount = count($pages);
         } else {
             try {
+                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+                if (file_exists($libPath)) {
+                    require_once($libPath);
+                }
                 $pdf = new Fpdi('P', 'pt');
                 $pageCount = $pdf->setSourceFile($pathToPdf);
             } catch (\Exception $e) {

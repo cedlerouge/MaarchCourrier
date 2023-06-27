@@ -599,12 +599,12 @@ class FolderPrintController
 
                 // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf, convertedAr_*.pdf and listNotes_*.pdf after merged is complete
                 foreach ($documentPaths as $documentPath) {
-                    if (strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false 
+                    if (strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false
                         || strpos($documentPath, "convertedAr_") !== false  || strpos($documentPath, "listNotes_") !== false) {
                         unlink($documentPath);
                     }
                 }
-                
+
                 $folderPrintPaths[] = $filePathOnTmp;
             }
         }
@@ -724,6 +724,10 @@ class FolderPrintController
             $notes[] = ['user' => $userName, 'note' => $noteText, 'date' => $date];
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
@@ -796,6 +800,10 @@ class FolderPrintController
             $sendDate = _UNDEFINED;
         }
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
@@ -843,6 +851,10 @@ class FolderPrintController
 
         $contentHtml = file_get_contents($args['pathHtml']);
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
@@ -891,6 +903,10 @@ class FolderPrintController
         $creationDate = new \DateTime($attachment['creation_date']);
         $creationDate = $creationDate->format('d-m-Y H:i');
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
@@ -1035,7 +1051,7 @@ class FolderPrintController
 
         return $filePathInTmpNoExtension . '.pdf';
     }
-    
+
     private static function getSummarySheet(array $args)
     {
         ValidatorModel::notEmpty($args, ['units', 'resId']);
@@ -1065,6 +1081,10 @@ class FolderPrintController
         ]);
         $fieldsIdentifier = array_column($indexingFields, 'identifier');
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi('P', 'pt');
         $pdf->setPrintHeader(false);
 
