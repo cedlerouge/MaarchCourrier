@@ -30,6 +30,7 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\controllers\UrlController;
+use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
