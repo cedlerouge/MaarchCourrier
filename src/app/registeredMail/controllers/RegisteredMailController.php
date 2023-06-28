@@ -552,6 +552,10 @@ class RegisteredMailController
     {
         $registeredMailNumber = $args['registeredMailNumber'];
 
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi();
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
@@ -944,14 +948,14 @@ class RegisteredMailController
             if (!empty($storeResult['errors'])) {
                 return ['errors' => '[storeResource] ' . $storeResult['errors']];
             }
-    
+
             $data['docserver_id']   = $storeResult['docserver_id'];
             $data['filename']       = $storeResult['file_destination_name'];
             $data['filesize']       = $storeResult['fileSize'];
             $data['path']           = $storeResult['directory'];
             $data['fingerprint']    = $storeResult['fingerPrint'];
             $data['format']         = 'pdf';
-    
+
             ResModel::update(['set' => $data, 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
         }
 
@@ -960,6 +964,10 @@ class RegisteredMailController
 
     public static function getDepositListPdf(array $args)
     {
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
         $pdf = new Fpdi();
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);

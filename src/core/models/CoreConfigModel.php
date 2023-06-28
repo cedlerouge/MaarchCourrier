@@ -206,6 +206,27 @@ class CoreConfigModel
         return $librariesDirectory;
     }
 
+    public static function getSetaPdfFormFillerLibrary()
+    {
+        $libDir = CoreConfigModel::getLibrariesDirectory();
+        $libPath = null;
+
+        if (!empty($libDir) && is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
+            $libPath = $libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php';
+        }
+        return $libPath;
+    }
+
+    public static function getFpdiPdfParserLibrary()
+    {
+        $libDir     = CoreConfigModel::getLibrariesDirectory();
+        $libPath    = null;
+
+        if (!empty($libDir) && is_file($libDir . 'FPDI-PDF-Parser/src/autoload.php')) {
+            $libPath = $libDir . 'FPDI-PDF-Parser/src/autoload.php';
+        }
+        return $libPath;
+    }
     public static function getSetaSignFormFillerLibrary()
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -220,7 +241,7 @@ class CoreConfigModel
             }
         }
         return $libPath;
-    }    
+    }
 
     public static function getLoggingMethod()
     {

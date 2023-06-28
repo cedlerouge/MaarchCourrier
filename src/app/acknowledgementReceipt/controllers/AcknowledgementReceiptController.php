@@ -24,6 +24,7 @@ use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
 
 class AcknowledgementReceiptController
@@ -126,6 +127,10 @@ class AcknowledgementReceiptController
 
         if (empty($resourcesInBasket) || !ResController::hasRightByResId(['resId' => $resourcesInBasket, 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Documents out of perimeter']);
+        }
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
         }
 
         $pdf = new Fpdi('P', 'pt');

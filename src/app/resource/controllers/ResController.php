@@ -276,7 +276,7 @@ class ResController extends ResourceControlController
 
     public function canUpdateFile(array $args) {
         $resource = $args['resource'];
-    
+
         $canUpdate = $GLOBALS['id'] == $resource['typist'];
 
         $resourcePrivilege = '';
@@ -600,7 +600,7 @@ class ResController extends ResourceControlController
             ]);
 
             $signatoryId = $listInstance[0]['item_id'] ?? $creatorId;
-    
+
             return $response->withJson([
                 'encodedDocument'   => base64_encode($fileContent),
                 'originalFormat'    => $originalFormat,
@@ -924,6 +924,10 @@ class ResController extends ResourceControlController
             $pageCount = count($pages);
         } else {
             try {
+                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+                if (file_exists($libPath)) {
+                    require_once($libPath);
+                }
                 $pdf = new Fpdi('P', 'pt');
                 $pageCount = $pdf->setSourceFile($pathToPdf);
             } catch (\Exception $e) {
