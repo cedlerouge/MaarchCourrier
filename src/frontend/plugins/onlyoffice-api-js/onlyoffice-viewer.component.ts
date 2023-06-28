@@ -129,7 +129,8 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     }
 
     getEncodedDocument(data: any) {
-        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: data.url } }).pipe(
+        const urlParam: any = !this?.functions.empty(data?.url) ? data.url : data;
+        this.http.get('../rest/onlyOffice/encodedFile', { params: { url: urlParam } }).pipe(
             tap((result: any) => {
                 this.file.content = result.encodedFile;
                 this.isSaving = false;
