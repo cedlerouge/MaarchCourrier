@@ -974,6 +974,13 @@ class SearchController
                             'where'  => ["({$where})", 'difflist_type = ?', 'signatory = ?', '(requested_signature = ? or (requested_signature = ? and process_date is not null))'],
                             'data'   => $data
                         ]);
+                    } elseif ($roleId == 'visaInProgress') {
+                        $data = array_merge($data, ['VISA_CIRCUIT', 'false', 'false']);
+                        $rolesMatch = ListInstanceModel::get([
+                           'select' => ['res_id'],
+                           'where' => ["({$where})", 'difflist_type = ?', 'signatory = ?', 'requested_signature = ?', 'process_date is null'],
+                           'data' => $data
+                        ]);
                     } else {
                         $data[] = $roleId;
                         $rolesMatch = ListInstanceModel::get([
