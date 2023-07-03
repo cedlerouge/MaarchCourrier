@@ -50,7 +50,12 @@ job_e2e:
     - chown -R www-data. /var/www/html/
     - chmod -R 775 /opt/maarch/
     - chmod -R 775 /var/www/html/
-    - curl -sL https://deb.nodesource.com/setup_18.x | bash - > /dev/null
+    - curl -sL https://deb.nodesource.com/setup_18.x > tmp.sh
+    # TEMPORARY FIX
+    - sed -i '350s/https/http/' tmp.sh
+    - sed -i '351s/https/http/' tmp.sh
+    #####
+    - chmod +x tmp.sh && ./tmp.sh && apt-get install -y nodejs
     - apt-get install -yqq nodejs > /dev/null
     - npm install npm@8.15.0 -g
     - node -v
