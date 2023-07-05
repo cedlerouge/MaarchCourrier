@@ -59,8 +59,6 @@ CREATE INDEX res_id_folders_idx ON resources_folders (res_id);
 -- groupbasket_redirect
 CREATE INDEX groupbasket_redirect_group_id_idx ON groupbasket_redirect (group_id);
 CREATE INDEX groupbasket_redirect_basket_id_idx ON groupbasket_redirect (basket_id);
-CREATE INDEX groupbasket_redirect_action_id_idx ON groupbasket_redirect (action_id);
-CREATE INDEX groupbasket_redirect_entity_id_idx ON groupbasket_redirect (entity_id);
 
 -- history
 CREATE INDEX table_name_idx ON history (table_name);
