@@ -360,6 +360,7 @@ export class ContactAutocompleteComponent implements OnInit {
                 };
                 this.setFormValue(newContact);
                 this.initFormValue();
+                this.resetAutocomplete();
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
