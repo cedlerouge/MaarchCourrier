@@ -261,7 +261,6 @@ export class UserAdministrationComponent implements OnInit {
                 } else {
                     this.createExternalSignatoryBookAccount(result, result.login);
                 }
-
             }
         });
     }
