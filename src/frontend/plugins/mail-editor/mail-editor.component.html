@@ -160,7 +160,7 @@
     <mat-chip-list *ngIf="!loading">
         <mat-chip class="copy" *ngIf="emailAttach.document?.isLinked"
             [removable]="!readonly" (removed)="removeAttachMail(0, 'document')"
-            [title]="emailAttach.document.chrono + ' - ' + emailAttach.document.label">
+            [title]="emailAttach.document.chrono + ' - ' + emailAttach.document.label" (click)="openDocument('resources', emailAttach.document)">
             <i
                 class="fa fa-file mailLabel"></i>&nbsp;{{emailAttach.document.label | shorten: 25: '...'}}&nbsp;<small
                 class="mailLabel">({{emailAttach.document.format}} - {{emailAttach.document.size}})</small>
@@ -170,7 +170,7 @@
             <ng-container *ngIf="keyVal.key !== 'document'">
                 <mat-chip class="copy" *ngFor="let item of emailAttach[keyVal.key]; let i=index;"
                     [removable]="!readonly"
-                    (removed)="removeAttachMail(i, keyVal.key)" [title]="item.label" (click)="openEmailAttach(keyVal.key, item)">
+                    (removed)="removeAttachMail(i, keyVal.key)" [title]="item.label" (click)="openDocument(keyVal.key, item)">
                     <i
                         class="{{emailAttachTool[keyVal.key].icon}} mailLabel"></i>&nbsp;{{item.label | shorten: 25: '...'}}&nbsp;<small
                         class="mailLabel">({{item.format}}{{!functions.empty(item.size) ? ' - '+item.size : ''}})</small>
