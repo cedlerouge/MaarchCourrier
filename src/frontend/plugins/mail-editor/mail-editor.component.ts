@@ -524,6 +524,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 this.emailAttach.document.format = mode !== 'pdf' ? item.format : 'pdf';
                 this.emailAttach.document.original = mode !== 'pdf';
                 this.emailAttach.document.size = mode === 'pdf' ? item.convertedDocument.size : item.size;
+                this.emailAttach.document.convertedDocument = item.convertedDocument;
             }
         } else {
             if (this.emailAttach[type].filter((attach: any) => attach.id === item.id).length === 0) {
@@ -1034,30 +1035,57 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         };
     }
 
-    openEmailAttach(type: string, attach: any): void {
-        if (type === 'attachments') {
-            this.http.get(`../rest/attachments/${attach.id}/content?mode=base64`).pipe(
-                tap((data: any) => {
-                    this.dialog.open(DocumentViewerModalComponent,
-                        {
-                            autoFocus: false,
-                            panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
-                            data: {
-                                title: `${attach.label}`,
-                                base64: data.encodedDocument,
-                                filename: data.filename,
-                                source: 'mailEditor',
-                                contentMode: 'route',
-                                content: `../rest/attachments/${attach.id}/originalContent?mode=base64`
+    openDocument(type: string, document: any): void {
+        if (!this.functions.empty(document.convertedDocument)) {
+            if (type === 'attachments') {
+                this.http.get(`../rest/attachments/${document.id}/content?mode=base64`).pipe(
+                    tap((data: any) => {
+                        this.dialog.open(DocumentViewerModalComponent,
+                            {
+                                autoFocus: false,
+                                panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
+                                data: {
+                                    title: `${document.label}`,
+                                    base64: data.encodedDocument,
+                                    filename: data.filename,
+                                    source: 'mailEditor',
+                                    contentMode: 'route',
+                                    content: `../rest/attachments/${document.id}/originalContent?mode=base64`
+                                }
                             }
-                        }
-                    );
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+                        );
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else if (type === 'resources') {
+                this.http.get(`../rest/resources/${document.id}/content?mode=base64`).pipe(
+                    tap((data: any) => {
+                        this.dialog.open(DocumentViewerModalComponent,
+                            {
+                                autoFocus: false,
+                                panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
+                                data: {
+                                    title: `${document.label}`,
+                                    base64: data.encodedDocument,
+                                    filename: data.filename,
+                                    source: 'mailEditor',
+                                    contentMode: 'route',
+                                    content: `../rest/resources/${document.id}/originalContent?mode=base64`
+                                }
+                            }
+                        );
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
+            }
+        } else {
+            this.notify.error(this.translate.instant('lang.noAvailablePreview'));
         }
     }
 
