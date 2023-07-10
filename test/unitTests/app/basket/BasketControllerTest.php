@@ -281,7 +281,7 @@ class BasketControllerTest extends CourrierTestCase
                 $this->assertNotNull($groupAction->redirects);
                 $this->assertSame('PSF', $groupAction->redirects[0]->entity_id);
                 $this->assertSame('', $groupAction->redirects[0]->keyword);
-                $this->assertSame('ENTITY', $groupAction->redirects[0]->redirect_mode);
+                $this->assertSame('USERS', $groupAction->redirects[0]->redirect_mode);
                 $this->assertSame('PSF', $groupAction->redirects[1]->entity_id);
                 $this->assertSame('', $groupAction->redirects[1]->keyword);
                 $this->assertSame('USERS', $groupAction->redirects[1]->redirect_mode);
