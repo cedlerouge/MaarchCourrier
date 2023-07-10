@@ -313,7 +313,7 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $this->assertSame(self::$resourceId, $responseBody['listInstance'][0]['res_id']);
         $this->assertSame(0, $responseBody['listInstance'][0]['sequence']);
-        $this->assertSame('aackermann', $responseBody['listInstance'][0]['item_id']);
+        $this->assertSame('ppetit', $responseBody['listInstance'][0]['item_id']);
         $this->assertSame('user_id', $responseBody['listInstance'][0]['item_type']);
         $this->assertSame('dest', $responseBody['listInstance'][0]['item_mode']);
         $this->assertSame($userInfo['id'], $responseBody['listInstance'][0]['added_by_user']);
