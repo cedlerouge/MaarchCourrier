@@ -1151,6 +1151,11 @@ SELECT r.res_id,
        r.custom_fields,
        r.retention_frozen,
        r.binding,
+       r.model_id,
+       r.version,
+       r.integrations,
+       r.linked_resources,
+       r.fulltext_result,
        en.entity_label,
        en.entity_type AS entitytype
 FROM res_letterbox r
