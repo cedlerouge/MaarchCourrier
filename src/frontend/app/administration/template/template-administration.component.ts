@@ -67,6 +67,8 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
         'csv',
     ];
 
+    extensionsRequiringEditing: string[] = ['doc'];
+
     selectedModelFile: any = null;
     availableTypes: string[] = [];
 
@@ -89,6 +91,8 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
     config: any = {};
 
     documentImported: boolean = false;
+
+    mustEditFile: boolean = false;
 
     acknowledgementReceiptFrom = [
         {
@@ -317,6 +321,10 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
                 this.documentImported = true;
                 this.getViewTemplateFile();
             };
+            /**
+             * Check if the extension of the imported file is in the array of extensions whose files need editing
+             */
+            this.mustEditFile = this.extensionsRequiringEditing.indexOf(this.template.file.format) > -1;
         }
     }
 
@@ -458,6 +466,7 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
                     this.template.file.content = data.content;
                 }
                 this.getViewTemplateFile();
+                this.mustEditFile = false;
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
@@ -486,6 +495,7 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
                     if (!this.lockFound) {
                         clearInterval(this.intervalLockFile);
                         this.loadTmpFile(`${data.fileTrunk}.${extension}`);
+                        this.mustEditFile = false;
                     }
                 })
             ).subscribe();
@@ -536,55 +546,75 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
         } else if (this.template.type === 'OFFICE_HTML') {
             this.template.template_content = tinymce.get('templateOfficeHtml').getContent();
         }*/
-
-        if (this.isValidTemplate()) {
-            if (this.creationMode) {
-                this.http.post('../rest/templates', this.formatTemplate()).pipe(
-                    tap((data: any) => {
-                        if (data.checkEntities) {
-                            this.config = {
-                                panelClass: 'maarch-modal',
-                                data: {
-                                    entitiesList: data.checkEntities,
-                                    template_attachment_type: this.template.template_attachment_type
-                                }
-                            };
-                            this.dialog.open(TemplateAdministrationCheckEntitiesModalComponent, this.config);
-                        } else {
-                            this.router.navigate(['/administration/templates']);
-                            this.notify.success(this.translate.instant('lang.templateAdded'));
-                        }
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err);
-                        return of(false);
-                    })
-                ).subscribe();
-            } else {
-                this.http.put('../rest/templates/' + this.template.id, this.formatTemplate()).pipe(
-                    tap((data: any) => {
-                        if (!this.functionsService.empty(data) && data.checkEntities) {
-                            this.config = {
-                                panelClass: 'maarch-modal',
-                                data: {
-                                    entitiesList: data.checkEntities,
-                                    template_attachment_type: this.template.template_attachment_type
-                                }
-                            };
-                            this.dialogRef = this.dialog.open(TemplateAdministrationCheckEntitiesModalComponent, this.config);
-                        } else {
-                            this.router.navigate(['/administration/templates']);
-                            this.notify.success(this.translate.instant('lang.templateUpdated'));
-                        }
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err);
-                        return of(false);
-                    })
-                ).subscribe();
+        if (this.mustEditFile) {
+            const dialogRef = this.dialog.open(AlertComponent,
+                {
+                    panelClass: 'maarch-modal',
+                    autoFocus: false,
+                    disableClose: true,
+                    data: {
+                        title: this.translate.instant('lang.warning'),
+                        msg: this.translate.instant('lang.editDocFileDesc')
+                    }
+                });
+            dialogRef.afterClosed().pipe(
+                filter((data: string) => data === 'ok'),
+                tap(() => {
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        } else {
+            if (this.isValidTemplate()) {
+                if (this.creationMode) {
+                    this.http.post('../rest/templates', this.formatTemplate()).pipe(
+                        tap((data: any) => {
+                            if (data.checkEntities) {
+                                this.config = {
+                                    panelClass: 'maarch-modal',
+                                    data: {
+                                        entitiesList: data.checkEntities,
+                                        template_attachment_type: this.template.template_attachment_type
+                                    }
+                                };
+                                this.dialog.open(TemplateAdministrationCheckEntitiesModalComponent, this.config);
+                            } else {
+                                this.router.navigate(['/administration/templates']);
+                                this.notify.success(this.translate.instant('lang.templateAdded'));
+                            }
+                        }),
+                        catchError((err: any) => {
+                            this.notify.handleSoftErrors(err);
+                            return of(false);
+                        })
+                    ).subscribe();
+                } else {
+                    this.http.put('../rest/templates/' + this.template.id, this.formatTemplate()).pipe(
+                        tap((data: any) => {
+                            if (!this.functionsService.empty(data) && data.checkEntities) {
+                                this.config = {
+                                    panelClass: 'maarch-modal',
+                                    data: {
+                                        entitiesList: data.checkEntities,
+                                        template_attachment_type: this.template.template_attachment_type
+                                    }
+                                };
+                                this.dialogRef = this.dialog.open(TemplateAdministrationCheckEntitiesModalComponent, this.config);
+                            } else {
+                                this.router.navigate(['/administration/templates']);
+                                this.notify.success(this.translate.instant('lang.templateUpdated'));
+                            }
+                        }),
+                        catchError((err: any) => {
+                            this.notify.handleSoftErrors(err);
+                            return of(false);
+                        })
+                    ).subscribe();
+                }
             }
         }
-
     }
 
     formatTemplate() {

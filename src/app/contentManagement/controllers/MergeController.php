@@ -47,7 +47,7 @@ include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
 
 class MergeController
 {
-    public const OFFICE_EXTENSIONS = ['odt', 'ods', 'odp', 'xlsx', 'pptx', 'docx', 'odf'];
+    public const OFFICE_EXTENSIONS = ['odt', 'ods', 'odp', 'xlsx', 'pptx', 'docx', 'odf', 'doc'];
 
     public static function mergeDocument(array $args)
     {
@@ -88,7 +88,7 @@ class MergeController
                     }
                 }
                 $tbs->PlugIn(OPENTBS_SELECT_MAIN);
-            } elseif ($extension == 'docx') {
+            } elseif ($extension == 'docx' || $extension == 'doc') {
                 $tbs->LoadTemplate($args['path'], OPENTBS_ALREADY_UTF8);
                 $templates = ['word/header1.xml', 'word/header2.xml', 'word/header3.xml', 'word/footer1.xml', 'word/footer2.xml', 'word/footer3.xml'];
                 foreach ($templates as $template) {
@@ -653,7 +653,7 @@ class MergeController
         ValidatorModel::stringType($args, ['type']);
 
         setlocale(LC_TIME, _DATE_LOCALE);
-        
+
         $mergeData = [
             'date'   => date('c'),
             'user'   => UserModel::getLabelledUserById(['id' => $GLOBALS['id']]),
@@ -710,7 +710,7 @@ class MergeController
 
         if ($extension == 'odt') {
             $tbs->LoadTemplate($pathToDocument, OPENTBS_ALREADY_UTF8);
-        } elseif ($extension == 'docx') {
+        } elseif ($extension == 'docx' || $extension == 'doc') {
             $tbs->LoadTemplate($pathToDocument, OPENTBS_ALREADY_UTF8);
             $templates = ['word/header1.xml', 'word/header2.xml', 'word/header3.xml', 'word/footer1.xml', 'word/footer2.xml', 'word/footer3.xml'];
             foreach ($templates as $template) {

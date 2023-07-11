@@ -2741,5 +2741,6 @@
     "useSMTPAuthDesc": "Permet d'utiliser l'adresse d'envoi configurée pour tous les courriels sortants",
     "labelBAN":  "Base Adresse Nationale",
     "labelSectors":  "Secteurs",
+    "editDocFileDesc": "Veuillez noter qu'il est important d'éditer le fichier avec l'extension <b>.doc</b> avant de valider",
     "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>"
 }
