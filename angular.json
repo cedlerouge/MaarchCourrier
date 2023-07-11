@@ -96,6 +96,30 @@
           "options": {
             "browserTarget": "maarchCourrier:build"
           }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "./src/frontend/test.ts",
+            "polyfills": "./src/frontend/polyfills.ts",
+            "tsConfig": "./src/frontend/tsconfig.spec.json",
+            "karmaConfig": "karma.conf.js",
+            "assets": [
+              "./src/frontend/assets",
+              { "glob": "**/*", "input": "node_modules/tinymce/skins", "output": "/tinymce/skins/" },
+              { "glob": "**/*", "input": "node_modules/tinymce/themes", "output": "/tinymce/themes/" },
+              { "glob": "**/*", "input": "node_modules/tinymce/plugins", "output": "/tinymce/plugins/" },
+              { "glob": "pdf.worker.min.js", "input": "node_modules/pdfjs-dist/build", "output": "/pdfjs/" },
+              { "glob": ".htaccess", "input": "./src/frontend", "output": "/" }
+            ],
+            "styles": [
+              {
+                "input": "./src/frontend/css/vars.scss",
+                "inject": true
+              }
+            ],
+            "scripts": []
+          }
         }
       }
     },
