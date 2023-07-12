@@ -28,7 +28,8 @@
       "create-component-admin": "echo Component name ? && read varname && ng g c administration/$varname --module administration --style=scss",
       "cypress:open": "cypress open --config-file test/e2e/cypress-config.json",
       "cypress:run": "cypress run --browser chrome --headless --config-file test/e2e/cypress-config.json",
-      "karma:test-with-coverage": "ng test --project=maarchCourrier --no-watch --no-progress --browsers=ChromeHeadless --code-coverage"
+      "karma:test-with-coverage": "ng test --project=maarchCourrier --no-watch --no-progress --browsers=ChromeHeadless --code-coverage",
+      "karma:test-ci": "ng test --project=maarchCourrier --karma-config karma.conf-ci.js --no-watch --no-progress --browsers=ChromeHeadlessCI --code-coverage"
   },
   "keywords": [],
   "author": "Maarch",
