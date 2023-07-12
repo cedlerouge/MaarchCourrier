@@ -37,19 +37,17 @@ export class AccountLinkComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         const dataUsers: any = await this.externalSignatoryBook.getAutocompleteUsersDatas(this.data);
-        if (!this.functions.empty(dataUsers)) {
-            if (dataUsers.length > 0) {
-                this.externalUser = dataUsers[0];
-                this.externalUser.inExternalSignatoryBook = true;
-                this.externalUser.picture = await this.externalSignatoryBook.getUserAvatar(this.externalUser.id);
-            } else {
-                this.externalUser.inExternalSignatoryBook = false;
-                this.externalUser = this.data.user;
-                this.externalUser.login = this.data.user.user_id;
-                this.externalUser.email = this.data.user.mail;
-            }
-        } else if (dataUsers === null) {
+        if (dataUsers === null) {
             this.dialogRef.close('');
+        } else if (dataUsers.length > 0) {
+            this.externalUser = dataUsers[0];
+            this.externalUser.inExternalSignatoryBook = true;
+            this.externalUser.picture = await this.externalSignatoryBook.getUserAvatar(this.externalUser.id);
+        } else {
+            this.externalUser.inExternalSignatoryBook = false;
+            this.externalUser = this.data.user;
+            this.externalUser.login = this.data.user.user_id;
+            this.externalUser.email = this.data.user.mail;
         }
     }
 
