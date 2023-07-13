@@ -113,9 +113,14 @@ class OutlookController
             }
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['preferences']]);
-        $user['preferences'] = json_decode($user['preferences'], true);
-        $configuration['value']['outlookPasswordSaved'] = !empty($user['preferences']['outlookPassword']);
+        $configuration['value']['tenantId']     = !empty($configuration['value']['tenantId']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]) : '';
+        $configuration['value']['clientId']     = !empty($configuration['value']['clientId']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientId']]) : '';
+        $configuration['value']['clientSecret'] = !empty($configuration['value']['clientSecret']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientSecret']]) : '';
+
+        $configuration['value']['outlookConnectionSaved'] = false;
+        if (!empty($configuration['value']['tenantId']) && !empty($configuration['value']['clientId']) && !empty($configuration['value']['clientSecret'])) {
+            $configuration['value']['outlookConnectionSaved'] = true;
+        }
 
         return $response->withJson(['configuration' => $configuration['value']]);
     }
@@ -160,31 +165,20 @@ class OutlookController
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type does not exist']);
         }
 
-        $data = ['indexingModelId' => $body['indexingModelId'], 'typeId' => $body['typeId'], 'statusId' => $body['statusId'], 'attachmentTypeId' => $body['attachmentTypeId']];
-        $data = json_encode($data, JSON_UNESCAPED_SLASHES);
+        $data = json_encode([
+            'indexingModelId'   => $body['indexingModelId'],
+            'typeId'            => $body['typeId'],
+            'statusId'          => $body['statusId'],
+            'attachmentTypeId'  => $body['attachmentTypeId'],
+            'tenantId'          => PasswordModel::encrypt(['password' => $body['tenantId'] ?? '']),
+            'clientId'          => PasswordModel::encrypt(['password' => $body['clientId'] ?? '']),
+            'clientSecret'      => PasswordModel::encrypt(['password' => $body['clientSecret'] ?? ''])
+        ], JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook', 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_addin_outlook']);
         } else {
             ConfigurationModel::update(['set' => ['value' => $data], 'where' => ['privilege = ?'], 'data' => ['admin_addin_outlook']]);
         }
-
-        return $response->withStatus(204);
-    }
-
-    public function saveOutlookPassword(Request $request, Response $response)
-    {
-        $body = $request->getParsedBody();
-
-        if (!Validator::notEmpty()->stringType()->validate($body['outlookPassword'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body outlookPassword is empty or not an integer']);
-        }
-
-        $preferences = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['preferences']]);
-        $preferences = json_decode($preferences['preferences'], true);
-
-        $preferences['outlookPassword'] = PasswordModel::encrypt(['password' => $body['outlookPassword']]);
-
-        UserModel::update(['set' => ['preferences' => json_encode($preferences)], 'where' => ['id = ?'], 'data' => [$GLOBALS['id']]]);
 
         return $response->withStatus(204);
     }
@@ -207,17 +201,16 @@ class OutlookController
             return $response->withStatus(400)->withJson(['errors' => 'Body resId is empty or not an integer']);
         }
 
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['mail', 'preferences']]);
-        $user['preferences'] = json_decode($user['preferences'], true);
-
-        if (empty($user['preferences']['outlookPassword'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'You have not set your outlook password', 'lang' => 'outlookPasswordRequired']);
-        }
-
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook']);
         $configuration['value'] = json_decode($configuration['value'], true);
 
-        if (empty($configuration['value']['attachmentTypeId'])) {
+        if (empty($configuration['value']['tenantId'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Outlook tenantId configuration is missing']);
+        } elseif (empty($configuration['value']['clientId'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Outlook clientId configuration is missing']);
+        } elseif (empty($configuration['value']['clientSecret'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'Outlook clientSecret configuration is missing']);
+        } elseif (empty($configuration['value']['attachmentTypeId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type configuration is missing']);
         }
         $attachmentType = AttachmentTypeModel::getById(['id' => $configuration['value']['attachmentTypeId'], 'select' => ['type_id']]);
@@ -226,10 +219,12 @@ class OutlookController
         }
 
         $config = [
-            'url'            => $body['ewsUrl'],
-            'mail'           => $body['userId'],
-            'password'       => PasswordModel::decrypt(['cryptedPassword' => $user['preferences']['outlookPassword']]),
+            'host'           => $body['ewsUrl'],
+            'email'          => $body['userId'],
             'version'        => $body['ewsVersion'],
+            'tenantId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]),
+            'clientId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientId']]),
+            'clientSecret'   => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientSecret']]),
             'attachmentType' => $attachmentType['type_id']
         ];
 
