@@ -37,15 +37,33 @@ class EWSController {
 
         $curlResponse = CurlModel::exec([
             'url'     => EWSController::BASE_TOKEN_URL . $args['tenantId'] . '/oauth2/v2.0/token',
-            'headers' => ['Content-Type: application/x-www-form-urlencoded'],
             'method'  => 'POST',
-            'body' => [
-				'grant_type'    => 'client_credentials',
+            'multipartBody' => [
+                'grant_type'    => 'client_credentials',
 				'client_id'     => $args['clientId'],
 				'client_secret' => $args['clientSecret'],
-				'scope'         => 'https://' . $args['host'] . '/.default'
-			]
+				'scope'         => 'https://' . $args['ewsHost'] . '/.default'
+            ]
         ]);
+
+        $errors = [];
+        if (!empty($curlResponse['errors'])) {
+            $errors[] = $curlResponse['errors'];
+        }
+        if (!empty($curlResponse['response']['error'])) {
+            $errors[] = $curlResponse['response'];
+        }
+        if (!empty($errors)) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'EWS OAuth2 Error',
+                'eventType' => 'Curl',
+                'eventId'   => 'Error while fetching access token, response: ' . json_encode($errors)
+            ]);
+            return ['errors' => $errors, 'lang' => 'outlookErrorGetToken'];
+        }
 
         $accessToken = $curlResponse['response']['access_token'] ?? null;
 
@@ -55,7 +73,7 @@ class EWSController {
                 'moduleId'  => 'EWSController',
                 'level'     => 'ERROR',
                 'recordId'  => 'EWS OAuth2 Error',
-                'eventType' => 'Curl',
+                'eventType' => 'Get Access Token',
                 'eventId'   => 'Error while fetching access token, response: ' . json_encode($curlResponse['response'])
             ]);
             return ['errors' => 'Error while fetching access token', 'lang' => 'outlookErrorGetToken'];
@@ -64,7 +82,7 @@ class EWSController {
         $client = null;
 
         try {
-            $client = new Client($args['host'], $args['email'], '-', $args['version']);
+            $client = new Client($args['ewsHost'], $args['email'], '-', $args['version']);
             $client->setCurlOptions([
                 CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken]
             ]);
@@ -90,8 +108,8 @@ class EWSController {
 
     public static function control(array $args)
     {
-        if (!Validator::notEmpty()->stringType()->validate($args['host'])) {
-            return ['errors' => '[EWS] host is empty or not a string'];
+        if (!Validator::notEmpty()->stringType()->validate($args['ewsHost'])) {
+            return ['errors' => '[EWS] ewsHost is empty or not a string'];
         } elseif (!Validator::notEmpty()->stringType()->validate($args['email'])) {
             return ['errors' => '[EWS] email is empty or not a string'];
         } elseif (!Validator::notEmpty()->stringType()->validate($args['version'])) {
@@ -115,7 +133,7 @@ class EWSController {
         ValidatorModel::intVal($args, ['resId']);
 
         $client = EWSController::initOauth2([
-            'host'          => $args['config']['host'] ?? null,
+            'ewsHost'       => $args['config']['ewsHost'] ?? null,
             'email'         => $args['config']['email'] ?? null,
             'version'       => $args['config']['version'] ?? null,
             'tenantId'      => $args['config']['tenantId'] ?? null,
@@ -165,9 +183,9 @@ class EWSController {
                 'level'     => 'ERROR',
                 'recordId'  => 'EWS OAuth2 Error',
                 'eventType' => 'Curl',
-                'eventId'   => 'Error when getting attachments, Exception: ' . $e->getMessage()
+                'eventId'   => 'Error when getting attachments. Exception: ' . $e->getMessage()
             ]);
-            return ['errors' => 'Error when getting attachments', 'lang' => 'outlookGetAttachmentsImpossible'];
+            return ['errors' => 'Error when getting attachments. Exception: ' . $e->getMessage(), 'lang' => 'outlookGetAttachmentsImpossible'];
         }
         // Iterate over the results, printing any error messages or receiving attachments.
         $responseMessages = $response->ResponseMessages->GetItemResponseMessage;

@@ -219,7 +219,7 @@ class OutlookController
         }
 
         $config = [
-            'host'           => $body['ewsUrl'],
+            'ewsHost'        => explode('/', $body['ewsUrl'])[0],
             'email'          => $body['userId'],
             'version'        => $body['ewsVersion'],
             'tenantId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]),
