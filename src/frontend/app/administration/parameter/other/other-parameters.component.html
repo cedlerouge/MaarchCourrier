@@ -48,9 +48,9 @@
             {{(watermark.enabled.value ? 'lang.enabled' : 'lang.disabled') | translate}}
         </mat-slide-toggle>
         <mat-form-field appearance="outline">
-            <mat-label>{{'lang.content' |translate}}</mat-label>
+            <mat-label>{{'lang.content' | translate}}</mat-label>
             <input matInput type="text" [formControl]="watermark.text">
-            <mat-hint align="end" [innerHTML]="'lang.watermarkContentDesc' | translate"></mat-hint>
+            <mat-hint align="end" [innerHTML]="'lang.watermarkContentDesc' | translate"></mat-hint>
         </mat-form-field>
         <div class="formType" style="margin-top: 20px;">
             <div class="formType-title">
@@ -63,7 +63,7 @@
                     [datas]="fonts" [showLabel]="true" style="width:100%;">
                 </app-plugin-select-search>
                 <mat-form-field>
-                    <mat-label>{{'lang.size' |translate}}</mat-label>
+                    <mat-label>{{'lang.size' | translate}}</mat-label>
                     <input matInput type="number" [formControl]="watermark.size">
                     <span matSuffix class="input-suffix">px</span>
                 </mat-form-field>
@@ -115,6 +115,25 @@
             </mat-panel-title>
         </mat-expansion-panel-header>
         <app-maarch-message [content]="'lang.outlookSendingModuleDesc' | translate" style="margin-bottom: 10px;"></app-maarch-message>
+        <div class="formType" style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="formType-title">
+                {{'lang.outlookAccount' | translate}}
+            </div>
+            <div class="outlookAuth">
+                <mat-form-field>
+                    <mat-label>{{'lang.tenantId' | translate}}</mat-label>
+                    <input matInput type="text" [formControl]="addinOutlookConf.tenantId" [title]="'lang.tenantId' | translate">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{'lang.clientId' | translate}}</mat-label>
+                    <input matInput type="text" [formControl]="addinOutlookConf.clientId" [title]="'lang.clientId' | translate">
+                </mat-form-field>
+                <mat-form-field>
+                    <mat-label>{{'lang.clientSecret' | translate}}</mat-label>
+                    <input matInput type="text" [formControl]="addinOutlookConf.clientSecret" [title]="'lang.clientSecret' | translate">
+                </mat-form-field>
+            </div>
+        </div>
         <app-plugin-select-search [id]="'indexingModelId'" [label]="'lang.indexingModel' | translate" [class]="''"
             [placeholderLabel]="'lang.chooseValue' | translate" [formControlSelect]="addinOutlookConf.indexingModelId"
             [datas]="indexingModels" [showLabel]="true" style="width:100%;">
@@ -142,7 +161,7 @@
             <mat-tab [label]="saeEnabled">
                 <app-maarch-message [mode]="'info'" [content]="'lang.configSaeInfo' | translate : {url : exportSedaUrl}" style="font-size: 14px; height: 50%; margin-bottom: 10px;"></app-maarch-message>
                 <mat-slide-toggle style="margin: 15px;" [checked]="saeEnabled === 'maarchRM'" color="primary" (change)="switchSae()">
-                    {{'lang.switchSae' | translate}}
+                    {{'lang.switchSae' | translate}}
                 </mat-slide-toggle>
                 <mat-form-field *ngIf="saeEnabled !== 'maarchRM'" appearance="outline">
                     <mat-label>{{'lang.sae' | translate}}</mat-label>
@@ -154,8 +173,8 @@
                         <div *ngIf="!sae.key.includes('status')" class="form-group">
                             <div class="col-md-6">
                                 <mat-form-field appearance="outline" [class.disabledInput]="sae.key === 'sae'">
-                                    <mat-label>{{'lang.' + sae.key |translate}}</mat-label>
-                                    <input [required]="['certificateSSL', 'M2M'].indexOf(sae.key) === -1" matInput type="text" [readonly]="sae.key === 'sae'" [title]="'lang.' + sae.key |translate"
+                                    <mat-label>{{'lang.' + sae.key | translate}}</mat-label>
+                                    <input [required]="['certificateSSL', 'M2M'].indexOf(sae.key) === -1" matInput type="text" [readonly]="sae.key === 'sae'" [title]="'lang.' + sae.key | translate"
                                         [value]="saeConfig[saeEnabled][sae.key]" [formControl]="saeConfig[saeEnabled][sae.key]">
                                 </mat-form-field>
                             </div>
@@ -163,7 +182,7 @@
                         <div *ngIf="sae.key.includes('status')" class="form-group">
                             <div class="col-md-12">
                                 <mat-form-field appearance="outline">
-                                    <mat-label>{{'lang.' + sae.key |translate}}</mat-label>
+                                    <mat-label>{{'lang.' + sae.key | translate}}</mat-label>
                                     <mat-select required [formControl]="saeConfig[saeEnabled][sae.key]">
                                         <mat-option *ngFor="let status of statuses" [value]="status.statusId" [id]="status.id">
                                             {{ status.label }}
@@ -177,7 +196,7 @@
                         <mat-expansion-panel *ngIf="sae.key === 'retentionRules'" class="externalSAEvalues" [expanded]="true">
                             <mat-expansion-panel-header>
                                 <mat-panel-title>
-                                    {{'lang.' + sae.key |translate}}
+                                    {{'lang.' + sae.key | translate}}
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                                 <div style="display: flex;">
@@ -211,7 +230,7 @@
                         <mat-expansion-panel *ngIf="sae.key === 'archiveEntities'" class="externalSAEvalues" [expanded]="false">
                             <mat-expansion-panel-header>
                                 <mat-panel-title>
-                                    {{'lang.' + sae.key |translate}}
+                                    {{'lang.' + sae.key | translate}}
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                                 <div style="display: flex;">
@@ -245,7 +264,7 @@
                         <mat-expansion-panel *ngIf="sae.key === 'archivalAgreements'" class="externalSAEvalues" [expanded]="false">
                             <mat-expansion-panel-header>
                                 <mat-panel-title>
-                                    {{'lang.' + sae.key |translate}}
+                                    {{'lang.' + sae.key | translate}}
                                 </mat-panel-title>
                             </mat-expansion-panel-header>
                                 <div style="display: flex;">

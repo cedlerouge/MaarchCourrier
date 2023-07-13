@@ -67,6 +67,9 @@ export class OtherParametersComponent implements OnInit {
         typeId: new UntypedFormControl(null, [Validators.required]),
         statusId: new UntypedFormControl(null, [Validators.required]),
         attachmentTypeId: new UntypedFormControl(null, [Validators.required]),
+        tenantId: new UntypedFormControl(null),
+        clientId: new UntypedFormControl(null),
+        clientSecret: new UntypedFormControl(null)
     };
 
     watermark = {
@@ -382,6 +385,9 @@ export class OtherParametersComponent implements OnInit {
                             typeId: new UntypedFormControl(data.configuration.typeId),
                             statusId: new UntypedFormControl(data.configuration.statusId),
                             attachmentTypeId: new UntypedFormControl(data.configuration.attachmentTypeId),
+                            tenantId: new UntypedFormControl(data.configuration.tenantId),
+                            clientId: new UntypedFormControl(data.configuration.clientId),
+                            clientSecret: new UntypedFormControl(data.configuration.clientSecret)
                         };
                     } else {
                         await this.setDefaultValues();

@@ -60,3 +60,11 @@
     color: rgb(138, 137, 137);
     pointer-events: none;
 }
+
+.outlookAuth {
+    display: grid;
+    padding-top: 1.25em;
+    width: 100%;
+    grid-template-rows: 1fr auto;
+    grid-gap: 10px;
+}

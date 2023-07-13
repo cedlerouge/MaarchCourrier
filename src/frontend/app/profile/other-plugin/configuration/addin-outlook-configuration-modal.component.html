@@ -2,21 +2,6 @@
     <h1 mat-dialog-title>{{'lang.configurePlugin' | translate}}</h1>
     <div mat-dialog-content>
         <mat-horizontal-stepper linear="true" #stepper>
-            <mat-step>
-                <ng-template matStepLabel>{{'lang.outlookAccount' | translate}}</ng-template>
-                <app-maarch-message [content]="'lang.addingOutlookPasswordMsg' | translate"></app-maarch-message>
-                <mat-form-field appearance="outline">
-                    <mat-label>{{'lang.outlookPassword' | translate}}</mat-label>
-                    <input matInput [type]="hidePassword ? 'password' : 'text'" [(ngModel)]="outlookPassword">
-                    <mat-icon color="primary" style="cursor: pointer;" matSuffix
-                    (click)="hidePassword = !hidePassword" class="fa fa-2x"
-                    [ngClass]="[hidePassword ? 'fa-eye-slash' : 'fa-eye']"></mat-icon>
-                </mat-form-field>
-                <i style="opacity: 0.5;font-size: 10px;">{{'lang.addingOutlookPasswordMsg2' | translate}}</i>
-                <div style="text-align: center;">
-                    <button mat-raised-button color="primary" [disabled]="outlookPassword === ''" (click)="savePassword();stepper.next();">{{ 'lang.validate' | translate }}</button>
-                </div>
-            </mat-step>
             <mat-step [label]="'lang.downloadManifest' | translate">
                 <app-maarch-message [content]="'lang.downloadManifestMsg' | translate"></app-maarch-message>
                 <div style="text-align: center;">
