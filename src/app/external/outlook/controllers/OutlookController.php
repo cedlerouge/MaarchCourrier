@@ -170,9 +170,10 @@ class OutlookController
             'typeId'            => $body['typeId'],
             'statusId'          => $body['statusId'],
             'attachmentTypeId'  => $body['attachmentTypeId'],
-            'tenantId'          => PasswordModel::encrypt(['password' => $body['tenantId'] ?? '']),
-            'clientId'          => PasswordModel::encrypt(['password' => $body['clientId'] ?? '']),
-            'clientSecret'      => PasswordModel::encrypt(['password' => $body['clientSecret'] ?? ''])
+            'version'           => $body['version'],
+            'tenantId'          => !empty($body['tenantId']) ? PasswordModel::encrypt(['password' => $body['tenantId']]) : '',
+            'clientId'          => !empty($body['clientId']) ? PasswordModel::encrypt(['password' => $body['clientId']]) : '',
+            'clientSecret'      => !empty($body['clientSecret']) ? PasswordModel::encrypt(['password' => $body['clientSecret']]) : ''
         ], JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook', 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_addin_outlook']);
@@ -193,8 +194,6 @@ class OutlookController
             return $response->withStatus(400)->withJson(['errors' => 'Body emailId is empty or no a string']);
         } elseif (!Validator::notEmpty()->stringType()->validate($body['ewsUrl'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body ewsUrl is empty or no a string']);
-        } elseif (!Validator::notEmpty()->stringType()->validate($body['ewsVersion'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body ewsVersion is empty or no a string']);
         } elseif (!Validator::notEmpty()->stringType()->validate($body['userId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body userId is empty or no a string']);
         } elseif (!Validator::notEmpty()->intVal()->validate($body['resId'])) {
@@ -221,7 +220,7 @@ class OutlookController
         $config = [
             'ewsHost'        => explode('/', $body['ewsUrl'])[0],
             'email'          => $body['userId'],
-            'version'        => $body['ewsVersion'],
+            'version'        => $configuration['value']['version'],
             'tenantId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]),
             'clientId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientId']]),
             'clientSecret'   => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientSecret']]),
