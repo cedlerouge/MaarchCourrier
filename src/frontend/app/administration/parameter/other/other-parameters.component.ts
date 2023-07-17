@@ -69,7 +69,8 @@ export class OtherParametersComponent implements OnInit {
         attachmentTypeId: new UntypedFormControl(null, [Validators.required]),
         tenantId: new UntypedFormControl(null),
         clientId: new UntypedFormControl(null),
-        clientSecret: new UntypedFormControl(null)
+        clientSecret: new UntypedFormControl(null),
+        version: new UntypedFormControl('Exchange2016')
     };
 
     watermark = {
@@ -291,6 +292,18 @@ export class OtherParametersComponent implements OnInit {
         }
     ];
 
+    exchangeVersions: string[] = [
+        'Exchange2007',
+        'Exchange2007_SP1',
+        'Exchange2009',
+        'Exchange2010',
+        'Exchange2010_SP1',
+        'Exchange2010_SP2',
+        'Exchange2013',
+        'Exchange2013_SP1',
+        'Exchange2016'
+    ];
+
     indexingModels: any = [];
     doctypes: any = [];
     statuses: any = [];
@@ -387,7 +400,8 @@ export class OtherParametersComponent implements OnInit {
                             attachmentTypeId: new UntypedFormControl(data.configuration.attachmentTypeId),
                             tenantId: new UntypedFormControl(data.configuration.tenantId),
                             clientId: new UntypedFormControl(data.configuration.clientId),
-                            clientSecret: new UntypedFormControl(data.configuration.clientSecret)
+                            clientSecret: new UntypedFormControl(data.configuration.clientSecret),
+                            version: new UntypedFormControl(data.configuration.version ?? 'Exchange2016')
                         };
                     } else {
                         await this.setDefaultValues();

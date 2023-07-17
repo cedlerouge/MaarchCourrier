@@ -120,6 +120,14 @@
                 {{'lang.outlookAccount' | translate}}
             </div>
             <div class="outlookAuth">
+                <mat-form-field appearance="outline" style="margin-bottom: -14px;">
+                    <mat-label>{{'lang.version' | translate}}</mat-label>
+                    <mat-select required [formControl]="addinOutlookConf.version">
+                        <mat-option *ngFor="let version of exchangeVersions" [value]="version" [id]="version">
+                            {{ version }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
                 <mat-form-field>
                     <mat-label>{{'lang.tenantId' | translate}}</mat-label>
                     <input matInput type="text" [formControl]="addinOutlookConf.tenantId" [title]="'lang.tenantId' | translate">
