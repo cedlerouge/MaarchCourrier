@@ -14,7 +14,7 @@ import { HttpClient } from '@angular/common/http';
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let httpTestingController: HttpTestingController; // Add HttpTestingController
+  let httpTestingController: HttpTestingController;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,7 +23,7 @@ describe('LoginComponent', () => {
         RouterTestingModule,
         BrowserAnimationsModule,
         TranslateModule,
-        HttpClientTestingModule // Import HttpClientTestingModule
+        HttpClientTestingModule
       ],
       providers: [
         TranslateService,
@@ -40,7 +40,7 @@ describe('LoginComponent', () => {
 
   beforeEach(() => {
     httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
-    fixture = TestBed.createComponent(LoginComponent);
+    fixture = TestBed.createComponent(LoginComponent); // Initialize LoginComponent
     component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component).toBeTruthy();
@@ -67,7 +67,7 @@ describe('LoginComponent', () => {
       expect(login.getAttributeNode('autofocus').specified).toBeTrue();
     });
   
-    fit('set login and password', () => {
+    it('set login and password', () => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
       const password = nativeElement.querySelector('input[name=password]');
@@ -87,15 +87,12 @@ describe('LoginComponent', () => {
       // Verify that the login input field now has the expected value
       expect(login.value).toBe('bbain');
       expect(password.value).toBe('maarch');
-      
-      component.onSubmit();
 
       // Handle the POST request and provide a mock response
       const req = httpTestingController.expectOne('../rest/authenticate');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
       req.flush({}); // Provide a mock response
-      
     });
   })
 
