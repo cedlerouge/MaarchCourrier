@@ -313,9 +313,9 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $this->assertSame(self::$resourceId, $responseBody['listInstance'][0]['res_id']);
         $this->assertSame(0, $responseBody['listInstance'][0]['sequence']);
-        $this->assertSame('aackermann', $responseBody['listInstance'][0]['item_id']);
+        $this->assertSame('ppetit', $responseBody['listInstance'][0]['item_id']);
         $this->assertSame('user_id', $responseBody['listInstance'][0]['item_type']);
-        $this->assertSame('dest', $responseBody['listInstance'][0]['item_mode']);
+        $this->assertSame('avis', $responseBody['listInstance'][0]['item_mode']);
         $this->assertSame($userInfo['id'], $responseBody['listInstance'][0]['added_by_user']);
         $this->assertSame(0, $responseBody['listInstance'][0]['viewed']);
         $this->assertSame('entity_id', $responseBody['listInstance'][0]['difflist_type']);
@@ -323,7 +323,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $this->assertEmpty($responseBody['listInstance'][0]['process_comment']);
         $this->assertEmpty($responseBody['listInstance'][0]['signatory']);
         $this->assertSame(false, $responseBody['listInstance'][0]['requested_signature']);
-        $this->assertSame(11, $responseBody['listInstance'][0]['itemSerialId']);
+        $this->assertSame(10, $responseBody['listInstance'][0]['itemSerialId']);
         $this->assertNotEmpty($responseBody['listInstance'][0]['labelToDisplay']);
         $this->assertNotEmpty($responseBody['listInstance'][0]['descriptionToDisplay']);
 
@@ -345,9 +345,9 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $this->assertSame(self::$resourceId, $responseBody['listInstance'][2]['res_id']);
         $this->assertSame(0, $responseBody['listInstance'][2]['sequence']);
-        $this->assertSame('ppetit', $responseBody['listInstance'][2]['item_id']);
+        $this->assertSame('aackermann', $responseBody['listInstance'][2]['item_id']);
         $this->assertSame('user_id', $responseBody['listInstance'][2]['item_type']);
-        $this->assertSame('avis', $responseBody['listInstance'][2]['item_mode']);
+        $this->assertSame('dest', $responseBody['listInstance'][2]['item_mode']);
         $this->assertSame($userInfo['id'], $responseBody['listInstance'][2]['added_by_user']);
         $this->assertSame(0, $responseBody['listInstance'][2]['viewed']);
         $this->assertSame('entity_id', $responseBody['listInstance'][2]['difflist_type']);
@@ -355,7 +355,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $this->assertEmpty($responseBody['listInstance'][2]['process_comment']);
         $this->assertEmpty($responseBody['listInstance'][2]['signatory']);
         $this->assertSame(false, $responseBody['listInstance'][2]['requested_signature']);
-        $this->assertSame(10, $responseBody['listInstance'][2]['itemSerialId']);
+        $this->assertSame(11, $responseBody['listInstance'][2]['itemSerialId']);
         $this->assertNotEmpty($responseBody['listInstance'][2]['labelToDisplay']);
         $this->assertNotEmpty($responseBody['listInstance'][2]['descriptionToDisplay']);
 

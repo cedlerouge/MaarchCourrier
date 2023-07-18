@@ -11,7 +11,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
+import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 declare let $: any;
@@ -316,9 +316,9 @@ export class BasketAdministrationComponent implements OnInit {
         const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.unlinkAction') + ' ?', msg: this.translate.instant('lang.confirmAction') } });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
+            map(() => action.checked = false),
             exhaustMap(() => this.http.put('../rest/baskets/' + this.id + '/groups/' + group.group_id + '/actions', { 'groupActions': group.groupActions })),
             tap(() => {
-                action.checked = false;
                 this.notify.success(this.translate.instant('lang.actionsGroupBasketUpdated'));
             }),
             catchError((err: any) => {

@@ -376,6 +376,8 @@ class InstallerController
 
         $connection = "host={$body['server']} port={$body['port']} user={$body['user']} password={$body['password']} dbname={$body['name']}";
         $connected = @pg_connect($connection);
+        $db = null;
+
         if ($connected) {
             pg_close();
             $dsn = "pgsql:host={$body['server']};port={$body['port']};dbname={$body['name']}";
@@ -401,6 +403,10 @@ class InstallerController
             $db = new \PDO($dsn, $body['user'], $body['password'], $options);
         }
 
+        if(empty($db)) {
+            return $response->withStatus(400)->withJson(['errors' => 'Database instance is empty']);
+        }
+
         if (!is_file('sql/structure.sql')) {
             return $response->withStatus(400)->withJson(['errors' => 'File sql/structure.sql does not exist']);
         }
@@ -408,6 +414,15 @@ class InstallerController
         $result = $db->exec($fileContent);
         if ($result === false) {
             return $response->withStatus(400)->withJson(['errors' => 'Request failed : run structure.sql']);
+        }
+
+        if (!is_file('sql/index_creation.sql')) {
+            return $response->withStatus(400)->withJson(['errors' => 'File sql/index_creation.sql does not exist']);
+        }
+        $fileContent = file_get_contents('sql/index_creation.sql');
+        $result = $db->exec($fileContent);
+        if ($result === false) {
+            return $response->withStatus(400)->withJson(['errors' => 'Request failed : run index_creation.sql']);
         }
 
         if (!empty($body['data'])) {
