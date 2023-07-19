@@ -11,6 +11,8 @@ import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
+import { MatIconRegistry } from '@angular/material/icon';
+import { DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
@@ -44,17 +46,27 @@ describe('LoginComponent', () => {
         PrivilegeService,
         DatePipe,
         AdministrationService,
-        HttpClient
+        HttpClient,
+        MatIconRegistry,
+        DomSanitizer
       ],
       declarations: [LoginComponent]
     }).compileComponents();
+
     // Set lang
     translateService = TestBed.inject(TranslateService);
     translateService.use('fr');
   });
 
   beforeEach(() => {
+    // Set maarchLogoFull SVG
+    const iconRegistry = TestBed.inject(MatIconRegistry);
+    const sanitizer = TestBed.inject(DomSanitizer);
+    const url: string = '../../assets/logo.svg';
+    iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+
     httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
+
     fixture = TestBed.createComponent(LoginComponent); // Initialize LoginComponent
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -76,7 +88,7 @@ describe('LoginComponent', () => {
       expect(login.getAttributeNode('autofocus').specified).toBeTrue();
     });
   
-    it('set login and password', fakeAsync(() => {
+    fit('set login and password', fakeAsync(() => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
       const password = nativeElement.querySelector('input[name=password]');
