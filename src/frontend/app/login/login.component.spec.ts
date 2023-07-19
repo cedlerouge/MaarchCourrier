@@ -1,20 +1,29 @@
-import { ComponentFixture, TestBed, tick } from '@angular/core/testing';
-import { TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../../app/app-common.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LoginComponent } from '@appRoot/login/login.component';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing'; // Import the HttpClientTestingModule and HttpTestingController
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { FoldersService } from '@appRoot/folder/folders.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import * as langFrJson from '../../../lang/lang-fr.json';
+
+class FakeLoader implements TranslateLoader {
+  getTranslation(lang: string): Observable<any> {
+      return of({ lang: langFrJson });
+  }
+}
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let httpTestingController: HttpTestingController;
+  let translateService: TranslateService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -23,7 +32,10 @@ describe('LoginComponent', () => {
         RouterTestingModule,
         BrowserAnimationsModule,
         TranslateModule,
-        HttpClientTestingModule
+        HttpClientTestingModule,
+        TranslateModule.forRoot({
+          loader: { provide: TranslateLoader, useClass: FakeLoader },
+      })
       ],
       providers: [
         TranslateService,
@@ -36,6 +48,9 @@ describe('LoginComponent', () => {
       ],
       declarations: [LoginComponent]
     }).compileComponents();
+    // Set lang
+    translateService = TestBed.inject(TranslateService);
+    translateService.use('fr');
   });
 
   beforeEach(() => {
@@ -51,11 +66,13 @@ describe('LoginComponent', () => {
   });
 
   describe('Login test', () => {
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
+      fixture.detectChanges();
+      tick(100);
       const req = httpTestingController.expectOne('../rest/languages/fr');
       expect(req.request.method).toBe('GET');
       req.flush({}); // Provide a response for the request
-    });
+    }));
 
     it('focus on login and password inputs', () => {
       const nativeElement = fixture.nativeElement;
@@ -67,7 +84,7 @@ describe('LoginComponent', () => {
       expect(login.getAttributeNode('autofocus').specified).toBeTrue();
     });
   
-    it('set login and password', () => {
+    it('set login and password', fakeAsync(() => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
       const password = nativeElement.querySelector('input[name=password]');
@@ -82,18 +99,24 @@ describe('LoginComponent', () => {
       // Trigger an input event to notify Angular of the value change
       login.dispatchEvent(new Event('input'));
       password.dispatchEvent(new Event('input'));
+
       fixture.detectChanges();
 
       // Verify that the login input field now has the expected value
       expect(login.value).toBe('bbain');
       expect(password.value).toBe('maarch');
 
+      component.onSubmit();
+
+      tick(300);
+
       // Handle the POST request and provide a mock response
+      httpTestingController = TestBed.inject(HttpTestingController);
+      console.log(httpTestingController);
       const req = httpTestingController.expectOne('../rest/authenticate');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
       req.flush({}); // Provide a mock response
-    });
-  })
-
+    }));
+  });
 });
