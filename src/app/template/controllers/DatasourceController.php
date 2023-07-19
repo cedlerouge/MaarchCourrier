@@ -213,7 +213,7 @@ class DatasourceController
             $resCustomFieldsData = DatasourceController::getCustomFieldsData([
                 'custom_fields' => $datasources['res_letterbox'][0]['custom_fields']
             ]);
-            $datasources['res_letterbox'][0] = array_merge($datasources['res_letterbox'][0], $resCustomFieldsData);
+            $datasources['res_letterbox'][0] = array_merge($datasources['res_letterbox'][0] ?? [], $resCustomFieldsData);
         }
 
         return $datasources;
