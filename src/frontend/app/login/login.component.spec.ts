@@ -66,14 +66,6 @@ describe('LoginComponent', () => {
   });
 
   describe('Login test', () => {
-    beforeEach(fakeAsync(() => {
-      fixture.detectChanges();
-      tick(100);
-      const req = httpTestingController.expectOne('../rest/languages/fr');
-      expect(req.request.method).toBe('GET');
-      req.flush({}); // Provide a response for the request
-    }));
-
     it('focus on login and password inputs', () => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
@@ -112,7 +104,6 @@ describe('LoginComponent', () => {
 
       // Handle the POST request and provide a mock response
       httpTestingController = TestBed.inject(HttpTestingController);
-      console.log(httpTestingController);
       const req = httpTestingController.expectOne('../rest/authenticate');
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body

@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit {
 
         this.environment = environment;
         if (this.authService.getToken() !== null) {
-            if (!this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id))) {
+            if (!this.functionsService.empty(this.authService.getToken()?.split('.')[1]) && !this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id))) {
                 this.router.navigate([this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id)]);
             } else {
                 this.router.navigate(['/home']);
@@ -88,7 +88,7 @@ export class LoginComponent implements OnInit {
                 if (this.authService.getCachedUrl()) {
                     this.router.navigateByUrl(this.authService.getCachedUrl());
                     this.authService.cleanCachedUrl();
-                } else if (!this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(data.headers.get('Token').split('.')[1])).user.id))) {
+                } else if (!this.functionsService.empty(this.authService.getToken()?.split('.')[1]) && !this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(data.headers.get('Token').split('.')[1])).user.id))) {
                     this.router.navigate([this.authService.getUrl(JSON.parse(atob(data.headers.get('Token').split('.')[1])).user.id)]);
                 } else {
                     this.router.navigate(['/home']);
