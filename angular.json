@@ -118,7 +118,13 @@
                 "inject": true
               }
             ],
-            "scripts": []
+            "scripts": [
+              "./node_modules/jquery/dist/jquery.min.js",
+              "./node_modules/jstree-bootstrap-theme/dist/jstree.min.js",
+              "./node_modules/jquery.nicescroll/dist/jquery.nicescroll.min.js",
+              "./node_modules/tooltipster/dist/js/tooltipster.bundle.min.js",
+              "./node_modules/tinymce/tinymce.min.js"
+            ]
           }
         }
       }
