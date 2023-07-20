@@ -12,7 +12,7 @@ import { AdministrationService } from '@appRoot/administration/administration.se
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
+import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
@@ -35,6 +35,7 @@ describe('LoginComponent', () => {
         BrowserAnimationsModule,
         TranslateModule,
         HttpClientTestingModule,
+        BrowserModule,
         TranslateModule.forRoot({
           loader: { provide: TranslateLoader, useClass: FakeLoader },
       })
@@ -48,7 +49,15 @@ describe('LoginComponent', () => {
         AdministrationService,
         HttpClient,
         MatIconRegistry,
-        DomSanitizer
+        // DomSanitizer
+        {
+          provide: DomSanitizer,
+          useValue: {
+            bypassSecurityTrustResourceUrl: (url: string) => url,
+            bypassSecurityTrustHtml: (html: string) => html,
+            sanitize: (ctx: any, val: string) => val,
+          },
+        },
       ],
       declarations: [LoginComponent]
     }).compileComponents();
@@ -58,11 +67,12 @@ describe('LoginComponent', () => {
     translateService.use('fr');
   });
 
-  beforeEach(() => {
-    // Set maarchLogoFull SVG
+  beforeEach(fakeAsync(() => {
+    // TO DO : Set maarchLogoFull SVG
     const iconRegistry = TestBed.inject(MatIconRegistry);
     const sanitizer = TestBed.inject(DomSanitizer);
-    const url: string = '../../assets/logo.svg';
+    const url: string = '../rest/images?image=logo';
+    tick(300);
     iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
 
     httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
@@ -71,7 +81,7 @@ describe('LoginComponent', () => {
     component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component).toBeTruthy();
-  });
+  }));
 
   afterEach(() => {
     httpTestingController.verify(); // Verify that there are no outstanding HTTP requests
@@ -88,7 +98,7 @@ describe('LoginComponent', () => {
       expect(login.getAttributeNode('autofocus').specified).toBeTrue();
     });
   
-    fit('set login and password', fakeAsync(() => {
+    it('set login and password', fakeAsync(() => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
       const password = nativeElement.querySelector('input[name=password]');
