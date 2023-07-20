@@ -52,8 +52,8 @@
     </div>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">
-        <button mat-raised-button mat-button (click)="stepper.previous()">{{'lang.previous' | translate}}</button>
+        <button *ngIf="stepper.selectedIndex === 1" mat-raised-button mat-button color="primary" (click)="stepper.previous()">{{'lang.previous' | translate}}</button>
         <button mat-raised-button mat-button [mat-dialog-close]="">{{'lang.close' | translate}}</button>
-        <button mat-raised-button mat-button (click)="stepper.next()">{{'lang.next' | translate}}</button>
+        <button *ngIf="stepper.selectedIndex === 0" mat-raised-button mat-button color="primary" (click)="stepper.next()">{{'lang.next' | translate}}</button>
     </div>
 </div>
