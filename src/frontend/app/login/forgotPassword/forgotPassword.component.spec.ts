@@ -77,6 +77,7 @@ describe('Forgot password component', () => {
         });
 
         fit('set login', fakeAsync(() => {
+            // get login input
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
 
@@ -96,21 +97,25 @@ describe('Forgot password component', () => {
 
             component.generateLink();
 
+            // Use whenStable() to wait for all pending asynchronous activities to complete
+            fixture.whenStable().then(() => {
+                // Now, check that the navigation was triggered
+                const router = TestBed.inject(Router);
+                const navigateSpy = spyOn(router, 'navigate');
+
+                // Check if navigation is called with the correct route
+                expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+
+                // Handle the POST request and provide a mock response
+                httpTestingController = TestBed.inject(HttpTestingController);
+                const req = httpTestingController.expectOne('../rest/password');
+                expect(req.request.method).toBe('POST');
+                expect(req.request.body).toEqual({ login: login.value }); // Add the request body
+                req.flush({}); // Provide a mock response
+            });
+
+            // Advance the fakeAsync timer to complete the HTTP request
             tick(300);
-
-            // Now, check that the navigation was triggered
-            const router = TestBed.inject(Router);
-            const navigateSpy = spyOn(router, 'navigate');
-
-            // Check if navigation is called with the correct route
-            expect(navigateSpy).toHaveBeenCalledWith(['/login']);
-
-            // Handle the POST request and provide a mock response
-            httpTestingController = TestBed.inject(HttpTestingController);
-            const req = httpTestingController.expectOne('../rest/password');
-            expect(req.request.method).toBe('POST');
-            expect(req.request.body).toEqual({ login: login.value }); // Add the request body
-            req.flush({}); // Provide a mock response
         }));
     });
 });
