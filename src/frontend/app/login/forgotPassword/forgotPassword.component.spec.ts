@@ -76,7 +76,7 @@ describe('Forgot password component', () => {
             expect(login.getAttributeNode('autofocus').specified).toBeTrue();
         });
 
-        fit('set login', fakeAsync(() => {
+        it('set login', fakeAsync(() => {
             // get login input
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
