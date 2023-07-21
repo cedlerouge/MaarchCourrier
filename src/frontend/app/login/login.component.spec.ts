@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../../app/app-common.module';
@@ -106,7 +106,7 @@ describe('LoginComponent', () => {
       expect(login.getAttributeNode('autofocus').specified).toBeTrue();
     });
   
-    it('set login and password', fakeAsync(() => {
+    it('set login and password', fakeAsync((done) => {
       const nativeElement = fixture.nativeElement;
       const login = nativeElement.querySelector('input[name=login]');
       const password = nativeElement.querySelector('input[name=password]');
@@ -136,19 +136,21 @@ describe('LoginComponent', () => {
         const router = TestBed.inject(Router);
         const navigateSpy = spyOn(router, 'navigate');
 
-        // Check if navigation is called with the correct route
-        expect(navigateSpy).toHaveBeenCalledWith(['/home']);
-
         // Handle the POST request and provide a mock response
         httpTestingController = TestBed.inject(HttpTestingController);
         const req = httpTestingController.expectOne('../rest/authenticate');
         expect(req.request.method).toBe('POST');
         expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
         req.flush({}); // Provide a mock response
+        setTimeout(() => {
+          // Check if navigation is called with the correct route
+          expect(navigateSpy).toHaveBeenCalledWith(['/home']);
+        }, 500);
+        // Advance the fakeAsync timer to complete the HTTP request
+        tick(300);
+        // Flush any pending asynchronous tasks
+        flush();
       });
-
-      // Advance the fakeAsync timer to complete the HTTP request
-      tick(300);
     }));
   });
 });
