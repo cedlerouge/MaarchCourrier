@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -103,19 +103,22 @@ describe('Forgot password component', () => {
                 const router = TestBed.inject(Router);
                 const navigateSpy = spyOn(router, 'navigate');
 
-                // Check if navigation is called with the correct route
-                expect(navigateSpy).toHaveBeenCalledWith(['/login']);
-
                 // Handle the POST request and provide a mock response
                 httpTestingController = TestBed.inject(HttpTestingController);
                 const req = httpTestingController.expectOne('../rest/password');
                 expect(req.request.method).toBe('POST');
                 expect(req.request.body).toEqual({ login: login.value }); // Add the request body
                 req.flush({}); // Provide a mock response
-            });
 
-            // Advance the fakeAsync timer to complete the HTTP request
-            tick(300);
+                setTimeout(() => {
+                    // Check if navigation is called with the correct route
+                    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+                  }, 500);
+                  // Advance the fakeAsync timer to complete the HTTP request
+                  tick(300);
+                  // Flush any pending asynchronous tasks
+                  flush();
+            });
         }));
     });
 });
