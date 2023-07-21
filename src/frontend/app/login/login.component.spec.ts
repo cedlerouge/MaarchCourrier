@@ -14,6 +14,7 @@ import { Observable, of } from 'rxjs';
 import { MatIconRegistry } from '@angular/material/icon';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
+import { Router } from '@angular/router';
 
 class FakeLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -38,7 +39,7 @@ describe('LoginComponent', () => {
         BrowserModule,
         TranslateModule.forRoot({
           loader: { provide: TranslateLoader, useClass: FakeLoader },
-      })
+        })
       ],
       providers: [
         TranslateService,
@@ -68,12 +69,13 @@ describe('LoginComponent', () => {
   });
 
   beforeEach(fakeAsync(() => {
-    // TO DO : Set maarchLogoFull SVG
-    const iconRegistry = TestBed.inject(MatIconRegistry);
-    const sanitizer = TestBed.inject(DomSanitizer);
-    const url: string = '../rest/images?image=logo';
-    tick(300);
-    iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+    /*  TO DO : Set maarchLogoFull SVG 
+      const iconRegistry = TestBed.inject(MatIconRegistry);
+      const sanitizer = TestBed.inject(DomSanitizer);
+      const url: string = '../rest/images?image=logo';
+      tick(300);
+      iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+    */
 
     httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
 
@@ -123,6 +125,13 @@ describe('LoginComponent', () => {
       component.onSubmit();
 
       tick(300);
+
+      // Check that the navigation was triggered
+      const router = TestBed.inject(Router);
+      const navigateSpy = spyOn(router, 'navigate');
+
+      // Check if navigation is called with the correct route
+      expect(navigateSpy).toHaveBeenCalledWith(['/home']);
 
       // Handle the POST request and provide a mock response
       httpTestingController = TestBed.inject(HttpTestingController);

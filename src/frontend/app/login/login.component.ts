@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
     constructor(
         public translate: TranslateService,
         private http: HttpClient,
-        private router: Router,
+        public router: Router,
         private headerService: HeaderService,
         public authService: AuthService,
         private localStorage: LocalStorageService,
