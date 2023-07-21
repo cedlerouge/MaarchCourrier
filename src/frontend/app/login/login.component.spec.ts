@@ -15,6 +15,11 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
 import { Router } from '@angular/router';
+import { Component } from '@angular/core';
+
+// DummyComponent for testing purposes
+@Component({ template: '' })
+class DummyComponent {}
 
 class FakeLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -39,7 +44,8 @@ describe('LoginComponent', () => {
         BrowserModule,
         TranslateModule.forRoot({
           loader: { provide: TranslateLoader, useClass: FakeLoader },
-        })
+        }),
+        RouterTestingModule.withRoutes([{ path: 'home', component: DummyComponent }]),
       ],
       providers: [
         TranslateService,
@@ -60,7 +66,7 @@ describe('LoginComponent', () => {
           },
         },
       ],
-      declarations: [LoginComponent]
+      declarations: [LoginComponent, DummyComponent]
     }).compileComponents();
 
     // Set lang
@@ -124,21 +130,25 @@ describe('LoginComponent', () => {
 
       component.onSubmit();
 
+      // Use whenStable() to wait for all pending asynchronous activities to complete
+      fixture.whenStable().then(() => {
+        // Check that the navigation was triggered
+        const router = TestBed.inject(Router);
+        const navigateSpy = spyOn(router, 'navigate');
+
+        // Check if navigation is called with the correct route
+        expect(navigateSpy).toHaveBeenCalledWith(['/home']);
+
+        // Handle the POST request and provide a mock response
+        httpTestingController = TestBed.inject(HttpTestingController);
+        const req = httpTestingController.expectOne('../rest/authenticate');
+        expect(req.request.method).toBe('POST');
+        expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
+        req.flush({}); // Provide a mock response
+      });
+
+      // Advance the fakeAsync timer to complete the HTTP request
       tick(300);
-
-      // Check that the navigation was triggered
-      const router = TestBed.inject(Router);
-      const navigateSpy = spyOn(router, 'navigate');
-
-      // Check if navigation is called with the correct route
-      expect(navigateSpy).toHaveBeenCalledWith(['/home']);
-
-      // Handle the POST request and provide a mock response
-      httpTestingController = TestBed.inject(HttpTestingController);
-      const req = httpTestingController.expectOne('../rest/authenticate');
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
-      req.flush({}); // Provide a mock response
     }));
   });
 });
