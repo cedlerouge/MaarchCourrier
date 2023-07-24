@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
+import { of } from 'rxjs';
 
 @Component({
     templateUrl: 'reset-password.component.html',
@@ -76,18 +77,20 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
 
         this.http.put('../rest/password', { 'token': this.token, 'password': this.password.newPassword })
             .pipe(
+                tap(() => {
+                    this.loadingForm = true;
+                    this.notificationService.success(this.translate.instant('lang.passwordChanged'));
+                    this.router.navigate(['/login']);
+                }),
                 finalize(() => {
                     this.labelButton = this.translate.instant('lang.update');
                     this.loading = false;
+                }),
+                catchError((err: any) => {
+                    this.notificationService.handleSoftErrors(err);
+                    return of(false);
                 })
-            )
-            .subscribe((data: any) => {
-                this.loadingForm = true;
-                this.notificationService.success(this.translate.instant('lang.passwordChanged'));
-                this.router.navigate(['/login']);
-            }, (err: any) => {
-                this.notificationService.handleSoftErrors(err);
-            });
+            ).subscribe();
     }
 
     checkPasswordValidity(password: string) {
@@ -111,8 +114,8 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
         this.handlePassword.error = false;
         this.handlePassword.errorMsg = '';
 
-        this.http.get('../rest/passwordRules')
-            .subscribe((data: any) => {
+        this.http.get('../rest/passwordRules').pipe(
+            tap((data: any) => {
                 const ruleTextArr: String[] = [];
                 const otherRuleTextArr: String[] = [];
 
@@ -162,9 +165,12 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
                 });
                 this.ruleText = ruleTextArr.join(', ');
                 this.otherRuleText = otherRuleTextArr.join('<br/>');
-            }, (err) => {
-                this.notificationService.handleErrors(err);
-            });
+            }),
+            catchError((err: any) => {
+                this.notificationService.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     allowValidate() {
