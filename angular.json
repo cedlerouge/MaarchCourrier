@@ -116,7 +116,19 @@
               {
                 "input": "./src/frontend/css/vars.scss",
                 "inject": true
-              }
+              },
+              "./node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "./src/frontend/css/font-awesome-maarch/css/font-maarch.css",
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/jstree-bootstrap-theme/dist/themes/proton/style.min.css",
+              "./node_modules/tooltipster/dist/css/tooltipster.bundle.min.css",
+              "./node_modules/tooltipster/dist/css/plugins/tooltipster/sideTip/themes/tooltipster-sideTip-light.min.css",
+              "./src/frontend/css/maarch-material.scss",
+              "./src/frontend/css/engine.scss",
+              "./src/frontend/css/engine_2.scss",
+              "./node_modules/ng2-dnd/bundles/style.css",
+              "./src/frontend/css/ng2-dnd/style-fix.css",
+              "./node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js",
