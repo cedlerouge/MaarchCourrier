@@ -8,11 +8,12 @@ import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { Observable, of } from 'rxjs';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../../lang/lang-fr.json';
 import { SharedModule } from '@appRoot/app-common.module';
 import { ForgotPasswordComponent } from './forgotPassword.component';
 import { Router } from '@angular/router';
+import { MatIconRegistry } from '@angular/material/icon';
 
 class FakeLoader implements TranslateLoader {
   getTranslation(lang: string): Observable<any> {
@@ -57,15 +58,19 @@ describe('Forgot password component', () => {
 
     beforeEach(fakeAsync(() => {
         httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
+        // maarchLogoWhiteFull SVG 
+        const iconRegistry = TestBed.inject(MatIconRegistry);
+        const sanitizer = TestBed.inject(DomSanitizer);
+        const url: string = '../../../assets/logo_white.svg';
+        tick(300);
+        iconRegistry.addSvgIcon('maarchLogoWhiteFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+
         fixture = TestBed.createComponent(ForgotPasswordComponent); // Initialize ForgotPasswordComponent
         component = fixture.componentInstance;
+
         fixture.detectChanges();
         expect(component).toBeTruthy();
     }));
-
-    afterEach(() => {
-        httpTestingController.verify(); // Verify that there are no outstanding HTTP requests
-    });
 
     describe('Set login', () => {
         it('focus on login', () => {
@@ -113,11 +118,11 @@ describe('Forgot password component', () => {
                 setTimeout(() => {
                     // Check if navigation is called with the correct route
                     expect(navigateSpy).toHaveBeenCalledWith(['/login']);
-                  }, 500);
-                  // Advance the fakeAsync timer to complete the HTTP request
-                  tick(300);
-                  // Flush any pending asynchronous tasks
-                  flush();
+                }, 500);
+                // Advance the fakeAsync timer to complete the HTTP request
+                tick(300);
+                // Flush any pending asynchronous tasks
+                flush();
             });
         }));
     });

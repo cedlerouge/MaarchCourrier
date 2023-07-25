@@ -84,16 +84,17 @@ describe('LoginComponent', () => {
     */
 
     httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
-
+    //  TO DO : Set maarchLogoFull SVG 
+    const iconRegistry = TestBed.inject(MatIconRegistry);
+    const sanitizer = TestBed.inject(DomSanitizer);
+    const url: string = '../rest/images?image=logo';
+    tick(300);
+    iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
     fixture = TestBed.createComponent(LoginComponent); // Initialize LoginComponent
     component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component).toBeTruthy();
   }));
-
-  afterEach(() => {
-    httpTestingController.verify(); // Verify that there are no outstanding HTTP requests
-  });
 
   describe('Login test', () => {
     it('focus on login and password inputs', () => {

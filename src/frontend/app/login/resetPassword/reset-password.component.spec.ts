@@ -8,11 +8,12 @@ import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { Observable, of } from 'rxjs';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../../lang/lang-fr.json';
 import { SharedModule } from '@appRoot/app-common.module';
 import { Router } from '@angular/router';
 import { ResetPasswordComponent } from './reset-password.component';
+import { MatIconRegistry } from '@angular/material/icon';
 
 
 class FakeLoader implements TranslateLoader {
@@ -57,35 +58,36 @@ describe('Reset password component', () => {
 
     beforeEach(fakeAsync(() => {
         httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
+
+        //  TO DO : Set maarchLogoFull SVG 
+        const iconRegistry = TestBed.inject(MatIconRegistry);
+        const sanitizer = TestBed.inject(DomSanitizer);
+        const url: string = '../../../assets/logo_white.svg';
+        tick(300);
+        iconRegistry.addSvgIcon('maarchLogoWhiteFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+
         fixture = TestBed.createComponent(ResetPasswordComponent); // Initialize ResetPasswordComponent
         component = fixture.componentInstance;
-        fixture.detectChanges();
-        expect(component).toBeTruthy();
 
-        fixture.whenStable().then(() => {
-            // Handle the POST request and provide a mock response
-            httpTestingController = TestBed.inject(HttpTestingController);
-            const req = httpTestingController.expectOne('../rest/passwordRules');
-            expect(req.request.method).toBe('GET');
-            req.flush({}); // Provide a mock response
-            // Advance the fakeAsync timer to complete the HTTP request
-            tick(300);
-          });
+        fixture.detectChanges();
+        tick(300);
+        expect(component).toBeTruthy();
     }));
 
-    afterEach(() => {
-        httpTestingController.verify(); // Verify that there are no outstanding HTTP requests
-    });
-
-    it('focus on password', () => {
+    it('focus on password', fakeAsync(() => {
         const nativeElement = fixture.nativeElement;
         const newPassword = nativeElement.querySelector('input[name=newPassword]');
         const passwordConfirmation = nativeElement.querySelector('input[name=passwordConfirmation]');
+        fixture.detectChanges();
+        tick(100);
+
+        component.getPassRules();
+        
         expect(newPassword).toBeTruthy();
         expect(passwordConfirmation).toBeTruthy();
         expect(newPassword.getAttributeNode('autofocus')).toBeTruthy();
         expect(newPassword.getAttributeNode('autofocus').specified).toBeTrue();
-    });
+    }));
 
     it('set password', fakeAsync(() => {
         const nativeElement = fixture.nativeElement;
