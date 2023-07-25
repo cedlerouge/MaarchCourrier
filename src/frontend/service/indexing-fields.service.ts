@@ -501,6 +501,15 @@ export class IndexingFieldsService {
                         enabled: true,
                     });
                     fields.push({
+                        identifier: 'role_visaInProgress',
+                        label: this.translate.instant('lang.visaUserInProgress'),
+                        icon: 'fa-user-check',
+                        type: 'select',
+                        default_value: null,
+                        values: [],
+                        enabled: true,
+                    });
+                    fields.push({
                         identifier: 'role_sign',
                         label: this.translate.instant('lang.signUser'),
                         icon: 'fa-user-tie',

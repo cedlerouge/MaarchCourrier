@@ -945,6 +945,7 @@ class SearchController
 
                 if (!empty($value['values']) && is_array($value['values'])) {
                     $where = '';
+                    $dataVisaInProgress = [];
                     $data = [];
                     foreach ($value['values'] as $itemValue) {
                         if (!empty($where)) {
@@ -956,6 +957,7 @@ class SearchController
 
                         if ($itemValue['type'] == 'user') {
                             $where .= ' OR delegate = ?';
+                            $dataVisaInProgress[] = $itemValue['id'];
                             $data[] = $itemValue['id'];
                         }
                         $where .= ')';
@@ -974,6 +976,26 @@ class SearchController
                             'where'  => ["({$where})", 'difflist_type = ?', 'signatory = ?', '(requested_signature = ? or (requested_signature = ? and process_date is not null))'],
                             'data'   => $data
                         ]);
+                    } elseif ($roleId == 'visaInProgress') {
+                        $select =  "select list1.res_id
+                                    from listinstance as list1
+                                    left join (
+                                        select list_lj.* from listinstance as list_lj
+                                        where list_lj.difflist_type = 'VISA_CIRCUIT' and list_lj.process_date IS NULL 
+                                        and list_lj.res_id = rvl.res_id order by list_lj.listinstance_id asc LIMIT 1
+                                    ) as list2 on list1.listinstance_id = list2.listinstance_id
+                                    where list2.requested_signature = false
+                                    and list2.item_id in (?)";
+                        $where = ["rvl.res_id in ($select)"];
+                        $data = $dataVisaInProgress;
+                        if (!empty($data)) {
+                            $rolesMatch = DatabaseModel::select([
+                                'select' => ['rvl.res_id'],
+                                'table'  => ['res_view_letterbox rvl'],
+                                'where'  => $where,
+                                'data'   => [$data]
+                            ]);
+                        }
                     } else {
                         $data[] = $roleId;
                         $rolesMatch = ListInstanceModel::get([

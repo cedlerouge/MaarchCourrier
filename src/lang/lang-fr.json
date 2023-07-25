@@ -1680,6 +1680,7 @@
     "visaCircuit": "Circuit de visa",
     "visaNote": "Consigne",
     "visaUser": "Viseur",
+    "visaUserInProgress": "Viseur en cours",
     "visaWorkflow": "Circuit de visa",
     "visaWorkflowDeleted": "Circuit de visa supprimé",
     "visaWorkflowInterrupted": "Circuit interrompu",
