@@ -1058,7 +1058,7 @@ class MaarchParapheurController
             }
 
             if (empty($curlResponse['response']['user'])) {
-                return $response->withJson(['link' => '', 'errors' => $errors, 'lang' => 'maarchParapheurLinkbroken']);
+                return $response->withStatus(400)->withJson(['errors' => $errors, 'lang' => 'maarchParapheurLinkbroken']);
             }
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
