@@ -25,6 +25,7 @@ use Note\models\NoteModel;
 use Resource\models\ResModel;
 use SrcCore\models\TextFormatModel;
 use User\models\UserModel;
+use CustomField\models\CustomFieldModel;
 
 class DatasourceController
 {
@@ -114,6 +115,12 @@ class DatasourceController
             if (!empty($event['basketName'])) {
                 $res['basketName'] = $event['basketName'];
             }
+
+            // CustomFields
+            $resCustomFieldsData = DatasourceController::getCustomFieldsData([
+                'custom_fields' => $res['custom_fields']
+            ]);
+            $res = array_merge($res, $resCustomFieldsData);
         
             $datasources['res_letterbox'][] = $res;
         
@@ -201,8 +208,48 @@ class DatasourceController
             $datasources['sender'][] = $contact;
             
             $datasources['notes'][] = ['content' => $note];
+
+            // CustomFields
+            $resCustomFieldsData = DatasourceController::getCustomFieldsData([
+                'custom_fields' => $datasources['res_letterbox'][0]['custom_fields']
+            ]);
+            $datasources['res_letterbox'][0] = array_merge($datasources['res_letterbox'][0] ?? [], $resCustomFieldsData);
         }
 
         return $datasources;
+    }
+
+    public static function getCustomFieldsData(array $args)
+    {
+        $customFieldsData   = [];
+        $resCustomFields    = !empty($args['custom_fields']) ? json_decode($args['custom_fields'], true) : [];
+        $resCustomFieldsIds = array_keys($resCustomFields);
+
+        if (!empty($resCustomFieldsIds)) {
+            $customFields = CustomFieldModel::get([
+                'select' => ['id', 'values', 'type'],
+                'where'  => ['id in (?)'],
+                'data'   => [$resCustomFieldsIds]
+            ]);
+
+            $customFieldsTypes = array_column($customFields, 'type', 'id');
+
+            foreach ($resCustomFields as $customId => $customField) {
+                if (is_array($customField)) {
+                    if ($customFieldsTypes[$customId] == 'banAutocomplete') {
+                        $customFieldsData['customField_' . $customId] = "{$customField[0]['addressNumber']} {$customField[0]['addressStreet']} {$customField[0]['addressTown']} ({$customField[0]['addressPostcode']})";
+                    } elseif ($customFieldsTypes[$customId] == 'contact') {
+                        $customValues = ContactController::getContactCustomField(['contacts' => $customField]);
+                        $customFieldsData['customField_' . $customId] = implode("\n", $customValues);
+                    } else {
+                        $customFieldsData['customField_' . $customId] = implode("\n", $customField);
+                    }
+                } else {
+                    $customFieldsData['customField_' . $customId] = $customField;
+                }
+            }
+        }
+
+        return $customFieldsData;
     }
 }
