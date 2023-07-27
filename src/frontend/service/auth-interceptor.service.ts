@@ -137,7 +137,7 @@ export class InactivityInterceptor implements HttpInterceptor {
         },
     ];
 
-    bypassUserActivityByRoutes: string[] = ['/', '/login', '/forgot-password', '/reset-password'];
+    bypassUserActivityByRoutes: string[] = ['/', '/login', '/forgot-password', '/reset-password', '/install'];
 
     constructor (
         private authService: AuthService,
