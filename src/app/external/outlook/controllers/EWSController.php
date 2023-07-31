@@ -13,13 +13,117 @@ use jamesiarmes\PhpEws\Enumeration\ResponseClassType;
 use jamesiarmes\PhpEws\Type\ItemResponseShapeType;
 use jamesiarmes\PhpEws\Type\ItemIdType;
 use jamesiarmes\PhpEws\Type\RequestAttachmentIdType;
+use jamesiarmes\PhpEws\Type\ConnectingSIDType;
+use jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
 
 use Convert\controllers\ConvertPdfController;
 use Resource\controllers\StoreController;
 use SrcCore\models\ValidatorModel;
+use Respect\Validation\Validator;
+use SrcCore\models\CurlModel;
+use SrcCore\controllers\LogsController;
 
 
 class EWSController {
+
+    private const BASE_TOKEN_URL = 'https://login.microsoftonline.com/';
+
+    public static function initOauth2(array $args)
+    {
+        $control = EWSController::control($args);
+        if (!empty($control['errors'])) {
+            return ['errors' => $control['errors'], 'lang' => $control['lang']];
+        }
+
+        $curlResponse = CurlModel::exec([
+            'url'     => EWSController::BASE_TOKEN_URL . $args['tenantId'] . '/oauth2/v2.0/token',
+            'method'  => 'POST',
+            'multipartBody' => [
+                'grant_type'    => 'client_credentials',
+				'client_id'     => $args['clientId'],
+				'client_secret' => $args['clientSecret'],
+				'scope'         => 'https://' . $args['ewsHost'] . '/.default'
+            ]
+        ]);
+
+        $errors = [];
+        if (!empty($curlResponse['errors'])) {
+            $errors[] = $curlResponse['errors'];
+        }
+        if (!empty($curlResponse['response']['error'])) {
+            $errors[] = $curlResponse['response'];
+        }
+        if (!empty($errors)) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'EWS OAuth2 Error',
+                'eventType' => 'Curl',
+                'eventId'   => 'Error while fetching access token, response: ' . json_encode($errors)
+            ]);
+            return ['errors' => $errors, 'lang' => 'outlookErrorGetToken'];
+        }
+
+        $accessToken = $curlResponse['response']['access_token'] ?? null;
+
+        if (empty($accessToken)) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'EWS OAuth2 Error',
+                'eventType' => 'Get Access Token',
+                'eventId'   => 'Error while fetching access token, response: ' . json_encode($curlResponse['response'])
+            ]);
+            return ['errors' => 'Error while fetching access token', 'lang' => 'outlookErrorGetToken'];
+        }
+
+        $client = null;
+
+        try {
+            $client = new Client($args['ewsHost'], $args['email'], '-', $args['version']);
+            $client->setCurlOptions([
+                CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken]
+            ]);
+            $exim = new ExchangeImpersonationType();
+            $csid = new ConnectingSIDType();
+            $csid->PrimarySmtpAddress = $args['email'];
+            $exim->ConnectingSID = $csid;
+            $client->setImpersonation($exim);
+        } catch (\Exception $e) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'Init EWS Client Error',
+                'eventType' => 'EWS Client',
+                'eventId'   => 'Error while initialize EWS Client. Exception : ' . $e->getMessage()
+            ]);
+            return ['errors' => 'Error while initialize EWS Client : ' . $e->getMessage()];
+        }
+
+        return ['client' => $client];
+    }
+
+    public static function control(array $args)
+    {
+        if (!Validator::notEmpty()->stringType()->validate($args['ewsHost'])) {
+            return ['errors' => '[EWS] ewsHost is empty or not a string'];
+        } elseif (!Validator::notEmpty()->stringType()->validate($args['email'])) {
+            return ['errors' => '[EWS] email is empty or not a string'];
+        } elseif (!Validator::notEmpty()->stringType()->validate($args['version'])) {
+            return ['errors' => '[EWS] version is empty or not a string'];
+        } elseif (!Validator::notEmpty()->stringType()->validate($args['tenantId'])) {
+            return ['errors' => '[EWS] tenantId is empty or not a string'];
+        } elseif (!Validator::notEmpty()->stringType()->validate($args['clientId'])) {
+            return ['errors' => '[EWS] clientId is empty or not a string'];
+        } elseif (!Validator::notEmpty()->stringType()->validate($args['clientSecret'])) {
+            return ['errors' => '[EWS] clientSecret is empty or not a string'];
+        }
+
+        return true;
+    }
 
     public static function getAttachments(array $args)
     {
@@ -28,7 +132,19 @@ class EWSController {
         ValidatorModel::stringType($args, ['emailId']);
         ValidatorModel::intVal($args, ['resId']);
 
-        $client = new Client($args['config']['url'], $args['config']['mail'], $args['config']['password'], $args['config']['version']);
+        $client = EWSController::initOauth2([
+            'ewsHost'       => $args['config']['ewsHost'] ?? null,
+            'email'         => $args['config']['email'] ?? null,
+            'version'       => $args['config']['version'] ?? null,
+            'tenantId'      => $args['config']['tenantId'] ?? null,
+            'clientId'      => $args['config']['clientId'] ?? null,
+            'clientSecret'  => $args['config']['clientSecret'] ?? null
+        ]);
+
+        if (!empty($client['errors'])) {
+            return ['errors' => $client['errors'], 'lang' => $client['lang']];
+        }
+        $client = $client['client'];
 
         // Some fixes on the message id from outlook js API, seen at :
         // https://blog.mastykarz.nl/office-365-unified-api-mail/
@@ -50,10 +166,26 @@ class EWSController {
             $response = $client->GetItem($request);
         } catch (\Exception $e) {
             if ($e->getCode() == 401) {
-                return ['errors' => 'Outlook password is wrong', 'lang' => 'outlookPasswordWrong'];
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'EWSController',
+                    'level'     => 'ERROR',
+                    'recordId'  => 'EWS OAuth2 Error',
+                    'eventType' => 'Curl',
+                    'eventId'   => 'Error while fetching mail data, response: ' . $e->getMessage()
+                ]);
+                return ['errors' => 'Error while fetching mail data: ' . $e->getMessage() , 'lang' => 'outlookGetMailDataImpossible'];
             }
             BatchHistoryModel::create(['info' => 'Get outlook attachments error :' . $e->getMessage(), 'module_name' => 'outlook']);
-            return ['errors' => 'Error when getting attachments', 'lang' => 'outlookGetAttachmentsImpossible'];
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'EWS OAuth2 Error',
+                'eventType' => 'Curl',
+                'eventId'   => 'Error when getting attachments. Exception: ' . $e->getMessage()
+            ]);
+            return ['errors' => 'Error when getting attachments. Exception: ' . $e->getMessage(), 'lang' => 'outlookGetAttachmentsImpossible'];
         }
         // Iterate over the results, printing any error messages or receiving attachments.
         $responseMessages = $response->ResponseMessages->GetItemResponseMessage;
@@ -133,6 +265,17 @@ class EWSController {
                     ]);
                 }
             }
+        }
+
+        if (!empty($errors)) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'EWSController',
+                'level'     => 'ERROR',
+                'recordId'  => 'Attachment Errors',
+                'eventType' => '',
+                'eventId'   => json_encode($errors)
+            ]);
         }
 
         return $errors;

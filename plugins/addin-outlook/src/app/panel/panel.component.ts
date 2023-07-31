@@ -69,7 +69,7 @@ export class PanelComponent implements OnInit {
         await this.getMailBody();
         await this.createContact();
         await this.createDocFromMail();
-        if (this.attachments.length > 0 && this.addinConfig.outlookPasswordSaved) {
+        if (this.attachments.length > 0 && this.addinConfig.outlookConnectionSaved) {
             this.createAttachments(this.resId);
         }
     }
@@ -204,7 +204,6 @@ export class PanelComponent implements OnInit {
         const objToSend = {
             resId: resId,
             ewsUrl: Office.context.mailbox.ewsUrl.replace('https://', ''),
-            ewsVersion: `Exchange20${Office.context.diagnostics.version.split('.')[0]}`,
             emailId: Office.context.mailbox.item.itemId,
             userId: Office.context.mailbox.userProfile.emailAddress,
             attachments: this.attachments.map((attachment: any) => attachment.id)

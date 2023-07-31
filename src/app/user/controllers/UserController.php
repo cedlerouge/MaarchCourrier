@@ -598,7 +598,6 @@ class UserController
         $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname', 'phone', 'mail', 'initials', 'preferences', 'external_id', 'status', 'mode', 'feature_tour', 'absence']]);
         $user['external_id']        = json_decode($user['external_id'], true);
         $user['preferences']        = json_decode($user['preferences'], true);
-        unset($user['preferences']['outlookPassword']);
         $user['featureTour']        = json_decode($user['feature_tour'], true);
         unset($user['feature_tour']);
         $user['signatures']         = UserSignatureModel::getByUserSerialId(['userSerialid' => $user['id']]);
