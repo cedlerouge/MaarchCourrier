@@ -240,6 +240,10 @@ export class UserAdministrationComponent implements OnInit {
             } else {
                 this.externalSignatoryBookConnectionStatus = false;
             }
+        } else {
+            this.user.canLinkToExternalSignatoryBook = true;
+            this.externalSignatoryBookConnectionStatus = false;
+            this.loading = false;
         }
     }
 
