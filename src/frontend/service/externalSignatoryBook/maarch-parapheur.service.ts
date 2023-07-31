@@ -171,7 +171,9 @@ export class MaarchParapheurService {
                 }),
                 catchError((err: any) => {
                     if (err.error.errors === 'Login already exists') {
-                        this.translate.instant('lang.loginAlreadyExistsInMaarchParapheur');
+                        this.notify.handleSoftErrors(this.translate.instant('lang.loginAlreadyExistsInMaarchParapheur'));
+                    } else if (err.error.errors === 'Privilege forbidden') {
+                        this.notify.handleSoftErrors(this.translate.instant('lang.insufficientPrivilege'));
                     } else {
                         this.notify.handleSoftErrors(err);
                     }
