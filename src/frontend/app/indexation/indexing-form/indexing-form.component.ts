@@ -1301,6 +1301,9 @@ export class IndexingFormComponent implements OnInit {
                     tap((data: any) => {
                         limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
                         this.arrFormControl['processLimitDate'].setValue(limitDate);
+                        if (this.functions.empty(limitDate)) {
+                            resolve(true);
+                        }
                     }),
                     filter((data) => this.arrFormControl['priority'] !== undefined && data.processLimitDate !== null),
                     exhaustMap(() => this.http.get('../rest/indexing/priority', { params: { 'processLimitDate': limitDate.toDateString() } })),
@@ -1339,6 +1342,8 @@ export class IndexingFormComponent implements OnInit {
                 delete objToSend.priority;
             }
             if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
+                console.log('ici');
+
                 this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                     tap((data: any) => {
                         limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
