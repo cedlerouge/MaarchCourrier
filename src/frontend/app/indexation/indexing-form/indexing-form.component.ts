@@ -1342,8 +1342,6 @@ export class IndexingFormComponent implements OnInit {
                 delete objToSend.priority;
             }
             if (!this.adminMode && this.arrFormControl['processLimitDate'] !== undefined) {
-                console.log('ici');
-
                 this.http.get('../rest/indexing/processLimitDate', { params: objToSend }).pipe(
                     tap((data: any) => {
                         limitDate = data.processLimitDate !== null ? new Date(data.processLimitDate) : '';
