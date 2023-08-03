@@ -2741,5 +2741,11 @@
     "labelBAN":  "Base Adresse Nationale",
     "labelSectors":  "Secteurs",
     "editDocFileDesc": "Veuillez noter qu'il est important d'éditer le fichier avec l'extension <b>.doc</b> avant de valider",
-    "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>"
+    "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>",
+    "keepOtherRoleForRedirection":  "Garder les autres rôles existants",
+    "keepOtherRoleForRedirectionDesc": "Permet de garder les utilisateurs ayant un autre rôle",
+    "keepCopyForRedirection": "Garder les rôles en copie existants",
+    "keepCopyForRedirectionDesc": "Permet de garder les utilisateurs en copie",
+    "keepDestForRedirection": "Mettre en copie l'attributaire actuel ",
+    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie"
 }

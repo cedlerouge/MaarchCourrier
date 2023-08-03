@@ -362,6 +362,24 @@
                                     [checked]="action.history == 'Y'">
                                     {{'lang.actionHistory' | translate}}</mat-slide-toggle>
                             </div>
+                            <div class="col-sm-6" style="text-align:center;" *ngIf="action.actionPageId === 'redirect'">
+                                <mat-slide-toggle name="actionKeepDestForRedirection" title="{{'lang.keepDestForRedirectionDesc' | translate}}"
+                                                  id="actionKeepDestForRedirection" color="primary" [(ngModel)]="action.parameters.keepDestForRedirection"
+                                                  [checked]="action.parameters.keepDestForRedirection" (change)="toogleKeepDest(action)">
+                                    {{'lang.keepDestForRedirection' | translate}}</mat-slide-toggle>
+                            </div>
+                            <div class="col-sm-6" style="text-align:center;" *ngIf="action.actionPageId === 'redirect'">
+                                <mat-slide-toggle name="actionKeepCopForRedirection" title="{{'lang.keepCopyForRedirectionDesc' | translate}}"
+                                                  id="actionKeepCopForRedirection" color="primary" [(ngModel)]="action.parameters.keepCopyForRedirection"
+                                                  [checked]="action.parameters.keepCopyForRedirection" (change)="toogleKeepCop(action)">
+                                    {{'lang.keepCopyForRedirection' | translate}}</mat-slide-toggle>
+                            </div>
+                            <div class="col-sm-6" style="text-align:center;" *ngIf="action.actionPageId === 'redirect'">
+                                <mat-slide-toggle name="actionKeepOtherRoleForRedirection" title="{{'lang.keepOtherRoleForRedirectionDesc' | translate}}"
+                                                  id="actionKeepOtherRoleForRedirection" color="primary" [(ngModel)]="action.parameters.keepOtherRoleForRedirection"
+                                                  [checked]="action.parameters.keepOtherRoleForRedirection" (change)="toogleKeepOther(action)">
+                                    {{'lang.keepOtherRoleForRedirection' | translate}}</mat-slide-toggle>
+                            </div>
                             <div class="col-sm-6" style="text-align:center;" *ngIf="action.actionPageId === 'send_to_visa'">
                                 <mat-slide-toggle name="actionLockVisaCircuit" title="{{'lang.actionLockVisaCircuitDesc' | translate}}"
                                                   id="actionLockVisaCircuit" color="primary" [(ngModel)]="action.parameters.lockVisaCircuit"

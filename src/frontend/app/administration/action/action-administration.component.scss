@@ -116,7 +116,7 @@
 .action-admin-checkbox-selected-list {
     margin-top: 10px;
 
-    ::ng-deep.mat-chip-list-wrapper {   
+    ::ng-deep.mat-chip-list-wrapper {
         justify-content: center;
     }
 
@@ -139,4 +139,9 @@
 
 .action-admin-banauto-form {
     width: 100%;
+}
+
+.col-sm-6 mat-slide-toggle {
+    margin-left: 250px;
+    display: block;
 }
