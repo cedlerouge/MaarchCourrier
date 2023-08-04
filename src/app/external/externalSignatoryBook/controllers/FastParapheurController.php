@@ -1428,16 +1428,16 @@ class FastParapheurController
                 'left_join' => ['item_id = user_id', 'users_entities.entity_id = entities.entity_id'],
                 'where'     => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
                 'data'      => [$args['resIdMaster'], 'sign']
-            ])[0];
+            ])[0] ?? null;
             $redactor = DatabaseModel::select([
                 'select'    => ['short_label'],
                 'table'     => ['res_view_letterbox', 'users_entities', 'entities'],
                 'left_join' => ['dest_user = user_id', 'users_entities.entity_id = entities.entity_id'],
                 'where'     => ['res_id = ?'],
                 'data'      => [$args['resIdMaster']]
-            ])[0];
+            ])[0] ?? null;
 
-            $signatory['business_id'] = json_decode($signatory['external_id'], true)['fastParapheurSubscriberId'] ?? null;
+            $signatory['business_id'] = json_decode($signatory['external_id'] ?? null, true)['fastParapheurSubscriberId'] ?? null;
             if (empty($signatory['business_id']) || substr($signatory['business_id'], 0, 3) == 'org') {
                 $signatory['business_id'] = $config['data']['subscriberId'];
             }
