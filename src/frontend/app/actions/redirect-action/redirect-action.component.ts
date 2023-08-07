@@ -29,11 +29,17 @@ export class RedirectActionComponent implements OnInit {
     injectDatasParam = {
         resId: 0,
         editable: true,
-        keepDestForRedirection: false
+        keepDestForRedirection: false,
+        keepCopyForRedirection: false,
+        keepOtherRoleForRedirection: false
     };
     destUser: any = null;
     oldUser: any = null;
+    ccUser: any[] = [];
+    otherRole: any[] = [];
     keepDestForRedirection: boolean = false;
+    keepCopyForRedirection: boolean = false;
+    keepOtherRoleForRedirection: boolean = false;
     currentDiffusionListDestRedirect: any = [];
     diffusionListDestRedirect: any = [];
     currentEntity: any = {
@@ -109,7 +115,11 @@ export class RedirectActionComponent implements OnInit {
                     });
                     this.entities = this.entities.filter((entity: any) => this.orphanEntitySerialIds.indexOf(entity.entity_id) === -1);
                     this.keepDestForRedirection = data.keepDestForRedirection;
+                    this.keepCopyForRedirection = data.keepCopyForRedirection;
+                    this.keepOtherRoleForRedirection = data.keepOtherRoleForRedirection;
                     this.injectDatasParam.keepDestForRedirection = data.keepDestForRedirection;
+                    this.injectDatasParam.keepCopyForRedirection = data.keepCopyForRedirection;
+                    this.injectDatasParam.keepOtherRoleForRedirection = data.keepOtherRoleForRedirection;
                     resolve(true);
                 }),
                 catchError((err: any) => {

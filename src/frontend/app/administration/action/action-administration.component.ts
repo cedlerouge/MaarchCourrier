@@ -38,6 +38,9 @@ export class ActionAdministrationComponent implements OnInit {
     selectedFieldsValue: Array<any> = [];
     selectedFieldsId: Array<any> = [];
     lockVisaCircuit: boolean;
+    keepDestForRedirection: boolean;
+    keepCopyForRedirection: boolean;
+    keepOtherRoleForRedirection: boolean;
 
     availableFillCustomFields: Array<any> = [];
     fillcustomFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
@@ -234,6 +237,9 @@ export class ActionAdministrationComponent implements OnInit {
                             this.errorStatus = this.action.parameters.errorStatus;
                             this.successStatus = this.action.parameters.successStatus;
                             this.lockVisaCircuit = this.action.parameters.lockVisaCircuit;
+                            this.keepDestForRedirection = this.action.parameters.keepDestForRedirection;
+                            this.keepCopyForRedirection = this.action.parameters.keepCopyForRedirection;
+                            this.keepOtherRoleForRedirection = this.action.parameters.keepOtherRoleForRedirection;
                         }
                     });
             }
@@ -504,12 +510,17 @@ export class ActionAdministrationComponent implements OnInit {
                 errorStatus: errorStatus
             };
         } else if (this.intermediateStatusActions.indexOf(this.action.actionPageId) !== -1) {
-            this.action.parameters = { successStatus: this.successStatus, errorStatus: this.errorStatus, lockVisaCircuit: this.lockVisaCircuit };
+            this.action.parameters = { successStatus: this.successStatus, errorStatus: this.errorStatus, lockVisaCircuit: this.lockVisaCircuit, keepDestForRedirection: this.keepDestForRedirection, keepCopyForRedirection: this.keepCopyForRedirection, keepOtherRoleForRedirection: this.keepOtherRoleForRedirection };
         }
         this.action.action_page = this.action.actionPageId;
         this.action.component = this.actionPagesService.getAllActionPages(this.action.actionPageId).component;
         if (this.action.actionPageId !== 'send_to_visa') {
             delete this.action.parameters.lockVisaCircuit;
+        }
+        if (this.action.actionPageId !== 'redirect') {
+            delete this.action.parameters.keepDestForRedirection;
+            delete this.action.parameters.keepCopyForRedirection;
+            delete this.action.parameters.keepOtherRoleForRedirection;
         }
 
         if (this.creationMode) {
@@ -639,5 +650,16 @@ export class ActionAdministrationComponent implements OnInit {
     }
     toggleVisaCircuit(action: any){
         this.lockVisaCircuit = action.parameters.lockVisaCircuit;
+    }
+    toogleKeepDest(action: any) {
+        this.keepDestForRedirection = action.parameters.keepDestForRedirection;
+    }
+
+    toogleKeepCop(action: any)  {
+        this.keepCopyForRedirection = action.parameters.keepCopyForRedirection;
+    }
+
+    toogleKeepOther(action: any){
+        this.keepOtherRoleForRedirection = action.parameters.keepOtherRoleForRedirection;
     }
 }
