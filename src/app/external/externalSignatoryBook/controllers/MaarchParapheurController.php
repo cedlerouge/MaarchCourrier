@@ -324,9 +324,9 @@ class MaarchParapheurController
                         return ['error' => 'Docserver does not exist ' . $adrInfo['docserver_id']];
                     }
                     $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
-        
+
                     $encodedZipDocument = MaarchParapheurController::createZip(['filepath' => $filePath, 'filename' => $adrInfo['filename']]);
-        
+
                     $attachmentsData = [];
                     if (!empty($encodedMainZipFile)) {
                         $attachmentsData = [[
@@ -423,7 +423,7 @@ class MaarchParapheurController
                     if (!empty($response['response']['errors']) || !empty($response['errors'])) {
                         return ['error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors'] ?? $response['errors']];
                     }
-        
+
                     $attachmentToFreeze[$collId][$resId] = $response['response']['id'];
                 }
                 if (!empty($integratedResource)) {
@@ -495,7 +495,7 @@ class MaarchParapheurController
                     }
 
                     $bodyData['linkId'] = $aArgs['resIdMaster'];
-        
+
                     $response = CurlModel::exec([
                         'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/documents',
                         'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
@@ -510,7 +510,7 @@ class MaarchParapheurController
                     if (!empty($response['response']['errors']) || !empty($response['errors'])) {
                         return ['error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors'] ?? $response['errors']];
                     }
-        
+
                     $attachmentToFreeze['letterbox_coll'][$integratedResource[0]['res_id']] = $response['response']['id'];
                 }
             }
@@ -644,7 +644,7 @@ class MaarchParapheurController
                 continue;
             }
             $state = MaarchParapheurController::getState(['workflow' => $documentWorkflow]);
-            
+
             if (in_array($state['status'], ['validated', 'refused'])) {
                 $signedDocument = MaarchParapheurController::getDocument(['config' => $aArgs['config'], 'documentId' => $value['external_id'], 'status' => $state['status']]);
                 $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
@@ -825,7 +825,7 @@ class MaarchParapheurController
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'login is empty or wrong format']);
         }
-        
+
         $userController = new UserController();
         $error = $userController->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -899,7 +899,7 @@ class MaarchParapheurController
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'maarchParapheurUserId is empty or not an integer']);
         }
-        
+
         $userController = new UserController();
         $error = $userController->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1001,7 +1001,7 @@ class MaarchParapheurController
     public static function userStatusInMaarchParapheur(Request $request, Response $response, array $aArgs)
     {
         $userController = new UserController();
-        $error = $userController->hasUsersRights(['id' => $aArgs['id']]);
+        $error = $userController->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
         if (!empty($error['error'])) {
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
@@ -1076,7 +1076,7 @@ class MaarchParapheurController
                 if (empty($userSignatures)) {
                     return $response->withStatus(400)->withJson(['errors' => 'User has no signature']);
                 }
-        
+
                 $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
                 if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                     return $response->withStatus(400)->withJson(['errors' => 'Path for signature docserver does not exists']);
@@ -1100,7 +1100,7 @@ class MaarchParapheurController
                     "signatures"          => $signatures,
                     "externalApplication" => 'maarchCourrier'
                 ];
-    
+
                 foreach ($loadedXml->signatoryBook as $value) {
                     if ($value->id == "maarchParapheur") {
                         $url      = $value->url;
