@@ -723,6 +723,7 @@ class FastParapheurController
                 ])[0];
             } elseif (!empty($args['valueResponse']['userFullname'])) {
                 $search = $args['valueResponse']['userFullname'];
+                $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
 
                 $fpUsers = FastParapheurController::getUsers([
                     'config' => [
@@ -733,8 +734,11 @@ class FastParapheurController
                         'certType'     => $args['config']['data']['certType']
                     ]
                 ]);
+                if (!empty($fpUsers['errors'])) {
+                    return $signatoryInfo;
+                }
                 if (empty($fpUsers)) {
-                    return null;
+                    return $signatoryInfo;
                 }
 
                 $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
@@ -760,8 +764,6 @@ class FastParapheurController
                             break;
                         }
                     }
-                } else {
-                    $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
                 }
             }
         }
