@@ -169,8 +169,7 @@
                         <mat-row *matRowDef="let row; columns: displayedColumnsHistory;">
                         </mat-row>
                     </mat-table>
-                    <div class="mat-paginator"
-                        style="min-height:48px;display: flex;justify-content: end;align-items: center;padding-right: 20px;">
+                    <div class="mat-paginator" class="mat-paginator resultLength">
                         {{resultsLength}} {{'lang.elements' | translate}}
                     </div>
                 </div>

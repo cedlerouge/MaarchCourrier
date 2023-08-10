@@ -66,3 +66,14 @@
         left: 0px;
     }
 }
+
+.resultLength {
+    min-height:48px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    position: sticky;
+    background-color: white;
+    bottom: 0;
+    padding-right: 20px;
+}
