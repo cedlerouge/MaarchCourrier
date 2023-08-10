@@ -123,7 +123,6 @@ export class HistoryComponent implements OnInit {
                 takeUntil(this.destroy$),
                 startWith({}),
                 switchMap(() => {
-                    this.pageSize = this.paginator.pageSize;
                     this.isLoadingResults = true;
                     let searchValue = '';
                     if (!this.functions.empty(this.searchHistory.value)) {
