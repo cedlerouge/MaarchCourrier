@@ -571,7 +571,7 @@ class FolderController
         }
 
         $folder = FolderController::getScopeFolders(['login' => $GLOBALS['login'], 'folderId' => $aArgs['id'], 'edition' => true]);
-        
+
         DatabaseModel::beginTransaction();
         $deletion = FolderController::folderDeletion(['folderId' => $aArgs['id']]);
         if (!$deletion) {
@@ -688,7 +688,7 @@ class FolderController
 
             $allQueryData = ResourceListController::getResourcesListQueryData(['data' => $queryParams]);
             if (!empty($allQueryData['order'])) {
-                $data['order'] = $allQueryData['order'];
+                $queryParams['order'] = $allQueryData['order'];
             }
 
             $rawResources = ResourceListModel::getOnView([
@@ -697,7 +697,7 @@ class FolderController
                 'leftJoin'  => $allQueryData['leftJoin'],
                 'where'     => array_merge(['res_id in (?)'], $allQueryData['where']),
                 'data'      => array_merge([$foldersResources], $allQueryData['queryData']),
-                'orderBy'   => empty($data['order']) ? ['creation_date'] : [$data['order']]
+                'orderBy'   => empty($queryParams['order']) ? ['creation_date'] : [$queryParams['order']]
             ]);
 
             $resIds = ResourceListController::getIdsWithOffsetAndLimit(['resources' => $rawResources, 'offset' => $queryParams['offset'], 'limit' => $queryParams['limit']]);

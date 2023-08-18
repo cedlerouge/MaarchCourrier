@@ -1005,7 +1005,7 @@ class MaarchParapheurController
     public static function userStatusInMaarchParapheur(Request $request, Response $response, array $aArgs)
     {
         $userController = new UserController();
-        $error = $userController->hasUsersRights(['id' => $aArgs['id']]);
+        $error = $userController->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
         if (!empty($error['error'])) {
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
