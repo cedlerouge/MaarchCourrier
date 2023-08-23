@@ -11,6 +11,7 @@ import { environment } from '../environments/environment';
 import { TranslateService } from '@ngx-translate/core';
 import { DateAdapter } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MigrationService } from '@service/migration.service';
 
 /** Custom options the configure the tooltip's default show/hide delays. */
 export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
@@ -45,7 +46,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         public authService: AuthService,
         private adapter: DateAdapter<any>,
         public dialog: MatDialog,
+        public migrationService: MigrationService
     ) {
+        this.migrationService.startMigrationCheck();
         translate.setDefaultLang('fr');
         iconReg.addSvgIcon('maarchLogo', sanitizer.bypassSecurityTrustResourceUrl('../rest/images?image=onlyLogo'));
         iconReg.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl('../rest/images?image=logo'));
