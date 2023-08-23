@@ -27,6 +27,7 @@ import { FoldersService } from './folder/folders.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { ActionPagesService } from '@service/actionPages.service';
 import { ActionsService } from './actions/actions.service';
+import { MigrationService } from '@service/migration.service';
 
 import { AppComponent } from './app.component';
 
@@ -313,6 +314,7 @@ export class MyHammerConfig extends HammerGestureConfig {
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
         { provide: HTTP_INTERCEPTORS, useClass: InactivityInterceptor, multi: true },
+        MigrationService,
         DatePipe,
         FiltersListService,
         CriteriaSearchService,
