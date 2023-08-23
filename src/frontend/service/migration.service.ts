@@ -26,19 +26,26 @@ export class MigrationService {
     ) { }
 
     startMigrationCheck() {
+        // Subscribe to an interval that triggers every 10000 milliseconds (10 seconds)
         this.migrationLock = interval(10000).subscribe(() => {
             this.http.get('../rest/authenticationInformations').pipe(
+                // Map the received data to extract the 'isMigrating' property
                 map((data: any) => data.isMigrating),
                 tap((data: any) => {
+                    // Update the 'isMigrating' property based on received data, default to false
                     this.isMigrating = data ?? false;
+                    // Check if the user can log out and handle migration state changes
                     if (this.authService.canLogOut()) {
                         if (this.isMigrating && this.functions.empty(this.isMigratingClone)) {
+                            // If migrating and there's no previous clone state, trigger logout and alert
                             this.logoutAndShowAlert();
                         } else if (!this.isMigrating && this.isMigratingClone) {
+                            // If not migrating but there was a previous clone state, unsubscribe
                             this.unsubscribeObservable();
                         }
                     }
                 }),
+                // Handle errors and display notifications
                 catchError((err: any) => {
                     this.notifications.handleSoftErrors(err);
                     this.dialog.closeAll();
