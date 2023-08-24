@@ -30,6 +30,7 @@ use SrcCore\models\ValidatorModel;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 use User\controllers\UserController;
 use User\models\UserModel;
+use VersionUpdate\controllers\VersionUpdateController;
 
 class AuthenticationController
 {
@@ -118,7 +119,8 @@ class AuthenticationController
             'mailServerOnline'          => $emailConfiguration['online'] ?? false,
             'maarchUrl'                 => $maarchUrl,
             'externalSignatoryBook'     => $externalSignatoryBook,
-            'idleTime'                  => $idleTime
+            'idleTime'                  => $idleTime,
+            'isMigrating'               => VersionUpdateController::isMigrating()
         ];
 
         if (!empty($keycloakState)) {
