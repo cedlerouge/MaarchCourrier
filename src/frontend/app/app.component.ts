@@ -48,7 +48,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         public dialog: MatDialog,
         public migrationService: MigrationService
     ) {
-        this.migrationService.startMigrationCheck();
         translate.setDefaultLang('fr');
         iconReg.addSvgIcon('maarchLogo', sanitizer.bypassSecurityTrustResourceUrl('../rest/images?image=onlyLogo'));
         iconReg.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl('../rest/images?image=logo'));
@@ -68,6 +67,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     async ngOnInit() {
         this.loading = false;
+        this.migrationService.initCheck();
         this.headerService.hideSideBar = true;
         setTimeout(() => {
             this.headerService.sideNavLeft = this.snavLeft;
