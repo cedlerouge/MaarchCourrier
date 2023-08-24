@@ -24,10 +24,22 @@ export class MigrationService {
         private dialog: MatDialog,
         private translate: TranslateService,
     ) { }
+    async initCheck(): Promise<void> {
+        await this.getMigrationStatus();
+        setTimeout(() => {
+            this.startMigrationCheck();
+        }, 100);
+    }
 
-    startMigrationCheck() {
+    startMigrationCheck(): any {
         // Subscribe to an interval that triggers every 10000 milliseconds (10 seconds)
         this.migrationLock = interval(10000).subscribe(() => {
+            this.getMigrationStatus();
+        });
+    }
+
+    getMigrationStatus(): any {
+        return new Promise((resolve) => {
             this.http.get('../rest/authenticationInformations').pipe(
                 // Map the received data to extract the 'isMigrating' property
                 map((data: any) => data.isMigrating),
@@ -44,25 +56,27 @@ export class MigrationService {
                             this.unsubscribeObservable();
                         }
                     }
+                    resolve(true);
                 }),
                 // Handle errors and display notifications
                 catchError((err: any) => {
                     this.notifications.handleSoftErrors(err);
                     this.dialog.closeAll();
+                    resolve(true);
                     return of(false);
                 })
             ).subscribe();
         });
     }
 
-    logoutAndShowAlert() {
+    logoutAndShowAlert(): any {
         this.authService.logout();
         setTimeout(() => {
             this.showAlertComponent();
         }, 100);
     }
 
-    showAlertComponent() {
+    showAlertComponent(): any {
         this.dialog.open(AlertComponent,
             {
                 panelClass: 'maarch-modal',
@@ -77,7 +91,7 @@ export class MigrationService {
         this.isMigratingClone = JSON.parse(JSON.stringify(this.isMigrating));
     }
 
-    unsubscribeObservable() {
+    unsubscribeObservable(): any {
         // this.migrationLock.unsubscribe();
         this.dialog.closeAll();
         window.location.reload();
