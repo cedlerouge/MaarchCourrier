@@ -2747,5 +2747,6 @@
     "keepCopyForRedirection": "Garder les rôles en copie existants",
     "keepCopyForRedirectionDesc": "Permet de garder les utilisateurs en copie",
     "keepDestForRedirection": "Mettre en copie l'attributaire actuel ",
-    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie"
+    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie",
+    "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions."
 }
