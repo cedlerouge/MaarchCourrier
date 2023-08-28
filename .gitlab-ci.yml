@@ -206,3 +206,35 @@ create_major_tag:
   script:
     - chmod +x ./ci/new_major_tag.sh
     - ./ci/new_major_tag.sh
+
+
+test-karma:
+  stage: test
+  image: node:18.7.0
+  before_script:
+    # Install dependencies and ChromeHeadless
+    - apt-get update -qy
+    - apt-get install -y wget
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -fy
+    # Set the CHROME_BIN environment variable
+    - export CHROME_BIN=$(which chromium-browser)
+    - curl -sL https://deb.nodesource.com/setup_18.x > tmp.sh
+    # TEMPORARY FIX
+    - sed -i '350s/https/http/' tmp.sh
+    - sed -i '351s/https/http/' tmp.sh
+    #####
+    - chmod +x tmp.sh && ./tmp.sh && apt-get install -y nodejs
+    - apt-get install -yqq nodejs > /dev/null
+    - npm install npm@8.15.0 -g
+    - node -v
+    - npm -v
+    - npm set registry https://registry.npmjs.org/
+    - npm run reload-packages
+  script:
+    - npm run karma:test-ci
+  artifacts:
+    expire_in: 2 days
+    when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule" && $TAG_MODE == "karma"'
