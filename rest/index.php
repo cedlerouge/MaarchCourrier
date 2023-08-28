@@ -38,6 +38,29 @@ $requestUri = explode('/rest', $requestUri);
 $requestUriBasePath = $requestUri[0] ?? '';
 $app->setBasePath($requestUriBasePath . '/rest');
 
+//Migration
+$app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
+    $response = new \SrcCore\http\Response();
+
+    $routeContext = \Slim\Routing\RouteContext::fromRequest($request);
+    $route = $routeContext->getRoute();
+    $route->getPattern();
+
+    $currentMethod = $route->getMethods()[0];
+    $currentRoute = $route->getPattern();
+
+    if (!in_array($currentMethod . $currentRoute, \VersionUpdate\controllers\VersionUpdateController::ROUTES_WITHOUT_MIGRATION)) {
+        if (\VersionUpdate\controllers\VersionUpdateController::isMigrating()) {
+            return $response->withStatus(200)->withHeader('Retry-After', '5 minutes')->withJson([
+                'message'       => 'Service Indisponible : ' . _MIGRATION_PROCESSING,
+                'isMigrating'   => true
+            ]);
+        }
+    }
+
+    return $requestHandler->handle($request);
+});
+
 //Authentication
 $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
     $response = new \SrcCore\http\Response();

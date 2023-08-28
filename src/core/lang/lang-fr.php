@@ -477,3 +477,4 @@ define('_ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', array(
     "n'existe plus dans le parapheur externe"
 ));
 define('_EXTERNAL_USER', "Utilisateur externe");
+define('_MIGRATION_PROCESSING', "L'application n'est pas accessible en raison d'une migration en cours.");
