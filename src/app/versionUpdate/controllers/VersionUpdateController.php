@@ -29,6 +29,7 @@ use User\models\UserModel;
 class VersionUpdateController
 {
     public const UPDATE_LOCK_FILE = "migration/updating.lck";
+    public const ROUTES_WITHOUT_MIGRATION = ['GET/languages/{lang}', 'GET/authenticationInformations', 'GET/images'];
 
     public function get(Request $request, Response $response)
     {
