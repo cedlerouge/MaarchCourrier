@@ -15,7 +15,8 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-    templateUrl: 'notifications-administration.component.html'
+    templateUrl: 'notifications-administration.component.html',
+    styleUrls: ['./notifications.administration.component.scss']
 })
 export class NotificationsAdministrationComponent implements OnInit {
 
