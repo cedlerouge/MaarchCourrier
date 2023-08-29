@@ -1013,10 +1013,6 @@ class MaarchParapheurController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
 
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
-            $url      = null;
-            $userId   = null;
-            $password = null;
-
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
                     $url      = $value->url;
@@ -1026,33 +1022,23 @@ class MaarchParapheurController
                 }
             }
 
-            if (empty($url) || empty($userId) || empty($password)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Could not get remote signatory book configuration. Please check your configuration file.']);
-            }
+            $userInfo = UserModel::getById(['select' => ['external_id->\'maarchParapheur\' as external_id'], 'id' => $aArgs['id']]);
 
-            $userInfo = UserModel::getById(['select' => ['external_id'], 'id' => $aArgs['id']]);
-            $userExternalIds = json_decode($userInfo['external_id'] ?? '{}', true);
-
-            if (empty($userExternalIds['maarchParapheur'])) {
+            if (!empty($userInfo['external_id'])) {
+                $curlResponse = CurlModel::exec([
+                    'url'           => rtrim($url, '/') . '/rest/users/'.$userInfo['external_id'],
+                    'basicAuth'     => ['user' => $userId, 'password' => $password],
+                    'headers'       => ['content-type:application/json'],
+                    'method'        => 'GET'
+                ]);
+            } else {
                 return $response->withStatus(400)->withJson(['errors' => 'User does not have Maarch Parapheur Id']);
             }
-
-            $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/users/' . $userExternalIds['maarchParapheur'],
-                'basicAuth'     => ['user' => $userId, 'password' => $password],
-                'headers'       => ['content-type:application/json'],
-                'method'        => 'GET'
-            ]);
 
             $errors = '';
             if ($curlResponse['code'] != '200') {
                 if (!empty($curlResponse['response']['errors'])) {
                     $errors =  $curlResponse['response']['errors'];
-
-                    if ($curlResponse['code'] == 400) {
-                        unset($userExternalIds['maarchParapheur']);
-                        UserModel::updateExternalId(['id' => $aArgs['id'], 'externalId' => json_encode($userExternalIds)]);
-                    }
                 } else {
                     $errors =  $curlResponse['errors'];
                 }
@@ -1062,7 +1048,7 @@ class MaarchParapheurController
             }
 
             if (empty($curlResponse['response']['user'])) {
-                return $response->withStatus(400)->withJson(['errors' => $errors, 'lang' => 'maarchParapheurLinkbroken']);
+                return $response->withJson(['link' => '', 'errors' => $errors]);
             }
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
