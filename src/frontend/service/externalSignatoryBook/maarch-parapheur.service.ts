@@ -189,7 +189,6 @@ export class MaarchParapheurService {
                     resolve(data);
                 }),
                 catchError((err: any) => {
-                    resolve(null);
                     this.notify.handleSoftErrors(err);
                     resolve(null);
                     return of(false);
