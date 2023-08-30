@@ -10,8 +10,11 @@
 namespace MaarchCourrier\Tests\app\versionUpdate;
 
 use MaarchCourrier\Tests\CourrierTestCase;
+use Slim\Routing\RouteContext;
 use SrcCore\http\Response;
 use VersionUpdate\controllers\VersionUpdateController;
+use VersionUpdate\middlewares\VersionUpdateMiddleware;
+use VersionUpdate\middlewares\YourMiddleware;
 
 class VersionUpdateControllerTest extends CourrierTestCase
 {
@@ -35,6 +38,83 @@ class VersionUpdateControllerTest extends CourrierTestCase
         if ($responseBody->lastAvailableMajorVersion != null) {
             $this->assertIsString($responseBody->lastAvailableMajorVersion);
             $this->assertMatchesRegularExpression('/^\d{4}\.\d\.\d+$/', $responseBody->lastAvailableMajorVersion, 'Invalid available major version');
+        }
+    }
+
+    public function apiRouteProvideEmptyResponseDataForRoutesWithoutMigration(): array
+    {
+        $return = [];
+
+        foreach (VersionUpdateController::ROUTES_WITHOUT_MIGRATION as $methodeAndRoute) {
+            $return[$methodeAndRoute] = [
+                'input' => [
+                    'currentMethod' => explode('/',$methodeAndRoute)[0],
+                    'currentRoute'  => '/' . explode('/',$methodeAndRoute)[1]
+                ],
+                'expecting' => []
+            ];
+        }
+
+        return $return;
+    }
+
+    public function apiRouteProvideResponseDataForRoutesWithMigration(): array
+    {
+        $return = [];
+        $routes = [
+            'GET/versionsUpdateSQL',
+            'GET/validUrl',
+            'POST/authenticate',
+            'GET/authenticate/token',
+            'PUT/actions/{id}',
+            'POST/convertedFile'
+        ];
+
+        foreach ($routes as $methodeAndRoute) {
+            $return[$methodeAndRoute] = [
+                'input' => [
+                    'currentMethod' => explode('/',$methodeAndRoute)[0],
+                    'currentRoute'  => '/' . explode('/',$methodeAndRoute)[1]
+                ],
+                'expecting' => [
+                    'message'       => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
+                    'isMigrating'   => true
+                ]
+            ];
+        }
+
+        return $return;
+    }
+
+    /**
+     * @dataProvider apiRouteProvideEmptyResponseDataForRoutesWithoutMigration
+     */
+    public function testMiddlewareControlExpectingEmptyResponseUsingApiRoute($input, $expecting)
+    {
+        $control = VersionUpdateMiddleware::middlewareControl($input['currentMethod'], $input['currentRoute']);
+
+        $this->assertEmpty($control);
+        $this->assertSame($expecting, $control);
+    }
+
+    /**
+     * @dataProvider apiRouteProvideResponseDataForRoutesWithMigration
+     */
+    public function testMiddlewareControlExpectingResponseUsingApiRoute($input, $expecting)
+    {
+        \MaarchCourrier\Tests\app\versionUpdate\VersionUpdateControllerMock::isMigrating();
+
+        $control = VersionUpdateMiddleware::middlewareControl($input['currentMethod'], $input['currentRoute']);
+
+        $this->assertNotEmpty($control);
+        $this->assertNotEmpty($control['response']);
+        $this->assertSame($expecting, $control['response']);
+    }
+
+    protected function tearDown(): void
+    {
+        if (file_exists(VersionUpdateController::UPDATE_LOCK_FILE)) {
+            unlink(VersionUpdateController::UPDATE_LOCK_FILE);
         }
     }
 }
