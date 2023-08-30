@@ -50,7 +50,7 @@ class VersionUpdateMiddleware implements MiddlewareInterface
      * @param   string  $currentRoute   An API route
      * @return  array   Empty or Response array
      */
-    public static function middlewareControl(string $httpMethod, string $currentRoute): mixed
+    public static function middlewareControl(string $httpMethod, string $currentRoute)
     {
         $return = [];
         if (!in_array($httpMethod . $currentRoute, VersionUpdateController::ROUTES_WITHOUT_MIGRATION)) {
