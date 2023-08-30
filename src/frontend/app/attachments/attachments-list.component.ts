@@ -148,25 +148,31 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     setInSignatureBook(attachment: any) {
-        this.http.put('../rest/attachments/' + attachment.resId + '/inSignatureBook', {})
-            .subscribe(() => {
+        this.http.put('../rest/attachments/' + attachment.resId + '/inSignatureBook', {}).pipe(
+            tap(() => {
                 attachment.inSignatureBook = !attachment.inSignatureBook;
                 this.afterActionAttachment.emit('setInSignatureBook');
                 this.notify.success(this.translate.instant('lang.actionDone'));
-            }, (err: any) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err.error.errors);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     setInSendAttachment(attachment: any) {
-        this.http.put('../rest/attachments/' + attachment.resId + '/inSendAttachment', {})
-            .subscribe(() => {
+        this.http.put('../rest/attachments/' + attachment.resId + '/inSendAttachment', {}).pipe(
+            tap(() => {
                 attachment.inSendAttach = !attachment.inSendAttach;
                 this.afterActionAttachment.emit('setInSendAttachment');
                 this.notify.success(this.translate.instant('lang.actionDone'));
-            }, (err: any) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err.error.errors);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     toggleInfo(attachment: any, state: boolean) {
