@@ -32,12 +32,12 @@
                     <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v"></mat-icon>
                 </button>
                 <mat-menu #menuPjAction="matMenu">
-                    <button mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="setInSignatureBook(attachment)">
-                        <mat-checkbox color="primary" [(ngModel)]="attachment.inSignatureBook"></mat-checkbox>
+                    <button mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment)">
+                        <mat-checkbox color="primary" [checked]="attachment.inSignatureBook"></mat-checkbox>
                         {{'lang.putInSignatureBook' | translate}}
                     </button>
-                    <button mat-menu-item (click)="setInSendAttachment(attachment)" [disabled]="!mailevaEnabled">
-                        <mat-checkbox color="primary" [(ngModel)]="attachment.inSendAttach"
+                    <button mat-menu-item (click)="$event.stopPropagation(); setInSendAttachment(attachment)" [disabled]="!mailevaEnabled">
+                        <mat-checkbox color="primary" [checked]="attachment.inSendAttach"
                             [disabled]="!mailevaEnabled">
                         </mat-checkbox>
                         {{'lang.putInSendAttach' | translate}}
