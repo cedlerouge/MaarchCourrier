@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Version Update Controller
+ * @brief Version Update Controller custom mock
  * @author dev@maarch.org
  */
 

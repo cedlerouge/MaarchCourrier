@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Version Update Controller
+ * @brief Version Update Interface
  * @author dev@maarch.org
  */
 
