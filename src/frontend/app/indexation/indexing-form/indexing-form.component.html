@@ -202,7 +202,7 @@
                                     </app-plugin-autocomplete>
                                 </ng-container>-->
                                 <ng-container *ngIf="['senders','recipients'].indexOf(field.identifier) > -1">
-                                    <app-contact-autocomplete [id]="field.identifier"
+                                    <app-contact-autocomplete #appContactAutocomplete [id]="field.identifier"
                                         [control]="arrFormControl[field.identifier]" style="width:100%;"
                                         (retrieveDocumentEvent)="retrieveDocumentEvent.emit()"
                                         (afterContactSelected)="selectedContact($event, field.identifier)" (removeContactEvent)="checkRemovedItem($event)">

@@ -22,3 +22,8 @@ WHERE component = 'redirectAction';
 DELETE FROM parameters WHERE id = 'keepDestForRedirection';
 
 UPDATE parameters SET param_value_string = '2301.2.0' WHERE id = 'database_version';
+
+ALTER TABLE indexing_models DROP COLUMN IF EXISTS lad_processing;
+ALTER TABLE indexing_models ADD COLUMN lad_processing BOOLEAN DEFAULT FALSE NOT NULL;
+
+INSERT INTO configurations (id, privilege, value) VALUES (10, 'admin_mercure', '{"mws": {"url": "","login": "","password": "","tokenMws": "","loginMaarch": "","passwordMaarch": ""},"enabledLad": true,"mwsLadPriority": false}');

@@ -393,6 +393,15 @@ $app->put('/languages', \SrcCore\controllers\CoreController::class . ':generateL
 //Languages
 $app->get('/languages/{lang}', \SrcCore\controllers\LanguageController::class . ':getByLang');
 
+//Lecture Automatique de Documents
+$app->post('/administration/mercure/test', \Mercure\controllers\LadController::class . ':testAndActivateLad');
+$app->post('/mercure/lad', \Mercure\controllers\LadController::class . ':ladRequest');
+$app->get('/mercure/lad/contactIndexations', \Mercure\controllers\LadController::class . ':getContactsIndexationState');
+$app->post('/mercure/lad/contactIndexations', \Mercure\controllers\LadController::class . ':generateContactsIndexation');
+$app->get('/mercure/webservice/account', \Mercure\controllers\MwsController::class . ':checkAccount');
+$app->get('/mercure/webservice/subscriptionState', \Mercure\controllers\MwsController::class . ':loadSubscriptionState');
+$app->get('/mercure/webservice/documents/{token}', \Mercure\controllers\MwsController::class . ':loadListDocs');
+
 //ListInstances
 $app->put('/listinstances', \Entity\controllers\ListInstanceController::class . ':update');
 

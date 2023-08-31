@@ -40,7 +40,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
         default: false,
         owner: 0,
         private: false,
-        mandatoryFile: false
+        mandatoryFile: false,
+        ladProcessing: false
     };
 
     indexingModelClone: any;
@@ -66,6 +67,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
         state: {selected: false}
     };
 
+    ladEnabled: boolean = false;
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -81,6 +83,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.getLadConfiguration();
         this.route.params.subscribe(async (params) => {
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
@@ -285,5 +288,17 @@ export class IndexingModelAdministrationComponent implements OnInit {
                 id : ent.serialId,
             })));
         }
+    }
+
+    getLadConfiguration(){
+        this.http.get('../rest/configurations/admin_mercure').pipe(
+            tap((data: any) => {
+                this.ladEnabled = data.configuration.value.enabledLad;
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }

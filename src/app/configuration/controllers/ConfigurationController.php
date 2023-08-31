@@ -76,7 +76,7 @@ class ConfigurationController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!in_array($args['privilege'], ['admin_email_server', 'admin_search', 'admin_sso', 'admin_document_editors', 'admin_parameters_watermark', 'admin_shippings', 'admin_organization_email_signatures'])) {
+        if (!in_array($args['privilege'], ['admin_email_server', 'admin_search', 'admin_sso', 'admin_document_editors', 'admin_parameters_watermark', 'admin_shippings', 'admin_organization_email_signatures', 'admin_mercure'])) {
             return $response->withStatus(403)->withJson(['errors' => 'Unknown privilege']);
         }
 
@@ -221,6 +221,15 @@ class ConfigurationController
                     return $response->withStatus(400)->withJson(['errors' => "Body signature['content'] is empty or not string"]);
                 }
             }
+        } elseif ($args['privilege'] == 'admin_lad'){
+            if (!Validator::notEmpty()->arrayType()->validate($data)) {
+                return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
+            } elseif (!Validator::boolType()->validate($data['enabled'] ?? null)) {
+                return $response->withStatus(400)->withJson(['errors' => "Body enabled is not set or not a boolean"]);
+            }
+            $data = [
+                'enabled' => $data['enabled'],
+            ];
         }
 
         $data = json_encode($data, JSON_UNESCAPED_SLASHES);

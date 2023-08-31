@@ -18,6 +18,7 @@ import { RegisteredMailRecipientInputComponent } from '../../administration/regi
 import { Router } from '@angular/router';
 import { LinkResourceModalComponent } from '@appRoot/linkedResource/linkResourceModal/link-resource-modal.component';
 import { IndexingModelValuesSelectorComponent } from '@appRoot/administration/indexingModel/valuesSelector/values-selector.component';
+import { ContactAutocompleteComponent } from '../../contact/autocomplete/contact-autocomplete.component';
 
 
 @Component({
@@ -47,6 +48,7 @@ export class IndexingFormComponent implements OnInit {
     @ViewChild('appDiffusionsList', { static: false }) appDiffusionsList: DiffusionsListComponent;
     @ViewChild('appIssuingSiteInput', { static: false }) appIssuingSiteInput: IssuingSiteInputComponent;
     @ViewChild('appRegisteredMailRecipientInput', { static: false }) appRegisteredMailRecipientInput: RegisteredMailRecipientInputComponent;
+    @ViewChild('appContactAutocomplete', { static: false }) appContactAutocomplete: ContactAutocompleteComponent;
 
     loading: boolean = true;
 
@@ -777,6 +779,44 @@ export class IndexingFormComponent implements OnInit {
         });
     }
 
+    async fillWithLad(ladResult: any){
+        // Tester si champs existe dans le formulaire
+        this.loading = true;
+        await Promise.all(this.fieldCategories.map(async (element) => {
+            await Promise.all(this['indexingModels_' + element].map(async (elem: any) => {
+                if (elem.identifier === 'documentDate'){
+                    this.arrFormControl[elem.identifier].setValue(new Date(ladResult.documentDate));
+                } else if (elem.identifier === 'subject'){
+                    this.arrFormControl[elem.identifier].setValue(ladResult.subject);
+                } else if (elem.identifier === 'senders' && !this.functions.empty(ladResult.contactIdx)){
+                    this.http.get('../rest/contacts/' + ladResult.contactIdx).pipe(
+                        tap((data: any) => {
+                            const dataContact = {
+                                'id': data.id,
+                                'type': 'contact',
+                                'lastname': data.lastname,
+                                'firstname': data.firstname,
+                                'addressPostcode': data.addressPostcode,
+                                'addressNumber': data.addressNumber,
+                                'addressStreet': data.addressStreet,
+                                'addressTown': data.addressTown,
+                                'company': '',
+                                'fillingRate': data.fillingRate
+                            };
+
+                            this.arrFormControl['senders'].setValue([dataContact]);
+
+                            this.appContactAutocomplete.setContactLad(dataContact);
+
+                            this.selectedContact(dataContact, 'senders');
+                        })
+                    ).subscribe();
+                }
+            }));
+        }));
+
+        this.loading = false;
+    }
     async initElemForm(saveResourceState: boolean = true) {
         this.loading = true;
 

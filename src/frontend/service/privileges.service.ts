@@ -326,6 +326,15 @@ export class PrivilegeService {
             'style': 'multigest',
             'hasParams': false
         },
+        {
+            'id': 'admin_mercure',
+            'label': 'lang.mercure',
+            'comment': 'lang.adminLadDesc',
+            'route': '/administration/mercure',
+            'unit': 'supervision',
+            'style': 'fab fa-phabricator',
+            'hasParams': false
+        }
     ];
 
     private privileges: Privilege[] = [
