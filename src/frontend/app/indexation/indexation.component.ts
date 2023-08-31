@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy } from '@angular/core';
+import {Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, AfterViewInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -39,6 +39,7 @@ export class IndexationComponent implements OnInit, OnDestroy {
     @ViewChild('appDocumentViewer', { static: false }) appDocumentViewer: DocumentViewerComponent;
 
     loading: boolean = false;
+    loadedForm: boolean = false;
 
 
     indexingModels: any[] = [];
@@ -296,8 +297,46 @@ export class IndexationComponent implements OnInit, OnDestroy {
         }
     }
 
-    refreshDatas() {
-        this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
+    setLoadedForm(){
+        this.loadedForm = true;
     }
 
+    async refreshDatas(event: string) {
+        if (event == 'launchLad' && this.currentIndexingModel.ladProcessing){
+            // Attendre que le formulaire soit chargé pour pouvoir lancer la LAD
+            if (this.loadedForm){
+                this.launchLadProcess();
+                this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
+            } else {
+                await this.sleep(500);
+                await this.refreshDatas(event);
+            }
+        }
+    }
+
+    sleep(ms){
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    launchLadProcess(){
+        this.indexingForm.loading = true;
+
+        const content = this.appDocumentViewer.file.base64src ?? this.appDocumentViewer.file.content;
+        const filename = (this.appDocumentViewer.file.name == 'pdf') ? this.appDocumentViewer.file.name : this.appDocumentViewer.file.name + '.pdf';
+
+        this.http.post('../rest/mercure/lad', { encodedResource: content, extension: 'pdf', filename: filename }).pipe(
+            tap((data: any) => {
+                if (data.message === null || typeof data.message === 'undefined'){
+                    this.indexingForm.fillWithLad(data);
+                } else {
+                    this.indexingForm.loading = false;
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                this.dialogRef.close();
+                return of(false);
+            })
+        ).subscribe();
+    }
 }

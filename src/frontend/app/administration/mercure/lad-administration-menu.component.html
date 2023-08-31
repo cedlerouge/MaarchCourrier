@@ -1,0 +1,58 @@
+<mat-nav-list>
+    <h3 mat-subheader>{{'lang.actions' | translate}}</h3>
+    <a mat-list-item disableRipple="true" matTooltip="{{'lang.toogleLadConf' | translate}}">
+        <mat-icon color="primary" mat-list-icon>
+            <mat-slide-toggle [checked]="config.enabledLad" [disabled]="!config.enabledLad" color="primary"
+                              (change)="config.enabledLad ? toggleLadConf() : '';"></mat-slide-toggle>
+        </mat-icon>
+        <p mat-line [ngStyle]="{'opacity': config.enabledLad ? '' : '0.3'}" (click)="config.enabledLad ? toggleLadConf() : '';">
+            {{'lang.lad' | translate}} {{(config.enabledLad ? 'lang.enabled' : 'lang.disabled') | translate}}
+        </p>
+    </a>
+
+    <a mat-list-item routerLink="/administration/mercure">
+        <mat-icon color="primary" mat-list-icon class="fa fa-cogs"></mat-icon>
+        <p mat-line>
+            {{'lang.informations' | translate}}
+        </p>
+    </a>
+    <a mat-list-item (click)="launchTest()">
+        <mat-icon color="primary" mat-list-icon class="fas fa-paper-plane"></mat-icon>
+        <p mat-line>
+            {{'lang.testAndActivate' | translate}}
+        </p>
+        <span *ngIf="loading" style="display:flex;height:24px;width:24px;">
+            <mat-spinner style="margin:auto;" [diameter]="24"></mat-spinner>
+        </span>
+    </a>
+    <a mat-list-item routerLink="/administration/mercure/contacts" >
+        <mat-icon color="primary" mat-list-icon class="fa fa-address-book"></mat-icon>
+        <p mat-line>
+            {{'lang.ladContactsManagement' | translate}}
+        </p>
+    </a>
+</mat-nav-list>
+
+<mat-divider></mat-divider>
+<mat-nav-list>
+    <h3 mat-subheader>{{'lang.mws' | translate}}</h3>
+
+    <a mat-list-item routerLink="/administration/mercure/webservice">
+        <mat-icon color="primary" mat-list-icon class="fa fa-cogs"></mat-icon>
+        <p mat-line>
+            {{'lang.mwsConfig' | translate}}
+        </p>
+    </a>
+    <a mat-list-item *ngIf="config.mws.tokenMws !== ''" routerLink="/administration/mercure/webservice/listDocs">
+        <mat-icon color="primary" mat-list-icon class="fa fa-th-list"></mat-icon>
+        <p mat-line>
+            {{'lang.mwsListDocs' | translate}}
+        </p>
+    </a>
+    <a mat-list-item *ngIf="config.mws.tokenMws !== ''" routerLink="/administration/mercure/webservice/monitoring">
+        <mat-icon color="primary" mat-list-icon class="fas fa-chart-pie"></mat-icon>
+        <p mat-line>
+            {{'lang.mwsMonitoring' | translate}}
+        </p>
+    </a>
+</mat-nav-list>

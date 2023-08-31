@@ -113,7 +113,9 @@ class IndexingModelController
         }
         $model['fields']        = $fields;
         $model['mandatoryFile'] = $model['mandatory_file'];
+        $model['ladProcessing'] = $model['lad_processing'];
         unset($model['mandatory_file']);
+        unset($model['lad_processing']);
 
         if (!empty($queryParams['used']) && $queryParams['used'] == 'true') {
             $resources = ResModel::get([
@@ -214,8 +216,10 @@ class IndexingModelController
             }
             $body['fields'] = $arrayTmp;
             $body['mandatoryFile'] = $masterModel['mandatory_file'];
+	    $body['mandatoryFile'] = $masterModel['lad_processing'];
         }
         $body['mandatoryFile'] = empty($body['mandatoryFile']) ? 'false' : 'true';
+        $body['ladProcessing'] = empty($body['ladProcessing']) ? 'false' : 'true';
 
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_indexing_models', 'userId' => $GLOBALS['id']])) {
             $body['private'] = empty($body['private']) ? 'false' : 'true';
@@ -238,6 +242,7 @@ class IndexingModelController
             'owner'         => $GLOBALS['id'],
             'private'       => $body['private'],
             'mandatoryFile' => $body['mandatoryFile'],
+            'ladProcessing' => $body['ladProcessing'],
             'master'        => $master
         ]);
 
@@ -362,7 +367,8 @@ class IndexingModelController
                 'label'             => $body['label'],
                 'category'          => $body['category'],
                 '"default"'         => $body['default'] ? 'true' : 'false',
-                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true'
+                'mandatory_file'    => empty($body['mandatoryFile']) ? 'false' : 'true',
+                'lad_processing'    => empty($body['ladProcessing']) ? 'false' : 'true'
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
@@ -759,7 +765,9 @@ class IndexingModelController
         $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
         foreach ($models as $key => $model) {
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
+	    $models[$key]['ladProcessing'] = $model['lad_processing'];
             unset($models[$key]['mandatory_file']);
+	    unset($models[$key]['lad_processing']);
         }
         return $models;
     }

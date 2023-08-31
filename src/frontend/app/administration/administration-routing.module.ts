@@ -60,7 +60,11 @@ import { AttachmentTypesAdministrationComponent } from './attachment/attachment-
 import { OrganizationEmailSignaturesAdministrationComponent } from './organizationEmailSignatures/organization-email-signatures-administration.component';
 import { MultigestListAdministrationComponent } from './multigest/multigest-list-administration.component';
 import { MultigestAdministrationComponent } from './multigest/multigest-administration.component';
-
+import { LadAdministrationComponent } from './mercure/lad-administration.component';
+import { LadContactsManagementComponent } from './mercure/ladContactsManagement/lad-contacts-management.component';
+import { MwsAdministrationComponent } from './mercure/webservice/mws-administration.component';
+import { MwsListDocsComponent } from './mercure/webservice/mws-list-docs.component';
+import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.component';
 
 @NgModule({
     imports: [
@@ -145,6 +149,11 @@ import { MultigestAdministrationComponent } from './multigest/multigest-administ
             { path: 'administration/attachments/types/new', canActivate: [AppGuard], component: AttachmentTypeAdministrationComponent },
             { path: 'administration/attachments/types/:id', canActivate: [AppGuard], component: AttachmentTypeAdministrationComponent },
             { path: 'administration/attachments', redirectTo: 'attachments/types', pathMatch: 'full' },
+            { path: 'administration/mercure', canActivate: [AppGuard], component: LadAdministrationComponent },
+            { path: 'administration/mercure/contacts', canActivate: [AppGuard], component: LadContactsManagementComponent },
+            { path: 'administration/mercure/webservice', canActivate: [AppGuard], component: MwsAdministrationComponent },
+            { path: 'administration/mercure/webservice/listDocs', canActivate: [AppGuard], component: MwsListDocsComponent },
+            { path: 'administration/mercure/webservice/monitoring', canActivate: [AppGuard], component: MwsMonitoringComponent },
         ]),
     ],
     exports: [

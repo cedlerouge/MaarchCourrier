@@ -58,7 +58,7 @@ class IndexingModelModel
 
     public static function create(array $args)
     {
-        ValidatorModel::notEmpty($args, ['label', 'category', 'default', 'owner', 'private', 'mandatoryFile']);
+        ValidatorModel::notEmpty($args, ['label', 'category', 'default', 'owner', 'private', 'mandatoryFile', 'ladProcessing']);
         ValidatorModel::stringType($args, ['label', 'category', 'default', 'private']);
         ValidatorModel::intVal($args, ['owner', 'master']);
 
@@ -74,6 +74,7 @@ class IndexingModelModel
                 'owner'             => $args['owner'],
                 'private'           => $args['private'],
                 'mandatory_file'    => $args['mandatoryFile'],
+                'lad_processing' => $args['ladProcessing'],
                 'master'            => $args['master']
             ]
         ]);
