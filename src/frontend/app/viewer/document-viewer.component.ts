@@ -99,6 +99,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     @Input() isNewVersion: boolean = false;
 
+    @Input() zoom: number = 1;
+
     /**
       * Event emitter
       */
@@ -179,7 +181,6 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
 
     rotation: number = null;
-    zoom: number = 1;
 
     isFullScreen: boolean = false;
 
