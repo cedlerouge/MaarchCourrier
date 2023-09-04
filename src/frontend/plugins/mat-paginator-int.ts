@@ -1,12 +1,16 @@
 
 import { Injectable } from '@angular/core';
 import { MatPaginatorIntl } from '@angular/material/paginator';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable()
 export class CustomMatPaginatorIntl extends MatPaginatorIntl {
+
+    bypassRangeLabel: string[] = ['/administration/history', '/administration/history-batch'];
     constructor(
         public translate: TranslateService,
+        private router: Router
     ) {
         super();
 
@@ -30,6 +34,6 @@ export class CustomMatPaginatorIntl extends MatPaginatorIntl {
 
         const nbPage = Math.ceil(length / pageSize);
 
-        return `${this.translate.instant('lang.page')} ${page + 1} / ${nbPage}`;
+        return this.bypassRangeLabel.indexOf(this.router.url) === -1 ? `${this.translate.instant('lang.page')} ${page + 1} / ${nbPage}` : '';
     };
 }
