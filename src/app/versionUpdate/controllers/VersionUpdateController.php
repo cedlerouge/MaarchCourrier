@@ -349,6 +349,7 @@ class VersionUpdateController
 
         return $response->withStatus(204);
     }
+
     /**
      * Get any tag folders that are superior than the current database version
      */
@@ -525,11 +526,18 @@ class VersionUpdateController
     /**
      * Main function to run php files
      * @param   array   $folderFiles
-     * @param   string  $docserverMigrationFolderPath
+     * @param   string  $tagVersion
      * @return  bool
      */
     public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
     {
+        if (!Validator::arrayType()->notEmpty()->validate($folderFiles)) {
+            throw new \Throwable('$folderFiles must be a non empty array');
+        }
+        if (!Validator::stringType()->notEmpty()->validate($tagVersion)) {
+            throw new \Throwable('$tagVersion must be a non empty string');
+        }
+
         $numberOfFiles = 0;
         $success = 0;
         $errors = 0;
