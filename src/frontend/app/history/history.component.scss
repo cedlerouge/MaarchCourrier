@@ -80,3 +80,9 @@
     bottom: 0;
     padding-right: 20px;
 }
+
+.table-head-tool {
+    ::ng-deep .mat-paginator-range-actions {
+        margin-left: -60px;
+    }
+}

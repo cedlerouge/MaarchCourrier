@@ -18,7 +18,7 @@ export class FunctionsService {
         private datePipe: DatePipe
     ) { }
 
-    empty(value: any) {
+    empty(value: any): boolean {
         if (value === null || value === undefined) {
             return true;
 
@@ -35,8 +35,17 @@ export class FunctionsService {
         }
     }
 
-    isDate(value: any) {
+    isDate(value: any): boolean {
         return value instanceof Date && !isNaN(value.valueOf());
+    }
+
+    isNumber(evt: any): boolean {
+        evt = (evt) ? evt : window.event;
+        const charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
     }
 
     formatFrenchDateToTechnicalDate(date: string) {

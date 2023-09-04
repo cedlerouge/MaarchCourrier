@@ -2747,5 +2747,8 @@
     "keepCopyForRedirection": "Garder les rôles en copie existants",
     "keepCopyForRedirectionDesc": "Permet de garder les utilisateurs en copie",
     "keepDestForRedirection": "Mettre en copie l'attributaire actuel ",
-    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie"
+    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie",
+    "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions.",
+    "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br> La page sera rechargée après cette opération.",
+    "pageNotFound": "La page n'existe pas"
 }
