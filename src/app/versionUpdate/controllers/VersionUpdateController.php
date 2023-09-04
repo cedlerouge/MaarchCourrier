@@ -322,7 +322,7 @@ class VersionUpdateController
         return file_exists(VersionUpdateController::UPDATE_LOCK_FILE);
     }
 
-    public static function autoUpdate(Request $request, Response $response)
+    public static function autoUpdateLauncher(Request $request, Response $response)
     {
         $availableFolders = VersionUpdateController::getAvailableFolders();
         if (!empty($availableFolders['errors'])) {
@@ -340,9 +340,10 @@ class VersionUpdateController
         }
 
         if (!empty($availableFolders['folders'])) {
-            $control = VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
-            if (!empty($control['errors'])) {
-                return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
+            try {
+                VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
+            } catch (\Throwable $th) {
+                return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
             }
             return $response->withJson(['success' => 'Database has been updated']);
         }
@@ -352,6 +353,7 @@ class VersionUpdateController
 
     /**
      * Get any tag folders that are superior than the current database version
+     * @return  array  Return 'errors' for unexpected errors | Return 'folders' with the list of folders
      */
     public static function getAvailableFolders(): array
     {
@@ -400,7 +402,7 @@ class VersionUpdateController
     /**
      * Central function to run different types of files. SQL or PHP
      * @param   array   $tagFolderList  A list of strings
-     * @return  array|true  return an array that contain 'errors' OR return true when successful
+     * @return  Throwable|true  Throwable errors | Return true when successful
      */
     public static function executeTagFolderFiles(array $tagFolderList)
     {
@@ -411,8 +413,16 @@ class VersionUpdateController
         $migrationFolder = DocserverController::getMigrationFolderPath();
 
         if (!empty($migrationFolder['errors'])) {
-            return ['errors' => $migrationFolder['errors']];
+            throw new \Throwable($migrationFolder['errors']);
         }
+
+        LogsController::add([
+            'isTech'    => true,
+            'moduleId'  => 'Version Update Controller',
+            'eventId'   => "Update",
+            'level'     => 'INFO',
+            'eventType' => "Begging of the update..."
+        ]);
 
         foreach ($tagFolderList as $tagFolder) {
             $tagVersion      = basename($tagFolder);
@@ -448,6 +458,14 @@ class VersionUpdateController
             ]);
         }
 
+        LogsController::add([
+            'isTech'    => true,
+            'moduleId'  => 'Version Update Controller',
+            'eventId'   => "Update",
+            'level'     => 'INFO',
+            'eventType' => "End of the update"
+        ]);
+
         return true;
     }
 
@@ -455,7 +473,7 @@ class VersionUpdateController
      * Main function to run sql files
      * @param   string  $sqlFilePath
      * @param   string  $docserverMigrationFolderPath
-     * @return  bool
+     * @return  Throwable|bool  Throwable errors | return true if postgresql dump and sql file executed with sucess or return false if postgresql dump faild
      */
     public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool
     {
@@ -527,7 +545,7 @@ class VersionUpdateController
      * Main function to run php files
      * @param   array   $folderFiles
      * @param   string  $tagVersion
-     * @return  bool
+     * @return  Throwable|array Throwable errors | Array with 'numberOfFiles', 'success', 'errors' and 'rollback'
      */
     public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
     {
