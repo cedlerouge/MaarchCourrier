@@ -25,10 +25,12 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
 use User\models\UserModel;
+use VersionUpdate\interfaces\VersionUpdateControllerInterface;
 
-class VersionUpdateController
+class VersionUpdateController implements VersionUpdateControllerInterface
 {
     public const UPDATE_LOCK_FILE = "migration/updating.lck";
+    public const ROUTES_WITHOUT_MIGRATION = ['GET/languages/{lang}', 'GET/authenticationInformations', 'GET/images'];
 
     public function get(Request $request, Response $response)
     {

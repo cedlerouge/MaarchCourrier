@@ -38,6 +38,10 @@ $requestUri = explode('/rest', $requestUri);
 $requestUriBasePath = $requestUri[0] ?? '';
 $app->setBasePath($requestUriBasePath . '/rest');
 
+//Migration
+$versionUpdateMiddleware = new \VersionUpdate\middlewares\VersionUpdateMiddleware();
+$app->add($versionUpdateMiddleware);
+
 //Authentication
 $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
     $response = new \SrcCore\http\Response();
