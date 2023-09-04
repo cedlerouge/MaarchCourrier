@@ -25,6 +25,9 @@ use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
 use User\models\UserModel;
+use Respect\Validation\Validator;
+use SrcCore\controllers\LogsController;
+use SrcCore\interfaces\AutoUpdateInterface;
 
 class VersionUpdateController
 {
@@ -317,5 +320,282 @@ class VersionUpdateController
     public static function isMigrating(): bool
     {
         return file_exists(VersionUpdateController::UPDATE_LOCK_FILE);
+    }
+
+    public static function autoUpdate(Request $request, Response $response)
+    {
+        $availableFolders = VersionUpdateController::getAvailableFolders();
+        if (!empty($availableFolders['errors'])) {
+            return $response->withStatus(400)->withJson(['errors' => $availableFolders['errors']]);
+        }
+
+        if (empty($GLOBALS['id'] ?? null)) {
+            $user = UserModel::get([
+                'select'    => ['id'],
+                'where'     => ['mode = ? OR mode = ?'],
+                'data'      => ['root_visible', 'root_invisible'],
+                'limit'     => 1
+            ]);
+            $GLOBALS['id'] = $user[0]['id'];
+        }
+
+        if (!empty($availableFolders['folders'])) {
+            $control = VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
+            if (!empty($control['errors'])) {
+                return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
+            }
+            return $response->withJson(['success' => 'Database has been updated']);
+        }
+
+        return $response->withStatus(204);
+    }
+    /**
+     * Get any tag folders that are superior than the current database version
+     */
+    public static function getAvailableFolders(): array
+    {
+        $parameter = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'database_version']);
+
+        $parameter = explode('.', $parameter['param_value_string']);
+
+        if (count($parameter) < 2) {
+            return ['errors' => "Bad format database_version"];
+        }
+
+        $dbMajorVersion = (int)$parameter[0];
+        $dbMinorVersion = (int)$parameter[1];
+        $dbPatchVersion = (int)$parameter[2];
+
+        $folderTags = array_diff(scandir('migration'), array('..', '.', '.gitkeep'));
+        natcasesort($folderTags);
+        $availableFolders = [];
+
+        foreach ($folderTags as $folder) {
+            $folderVersions = explode('.', $folder);
+            $folderMajorVersion = (int)$folderVersions[0];
+            $folderMinorVersion = (int)$folderVersions[1];
+            $folderPatchVersion = (int)$folderVersions[2];
+
+            if (
+                $folderMajorVersion > $dbMajorVersion || 
+                ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion > $dbMinorVersion) || 
+                ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion == $dbMinorVersion && $folderPatchVersion > $dbPatchVersion)
+            ) {
+                if (is_dir("migration/$folder")) {
+                    if (!is_readable("migration/$folder")) {
+                        return ['errors' => "Folder 'migration/$folder' is not readable"];
+                    }
+                    if (count(array_diff(scandir("migration/$folder"), ['.', '..'])) == 0) {
+                        return ['errors' => "Folder 'migration/$folder' is empty, no updates are found!"];
+                    }
+                    $availableFolders[] = "migration/$folder";
+                }
+            }
+        }
+
+        return ['folders' => $availableFolders];
+    }
+
+    /**
+     * Central function to run different types of files. SQL or PHP
+     * @param   array   $tagFolderList  A list of strings
+     * @return  array|true  return an array that contain 'errors' OR return true when successful
+     */
+    public static function executeTagFolderFiles(array $tagFolderList)
+    {
+        if (!Validator::arrayType()->notEmpty()->validate($tagFolderList)) {
+            throw new \Throwable('$tagFolderList must be a non empty array of type string');
+        }
+
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+
+        if (!empty($migrationFolder['errors'])) {
+            return ['errors' => $migrationFolder['errors']];
+        }
+
+        foreach ($tagFolderList as $tagFolder) {
+            $tagVersion      = basename($tagFolder);
+            $tagFoldersFiles = scandir($tagFolder);
+
+            if (in_array($tagFoldersFiles, ['.gitkeep', '.', '..'])) {
+                continue;
+            }
+
+            $sqlFilePath = "$tagFolder/$tagVersion.sql";
+            $check = VersionUpdateController::executeTagSqlFile($sqlFilePath, $migrationFolder['path'] . "/" . $tagVersion);
+            if (empty($check)) {
+                // maybe reload dump db
+                continue;
+            }
+
+            $sqlFileIndex = array_search("$tagVersion.sql", $tagFoldersFiles);
+            if ($sqlFileIndex !== false) {
+                unset($tagFoldersFiles[$sqlFileIndex]);
+            }
+
+            $runScriptsByTag = VersionUpdateController::runScriptsByTag($tagFoldersFiles, $tagVersion);
+
+            ParameterModel::update(['id' => "database_version", 'param_value_string' => $tagVersion]);
+
+            $info = "Result of {$runScriptsByTag['numberOfFiles']} migration files, success : {$runScriptsByTag['success']}, errors : {$runScriptsByTag['errors']}, rollback : {$runScriptsByTag['rollback']}";
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'Version Update',
+                'eventId'   => "Tag '{$tagVersion}'",
+                'level'     => 'INFO',
+                'eventType' => $info
+            ]);
+        }
+
+        return true;
+    }
+
+    /**
+     * Main function to run sql files
+     * @param   string  $sqlFilePath
+     * @param   string  $docserverMigrationFolderPath
+     * @return  bool
+     */
+    public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool
+    {
+        if (!Validator::stringType()->notEmpty()->validate($sqlFilePath)) {
+            throw new \Throwable('$sqlFilePath must be a non empty string');
+        }
+        if (!Validator::stringType()->notEmpty()->validate($docserverMigrationFolderPath)) {
+            throw new \Throwable('$docserverMigrationFolderPath must be a non empty string');
+        }
+
+        if (file_exists($sqlFilePath)) {
+
+            $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+            $actualTime = date("dmY-His");
+            $tablesToSave = '';
+
+            $fileContent = file_get_contents($sqlFilePath);
+            $explodedFile = explode("\n", $fileContent);
+
+            foreach ($explodedFile as $key => $line) {
+                if (strpos($line, '--DATABASE_BACKUP') !== false) {
+                    $lineNb = $key;
+                }
+            }
+
+            if (isset($lineNb)) {
+                $explodedLine = explode('|', $explodedFile[$lineNb]);
+                array_shift($explodedLine);
+
+                foreach ($explodedLine as $table) {
+                    if (!empty($table)) {
+                        $tablesToSave .= ' -t ' . trim($table);
+                    }
+                }
+            }
+
+            $backupFile = $docserverMigrationFolderPath . "/backupDB_maarchcourrier_$actualTime.sql";
+            $dbname = "postgresql://{$config['database'][0]['user']}:{$config['database'][0]['password']}@{$config['database'][0]['server']}:{$config['database'][0]['port']}/{$config['database'][0]['name']}";
+            $execReturn = exec("pg_dump --dbname=\"$dbname\" $tablesToSave -a > \"$backupFile\"", $output, $intReturn);
+            if (!empty($execReturn)) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Version Update',
+                    'level'     => 'CRITICAL',
+                    'eventType' => '[executeTagSqlFile] : Postgresql dump failed : ' . $execReturn,
+                    'eventId'   => 'Execute Update'
+                ]);
+                return false;
+            }
+
+            DatabaseModel::exec($fileContent);
+            $fileName = explode('/', $sqlFilePath)[1];
+
+            HistoryController::add([
+                'tableName' => 'none',
+                'recordId'  => $fileName,
+                'eventType' => 'UP',
+                'userId'    => $GLOBALS['id'],
+                'info'      => _DB_UPDATED_WITH_FILE. ' : ' . $fileName,
+                'moduleId'  => null,
+                'eventId'   => 'databaseUpdate',
+            ]);
+        }
+
+        return true;
+    }
+
+    /**
+     * Main function to run php files
+     * @param   array   $folderFiles
+     * @param   string  $docserverMigrationFolderPath
+     * @return  bool
+     */
+    public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
+    {
+        $numberOfFiles = 0;
+        $success = 0;
+        $errors = 0;
+        $rollback = 0;
+
+        foreach ($folderFiles as $fileName) {
+            if (in_array($fileName, ['.', '..'])) {
+                continue;
+            }
+
+            $numberOfFiles++;
+            $filePath = "migration/$tagVersion/$fileName";
+            $migrationClass = require $filePath;
+
+            if (empty($migrationClass instanceof AutoUpdateInterface)) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Version Update',
+                    'eventId'   => 'Run Scripts By Tag',
+                    'level'     => 'CRITICAL',
+                    'eventType' => "Could not find 'AutoUpdateInterface' of an anonymous class from '$filePath'"
+                ]);
+                $errors++;
+                continue;
+            }
+
+            try {
+                $migrationClass->backup();
+            } catch (\Throwable $th) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Version Update',
+                    'eventId'   => 'Run Scripts By Tag',
+                    'level'     => 'CRITICAL',
+                    'eventType' => "Throwable - BACKUP : " . $th->getMessage()
+                ]);
+                $errors++;
+                continue;
+            }
+
+            try {
+                $migrationClass->update();
+
+                $success++;
+            } catch (\Throwable $th) {
+                $logInfo = "Throwable - UPDATE : " . $th->getMessage();
+                $errors++;
+
+                try {
+                    $migrationClass->rollback();
+                    $rollback++;
+                } catch (\Throwable $th) {
+                    $logInfo .= " | Throwable - ROLLBACK : " . $th->getMessage();
+                }
+
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Version Update',
+                    'eventId'   => 'Run Scripts By Tag',
+                    'level'     => 'CRITICAL',
+                    'eventType' => $logInfo
+                ]);
+                continue;
+            }
+        }
+
+        return ['numberOfFiles' => $numberOfFiles, 'success' => $success, 'errors' => $errors, 'rollback' => $rollback];
     }
 }
