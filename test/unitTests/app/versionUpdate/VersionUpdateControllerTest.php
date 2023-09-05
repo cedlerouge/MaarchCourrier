@@ -235,10 +235,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
     public function testAvailableFoldersWithFolderWritesChangedExpectFolderIsNotReadable()
     {
         // Arrange
-        chmod(self::$nextMigrationFolderPath, 0000);
-
-        $result = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
-        var_dump($result, $output, $resultCode);
+        chmod(self::$nextMigrationFolderPath, 000);
 
         // Act
         $availableFolders = VersionUpdateController::getAvailableFolders();
