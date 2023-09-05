@@ -68,6 +68,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
     };
 
     ladEnabled: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -83,8 +84,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.getLadConfiguration();
         this.route.params.subscribe(async (params) => {
+            await this.getLadConfiguration();
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
 
@@ -291,14 +292,17 @@ export class IndexingModelAdministrationComponent implements OnInit {
     }
 
     getLadConfiguration(){
-        this.http.get('../rest/configurations/admin_mercure').pipe(
-            tap((data: any) => {
-                this.ladEnabled = data.configuration.value.enabledLad;
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
+        return new Promise((resolve) => {
+            this.http.get('../rest/configurations/admin_mercure').pipe(
+                tap((data: any) => {
+                    this.ladEnabled = data.configuration.value.enabledLad;
+                    resolve(this.ladEnabled);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }

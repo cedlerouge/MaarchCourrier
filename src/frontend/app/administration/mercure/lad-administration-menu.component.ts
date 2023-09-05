@@ -96,10 +96,8 @@ export class LadAdministrationMenuComponent implements OnInit {
         this.loading = true;
         this.http.post('../rest/administration/mercure/test', this.config).pipe(
             tap((data: any) => {
-                if (data.success){
-                    this.setLadConf(true);
-                    this.loading = false;
-                }
+                this.setLadConf(true);
+                this.loading = false;
             }),
             catchError((err: any) => {
                 this.loading = false;

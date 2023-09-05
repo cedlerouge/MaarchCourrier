@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Docserver Controller
+ * @brief LadController Controller
  * @author dev@maarch.org
  */
 
@@ -18,6 +18,7 @@ use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
 use Convert\controllers\FullTextController;
 use DateTime;
+use Group\controllers\PrivilegeController;
 use SrcCore\controllers\LogsController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
@@ -44,12 +45,12 @@ class LadController
         }
 
         $configuration = json_decode($configuration['value'], true);
-        if (empty($configuration['enabledLad']) || !$configuration['enabledLad']) {
+        if (empty($configuration['enabledLad'])) {
             return $response->withStatus(200)->withJson(['message' => 'Mercure LAD is not enabled']);
         }
 
         $ladResult = [];
-        if ($configuration['mwsLadPriority']){
+        if ($configuration['mwsLadPriority']) {
             if (!Validator::notEmpty()->validate($body['filename'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body filename is empty']);
             }
@@ -73,7 +74,8 @@ class LadController
         return $response->withJson($ladResult);
     }
 
-    public static function testAndActivateLad(Request $request, Response $response){
+    public function testLad(Request $request, Response $response)
+    {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
             return $response->withStatus(400)->withJson(['errors' => 'Mercure configuration is not enabled']);
@@ -84,7 +86,7 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'LAD configuration file does not exist']);
         }
 
-        if (!is_dir($ladConfiguration['config']['mercureLadDirectory'])){
+        if (!is_dir($ladConfiguration['config']['mercureLadDirectory'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
@@ -96,8 +98,8 @@ class LadController
             'extension' => 'pdf'
         ]);
 
-        if (!empty($ladResult['subject'])){
-            return $response->withJson(['success' => true]);
+        if (!empty($ladResult['subject'])) {
+            return $response->withStatus(204);
         }
 
         return $response->withStatus(400)->withJson(['errors' => 'LAD result is empty']);
@@ -115,11 +117,12 @@ class LadController
             return ['errors' => 'LAD configuration file does not exist'];
         }
 
-        $tmpPath = $ladConfiguration['config']['mercureLadDirectory'].'/IN/'.$customId.DIRECTORY_SEPARATOR;
-        if (!is_dir($tmpPath)){
+        $tmpPath = $ladConfiguration['config']['mercureLadDirectory'] . '/IN/' . $customId.DIRECTORY_SEPARATOR;
+        if (!is_dir($tmpPath)) {
             mkdir($tmpPath, 0777);
-            mkdir($ladConfiguration['config']['mercureLadDirectory'].'/OUT/'.$customId.DIRECTORY_SEPARATOR, 0777);
+            mkdir($ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId.DIRECTORY_SEPARATOR, 0777);
         }
+
         $tmpFilename = 'lad' . rand() . '_' . rand();
 
         file_put_contents($tmpPath.$tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
@@ -135,15 +138,14 @@ class LadController
             'eventId'   => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
         ]);
 
-        $command = $ladConfiguration['config']['mercureLadDirectory'].'/Mercure5 '
-            .$tmpPath.$tmpFilename . '.' . $aArgs['extension'].' '
-            .$ladConfiguration['config']['mercureLadDirectory'].'/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml '
-            .$ladConfiguration['config']['mercureLadDirectory'].'/MERCURE5_I1_LAD_COURRIER.INI';
+        $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
+            . $tmpPath.$tmpFilename . '.' . $aArgs['extension'] . ' '
+            . $ladConfiguration['config']['mercureLadDirectory'] . '/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml '
+            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.INI';
 
         exec($command.' 2>&1', $output, $return);
 
-        $aReturn = [];
-        if ($return == 0){
+        if ($return == 0) {
             $mappingMercure = $ladConfiguration['mappingLadFields'];
             $outputXml = CoreConfigModel::getXmlLoaded(['path' => $ladConfiguration['config']['mercureLadDirectory'].'/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml']);
             $mandatoryFields = [
@@ -153,20 +155,20 @@ class LadController
             ];
             $aReturn = [];
 
-            foreach ($mandatoryFields as $f){
+            foreach ($mandatoryFields as $f) {
                 $aReturn[$f] = "";
             }
 
-            if ($outputXml){
+            if ($outputXml) {
                 foreach ($outputXml->page as $page) {
-                    foreach ($page->field as $field){
+                    foreach ($page->field as $field) {
                         $nameAttributeKey = 'n';
                         $nameAttribute = (string)$field->attributes()->$nameAttributeKey;
                         $disabledField = false;
                         $normalizationRule = '';
                         $normalizationFormat = null;
 
-                        if (isset($mappingMercure[$nameAttribute])){
+                        if (isset($mappingMercure[$nameAttribute])) {
                             if (isset($mappingMercure[$nameAttribute]['disabled']))
                                 $disabledField = $mappingMercure[$nameAttribute]['disabled'];
                             if (isset($mappingMercure[$nameAttribute]['normalizationRule']))
@@ -177,14 +179,12 @@ class LadController
                                 $nameAttribute = $mappingMercure[$nameAttribute]['key'];
                         }
 
-                        if (!$disabledField){
-                            if (!array_key_exists($nameAttribute, $aReturn) || empty($aReturn[$nameAttribute])){
+                        if (!$disabledField && (!array_key_exists($nameAttribute, $aReturn) || empty($aReturn[$nameAttribute]))) {
                                 $aReturn[$nameAttribute] = LadController::normalizeField((string)$field[0], $normalizationRule, $normalizationFormat);
-                            }
                         }
                     }
 
-                    foreach ($page->SenderContact as $contact){
+                    foreach ($page->SenderContact as $contact) {
                         $aReturn["contactIdx"] = (string)$contact->Idx[0];
                     }
                 }
@@ -197,7 +197,7 @@ class LadController
                 'tableName' => '',
                 'recordId'  => '',
                 'eventType' => "LAD task",
-                'eventId'   => "LAD task error on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}, return : {$return}"
+                'eventId'   => "LAD task error on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}, return : {$return}"
             ]);
             $aReturn = ['output' => $output, 'return' => $return, 'cmd' => $command];
         }
@@ -209,13 +209,14 @@ class LadController
             'tableName' => '',
             'recordId'  => '',
             'eventType' => "LAD task",
-            'eventId'   => "LAD task success on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
+            'eventId'   => "LAD task success on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}"
         ]);
 
         return $aReturn;
     }
 
-    private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null){
+    private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null)
+    {
         switch ($normalizationRule){
             case 'DATE':
                 $result = LadController::normalizeDate($fieldContent, $normalizationFormat);
@@ -228,8 +229,13 @@ class LadController
         return $result;
     }
 
-    public static function getContactsIndexationState(Request $request, Response $response){
+    public static function getContactsIndexationState(Request $request, Response $response)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
+
         if (empty($ladConfiguration)) {
             return $response->withJson(['errors' => 'LAD configuration file does not exist']);
         }
@@ -248,15 +254,14 @@ class LadController
         $countAllContacts = (int)$allContacts[0]['count'];
 
         $lexDirectory = $ladConfiguration['config']['contactsLexiconsDirectory'] . DIRECTORY_SEPARATOR . $customId;
-        if (is_file($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag")){
-            $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "r") or die("Unable to open file!");
+        if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")) {
+            $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "r");
 
             $dateIndexation = fgets($flagFile);
             fclose($flagFile);
         } else {
-            $dateIndexation = "Jamais";
+            $dateIndexation = "";
         }
-
 
         return $response->withJson([
             'dateIndexation'            => $dateIndexation,
@@ -266,116 +271,8 @@ class LadController
         ]);
     }
 
-    public static function generateContactsIndexation(Request $request, Response $response){
-        $customId = CoreConfigModel::getCustomId();
-
-        $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
-        if (empty($ladConfiguration)) {
-            return $response->withJson(['errors' => 'LAD configuration file does not exist']);
-        }
-
-        //Création des dossiers Idx et Lexiques si non existants
-        $lexDirectory = $ladConfiguration['config']['contactsLexiconsDirectory'] . DIRECTORY_SEPARATOR . $customId;
-        if (!is_dir($lexDirectory)){
-            mkdir($lexDirectory, 0777, true);
-        }
-
-        //Ouverture des index Lucene
-        try {
-            if (FullTextController::isDirEmpty($ladConfiguration['config']['contactsIndexesDirectory'])) {
-                $index = \Zend_Search_Lucene::create($ladConfiguration['config']['contactsIndexesDirectory']);
-            } else {
-                $index = \Zend_Search_Lucene::open($ladConfiguration['config']['contactsIndexesDirectory']);
-            }
-
-            $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-
-        } catch (\Exception $e) {
-            return $response->withJson(['errors' => 'Full Text index failed : ' . $e]);
-        }
-
-        //Construction de la configuration
-        $tabLexicon = $tabSelect = [];
-        foreach ($ladConfiguration['contactsIndexation'] as $fieldIndexation){
-            $tabSelect[] = $fieldIndexation['database'];
-
-            if (!is_null($fieldIndexation['lexicon'])){
-                $tabLexicon[$fieldIndexation['lexicon']] = [];
-            }
-        }
-
-
-        //Récupération des contacts
-        $contactsToIndexes = ContactModel::get([
-            'select'    => $tabSelect,
-            'orderBy'   => ['id']
-        ]);
-
-        foreach ($contactsToIndexes as $c){
-            //Suppression de l'ID en cours
-            $term = new \Zend_Search_Lucene_Index_Term((integer)$c['id'], 'Idx');
-            $terms = $index->termDocs($term);
-            foreach ($terms as $value) {
-                $index->delete($value);
-            }
-
-            $cIdx = new \Zend_Search_Lucene_Document();
-
-            foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation){
-                try {
-                    if ($key == "id"){
-                        $cIdx->addField(\Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (integer)$c['id']));
-                    } else {
-                        $cIdx->addField(\Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
-                    }
-                } catch (\Exception $e) {
-                    return $response->withJson(['errors' => 'Contact indexation Lucene failed : ' . $e]);
-                }
-
-                //Ajout des informations aux lexiques
-                if (isset($tabLexicon[$fieldIndexation['lexicon']])){
-                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key])){
-                        $tabLexicon[$fieldIndexation['lexicon']][] = $c[$key];
-                    }
-                }
-            }
-
-            $cIdx->addField(\Zend_Search_Lucene_Field::text('UserMWS', $customId, 'utf-8'));
-
-            $index->addDocument($cIdx);
-            $index->commit();
-            if ((integer)$c['id'] % 50 === 0) {
-                $index->optimize();
-            }
-
-            //Modification du status d'indexation
-            ContactModel::update([
-                'set'   => ['lad_indexation' => 1],
-                'where' => ['id = ?'],
-                'data'  => [$c['id']]
-            ]);
-        }
-
-        foreach ($tabLexicon as $keyLexicon => $l){
-            sort($l);
-            $lexiconFile = fopen($lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt", "w") or die("Unable to open file!");
-            foreach ($l as $entry){
-                fwrite($lexiconFile, $entry."\n");
-            }
-            fclose($lexiconFile);
-        }
-
-        $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "w") or die("Unable to open file!");
-        fwrite($flagFile, date("d-m-Y H:i:s"));
-        fclose($flagFile);
-
-        return $response->withJson([
-            'success'      => true
-        ]);
-    }
-
-    private static function normalizeDate($content, $format){
+    private static function normalizeDate($content, $format)
+    {
         $result = strtolower($content);
         $result = str_replace(" ", "", $result);
         $result = LadController::stripAccents($result);
@@ -389,7 +286,8 @@ class LadController
         return $date->format($format);
     }
 
-    private static function getElementsDate($dateString) {
+    private static function getElementsDate($dateString)
+    {
         //$strPattern = "([0-9]|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|premier|un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze)\s?\.?\\?\/?-?_?(12|11|10|09|08|07|06|05|04|03|02|01|décembre|decembre|novembre|octobre|septembre|aout|août|juillet|juin|mai|avril|mars|fevrier|février|janvier)\s?\.?\\?\/?-?_?(20[0-9][0-9])";
         $strPattern = "/([0-9]|01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|premier|un|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze)\s?\.?\\\\?\/?-?_?(12|11|10|09|08|07|06|05|04|03|02|01|décembre|decembre|novembre|octobre|septembre|aout|août|juillet|juin|mai|avril|mars|fevrier|février|janvier)\s?\.?\\\\?\/?-?_?(20[0-9][0-9])/m";
         preg_match_all($strPattern, $dateString, $matches, PREG_SET_ORDER, 0);

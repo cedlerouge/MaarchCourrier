@@ -25,7 +25,7 @@
                         <div class="col-md-12 col-xs-12">
                             <mat-card class="card-stats">
                                 <mat-card-header class="card-header">
-                                    <mat-card-title class="card-title">Statut d'indexation</mat-card-title>
+                                    <mat-card-title class="card-title">{{'lang.stateIndexation' | translate}}</mat-card-title>
                                 </mat-card-header>
                                 <mat-card-content class="card-body" style="height:10vh;text-align: center">
                                     <div class="row">
@@ -35,10 +35,13 @@
                                         <div class="col-md-3 col-xs-3">
                                             <div class="numbers">
                                                 <p class="card-category">
-                                                    Dernière indexation
+                                                    {{'lang.lastIndexation' | translate}}
                                                 </p>
-                                                <mat-card-title class="card-title">
+                                                <mat-card-title *ngIf="indexationState.dateIndexation !== ''" class="card-title">
                                                     {{ indexationState.dateIndexation }}
+                                                </mat-card-title>
+                                                <mat-card-title *ngIf="indexationState.dateIndexation == ''" class="card-title">
+                                                    {{'lang.never' | translate}}
                                                 </mat-card-title>
                                             </div>
                                         </div>
@@ -48,7 +51,7 @@
                                         <div class="col-md-3 col-xs-3">
                                             <div class="numbers">
                                                 <p class="card-category">
-                                                    Pourcentage d'indexation
+                                                    {{'lang.pctIndexation' | translate}}
                                                 </p>
                                                 <mat-card-title class="card-title">
                                                     {{ indexationState.pctIndexationContacts }} ({{ indexationState.countIndexedContacts }} / {{ indexationState.countAllContacts }})
@@ -61,9 +64,6 @@
                         </div>
                     </div>
 
-                    <div style="text-align:center;padding-top: 10px;">
-                        <button mat-raised-button color="primary" type="button" (click)="launchGeneration()">{{'lang.launchContactsIndexation' | translate}}</button>
-                    </div>
                 </mat-card>
             </div>
         </div>

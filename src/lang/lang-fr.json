@@ -2807,5 +2807,9 @@
     "mwsCountDepot": "Nombre de dépôts",
     "mwsCountPages": "Nombre de pages",
     "mwsSouscriptionDate": "Date de souscription",
-    "mwsExpirationDate": "Date d'expiration"
+    "mwsExpirationDate": "Date d'expiration",
+    "stateIndexation": "Pourcentage d'indexation",
+    "pctIndexation": "Pourcentage d'indexation",
+    "lastIndexation": "Dernière indexation",
+    "never": "Jamais"
 }

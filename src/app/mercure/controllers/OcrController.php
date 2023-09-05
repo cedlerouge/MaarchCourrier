@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Docserver Controller
+ * @brief OcrController Controller
  * @author dev@maarch.org
  */
 
@@ -53,14 +53,14 @@ class OcrController
         }
 
         $collId = '';
-        if ($body['type'] == 'resource'){
+        if ($body['type'] == 'resource') {
             $collId = 'letterbox_coll';
             $infosDoc = ResModel::getById([
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],
                 'resId'      => $body['resId']
             ]);
 
-        } else if($body['type'] == 'attachment'){
+        } else if($body['type'] == 'attachment') {
             $collId = 'attachments_coll';
             $infosDoc = AttachmentModel::getById([
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],
@@ -71,7 +71,7 @@ class OcrController
         }
 
         //Test OCR file exists in parameters
-        if (!empty($body['filename'])){
+        if (!empty($body['filename'])) {
             $testOcrFile = CoreConfigModel::getTmpPath() . "OCRFile_" . $body['filename'];
             if(is_file($testOcrFile)){
                 $ocrConvert['convertedFile'] = $testOcrFile;
@@ -79,8 +79,8 @@ class OcrController
         }
 
         if (strtolower($infosDoc['format']) == 'pdf') {
-            if (!isset($ocrConvert['convertedFile'])){
-                if ($configuration['mwsOcrPriority']){
+            if (!isset($ocrConvert['convertedFile'])) {
+                if ($configuration['mwsOcrPriority']) {
                     $ocrConvert = MwsController::launchOcrMws([
                         'collId'    => $collId,
                         'resId'     => $body['resId']
@@ -96,13 +96,13 @@ class OcrController
             return $response->withStatus(200)->withJson(['message' => "Not PDF file, no OCR needed"]);
         }
 
-        if (isset($ocrConvert['errors'])){
+        if (isset($ocrConvert['errors'])) {
             return $response->withStatus(500)->withJson([
                 'errors'    => $ocrConvert['errors'],
                 'body'      => $ocrConvert['body'] ?? null,
                 'output'    =>  $ocrConvert['output'] ?? null
             ]);
-        } else if (isset($ocrConvert['message'])) {
+        } elseif (isset($ocrConvert['message'])) {
             return $response->withStatus(200)->withJson(['message' => $ocrConvert['message']]);
         }
 
@@ -173,7 +173,8 @@ class OcrController
         return $response->withJson(['docserver_id' => $storeResult['docserver_id'], 'path' => $storeResult['destination_dir'], 'filename' => $storeResult['file_destination_name'], 'fingerprint' => $storeResult['fingerPrint']]);
     }
 
-    private static function launchOcrTesseract(array $aArgs){
+    private static function launchOcrTesseract(array $aArgs)
+    {
         ValidatorModel::notEmpty($aArgs, ['collId', 'resId']);
         ValidatorModel::stringType($aArgs, ['collId']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -210,7 +211,7 @@ class OcrController
 
         $fileContent = trim(file_get_contents($tmpFile));
         $fileContent = preg_replace('/[^A-Za-z0-9\-]/', '', $fileContent);
-        if (strlen($fileContent) > 0){
+        if (strlen($fileContent) > 0) {
             return ['message' => 'OCR Task not needed'];
         } else {
             //Conversion en TIFF
@@ -221,7 +222,7 @@ class OcrController
             $retvalConvert = null;
             exec($cmdConvertTiff.' 2>&1', $outputConvert, $retvalConvert);
 
-            if (!is_file($tmpFile)){
+            if (!is_file($tmpFile)) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'mercure',
@@ -236,7 +237,7 @@ class OcrController
             } else {
                 //Conversion OCR
                 $tmpFileOcr = CoreConfigModel::getTmpPath() . basename($pathToDocument, ".pdf") . rand();
-                $cmdConvertOcr = "tesseract ".escapeshellarg($tmpFile)." ".escapeshellarg($tmpFileOcr)." -l fra pdf";
+                $cmdConvertOcr = "tesseract " . escapeshellarg($tmpFile) . " " . escapeshellarg($tmpFileOcr) . " -l fra pdf";
 
                 $outputConvert = null;
                 $retvalConvert = null;
@@ -244,7 +245,7 @@ class OcrController
             }
         }
 
-        if (!is_file($tmpFileOcr.".pdf")){
+        if (!is_file($tmpFileOcr.".pdf")) {
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'mercure',

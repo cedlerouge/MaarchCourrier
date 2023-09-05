@@ -784,6 +784,7 @@ CREATE TABLE contacts
     custom_fields jsonb DEFAULT '{}',
     external_id jsonb DEFAULT '{}',
     sector CHARACTER VARYING(256),
+    lad_indexation BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT contacts_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
