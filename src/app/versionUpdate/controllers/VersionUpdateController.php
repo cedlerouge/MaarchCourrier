@@ -342,8 +342,8 @@ class VersionUpdateController
         if (!empty($availableFolders['folders'])) {
             try {
                 VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
-            } catch (\Exception $e) {
-                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
+            } catch (\Throwable $th) {
+                return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
             }
             return $response->withJson(['success' => 'Database has been updated']);
         }
@@ -584,13 +584,13 @@ class VersionUpdateController
 
             try {
                 $migrationClass->backup();
-            } catch (\Exception $e) {
+            } catch (\Throwable $th) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',
                     'eventId'   => 'Run Scripts By Tag',
                     'level'     => 'CRITICAL',
-                    'eventType' => "Throwable - BACKUP : " . $e->getMessage()
+                    'eventType' => "Throwable - BACKUP : " . $th->getMessage()
                 ]);
                 $errors++;
                 continue;
@@ -600,15 +600,15 @@ class VersionUpdateController
                 $migrationClass->update();
 
                 $success++;
-            } catch (\Exception $e) {
-                $logInfo = "Throwable - UPDATE : " . $e->getMessage();
+            } catch (\Throwable $th) {
+                $logInfo = "Throwable - UPDATE : " . $th->getMessage();
                 $errors++;
 
                 try {
                     $migrationClass->rollback();
                     $rollback++;
-                } catch (\Exception $e) {
-                    $logInfo .= " | Throwable - ROLLBACK : " . $e->getMessage();
+                } catch (\Throwable $th) {
+                    $logInfo .= " | Throwable - ROLLBACK : " . $th->getMessage();
                 }
 
                 LogsController::add([
