@@ -361,7 +361,7 @@ class VersionUpdateController
 
         $parameter = explode('.', $parameter['param_value_string']);
 
-        if (count($parameter) < 2) {
+        if (count($parameter) != 3) {
             return ['errors' => "Bad format database_version"];
         }
 
