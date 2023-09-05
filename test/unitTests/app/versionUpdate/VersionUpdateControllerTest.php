@@ -238,6 +238,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $migrationFolderPath = "/tmp/MaarchCourrierMigrationFolder";
         mkdir($migrationFolderPath, 0755);
         $nextMigrationFolderPath = $migrationFolderPath . "/" . basename(self::$nextMigrationFolderPath);
+        mkdir($migrationFolderPath, 0000);
         mkdir($nextMigrationFolderPath, 0000);
 
         self::$filesToRemove[] = $nextMigrationFolderPath;
