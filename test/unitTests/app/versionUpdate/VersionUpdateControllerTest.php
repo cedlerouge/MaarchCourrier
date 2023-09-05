@@ -235,14 +235,12 @@ class VersionUpdateControllerTest extends CourrierTestCase
     public function testAvailableFoldersWithFolderWritesChangedExpectFolderIsNotReadable()
     {
         // Arrange
-        chmod(self::$nextMigrationFolderPath, 0);
+        chmod(self::$nextMigrationFolderPath, 0355);
 
         // Act
         $availableFolders = VersionUpdateController::getAvailableFolders();
 
         // Assert
-        var_dump($availableFolders);
-
         $this->assertNotEmpty($availableFolders);
         $this->assertEmpty($availableFolders['folders'] ?? []);
         $this->assertNotEmpty($availableFolders['errors']);
