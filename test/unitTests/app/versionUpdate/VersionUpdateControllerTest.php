@@ -241,6 +241,8 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $availableFolders = VersionUpdateController::getAvailableFolders();
 
         // Assert
+        var_dump($availableFolders);
+
         $this->assertNotEmpty($availableFolders);
         $this->assertEmpty($availableFolders['folders'] ?? []);
         $this->assertNotEmpty($availableFolders['errors']);
