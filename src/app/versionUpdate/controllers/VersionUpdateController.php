@@ -342,8 +342,8 @@ class VersionUpdateController
         if (!empty($availableFolders['folders'])) {
             try {
                 VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
-            } catch (\Throwable $th) {
-                return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
+            } catch (\Exception $e) {
+                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
             }
             return $response->withJson(['success' => 'Database has been updated']);
         }
@@ -407,13 +407,12 @@ class VersionUpdateController
     public static function executeTagFolderFiles(array $tagFolderList)
     {
         if (!Validator::arrayType()->notEmpty()->validate($tagFolderList)) {
-            throw new \Throwable('$tagFolderList must be a non empty array of type string');
+            throw new \Exception('$tagFolderList must be a non empty array of type string');
         }
 
         $migrationFolder = DocserverController::getMigrationFolderPath();
-
         if (!empty($migrationFolder['errors'])) {
-            throw new \Throwable($migrationFolder['errors']);
+            throw new \Exception($migrationFolder['errors']);
         }
 
         LogsController::add([
@@ -433,7 +432,7 @@ class VersionUpdateController
             }
 
             $sqlFilePath = "$tagFolder/$tagVersion.sql";
-            $check = VersionUpdateController::executeTagSqlFile($sqlFilePath, $migrationFolder['path'] . "/" . $tagVersion);
+            $check = VersionUpdateController::executeTagSqlFile($sqlFilePath, $migrationFolder['path']);
             if (empty($check)) {
                 // maybe reload dump db
                 continue;
@@ -478,10 +477,10 @@ class VersionUpdateController
     public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool
     {
         if (!Validator::stringType()->notEmpty()->validate($sqlFilePath)) {
-            throw new \Throwable('$sqlFilePath must be a non empty string');
+            throw new \Exception('$sqlFilePath must be a non empty string');
         }
         if (!Validator::stringType()->notEmpty()->validate($docserverMigrationFolderPath)) {
-            throw new \Throwable('$docserverMigrationFolderPath must be a non empty string');
+            throw new \Exception('$docserverMigrationFolderPath must be a non empty string');
         }
 
         if (file_exists($sqlFilePath)) {
@@ -512,13 +511,14 @@ class VersionUpdateController
 
             $backupFile = $docserverMigrationFolderPath . "/backupDB_maarchcourrier_$actualTime.sql";
             $dbname = "postgresql://{$config['database'][0]['user']}:{$config['database'][0]['password']}@{$config['database'][0]['server']}:{$config['database'][0]['port']}/{$config['database'][0]['name']}";
-            $execReturn = exec("pg_dump --dbname=\"$dbname\" $tablesToSave -a > \"$backupFile\"", $output, $intReturn);
-            if (!empty($execReturn)) {
+            exec("pg_dump --dbname=\"$dbname\" $tablesToSave -a > \"$backupFile\"", $output, $intReturn);
+
+            if ($intReturn != 0) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',
                     'level'     => 'CRITICAL',
-                    'eventType' => '[executeTagSqlFile] : Postgresql dump failed : ' . $execReturn,
+                    'eventType' => '[executeTagSqlFile] : Postgresql dump failed : One or more backup tables does not exist OR the backup path is not reachable',
                     'eventId'   => 'Execute Update'
                 ]);
                 return false;
@@ -550,10 +550,10 @@ class VersionUpdateController
     public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
     {
         if (!Validator::arrayType()->notEmpty()->validate($folderFiles)) {
-            throw new \Throwable('$folderFiles must be a non empty array');
+            throw new \Exception('$folderFiles must be a non empty array');
         }
         if (!Validator::stringType()->notEmpty()->validate($tagVersion)) {
-            throw new \Throwable('$tagVersion must be a non empty string');
+            throw new \Exception('$tagVersion must be a non empty string');
         }
 
         $numberOfFiles = 0;
@@ -584,13 +584,13 @@ class VersionUpdateController
 
             try {
                 $migrationClass->backup();
-            } catch (\Throwable $th) {
+            } catch (\Exception $e) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',
                     'eventId'   => 'Run Scripts By Tag',
                     'level'     => 'CRITICAL',
-                    'eventType' => "Throwable - BACKUP : " . $th->getMessage()
+                    'eventType' => "Throwable - BACKUP : " . $e->getMessage()
                 ]);
                 $errors++;
                 continue;
@@ -600,15 +600,15 @@ class VersionUpdateController
                 $migrationClass->update();
 
                 $success++;
-            } catch (\Throwable $th) {
-                $logInfo = "Throwable - UPDATE : " . $th->getMessage();
+            } catch (\Exception $e) {
+                $logInfo = "Throwable - UPDATE : " . $e->getMessage();
                 $errors++;
 
                 try {
                     $migrationClass->rollback();
                     $rollback++;
-                } catch (\Throwable $th) {
-                    $logInfo .= " | Throwable - ROLLBACK : " . $th->getMessage();
+                } catch (\Exception $e) {
+                    $logInfo .= " | Throwable - ROLLBACK : " . $e->getMessage();
                 }
 
                 LogsController::add([
