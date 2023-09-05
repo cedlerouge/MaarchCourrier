@@ -236,20 +236,20 @@ class VersionUpdateControllerTest extends CourrierTestCase
     {
         // Arrange
         // chmod(self::$nextMigrationFolderPath, 000);
-        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
-        var_dump("ls -rtl " . self::$nextMigrationFolderPath, self::$nextMigrationFolderPath, $execReturn, $output, $resultCode);
+        // $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
+        // var_dump("ls -rtl " . self::$nextMigrationFolderPath, self::$nextMigrationFolderPath, $execReturn, $output, $resultCode);
 
-        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath . "/..", $output, $resultCode);
-        var_dump("ls -rtl " . self::$nextMigrationFolderPath . "/..", $execReturn, $output, $resultCode);
-        
+        // $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath . "/..", $output, $resultCode);
+        // var_dump("ls -rtl " . self::$nextMigrationFolderPath . "/..", $execReturn, $output, $resultCode);
+
         $execReturn = exec("chmod 0000 -R " . self::$nextMigrationFolderPath, $output, $resultCode);
         var_dump("chmod 0000 -R " . self::$nextMigrationFolderPath, $execReturn, $output, $resultCode);
 
-        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
-        var_dump("ls -rtl " . self::$nextMigrationFolderPath, $execReturn, $output, $resultCode);
+        // $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
+        // var_dump("ls -rtl " . self::$nextMigrationFolderPath, $execReturn, $output, $resultCode);
 
-        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath . "/..", $output, $resultCode);
-        var_dump("ls -rtl " . self::$nextMigrationFolderPath . "/..", $execReturn, $output, $resultCode);
+        $execReturn = exec("ls -rtl /builds/maarch/MaarchCourrier/migration", $output, $resultCode);
+        var_dump("ls -rtl /builds/maarch/MaarchCourrier/migration", $execReturn, $output, $resultCode);
 
 
         // Act
