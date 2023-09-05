@@ -235,24 +235,48 @@ class VersionUpdateControllerTest extends CourrierTestCase
     public function testAvailableFoldersWithFolderWritesChangedExpectFolderIsNotReadable()
     {
         // Arrange
-        $migrationFolderPath = "/tmp/MaarchCourrierMigrationFolder";
-        mkdir($migrationFolderPath, 0755);
-        $nextMigrationFolderPath = $migrationFolderPath . "/" . basename(self::$nextMigrationFolderPath);
-        mkdir($migrationFolderPath, 0000);
-        mkdir($nextMigrationFolderPath, 0000);
+        // chmod(self::$nextMigrationFolderPath, 000);
+        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
+        var_dump($execReturn, $output, $resultCode);
+        $execReturn = exec("chmod 0000 -R " . self::$nextMigrationFolderPath, $output, $resultCode);
+        var_dump($execReturn, $output, $resultCode);
+        $execReturn = exec("ls -rtl " . self::$nextMigrationFolderPath, $output, $resultCode);
+        var_dump($execReturn, $output, $resultCode);
+        $execReturn = exec("ls -rtl /var/www/html/courrier-2301/migration", $output, $resultCode);
+        var_dump($execReturn, $output, $resultCode);
 
-        self::$filesToRemove[] = $nextMigrationFolderPath;
-        self::$filesToRemove[] = $migrationFolderPath;
 
         // Act
-        $availableFolders = VersionUpdateController::getAvailableFolders($migrationFolderPath);
+        $availableFolders = VersionUpdateController::getAvailableFolders();
 
         // Assert
         $this->assertNotEmpty($availableFolders);
         $this->assertEmpty($availableFolders['folders'] ?? []);
         $this->assertNotEmpty($availableFolders['errors']);
-        $this->assertSame($availableFolders['errors'], "Folder '$nextMigrationFolderPath' is not readable");
+        $this->assertSame($availableFolders['errors'], "Folder '" . self::$availableTestFolder . "' is not readable");
     }
+
+    // public function testAvailableFoldersWithFolderWritesChangedExpectFolderIsNotReadable()
+    // {
+    //     // Arrange
+    //     $migrationFolderPath = "/tmp/MaarchCourrierMigrationFolder";
+    //     mkdir($migrationFolderPath, 0755);
+    //     $nextMigrationFolderPath = $migrationFolderPath . "/" . basename(self::$nextMigrationFolderPath);
+    //     mkdir($migrationFolderPath, 0000);
+    //     mkdir($nextMigrationFolderPath, 0000);
+
+    //     self::$filesToRemove[] = $nextMigrationFolderPath;
+    //     self::$filesToRemove[] = $migrationFolderPath;
+
+    //     // Act
+    //     $availableFolders = VersionUpdateController::getAvailableFolders($migrationFolderPath);
+
+    //     // Assert
+    //     $this->assertNotEmpty($availableFolders);
+    //     $this->assertEmpty($availableFolders['folders'] ?? []);
+    //     $this->assertNotEmpty($availableFolders['errors']);
+    //     $this->assertSame($availableFolders['errors'], "Folder '$nextMigrationFolderPath' is not readable");
+    // }
 
     public function testAvailableFoldersWithAvailableFolderIsEmptyExpectError()
     {
