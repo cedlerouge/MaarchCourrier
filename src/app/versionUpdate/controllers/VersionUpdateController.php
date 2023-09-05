@@ -353,9 +353,10 @@ class VersionUpdateController
 
     /**
      * Get any tag folders that are superior than the current database version
-     * @return  array  Return 'errors' for unexpected errors | Return 'folders' with the list of folders
+     * @param   string  $migrationFolderPath    The location of migration folder
+     * @return  array   Return 'errors' for unexpected errors | Return 'folders' with the list of folders
      */
-    public static function getAvailableFolders(): array
+    public static function getAvailableFolders(string $migrationFolderPath = 'migration'): array
     {
         $parameter = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'database_version']);
 
@@ -369,7 +370,7 @@ class VersionUpdateController
         $dbMinorVersion = (int)$parameter[1];
         $dbPatchVersion = (int)$parameter[2];
 
-        $folderTags = array_diff(scandir('migration'), array('..', '.', '.gitkeep'));
+        $folderTags = array_diff(scandir($migrationFolderPath), array('..', '.', '.gitkeep'));
         natcasesort($folderTags);
         $availableFolders = [];
 
@@ -384,14 +385,14 @@ class VersionUpdateController
                 ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion > $dbMinorVersion) || 
                 ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion == $dbMinorVersion && $folderPatchVersion > $dbPatchVersion)
             ) {
-                if (is_dir("migration/$folder")) {
-                    if (!is_readable("migration/$folder")) {
-                        return ['errors' => "Folder 'migration/$folder' is not readable"];
+                if (is_dir("$migrationFolderPath/$folder")) {
+                    if (!is_readable("$migrationFolderPath/$folder")) {
+                        return ['errors' => "Folder '$migrationFolderPath/$folder' is not readable"];
                     }
-                    if (count(array_diff(scandir("migration/$folder"), ['.', '..'])) == 0) {
-                        return ['errors' => "Folder 'migration/$folder' is empty, no updates are found!"];
+                    if (count(array_diff(scandir("$migrationFolderPath/$folder"), ['.', '..'])) == 0) {
+                        return ['errors' => "Folder '$migrationFolderPath/$folder' is empty, no updates are found!"];
                     }
-                    $availableFolders[] = "migration/$folder";
+                    $availableFolders[] = "$migrationFolderPath/$folder";
                 }
             }
         }
