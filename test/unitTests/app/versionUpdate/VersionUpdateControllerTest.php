@@ -38,9 +38,9 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $parts[count($parts) - 1] = $lastPart;
         $nextVersion = implode('.', $parts);
 
-        $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
-        $sampleMigrationFolderPath = $config['config']['maarchDirectory'] . "/install/samples/migration/xxxx.x.x";
-        self::$nextMigrationFolderPath = $config['config']['maarchDirectory'] . "/migration/$nextVersion";
+        $sampleMigrationFolderPath = getcwd() . "/install/samples/migration/xxxx.x.x";
+        self::$nextMigrationFolderPath = getcwd() . "/migration/$nextVersion";
+
         if (!file_exists(self::$nextMigrationFolderPath)) {
             mkdir(self::$nextMigrationFolderPath, 0777);
         }
