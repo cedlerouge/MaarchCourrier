@@ -23,6 +23,9 @@ DELETE FROM parameters WHERE id = 'keepDestForRedirection';
 
 UPDATE parameters SET param_value_string = '2301.2.0' WHERE id = 'database_version';
 
+ALTER TABLE contacts DROP COLUMN IF EXISTS lad_indexation;
+ALTER TABLE contacts ADD COLUMN lad_indexation BOOLEAN DEFAULT FALSE NOT NULL;
+
 ALTER TABLE indexing_models DROP COLUMN IF EXISTS lad_processing;
 ALTER TABLE indexing_models ADD COLUMN lad_processing BOOLEAN DEFAULT FALSE NOT NULL;
 

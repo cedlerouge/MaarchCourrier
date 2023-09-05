@@ -5,10 +5,9 @@ import { NotificationService } from '@service/notification/notification.service'
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
-import { of } from 'rxjs';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { AdministrationService } from '../../administration.service';
-import {catchError, debounceTime, exhaustMap, filter, finalize, map, tap} from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 @Component({
     templateUrl: 'lad-contacts-management.component.html',
@@ -22,7 +21,7 @@ export class LadContactsManagementComponent implements OnInit {
     dialogRef: MatDialogRef<any>;
 
     indexationState: any = {
-        dateIndexation : '01/01/1970',
+        dateIndexation : '',
         countIndexedContacts : 0,
         countAllContacts : 0,
         pctIndexationContacts : 0
@@ -54,21 +53,6 @@ export class LadContactsManagementComponent implements OnInit {
         this.http.get('../rest/mercure/lad/contactIndexations').pipe(
             tap((data: any) => {
                 this.indexationState = data;
-                console.log(this.indexationState);
-            })
-        ).subscribe();
-    }
-
-    launchGeneration() {
-        this.http.post('../rest/mercure/lad/contactIndexations', null).pipe(
-            tap(() => {
-                window.location.reload();
-            }),
-            finalize(() => this.loading = false),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                this.dialogRef.close();
-                return of(false);
             })
         ).subscribe();
     }

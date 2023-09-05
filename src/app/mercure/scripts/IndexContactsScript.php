@@ -78,7 +78,7 @@ class IndexContactsScript
         //Création des dossiers Lexiques et Index si non existants
         $lexDirectory = $ladConfiguration['config']['contactsLexiconsDirectory'] . DIRECTORY_SEPARATOR . $args['customId'];
         if (!is_dir($lexDirectory)){
-            mkdir($lexDirectory, 0777, true);
+            mkdir($lexDirectory, 0775, true);
         }
 
         //Ouverture des index Lucene
@@ -113,8 +113,9 @@ class IndexContactsScript
             'orderBy'   => ['id']
         ]);
 
-
         $cptIndex = 0;
+
+        $listIdToUpdate = [];
         foreach ($contactsToIndexes as $c){
             if ($cptIndex%50 == 0){
                 echo "Indexation contact ".$cptIndex."/".count($contactsToIndexes)."\n";
@@ -157,29 +158,38 @@ class IndexContactsScript
                 $index->optimize();
             }
 
-            //Modification du status d'indexation
-            ContactModel::update([
-                'set'   => ['lad_indexation' => 1],
-                'where' => ['id = ?'],
-                'data'  => [$c['id']]
-            ]);
+            $listIdToUpdate[] = $c['id'];
 
             $cptIndex++;
         }
 
-        foreach ($tabLexicon as $keyLexicon => $l){
+        //Modification du status d'indexation
+        ContactModel::update([
+            'set'   => ['lad_indexation' => 1],
+            'where' => ['id in (?)'],
+            'data'  => [$listIdToUpdate]
+        ]);
+
+        foreach ($tabLexicon as $keyLexicon => $l) {
             sort($l);
-            $lexiconFile = fopen($lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt", "w") or die("Unable to open file!");
-            foreach ($l as $entry){
+            $lexiconFile = fopen($lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt", "w");
+            if ($lexiconFile === false) {
+                echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt";
+                return false;
+            }
+
+            foreach ($l as $entry) {
                 fwrite($lexiconFile, $entry."\n");
             }
             fclose($lexiconFile);
         }
 
-        $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "w") or die("Unable to open file!");
+
+        $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "w");
         fwrite($flagFile, date("d-m-Y H:i:s"));
         fclose($flagFile);
 
         echo "Contacts indexation done !\n";
+        return true;
     }
 }

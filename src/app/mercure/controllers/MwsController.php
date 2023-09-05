@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Docserver Controller
+ * @brief MwsController Controller
  * @author dev@maarch.org
  */
 
@@ -19,6 +19,7 @@ use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
 use Convert\controllers\FullTextController;
 use Docserver\models\DocserverModel;
+use Group\controllers\PrivilegeController;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use Respect\Validation\Validator;
@@ -30,7 +31,8 @@ use SrcCore\models\ValidatorModel;
 
 class MwsController
 {
-    private function getMwsConfiguration(){
+    private function getMwsConfiguration()
+    {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
             return [
@@ -58,15 +60,20 @@ class MwsController
         ];
     }
 
-    public function checkAccount(Request $request, Response $response){
+    public function checkAccount(Request $request, Response $response)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
+
         $mwsConfig = MwsController::getMwsConfiguration();
         if (isset($mwsConfig['errors']))
             return $response->withStatus($mwsConfig['code'])->withJson(['errors' => $mwsConfig['errors'], 'mwsConfig' => $mwsConfig]);
 
-        $body = (object) array(
+        $body = (object) [
             'username' => $mwsConfig['login'],
             'password' => $mwsConfig['password']
-        );
+        ];
 
         $curlResponse = CurlModel::exec([
             'url'           => "{$mwsConfig['url']}/api/login_check",
@@ -78,8 +85,8 @@ class MwsController
         if ($curlResponse['code'] != 200) {
             if ($curlResponse['code'] == 404) {
                 return $response->withStatus(404)->withJson(['errors' => 'Page not found', 'lang' => 'pageNotFound']);
-            } else if ($curlResponse['code'] == 401) {
-                return $response->withStatus(401)->withJson(['errors' => 'Identifiants invalides', 'lang' => 'invalidCredentials']);
+            } else if ($curlResponse['code'] == 400) {
+                return $response->withStatus(400)->withJson(['errors' => 'Identifiants invalides', 'lang' => 'invalidCredentials']);
             } elseif (!empty($curlResponse['response'])) {
                 return $response->withStatus(400)->withJson(['errors' => json_encode($curlResponse['response'])]);
             } else {
@@ -88,10 +95,15 @@ class MwsController
         }
 
 
-        return $response->withStatus(200)->withJson(['token' => $curlResponse['response']['token'], 'username' => $mwsConfig['login']]);
+        return $response->withJson(['token' => $curlResponse['response']['token'], 'username' => $mwsConfig['login']]);
     }
 
-    public function loadListDocs(Request $request, Response $response, array $aArgs){
+    public function loadListDocs(Request $request, Response $response, array $aArgs)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
+
         $mwsConfig = MwsController::getMwsConfiguration();
         if (isset($mwsConfig['errors'])) return $response->withStatus($mwsConfig['code'])->withJson(['errors' => $mwsConfig['errors']]);
 
@@ -106,10 +118,11 @@ class MwsController
             ]
         ]);
 
-        return $response->withStatus(200)->withJson(['docs' => $curlResponse['response']['hydra:member'], 'nbTotal' => $curlResponse['response']['hydra:totalItems']]);
+        return $response->withJson(['docs' => $curlResponse['response']['hydra:member'], 'nbTotal' => $curlResponse['response']['hydra:totalItems']]);
     }
 
-    public static function launchOcrMws(array $aArgs){
+    public static function launchOcrMws(array $aArgs)
+    {
         ValidatorModel::notEmpty($aArgs, ['collId', 'resId']);
         ValidatorModel::stringType($aArgs, ['collId']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -136,11 +149,11 @@ class MwsController
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
-        $body = (object) array(
+        $body = (object) [
             'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
             'filename' => basename($pathToDocument),
             'method' => 'CONVERT'
-        );
+        ];
 
         $curlResponse = CurlModel::exec([
             'url'           => "{$configuration['mws']['url']}api/newFile",
@@ -153,7 +166,7 @@ class MwsController
 
         file_put_contents($tmpFileOcr, base64_decode($curlResponse['response']['encodedFile']));
 
-        if (is_file($tmpFileOcr)){
+        if (is_file($tmpFileOcr)) {
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'mercure',
@@ -184,19 +197,20 @@ class MwsController
         return ['convertedFile' => $tmpFileOcr];
     }
 
-    public static function launchLadMws(array $aArgs){
+    public static function launchLadMws(array $aArgs)
+    {
         ValidatorModel::notEmpty($aArgs, ['encodedResource', 'filename']);
         ValidatorModel::stringType($aArgs, ['encodedResource', 'filename']);
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
-        $body = (object) array(
+        $body = (object) [
             'encodedFile' => $aArgs['encodedResource'],
             'filename' => $aArgs['filename'],
             'method' => 'EXTRACT_LAD_VALUES',
             'type' => 'COURRIER'
-        );
+        ];
 
         LogsController::add([
             'isTech'    => true,
@@ -220,7 +234,7 @@ class MwsController
 
         $aReturn = [];
         foreach ($curlResponse['response']['ladInformations'][0] as $nameField => $valueField) {
-            if (isset($mappingMercure[$nameField])){
+            if (isset($mappingMercure[$nameField])) {
                 $disabledField = false;
                 $returnNameAttribute = $nameField;
 
@@ -230,18 +244,15 @@ class MwsController
                 if (isset($mappingMercure[$nameField]['disabled']))
                     $disabledField = $mappingMercure[$nameField]['disabled'];
 
-                if (!$disabledField){
-                    if (!array_key_exists($returnNameAttribute, $aReturn) || empty($aReturn[$returnNameAttribute])){
-                        $aReturn[$returnNameAttribute] = $valueField;
-                    }
+                if (!$disabledField && (!array_key_exists($returnNameAttribute, $aReturn) || empty($aReturn[$returnNameAttribute]))){
+                    $aReturn[$returnNameAttribute] = $valueField;
                 }
             }
         }
 
-        if (!empty($curlResponse['response']['encodedFile'])){
+        if (!empty($curlResponse['response']['encodedFile'])) {
             $tmpFileOcr = CoreConfigModel::getTmpPath() . "OCRFile_" . $aArgs['filename'];
             file_put_contents($tmpFileOcr, base64_decode($curlResponse['response']['encodedFile']));
-            //$aReturn['ocrFile'] = $tmpFileOcr;
         }
 
         LogsController::add([
@@ -256,7 +267,8 @@ class MwsController
         return $aReturn;
     }
 
-    public static function loadSubscriptionState(Request $request, Response $response){
+    public static function loadSubscriptionState(Request $request, Response $response)
+    {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
@@ -266,9 +278,9 @@ class MwsController
             'method'        => 'GET'
         ]);
 
-        if ($curlResponse['code'] == 204){
+        if ($curlResponse['code'] == 204) {
             return $response->withStatus(204)->withJson(['errors'  => 'Aucun abonnement pour cet utilisateur']);
         }
-        return $response->withStatus(200)->withJson($curlResponse['response']);
+        return $response->withJson($curlResponse['response']);
     }
 }
