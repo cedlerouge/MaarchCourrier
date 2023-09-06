@@ -275,6 +275,8 @@ INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, f
 INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('TEMPLATES', 'Modèles de documents', 'Y', 'NONE');
 INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('ARCHIVETRANSFER', 'Archives numériques', 'Y', 'SHA256');
 INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('ACKNOWLEDGEMENT_RECEIPTS', 'Accusés de réception', 'Y', NULL);
+    INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('MIGRATION', 'Sauvegarde des migrations', 'Y', NULL);
+
 
 INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (1, 'FASTHD_AI', 'DOC', 'Dépôt documentaire issue d''imports de masse', 'Y', 50000000000, 1, '/opt/maarch/docservers/ai/', '2011-01-07 13:43:48.696644', 'letterbox_coll');
 INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (8, 'FULLTEXT_MLB', 'FULLTEXT', 'Dépôt de l''extraction plein texte des documents numérisés', 'N', 50000000000, 0, '/opt/maarch/docservers/fulltext_resources/', '2015-03-16 14:47:49.197164', 'letterbox_coll');
@@ -288,6 +290,7 @@ INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_re
 INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (2, 'FASTHD_MAN', 'DOC', 'Dépôt documentaire de numérisation manuelle', 'N', 50000000000, 1290730, '/opt/maarch/docservers/resources/', '2011-01-13 14:47:49.197164', 'letterbox_coll');
 INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (4, 'CONVERT_MLB', 'CONVERT', 'Dépôt des formats des documents numérisés', 'N', 50000000000, 0, '/opt/maarch/docservers/convert_resources/', '2015-03-16 14:47:49.197164', 'letterbox_coll');
 INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (12, 'ACKNOWLEDGEMENT_RECEIPTS', 'ACKNOWLEDGEMENT_RECEIPTS', 'Dépôt des AR', 'N', 50000000000, 0, '/opt/maarch/docservers/acknowledgement_receipts/', '2019-04-19 22:22:22.201904', 'letterbox_coll');
+INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (13, 'MIGRATION', 'MIGRATION', 'Dêpot de sauvegarde des migrations', 'N', 50000000000, 0, '/opt/maarch/docservers/migration/', '2023-09-05 22:22:22.201904', 'migration_coll');
 
 INSERT INTO doctypes (coll_id, type_id, description, enabled, doctypes_first_level_id, doctypes_second_level_id, retention_final_disposition, retention_rule, action_current_use, duration_current_use, process_delay, delay1, delay2, process_mode) VALUES ('', 101, 'Abonnements – documentation – archives', 'Y', 1, 1, 'destruction', 'compta_3_03', NULL, 365, 30, 14, 1, 'NORMAL');
 INSERT INTO doctypes (coll_id, type_id, description, enabled, doctypes_first_level_id, doctypes_second_level_id, retention_final_disposition, retention_rule, action_current_use, duration_current_use, process_delay, delay1, delay2, process_mode) VALUES ('', 102, 'Convocation', 'Y', 1, 1, 'destruction', 'compta_3_03', NULL, 365, 60, 14, 1, 'NORMAL');
@@ -984,7 +987,7 @@ INSERT INTO templates (template_id, template_label, template_comment, template_c
 <p>&nbsp;</p>
 <p style="font-family: Trebuchet MS, Arial, Helvetica, sans-serif; width: 100%; text-align: center; font-size: 9px; font-style: italic; opacity: 0.5;">Message g&eacute;n&eacute;r&eacute; via l''application MaarchCourrier</p>', 'HTML', NULL, NULL, 'ODP: open_office_presentation', 'notes', 'notifications', NULL, NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (900, '[TRT] Passer me voir', 'Passer me voir', 'Passer me voir à mon bureau, merci.', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
-INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (901, '[TRT] Compléter', 'Compléter', 'Le projet de réponse doit être complété/révisé sur les points suivants : 
+INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (901, '[TRT] Compléter', 'Compléter', 'Le projet de réponse doit être complété/révisé sur les points suivants :
 
 - ', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
 INSERT INTO templates (template_id, template_label, template_comment, template_content, template_type, template_path, template_file_name, template_style, template_datasource, template_target, template_attachment_type, subject) VALUES (902, '[AVIS] Demande avis', 'Demande avis', 'Merci de me fournir les éléments de langage pour répondre à ce courrier.', 'TXT', NULL, NULL, 'XLSX: demo_spreadsheet_msoffice', '', 'notes', 'all', NULL);
@@ -2067,7 +2070,7 @@ TRUNCATE TABLE entities_folders;
 INSERT INTO entities_folders (folder_id, entity_id, edition)
 SELECT folders.id, entities.id, false
 FROM folders, entities
-WHERE 1=1; 
+WHERE 1=1;
 
 
 SELECT setval('acknowledgement_receipts_id_seq', (SELECT max(id)+1 FROM acknowledgement_receipts), false);

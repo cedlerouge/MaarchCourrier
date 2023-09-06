@@ -498,7 +498,8 @@ class InstallerController
             'FULLTEXT_ATTACHMENTS'      => 'fulltext_attachments',
             'TEMPLATES'                 => 'templates',
             'ARCHIVETRANSFER'           => 'archive_transfer',
-            'ACKNOWLEDGEMENT_RECEIPTS'  => 'acknowledgement_receipts'
+            'ACKNOWLEDGEMENT_RECEIPTS'  => 'acknowledgement_receipts',
+            'MIGRATION'                 => 'migration'
         ];
 
         foreach ($docservers as $docserver) {
