@@ -62,23 +62,17 @@ class DocserverController
      */
     public static function getMigrationFolderPath()
     {
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'DOC', 'collId' => 'letterbox_coll', 'select' => ['path_template']]);
+        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration_coll', 'select' => ['path_template']]);
         if (empty($docserver)) {
-            return ['errors' => 'Docserver letterbox_coll  does not exist'];
+            return ['errors' => 'Docserver migration_coll  does not exist'];
         }
-        $directoryPath = explode('/', rtrim($docserver['path_template'], '/'));
-        array_pop($directoryPath);
-        $directoryPath = implode('/', $directoryPath);
-
-        if (!is_dir($directoryPath . '/migration')) {
-            if (!is_writable($directoryPath)) {
-                return ['errors' => 'Directory path is not writable : ' . $directoryPath];
-            }
-            mkdir($directoryPath . '/migration', 0755, true);
-        } elseif (!is_writable($directoryPath . '/migration')) {
-            return ['errors' => 'Directory path is not writable : ' . $directoryPath . '/migration'];
+        if (empty($docserver['path_template'] ?? null)) {
+            return ['errors' => 'Docserver path is empty'];
         }
-        return ['path' => $directoryPath . '/migration'];
+        if (!is_writable($docserver['path_template'])) {
+            return ['errors' => 'Directory path is not writable : ' . $docserver['path_template']];
+        }
+        return ['path' => $docserver['path_template']];
     }
 
     public function create(Request $request, Response $response)
@@ -117,7 +111,7 @@ class DocserverController
             'collId' => $data['coll_id']
         ]);
         $data['is_readonly'] = empty($existingCurrentDocserver) ? 'N' : 'Y';
-        
+
         if (substr($data['path_template'], -1) != DIRECTORY_SEPARATOR) {
             $data['path_template'] .= "/";
         }
