@@ -173,13 +173,12 @@ class VersionUpdateControllerTest extends CourrierTestCase
     {
         // Arrange
         $versionUpdateController = new VersionUpdateController();
-        foreach (self::$filesToRemove as $path) {
-            if (is_dir($path)){
-                rmdir($path);
-            } else {
-                unlink($path);
-            }
-        }
+
+        $folderTags = scandir(getcwd() . "/migration");
+        natcasesort($folderTags);
+        $lastTag = $folderTags[count($folderTags) - 1];
+        ParameterModel::update(['id' => "database_version", 'param_value_string' => $lastTag]);
+
         // Act
         // PUT
         $request  = $this->createRequest('PUT');
