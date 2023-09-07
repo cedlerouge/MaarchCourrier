@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief MwsController Controller
+ * @brief MwsController
  * @author dev@maarch.org
  */
 
@@ -269,6 +269,10 @@ class MwsController
 
     public static function loadSubscriptionState(Request $request, Response $response)
     {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
+
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
