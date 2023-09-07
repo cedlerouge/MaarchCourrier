@@ -12,7 +12,7 @@ export class MigrationCheckGuard implements CanActivate {
     ) {}
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> {
-        if (this.migrationService.isMigrating) {
+        if (this.migrationService.migrating) {
             this.migrationService.logoutAndShowAlert();
         }
         return of(true);

@@ -38,7 +38,7 @@ class VersionUpdateMiddleware implements MiddlewareInterface
 
         $control = VersionUpdateMiddleware::middlewareControl($currentMethod, $currentRoute);
         if (!empty($control)) {
-            return $response->withHeader('Retry-After', '5 minutes')->withStatus(200)->withJson($control['response']);
+            return $response->withHeader('Retry-After', '5 minutes')->withStatus(503)->withJson($control['response']);
         }
 
         return $requestHandler->handle($request);
@@ -56,8 +56,9 @@ class VersionUpdateMiddleware implements MiddlewareInterface
         if (!in_array($httpMethod . $currentRoute, VersionUpdateController::ROUTES_WITHOUT_MIGRATION)) {
             if (VersionUpdateController::isMigrating()) {
                 $return['response'] = [
-                    'message'       => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
-                    'isMigrating'   => true
+                    "errors"        => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
+                    "lang"          => "migrationProcessing",
+                    'migrating'     => true
                 ];
             }
         }

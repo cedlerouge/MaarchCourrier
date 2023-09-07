@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
     }
 
     onSubmit(ssoToken = null) {
-        if (this.migrationService.isMigrating) {
+        if (this.migrationService.migrating) {
             this.migrationService.logoutAndShowAlert();
             return false;
         }

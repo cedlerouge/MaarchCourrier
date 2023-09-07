@@ -120,7 +120,7 @@ class AuthenticationController
             'maarchUrl'                 => $maarchUrl,
             'externalSignatoryBook'     => $externalSignatoryBook,
             'idleTime'                  => $idleTime,
-            'isMigrating'               => VersionUpdateController::isMigrating()
+            'migrating'               => VersionUpdateController::isMigrating()
         ];
 
         if (!empty($keycloakState)) {

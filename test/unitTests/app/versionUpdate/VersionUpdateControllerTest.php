@@ -75,10 +75,6 @@ class VersionUpdateControllerTest extends CourrierTestCase
                 'input' => [
                     'currentMethod' => explode('/',$methodeAndRoute)[0],
                     'currentRoute'  => '/' . explode('/',$methodeAndRoute)[1]
-                ],
-                'expecting' => [
-                    'message'       => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
-                    'isMigrating'   => true
                 ]
             ];
         }
@@ -100,7 +96,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
     /**
      * @dataProvider apiRouteProvideResponseDataForRoutesWithMigration
      */
-    public function testMiddlewareControlExpectingResponseUsingApiRoute($input, $expecting)
+    public function testMiddlewareControlExpectingResponseUsingApiRoute($input)
     {
         \MaarchCourrier\Tests\app\versionUpdate\VersionUpdateControllerMock::isMigrating();
 
@@ -108,7 +104,10 @@ class VersionUpdateControllerTest extends CourrierTestCase
 
         $this->assertNotEmpty($control);
         $this->assertNotEmpty($control['response']);
-        $this->assertSame($expecting, $control['response']);
+        $this->assertSame([
+            'message'       => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
+            'isMigrating'   => true
+        ], $control['response']);
     }
 
     protected function tearDown(): void

@@ -13,8 +13,8 @@ import { TranslateService } from '@ngx-translate/core';
 export class MigrationService {
 
     migrationLock: Subscription;
-    isMigrating: boolean = false;
-    isMigratingClone: any = null;
+    migrating: boolean = false;
+    migratingClone: any = null;
 
     constructor(
         private http: HttpClient,
@@ -41,17 +41,17 @@ export class MigrationService {
     getMigrationStatus(): any {
         return new Promise((resolve) => {
             this.http.get('../rest/authenticationInformations').pipe(
-                // Map the received data to extract the 'isMigrating' property
-                map((data: any) => data.isMigrating),
+                // Map the received data to extract the 'migrating' property
+                map((data: any) => data.migrating),
                 tap((data: any) => {
-                    // Update the 'isMigrating' property based on received data, default to false
-                    this.isMigrating = data ?? false;
+                    // Update the 'migrating' property based on received data, default to false
+                    this.migrating = data ?? false;
                     // Check if the user can log out and handle migration state changes
                     if (this.authService.canLogOut()) {
-                        if (this.isMigrating && this.functions.empty(this.isMigratingClone)) {
+                        if (this.migrating && this.functions.empty(this.migratingClone)) {
                             // If migrating and there's no previous clone state, trigger logout and alert
                             this.logoutAndShowAlert();
-                        } else if (!this.isMigrating && this.isMigratingClone) {
+                        } else if (!this.migrating && this.migratingClone) {
                             // If not migrating but there was a previous clone state, unsubscribe
                             this.unsubscribeObservable();
                         }
@@ -88,7 +88,7 @@ export class MigrationService {
                     hideButton: true
                 }
             });
-        this.isMigratingClone = JSON.parse(JSON.stringify(this.isMigrating));
+        this.migratingClone = JSON.parse(JSON.stringify(this.migrating));
     }
 
     unsubscribeObservable(): any {
