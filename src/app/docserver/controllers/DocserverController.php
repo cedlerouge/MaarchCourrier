@@ -62,9 +62,9 @@ class DocserverController
      */
     public static function getMigrationFolderPath()
     {
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration_coll', 'select' => ['path_template']]);
+        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
         if (empty($docserver)) {
-            return ['errors' => 'Docserver migration_coll  does not exist'];
+            return ['errors' => 'Docserver migration  does not exist'];
         }
         if (empty($docserver['path_template'] ?? null)) {
             return ['errors' => 'Docserver path is empty'];
