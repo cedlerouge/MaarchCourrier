@@ -186,9 +186,13 @@ class IndexContactsScript
 
 
         $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "w");
+	if ($flagFile == false) {
+	    echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
+	} else {
         fwrite($flagFile, date("d-m-Y H:i:s"));
         fclose($flagFile);
 
+	}
         echo "Contacts indexation done !\n";
         return true;
     }

@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief LadController Controller
+ * @brief LadController
  * @author dev@maarch.org
  */
 
@@ -257,8 +257,12 @@ class LadController
         if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")) {
             $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "r");
 
-            $dateIndexation = fgets($flagFile);
-            fclose($flagFile);
+            if ($flagFile === false) {
+                $dateIndexation = "";
+            } else {
+                $dateIndexation = fgets($flagFile);
+                fclose($flagFile);
+            }
         } else {
             $dateIndexation = "";
         }
