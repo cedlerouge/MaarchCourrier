@@ -266,7 +266,7 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertSame('Directory path is not writable : path/that/des/not/exist', $migrationFolder['errors']);
     }
 
-    public function testMigrationFolderExist(): void
+    public function testMigrationFolderExistAndTheTemplatePathIsCorrect(): void
     {
         //Arrange
 
