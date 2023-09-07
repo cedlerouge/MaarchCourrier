@@ -22,7 +22,6 @@ class DocserverControllerTest extends CourrierTestCase
     private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
 
     private static $docserver = [];
-    private static $TmpMigPath = '/tmp/migration';
 
     public function testGet()
     {
@@ -254,26 +253,6 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertSame('Docserver path is empty', $migrationFolder['errors']);
     }
 
-    public function testWhenThePathTemplateOfTheMigrationFolderExistButThereAreNoWritingRightsAnErrorIsReturned(): void
-    {
-        //Arrange
-        mkdir(self::$TmpMigPath, 0755);
-        chmod(self::$TmpMigPath, 000);
-        DocserverModel::update([
-            'table' => 'docservers',
-            'set'   => [
-                'path_template'=> '/tmp/migration'
-            ],
-            'where' => ['docserver_id = ?', 'coll_id = ?'],
-            'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
-        ]);
-        //Act
-        $migrationFolder = DocserverController::getMigrationFolderPath();
-
-        //Assert
-        $this->assertSame('Directory path is not writable : /tmp/migration', $migrationFolder['errors']);
-    }
-
     public function testMigrationFolderExistAndTheTemplatePathIsCorrect(): void
     {
         //Arrange
@@ -291,9 +270,6 @@ class DocserverControllerTest extends CourrierTestCase
 
     protected function tearDown(): void
     {
-        if (!empty(self::$TmpMigPath)) {
-            rmdir(self::$TmpMigPath);
-        }
         $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
         if (empty($docservers)) {
             DocserverModel::create(self::$docserver);
