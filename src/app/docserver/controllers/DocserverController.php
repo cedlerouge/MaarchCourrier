@@ -64,7 +64,7 @@ class DocserverController
     {
         $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
         if (empty($docserver)) {
-            return ['errors' => 'Docserver migration  does not exist'];
+            return ['errors' => 'Docserver migration does not exist'];
         }
         if (empty($docserver['path_template'] ?? null)) {
             return ['errors' => 'Docserver path is empty'];
