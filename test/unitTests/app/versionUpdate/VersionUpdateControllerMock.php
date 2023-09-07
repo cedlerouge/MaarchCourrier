@@ -15,9 +15,8 @@
 namespace MaarchCourrier\Tests\app\versionUpdate;
 
 use VersionUpdate\controllers\VersionUpdateController;
-use VersionUpdate\interfaces\VersionUpdateControllerInterface;
 
-class VersionUpdateControllerMock implements VersionUpdateControllerInterface
+class VersionUpdateControllerMock
 {
     public static function isMigrating(): bool
     {

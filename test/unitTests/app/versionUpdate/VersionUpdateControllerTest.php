@@ -14,7 +14,6 @@ use Slim\Routing\RouteContext;
 use SrcCore\http\Response;
 use VersionUpdate\controllers\VersionUpdateController;
 use VersionUpdate\middlewares\VersionUpdateMiddleware;
-use VersionUpdate\middlewares\YourMiddleware;
 
 class VersionUpdateControllerTest extends CourrierTestCase
 {
@@ -105,8 +104,9 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $this->assertNotEmpty($control);
         $this->assertNotEmpty($control['response']);
         $this->assertSame([
-            'message'       => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
-            'isMigrating'   => true
+            "errors"        => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
+            "lang"          => "migrationProcessing",
+            'migrating'     => true
         ], $control['response']);
     }
 
