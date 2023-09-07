@@ -63,13 +63,13 @@ class VersionUpdateController
             return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$applicationVersion}"]);
         }
 
-        $currentVersionBranch = $versions[0];
+        $currentMajorVersionTag = $versions[0];
         $currentMinorVersionTag = $versions[1];
         $currentPatchVersionTag = $versions[2];
 
+        $availableMajorVersions = [];
         $availableMinorVersions = [];
         $availablePatchVersions = [];
-        $availableMajorVersions = [];
 
         foreach ($tags as $value) {
             if (!preg_match("/^\d{4}\.\d\.\d+$/", $value['name'])) {
@@ -77,34 +77,34 @@ class VersionUpdateController
             }
             $explodedValue = explode('.', $value['name']);
 
-            $branchVersionTag = $explodedValue[0];
+            $majorVersionTag = $explodedValue[0];
             $minorVersionTag = $explodedValue[1];
             $patchVersionTag = $explodedValue[2];
 
 
-            if ($branchVersionTag > $currentVersionBranch) {
+            if ($majorVersionTag > $currentMajorVersionTag) {
                 $availableMajorVersions[] = $value['name'];
-            } else if ($branchVersionTag == $currentVersionBranch && $minorVersionTag > $currentMinorVersionTag) {
+            } else if ($majorVersionTag == $currentMajorVersionTag && $minorVersionTag > $currentMinorVersionTag) {
                 $availableMinorVersions[] = $value['name'];
             } else if ($minorVersionTag == $currentMinorVersionTag && $patchVersionTag > $currentPatchVersionTag) {
                 $availablePatchVersions[] = $value['name'];
             }
         }
 
-        natcasesort($availableMinorVersions);
         natcasesort($availableMajorVersions);
+        natcasesort($availableMinorVersions);
         natcasesort($availablePatchVersions);
+        
+        if (empty($availableMajorVersions)) {
+            $lastAvailableMajorVersion = null;
+        } else {
+            $lastAvailableMajorVersion = end($availableMajorVersions);
+        }
 
         if (empty($availableMinorVersions)) {
             $lastAvailableMinorVersion = null;
         } else {
             $lastAvailableMinorVersion = end($availableMinorVersions);
-        }
-
-        if (empty($availableMajorVersions)) {
-            $lastAvailableMajorVersion = null;
-        } else {
-            $lastAvailableMajorVersion = end($availableMajorVersions);
         }
 
         if (empty($availablePatchVersions)) {
@@ -118,8 +118,8 @@ class VersionUpdateController
         exec('git status --porcelain --untracked-files=no 2>&1', $output);
 
         return $response->withJson([
-            'lastAvailableMinorVersion' => $lastAvailableMinorVersion,
             'lastAvailableMajorVersion' => $lastAvailableMajorVersion,
+            'lastAvailableMinorVersion' => $lastAvailableMinorVersion,
             'lastAvailablePatchVersion' => $lastAvailablePatchVersion,
             'currentVersion'            => $currentVersion,
             'canUpdate'                 => empty($output),
@@ -144,9 +144,9 @@ class VersionUpdateController
             return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$body['tag']}"]);
         }
 
-        $targetVersionBranch = $targetTagVersions[0];
-        $targetMinorVersionTag = $targetTagVersions[2];
-        $targetMajorVersionTag = $targetTagVersions[1];
+        $targetMajorVersionTag = (int)$targetTagVersions[0];
+        $targetMinorVersionTag = (int)$targetTagVersions[1];
+        $targetPatchVersionTag = (int)$targetTagVersions[2];
 
         $applicationVersion = CoreConfigModel::getApplicationVersion();
         if (empty($applicationVersion)) {
@@ -156,18 +156,25 @@ class VersionUpdateController
         $currentVersion = $applicationVersion;
 
         $versions = explode('.', $currentVersion);
-        $currentVersionBranch = $versions[0];
-        $currentMinorVersionTag = $versions[2];
-        $currentMajorVersionTag = $versions[1];
+        $currentMajorVersionTag = (int)$versions[0];
+        $currentMinorVersionTag = (int)$versions[1];
+        $currentPatchVersionTag = (int)$versions[2];
 
-        if ($currentVersionBranch !== $targetVersionBranch) {
-            return $response->withStatus(400)->withJson(['errors' => "Target branch version did not match with current branch"]);
-        }
-
-        if ($targetMajorVersionTag < $currentMajorVersionTag) {
+        if (
+            $targetMajorVersionTag < $currentMajorVersionTag
+        ) {
             return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same major tag"]);
-        } else if ($targetMajorVersionTag == $currentMajorVersionTag && $targetMinorVersionTag <= $currentMinorVersionTag) {
+        } elseif (
+            $targetMajorVersionTag == $currentMajorVersionTag && 
+            $targetMinorVersionTag < $currentMinorVersionTag
+        ) {
             return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same minor tag"]);
+        } elseif (
+            $targetMajorVersionTag == $currentMajorVersionTag && 
+            $targetMinorVersionTag == $currentMinorVersionTag && 
+            $targetPatchVersionTag < $currentPatchVersionTag
+        ) {
+            return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same patch tag"]);
         }
 
         $output = [];
@@ -188,11 +195,11 @@ class VersionUpdateController
         exec('git fetch');
         exec("git checkout {$targetTag} 2>&1", $output, $returnCode);
 
-        $log = "Application update from {$currentVersion} to {$targetTag}\nCheckout response {$returnCode} => " . implode(' ', $output) . "\n";
+        $log = "Application tag update from {$currentVersion} to {$targetTag}\nCheckout response {$returnCode} => " . implode(' ', $output) . "\n";
         file_put_contents("{$migrationFolder['path']}/updateVersion_{$actualTime}.log", $log, FILE_APPEND);
 
         if ($returnCode != 0) {
-            return $response->withStatus(400)->withJson(['errors' => "Application update failed. Please check updateVersion.log at {$migrationFolder['path']}"]);
+            return $response->withStatus(400)->withJson(['errors' => "Application tag update failed. Please check updateVersion.log at {$migrationFolder['path']}"]);
         }
 
         HistoryController::add([
