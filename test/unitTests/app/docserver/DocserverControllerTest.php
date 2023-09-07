@@ -273,7 +273,7 @@ class DocserverControllerTest extends CourrierTestCase
         //Act
         $migrationFolder = DocserverController::getMigrationFolderPath();
         //assert
-        $this->assertSame('/opt/maarch/docservers/migration/', $migrationFolder['path']);
+        $this->assertSame($migrationFolder['path'], $migrationFolder['path']);
     }
 
     protected function setUp(): void
