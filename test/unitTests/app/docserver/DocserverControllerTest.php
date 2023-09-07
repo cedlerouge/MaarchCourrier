@@ -227,7 +227,7 @@ class DocserverControllerTest extends CourrierTestCase
         $migrationFolder = DocserverController::getMigrationFolderPath();
 
         //Assert
-        $this->assertSame('Docserver migration_coll  does not exist', $migrationFolder['errors']);
+        $this->assertSame('Docserver migration does not exist', $migrationFolder['errors']);
     }
 
     public function testWhenThePathTemplateOfTheMigrationFolderDoesNotExistAnErrorIsReturned(): void
@@ -278,12 +278,12 @@ class DocserverControllerTest extends CourrierTestCase
 
     protected function setUp(): void
     {
-        self::$docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration_coll', 'select' => ['*']]);
+        self::$docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['*']]);
     }
 
     protected function tearDown(): void
     {
-        $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration_coll', 'select' => ['path_template']]);
+        $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
         if (empty($docservers)) {
             DocserverModel::create(self::$docserver);
         } else {
