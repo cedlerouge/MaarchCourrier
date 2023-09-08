@@ -218,10 +218,9 @@ export class AuthService {
         $('body').append(loader);
         this.http.put('../rest/versionsUpdateSQL', {}).pipe(
             finalize(() => $('#updateLoading').remove()),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
+            catchError((err: any) =>
+                of(false)
+            )
         ).subscribe();
     }
 

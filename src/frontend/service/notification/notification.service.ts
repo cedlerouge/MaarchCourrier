@@ -88,7 +88,7 @@ export class NotificationService {
 
     handleSoftErrors(err: any) {
         console.log(err);
-        if (err.error !== undefined) {
+        if (err?.error !== undefined) {
             if (err.error.errors !== undefined) {
                 if (err.error.lang !== undefined) {
                     this.error(this.translate.instant('lang.' + err.error.lang));

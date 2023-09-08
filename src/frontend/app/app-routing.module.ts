@@ -21,46 +21,45 @@ import { SearchComponent } from './search/search.component';
 import { ProcessComponent } from './process/process.component';
 import { IndexationComponent } from './indexation/indexation.component';
 import { AppLightGuard } from '@service/app-light.guard';
-import { MigrationCheckGuard } from '@service/migration.guard';
 
 
 const routes: Routes = [
-    { path: 'resources/:resId/content', canActivate: [MigrationCheckGuard, AppGuard], component: DocumentViewerPageComponent },
+    { path: 'resources/:resId/content', canActivate: [AppGuard], component: DocumentViewerPageComponent },
     {
         path: 'install',
         canActivate: [AppLightGuard],
         loadChildren: () => import('./installer/installer.module').then(m => m.InstallerModule)
     },
-    { path: 'signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId', canActivate: [MigrationCheckGuard, AppGuard], component: SignatureBookComponent },
-    { path: 'followed', canActivate: [MigrationCheckGuard, AppGuard], component: FollowedDocumentListComponent },
-    { path: 'saveNumericPackage', canActivate: [MigrationCheckGuard, AppGuard], component: SaveNumericPackageComponent },
-    { path: 'separators/print', canActivate: [MigrationCheckGuard, AppGuard], component: PrintSeparatorComponent },
-    { path: 'forgot-password', canActivate: [MigrationCheckGuard], component: ForgotPasswordComponent },
-    { path: 'reset-password', canActivate: [MigrationCheckGuard], component: ResetPasswordComponent },
-    { path: 'activate-user', canActivate: [MigrationCheckGuard], component: ActivateUserComponent },
-    { path: 'password-modification', canActivate: [MigrationCheckGuard], component: PasswordModificationComponent },
-    { path: 'folders/:folderId', canActivate: [MigrationCheckGuard, AppGuard], component: FolderDocumentListComponent },
-    { path: 'profile', canActivate: [MigrationCheckGuard, AppGuard], component: ProfileComponent },
-    { path: 'home', canActivate: [MigrationCheckGuard, AppGuard], component: HomeComponent },
-    { path: 'basketList/users/:userSerialId/groups/:groupSerialId/baskets/:basketId', canActivate: [MigrationCheckGuard, AppGuard], component: BasketListComponent },
+    { path: 'signatureBook/users/:userId/groups/:groupId/baskets/:basketId/resources/:resId', canActivate: [AppGuard], component: SignatureBookComponent },
+    { path: 'followed', canActivate: [AppGuard], component: FollowedDocumentListComponent },
+    { path: 'saveNumericPackage', canActivate: [AppGuard], component: SaveNumericPackageComponent },
+    { path: 'separators/print', canActivate: [AppGuard], component: PrintSeparatorComponent },
+    { path: 'forgot-password', component: ForgotPasswordComponent },
+    { path: 'reset-password', component: ResetPasswordComponent },
+    { path: 'activate-user', component: ActivateUserComponent },
+    { path: 'password-modification', component: PasswordModificationComponent },
+    { path: 'folders/:folderId', canActivate: [AppGuard], component: FolderDocumentListComponent },
+    { path: 'profile', canActivate: [AppGuard], component: ProfileComponent },
+    { path: 'home', canActivate: [AppGuard], component: HomeComponent },
+    { path: 'basketList/users/:userSerialId/groups/:groupSerialId/baskets/:basketId', canActivate: [AppGuard], component: BasketListComponent },
     { path: 'login', canActivate: [AppLightGuard], component: LoginComponent },
-    { path: 'registeredMail/acknowledgement', canActivate: [MigrationCheckGuard, AppGuard], component: AcknowledgementReceptionComponent },
-    { path: 'search', canActivate: [MigrationCheckGuard, AppGuard], component: SearchComponent },
+    { path: 'registeredMail/acknowledgement', canActivate: [AppGuard], component: AcknowledgementReceptionComponent },
+    { path: 'search', canActivate: [AppGuard], component: SearchComponent },
     {
         path: 'process/users/:userSerialId/groups/:groupSerialId/baskets/:basketId/resId/:resId',
-        canActivate: [MigrationCheckGuard, AppGuard],
+        canActivate: [AppGuard],
         canDeactivate: [AfterProcessGuard],
         component: ProcessComponent
     },
     {
         path: 'resources/:detailResId',
-        canActivate: [MigrationCheckGuard, AppGuard],
+        canActivate: [AppGuard],
         canDeactivate: [AfterProcessGuard],
         component: ProcessComponent
     },
     {
         path: 'indexing/:groupId',
-        canActivate: [MigrationCheckGuard, AppGuard],
+        canActivate: [AppGuard],
         component: IndexationComponent
     },
     {

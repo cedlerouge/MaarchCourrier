@@ -13,7 +13,6 @@ import { FunctionsService } from '@service/functions.service';
 import { TimeLimitPipe } from '../../plugins/timeLimit.pipe';
 import { TranslateService } from '@ngx-translate/core';
 import { LocalStorageService } from '@service/local-storage.service';
-import { MigrationService } from '@service/migration.service';
 
 @Component({
     templateUrl: 'login.component.html',
@@ -41,8 +40,7 @@ export class LoginComponent implements OnInit {
         private notify: NotificationService,
         public dialog: MatDialog,
         private formBuilder: UntypedFormBuilder,
-        private timeLimit: TimeLimitPipe,
-        private migrationService: MigrationService
+        private timeLimit: TimeLimitPipe
     ) { }
 
     ngOnInit(): void {
@@ -65,10 +63,6 @@ export class LoginComponent implements OnInit {
     }
 
     onSubmit(ssoToken = null) {
-        if (this.migrationService.migrating) {
-            this.migrationService.logoutAndShowAlert();
-            return false;
-        }
         this.loading = true;
 
         let url = '../rest/authenticate';
