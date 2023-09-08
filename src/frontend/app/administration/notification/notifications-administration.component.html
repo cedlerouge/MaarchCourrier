@@ -73,10 +73,12 @@
                                 [class.hide-for-mobile]="appService.getViewMode()">{{'lang.status' | translate}}</mat-header-cell>
                             <mat-cell *matCellDef="let element" matTooltip="{{'lang.view' | translate}}" style="flex:1;"
                                 [class.hide-for-mobile]="appService.getViewMode()">
-                                <span *ngIf="element.is_enabled == 'Y'" color="primary"
-                                    class="label">{{'lang.active' | translate}}</span>
-                                <span *ngIf="element.is_enabled == 'N'" color="warn"
-                                    class="label">{{'lang.suspended' | translate}}</span>
+                                <span *ngIf="element.is_enabled == 'Y'" class="label primary">
+                                    {{'lang.active' | translate}}
+                                </span>
+                                <span *ngIf="element.is_enabled == 'N'" class="label warn">
+                                    {{'lang.suspended' | translate}}
+                                </span>
                             </mat-cell>
                         </ng-container>
                         <ng-container matColumnDef="notifications">

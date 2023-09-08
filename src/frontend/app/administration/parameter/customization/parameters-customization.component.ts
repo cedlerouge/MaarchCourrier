@@ -119,7 +119,7 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             statusbar: false,
             readonly: readonly,
             plugins: [
-                'autolink', 'table', 'code'
+                'autolink', 'table', 'code', 'autoresize'
             ],
             external_plugins: {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'

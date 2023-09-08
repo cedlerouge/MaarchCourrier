@@ -909,7 +909,8 @@ class ResController extends ResourceControlController
         $adrPdf = AdrModel::getDocuments([
             'select'  => ['path', 'filename', 'docserver_id'],
             'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'PDF']
+            'data'    => [$args['resId'], 'PDF'],
+            'orderBy' => ['version desc']
         ]);
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $adrPdf[0]['docserver_id'], 'select' => ['path_template']]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {

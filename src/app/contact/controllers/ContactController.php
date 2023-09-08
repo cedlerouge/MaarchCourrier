@@ -934,16 +934,22 @@ class ContactController
         $criteria = [];
         $order = [];
         foreach ($queryParams['criteria'] as $criterion) {
-            if (strpos($criterion, 'contactCustomField_') !== false) {
-                if (!in_array('custom_fields', $order)) {
-                    $order[] = 'custom_fields';
-                }
-                $customId = explode('_', $criterion)[1];
-                $criteria[] = "replace(lower(unaccent(custom_fields->>'" . $customId . "') ), ' ', '')";
-            } else {
+            if ($criterion === 'civility') {
                 $order[] = $allowedFields[$criterion];
-                $criteria[] = "replace(lower(unaccent(" . $allowedFields[$criterion] . ") ), ' ', '')";
+                $criteria[] = $allowedFields[$criterion];
+            } else {
+                if (strpos($criterion, 'contactCustomField_') !== false) {
+                    if (!in_array('custom_fields', $order)) {
+                        $order[] = 'custom_fields';
+                    }
+                    $customId = explode('_', $criterion)[1];
+                    $criteria[] = "replace(lower(unaccent(custom_fields->>'" . $customId . "') ), ' ', '')";
+                } else {
+                    $order[] = $allowedFields[$criterion];
+                    $criteria[] = "replace(lower(unaccent(" . $allowedFields[$criterion] . ") ), ' ', '')";
+                }
             }
+
         }
 
         $fields = ['distinct(id)', 'enabled', 'dense_rank() over (order by ' . implode(',', $criteria) . ') duplicate_id', 'custom_fields'];
@@ -956,7 +962,11 @@ class ContactController
         foreach ($criteria as $criterion) {
             $subQuery = "SELECT " . $criterion . ' as field FROM contacts c GROUP BY field HAVING count(*) > 1';
 
-            $where[] = $criterion . " in (" . $subQuery . ") AND " . $criterion . " != '' AND " . $criterion . " is not null";
+            if ($criterion === 'civility') {
+                $where[] = $criterion . " in (" . $subQuery . ") AND " . $criterion . " != 0 AND " . $criterion . " is not null";
+            } else {
+                $where[] = $criterion . " in (" . $subQuery . ") AND " . $criterion . " != '' AND " . $criterion . " is not null";
+            }
         }
 
         $duplicatesQuery = "SELECT " . implode(', ', $fields) . ' FROM contacts WHERE ' . implode(' AND ', $where);
