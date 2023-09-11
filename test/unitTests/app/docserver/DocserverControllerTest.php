@@ -11,13 +11,17 @@ namespace MaarchCourrier\Tests\app\docserver;
 
 use Docserver\controllers\DocserverController;
 use Docserver\controllers\DocserverTypeController;
+use Docserver\models\DocserverModel;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\models\DatabaseModel;
 
 class DocserverControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
+
+    private static $docserver = [];
 
     public function testGet()
     {
@@ -77,7 +81,7 @@ class DocserverControllerTest extends CourrierTestCase
 
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
-        
+
         $this->assertSame(_PATH_OF_DOCSERVER_UNAPPROACHABLE, $responseBody->errors);
 
         //  CREATE
@@ -92,7 +96,7 @@ class DocserverControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $args);
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
-        
+
         $this->assertSame('Bad Request', $responseBody->errors);
 
         //  CREATE
@@ -107,7 +111,7 @@ class DocserverControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $args);
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
-        
+
         $this->assertSame(_ID. ' ' . _ALREADY_EXISTS, $responseBody->errors);
     }
 
@@ -210,4 +214,75 @@ class DocserverControllerTest extends CourrierTestCase
             $this->assertNotEmpty($docserverType->enabled);
         }
     }
+//TODO  Uncomment the test when else condition in getMigrationFolderPath() is removed
+//    public function testWhenTheMigrationFolderDoesNotExistAnErrorIsReturned(): void
+//    {
+//        //Arrange
+//        DatabaseModel::delete([
+//            'table'=> 'docservers',
+//            'where'=> ["docserver_id = 'MIGRATION'"]
+//        ]);
+//        //Arrange
+//        DatabaseModel::delete([
+//            'table'=> 'docservers',
+//            'where'=> ["docserver_id = 'FASTHD_MAN'"]
+//        ]);
+//
+//        //Act
+//        $migrationFolder = DocserverController::getMigrationFolderPath();
+//
+//        //Assert
+//        $this->assertSame('Docserver migration does not exist', $migrationFolder['errors']);
+//    }
+
+    public function testWhenThePathTemplateOfTheMigrationFolderDoesNotExistAnErrorIsReturned(): void
+    {
+        //Arrange
+        DocserverModel::update([
+            'table' => 'docservers',
+            'set'   => [
+                'path_template'=> ''
+            ],
+            'where' => ['docserver_id = ?', 'coll_id = ?'],
+            'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
+        ]);
+        //Act
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+
+        //Assert
+        $this->assertSame('Docserver path is empty', $migrationFolder['errors']);
+    }
+
+    public function testMigrationFolderExistAndTheTemplatePathIsCorrect(): void
+    {
+        //Arrange
+
+        //Act
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+        //assert
+        $this->assertSame('/opt/maarch/docservers/migration/', $migrationFolder['path']);
+    }
+
+    protected function setUp(): void
+    {
+        self::$docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['*']]);
+    }
+
+    protected function tearDown(): void
+    {
+        $docservers = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['path_template']]);
+        if (empty($docservers)) {
+            DocserverModel::create(self::$docserver);
+        } else {
+            DocserverModel::update([
+                'table' => 'docservers',
+                'set'   => [
+                    'path_template'=> self::$docserver['path_template']
+                ],
+                'where' => ['docserver_id = ?', 'coll_id = ?'],
+                'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
+            ]);
+        }
+    }
+
 }
