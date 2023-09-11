@@ -49,9 +49,10 @@ export class ForgotPasswordComponent implements OnInit {
                     this.labelButton = this.translate.instant('lang.send');
                     this.loading = false;
                 }),
-                catchError((err: any) =>
-                    of(false)
-                )
+                catchError((err: any) => {
+                    this.notificationService.handleSoftErrors(err);
+                    return of(false);
+                })
             ).subscribe();
     }
 
