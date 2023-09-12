@@ -295,15 +295,12 @@ class VersionUpdateController
 
     /**
      * Central function to run different types of files. SQL or PHP
-     * @param   array   $tagFolderList  A list of strings
-     * @return  Throwable|true  Throwable errors | Return true when successful
+     * @param   string[]    $tagFolderList  A list of strings
+     * @throws  Exception   
+     * @return  true        Return true when successful
      */
     public static function executeTagFolderFiles(array $tagFolderList)
     {
-        if (!Validator::arrayType()->notEmpty()->validate($tagFolderList)) {
-            throw new \Exception('$tagFolderList must be a non empty array of type string');
-        }
-
         $migrationFolder = DocserverController::getMigrationFolderPath();
         if (!empty($migrationFolder['errors'])) {
             throw new \Exception($migrationFolder['errors']);
@@ -366,17 +363,10 @@ class VersionUpdateController
      * Main function to run sql files
      * @param   string  $sqlFilePath
      * @param   string  $docserverMigrationFolderPath
-     * @return  Throwable|bool  Throwable errors | return true if postgresql dump and sql file executed with sucess or return false if postgresql dump faild
+     * @return  bool    Return true if postgresql dump and sql file executed with sucess or return false if postgresql dump faild
      */
     public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool
     {
-        if (!Validator::stringType()->notEmpty()->validate($sqlFilePath)) {
-            throw new \Exception('$sqlFilePath must be a non empty string');
-        }
-        if (!Validator::stringType()->notEmpty()->validate($docserverMigrationFolderPath)) {
-            throw new \Exception('$docserverMigrationFolderPath must be a non empty string');
-        }
-
         if (file_exists($sqlFilePath)) {
 
             $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
@@ -437,19 +427,12 @@ class VersionUpdateController
 
     /**
      * Main function to run php files
-     * @param   array   $folderFiles
-     * @param   string  $tagVersion
-     * @return  Throwable|array Throwable errors | Array with 'numberOfFiles', 'success', 'errors' and 'rollback'
+     * @param   string[]    $folderFiles
+     * @param   string      $tagVersion
+     * @return  int[]       Array of numbers with 'numberOfFiles', 'success', 'errors' and 'rollback'
      */
     public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
     {
-        if (!Validator::arrayType()->notEmpty()->validate($folderFiles)) {
-            throw new \Exception('$folderFiles must be a non empty array');
-        }
-        if (!Validator::stringType()->notEmpty()->validate($tagVersion)) {
-            throw new \Exception('$tagVersion must be a non empty string');
-        }
-
         $numberOfFiles = 0;
         $success = 0;
         $errors = 0;
