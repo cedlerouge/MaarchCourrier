@@ -15,32 +15,32 @@
 
 namespace SrcCore\interfaces;
 
-Interface AutoUpdateInterface
+interface AutoUpdateInterface
 {
     /**
      * Function to perform any backups for the update.
      * Use trycatch at the root of the function.
      * 
-     * @return  mixed   true if backup is sucessful
-     * @throws  \Exception if the backup failed
+     * @return  void   If backup is successful
+     * @throws  \Exception If the backup failed
      */
-    public static function backup();
+    public static function backup(): void;
 
     /**
      * Function to perform any update for a feature.
      * Use trycatch at the root of the function.
      * 
-     * @return  mixed   true if update is sucessful
-     * @throws  \Exception if the update failed
+     * @return  void   If update is successful
+     * @throws  \Exception If the update failed
      */
-    public static function update();
+    public static function update(): void;
 
     /**
      * Function to perform any rollback for the update.
      * Use trycatch at the root of the function.
      * 
-     * @return  mixed   true if rollback is sucessful
-     * @throws  \Exception if the rollback failed
+     * @return  void   If rollback is successful
+     * @throws  \Exception If the rollback failed
      */
-    public static function rollback();
+    public static function rollback(): void;
 }

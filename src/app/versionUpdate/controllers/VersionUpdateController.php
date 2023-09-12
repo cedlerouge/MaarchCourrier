@@ -315,7 +315,7 @@ class VersionUpdateController
             'moduleId'  => 'Version Update Controller',
             'eventId'   => "Update",
             'level'     => 'INFO',
-            'eventType' => "Begging of the update..."
+            'eventType' => "Beginning of the update..."
         ]);
 
         foreach ($tagFolderList as $tagFolder) {
