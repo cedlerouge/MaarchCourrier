@@ -151,7 +151,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
         ], $control['response']);
     }
 
-    public function testAutoUpdateLauncherWithSucessCode200AndDatabaseUpdated()
+    public function testAutoUpdateLauncherWithSomethingToMigrateExpectSucessCode200AndDatabaseUpdated()
     {
         // Arrange
         $versionUpdateController = new VersionUpdateController();
@@ -169,7 +169,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $this->assertSame('Database has been updated', $responseBody->success);
     }
 
-    public function testAutoUpdateLauncherWithSucessCode204()
+    public function testAutoUpdateLauncherWithNothingToMigrateExpectSucessCode204()
     {
         // Arrange
         $versionUpdateController = new VersionUpdateController();
