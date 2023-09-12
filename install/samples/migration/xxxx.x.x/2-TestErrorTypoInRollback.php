@@ -14,7 +14,7 @@ return new class implements AutoUpdateInterface
     {
         try {
             $config = CoreConfigModel::getJsonLoaded(['path' => self::$originalConfigPath]);
-            file_put_contents(self::$testConfigPath, json_encode($config), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            file_put_contents(self::$testConfigPath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         } catch (\Throwable $th) {
             throw new \Exception($th->getMessage());
         }
@@ -30,7 +30,7 @@ return new class implements AutoUpdateInterface
             ];
 
             // simulate en error
-            file_put_contents(self::$testConfigPath_, json_encode($config), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            file_put_contents(self::$testConfigPath_, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         } catch (\Throwable $th) {
             throw new \Exception($th->getMessage());
         }
@@ -40,7 +40,7 @@ return new class implements AutoUpdateInterface
     {
         try {
             $config = CoreConfigModel::getJsonLoaded(['path' => self::$testConfigPath]);
-            file_put_contents(self::$originalConfigPath, json_encode($config), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            file_put_contents(self::$originalConfigPath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
             unlink(self::$testConfigPath);
 
             // simulate en error
