@@ -301,6 +301,10 @@ class VersionUpdateController
      */
     public static function executeTagFolderFiles(array $tagFolderList)
     {
+        if (empty($tagFolderList)) {
+            throw new \Exception('$tagFolderList must be a non empty array of type string');
+        }
+
         $migrationFolder = DocserverController::getMigrationFolderPath();
         if (!empty($migrationFolder['errors'])) {
             throw new \Exception($migrationFolder['errors']);
@@ -367,6 +371,13 @@ class VersionUpdateController
      */
     public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool
     {
+        if (empty($sqlFilePath)) {
+            throw new \Exception('$sqlFilePath must be a non empty string');
+        }
+        if (empty($docserverMigrationFolderPath)) {
+            throw new \Exception('$docserverMigrationFolderPath must be a non empty string');
+        }
+
         if (file_exists($sqlFilePath)) {
 
             $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
@@ -433,6 +444,13 @@ class VersionUpdateController
      */
     public static function runScriptsByTag(array $folderFiles, string $tagVersion): array
     {
+        if (empty($folderFiles)) {
+            throw new \Exception('$folderFiles must be a non empty array');
+        }
+        if (empty($tagVersion)) {
+            throw new \Exception('$tagVersion must be a non empty string');
+        }
+
         $numberOfFiles = 0;
         $success = 0;
         $errors = 0;

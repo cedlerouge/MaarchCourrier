@@ -201,25 +201,25 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $this->assertContains(self::$availableTestFolder, $availableFolders['folders']);
     }
 
-    public function testAvailableFoldersWithDatabaseVersionHasOneDotExpectBadFormatDatabaseVersion()
+    public function provideDatabaseVersionFormats()
     {
-        // Arrange
-        ParameterModel::update(['id' => "database_version", 'param_value_string' => '2301.1']);
-
-        // Act
-        $availableFolders = VersionUpdateController::getAvailableFolders();
-
-        // Assert
-        $this->assertNotEmpty($availableFolders);
-        $this->assertEmpty($availableFolders['folders'] ?? []);
-        $this->assertNotEmpty($availableFolders['errors']);
-        $this->assertSame($availableFolders['errors'], "Bad format database_version");
+        return [
+            '2301.1 Format' => [
+                'input' => '2301.1'
+            ],
+            '2301.1.4.1 Format' => [
+                'input' => '2301.1.4.1'
+            ]
+        ];
     }
 
-    public function testAvailableFoldersWithDatabaseVersionHasThreeDotExpectBadFormatDatabaseVersion()
+    /**
+     * @dataProvider provideDatabaseVersionFormats
+     */
+    public function testAvailableFoldersWithDatabaseVersionFormatThatDoesNotHaveThreeDotsExpectBadFormatDatabaseVersion($input)
     {
         // Arrange
-        ParameterModel::update(['id' => "database_version", 'param_value_string' => '2301.1.4.1']);
+        ParameterModel::update(['id' => "database_version", 'param_value_string' => $input]);
 
         // Act
         $availableFolders = VersionUpdateController::getAvailableFolders();
