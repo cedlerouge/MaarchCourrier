@@ -478,4 +478,3 @@ define('_ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', array(
 ));
 define('_EXTERNAL_USER', "Utilisateur externe");
 define('_MIGRATION_PROCESSING', "L'application n'est pas accessible en raison d'une migration en cours.");
-define('_SERVICE_UNAVAILABLE_MIGRATION_PROCESSING', "Service unavailable : migration in progress.");

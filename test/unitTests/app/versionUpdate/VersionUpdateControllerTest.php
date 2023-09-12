@@ -14,6 +14,7 @@ use Slim\Routing\RouteContext;
 use SrcCore\http\Response;
 use VersionUpdate\controllers\VersionUpdateController;
 use VersionUpdate\middlewares\VersionUpdateMiddleware;
+use MaarchCourrier\Tests\app\versionUpdate\VersionUpdateControllerMock;
 
 class VersionUpdateControllerTest extends CourrierTestCase
 {
@@ -49,8 +50,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
                 'input' => [
                     'currentMethod' => explode('/',$methodeAndRoute)[0],
                     'currentRoute'  => '/' . explode('/',$methodeAndRoute)[1]
-                ],
-                'expecting' => []
+                ]
             ];
         }
 
@@ -84,12 +84,12 @@ class VersionUpdateControllerTest extends CourrierTestCase
     /**
      * @dataProvider apiRouteProvideEmptyResponseDataForRoutesWithoutMigration
      */
-    public function testMiddlewareControlExpectingEmptyResponseUsingApiRoute($input, $expecting)
+    public function testMiddlewareControlExpectingEmptyResponseUsingApiRoute($input)
     {
         $control = VersionUpdateMiddleware::middlewareControl($input['currentMethod'], $input['currentRoute']);
 
         $this->assertEmpty($control);
-        $this->assertSame($expecting, $control);
+        $this->assertSame([], $control);
     }
 
     /**
@@ -97,14 +97,14 @@ class VersionUpdateControllerTest extends CourrierTestCase
      */
     public function testMiddlewareControlExpectingResponseUsingApiRoute($input)
     {
-        \MaarchCourrier\Tests\app\versionUpdate\VersionUpdateControllerMock::isMigrating();
+        VersionUpdateControllerMock::isMigrating();
 
         $control = VersionUpdateMiddleware::middlewareControl($input['currentMethod'], $input['currentRoute']);
 
         $this->assertNotEmpty($control);
         $this->assertNotEmpty($control['response']);
         $this->assertSame([
-            "errors"        => _SERVICE_UNAVAILABLE_MIGRATION_PROCESSING,
+            "errors"        => "Service unavailable : migration in progress.",
             "lang"          => "migrationProcessing",
             'migrating'     => true
         ], $control['response']);
