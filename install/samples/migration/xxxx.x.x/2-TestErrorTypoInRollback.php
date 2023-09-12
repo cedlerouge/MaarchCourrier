@@ -10,7 +10,7 @@ return new class implements AutoUpdateInterface
     private static $testConfigPath = 'config/config.json.backup';
     private static $originalConfigPath = 'config/config.json';
 
-    public static function backup(): void
+    public function backup(): void
     {
         try {
             $config = CoreConfigModel::getJsonLoaded(['path' => self::$originalConfigPath]);
@@ -20,7 +20,7 @@ return new class implements AutoUpdateInterface
         }
     }
 
-    public static function update(): void
+    public function update(): void
     {
         try {
             $config = CoreConfigModel::getJsonLoaded(['path' => self::$originalConfigPath]);
@@ -36,7 +36,7 @@ return new class implements AutoUpdateInterface
         }
     }
 
-    public static function rollback(): void
+    public function rollback(): void
     {
         try {
             $config = CoreConfigModel::getJsonLoaded(['path' => self::$testConfigPath]);

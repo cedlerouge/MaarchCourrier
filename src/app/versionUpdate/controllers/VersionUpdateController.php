@@ -465,7 +465,7 @@ class VersionUpdateController
             $filePath = "migration/$tagVersion/$fileName";
             $migrationClass = require $filePath;
 
-            if (empty($migrationClass instanceof AutoUpdateInterface)) {
+            if (empty($migrationClass) || !$migrationClass instanceof AutoUpdateInterface) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',

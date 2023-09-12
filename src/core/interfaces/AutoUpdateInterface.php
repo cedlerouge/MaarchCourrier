@@ -24,7 +24,7 @@ interface AutoUpdateInterface
      * @return  void   If backup is successful
      * @throws  \Exception If the backup failed
      */
-    public static function backup(): void;
+    public function backup(): void;
 
     /**
      * Function to perform any update for a feature.
@@ -33,7 +33,7 @@ interface AutoUpdateInterface
      * @return  void   If update is successful
      * @throws  \Exception If the update failed
      */
-    public static function update(): void;
+    public function update(): void;
 
     /**
      * Function to perform any rollback for the update.
@@ -42,5 +42,5 @@ interface AutoUpdateInterface
      * @return  void   If rollback is successful
      * @throws  \Exception If the rollback failed
      */
-    public static function rollback(): void;
+    public function rollback(): void;
 }
