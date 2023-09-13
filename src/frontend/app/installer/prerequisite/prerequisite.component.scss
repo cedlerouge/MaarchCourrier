@@ -67,8 +67,13 @@
     }
 }
 
-::ng-deep.tooltip-red {
+::ng-deep.tooltip-ko {
     background: #b71c1c;
     font-size: 14px;
-  }
+}
+
+::ng-deep.tooltip-warning {
+    background: orange;
+    font-size: 14px;
+}
   
