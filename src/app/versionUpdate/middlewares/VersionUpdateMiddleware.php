@@ -56,7 +56,7 @@ class VersionUpdateMiddleware implements MiddlewareInterface
         if (!in_array($httpMethod . $currentRoute, VersionUpdateController::ROUTES_WITHOUT_MIGRATION)) {
             if (VersionUpdateController::isMigrating()) {
                 $return['response'] = [
-                    "errors"        => "Service unavailable : migration in progress.",
+                    "errors"        => "Service unavailable : migration in progress",
                     "lang"          => "migrationProcessing",
                     'migrating'     => true
                 ];

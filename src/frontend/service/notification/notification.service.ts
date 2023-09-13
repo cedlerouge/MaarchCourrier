@@ -51,8 +51,6 @@ export class NotificationService {
     }
 
     handleErrors(err: any) {
-        console.log(err);
-
         if (err.status === 0 && err.statusText === 'Unknown Error') {
             this.error(this.translate.instant('lang.connectionFailed'));
         } else {
@@ -88,7 +86,6 @@ export class NotificationService {
     }
 
     handleSoftErrors(err: any) {
-        console.log(err);
         if (err?.error !== undefined) {
             if (err.error.errors !== undefined) {
                 if (err.error.lang !== undefined) {

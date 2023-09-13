@@ -104,7 +104,7 @@ class VersionUpdateControllerTest extends CourrierTestCase
         $this->assertNotEmpty($control);
         $this->assertNotEmpty($control['response']);
         $this->assertSame([
-            "errors"        => "Service unavailable : migration in progress.",
+            "errors"        => "Service unavailable : migration in progress",
             "lang"          => "migrationProcessing",
             'migrating'     => true
         ], $control['response']);
