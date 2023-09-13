@@ -464,8 +464,9 @@ class VersionUpdateController
             $numberOfFiles++;
             $filePath = "migration/$tagVersion/$fileName";
             $migrationClass = require $filePath;
+            $migration = new $migrationClass;
 
-            if (empty($migrationClass) || !$migrationClass instanceof AutoUpdateInterface) {
+            if (empty($migration) || !$migration instanceof AutoUpdateInterface) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',
@@ -478,7 +479,7 @@ class VersionUpdateController
             }
 
             try {
-                $migrationClass->backup();
+                $migration->backup();
             } catch (\Throwable $th) {
                 LogsController::add([
                     'isTech'    => true,
@@ -492,7 +493,7 @@ class VersionUpdateController
             }
 
             try {
-                $migrationClass->update();
+                $migration->update();
 
                 $success++;
             } catch (\Throwable $th) {
@@ -500,7 +501,7 @@ class VersionUpdateController
                 $errors++;
 
                 try {
-                    $migrationClass->rollback();
+                    $migration->rollback();
                     $rollback++;
                 } catch (\Throwable $th) {
                     $logInfo .= " | Throwable - ROLLBACK : " . $th->getMessage();

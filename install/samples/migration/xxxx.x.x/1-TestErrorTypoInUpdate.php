@@ -1,11 +1,25 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Migration Test Script
+ * @author dev@maarch.org
+ */
+
+namespace Migration\xxxx_x_x;
+
 require 'vendor/autoload.php';
 
 use SrcCore\interfaces\AutoUpdateInterface;
 use SrcCore\models\CoreConfigModel;
 
-return new class implements AutoUpdateInterface
+class TestErrorTypoInUpdate implements AutoUpdateInterface
 {
     private static $testConfigPath = 'config/config.json.backup';
     private static $originalConfigPath = 'config/config.json';
@@ -46,4 +60,5 @@ return new class implements AutoUpdateInterface
             throw new \Exception($th->getMessage());
         }
     }
-};
+}
+return TestErrorTypoInUpdate::class; // The file return the class name

@@ -11,6 +11,9 @@
     </report>
   </coverage>
   <testsuites>
+    <testsuite name="Maarch Acceptance Test">
+      <file>test/acceptanceTests/core/MigrationControllerAcceptanceTest.php</file>
+    </testsuite>
     <testsuite name="Maarch Test Suite">
       <directory>test/unitTests/core/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
