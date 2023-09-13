@@ -691,7 +691,7 @@ class EmailController
             $phpmailer->addBCC($recipient);
         }
 
-        if ($email['is_html']) {
+        if ($email['is_html'] && !empty($email['body'])) {
             $phpmailer->isHTML(true);
 
             $dom = new \DOMDocument();
