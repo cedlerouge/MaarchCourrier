@@ -5,6 +5,7 @@
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
+--DATABASE_BACKUP|actions|parameters
 
 UPDATE users SET preferences = preferences - 'outlookPassword' WHERE preferences->>'outlookPassword' IS NOT NULL;
 
