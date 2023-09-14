@@ -69,7 +69,7 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
 
         $iterator   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directoryToScan), \RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach ($iterator as $file) {
+        foreach (iterator_to_array($iterator) as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
                 $tokens = token_get_all(file_get_contents($file->getPathname()));
 
@@ -104,7 +104,7 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
         $migrationClassDuplicateList = MigrationControllerAcceptanceTest::doesMigrationFolderHasDuplicateClasses($directoryToScan);
 
         // Assert
-        $this->assertEmpty($migrationClassDuplicateList, implode(", ", $migrationClassDuplicateList));
+        $this->assertEmpty($migrationClassDuplicateList, implode(", ", $migrationClassDuplicateList ?? []));
     }
 
     /**
@@ -119,16 +119,16 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
             $configJson = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
             $directoryToScan = $configJson['config']['maarchDirectory'];
         }
-        
+
         $output     = [];
         $iterator   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directoryToScan), \RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach ($iterator as $file) {
+        foreach (iterator_to_array($iterator) as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
                 $class = require $file->getRealPath();
                 $classObj = new $class;
 
-                if (!in_array(AutoUpdateInterface::class, class_implements($classObj::class))) {
+                if (!in_array(AutoUpdateInterface::class, class_implements($classObj))) {
                     $output[] = "The class " . get_class($classObj) . " does not implement AutoUpdateInterface in '{$file->getRealPath()}'";
                 }
             }
@@ -146,7 +146,7 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
         $migrationClassDuplicateList = MigrationControllerAcceptanceTest::doesMigrationScriptsImplementAutoUpdateInterfaceInMigrationFolder($directoryToScan);
 
         // Assert
-        $this->assertEmpty($migrationClassDuplicateList, implode(", ", $migrationClassDuplicateList));
+        $this->assertEmpty($migrationClassDuplicateList, implode(", ", $migrationClassDuplicateList ?? []));
     }
 
     protected function tearDown(): void
