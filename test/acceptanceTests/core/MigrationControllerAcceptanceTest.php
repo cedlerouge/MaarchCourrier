@@ -69,7 +69,7 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
 
         $iterator   = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directoryToScan), \RecursiveIteratorIterator::SELF_FIRST);
 
-        foreach (iterator_to_array($iterator) as $file) {
+        foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
                 $tokens = token_get_all(file_get_contents($file->getPathname()));
 
@@ -91,6 +91,8 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
                 }
             }
         }
+
+        unset($iterator);
 
         return $output;
     }
@@ -125,11 +127,18 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
 
         foreach (iterator_to_array($iterator) as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
-                $class = require $file->getRealPath();
-                $classObj = new $class;
+
+                $classObj = null;
+                try {
+                    $class = require $file->getPathname();
+                    $classObj = new $class();
+                } catch (\Throwable $th) {
+                    $output[] = $th->getMessage();
+                    continue;
+                }
 
                 if (!in_array(AutoUpdateInterface::class, class_implements($classObj))) {
-                    $output[] = "The class " . get_class($classObj) . " does not implement AutoUpdateInterface in '{$file->getRealPath()}'";
+                    $output[] = "The class " . get_class($classObj) . " does not implement AutoUpdateInterface in '{$file->getPathname()}'";
                 }
             }
         }
@@ -141,6 +150,12 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
     {
         // Arrange
         $directoryToScan = getcwd() . '/migration';
+        unlink(self::$filesToRemove[0]);
+        unlink(self::$filesToRemove[1]);
+        unlink(self::$filesToRemove[2]);
+        self::$filesToRemove[0] = self::$nextMigrationFolderPath . '/3-TestMyMigration.php';
+        unset(self::$filesToRemove[1], self::$filesToRemove[2]);
+        copy(self::$sampleMigrationFolderPath . '/3-TestMyMigration.php', self::$nextMigrationFolderPath . '/3-TestMyMigration.php');
 
         // Act
         $migrationClassDuplicateList = MigrationControllerAcceptanceTest::doesMigrationScriptsImplementAutoUpdateInterfaceInMigrationFolder($directoryToScan);
