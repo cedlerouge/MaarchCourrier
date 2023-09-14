@@ -12,6 +12,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { LatinisePipe } from 'ngx-pipes';
 import { PrivilegeService } from '@service/privileges.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-history-list',
@@ -75,7 +76,9 @@ export class HistoryComponent implements OnInit {
         public dialog: MatDialog,
         public functions: FunctionsService,
         private latinisePipe: LatinisePipe,
-        public privilegeService: PrivilegeService) { }
+        public router: Router,
+        public privilegeService: PrivilegeService
+    ) { }
 
     ngOnInit(): void {
         if (this.resId !== null) {
