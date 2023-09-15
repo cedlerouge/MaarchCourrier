@@ -777,13 +777,8 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
         }
 
-        /*$pathInfo = pathinfo($pathToDocument);
-        if ($pathInfo['extension'] == 'pdf') {
-            $fileContent = WatermarkController::watermarkResource(['resId' => $args['resId'], 'path' => $pathToDocument]);
-        }
-        if (empty($fileContent)) {
-            $fileContent = file_get_contents($pathToDocument);
-        }*/
+        $pathInfo = pathinfo($pathToDocument);
+
         $fileContent = file_get_contents($pathToDocument);
 
         if ($fileContent === false) {
