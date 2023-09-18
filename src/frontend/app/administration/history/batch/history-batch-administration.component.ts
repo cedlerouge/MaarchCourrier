@@ -61,6 +61,7 @@ export class HistoryBatchAdministrationComponent implements OnInit {
     resultsLength = 0;
 
     searchHistory = new UntypedFormControl();
+    currentPage = new UntypedFormControl();
     startDateFilter: any = '';
     endDateFilter: any = '';
     filterUrl: string = '';
@@ -81,6 +82,7 @@ export class HistoryBatchAdministrationComponent implements OnInit {
     subMenus: any[] = [];
 
     pageSize: number = 10;
+    pageLength: number = 0;
 
     private destroy$ = new Subject<boolean>();
 
@@ -153,6 +155,8 @@ export class HistoryBatchAdministrationComponent implements OnInit {
                     this.isLoadingResults = false;
                     data = this.processPostData(data);
                     this.resultsLength = data.count;
+                    this.currentPage.setValue(this.paginator.pageIndex + 1);
+                    this.pageLength = Math.ceil(this.resultsLength / this.pageSize);
                     this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.historyBatch').toLowerCase(), '', '');
                     return data.history;
                 }),

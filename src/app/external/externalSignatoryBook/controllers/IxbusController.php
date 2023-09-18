@@ -176,7 +176,7 @@ class IxbusController
             'nature'     => $aArgs['natureId'],
             'referent'   => $aArgs['referent'],
             'circuit'    => $aArgs['messageModel'],
-            'options'    => ['confidentiel' => false, 'dateLimite' => true, 'documentModifiable' => true, 'annexesSignables' => false, 'autoriserModificationAnnexes' => false, 'signature' => $signature],
+            'options'    => ['confidentiel' => false, 'dateLimite' => true, 'documentModifiable' => true, 'annexesSignables' => false, 'autoriserModificationAnnexes' => true, 'signature' => $signature],
             'dateLimite' => $processLimitDate,
         ];
 
@@ -230,7 +230,7 @@ class IxbusController
             if (!empty($transmittedFolder['error'])) {
                 return ['error' => $transmittedFolder['message']];
             }
-            
+
             $attachmentToFreeze[$collId][$resId] = $folderId;
         }
 
@@ -292,7 +292,7 @@ class IxbusController
             if (!empty($transmittedFolder['error'])) {
                 return ['error' => $transmittedFolder['message']];
             }
-            
+
             $attachmentToFreeze[$collId][$resId] = $folderId;
         }
 

@@ -99,6 +99,8 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     @Input() isNewVersion: boolean = false;
 
+    @Input() zoom: number = 1;
+
     /**
       * Event emitter
       */
@@ -179,7 +181,6 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
 
     rotation: number = null;
-    zoom: number = 1;
 
     isFullScreen: boolean = false;
 
@@ -744,7 +745,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     openPdfInTab() {
         let src = '';
         if (this.file.contentMode === 'route'){
-            this.http.get(this.file.content, { responseType: 'json' }).pipe(
+            this.http.get(this.file.contentView, { responseType: 'json' }).pipe(
                 tap((data: any) => {
                     const contentBlob = this.b64toBlob(data.encodedDocument, data.mimeType);
                     const fileURL = URL.createObjectURL(contentBlob);
