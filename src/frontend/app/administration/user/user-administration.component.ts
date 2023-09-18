@@ -240,10 +240,6 @@ export class UserAdministrationComponent implements OnInit {
             } else {
                 this.externalSignatoryBookConnectionStatus = false;
             }
-        } else {
-            this.user.canLinkToExternalSignatoryBook = true;
-            this.externalSignatoryBookConnectionStatus = false;
-            this.loading = false;
         }
     }
 
@@ -271,7 +267,7 @@ export class UserAdministrationComponent implements OnInit {
 
     async linkAccountToSignatoryBook(result: any) {
         const data: any = await this.externalSignatoryBook.linkAccountToSignatoryBook(result, this.serialId);
-        if (data) {
+        if (!this.functions.empty(data)) {
             this.user.canLinkToExternalSignatoryBook = false;
             this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = result.id;
             this.checkInfoExternalSignatoryBookAccount();
