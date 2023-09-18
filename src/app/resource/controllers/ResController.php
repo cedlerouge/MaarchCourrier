@@ -778,12 +778,9 @@ class ResController extends ResourceControlController
         }
 
         $pathInfo = pathinfo($pathToDocument);
-        if ($pathInfo['extension'] == 'pdf') {
-            $fileContent = WatermarkController::watermarkResource(['resId' => $args['resId'], 'path' => $pathToDocument]);
-        }
-        if (empty($fileContent)) {
-            $fileContent = file_get_contents($pathToDocument);
-        }
+
+        $fileContent = file_get_contents($pathToDocument);
+
         if ($fileContent === false) {
             return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
         }
