@@ -215,6 +215,11 @@ class VersionUpdateController
         return $response->withStatus(204);
     }
 
+    public static function isMigrating(): bool
+    {
+        return file_exists(VersionUpdateController::UPDATE_LOCK_FILE);
+    }
+
     public static function autoUpdateLauncher(Request $request, Response $response)
     {
         $availableFolders = VersionUpdateController::getAvailableFolders();
