@@ -28,6 +28,9 @@ use User\models\UserModel;
 
 class VersionUpdateController
 {
+    public const UPDATE_LOCK_FILE = "migration/updating.lck";
+    public const ROUTES_WITHOUT_MIGRATION = ['GET/languages/{lang}', 'GET/authenticationInformations', 'GET/images'];
+
     public function get(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_update_control', 'userId' => $GLOBALS['id']])) {
@@ -309,5 +312,10 @@ class VersionUpdateController
         }
 
         return $response->withStatus(204);
+    }
+
+    public static function isMigrating(): bool
+    {
+        return file_exists(VersionUpdateController::UPDATE_LOCK_FILE);
     }
 }

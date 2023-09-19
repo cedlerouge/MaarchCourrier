@@ -23,36 +23,35 @@ export class NotificationService {
     constructor(public translate: TranslateService, private router: Router, public snackBar: MatSnackBar) {
     }
     success(message: string) {
-        const duration = this.getMessageDuration(message, 2000);
-        const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
-            duration: duration,
-            panelClass: 'success-snackbar',
-            verticalPosition : 'top',
-            data: { message: message, icon: 'info-circle', close: () => {
-                snackBar.dismiss();
-            } }
-        });
+        if (typeof message === 'string') {
+            const duration = this.getMessageDuration(message, 2000);
+            const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
+                duration: duration,
+                panelClass: 'success-snackbar',
+                verticalPosition : 'top',
+                data: { message: message, icon: 'info-circle', close: () => {
+                    snackBar.dismiss();
+                } }
+            });
+        }
     }
 
     error(message: string, url: string = null) {
-        const duration = this.getMessageDuration(message, 4000);
-        const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
-            duration: duration,
-            panelClass: 'error-snackbar',
-            verticalPosition : 'top',
-            data: { url: url, message: message, icon: 'exclamation-triangle', close: () => {
-                snackBar.dismiss();
-            } }
-        });
+        if (typeof message === 'string') {
+            const duration = this.getMessageDuration(message, 4000);
+            const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
+                duration: duration,
+                panelClass: 'error-snackbar',
+                verticalPosition : 'top',
+                data: { url: url, message: message, icon: 'exclamation-triangle', close: () => {
+                    snackBar.dismiss();
+                } }
+            });
+        }
     }
 
     handleErrors(err: any) {
-        console.log(err);
-        /* if (err.status === 401 && this.router.url !== '/home') {
-            this.router.navigate(['/home']);
-            window.location.reload(true);
-            this.error(this.translate.instant('lang.mustReconnect'));
-        } else*/ if (err.status === 0 && err.statusText === 'Unknown Error') {
+        if (err.status === 0 && err.statusText === 'Unknown Error') {
             this.error(this.translate.instant('lang.connectionFailed'));
         } else {
             if (err.error !== undefined) {
@@ -87,8 +86,7 @@ export class NotificationService {
     }
 
     handleSoftErrors(err: any) {
-        console.log(err);
-        if (err.error !== undefined) {
+        if (err?.error !== undefined) {
             if (err.error.errors !== undefined) {
                 if (err.error.lang !== undefined) {
                     this.error(this.translate.instant('lang.' + err.error.lang));
