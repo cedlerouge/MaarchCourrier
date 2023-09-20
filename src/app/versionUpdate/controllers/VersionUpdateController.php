@@ -22,10 +22,8 @@ use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
-use SrcCore\models\ValidatorModel;
 use History\controllers\HistoryController;
 use User\models\UserModel;
-use Respect\Validation\Validator;
 use SrcCore\controllers\LogsController;
 use SrcCore\interfaces\AutoUpdateInterface;
 
