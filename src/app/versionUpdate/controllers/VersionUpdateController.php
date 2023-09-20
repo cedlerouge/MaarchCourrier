@@ -181,10 +181,11 @@ class VersionUpdateController
             return $response->withStatus(400)->withJson(['errors' => 'Some files are modified. Can not update application', 'lang' => 'canNotUpdateApplication']);
         }
 
-        $migrationFolder = DocserverController::getMigrationFolderPath();
-
-        if (!empty($migrationFolder['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $migrationFolder['errors']]);
+        $migrationTagFolderPath = null;
+        try {
+            $migrationTagFolderPath = VersionUpdateController::getMigrationTagFolderPath($targetTag);
+        } catch (\Throwable $th) {
+            return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
         }
 
         $actualTime = date("dmY-His");
@@ -194,10 +195,10 @@ class VersionUpdateController
         exec("git checkout {$targetTag} 2>&1", $output, $returnCode);
 
         $log = "Application tag update from {$currentVersion} to {$targetTag}\nCheckout response {$returnCode} => " . implode(' ', $output) . "\n";
-        file_put_contents("{$migrationFolder['path']}/updateVersion_{$actualTime}.log", $log, FILE_APPEND);
+        file_put_contents("{$migrationTagFolderPath}/updateVersion_{$actualTime}.log", $log, FILE_APPEND);
 
         if ($returnCode != 0) {
-            return $response->withStatus(400)->withJson(['errors' => "Application tag update failed. Please check updateVersion.log at {$migrationFolder['path']}"]);
+            return $response->withStatus(400)->withJson(['errors' => "Application tag update failed. Please check updateVersion.log at {$migrationTagFolderPath}"]);
         }
 
         HistoryController::add([
@@ -216,6 +217,32 @@ class VersionUpdateController
     public static function isMigrating(): bool
     {
         return file_exists(VersionUpdateController::UPDATE_LOCK_FILE);
+    }
+
+    /**
+     * Get the migration tag folder path. Create the path if does not exist.
+     * @param   string      $tagVersion
+     * @throws  Exception   If an occurred from DocserverController::getMigrationFolderPath()
+     * @return  string      Return the path of the migration tag folder
+     */
+    public static function getMigrationTagFolderPath(string $tagVersion): string
+    {
+        if (empty($tagVersion)) {
+            throw new \Exception('$tagVersion must be a non empty string');
+        }
+
+        $migrationFolder = DocserverController::getMigrationFolderPath();
+
+        if (!empty($migrationFolder['errors'])) {
+            throw new \Exception($migrationFolder['errors']);
+        }
+        $migrationTagFolderPath = $migrationFolder['path'] . '/' . $tagVersion;
+
+        if (!is_dir($migrationTagFolderPath)) {
+            mkdir($migrationTagFolderPath, 0755, true);
+        }
+
+        return $migrationTagFolderPath;
     }
 
     public static function autoUpdateLauncher(Request $request, Response $response)
@@ -308,11 +335,6 @@ class VersionUpdateController
             throw new \Exception('$tagFolderList must be a non empty array of type string');
         }
 
-        $migrationFolder = DocserverController::getMigrationFolderPath();
-        if (!empty($migrationFolder['errors'])) {
-            throw new \Exception($migrationFolder['errors']);
-        }
-
         LogsController::add([
             'isTech'    => true,
             'moduleId'  => 'Version Update Controller',
@@ -329,10 +351,16 @@ class VersionUpdateController
                 continue;
             }
 
+            $migrationTagFolderPath = null;
+            try {
+                $migrationTagFolderPath = VersionUpdateController::getMigrationTagFolderPath($tagFolder);
+            } catch (\Throwable $th) {
+                throw new \Exception($th->getMessage());
+            }
+
             $sqlFilePath = "$tagFolder/$tagVersion.sql";
-            $check = VersionUpdateController::executeTagSqlFile($sqlFilePath, $migrationFolder['path']);
+            $check = VersionUpdateController::executeTagSqlFile($sqlFilePath, $migrationTagFolderPath);
             if (empty($check)) {
-                // maybe reload dump db
                 continue;
             }
 
