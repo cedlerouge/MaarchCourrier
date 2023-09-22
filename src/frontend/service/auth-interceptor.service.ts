@@ -87,6 +87,9 @@ export class AuthInterceptor implements HttpInterceptor {
                         return this.handle401Error(request, next);
                     } else if (error.error.errors === 'User must change his password') {
                         return this.router.navigate(['/password-modification']);
+                    } else if (error.status === 503 && error?.error?.errors === 'Service unavailable : migration in progress' && this.authService.canLogOut()) {
+                        this.authService.logout();
+                        this.notificationService.handleSoftErrors(error);
                     } else {
                         const response = new HttpErrorResponse({
                             error: error.error,
