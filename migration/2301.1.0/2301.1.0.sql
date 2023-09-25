@@ -29,6 +29,3 @@ UPDATE usergroups_services set service_id = 'update_resources' WHERE service_id 
 -- New column for notifications
 ALTER TABLE notifications DROP COLUMN IF EXISTS send_as_recap;
 ALTER TABLE notifications ADD COLUMN send_as_recap BOOLEAN DEFAULT FALSE;
-
-
-UPDATE parameters SET param_value_string = '2301.1.0' WHERE id = 'database_version';

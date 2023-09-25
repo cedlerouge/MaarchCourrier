@@ -1,11 +1,10 @@
 -- *************************************************************************--
 --                                                                          --
 --                                                                          --
--- Model migration script - 2301.1.0 to 2301.1.1                            --
+-- Model migration script - xxxx.x.x to xxxx.x.x                            --
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
+--DATABASE_BACKUP|parameters
 
-DELETE FROM parameters WHERE id = 'useSectorsForAddresses';
-
-UPDATE parameters SET param_value_string = '2301.1.1' WHERE id = 'database_version';
+INSERT INTO parameters(id, description, param_value_string) VALUES('maarch_courrier_test', 'Simple insert for phpunit tests', 'PHPunitTests');
