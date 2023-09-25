@@ -3,6 +3,10 @@
     <div class="alert-message alert-message-info" role="alert" style="margin-top: 30px;min-width: 100%;">
         {{'lang.stepPrerequisite_desc' | translate}} : <a href="{{docMaarchUrl}}" target="_blank" class="link">{{docMaarchUrl}}</a>
     </div>
+    <app-maarch-message *ngIf="isWarningPackage()"
+        [mode]="'warning'" 
+        [content]="'lang.isWarningPackage' | translate">
+    </app-maarch-message>
     <mat-list style="background: white;" *ngFor="let groupPackage of packagesList | keyvalue">
         <div mat-subheader>{{'lang.' + groupPackage.key | translate}}</div>
         <mat-grid-list cols="3" rowHeight="50px">
@@ -12,7 +16,7 @@
                     <div mat-line class="packageName">
                         {{'lang.install_' + package.label | translate}} <i #packageItem="matTooltip" [id]="package.label" class="fa fa-info-circle" 
                         [matTooltip]="'lang.install_'+package.label+'_desc' | translate"
-                        [matTooltipClass]="package.state !== 'ok' ? 'tooltip-red' : ''" matTooltipPosition="right"></i>
+                        [matTooltipClass]="package.state !== 'ok' ? 'tooltip-' + package.state : ''" matTooltipPosition="right"></i>
                     </div>
                 </mat-list-item>  
             </mat-grid-tile>

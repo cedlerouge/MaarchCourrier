@@ -1800,6 +1800,7 @@
     "install_zip": "zip",
     "install_zip_desc": "Outil d'empaquetage et de compactage de fichiers.",
     "install_writable": "Droits de lecture et d'écriture du répertoire racine de Maarch Courrier",
+    "install_writable_desc": "chown -R maarch: .",
     "install_displayErrors": "Paramètre display_errors (php.ini)",
     "install_displayErrors_desc": "display_errors = On",
     "install_shortOpenTag": "Paramètre short_open_tags (php.ini)",
@@ -2749,5 +2750,6 @@
     "keepDestForRedirection": "Mettre en copie l'attributaire actuel ",
     "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie",
     "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions.",
+    "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
     "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>"
 }
