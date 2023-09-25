@@ -67,9 +67,10 @@ class ContentManagementControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $response     = $documentEditorController->get($request, new Response());
-        $responseBody = json_decode((string)$response->getBody());
-        
+        $responseBody = json_decode((string)$response->getBody(), true);
+
         $this->assertIsArray($responseBody);
+        unset($responseBody['default']);
         foreach ($responseBody as $value) {
             $this->assertContains($value, ['java', 'onlyoffice']);
         }

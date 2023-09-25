@@ -37,9 +37,13 @@ class DocumentEditorController
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         $allowedMethods = [];
+        $default = $configuration['default'] ?? '';
+        unset($configuration['default']);
         foreach ($configuration as $key => $method) {
             $allowedMethods[] = $key;
         }
+
+        $allowedMethods['default'] = $default;
 
         return $allowedMethods;
     }

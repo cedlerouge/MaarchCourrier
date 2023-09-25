@@ -30,6 +30,7 @@ class ConfigurationControllerTest extends CourrierTestCase
             'secure'     => 'ssl',
             'from'       => 'dev.maarch@maarch.org',
             'charset'    => 'utf-8',
+            'default'    => null
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -59,7 +60,8 @@ class ConfigurationControllerTest extends CourrierTestCase
                 'secure'     => 'ssl',
                 'from'       => 'dev.maarch@maarch.org',
                 'charset'    => 'utf-8',
-                'passwordAlreadyExists' => true
+                'passwordAlreadyExists' => true,
+                'default'    => null
             ]
         );
 
@@ -76,6 +78,7 @@ class ConfigurationControllerTest extends CourrierTestCase
             'secure'     => 'tls',
             'from'       => 'dev.maarch@maarch.org',
             'charset'    => 'utf-8',
+            'default'    => null
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -104,7 +107,8 @@ class ConfigurationControllerTest extends CourrierTestCase
                 'secure'     => 'tls',
                 'from'       => 'dev.maarch@maarch.org',
                 'charset'    => 'utf-8',
-                'passwordAlreadyExists' => false
+                'passwordAlreadyExists' => false,
+                'default'    => null
             ]
         );
 
@@ -198,6 +202,7 @@ class ConfigurationControllerTest extends CourrierTestCase
             'secure'     => 'ssl',
             'from'       => 'notifications@maarch.org',
             'charset'    => 'utf-8',
+            'default'    => null
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -227,7 +232,8 @@ class ConfigurationControllerTest extends CourrierTestCase
                 'secure'     => 'ssl',
                 'from'       => 'notifications@maarch.org',
                 'charset'    => 'utf-8',
-                'passwordAlreadyExists' => true
+                'passwordAlreadyExists' => true,
+                'default'    => null
             ]
         );
 
@@ -244,6 +250,7 @@ class ConfigurationControllerTest extends CourrierTestCase
             'secure'     => 'ssl',
             'from'       => 'notifications@maarch.org',
             'charset'    => 'utf-8',
+            'default'    => null
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -273,7 +280,8 @@ class ConfigurationControllerTest extends CourrierTestCase
                 'secure'     => 'ssl',
                 'from'       => 'notifications@maarch.org',
                 'charset'    => 'utf-8',
-                'passwordAlreadyExists' => true
+                'passwordAlreadyExists' => true,
+                'default'    => null
             ]
         );
 
