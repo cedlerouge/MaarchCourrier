@@ -17,40 +17,6 @@ use SrcCore\interfaces\AutoUpdateInterface;
 
 class MigrationControllerAcceptanceTest extends CourrierTestCase
 {
-    private static $filesToRemove = [];
-    private static $nextMigrationFolderPath = null;
-    private static $sampleMigrationFolderPath = null;
-
-    protected function setUp(): void
-    {
-        $packageJson = CoreConfigModel::getJsonLoaded(['path' => 'package.json']);
-        $parts = explode('.', $packageJson['version']);
-        // Get the last part and increment it
-        $lastPart = end($parts);
-        $lastPart = (int)$lastPart + 1;
-        $parts[count($parts) - 1] = $lastPart;
-        $nextVersion = implode('.', $parts);
-
-        self::$sampleMigrationFolderPath = getcwd() . "/install/samples/migration/xxxx.x.x";
-        self::$nextMigrationFolderPath = getcwd() . "/migration/$nextVersion";
-
-        if (!file_exists(self::$nextMigrationFolderPath)) {
-            mkdir(self::$nextMigrationFolderPath, 0777);
-        }
-
-        copy(self::$sampleMigrationFolderPath . '/1-TestErrorTypoInUpdate.php', self::$nextMigrationFolderPath . '/1-TestErrorTypoInUpdate.php');
-        copy(self::$sampleMigrationFolderPath . '/2-TestErrorTypoInRollback.php', self::$nextMigrationFolderPath . '/2-TestErrorTypoInRollback.php');
-        copy(self::$sampleMigrationFolderPath . '/xxxx.x.x.sql', self::$nextMigrationFolderPath . "/$nextVersion.sql");
-
-        // For tearDown
-        self::$filesToRemove = [
-            self::$nextMigrationFolderPath . '/1-TestErrorTypoInUpdate.php',
-            self::$nextMigrationFolderPath . '/2-TestErrorTypoInRollback.php',
-            self::$nextMigrationFolderPath . "/$nextVersion.sql",
-            self::$nextMigrationFolderPath
-        ];
-    }
-
     /**
      * Look for any php files in the migration folder recursively and check the class name.
      * 
@@ -150,30 +116,11 @@ class MigrationControllerAcceptanceTest extends CourrierTestCase
     {
         // Arrange
         $directoryToScan = getcwd() . '/migration';
-        unlink(self::$filesToRemove[0]);
-        unlink(self::$filesToRemove[1]);
-        unlink(self::$filesToRemove[2]);
-        self::$filesToRemove[0] = self::$nextMigrationFolderPath . '/3-TestMyMigration.php';
-        unset(self::$filesToRemove[1], self::$filesToRemove[2]);
-        copy(self::$sampleMigrationFolderPath . '/3-TestMyMigration.php', self::$nextMigrationFolderPath . '/3-TestMyMigration.php');
 
         // Act
         $migrationClassDuplicateList = MigrationControllerAcceptanceTest::doesMigrationScriptsImplementAutoUpdateInterfaceInMigrationFolder($directoryToScan);
 
         // Assert
         $this->assertEmpty($migrationClassDuplicateList, implode(", ", $migrationClassDuplicateList ?? []));
-    }
-
-    protected function tearDown(): void
-    {
-        foreach (self::$filesToRemove as $path) {
-            if (file_exists($path)) {
-                if (is_dir($path)) {
-                    rmdir($path);
-                } else {
-                    unlink($path);
-                }
-            }
-        }
     }
 }
