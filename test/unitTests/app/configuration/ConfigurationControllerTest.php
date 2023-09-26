@@ -103,7 +103,7 @@ class ConfigurationControllerTest extends CourrierTestCase
                 'port'       => '231',
                 'auth'       => false,
                 'user'       => '',
-                'password'       => '',
+                'password'   => '',
                 'secure'     => 'tls',
                 'from'       => 'dev.maarch@maarch.org',
                 'charset'    => 'utf-8',
