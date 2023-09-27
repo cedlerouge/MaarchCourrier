@@ -28,7 +28,7 @@ use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use Status\models\StatusModel;
 use ContentManagement\controllers\DocumentEditorController;
 
@@ -90,7 +90,7 @@ class ConfigurationController
                     $data['password'] = $configuration['value']['password'];
                 }
             } elseif ($data['auth'] && !empty($data['password'])) {
-                $data['password'] = PasswordModel::encrypt(['password' => $data['password']]);
+                $data['password'] = PasswordController::encrypt(['dataToEncrypt' => $data['password']]);
             }
             $check = ConfigurationController::checkMailer($data);
             if (!empty($check['errors'])) {

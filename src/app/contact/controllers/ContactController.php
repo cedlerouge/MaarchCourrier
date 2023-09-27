@@ -36,7 +36,7 @@ use SrcCore\http\Response;
 use SrcCore\controllers\AutoCompleteController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
@@ -164,7 +164,7 @@ class ContactController
                 $contactBody['login'] = $body['communicationMeans']['login'];
             }
             if (!empty($body['communicationMeans']['password'])) {
-                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);
+                $contactBody['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['communicationMeans']['password']]);
             }
         }
 
@@ -356,7 +356,7 @@ class ContactController
                 $contactBody['login'] = $body['communicationMeans']['login'];
             }
             if (!empty($body['communicationMeans']['password'])) {
-                $contactBody['password'] = PasswordModel::encrypt(['password' => $body['communicationMeans']['password']]);
+                $contactBody['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['communicationMeans']['password']]);
             }
         }
 

@@ -32,7 +32,7 @@ use Resource\models\ResourceContactModel;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
@@ -162,7 +162,7 @@ class MultigestController
             'id'       => $id,
             'label'    => $body['label'],
             'login'    => $body['login'],
-            'password' => PasswordModel::encrypt(['password' => $body['password']]),
+            'password' => PasswordController::encrypt(['dataToEncrypt' => $body['password']]),
             'sasId'    => $body['sasId']
         ];
         $account = json_encode($account);
@@ -237,7 +237,7 @@ class MultigestController
             'id'        => $args['id'],
             'label'     => $body['label'],
             'login'     => $body['login'],
-            'password'  => empty($body['password']) ? $externalId['multigest']['password'] : PasswordModel::encrypt(['password' => $body['password']]),
+            'password'  => empty($body['password']) ? $externalId['multigest']['password'] : PasswordController::encrypt(['dataToEncrypt' => $body['password']]),
             'sasId'     => $body['sasId']
         ];
         $account = json_encode($account);
@@ -306,7 +306,7 @@ class MultigestController
         $result = MultigestController::checkAccountWithCredentials([
             'sasId' => $body['sasId'],
             'login' => $body['login'],
-            'password' => empty($body['password']) ? '' : PasswordModel::decrypt(['cryptedPassword' => $body['password']])
+            'password' => empty($body['password']) ? '' : PasswordController::decrypt(['encryptedData' => $body['password']])
         ]);
 
         if (!empty($result['errors'])) {
@@ -531,7 +531,7 @@ class MultigestController
         try {
             $soapClient = new \SoapClient($multigestUri, [
                 'login'          => $configuration['login'],
-                'password'       => empty($configuration['password']) ? '' : PasswordModel::decrypt(['cryptedPassword' => $configuration['password']]),
+                'password'       => empty($configuration['password']) ? '' : PasswordController::decrypt(['encryptedData' => $configuration['password']]),
                 'authentication' => SOAP_AUTHENTICATION_BASIC
             ]);
         } catch (\SoapFault $e) {
