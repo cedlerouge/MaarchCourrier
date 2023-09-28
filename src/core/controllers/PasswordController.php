@@ -107,8 +107,10 @@ class PasswordController
 
     /**
      * Encrypt data with the old vhost or new file encryption key
-     *
-     * @return string
+     * 
+     * @param   array   $args{dataToEncrypt: string}
+     * 
+     * @throws  Exception   It can throws an exception
      */
     public static function encrypt(array $args): string
     {
@@ -125,7 +127,9 @@ class PasswordController
     /**
      * Decrypt encrypted data with the old vhost or new file encryption key
      *
-     * @return string
+     * @param   array   $args{encryptedData: string}
+     * 
+     * @throws  Exception   It can throws an exception
      */
     public static function decrypt(array $args): string
     {
