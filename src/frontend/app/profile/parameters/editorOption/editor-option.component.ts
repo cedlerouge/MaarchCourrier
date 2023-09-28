@@ -4,7 +4,8 @@ import { NotificationService } from '@service/notification/notification.service'
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
-import { tap } from 'rxjs/operators';
+import {catchError, tap} from 'rxjs/operators';
+import {of} from 'rxjs';
 
 @Component({
     selector: 'app-editor-option',
@@ -28,7 +29,11 @@ export class EditorOptionComponent implements OnInit {
     ) {
         this.http.get('../rest/documentEditors').pipe(
             tap((data: any) => {
-                this.editorsList = data;
+                this.editorsList = Object.keys(data).filter(key => key !== 'default').map(key => data[key]);
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
             })
         ).subscribe();
     }
@@ -36,13 +41,16 @@ export class EditorOptionComponent implements OnInit {
     ngOnInit(): void {}
 
     updateUserPreferences() {
-        this.http.put('../rest/currentUser/profile/preferences', { documentEdition: this.docEdition})
-            .subscribe(() => {
+        this.http.put('../rest/currentUser/profile/preferences', { documentEdition: this.docEdition}).pipe(
+            tap(() => {
                 this.notify.success(this.translate.instant('lang.modificationSaved'));
                 this.headerService.resfreshCurrentUser();
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
 }

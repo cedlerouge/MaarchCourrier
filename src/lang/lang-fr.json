@@ -2751,5 +2751,6 @@
     "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie",
     "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions.",
     "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
-    "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>"
+    "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>",
+    "defaultEditor": "Editeur par défaut"
 }

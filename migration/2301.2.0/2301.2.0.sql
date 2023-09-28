@@ -22,6 +22,8 @@ WHERE component = 'redirectAction';
 
 DELETE FROM parameters WHERE id = 'keepDestForRedirection';
 
+UPDATE configurations SET value = jsonb_set(value, '{default}', '""'::jsonb, TRUE) WHERE privilege = 'admin_document_editors';
+
 -- New storage zone
 DELETE FROM docserver_types WHERE docserver_type_id = 'MIGRATION';
 INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('MIGRATION', 'Sauvegarde des migrations', 'Y', NULL);
