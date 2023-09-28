@@ -210,7 +210,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @return  array['errors'] | true
      */
-    private function changeServerMailPassword(string $oldEncryptKey): array|bool
+    private function changeServerMailPassword(string $oldEncryptKey)
     {
         // Get server mail info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server']);
@@ -249,7 +249,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @return  array['errors'] | true
      */
-    private function undoServerMailPasswordChanges(string $newEncryptKey): array|bool
+    private function undoServerMailPasswordChanges(string $newEncryptKey)
     {
         // Get server mail info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server']);
@@ -436,7 +436,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @return  array['errors'] | true
      */
-    function changeOutlookPasswords(string $oldEncryptKey): array|bool
+    function changeOutlookPasswords(string $oldEncryptKey)
     {
         // Get addin outlook info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook']);
@@ -486,7 +486,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @return  array['errors'] | true
      */
-    function undoOutlookPasswordChanges(string $newEncryptKey): array|bool
+    function undoOutlookPasswordChanges(string $newEncryptKey)
     {
         // Get addin outlook info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook']);
@@ -547,8 +547,8 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change users outlook password encryption
             if (!empty($account['password'] ?? null)) {
-                $account['password'] = self::decrypt($account['password'], $oldEncryptKey);
-                $account['password'] = PasswordModel::encrypt($account['password']);
+                $account['password'] = self::oldDecrypt($account['password'], $oldEncryptKey);
+                $account['password'] = PasswordController::encrypt($account['password']);
                 $needToUpdate = true;
             }
 
