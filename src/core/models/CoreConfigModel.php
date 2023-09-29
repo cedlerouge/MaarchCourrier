@@ -196,7 +196,7 @@ class CoreConfigModel
         return $encryptKey;
     }
 
-        /**
+    /**
      * @deprecated This function will be removed in future major versions.
      * Please use getEncryptKey() instead.
      *

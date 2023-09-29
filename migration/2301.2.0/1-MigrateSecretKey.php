@@ -1,12 +1,11 @@
 <?php
 namespace Migration\_2301_2_0;
 
-require 'vendor/autoload.php';
+require getcwd() . '/vendor/autoload.php';
 
 use SrcCore\interfaces\AutoUpdateInterface;
 use VersionUpdate\controllers\VersionUpdateController;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
 use SrcCore\controllers\PasswordController;
 use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
@@ -24,22 +23,22 @@ class MigrateSecretKey implements AutoUpdateInterface
     public function backup(): void
     {
         try {
-            self::$backupFolderPath = VersionUpdateController::getMigrationTagFolderPath('2301.2.0');
+            $this->backupFolderPath = VersionUpdateController::getMigrationTagFolderPath('2301.2.0');
 
-            if (file_exists(self::$backupFolderPath . '/' . self::$backupConfigFileName)) {
-                unlink(self::$backupFolderPath . '/' . self::$backupConfigFileName);
+            if (file_exists($this->backupFolderPath . '/' . $this->backupConfigFileName)) {
+                unlink($this->backupFolderPath . '/' . $this->backupConfigFileName);
             }
 
             $configPath = CoreConfigModel::getConfigPath();
             $config     = CoreConfigModel::getJsonLoaded(['path' => $configPath]);
             $config     = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            file_put_contents(self::$backupFolderPath . '/' . self::$backupConfigFileName, $config);
+            file_put_contents($this->backupFolderPath . '/' . $this->backupConfigFileName, $config);
 
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'Migrate Secret Key',
-                'level'     => 'CRITICAL',
-                'eventType' => self::$logHeader . " [backup] : Backup config '$configPath' to '" . self::$backupFolderPath . '/' . self::$backupConfigFileName . "'",
+                'level'     => 'INFO',
+                'eventType' => $this->logHeader . " [backup] : Backup config '$configPath' to '" . $this->backupFolderPath . '/' . $this->backupConfigFileName . "'",
                 'eventId'   => 'Execute Backup'
             ]);
         } catch (\Throwable $th) {
@@ -53,88 +52,89 @@ class MigrateSecretKey implements AutoUpdateInterface
             $configPath = CoreConfigModel::getConfigPath();
             $customConfig = CoreConfigModel::getJsonLoaded(['path' => $configPath]);
 
-            if (!file_exists($customConfig)) {
-                throw new \Exception(self::$logHeader . " [update] : configuration file '$configPath' not found.");
+            if (empty($customConfig)) {
+                throw new \Exception($this->logHeader . " [update] : configuration file '$configPath' not found.");
             }
 
             // Move vHost encrypt key to secret key file
-            $vhostEncryptKey = self::getVhostEncryptKey();
+            $vhostEncryptKey = $this->getVhostEncryptKey();
 
-            $secretKeyPath = $configPath . 'mc_secret.key';
+            $customConfigPath = explode('/', $configPath);
+            array_pop($customConfigPath);
+            $customConfigPath = implode('/', $customConfigPath);
+            $secretKeyPath = getcwd() . '/' . $customConfigPath . '/mc_secret.key';
+
             if (!file_exists($secretKeyPath)) {
                 file_put_contents($secretKeyPath, $vhostEncryptKey);
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Migrate Secret Key',
                     'level'     => 'INFO',
-                    'eventType' => self::$logHeader . " [update] : Create secret key file at '$secretKeyPath'",
+                    'eventType' => $this->logHeader . " [update] : Create secret key file at '$secretKeyPath'",
                     'eventId'   => 'Execute Update'
                 ]);
             }
 
             $customConfig['config']['privateKeyPath'] = $secretKeyPath;
             file_put_contents($configPath, json_encode($customConfig, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
-            self::$rollbackSteps['configFile'] = true;
+            $this->rollbackSteps['configFile'] = true;
 
 
             // Update the password encryption with new private key
-            $result = self::changeServerMailPassword($vhostEncryptKey);
+            $result = $this->changeServerMailPassword($vhostEncryptKey);
             if (!empty($result['errors'])) {
-                throw new \Exception(self::$logHeader . " [update] : " . $result['errors']);
+                throw new \Exception($this->logHeader . " [update] : " . $result['errors']);
             }
-            self::$rollbackSteps['serverMailPassword'] = true;
+            $this->rollbackSteps['serverMailPassword'] = true;
             
-            self::changeContactPasswords($vhostEncryptKey);
-            self::$rollbackSteps['contactPasswords'] = true;
+            $this->changeContactPasswords($vhostEncryptKey);
+            $this->rollbackSteps['contactPasswords'] = true;
 
-            self::changeEntitiesExternalIdPasswords($vhostEncryptKey);
-            self::$rollbackSteps['entitiesExternalIdPasswords'] = true;
+            $this->changeEntitiesExternalIdPasswords($vhostEncryptKey);
+            $this->rollbackSteps['entitiesExternalIdPasswords'] = true;
 
-            $result = self::changeOutlookPasswords($vhostEncryptKey);
+            $result = $this->changeOutlookPasswords($vhostEncryptKey);
             if (!empty($result['errors'])) {
-                throw new \Exception(self::$logHeader . " [update] : " . $result['errors']);
+                throw new \Exception($this->logHeader . " [update] : " . $result['errors']);
             }
-            self::$rollbackSteps['outlookPasswords'] = true;
+            $this->rollbackSteps['outlookPasswords'] = true;
 
-            self::changeShippingTemplateAccountPasswords($vhostEncryptKey);
-            self::$rollbackSteps['shippingTemplateAccountPasswords'] = true;
+            $this->changeShippingTemplateAccountPasswords($vhostEncryptKey);
+            $this->rollbackSteps['shippingTemplateAccountPasswords'] = true;
 
         } catch (\Throwable $th) {
-            throw new \Exception($th->getMessage());
+            throw new \Exception($th->getMessage() . ". Trace : " . $th->getTraceAsString());
         }
     }
 
     public function rollback(): void
     {
         try {
-            $privateKeyData = null;
-
-            // Get private key data, so we can decrypt the reset.
-            $configPath     = CoreConfigModel::getConfigPath();
-            $config         = CoreConfigModel::getJsonLoaded(['path' => $configPath]);
-            $privateKeyData = file_get_contents($config['config']['privateKeyPath']);
-
             // Rollback passwords (depending where the update function stopped)
-            if (!empty(self::$rollbackSteps['serverMailPassword'] ?? null)) {
-                self::undoServerMailPasswordChanges($privateKeyData);
+            if (!empty($this->rollbackSteps['serverMailPassword'] ?? null)) {
+                $this->undoServerMailPasswordChanges();
             }
-            if (!empty(self::$rollbackSteps['contactPasswords'] ?? null)) {
-                self::undoContactPasswordChanges($privateKeyData);
+            if (!empty($this->rollbackSteps['contactPasswords'] ?? null)) {
+                $this->undoContactPasswordChanges();
             }
-            if (!empty(self::$rollbackSteps['entitiesExternalIdPasswords'] ?? null)) {
-                self::undoEntitiesExternalIdPasswordChanges($privateKeyData);
+            if (!empty($this->rollbackSteps['entitiesExternalIdPasswords'] ?? null)) {
+                $this->undoEntitiesExternalIdPasswordChanges();
             }
-            if (!empty(self::$rollbackSteps['outlookPasswords'] ?? null)) {
-                self::undoOutlookPasswordChanges($privateKeyData);
+            if (!empty($this->rollbackSteps['outlookPasswords'] ?? null)) {
+                $this->undoOutlookPasswordChanges();
             }
-            if (!empty(self::$rollbackSteps['shippingTemplateAccountPasswords'] ?? null)) {
-                self::undoShippingTemplateAccountPasswordChanges($privateKeyData);
+            if (!empty($this->rollbackSteps['shippingTemplateAccountPasswords'] ?? null)) {
+                $this->undoShippingTemplateAccountPasswordChanges();
             }
 
             // Rollback config
-            if (!empty(self::$rollbackSteps['configFile'] ?? null)) {
+            if (!empty($this->rollbackSteps['configFile'] ?? null)) {
+                $configPath = CoreConfigModel::getConfigPath();
+                $config = CoreConfigModel::getJsonLoaded(['path' => $configPath]);
+
                 unlink($config['config']['privateKeyPath']);
-                $configBackup   = CoreConfigModel::getJsonLoaded(['path' => self::$backupFolderPath . '/' . self::$backupConfigFileName]);
+
+                $configBackup   = CoreConfigModel::getJsonLoaded(['path' => $this->backupFolderPath . '/' . $this->backupConfigFileName]);
                 $configBackup   = json_encode($configBackup, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 file_put_contents($configPath, $configBackup);
             }
@@ -182,8 +182,10 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $encryptedPassword  Encrypted data
      * @param   string  $privateKey         Key for decryption
+     * 
+     * @return  array|string    ['errors' => string] | string
      */
-    function oldDecrypt(string $encryptedPassword, string $privateKey): string
+    function oldDecrypt(string $encryptedPassword, string $privateKey)
     {
         $cipher_method = 'AES-128-CTR';
 
@@ -219,12 +221,11 @@ class MigrateSecretKey implements AutoUpdateInterface
         }
 
         // Change password encryption
-        $configuration = json_decode($configuration, true);
-        $configuration = $configuration['value'];
+        $configuration = json_decode($configuration['value'], true);
 
-        $password = self::oldDecrypt($configuration['password'], $oldEncryptKey);
+        $password = $this->oldDecrypt($configuration['password'], $oldEncryptKey);
         if (!empty($password['errors'])) {
-            self::$rollbackSteps['configFile'] = true;
+            $this->rollbackSteps['configFile'] = true;
             return ['errors' => $password['errors']];
         }
 
@@ -245,11 +246,9 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Email Server password
      * 
-     * @param   string  $newEncryptKey
-     * 
      * @return  array['errors'] | true
      */
-    private function undoServerMailPasswordChanges(string $newEncryptKey)
+    private function undoServerMailPasswordChanges()
     {
         // Get server mail info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server']);
@@ -258,16 +257,10 @@ class MigrateSecretKey implements AutoUpdateInterface
         }
 
         // Change password encryption
-        $configuration = json_decode($configuration, true);
-        $configuration = $configuration['value'];
+        $configuration = json_decode($configuration['value'], true);
 
-        $password = PasswordController::decrypt($configuration['password'], $newEncryptKey);
-        if (!empty($password['errors'])) {
-            self::$rollbackSteps['configFile'] = true;
-            return ['errors' => $password['errors']];
-        }
-
-        $configuration['password'] = self::oldEncrypt($password);
+        $configuration['password'] = PasswordController::decrypt(['encryptedData' => $configuration['password']]);
+        $configuration['password'] = $this->oldEncrypt($configuration['password']);
 
         // Update config
         ConfigurationModel::update([
@@ -285,8 +278,10 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Contact password for MAARCH 2 MAARCH
      * 
      * @param   string  $oldEncryptKey
+     * 
+     * @return  array['errors'] | true
      */
-    function changeContactPasswords(string $oldEncryptKey): void
+    function changeContactPasswords(string $oldEncryptKey)
     {
         // Get contacts info
         $contacts = ContactModel::get([
@@ -299,8 +294,12 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change contact password encryption
             if (!empty($communicationMeans['password'])) {
-                $communicationMeans['password'] = self::oldDecrypt($communicationMeans['password'], $oldEncryptKey);
-                $communicationMeans['password'] = PasswordController::encrypt(['dataToEncrypt' => $communicationMeans['password']]);
+                $password = $this->oldDecrypt($communicationMeans['password'], $oldEncryptKey);
+                if (!empty($password['errors'])) {
+                    $this->rollbackSteps['configFile'] = true;
+                    return ['errors' => $password['errors']];
+                }
+                $communicationMeans['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
 
                 // Update contact
                 ContactModel::update([
@@ -312,14 +311,14 @@ class MigrateSecretKey implements AutoUpdateInterface
                 ]);
             }
         }
+
+        return true;
     }
 
     /**
      * Change Contact password for MAARCH 2 MAARCH
-     * 
-     * @param   string  $newEncryptKey
      */
-    function undoContactPasswordChanges(string $newEncryptKey): void
+    function undoContactPasswordChanges(): void
     {
         // Get contacts info
         $contacts = ContactModel::get([
@@ -332,8 +331,8 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change contact password encryption
             if (!empty($communicationMeans['password'])) {
-                $communicationMeans['password'] = PasswordController::decrypt($communicationMeans['password'], $newEncryptKey);
-                $communicationMeans['password'] = self::oldEncrypt($communicationMeans['password']);
+                $communicationMeans['password'] = PasswordController::decrypt(['encryptedData' => $communicationMeans['password']]);
+                $communicationMeans['password'] = $this->oldEncrypt($communicationMeans['password']);
 
                 // Update contact
                 ContactModel::update([
@@ -351,8 +350,10 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Entities external passwords (alfresco, multigest)
      * 
      * @param   string  $oldEncryptKey
+     * 
+     * @return  array['errors'] | true
      */
-    function changeEntitiesExternalIdPasswords(string $oldEncryptKey): void
+    function changeEntitiesExternalIdPasswords(string $oldEncryptKey)
     {
         // Get entities info
         $entities = EntityModel::get([
@@ -366,13 +367,23 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change alfresco and multigest password encryption
             if (!empty($externalId['alfresco'] ?? null)) {
-                $externalId['alfresco']['password'] = self::oldDecrypt($externalId['alfresco']['password'], $oldEncryptKey);
-                $externalId['alfresco']['password'] = PasswordController::encrypt(['dataToEncrypt' => $externalId['alfresco']['password']]);
+                $password = $this->oldDecrypt($externalId['alfresco']['password'], $oldEncryptKey);
+                if (!empty($password['errors'])) {
+                    $this->rollbackSteps['configFile'] = true;
+                    return ['errors' => $password['errors']];
+                }
+
+                $externalId['alfresco']['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
                 $needToUpdate = true;
             }
             if (!empty($externalId['multigest'] ?? null)) {
-                $externalId['multigest']['password'] = self::oldDecrypt($externalId['multigest']['password'], $oldEncryptKey);
-                $externalId['multigest']['password'] = PasswordController::encrypt(['dataToEncrypt' => $externalId['multigest']['password']]);
+                $password = $this->oldDecrypt($externalId['multigest']['password'], $oldEncryptKey);
+                if (!empty($password['errors'])) {
+                    $this->rollbackSteps['configFile'] = true;
+                    return ['errors' => $password['errors']];
+                }
+
+                $externalId['multigest']['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
                 $needToUpdate = true;
             }
             if (!empty($needToUpdate)) {
@@ -386,14 +397,14 @@ class MigrateSecretKey implements AutoUpdateInterface
                 ]);
             }
         }
+
+        return true;
     }
 
     /**
      * Change Entities external passwords (alfresco, multigest)
-     * 
-     * @param   string  $newEncryptKey
      */
-    function undoEntitiesExternalIdPasswordChanges(string $newEncryptKey): void
+    function undoEntitiesExternalIdPasswordChanges(): void
     {
         // Get entities info
         $entities = EntityModel::get([
@@ -407,13 +418,13 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change alfresco and multigest password encryption
             if (!empty($externalId['alfresco'] ?? null)) {
-                $externalId['alfresco']['password'] = PasswordController::decrypt($externalId['alfresco']['password'], $newEncryptKey);
-                $externalId['alfresco']['password'] = self::oldEncrypt($externalId['alfresco']['password']);
+                $externalId['alfresco']['password'] = PasswordController::decrypt(['encryptedData' => $externalId['alfresco']['password']]);
+                $externalId['alfresco']['password'] = $this->oldEncrypt($externalId['alfresco']['password']);
                 $needToUpdate = true;
             }
             if (!empty($externalId['multigest'] ?? null)) {
-                $externalId['multigest']['password'] = PasswordController::decrypt($externalId['multigest']['password'], $newEncryptKey);
-                $externalId['multigest']['password'] = self::oldEncrypt($externalId['multigest']['password']);
+                $externalId['multigest']['password'] = PasswordController::decrypt(['encryptedData' => $externalId['multigest']['password']]);
+                $externalId['multigest']['password'] = $this->oldEncrypt($externalId['multigest']['password']);
                 $needToUpdate = true;
             }
             if (!empty($needToUpdate)) {
@@ -446,22 +457,36 @@ class MigrateSecretKey implements AutoUpdateInterface
         $needToUpdate = false;
 
         // Change tenantId, clientId and clientSecret encryption
-        $configuration = json_decode($configuration, true);
-        $configuration = $configuration['value'];
+        $configuration = json_decode($configuration['value'], true);
 
         if (!empty($configuration['tenantId'] ?? null)) {
-            $configuration['tenantId'] = self::oldDecrypt($configuration['tenantId'], $oldEncryptKey);
-            $configuration['tenantId'] = PasswordController::encrypt(['dataToEncrypt' => $configuration['tenantId']]);
+            $password = $this->oldDecrypt($configuration['tenantId'], $oldEncryptKey);
+            if (!empty($password['errors'])) {
+                $this->rollbackSteps['configFile'] = true;
+                return ['errors' => $password['errors']];
+            }
+
+            $configuration['tenantId'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
             $needToUpdate = true;
         }
         if (!empty($configuration['clientId'] ?? null)) {
-            $configuration['clientId'] = self::oldDecrypt($configuration['clientId'], $oldEncryptKey);
-            $configuration['clientId'] = PasswordController::encrypt(['dataToEncrypt' => $configuration['clientId']]);
+            $password = $this->oldDecrypt($configuration['clientId'], $oldEncryptKey);
+            if (!empty($password['errors'])) {
+                $this->rollbackSteps['outlookPasswords'] = true;
+                return ['errors' => $password['errors']];
+            }
+
+            $configuration['clientId'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
             $needToUpdate = true;
         }
         if (!empty($configuration['clientSecret'] ?? null)) {
-            $configuration['clientSecret'] = self::oldDecrypt($configuration['clientSecret'], $oldEncryptKey);
-            $configuration['clientSecret'] = PasswordController::encrypt(['dataToEncrypt' => $configuration['clientSecret']]);
+            $password = $this->oldDecrypt($configuration['clientSecret'], $oldEncryptKey);
+            if (!empty($password['errors'])) {
+                $this->rollbackSteps['outlookPasswords'] = true;
+                return ['errors' => $password['errors']];
+            }
+
+            $configuration['clientSecret'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
             $needToUpdate = true;
         }
 
@@ -482,11 +507,9 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Outlook connection information (tenantId, clientId and clientSecret)
      * 
-     * @param   string  $newEncryptKey
-     * 
      * @return  array['errors'] | true
      */
-    function undoOutlookPasswordChanges(string $newEncryptKey)
+    function undoOutlookPasswordChanges()
     {
         // Get addin outlook info
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook']);
@@ -496,22 +519,21 @@ class MigrateSecretKey implements AutoUpdateInterface
         $needToUpdate = false;
 
         // Change tenantId, clientId and clientSecret encryption
-        $configuration = json_decode($configuration, true);
-        $configuration = $configuration['value'];
+        $configuration = json_decode($configuration['value'], true);
 
         if (!empty($configuration['tenantId'] ?? null)) {
-            $configuration['tenantId'] = PasswordController::decrypt($configuration['tenantId'], $newEncryptKey);
-            $configuration['tenantId'] = self::oldEncrypt($configuration['tenantId']);
+            $configuration['tenantId'] = PasswordController::decrypt(['encryptedData' => $configuration['tenantId']]);
+            $configuration['tenantId'] = $this->oldEncrypt($configuration['tenantId']);
             $needToUpdate = true;
         }
         if (!empty($configuration['clientId'] ?? null)) {
-            $configuration['clientId'] = PasswordController::decrypt($configuration['clientId'], $newEncryptKey);
-            $configuration['clientId'] = self::oldEncrypt($configuration['clientId']);
+            $configuration['clientId'] = PasswordController::decrypt(['encryptedData' => $configuration['clientId']]);
+            $configuration['clientId'] = $this->oldEncrypt($configuration['clientId']);
             $needToUpdate = true;
         }
         if (!empty($configuration['clientSecret'] ?? null)) {
-            $configuration['clientSecret'] = PasswordController::decrypt($configuration['clientSecret'], $newEncryptKey);
-            $configuration['clientSecret'] = self::oldEncrypt($configuration['clientSecret']);
+            $configuration['clientSecret'] = PasswordController::decrypt(['encryptedData' => $configuration['clientSecret']]);
+            $configuration['clientSecret'] = $this->oldEncrypt($configuration['clientSecret']);
             $needToUpdate = true;
         }
 
@@ -533,8 +555,10 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Shipphinh template account password
      * 
      * @param   string  $oldEncryptKey
+     * 
+     * @return  array['errors'] | true
      */
-    function changeShippingTemplateAccountPasswords(string $oldEncryptKey): void
+    function changeShippingTemplateAccountPasswords(string $oldEncryptKey)
     {
         $shippingTemplates = ShippingTemplateModel::get([
             'select' => ['id', 'account'],
@@ -547,8 +571,13 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change users outlook password encryption
             if (!empty($account['password'] ?? null)) {
-                $account['password'] = self::oldDecrypt($account['password'], $oldEncryptKey);
-                $account['password'] = PasswordController::encrypt($account['password']);
+                $password = $this->oldDecrypt($account['password'], $oldEncryptKey);
+                if (!empty($password['errors'])) {
+                    $this->rollbackSteps['outlookPasswords'] = true;
+                    return ['errors' => $password['errors']];
+                }
+
+                $account['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
                 $needToUpdate = true;
             }
 
@@ -563,14 +592,14 @@ class MigrateSecretKey implements AutoUpdateInterface
                 ]);
             }
         }
+
+        return true;
     }
 
     /**
      * Change Shipphinh template account password
-     * 
-     * @param   string  $newEncryptKey
      */
-    function undoShippingTemplateAccountPasswordChanges(string $newEncryptKey): void
+    function undoShippingTemplateAccountPasswordChanges(): void
     {
         $shippingTemplates = ShippingTemplateModel::get([
             'select' => ['id', 'account'],
@@ -583,8 +612,8 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             // Change users outlook password encryption
             if (!empty($account['password'] ?? null)) {
-                $account['password'] = PasswordController::decrypt($account['password'], $newEncryptKey);
-                $account['password'] = self::oldEncrypt($account['password']);
+                $account['password'] = PasswordController::decrypt(['encryptedData' => $account['password']]);
+                $account['password'] = $this->oldEncrypt($account['password']);
                 $needToUpdate = true;
             }
 
