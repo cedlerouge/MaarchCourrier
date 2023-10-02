@@ -1321,34 +1321,36 @@ class ResController extends ResourceControlController
             if (!empty($body['destination'])) {
                 $where = ['entity_id = ? AND type = ?'];
                 $data = [$body['destination'], 'diffusionList'];
-                $listTemplate = ListTemplateModel::get(['select' => ['*'], 'where' => $where, 'data' => $data])[0];
-                $listTemplateItems = ListTemplateItemModel::get(['select' => ['*'], 'where' => ['list_template_id = ?'], 'data' => [$listTemplate['id']]]);
-                foreach ($listTemplateItems as $itemKey => $value) {
-                    if ($value['item_type'] == 'user') {
-                        $user = UserModel::getById(['id' => $value['item_id'], 'select' => ['firstname', 'lastname', 'external_id', 'status']]);
-                        if (empty($user) || in_array($user['status'], ['SPD', 'DEL'])) {
-                            if ($listTemplate['type'] == 'diffusionList') {
-                                unset($listTemplateItems[$itemKey]);
-                                continue;
+                $listTemplate = ListTemplateModel::get(['select' => ['*'], 'where' => $where, 'data' => $data])[0] ?? [];
+                if (!empty($listTemplate)) {
+                    $listTemplateItems = ListTemplateItemModel::get(['select' => ['*'], 'where' => ['list_template_id = ?'], 'data' => [$listTemplate['id']]]);
+                    foreach ($listTemplateItems as $itemKey => $value) {
+                        if ($value['item_type'] == 'user') {
+                            $user = UserModel::getById(['id' => $value['item_id'], 'select' => ['firstname', 'lastname', 'external_id', 'status']]);
+                            if (empty($user) || in_array($user['status'], ['SPD', 'DEL'])) {
+                                if ($listTemplate['type'] == 'diffusionList') {
+                                    unset($listTemplateItems[$itemKey]);
+                                    continue;
+                                }
                             }
                         }
                     }
-                }
-                $listTemplate['items'] = array_values($listTemplateItems);
-                if (!empty($listTemplateItems)) {
-                    foreach ($listTemplateItems as $diffusion) {
-                        if ($diffusion['item_mode'] == 'dest') {
-                            ResModel::update(['set' => ['dest_user' => $diffusion['id']], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                    $listTemplate['items'] = array_values($listTemplateItems);
+                    if (!empty($listTemplateItems)) {
+                        foreach ($listTemplateItems as $diffusion) {
+                            if ($diffusion['item_mode'] == 'dest') {
+                                ResModel::update(['set' => ['dest_user' => $diffusion['id']], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                            }
+                            ListInstanceModel::create([
+                                'res_id'            => $args['resId'],
+                                'sequence'          => $diffusion['sequence'],
+                                'item_id'           => $diffusion['item_id'],
+                                'item_type'         => $diffusion['item_type'] == 'user' ? 'user_id' : 'entity_id',
+                                'item_mode'         => $diffusion['item_mode'],
+                                'added_by_user'     => $GLOBALS['id'],
+                                'difflist_type'     => 'entity_id'
+                            ]);
                         }
-                        ListInstanceModel::create([
-                            'res_id'            => $args['resId'],
-                            'sequence'          => $diffusion['sequence'],
-                            'item_id'           => $diffusion['item_id'],
-                            'item_type'         => $diffusion['item_type'] == 'user' ? 'user_id' : 'entity_id',
-                            'item_mode'         => $diffusion['item_mode'],
-                            'added_by_user'     => $GLOBALS['id'],
-                            'difflist_type'     => 'entity_id'
-                        ]);
                     }
                 }
             }
