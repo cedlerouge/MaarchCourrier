@@ -35,6 +35,8 @@ class EmailScript
 {
     public static function send(array $args)
     {
+        $GLOBALS['customId'] = $args['customId'];
+
         DatabasePDO::reset();
         new DatabasePDO(['customId' => $args['customId']]);
 
