@@ -1,7 +1,7 @@
 <?php
 namespace Migration\_2301_2_0;
 
-require getcwd() . '/vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use SrcCore\interfaces\AutoUpdateInterface;
 use VersionUpdate\controllers\VersionUpdateController;
