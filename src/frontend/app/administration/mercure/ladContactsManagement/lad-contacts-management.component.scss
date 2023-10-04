@@ -29,7 +29,7 @@
 
 .card-stats .card-header{
   padding: .15rem 1.25rem .15rem 1.25rem;
-  color: #135f7f;
+  color: var(--maarch-color-primary);;
 
   margin-bottom: 0;
   background-color: rgba(0,0,0,.03);
@@ -54,7 +54,7 @@
 
 .card-stats .card-body .numbers p {
   margin-bottom: 0;
-  color: #135f7f;
+  color: var(--maarch-color-primary);
 }
 
 .card-stats .card-body .numbers .card-category {
@@ -68,7 +68,7 @@
 }
 
 .card-stats .card-footer .stats {
-  color: #135f7f;
+  color: var(--maarch-color-primary);;
 }
 
 .card-stats .card-footer hr {
@@ -79,5 +79,5 @@
   font-size: 2.4vw;
   min-height: 50px;
   text-align: right;
-  color: #135f7f;
+  color: var(--maarch-color-primary);;
 }
