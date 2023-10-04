@@ -2796,5 +2796,7 @@
     "stateIndexation": "Pourcentage d'indexation",
     "pctIndexation": "Pourcentage d'indexation",
     "lastIndexation": "Dernière indexation",
-    "never": "Jamais"
+    "never": "Jamais",
+    "mwsProcessedPages": "Pages traitées",
+    "mwsRemainingPages" : "Pages restantes"
 }

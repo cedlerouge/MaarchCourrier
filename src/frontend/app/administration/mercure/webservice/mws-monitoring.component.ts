@@ -116,11 +116,11 @@ export class MwsMonitoringComponent implements OnInit {
 
                 this.chartPages = [
                     {
-                        'name': 'Pages traitées',
+                        'name': this.translate.instant('lang.mwsProcessedPages'),
                         'value': data.nbProcessedPages
                     },
                     {
-                        'name': 'Pages restantes',
+                        'name': this.translate.instant('lang.mwsRemainingPages'),
                         'value': data.nbPagesRemaining
                     }
                 ];

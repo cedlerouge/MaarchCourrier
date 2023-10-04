@@ -7,7 +7,8 @@ import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AdministrationService } from '../../administration.service';
-import { tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
     templateUrl: 'lad-contacts-management.component.html',
@@ -53,6 +54,10 @@ export class LadContactsManagementComponent implements OnInit {
         this.http.get('../rest/mercure/lad/contactIndexations').pipe(
             tap((data: any) => {
                 this.indexationState = data;
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
             })
         ).subscribe();
     }
