@@ -17,7 +17,9 @@ import * as langFrJson from '../../../lang/lang-fr.json';
 import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 
-// DummyComponent for testing purposes
+/*
+ * Test component with empty template to simulate navigation to home page in the event of successful authentication
+*/
 @Component({ template: '' })
 class DummyComponent {}
 
@@ -56,7 +58,6 @@ describe('LoginComponent', () => {
                 AdministrationService,
                 HttpClient,
                 MatIconRegistry,
-                // DomSanitizer
                 {
                     provide: DomSanitizer,
                     useValue: {
@@ -75,14 +76,6 @@ describe('LoginComponent', () => {
     });
 
     beforeEach(fakeAsync(() => {
-        /*  TO DO : Set maarchLogoFull SVG 
-      const iconRegistry = TestBed.inject(MatIconRegistry);
-      const sanitizer = TestBed.inject(DomSanitizer);
-      const url: string = '../rest/images?image=logo';
-      tick(300);
-      iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
-    */
-
         httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
         //  TO DO : Set maarchLogoFull SVG
         const iconRegistry = TestBed.inject(MatIconRegistry);
@@ -153,5 +146,50 @@ describe('LoginComponent', () => {
                 flush();
             });
         }));
-    });
+
+        it('handles authentication failure with incorrect password', fakeAsync(() => {
+          const nativeElement = fixture.nativeElement;
+          const login = nativeElement.querySelector('input[name=login]');
+          const password = nativeElement.querySelector('input[name=password]');
+      
+          expect(login).toBeTruthy();
+          expect(password).toBeTruthy();
+      
+          // Set the value of the login input field
+          login.value = 'bbain';
+          password.value = 'wrongpassword'; // Incorrect password
+      
+          // Trigger an input event to notify Angular of the value change
+          login.dispatchEvent(new Event('input'));
+          password.dispatchEvent(new Event('input'));
+      
+          fixture.detectChanges();
+      
+          // Verify that the login input field now has the expected value
+          expect(login.value).toBe('bbain');
+          expect(password.value).toBe('wrongpassword');
+      
+          component.onSubmit();
+      
+          // Use whenStable() to wait for all pending asynchronous activities to complete
+          fixture.whenStable().then(() => {
+              // Check that the navigation was not triggered in case of authentication failure
+              const router = TestBed.inject(Router);
+              const navigateSpy = spyOn(router, 'navigate');
+      
+              // Handle the POST request and provide a mock error response
+              httpTestingController = TestBed.inject(HttpTestingController);
+              const req = httpTestingController.expectOne('../rest/authenticate');
+              expect(req.request.method).toBe('POST');
+              expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
+              req.flush({}, { status: 401, statusText: 'Unauthorized' }); // Provide a mock error response
+      
+              // Flush any pending asynchronous tasks
+              flush();
+      
+              // Check if navigation is not called in case of authentication failure
+              expect(navigateSpy).not.toHaveBeenCalled();
+          });
+        }));
+      });
 });
