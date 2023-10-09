@@ -15,10 +15,10 @@ use SrcCore\controllers\LogsController;
 
 class MigrateSecretKey implements AutoUpdateInterface
 {
-    private $backupFolderPath       = null;
-    private $backupConfigFileName   = 'config.json.backup';
-    private $logHeader      = "Migration de la clé privée";
-    private $rollbackSteps  = [];
+    private string $backupFolderPath       = null;
+    private array $backupConfigFileName   = 'config.json.backup';
+    private array $logHeader      = "Migration de la clé privée";
+    private array $rollbackSteps  = [];
 
     public function backup(): void
     {
@@ -209,8 +209,8 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Email Server password
      * 
      * @param   string  $oldEncryptKey
-     * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     private function changeServerMailPassword(string $oldEncryptKey)
     {
@@ -246,7 +246,8 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Email Server password
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     private function undoServerMailPasswordChanges()
     {
@@ -279,7 +280,8 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $oldEncryptKey
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     function changeContactPasswords(string $oldEncryptKey)
     {
@@ -317,6 +319,7 @@ class MigrateSecretKey implements AutoUpdateInterface
 
     /**
      * Change Contact password for MAARCH 2 MAARCH
+     * @throws  \Exception
      */
     function undoContactPasswordChanges(): void
     {
@@ -351,7 +354,8 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $oldEncryptKey
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     function changeEntitiesExternalIdPasswords(string $oldEncryptKey)
     {
@@ -403,6 +407,7 @@ class MigrateSecretKey implements AutoUpdateInterface
 
     /**
      * Change Entities external passwords (alfresco, multigest)
+     * @throws  \Exception
      */
     function undoEntitiesExternalIdPasswordChanges(): void
     {
@@ -445,7 +450,8 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $oldEncryptKey
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     function changeOutlookPasswords(string $oldEncryptKey)
     {
@@ -507,7 +513,8 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Outlook connection information (tenantId, clientId and clientSecret)
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     function undoOutlookPasswordChanges()
     {
@@ -556,7 +563,8 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $oldEncryptKey
      * 
-     * @return  array['errors'] | true
+     * @throws  \Exception
+     * @return  array|boolean   ['errors'] | true
      */
     function changeShippingTemplateAccountPasswords(string $oldEncryptKey)
     {
@@ -598,6 +606,7 @@ class MigrateSecretKey implements AutoUpdateInterface
 
     /**
      * Change Shipphinh template account password
+     * @throws  \Exception
      */
     function undoShippingTemplateAccountPasswordChanges(): void
     {
