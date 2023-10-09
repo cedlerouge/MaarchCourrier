@@ -2,11 +2,14 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./out-tsc/spec"
+    "outDir": "./out-tsc/spec",
+    "types": [
+      "jquery",
+      "node",
+      "jstree",
+      "jasmine"
+    ],
   },
-  "types": [
-    "jasmine"
-  ],
   "files": [
     "test.ts",
     "polyfills.ts"

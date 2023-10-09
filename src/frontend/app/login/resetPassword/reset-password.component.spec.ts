@@ -15,11 +15,10 @@ import { Router } from '@angular/router';
 import { ResetPasswordComponent } from './reset-password.component';
 import { MatIconRegistry } from '@angular/material/icon';
 
-
 class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-      return of({ lang: langFrJson });
-  }
+    getTranslation(): Observable<any> {
+        return of({ lang: langFrJson });
+    }
 }
 
 describe('Reset password component', () => {
@@ -38,7 +37,8 @@ describe('Reset password component', () => {
                 HttpClientTestingModule,
                 BrowserModule,
                 TranslateModule.forRoot({
-                loader: { provide: TranslateLoader, useClass: FakeLoader }})
+                    loader: { provide: TranslateLoader, useClass: FakeLoader },
+                }),
             ],
             providers: [
                 TranslateService,
@@ -46,9 +46,9 @@ describe('Reset password component', () => {
                 FoldersService,
                 PrivilegeService,
                 DatePipe,
-                AdministrationService
+                AdministrationService,
             ],
-            declarations: [ResetPasswordComponent]
+            declarations: [ResetPasswordComponent],
         }).compileComponents();
 
         // Set lang
@@ -59,7 +59,7 @@ describe('Reset password component', () => {
     beforeEach(fakeAsync(() => {
         httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
 
-        //  TO DO : Set maarchLogoFull SVG 
+        //  TO DO : Set maarchLogoFull SVG
         const iconRegistry = TestBed.inject(MatIconRegistry);
         const sanitizer = TestBed.inject(DomSanitizer);
         const url: string = '../../../assets/logo_white.svg';
@@ -82,7 +82,7 @@ describe('Reset password component', () => {
         tick(100);
 
         component.getPassRules();
-        
+
         expect(newPassword).toBeTruthy();
         expect(passwordConfirmation).toBeTruthy();
         expect(newPassword.getAttributeNode('autofocus')).toBeTruthy();
@@ -95,7 +95,7 @@ describe('Reset password component', () => {
         const passwordConfirmation = nativeElement.querySelector('input[name=passwordConfirmation]');
 
         fixture.detectChanges();
-        
+
         expect(newPassword).toBeTruthy();
         expect(passwordConfirmation).toBeTruthy();
 
@@ -115,28 +115,28 @@ describe('Reset password component', () => {
 
         component.updatePassword();
 
-      // Use whenStable() to wait for all pending asynchronous activities to complete
-      fixture.whenStable().then(() => {
-        // Check that the navigation was triggered
-        const router = TestBed.inject(Router);
-        const navigateSpy = spyOn(router, 'navigate');
+        // Use whenStable() to wait for all pending asynchronous activities to complete
+        fixture.whenStable().then(() => {
+            // Check that the navigation was triggered
+            const router = TestBed.inject(Router);
+            const navigateSpy = spyOn(router, 'navigate');
 
-        // Handle the POST request and provide a mock response
-        httpTestingController = TestBed.inject(HttpTestingController);
-        const req = httpTestingController.expectOne('../rest/password');
+            // Handle the POST request and provide a mock response
+            httpTestingController = TestBed.inject(HttpTestingController);
+            const req = httpTestingController.expectOne('../rest/password');
 
-        expect(req.request.method).toBe('PUT');
-        expect(req.request.body).toEqual({ token: component.token, password: newPassword.value }); // Add the request body
-        req.flush({}); // Provide a mock response
+            expect(req.request.method).toBe('PUT');
+            expect(req.request.body).toEqual({ token: component.token, password: newPassword.value }); // Add the request body
+            req.flush({}); // Provide a mock response
 
-        setTimeout(() => {
-          // Check if navigation is called with the correct route
-          expect(navigateSpy).toHaveBeenCalledWith(['/login']);
-        }, 500);
-        // Advance the fakeAsync timer to complete the HTTP request
-        tick(300);
-        // Flush any pending asynchronous tasks
-        flush();
-      });
+            setTimeout(() => {
+                // Check if navigation is called with the correct route
+                expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+            }, 500);
+            // Advance the fakeAsync timer to complete the HTTP request
+            tick(300);
+            // Flush any pending asynchronous tasks
+            flush();
+        });
     }));
 });

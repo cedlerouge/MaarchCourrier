@@ -22,60 +22,60 @@ import { Component } from '@angular/core';
 class DummyComponent {}
 
 class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-      return of({ lang: langFrJson });
-  }
+    getTranslation(): Observable<any> {
+        return of({ lang: langFrJson });
+    }
 }
 
 describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
-  let httpTestingController: HttpTestingController;
-  let translateService: TranslateService;
+    let component: LoginComponent;
+    let fixture: ComponentFixture<LoginComponent>;
+    let httpTestingController: HttpTestingController;
+    let translateService: TranslateService;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [
-        SharedModule,
-        RouterTestingModule,
-        BrowserAnimationsModule,
-        TranslateModule,
-        HttpClientTestingModule,
-        BrowserModule,
-        TranslateModule.forRoot({
-          loader: { provide: TranslateLoader, useClass: FakeLoader },
-        }),
-        RouterTestingModule.withRoutes([{ path: 'home', component: DummyComponent }]),
-      ],
-      providers: [
-        TranslateService,
-        TranslateStore,
-        FoldersService,
-        PrivilegeService,
-        DatePipe,
-        AdministrationService,
-        HttpClient,
-        MatIconRegistry,
-        // DomSanitizer
-        {
-          provide: DomSanitizer,
-          useValue: {
-            bypassSecurityTrustResourceUrl: (url: string) => url,
-            bypassSecurityTrustHtml: (html: string) => html,
-            sanitize: (ctx: any, val: string) => val,
-          },
-        },
-      ],
-      declarations: [LoginComponent, DummyComponent]
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [
+                SharedModule,
+                RouterTestingModule,
+                BrowserAnimationsModule,
+                TranslateModule,
+                HttpClientTestingModule,
+                BrowserModule,
+                TranslateModule.forRoot({
+                    loader: { provide: TranslateLoader, useClass: FakeLoader },
+                }),
+                RouterTestingModule.withRoutes([{ path: 'home', component: DummyComponent }]),
+            ],
+            providers: [
+                TranslateService,
+                TranslateStore,
+                FoldersService,
+                PrivilegeService,
+                DatePipe,
+                AdministrationService,
+                HttpClient,
+                MatIconRegistry,
+                // DomSanitizer
+                {
+                    provide: DomSanitizer,
+                    useValue: {
+                        bypassSecurityTrustResourceUrl: (url: string) => url,
+                        bypassSecurityTrustHtml: (html: string) => html,
+                        sanitize: (ctx: any, val: string) => val,
+                    },
+                },
+            ],
+            declarations: [LoginComponent, DummyComponent],
+        }).compileComponents();
 
-    // Set lang
-    translateService = TestBed.inject(TranslateService);
-    translateService.use('fr');
-  });
+        // Set lang
+        translateService = TestBed.inject(TranslateService);
+        translateService.use('fr');
+    });
 
-  beforeEach(fakeAsync(() => {
-    /*  TO DO : Set maarchLogoFull SVG 
+    beforeEach(fakeAsync(() => {
+        /*  TO DO : Set maarchLogoFull SVG 
       const iconRegistry = TestBed.inject(MatIconRegistry);
       const sanitizer = TestBed.inject(DomSanitizer);
       const url: string = '../rest/images?image=logo';
@@ -83,75 +83,75 @@ describe('LoginComponent', () => {
       iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
     */
 
-    httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
-    //  TO DO : Set maarchLogoFull SVG 
-    const iconRegistry = TestBed.inject(MatIconRegistry);
-    const sanitizer = TestBed.inject(DomSanitizer);
-    const url: string = '../rest/images?image=logo';
-    tick(300);
-    iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
-    fixture = TestBed.createComponent(LoginComponent); // Initialize LoginComponent
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-    expect(component).toBeTruthy();
-  }));
-
-  describe('Login test', () => {
-    it('focus on login and password inputs', () => {
-      const nativeElement = fixture.nativeElement;
-      const login = nativeElement.querySelector('input[name=login]');
-      const password = nativeElement.querySelector('input[name=password]');
-      expect(login).toBeTruthy();
-      expect(password).toBeTruthy();
-      expect(login.getAttributeNode('autofocus')).toBeTruthy();
-      expect(login.getAttributeNode('autofocus').specified).toBeTrue();
-    });
-  
-    it('set login and password', fakeAsync((done) => {
-      const nativeElement = fixture.nativeElement;
-      const login = nativeElement.querySelector('input[name=login]');
-      const password = nativeElement.querySelector('input[name=password]');
-
-      expect(login).toBeTruthy();
-      expect(password).toBeTruthy();
-  
-      // Set the value of the login input field
-      login.value = 'bbain';
-      password.value = 'maarch';
-
-      // Trigger an input event to notify Angular of the value change
-      login.dispatchEvent(new Event('input'));
-      password.dispatchEvent(new Event('input'));
-
-      fixture.detectChanges();
-
-      // Verify that the login input field now has the expected value
-      expect(login.value).toBe('bbain');
-      expect(password.value).toBe('maarch');
-
-      component.onSubmit();
-
-      // Use whenStable() to wait for all pending asynchronous activities to complete
-      fixture.whenStable().then(() => {
-        // Check that the navigation was triggered
-        const router = TestBed.inject(Router);
-        const navigateSpy = spyOn(router, 'navigate');
-
-        // Handle the POST request and provide a mock response
-        httpTestingController = TestBed.inject(HttpTestingController);
-        const req = httpTestingController.expectOne('../rest/authenticate');
-        expect(req.request.method).toBe('POST');
-        expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
-        req.flush({}); // Provide a mock response
-        setTimeout(() => {
-          // Check if navigation is called with the correct route
-          expect(navigateSpy).toHaveBeenCalledWith(['/home']);
-        }, 500);
-        // Advance the fakeAsync timer to complete the HTTP request
+        httpTestingController = TestBed.inject(HttpTestingController); // Initialize HttpTestingController
+        //  TO DO : Set maarchLogoFull SVG
+        const iconRegistry = TestBed.inject(MatIconRegistry);
+        const sanitizer = TestBed.inject(DomSanitizer);
+        const url: string = '../rest/images?image=logo';
         tick(300);
-        // Flush any pending asynchronous tasks
-        flush();
-      });
+        iconRegistry.addSvgIcon('maarchLogoFull', sanitizer.bypassSecurityTrustResourceUrl(url));
+        fixture = TestBed.createComponent(LoginComponent); // Initialize LoginComponent
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        expect(component).toBeTruthy();
     }));
-  });
+
+    describe('Login test', () => {
+        it('focus on login and password inputs', () => {
+            const nativeElement = fixture.nativeElement;
+            const login = nativeElement.querySelector('input[name=login]');
+            const password = nativeElement.querySelector('input[name=password]');
+            expect(login).toBeTruthy();
+            expect(password).toBeTruthy();
+            expect(login.getAttributeNode('autofocus')).toBeTruthy();
+            expect(login.getAttributeNode('autofocus').specified).toBeTrue();
+        });
+
+        it('set login and password', fakeAsync(() => {
+            const nativeElement = fixture.nativeElement;
+            const login = nativeElement.querySelector('input[name=login]');
+            const password = nativeElement.querySelector('input[name=password]');
+
+            expect(login).toBeTruthy();
+            expect(password).toBeTruthy();
+
+            // Set the value of the login input field
+            login.value = 'bbain';
+            password.value = 'maarch';
+
+            // Trigger an input event to notify Angular of the value change
+            login.dispatchEvent(new Event('input'));
+            password.dispatchEvent(new Event('input'));
+
+            fixture.detectChanges();
+
+            // Verify that the login input field now has the expected value
+            expect(login.value).toBe('bbain');
+            expect(password.value).toBe('maarch');
+
+            component.onSubmit();
+
+            // Use whenStable() to wait for all pending asynchronous activities to complete
+            fixture.whenStable().then(() => {
+                // Check that the navigation was triggered
+                const router = TestBed.inject(Router);
+                const navigateSpy = spyOn(router, 'navigate');
+
+                // Handle the POST request and provide a mock response
+                httpTestingController = TestBed.inject(HttpTestingController);
+                const req = httpTestingController.expectOne('../rest/authenticate');
+                expect(req.request.method).toBe('POST');
+                expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
+                req.flush({}); // Provide a mock response
+                setTimeout(() => {
+                    // Check if navigation is called with the correct route
+                    expect(navigateSpy).toHaveBeenCalledWith(['/home']);
+                }, 500);
+                // Advance the fakeAsync timer to complete the HTTP request
+                tick(300);
+                // Flush any pending asynchronous tasks
+                flush();
+            });
+        }));
+    });
 });
