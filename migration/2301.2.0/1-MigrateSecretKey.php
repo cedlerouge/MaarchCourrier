@@ -20,6 +20,10 @@ class MigrateSecretKey implements AutoUpdateInterface
     private string $logHeader       = "Migration de la clé privée";
     private array $rollbackSteps    = [];
 
+    /**
+     * @throws \Exception
+     * @return void
+     */
     public function backup(): void
     {
         try {
@@ -46,6 +50,10 @@ class MigrateSecretKey implements AutoUpdateInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     * @return void
+     */
     public function update(): void
     {
         try {
@@ -107,6 +115,10 @@ class MigrateSecretKey implements AutoUpdateInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     * @return void
+     */
     public function rollback(): void
     {
         try {
@@ -147,6 +159,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Get Encrypted key from vHost
      * 
      * @deprecated  In version 2401.x.x or higher MaarchCourrier wont fetch encrypted key from the vHost configuration.
+     * @return  string
      */
     private function getVhostEncryptKey(): string
     {
@@ -165,6 +178,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Encrypt data using old cypher method
      * 
      * @param   string  $password  Data to encrypt
+     * @return  string
      */
     public static function oldEncrypt(string $password): string
     {
@@ -210,7 +224,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * 
      * @param   string  $oldEncryptKey
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     private function changeServerMailPassword(string $oldEncryptKey)
     {
@@ -247,7 +261,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Email Server password
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     private function undoServerMailPasswordChanges()
     {
@@ -281,7 +295,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * @param   string  $oldEncryptKey
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     function changeContactPasswords(string $oldEncryptKey)
     {
@@ -320,6 +334,7 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Contact password for MAARCH 2 MAARCH
      * @throws  \Exception
+     * @return void
      */
     function undoContactPasswordChanges(): void
     {
@@ -355,7 +370,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * @param   string  $oldEncryptKey
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     function changeEntitiesExternalIdPasswords(string $oldEncryptKey)
     {
@@ -408,6 +423,7 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Entities external passwords (alfresco, multigest)
      * @throws  \Exception
+     * @return  void
      */
     function undoEntitiesExternalIdPasswordChanges(): void
     {
@@ -451,7 +467,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * @param   string  $oldEncryptKey
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     function changeOutlookPasswords(string $oldEncryptKey)
     {
@@ -514,7 +530,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * Change Outlook connection information (tenantId, clientId and clientSecret)
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     function undoOutlookPasswordChanges()
     {
@@ -564,7 +580,7 @@ class MigrateSecretKey implements AutoUpdateInterface
      * @param   string  $oldEncryptKey
      * 
      * @throws  \Exception
-     * @return  array|boolean   ['errors'] | true
+     * @return  array|string[]|true   ['errors'] | true
      */
     function changeShippingTemplateAccountPasswords(string $oldEncryptKey)
     {
@@ -607,6 +623,7 @@ class MigrateSecretKey implements AutoUpdateInterface
     /**
      * Change Shipphinh template account password
      * @throws  \Exception
+     * @return  void
      */
     function undoShippingTemplateAccountPasswordChanges(): void
     {
