@@ -15,10 +15,10 @@ use SrcCore\controllers\LogsController;
 
 class MigrateSecretKey implements AutoUpdateInterface
 {
-    private string $backupFolderPath       = null;
-    private array $backupConfigFileName   = 'config.json.backup';
-    private array $logHeader      = "Migration de la clé privée";
-    private array $rollbackSteps  = [];
+    private ?string $backupFolderPath       = null;
+    private string $backupConfigFileName    = 'config.json.backup';
+    private string $logHeader       = "Migration de la clé privée";
+    private array $rollbackSteps    = [];
 
     public function backup(): void
     {
