@@ -224,7 +224,7 @@ class PasswordControllerTest extends CourrierTestCase
         $useVhostEncryptKey = CoreConfigModel::useVhostEncryptKey();
 
         $this->assertNotEmpty($useVhostEncryptKey);
-        $this->assertSame(true, $useVhostEncryptKey);
+        $this->assertTrue($useVhostEncryptKey);
     }
 
     /**
@@ -235,7 +235,7 @@ class PasswordControllerTest extends CourrierTestCase
         $usePrivateKey = CoreConfigModel::useVhostEncryptKey();
 
         $this->assertEmpty($usePrivateKey);
-        $this->assertSame(false, $usePrivateKey);
+        $this->assertFalse($usePrivateKey);
     }
 
     /**
