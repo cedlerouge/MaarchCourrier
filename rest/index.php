@@ -38,6 +38,10 @@ $requestUri = explode('/rest', $requestUri);
 $requestUriBasePath = $requestUri[0] ?? '';
 $app->setBasePath($requestUriBasePath . '/rest');
 
+//Migration
+$versionUpdateMiddleware = new \VersionUpdate\middlewares\VersionUpdateMiddleware();
+$app->add($versionUpdateMiddleware);
+
 //Authentication
 $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
     $response = new \SrcCore\http\Response();
@@ -640,7 +644,7 @@ $app->get('/followedResources/filters', \Resource\controllers\UserFollowedResour
 //VersionsUpdate
 $app->get('/versionsUpdate', \VersionUpdate\controllers\VersionUpdateController::class . ':get');
 $app->put('/versionsUpdate', \VersionUpdate\controllers\VersionUpdateController::class . ':update');
-$app->put('/versionsUpdateSQL', \VersionUpdate\controllers\VersionUpdateController::class . ':updateSQLVersion');
+$app->put('/versionsUpdateSQL', \VersionUpdate\controllers\VersionUpdateController::class . ':autoUpdateLauncher');
 
 //CurrentUser
 $app->get('/currentUser/profile', \User\controllers\UserController::class . ':getProfile');

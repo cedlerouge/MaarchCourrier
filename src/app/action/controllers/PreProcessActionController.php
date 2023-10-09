@@ -73,7 +73,8 @@ class PreProcessActionController
 
         $basket = BasketModel::getById(['id' => $args['basketId'], 'select' => ['basket_id']]);
         $group = GroupModel::getById(['id' => $args['groupId'], 'select' => ['group_id']]);
-        $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'keepDestForRedirection']);
+        $action = ActionModel::getById(['id' => $args['actionId'], 'select' => ['parameters']]);
+        $parameters = json_decode($action['parameters'], true);
 
         $keywords = [
             'ALL_ENTITIES'          => '@all_entities',
@@ -169,7 +170,7 @@ class PreProcessActionController
             }
         }
 
-        return $response->withJson(['entities' => $allEntities, 'users' => $users, 'keepDestForRedirection' => !empty($parameter['param_value_int']), 'autoRedirectToUser' => $autoRedirectToUser]);
+        return $response->withJson(['entities' => $allEntities, 'users' => $users, 'keepDestForRedirection' => !empty($parameters['keepDestForRedirection']), 'keepCopyForRedirection' => !empty($parameters['keepCopyForRedirection']), 'keepOtherRoleForRedirection' => !empty($parameters['keepOtherRoleForRedirection']), 'autoRedirectToUser' => $autoRedirectToUser]);
     }
 
     public function checkAcknowledgementReceipt(Request $request, Response $response, array $args)

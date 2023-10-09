@@ -62,6 +62,8 @@ use Tag\models\ResourceTagModel;
 use User\controllers\UserController;
 use User\models\UserModel;
 use SignatureBook\controllers\SignatureBookController;
+use Entity\models\ListTemplateModel;
+use Entity\models\ListTemplateItemModel;
 
 class ResController extends ResourceControlController
 {
@@ -909,7 +911,8 @@ class ResController extends ResourceControlController
         $adrPdf = AdrModel::getDocuments([
             'select'  => ['path', 'filename', 'docserver_id'],
             'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'PDF']
+            'data'    => [$args['resId'], 'PDF'],
+            'orderBy' => ['version desc']
         ]);
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $adrPdf[0]['docserver_id'], 'select' => ['path_template']]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
@@ -1313,6 +1316,43 @@ class ResController extends ResourceControlController
                     'added_by_user'     => $GLOBALS['id'],
                     'difflist_type'     => 'entity_id'
                 ]);
+            }
+        } else {
+            if (!empty($body['destination'])) {
+                $where = ['entity_id = ? AND type = ?'];
+                $data = [$body['destination'], 'diffusionList'];
+                $listTemplate = ListTemplateModel::get(['select' => ['*'], 'where' => $where, 'data' => $data])[0] ?? [];
+                if (!empty($listTemplate)) {
+                    $listTemplateItems = ListTemplateItemModel::get(['select' => ['*'], 'where' => ['list_template_id = ?'], 'data' => [$listTemplate['id']]]);
+                    foreach ($listTemplateItems as $itemKey => $value) {
+                        if ($value['item_type'] == 'user') {
+                            $user = UserModel::getById(['id' => $value['item_id'], 'select' => ['firstname', 'lastname', 'external_id', 'status']]);
+                            if (empty($user) || in_array($user['status'], ['SPD', 'DEL'])) {
+                                if ($listTemplate['type'] == 'diffusionList') {
+                                    unset($listTemplateItems[$itemKey]);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    $listTemplate['items'] = array_values($listTemplateItems);
+                    if (!empty($listTemplateItems)) {
+                        foreach ($listTemplateItems as $diffusion) {
+                            if ($diffusion['item_mode'] == 'dest') {
+                                ResModel::update(['set' => ['dest_user' => $diffusion['id']], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+                            }
+                            ListInstanceModel::create([
+                                'res_id'            => $args['resId'],
+                                'sequence'          => $diffusion['sequence'],
+                                'item_id'           => $diffusion['item_id'],
+                                'item_type'         => $diffusion['item_type'] == 'user' ? 'user_id' : 'entity_id',
+                                'item_mode'         => $diffusion['item_mode'],
+                                'added_by_user'     => $GLOBALS['id'],
+                                'difflist_type'     => 'entity_id'
+                            ]);
+                        }
+                    }
+                }
             }
         }
         if (!empty($body['folders'])) {

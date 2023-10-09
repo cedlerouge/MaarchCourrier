@@ -29,6 +29,16 @@ export class DiffusionsListComponent implements OnInit {
     @Input() keepDestForRedirection: boolean = false;
 
     /**
+     * Keep users in copy
+     */
+    @Input() keepCopyForRedirection: boolean = false;
+
+    /**
+     * Keep users with another role
+     */
+    @Input() keepOtherRoleForRedirection: boolean = false;
+
+    /**
       * Entity identifier to load listModel of entity (Incompatible with resId)
       */
     @Input() entityId: any = null;
@@ -194,14 +204,17 @@ export class DiffusionsListComponent implements OnInit {
 
             if (listInstance !== undefined) {
                 listInstance.forEach((element: any) => {
-                    if (destResource && element.item_mode == 'dest') {
-                        this.diffList[element.item_mode].items = [element];
-                    }
-                    if (this.keepRoles.indexOf(element.item_mode) > -1 && this.diffList[element.item_mode].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
+                    if (this.keepCopyForRedirection &&  this.keepRoles.indexOf(element.item_mode) > -1 && this.diffList[element.item_mode].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
                         this.diffList[element.item_mode].items.push(element);
                     }
-                    if (this.keepDestForRedirection && element.item_mode == 'dest' && this.diffList['cc'].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
+                    if (this.keepDestForRedirection && element.item_mode === 'dest' && this.diffList['cc'].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
                         this.diffList['cc'].items.push(element);
+                    }
+                    if (this.keepCopyForRedirection && element.item_mode === 'cc' && this.diffList['cc'].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
+                        this.diffList['cc'].items.push(element);
+                    }
+                    if (this.keepOtherRoleForRedirection && element.item_mode !== 'cc' && element.item_mode !== 'dest'  && this.diffList[element.item_mode].items.filter((item: any) => item.itemSerialId === element.itemSerialId && item.item_type === element.item_type).length === 0) {
+                        this.diffList[element.item_mode].items.push(element);
                     }
                 });
             }

@@ -140,6 +140,8 @@ class ConfigurationController
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
             }
+            $default = $data['default'];
+            unset($data['default']);
             foreach ($data as $key => $editor) {
                 if ($key == 'java') {
                     $data[$key] = [];
@@ -223,6 +225,9 @@ class ConfigurationController
             }
         }
 
+        if (!empty($default)) {
+            $data['default'] = $default;
+        }
         $data = json_encode($data, JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => $args['privilege'], 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => $args['privilege']]);

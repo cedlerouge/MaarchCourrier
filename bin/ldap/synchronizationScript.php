@@ -32,7 +32,7 @@ if (!empty($xmlfile->synchronizeEntities) && (string)$xmlfile->synchronizeEntiti
 }
 
 if ($synchronizeUsers) {
-    $maarchUsers = \User\models\UserModel::get(['select' => ['id', 'user_id', 'firstname', 'lastname', 'phone', 'mail', 'status', 'mode']]);
+    $maarchUsers = \User\models\UserModel::get(['select' => ['id', 'user_id', 'firstname', 'lastname', 'phone', 'mail', 'preferences', 'status', 'mode']]);
     $ldapUsers = getUsersEntries($xmlfile);
     if (!empty($ldapUsers['errors'])) {
         writeLog(['message' => "[ERROR] {$ldapUsers['errors']}"]);

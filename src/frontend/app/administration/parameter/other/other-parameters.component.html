@@ -8,19 +8,32 @@
         <mat-tab-group>
             <mat-tab *ngFor="let editor of editorsEnabled; let i=index" [label]="editor">
                 <app-maarch-message [content]="'lang.'+editor+'Desc' | translate"></app-maarch-message>
+                <mat-slide-toggle
+                        class="toggleConf"
+                        color="primary"
+                        [title]="'lang.defaultEditor' | translate"
+                        [formControl]="editorsConf[editor]['default']"
+                        [checked]="editorsConf[editor]['default'].value"
+                        (toggleChange)="setDefaultEditor(editor)">
+                    {{'lang.defaultEditor' | translate}}
+                </mat-slide-toggle>
                 <ng-container *ngFor="let info of editorsConf[editor] | keyvalue: originalOrder">
-                    <mat-form-field *ngIf="info.key !== 'ssl'" appearance="outline">
+                    <mat-form-field *ngIf="info.key !== 'ssl' && info.key !== 'default'" appearance="outline">
                         <mat-label>{{'lang.' + info.key | translate}}</mat-label>
                         <input matInput [type]="info.key === 'port' ? 'number' : 'text'"
                             [formControl]="editorsConf[editor][info.key]">
                     </mat-form-field>
-                    <mat-slide-toggle style="height:40px;" *ngIf="info.key === 'ssl'" color="primary"
-                        [formControl]="editorsConf[editor][info.key]">{{'lang.' + info.key | translate}}
+                    <mat-slide-toggle *ngIf="info.key === 'ssl'"
+                                      class="toggleConf"
+                                      color="primary"
+                                      [formControl]="editorsConf[editor][info.key]">{{'lang.' + info.key | translate}}
                     </mat-slide-toggle>
                 </ng-container>
                 <div style="display: flex;justify-content: center;">
-                    <button mat-button color="warn" mat-raised-button (click)="removeEditor(i)">
-                        {{'lang.disableEditor' | translate}}
+                    <button mat-button mat-raised-button color="warn"
+                            [disabled]="editorsConf[editor]['default'].value === true"
+                            (click)="removeEditor(i)">
+                        {{'lang.disableEditor' | translate}}
                     </button>
                 </div>
             </mat-tab>
@@ -29,7 +42,7 @@
                     <button mat-button (click)="$event.stopPropagation()" color="primary" [matMenuTriggerFor]="menu"
                         [disabled]="allEditorsEnabled()">
                         <i class="fa fa-plus"></i>
-                        {{'lang.configureNewEditor' | translate}}</button>
+                        {{'lang.configureNewEditor' | translate}}</button>
                     <mat-menu #menu="matMenu">
                         <button mat-menu-item *ngFor="let editor of getAvailableEditors()"
                             (click)="addEditor(editor)">{{editor}}</button>
@@ -231,7 +244,7 @@
                                                 </mat-form-field>
                                             </div>
                                         </div>
-                                        
+
                                     </span>
                                 </div>
                         </mat-expansion-panel>
@@ -265,7 +278,7 @@
                                                 </mat-form-field>
                                             </div>
                                         </div>
-                                        
+
                                     </span>
                                 </div>
                         </mat-expansion-panel>
@@ -299,7 +312,7 @@
                                                 </mat-form-field>
                                             </div>
                                         </div>
-                                        
+
                                     </span>
                                 </div>
                         </mat-expansion-panel>

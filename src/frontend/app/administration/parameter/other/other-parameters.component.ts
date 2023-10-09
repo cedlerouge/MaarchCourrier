@@ -6,7 +6,6 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { catchError, debounceTime, filter, finalize, map, tap } from 'rxjs/operators';
 import { ColorEvent } from 'ngx-color';
 import { FunctionsService } from '@service/functions.service';
-import { environment } from '../../../../environments/environment';
 import {
     amber,
     blue,
@@ -41,24 +40,27 @@ import { CheckSaeInterconnectionComponent } from './checkSaeInterconnection/chec
 export class OtherParametersComponent implements OnInit {
 
     editorsConf: any = {
-        java: {},
+        java: {default: new UntypedFormControl(false)},
         onlyoffice: {
             ssl: new UntypedFormControl(false),
             uri: new UntypedFormControl('192.168.0.11', [Validators.required]),
             port: new UntypedFormControl(8765, [Validators.required]),
             token: new UntypedFormControl(''),
-            authorizationHeader: new UntypedFormControl('Authorization')
+            authorizationHeader: new UntypedFormControl('Authorization'),
+            default: new UntypedFormControl(false)
         },
         collaboraonline: {
             ssl: new UntypedFormControl(false),
             uri: new UntypedFormControl('192.168.0.11', [Validators.required]),
             port: new UntypedFormControl(9980, [Validators.required]),
+            default: new UntypedFormControl(false)
         },
         office365sharepoint: {
             tenantId: new UntypedFormControl('abc-123456789-efd', [Validators.required]),
             clientId: new UntypedFormControl('abc-123456789-efd', [Validators.required]),
             clientSecret: new UntypedFormControl('abc-123456789-efd'),
             siteUrl: new UntypedFormControl('https://exemple.sharepoint.com/sites/example', [Validators.required]),
+            default: new UntypedFormControl(false)
         }
     };
 
@@ -418,17 +420,25 @@ export class OtherParametersComponent implements OnInit {
             this.http.get('../rest/configurations/admin_document_editors').pipe(
                 map((data: any) => data.configuration.value),
                 tap((data: any) => {
+                    const defaultEditor: string = JSON.parse(JSON.stringify(data.default));
+                    delete data.default;
                     Object.keys(data).forEach(confId => {
                         this.editorsEnabled.push(confId);
                         Object.keys(data[confId]).forEach(itemId => {
-                            // console.log(confId, itemId);
-
                             if (!this.functions.empty(this.editorsConf[confId][itemId])) {
                                 this.editorsConf[confId][itemId].setValue(data[confId][itemId]);
                             }
                         });
                     });
+                    this.editorsEnabled.forEach((item: any) => {
+                        // Set the "default" property to true for the editor with the default ID, otherwise false
+                        this.editorsConf[item]['default'].setValue(item === defaultEditor);
+                    });
                     resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
                 })
             ).subscribe();
         });
@@ -526,15 +536,25 @@ export class OtherParametersComponent implements OnInit {
     }
 
     formatEditorsConfig() {
-        const obj: any = {};
+        let obj: any = {};
+        let defaultEditor: string = '';
+
         this.editorsEnabled.forEach(id => {
             if (this.editorsEnabled.indexOf(id) > -1) {
                 obj[id] = {};
                 Object.keys(this.editorsConf[id]).forEach(elemId => {
-                    obj[id][elemId] = this.editorsConf[id][elemId].value;
+                    if (elemId !== 'default') {
+                        obj[id][elemId] = this.editorsConf[id][elemId].value;
+                    } else if (this.editorsConf[id][elemId].value === true) {
+                        defaultEditor = id;
+                    }
                 });
             }
         });
+        obj = {
+            ...obj,
+            default: defaultEditor
+        };
         return obj;
     }
 
@@ -822,5 +842,22 @@ export class OtherParametersComponent implements OnInit {
                     !this.functions.empty(this.saeConfig['maarchRM']['sae'].value);
 
         }
+    }
+
+    setDefaultEditor(editor: string) {
+        // Loop through all editors
+        for (const key in this.editorsConf) {
+            if (this.editorsConf.hasOwnProperty(key)) {
+                // Set the "default" property to true for the selected editor, otherwise false
+                this.editorsConf[key]['default'].setValue(key === editor);
+            }
+        }
+    }
+
+    isDefaultEditor(editor: string): boolean {
+        if (!this.functions.empty(this.editorsConf[editor])) {
+            return this.editorsConf[editor]['default'].value;
+        }
+        return false;
     }
 }

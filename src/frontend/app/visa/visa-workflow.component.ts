@@ -33,6 +33,8 @@ export class VisaWorkflowComponent implements OnInit {
     @Input() showComment: boolean = true;
 
     @Output() workflowUpdated = new EventEmitter<any>();
+    @Output() refreshActionsList = new EventEmitter<boolean>();
+
     @ViewChild('searchVisaSignUserInput', { static: false }) searchVisaSignUserInput: ElementRef;
 
     visaWorkflow: any = {
@@ -381,6 +383,7 @@ export class VisaWorkflowComponent implements OnInit {
                     tap(() => {
                         this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
                         this.notify.success(this.translate.instant('lang.visaWorkflowDeleted'));
+                        this.refreshActionsList.emit(true);
                         resolve(true);
                     }),
                     catchError((err: any) => {
@@ -398,6 +401,7 @@ export class VisaWorkflowComponent implements OnInit {
                     tap((data: any) => {
                         this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
                         this.notify.success(this.translate.instant('lang.visaWorkflowUpdated'));
+                        this.refreshActionsList.emit(true);
                         resolve(true);
                     }),
                     catchError((err: any) => {
@@ -590,6 +594,11 @@ export class VisaWorkflowComponent implements OnInit {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    cancelModifications() {
+        this.visaWorkflow.items = this.visaWorkflowClone;
+        this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
     }
 
     private _filter(value: string): string[] {

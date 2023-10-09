@@ -165,6 +165,3 @@ CREATE INDEX IF NOT EXISTS user_id_res_mark_as_read_idx ON res_mark_as_read (use
 
 -- resource_contacts
 CREATE INDEX IF NOT EXISTS resource_contacts_res_id_idx ON resource_contacts (res_id);
-
-
-UPDATE parameters SET param_value_string = '2301.1.3' WHERE id = 'database_version';

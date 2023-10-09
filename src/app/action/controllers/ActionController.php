@@ -129,8 +129,17 @@ class ActionController
                     unset($parameters['errorStatus']);
                 }
             }
-            if(!empty($parameters['lockVisaCircuit']) && $parameters['lockVisaCircuit'] !== false){
+            if (!empty($parameters['lockVisaCircuit'])){
                 $parameters['lockVisaCircuit'] = false;
+            }
+            if (!empty($parameters['keepDestForRedirection'])) {
+                $parameters['keepDestForRedirection'] = false;
+            }
+            if (!empty($parameters['keepCopyForRedirection'])) {
+                $parameters['keepCopyForRedirection'] = false;
+            }
+            if (!empty($parameters['keepOtherRoleForRedirection'])) {
+                $parameters['keepOtherRoleForRedirection'] = false;
             }
         }
 
@@ -314,8 +323,23 @@ class ActionController
         }
 
         $lockVisaCircuit = $aArgs['parameters']['lockVisaCircuit'] ?? false;
-        if($aArgs['action_page'] == 'send_to_visa' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)){
+        if($aArgs['component'] == 'sendSignatureBookAction' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)){
             $errors[] = 'lockCircuitVisa is not a boolean';
+        }
+
+        $keepDestForRedirection =  $aArgs['parameters']['keepDestForRedirection'] ?? false;
+        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepDestForRedirection) && !Validator::boolType()->validate($keepDestForRedirection)){
+            $errors[] = 'keepDestForRedirection is not a boolean';
+        }
+
+        $keepCopyForRedirection =  $aArgs['parameters']['keepCopyForRedirection'] ?? false;
+        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepCopyForRedirection) && !Validator::boolType()->validate($keepCopyForRedirection)){
+            $errors[] = 'keepCopyForRedirection is not a boolean';
+        }
+
+        $keepOtherRoleForRedirection =  $aArgs['parameters']['keepOtherRoleForRedirection'] ?? false;
+        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepOtherRoleForRedirection) && !Validator::boolType()->validate($keepOtherRoleForRedirection)){
+            $errors[] = 'keepOtherRoleForRedirection is not a boolean';
         }
 
         return $errors;
@@ -329,6 +353,9 @@ class ActionController
         $obj['action']['id_status']        = '_NOSTATUS_';
         $obj['categoriesList']             = ResModel::getCategories();
         $obj['action']['parameters']['lockVisaCircuit'] = false;
+        $obj['action']['parameters']['keepDestForRedirection'] = false;
+        $obj['action']['parameters']['keepCopyForRedirection'] = false;
+        $obj['action']['parameters']['keepOtherRoleForRedirection'] = false;
 
         $obj['action']['actionCategories'] = array_column($obj['categoriesList'], 'id');
 

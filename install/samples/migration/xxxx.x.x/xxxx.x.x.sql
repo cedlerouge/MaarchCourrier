@@ -1,11 +1,10 @@
 -- *************************************************************************--
 --                                                                          --
 --                                                                          --
--- Model migration script - 2301.1.x to 2301.2.0                            --
+-- Model migration script - xxxx.x.x to xxxx.x.x                            --
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
+--DATABASE_BACKUP|parameters
 
-UPDATE users SET preferences = preferences - 'outlookPassword' WHERE preferences->>'outlookPassword' IS NOT NULL;
-
-UPDATE parameters SET param_value_string = '2301.2.0' WHERE id = 'database_version';
+INSERT INTO parameters(id, description, param_value_string) VALUES('maarch_courrier_test', 'Simple insert for phpunit tests', 'PHPunitTests');

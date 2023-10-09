@@ -1800,6 +1800,7 @@
     "install_zip": "zip",
     "install_zip_desc": "Outil d'empaquetage et de compactage de fichiers.",
     "install_writable": "Droits de lecture et d'écriture du répertoire racine de Maarch Courrier",
+    "install_writable_desc": "chown -R maarch: .",
     "install_displayErrors": "Paramètre display_errors (php.ini)",
     "install_displayErrors_desc": "display_errors = On",
     "install_shortOpenTag": "Paramètre short_open_tags (php.ini)",
@@ -2741,5 +2742,15 @@
     "labelBAN":  "Base Adresse Nationale",
     "labelSectors":  "Secteurs",
     "editDocFileDesc": "Veuillez noter qu'il est important d'éditer le fichier avec l'extension <b>.doc</b> avant de valider",
-    "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>"
+    "cannotAttachSummarySheet": "<b>Présence d'un utilisateur externe : la fiche de liaison ne sera pas jointe en annexe.</b>",
+    "keepOtherRoleForRedirection":  "Garder les autres rôles existants",
+    "keepOtherRoleForRedirectionDesc": "Permet de garder les utilisateurs ayant un autre rôle",
+    "keepCopyForRedirection": "Garder les rôles en copie existants",
+    "keepCopyForRedirectionDesc": "Permet de garder les utilisateurs en copie",
+    "keepDestForRedirection": "Mettre en copie l'attributaire actuel ",
+    "keepDestForRedirectionDesc": "Permet de garder l'attributaire actuel en copie",
+    "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions.",
+    "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
+    "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>",
+    "defaultEditor": "Editeur par défaut"
 }

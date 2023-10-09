@@ -42,7 +42,10 @@
                 </h2>
                 <div class="contentEntities">
                     <app-diffusions-list #appDiffusionsList [adminMode]="true" [resId]="injectDatasParam.resId"
-                        [keepDestForRedirection]="injectDatasParam.keepDestForRedirection" [target]="'redirect'">
+                        [keepDestForRedirection]="injectDatasParam.keepDestForRedirection"
+                        [keepCopyForRedirection]="keepCopyForRedirection"
+                        [keepOtherRoleForRedirection]="keepOtherRoleForRedirection"
+                        [target]="'redirect'">
                     </app-diffusions-list>
                 </div>
             </div>
