@@ -148,48 +148,48 @@ describe('LoginComponent', () => {
         }));
 
         it('handles authentication failure with incorrect password', fakeAsync(() => {
-          const nativeElement = fixture.nativeElement;
-          const login = nativeElement.querySelector('input[name=login]');
-          const password = nativeElement.querySelector('input[name=password]');
+            const nativeElement = fixture.nativeElement;
+            const login = nativeElement.querySelector('input[name=login]');
+            const password = nativeElement.querySelector('input[name=password]');
       
-          expect(login).toBeTruthy();
-          expect(password).toBeTruthy();
+            expect(login).toBeTruthy();
+            expect(password).toBeTruthy();
       
-          // Set the value of the login input field
-          login.value = 'bbain';
-          password.value = 'wrongpassword'; // Incorrect password
+            // Set the value of the login input field
+            login.value = 'bbain';
+            password.value = 'wrongpassword'; // Incorrect password
       
-          // Trigger an input event to notify Angular of the value change
-          login.dispatchEvent(new Event('input'));
-          password.dispatchEvent(new Event('input'));
+            // Trigger an input event to notify Angular of the value change
+            login.dispatchEvent(new Event('input'));
+            password.dispatchEvent(new Event('input'));
       
-          fixture.detectChanges();
+            fixture.detectChanges();
       
-          // Verify that the login input field now has the expected value
-          expect(login.value).toBe('bbain');
-          expect(password.value).toBe('wrongpassword');
+            // Verify that the login input field now has the expected value
+            expect(login.value).toBe('bbain');
+            expect(password.value).toBe('wrongpassword');
       
-          component.onSubmit();
+            component.onSubmit();
       
-          // Use whenStable() to wait for all pending asynchronous activities to complete
-          fixture.whenStable().then(() => {
-              // Check that the navigation was not triggered in case of authentication failure
-              const router = TestBed.inject(Router);
-              const navigateSpy = spyOn(router, 'navigate');
+            // Use whenStable() to wait for all pending asynchronous activities to complete
+            fixture.whenStable().then(() => {
+                // Check that the navigation was not triggered in case of authentication failure
+                const router = TestBed.inject(Router);
+                const navigateSpy = spyOn(router, 'navigate');
       
-              // Handle the POST request and provide a mock error response
-              httpTestingController = TestBed.inject(HttpTestingController);
-              const req = httpTestingController.expectOne('../rest/authenticate');
-              expect(req.request.method).toBe('POST');
-              expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
-              req.flush({}, { status: 401, statusText: 'Unauthorized' }); // Provide a mock error response
+                // Handle the POST request and provide a mock error response
+                httpTestingController = TestBed.inject(HttpTestingController);
+                const req = httpTestingController.expectOne('../rest/authenticate');
+                expect(req.request.method).toBe('POST');
+                expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
+                req.flush({}, { status: 401, statusText: 'Authentication failed : wrong password' }); // Provide a mock error response
       
-              // Flush any pending asynchronous tasks
-              flush();
+                // Flush any pending asynchronous tasks
+                flush();
       
-              // Check if navigation is not called in case of authentication failure
-              expect(navigateSpy).not.toHaveBeenCalled();
-          });
+                // Check if navigation is not called in case of authentication failure
+                expect(navigateSpy).not.toHaveBeenCalled();
+            });
         }));
-      });
+    });
 });
