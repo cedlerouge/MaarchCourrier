@@ -91,23 +91,32 @@ class MigrateSecretKey implements AutoUpdateInterface
             // Update the password encryption with new private key
             $result = $this->changeServerMailPassword($vhostEncryptKey);
             if (!empty($result['errors'])) {
-                throw new \Exception($this->logHeader . " [update] : " . $result['errors']);
+                throw new \Exception($this->logHeader . " [update][changeServerMailPassword] : " . $result['errors']);
             }
             $this->rollbackSteps['serverMailPassword'] = true;
             
-            $this->changeContactPasswords($vhostEncryptKey);
+            $result = $this->changeContactPasswords($vhostEncryptKey);
+            if (!empty($result['errors'])) {
+                throw new \Exception($this->logHeader . " [update][changeContactPasswords] : " . $result['errors']);
+            }
             $this->rollbackSteps['contactPasswords'] = true;
 
-            $this->changeEntitiesExternalIdPasswords($vhostEncryptKey);
+            $result = $this->changeEntitiesExternalIdPasswords($vhostEncryptKey);
+            if (!empty($result['errors'])) {
+                throw new \Exception($this->logHeader . " [update][changeEntitiesExternalIdPasswords] : " . $result['errors']);
+            }
             $this->rollbackSteps['entitiesExternalIdPasswords'] = true;
 
             $result = $this->changeOutlookPasswords($vhostEncryptKey);
             if (!empty($result['errors'])) {
-                throw new \Exception($this->logHeader . " [update] : " . $result['errors']);
+                throw new \Exception($this->logHeader . " [update][changeOutlookPasswords] : " . $result['errors']);
             }
             $this->rollbackSteps['outlookPasswords'] = true;
 
-            $this->changeShippingTemplateAccountPasswords($vhostEncryptKey);
+            $result = $this->changeShippingTemplateAccountPasswords($vhostEncryptKey);
+            if (!empty($result['errors'])) {
+                throw new \Exception($this->logHeader . " [update][changeShippingTemplateAccountPasswords] : " . $result['errors']);
+            }
             $this->rollbackSteps['shippingTemplateAccountPasswords'] = true;
 
         } catch (\Throwable $th) {
@@ -124,7 +133,10 @@ class MigrateSecretKey implements AutoUpdateInterface
         try {
             // Rollback passwords (depending where the update function stopped)
             if (!empty($this->rollbackSteps['serverMailPassword'] ?? null)) {
-                $this->undoServerMailPasswordChanges();
+                $result = $this->undoServerMailPasswordChanges();
+                if (!empty($result['errors'])) {
+                    throw new \Exception($this->logHeader . " [update][undoServerMailPasswordChanges] : " . $result['errors']);
+                }
             }
             if (!empty($this->rollbackSteps['contactPasswords'] ?? null)) {
                 $this->undoContactPasswordChanges();
@@ -133,7 +145,10 @@ class MigrateSecretKey implements AutoUpdateInterface
                 $this->undoEntitiesExternalIdPasswordChanges();
             }
             if (!empty($this->rollbackSteps['outlookPasswords'] ?? null)) {
-                $this->undoOutlookPasswordChanges();
+                $result = $this->undoOutlookPasswordChanges();
+                if (!empty($result['errors'])) {
+                    throw new \Exception($this->logHeader . " [update][undoOutlookPasswordChanges] : " . $result['errors']);
+                }
             }
             if (!empty($this->rollbackSteps['shippingTemplateAccountPasswords'] ?? null)) {
                 $this->undoShippingTemplateAccountPasswordChanges();
@@ -575,7 +590,7 @@ class MigrateSecretKey implements AutoUpdateInterface
     }
 
     /**
-     * Change Shipphinh template account password
+     * Change Shipphinh template account password (Maileva)
      * 
      * @param   string  $oldEncryptKey
      * 
@@ -621,7 +636,7 @@ class MigrateSecretKey implements AutoUpdateInterface
     }
 
     /**
-     * Change Shipphinh template account password
+     * Change Shipphing template account password (Maileva)
      * @throws  \Exception
      * @return  void
      */
