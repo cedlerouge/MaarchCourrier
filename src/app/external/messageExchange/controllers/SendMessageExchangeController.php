@@ -547,6 +547,7 @@ class SendMessageExchangeController
         if (isset($aArgs['ArchivalAgency']['CommunicationType']['type'])) {
             $arcCommunicationObject          = new \stdClass();
             $arcCommunicationObject->Channel = $aArgs['ArchivalAgency']['CommunicationType']['type'];
+            $postUrl = '';
             if ($aArgs['ArchivalAgency']['CommunicationType']['type'] == 'url') {
                 $postUrl = '/rest/saveNumericPackage';
             }
