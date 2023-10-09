@@ -291,8 +291,8 @@ class ConfigurationController
             ],
             'basketToRedirect' => $xmlConfig['basketRedirection_afterUpload'][0],
             'communications'   => [
-                'email'                 => $xmlConfig['m2m_communication_type']['email'],
-                'url'                   => $xmlConfig['m2m_communication_type']['url'],
+                'email'                 => $xmlConfig['m2m_communication_type']['email'] ?? null,
+                'url'                   => $xmlConfig['m2m_communication_type']['url'] ?? null,
                 'login'                 => $xmlConfig['m2m_login'][0] ?? null,
                 'passwordAlreadyExists' => !empty($xmlConfig['m2m_password'])
             ]
