@@ -266,7 +266,8 @@ export class AuthService {
                         this.mailServerOnline = data.mailServerOnline;
                         this.changeKey = data.changeKey;
                         this.applicationName = data.applicationName;
-                        this.loginMessage = data.loginMessage;
+                        this.loginMessage = this.functionsService.removeScriptTagsIfExist(data.loginMessage);
+                        this.loginMessage = this.functionsService.sanitizeHtml(this.loginMessage);
                         this.externalSignatoryBook = data.externalSignatoryBook;
                         this.setEvent('authenticationInformations');
                         this.authMode = data.authMode;
