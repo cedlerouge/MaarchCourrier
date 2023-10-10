@@ -182,7 +182,7 @@ describe('LoginComponent', () => {
                 const req = httpTestingController.expectOne('../rest/authenticate');
                 expect(req.request.method).toBe('POST');
                 expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
-                req.flush({}, { status: 401, statusText: 'Authentication failed : wrong password' }); // Provide a mock error response
+                req.flush({}, { status: 401, statusText: component.translate.instant('lang.wrongLoginPassword') }); // Provide a mock error response
       
                 // Flush any pending asynchronous tasks
                 flush();
