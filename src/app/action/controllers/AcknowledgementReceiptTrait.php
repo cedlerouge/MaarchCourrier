@@ -241,8 +241,8 @@ trait AcknowledgementReceiptTrait
                     'document'      => ['id' => $args['resId'], 'isLinked' => false, 'original' => true],
                     'isHtml'        => true,
                     'status'        => 'TO_SEND',
-                    'cc'            => !empty($args['data']['cc']) ? array_column($args['data']['cc'], 'email') : '[]',
-                    'cci'           => !empty($args['data']['cci']) ? array_column($args['data']['cci'], 'email') : '[]'
+                    'cc'            => !empty($args['data']['cc']) ? array_column($args['data']['cc'], 'email') : [],
+                    'cci'           => !empty($args['data']['cci']) ? array_column($args['data']['cci'], 'email') : []
                 ],
                 'options'   => [
                     'acknowledgementReceiptId' => $email['id']
