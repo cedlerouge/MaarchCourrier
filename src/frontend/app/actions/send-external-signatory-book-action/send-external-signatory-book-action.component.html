@@ -35,7 +35,7 @@
                         </ul>
                     </div>
                     <div>
-                        <app-i-paraph #iParapheur *ngIf="authService.externalSignatoryBook.id === 'iParapheur' && !loading"
+                        <app-i-paraph #iParapheur *ngIf="['iParapheur', 'pastell'].indexOf(authService.externalSignatoryBook.id) > -1 && !loading"
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas">
                         </app-i-paraph>
