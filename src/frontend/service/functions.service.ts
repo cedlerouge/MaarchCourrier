@@ -166,4 +166,16 @@ export class FunctionsService {
     getDocBaseUrl() {
         return `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.BASE_VERSION}`;
     }
+
+    removeScriptTagsIfExist(data: string): string {
+        data = data.replace(/alert\(|confirm\(|prompt\(/g, '');
+        return data;
+    }
+
+    sanitizeHtml(html: string): string {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const scripts = doc.querySelectorAll('script');
+        scripts.forEach(script => script.remove());
+        return doc.body.innerHTML;
+    }
 }

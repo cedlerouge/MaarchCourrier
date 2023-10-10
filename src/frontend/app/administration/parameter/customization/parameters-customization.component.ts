@@ -119,8 +119,9 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             statusbar: false,
             readonly: readonly,
             plugins: [
-                'autolink', 'table', 'code', 'autoresize'
+                'autolink', 'table', 'autoresize'
             ],
+            extended_valid_elements: 'script[src|async|defer|type|charset]', // disables script execution in TinyMCE
             external_plugins: {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
             },
@@ -134,7 +135,7 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             forced_root_block : false,
             toolbar: !readonly ? 'undo redo | fontselect fontsizeselect | bold italic underline strikethrough forecolor | table maarch_b64image | \
         alignleft aligncenter alignright alignjustify \
-        bullist numlist outdent indent | removeformat code' : ''
+        bullist numlist outdent indent | removeformat' : ''
         };
         tinymce.init(param);
         param.selector = '#homepage_message';
