@@ -172,10 +172,55 @@ export class FunctionsService {
         return data;
     }
 
+    /**
+     * Sanitizes HTML content to remove all script elements, event attributes, and external script URLs.
+     * @param {string} html - The HTML content to be sanitized.
+     * @returns {string} - The sanitized HTML content without any scripts or related elements.
+    */
     sanitizeHtml(html: string): string {
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        const scripts = doc.querySelectorAll('script');
-        scripts.forEach(script => script.remove());
-        return doc.body.innerHTML;
+        // Parse the input HTML string into a DOM object
+        const domParser = new DOMParser().parseFromString(html, 'text/html');
+
+        // Remove all <script> tags from the DOM
+        const scripts = domParser.querySelectorAll('script');
+        scripts.forEach((script: any) => {
+            script.remove();
+        });
+
+        // Remove external script URLs by removing the 'src' attribute from script elements
+        const elementsWithScriptSrc = domParser.querySelectorAll('[src]');
+        elementsWithScriptSrc.forEach(element => {
+            element.removeAttribute('src');
+        });
+
+        // Remove event attributes (such as onclick, onerror, etc.) from all elements
+        const elementsWithEventAttributes = domParser.querySelectorAll('*');
+        elementsWithEventAttributes.forEach(element => {
+            element.removeAttribute('onabort');
+            element.removeAttribute('onblur');
+            element.removeAttribute('onchange');
+            element.removeAttribute('onclick');
+            element.removeAttribute('ondblclick');
+            element.removeAttribute('onerror');
+            element.removeAttribute('onfocus');
+            element.removeAttribute('onkeydown');
+            element.removeAttribute('onkeypress');
+            element.removeAttribute('onkeyup');
+            element.removeAttribute('onload');
+            element.removeAttribute('onmousedown');
+            element.removeAttribute('onmousemove');
+            element.removeAttribute('onmouseout');
+            element.removeAttribute('onmouseover');
+            element.removeAttribute('onmouseup');
+            element.removeAttribute('onreset');
+            element.removeAttribute('onresize');
+            element.removeAttribute('onscroll');
+            element.removeAttribute('onselect');
+            element.removeAttribute('onsubmit');
+            element.removeAttribute('onunload');
+        });
+
+        // Return the sanitized HTML content
+        return domParser.body.innerHTML;
     }
 }
