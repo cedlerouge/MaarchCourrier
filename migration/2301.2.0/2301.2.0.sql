@@ -5,22 +5,7 @@
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
---DATABASE_BACKUP|actions|parameters
-
-UPDATE users SET preferences = preferences - 'outlookPassword' WHERE preferences->>'outlookPassword' IS NOT NULL;
-
-UPDATE actions
-SET parameters = CASE
-                     WHEN
-                         (SELECT param_value_int FROM parameters where id = 'keepDestForRedirection') != '0' THEN
-                         parameters::jsonb ||
-                             '{"keepCopyForRedirection": false, "keepDestForRedirection:": true, "keepOtherRoleForRedirection": false}'
-                     WHEN (SELECT param_value_int FROM parameters where id = 'keepDestForRedirection') = '0' THEN
-                         parameters::jsonb ||
-                             '{"keepCopyForRedirection": false, "keepDestForRedirection:": false, "keepOtherRoleForRedirection": false}' END
-WHERE component = 'redirectAction';
-
-DELETE FROM parameters WHERE id = 'keepDestForRedirection';
+--DATABASE_BACKUP|configurations
 
 UPDATE configurations SET value = jsonb_set(value, '{default}', '""'::jsonb, TRUE) WHERE privilege = 'admin_document_editors';
 
