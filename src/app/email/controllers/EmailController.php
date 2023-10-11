@@ -184,7 +184,11 @@ class EmailController
         $rawEmail = EmailModel::getById(['id' => $args['id']]);
         $document = json_decode($rawEmail['document'], true);
 
-        if (!empty($document['id']) && !ResController::hasRightByResId(['resId' => [$document['id']], 'userId' => $GLOBALS['id']])) {
+        if (empty($document['id'])){
+            return $response->withStatus(403)->withJson(['errors' => 'Email not linked to a resource']);
+        }
+
+        if (!ResController::hasRightByResId(['resId' => [$document['id']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
