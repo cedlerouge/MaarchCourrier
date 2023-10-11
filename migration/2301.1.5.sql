@@ -1,7 +1,7 @@
 -- *************************************************************************--
 --                                                                          --
 --                                                                          --
--- Model migration script - 2301.1.x to 2301.2.0                            --
+-- Model migration script - 2301.1.3 to 2301.1.5                            --
 --                                                                          --
 --                                                                          --
 -- *************************************************************************--
@@ -21,4 +21,4 @@ WHERE component = 'redirectAction';
 
 DELETE FROM parameters WHERE id = 'keepDestForRedirection';
 
-UPDATE parameters SET param_value_string = '2301.2.0' WHERE id = 'database_version';
+UPDATE parameters SET param_value_string = '2301.1.5' WHERE id = 'database_version';
