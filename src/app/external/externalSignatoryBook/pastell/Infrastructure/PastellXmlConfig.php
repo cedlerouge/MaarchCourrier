@@ -31,7 +31,7 @@ class PastellXmlConfig implements PastellConfigInterface
                     (string)$PastellConfig->login ?? null,
                     (string)$PastellConfig->password ?? null,
                     (int)$PastellConfig->entityId ?? null,
-                    (int)$pastellConfig->connectorId ?? null,
+                    (int)$PastellConfig->connectorId ?? null,
                     (string)$PastellConfig->defaultType ?? null,
                     (string)$PastellConfig->defaultSousType ?? null
                 );
