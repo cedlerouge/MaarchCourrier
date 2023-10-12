@@ -85,4 +85,18 @@
         <docutype>101</docutype>
         <docustype>9</docustype>
     </signatoryBook>
+        <signatoryBook>
+            <id>Pastell</id>
+            <login></login>
+            <password></password>
+            <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
+            <entity>MAARCH (GROUPE XELIANS) (92)</entity>
+            <defaultType>XELIANS COURRIER</defaultType>
+            <defaultSousType>courrier</defaultSousType>
+            <errorCode>KO</errorCode>
+            <visaState>CachetOK</visaState>
+            <signState>Signe</signState>
+            <refusedVisa>RejetVisa</refusedVisa>
+            <refusedSign>RejetSignataire</refusedSign>
+        </signatoryBook>
 </root>
