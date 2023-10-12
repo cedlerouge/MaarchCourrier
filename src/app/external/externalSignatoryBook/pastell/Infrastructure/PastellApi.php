@@ -26,20 +26,22 @@ class PastellApi implements PastellApiInterface
     public function getVersion(string $url, string $login, string $password): array
     {
         $response = CurlModel::exec([
-            'url' => $url . 'version',
+            'url' => $url . '/version',
             'basicAuth' => ['user' => $login, 'password' => $password],
             'method' => 'GET'
         ]);
 
-        if (!empty($response['error-message'])) {
-            $errors = ["error" => $response['error-message']];
-        } else {
-            foreach ($response['response'] as $version) {
-                $version = $version['version'];
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
             }
+        } else {
+            $return = ['version' => $response['response']['version'] ?? ''];
         }
 
-        return !empty($errors) ? $errors : $version;
+        return $return;
     }
 
     public function getEntity(string $entity): array
