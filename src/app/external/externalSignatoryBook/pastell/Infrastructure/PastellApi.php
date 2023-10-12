@@ -9,6 +9,7 @@
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use SrcCore\models\CurlModel;
 
 class PastellApi implements PastellApiInterface
@@ -20,11 +21,11 @@ class PastellApi implements PastellApiInterface
      * @param string $password
      * @return array
      */
-    public function getVersion(string $url, string $login, string $password): array
+    public function getVersion(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $url . '/version',
-            'basicAuth' => ['user' => $login, 'password' => $password],
+            'url' => $config->getUrl() . '/version',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
 
@@ -47,13 +48,13 @@ class PastellApi implements PastellApiInterface
      * @param string $password
      * @return array|string[]
      */
-    public function getEntity(string $url, string $login, string $password): array
+    public function getEntity(PastellConfig $config): array
     {
         $return = [];
         //Récupération de l'entité accessible via l'utilisateur connecté
         $response = CurlModel::exec([
-            'url' => $url . '/entite',
-            'basicAuth' => ['user' => $login, 'password' => $password],
+            'url' => $config->getUrl() . '/entite',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
 
@@ -78,12 +79,12 @@ class PastellApi implements PastellApiInterface
      * @param int $entite
      * @return array|string[]
      */
-    public function getConnector(string $url, string $login, string $password, int $entite): array
+    public function getConnector(PastellConfig $config): array
     {
         $return = [];
         $response = CurlModel::exec([
-            'url' => $url . '/entite/', $entite . '/connecteur',
-            'basicAuth' => ['user' => $login, 'password' => $password],
+            'url' => $config->getUrl() . '/entite/', $config->getEntity() . '/connecteur',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
 
@@ -96,6 +97,37 @@ class PastellApi implements PastellApiInterface
         } else {
             foreach ($response['response'] as $connector){
                 $return = ['connectorId' => $connector['id_ce']];
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @param int $entite
+     * @param int $connector
+     * @return array
+     */
+    public function getType(PastellConfig $config): array
+    {
+        $return = [];
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite' . $config->getEntity() . '/connecteur' . $config->getConnector() . '/externalData/iparapheur_type',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            foreach ($response['response'] as $entite) {
+                $return = ['idEntity' => $entite['id_e']];
             }
         }
         return $return;

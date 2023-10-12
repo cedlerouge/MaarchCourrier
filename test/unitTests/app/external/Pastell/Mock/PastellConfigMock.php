@@ -23,7 +23,7 @@ class PastellConfigMock implements PastellConfigInterface
             'toto123',
             193,
             776,
-            '',
+            'XELIANS COURRIER',
             ''
         );
     }

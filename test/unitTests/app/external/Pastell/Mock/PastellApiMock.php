@@ -9,6 +9,7 @@
 namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 
 class PastellApiMock implements PastellApiInterface
 {
@@ -16,38 +17,41 @@ class PastellApiMock implements PastellApiInterface
     public array $version = [];
     public array $entity = [];
     public array $connector = [];
+    public array $type = [];
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
+     * @param PastellConfig $config
      * @return string[]
      */
-    public function getVersion(string $url, string $login, string $password): array
+    public function getVersion(PastellConfig $config): array
     {
         return $this->version;
     }
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
+     * @param PastellConfig $config
      * @return array
      */
-    public function getEntity(string $url, string $login, string $password): array
+    public function getEntity(PastellConfig $config): array
     {
         return $this->entity;
     }
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
-     * @param int $entite
+     * @param PastellConfig $config
      * @return array
      */
-    public function getConnector(string $url, string $login, string $password, int $entite): array
+    public function getConnector(PastellConfig $config): array
     {
         return $this->connector;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getType(PastellConfig $config): array
+    {
+        return $this->type;
     }
 }
