@@ -11,5 +11,5 @@ namespace ExternalSignatoryBook\pastell\Domain;
 
 interface PastellConfigInterface
 {
-    public function getPastellConfig(): array;
+    public function getPastellConfig(): ?PastellConfig;
 }

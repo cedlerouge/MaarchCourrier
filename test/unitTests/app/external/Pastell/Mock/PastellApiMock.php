@@ -14,13 +14,8 @@ use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 class PastellApiMock implements PastellApiInterface
 {
 
-    /**
-     * @return bool
-     */
-    public function checkPastellConfig(): bool
-    {
-        return false;
-    }
+    public array $version = [];
+    public array $entity = [];
 
     /**
      * @param string $url
@@ -30,11 +25,16 @@ class PastellApiMock implements PastellApiInterface
      */
     public function getVersion(string $url, string $login, string $password): array
     {
-        return ['errors' => 'Erreur lors de la récupération de la version'];
+        return $this->version;
     }
 
-    public function getEntity($entity): array
+    public function getEntity($config): array
     {
-        return ['errors' => 'Erreur lors de la récupération'];
+        return $this->entity;
+    }
+
+    public function getConnector(array $config)
+    {
+        // TODO: Implement getConnector() method.
     }
 }
