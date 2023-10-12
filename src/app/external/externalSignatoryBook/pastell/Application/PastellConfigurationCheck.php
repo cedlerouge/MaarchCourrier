@@ -37,7 +37,7 @@ class PastellConfigurationCheck
         if (empty($config) || empty($config->getUrl()) || empty($config->getLogin()) || empty($config->getPassword())) {
             return false;
         }
-        $version = $this->pastellApi->getVersion($config->getUrl(), $config->getLogin(), $config->getPassword());
+        $version = $this->pastellApi->getVersion($config);
         if (!empty($version['errors'])) {
             return false;
         }
@@ -46,13 +46,13 @@ class PastellConfigurationCheck
             return false;
         }
 
-        $entities = $this->pastellApi->getEntity($config->getUrl(), $config->getLogin(),$config->getPassword());
+        $entities = $this->pastellApi->getEntity($config);
 
         if (!in_array($config->getEntity(), $entities)) {
             return false;
         }
 
-        $connectors = $this->pastellApi->getConnector($config->getUrl(), $config->getLogin(), $config->getPassword(), $config->getEntity());
+        $connectors = $this->pastellApi->getConnector($config);
 
         if (!in_array($config->getConnector(), $connectors)) {
             return false;
