@@ -19,7 +19,7 @@ interface PastellApiInterface
      * @param string $password
      * @return array
      */
-    public function getVersion(string $url, string $login, string $password): array;
+    public function getVersion(PastellConfig $config): array;
 
     /**
      * @param string $url
@@ -27,14 +27,17 @@ interface PastellApiInterface
      * @param string $password
      * @return array
      */
-    public function getEntity(string $url, string $login, string $password): array;
+    public function getEntity(PastellConfig $config): array;
 
     /**
      * @param string $url
      * @param string $login
      * @param string $password
      * @param int $entite
-     * @return mixed
+     * @return array
      */
-    public function getConnector(string $url, string $login, string $password, int $entite);
+    public function getConnector(PastellConfig $config): array;
+
+    public function getType(PastellConfig $config): array;
+
 }
