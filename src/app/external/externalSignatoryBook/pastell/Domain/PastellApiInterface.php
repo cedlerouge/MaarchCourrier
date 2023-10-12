@@ -14,11 +14,6 @@ namespace ExternalSignatoryBook\pastell\Domain;
 interface PastellApiInterface
 {
     /**
-     * @return bool
-     */
-    public function checkPastellConfig(): bool;
-
-    /**
      * @param string $url
      * @param string $login
      * @param string $password
@@ -27,8 +22,12 @@ interface PastellApiInterface
     public function getVersion(string $url, string $login, string $password): array;
 
     /**
-     * @param string $entity
+     * @param string $url
+     * @param string $login
+     * @param string $password
      * @return array
      */
-    public function getEntity(string $entity): array;
+    public function getEntity(string $url, string $login, string $password): array;
+
+    public function getConnector(string $url, string $login, string $password, int $entite);
 }

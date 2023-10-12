@@ -11,6 +11,7 @@
 namespace unitTests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +25,7 @@ class PastellServiceTest extends TestCase
     {
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig = [];
+        $pastellConfigMock->pastellConfig = null;
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
         $result = $pastellService->checkPastellConfig();
@@ -39,7 +40,15 @@ class PastellServiceTest extends TestCase
     {
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig = ['toto'];
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            '',
+            'toto',
+            'toto123',
+            193,
+            0,
+            '',
+            ''
+        );
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
         $result = $pastellService->checkPastellConfig();
@@ -54,7 +63,15 @@ class PastellServiceTest extends TestCase
     {
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig = ['url' => 'toto'];
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            '',
+            'toto123',
+            193,
+            0,
+            '',
+            ''
+        );
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
         $result = $pastellService->checkPastellConfig();
@@ -69,11 +86,15 @@ class PastellServiceTest extends TestCase
     {
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig =
-            [
-                'url' => 'toto',
-                'login' => 'toto2'
-            ];
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            '',
+            193,
+            0,
+            '',
+            ''
+        );
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
         $result = $pastellService->checkPastellConfig();
@@ -87,6 +108,7 @@ class PastellServiceTest extends TestCase
     public function testConfigurationIsNotValidIfUrlIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->version = ['errors' => 'Erreur lors de la récupération de la version'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
@@ -97,14 +119,50 @@ class PastellServiceTest extends TestCase
 
     }
 
-    public function testIfEntityIsMatching(): void
+    public function testConfigurationIsNotValidIfEntityIsMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
-        $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            0,
+            0,
+            '',
+            ''
+        );
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-        $result = $pastellService->checkEntity();
+        $result = $pastellConfigCheck->checkPastellConfig();
 
         $this->assertFalse($result);
     }
+
+    public function testConfigurationIsNotValidIfEntityIsNotFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        //$pastellApiMock->entity = ['errors' => 'Erreur lors de la récupération'];
+        $pastellApiMock->entity = ['192', '42', '813'];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertFalse($result);
+    }
+
+    public function testConfigurationIsValidIfEntityIsFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->entity = ['192', '193', '813'];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertTrue($result);
+    }
+
+
 }

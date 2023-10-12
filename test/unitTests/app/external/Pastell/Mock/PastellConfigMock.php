@@ -9,21 +9,32 @@
 
 namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
 
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
+use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
 
 class PastellConfigMock implements PastellConfigInterface
 {
 
-    public array $pastellConfig = [
-        'url' => 'testUrl',
-        'login' => 'toto',
-        'password' => 'toto123'
-    ];
+    public ?PastellConfig $pastellConfig = null;
+
+    public function __construct()
+    {
+        $this->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            193,
+            0,
+            '',
+            ''
+        );
+    }
 
     /**
-     * @return array|string[]
+     * @return PastellConfig|null
      */
-    public function getPastellConfig(): array
+    public function getPastellConfig(): ?PastellConfig
     {
         return $this->pastellConfig;
     }
