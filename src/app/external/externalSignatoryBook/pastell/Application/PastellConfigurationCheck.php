@@ -36,21 +36,21 @@ class PastellConfigurationCheck
     {
         $config = $this->pastellConfig->getPastellConfig();
 
-        if (empty($config) || empty($config['url']) || empty($config['login']) || empty($config['password'])) {
+        if (empty($config) || empty($config->getUrl()) || empty($config->getLogin()) || empty($config->getPassword())) {
             return false;
         }
-        $version = $this->pastellApi->getVersion($config['url'], $config['login'], $config['password']);
+        $version = $this->pastellApi->getVersion($config->getUrl(), $config->getLogin(), $config->getPassword());
         if (!empty($version['errors'])) {
             return false;
         }
 
-        if (empty($config['entityId'])) {
+        if (empty($config->getEntity())) {
             return false;
         }
 
-        $entities = $this->pastellApi->getEntity($config);
+        $entities = $this->pastellApi->getEntity($config->getUrl(), $config->getLogin(),$config->getPassword());
 
-        if (!in_array($config['entityId'], $entities)) {
+        if (!in_array($config->getEntity(), $entities)) {
             return false;
         }
 

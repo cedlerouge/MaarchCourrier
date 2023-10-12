@@ -28,12 +28,12 @@ class PastellApiMock implements PastellApiInterface
         return $this->version;
     }
 
-    public function getEntity($config): array
+    public function getEntity(string $url, string $login, string $password): array
     {
         return $this->entity;
     }
 
-    public function getConnector(array $config)
+    public function getConnector(string $url, string $login, string $password, int $entite)
     {
         // TODO: Implement getConnector() method.
     }
