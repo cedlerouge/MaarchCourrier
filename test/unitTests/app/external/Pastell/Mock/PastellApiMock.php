@@ -4,7 +4,6 @@
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
  * This file is part of Maarch software.
- *
  */
 
 namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
@@ -16,6 +15,7 @@ class PastellApiMock implements PastellApiInterface
 
     public array $version = [];
     public array $entity = [];
+    public array $connector = [];
 
     /**
      * @param string $url
@@ -28,13 +28,26 @@ class PastellApiMock implements PastellApiInterface
         return $this->version;
     }
 
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @return array
+     */
     public function getEntity(string $url, string $login, string $password): array
     {
         return $this->entity;
     }
 
-    public function getConnector(string $url, string $login, string $password, int $entite)
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @param int $entite
+     * @return array
+     */
+    public function getConnector(string $url, string $login, string $password, int $entite): array
     {
-        // TODO: Implement getConnector() method.
+        return $this->connector;
     }
 }

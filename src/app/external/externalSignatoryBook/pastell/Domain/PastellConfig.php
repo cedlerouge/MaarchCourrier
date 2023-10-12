@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
+
 namespace ExternalSignatoryBook\pastell\Domain;
 
 class PastellConfig
@@ -25,11 +31,12 @@ class PastellConfig
         string $url,
         string $login,
         string $password,
-        int $entity,
-        int $connector,
+        int    $entity,
+        int    $connector,
         string $type,
         string $sousType
-    ) {
+    )
+    {
         $this->url = $url;
         $this->login = $login;
         $this->password = $password;
@@ -38,7 +45,6 @@ class PastellConfig
         $this->type = $type;
         $this->sousType = $sousType;
     }
-
 
     public function getUrl(): string
     {
