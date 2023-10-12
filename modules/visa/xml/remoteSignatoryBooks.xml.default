@@ -87,8 +87,8 @@
     </signatoryBook>
     <signatoryBook>
         <id>Pastell</id>
-        <login>gheurtier</login>
-        <password>M@arch!2023azerty</password>
+        <login></login>
+        <password></password>
         <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
         <entity>MAARCH (GROUPE XELIANS) (92)</entity>
         <defaultType>XELIANS COURRIER</defaultType>
