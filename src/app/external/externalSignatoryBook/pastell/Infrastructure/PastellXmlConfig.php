@@ -8,7 +8,10 @@ use SrcCore\models\CoreConfigModel;
 
 class PastellXmlConfig implements PastellConfigInterface
 {
-
+    /**
+     * @param array $Args
+     * @return PastellConfig|null
+     */
     public function getPastellConfig(array $Args = []): ?PastellConfig
     {
         $customId = CoreConfigModel::getCustomId();
@@ -37,7 +40,6 @@ class PastellXmlConfig implements PastellConfigInterface
                 );
             }
         }
-
         return $pastellConfig;
     }
 }

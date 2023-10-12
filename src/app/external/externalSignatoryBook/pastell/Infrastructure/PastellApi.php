@@ -1,16 +1,18 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
-use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use SrcCore\models\CurlModel;
 
 class PastellApi implements PastellApiInterface
 {
-// TODO appel CURL
-
-
     /**
      * Récupération de la version de Pastell (permet de vérifier la connexion avec l'url, login et password)
      * @param string $url
@@ -26,7 +28,7 @@ class PastellApi implements PastellApiInterface
             'method' => 'GET'
         ]);
 
-        if ($response['code'] > 201) {
+        if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
             } else {
@@ -39,6 +41,12 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @return array|string[]
+     */
     public function getEntity(string $url, string $login, string $password): array
     {
         $return = [];
@@ -49,7 +57,7 @@ class PastellApi implements PastellApiInterface
             'method' => 'GET'
         ]);
 
-        if ($response['code'] > 201) {
+        if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
             } else {
@@ -57,14 +65,39 @@ class PastellApi implements PastellApiInterface
             }
         } else {
             foreach ($response['response'] as $entite) {
-                $return = ['idEntity' => $entite['id_e']];
+                $return = ['entityId' => $entite['id_e']];
             }
         }
         return $return;
     }
 
-    public function getConnector(string $url, string $login, string $password, int $entite)
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @param int $entite
+     * @return array|string[]
+     */
+    public function getConnector(string $url, string $login, string $password, int $entite): array
     {
-        // TODO: Implement getConnector() method.
+        $return = [];
+        $response = CurlModel::exec([
+            'url' => $url . '/entite/', $entite . '/connecteur',
+            'basicAuth' => ['user' => $login, 'password' => $password],
+            'method' => 'GET'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            foreach ($response['response'] as $connector){
+                $return = ['connectorId' => $connector['id_ce']];
+            }
+        }
+        return $return;
     }
 }

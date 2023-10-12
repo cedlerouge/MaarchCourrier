@@ -4,13 +4,11 @@
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
  * This file is part of Maarch software.
- *
  */
 
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
-use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 
 class PastellConfigurationCheck
@@ -51,6 +49,12 @@ class PastellConfigurationCheck
         $entities = $this->pastellApi->getEntity($config->getUrl(), $config->getLogin(),$config->getPassword());
 
         if (!in_array($config->getEntity(), $entities)) {
+            return false;
+        }
+
+        $connectors = $this->pastellApi->getConnector($config->getUrl(), $config->getLogin(), $config->getPassword(), $config->getEntity());
+
+        if (!in_array($config->getConnector(), $connectors)) {
             return false;
         }
 

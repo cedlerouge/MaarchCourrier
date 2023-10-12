@@ -1,11 +1,9 @@
 <?php
 
-
 /**
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
  * This file is part of Maarch software.
- *
  */
 
 namespace unitTests\app\external\Pastell\Application;
@@ -119,6 +117,9 @@ class PastellServiceTest extends TestCase
 
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfEntityIsMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -139,10 +140,12 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfEntityIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
-        //$pastellApiMock->entity = ['errors' => 'Erreur lors de la récupération'];
         $pastellApiMock->entity = ['192', '42', '813'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -152,6 +155,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsValidIfEntityIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -164,5 +170,27 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testConfigurationIsValidIfConnectorIsNotFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->connector = ['34', '245', '813'];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertFalse($result);
+    }
+
+    public function testConfigurationIsValidIfConnectorIsFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->connector = ['34', '245', '776'];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertTrue($result);
+    }
 }
