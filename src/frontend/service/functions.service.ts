@@ -167,11 +167,6 @@ export class FunctionsService {
         return `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.BASE_VERSION}`;
     }
 
-    removeScriptTagsIfExist(data: string): string {
-        data = data.replace(/alert\(|confirm\(|prompt\(/g, '');
-        return data;
-    }
-
     /**
      * Sanitizes HTML content to remove all script elements, event attributes, and external script URLs.
      * @param {string} html - The HTML content to be sanitized.
@@ -185,12 +180,6 @@ export class FunctionsService {
         const scripts = domParser.querySelectorAll('script');
         scripts.forEach((script: any) => {
             script.remove();
-        });
-
-        // Remove external script URLs by removing the 'src' attribute from script elements
-        const elementsWithScriptSrc = domParser.querySelectorAll('[src]');
-        elementsWithScriptSrc.forEach(element => {
-            element.removeAttribute('src');
         });
 
         // Remove event attributes (such as onclick, onerror, etc.) from all elements

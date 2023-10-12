@@ -44,8 +44,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
         this.http.get('../rest/home').pipe(
             tap((data: any) => {
                 this.homeData = data;
-                this.homeData = this.functions.removeScriptTagsIfExist(data['homeMessage']);
-                const sanitizedHtml = this.functions.sanitizeHtml(this.homeData);
+                const sanitizedHtml = this.functions.sanitizeHtml(data['homeMessage']);
                 this.homeMessage = this.sanitizer.bypassSecurityTrustHtml(sanitizedHtml);
             }),
             catchError((err: any) => {
