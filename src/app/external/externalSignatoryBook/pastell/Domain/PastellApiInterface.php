@@ -29,5 +29,12 @@ interface PastellApiInterface
      */
     public function getEntity(string $url, string $login, string $password): array;
 
+    /**
+     * @param string $url
+     * @param string $login
+     * @param string $password
+     * @param int $entite
+     * @return mixed
+     */
     public function getConnector(string $url, string $login, string $password, int $entite);
 }
