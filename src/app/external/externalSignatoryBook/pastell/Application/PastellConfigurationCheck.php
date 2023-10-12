@@ -10,13 +10,13 @@
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 
 class PastellConfigurationCheck
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
-    private PastellApiInterface $pastellEntity;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -44,14 +44,13 @@ class PastellConfigurationCheck
             return false;
         }
 
-        return true;
-    }
+        if (empty($config['entityId'])) {
+            return false;
+        }
 
-    public function checkEntity(): bool
-    {
-        $entity = $this->pastellEntity->getEntity();
+        $entities = $this->pastellApi->getEntity($config);
 
-        if(empty($entity)) {
+        if (!in_array($config['entityId'], $entities)) {
             return false;
         }
 

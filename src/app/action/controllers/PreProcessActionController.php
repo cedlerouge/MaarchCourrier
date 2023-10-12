@@ -484,7 +484,7 @@ class PreProcessActionController
                 $additionalsInfos['ixbus'] = IxbusController::getInitializeDatas($config);
             }
             $availableResources = [];
-            if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus'])) {
+            if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus', 'Pastell'])) {
                 if (is_array($data['resources']) && count($data['resources']) == 1) {
                     $resDestination = ResModel::getById([
                         'select'   => ['destination'],
