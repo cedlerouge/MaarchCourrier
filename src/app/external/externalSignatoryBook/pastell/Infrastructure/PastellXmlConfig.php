@@ -35,9 +35,9 @@ class PastellXmlConfig implements PastellConfigInterface
                     (string)$PastellConfig->password ?? null,
                     (int)$PastellConfig->entityId ?? null,
                     (int)$PastellConfig->connectorId ?? null,
-                        (string)$PastellConfig->documentType ?? null,
+                    (string)$PastellConfig->documentType ?? null,
                     (string)$PastellConfig->iParapheurType ?? null,
-                        (string)$PastellConfig->iParapheurSousType ?? null
+                    (string)$PastellConfig->iParapheurSousType ?? null
                 );
             }
         }

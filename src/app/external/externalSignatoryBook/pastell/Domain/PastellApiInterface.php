@@ -31,6 +31,16 @@ interface PastellApiInterface
      */
     public function getConnector(PastellConfig $config): array;
 
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
     public function getDocumentType(PastellConfig $config): array;
+
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function createFolder(PastellConfig $config): array;
 
 }

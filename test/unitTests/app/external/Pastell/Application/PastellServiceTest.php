@@ -173,6 +173,9 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfConnectorIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -186,6 +189,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsValidIfConnectorIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -198,6 +204,9 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfDocumentTypeIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -219,6 +228,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsValidIfDocumentTypeIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();

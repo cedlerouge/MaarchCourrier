@@ -15,3 +15,4 @@ interface PastellConfigInterface
      */
     public function getPastellConfig(): ?PastellConfig;
 }
+ 
