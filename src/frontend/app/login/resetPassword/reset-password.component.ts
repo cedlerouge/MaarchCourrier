@@ -25,8 +25,8 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
     };
     labelButton: string = this.translate.instant('lang.update');
 
-    hideNewPassword: Boolean = true;
-    hideNewPasswordConfirm: Boolean = true;
+    hideNewPassword: boolean = true;
+    hideNewPasswordConfirm: boolean = true;
 
     // HANDLE PASSWORD
     passwordRules: any = {
@@ -96,13 +96,13 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
     checkPasswordValidity(password: string) {
         this.handlePassword.error = true;
 
-        if (!password.match(/[A-Z]/g) && this.passwordRules.complexityUpper.enabled) {
+        if (!password.match(/[A-Z]/g) && this.passwordRules?.complexityUpper?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexityUpperRequired');
-        } else if (!password.match(/[0-9]/g) && this.passwordRules.complexityNumber.enabled) {
+        } else if (!password.match(/[0-9]/g) && this.passwordRules?.complexityNumber?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexityNumberRequired');
-        } else if (!password.match(/[^A-Za-z0-9]/g) && this.passwordRules.complexitySpecial.enabled) {
+        } else if (!password.match(/[^A-Za-z0-9]/g) && this.passwordRules?.complexitySpecial?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexitySpecialRequired');
-        } else if (password.length < this.passwordRules.minLength.value && this.passwordRules.minLength.enabled) {
+        } else if (password.length < this.passwordRules?.minLength.value && this.passwordRules?.minLength?.enabled) {
             this.handlePassword.errorMsg = this.passwordRules.minLength.value + ' ' + this.translate.instant('lang.passwordminLength') + ' !';
         } else {
             this.handlePassword.error = false;
@@ -116,8 +116,8 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
 
         this.http.get('../rest/passwordRules').pipe(
             tap((data: any) => {
-                const ruleTextArr: String[] = [];
-                const otherRuleTextArr: String[] = [];
+                const ruleTextArr: string[] = [];
+                const otherRuleTextArr: string[] = [];
 
                 data.rules.forEach((rule: any) => {
                     if (rule.label === 'minLength') {
@@ -173,7 +173,19 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
         ).subscribe();
     }
 
-    allowValidate() {
+    containsSpaces(password: string): any {
+        if (password.includes(' ')) {            
+            this.handlePassword.error = true;
+            this.handlePassword.errorMsg = this.translate.instant('lang.spacesNotAllowed');
+        } else {
+            console.log('here');
+            
+            this.handlePassword.error = false;
+            this.handlePassword.errorMsg = '';
+        }
+    }
+
+    allowValidate(): boolean {
         if ((this.handlePassword.error || this.password.newPassword !== this.password.passwordConfirmation || this.password.newPassword.length === 0 || this.password.passwordConfirmation.length === 0)) {
             return true;
         } else {

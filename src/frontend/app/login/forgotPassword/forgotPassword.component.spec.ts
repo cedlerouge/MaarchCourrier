@@ -16,9 +16,9 @@ import { Router } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
 
 class FakeLoader implements TranslateLoader {
-  getTranslation(lang: string): Observable<any> {
-      return of({ lang: langFrJson });
-  }
+    getTranslation(): Observable<any> {
+        return of({ lang: langFrJson });
+    }
 }
 
 describe('Forgot password component', () => {
@@ -37,7 +37,7 @@ describe('Forgot password component', () => {
                 HttpClientTestingModule,
                 BrowserModule,
                 TranslateModule.forRoot({
-                loader: { provide: TranslateLoader, useClass: FakeLoader },
+                    loader: { provide: TranslateLoader, useClass: FakeLoader },
                 })
             ],
             providers: [

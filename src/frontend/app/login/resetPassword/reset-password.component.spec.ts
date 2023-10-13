@@ -139,4 +139,69 @@ describe('Reset password component', () => {
             flush();
         });
     }));
+
+    it('display an error message if newPassword or passwordConfirmation includes spaces', fakeAsync(() => {
+        component.password.newPassword = 'password with space';
+
+        fixture.detectChanges();
+    
+        component.containsSpaces(component.password.newPassword);
+    
+        expect(component.handlePassword.error).toBe(true);
+        expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.spacesNotAllowed'));
+    }));
+    
+
+    it('display an error message if the password does not contain capital letters', () => {
+        component.passwordRules = {
+            complexityUpper: { enabled: true, value: 0 }
+        };
+
+        fixture.detectChanges();
+
+        component.checkPasswordValidity('password');
+
+        expect(component.handlePassword.error).toBe(true);
+        expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.passwordcomplexityUpperRequired'));
+    });
+
+    it('display an error message if the password does not contain any digits', () => {
+        component.passwordRules = {
+            complexityNumber: { enabled: true, value: 0 },
+        };
+
+        fixture.detectChanges();        
+
+        component.checkPasswordValidity('password');
+        
+        expect(component.handlePassword.error).toBe(true);
+        expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.passwordcomplexityNumberRequired'));
+    });
+
+    it('display an error message if the password does not contain special characters', () => {
+        component.passwordRules = {
+            complexitySpecial: { enabled: true, value: 0 },
+        };
+
+        fixture.detectChanges();
+
+        component.checkPasswordValidity('Password123'); // Un mot de passe valide
+
+        // Assert
+        expect(component.handlePassword.error).toBe(true);
+        expect(component.handlePassword.errorMsg).toBe(component.translate.instant('lang.passwordcomplexitySpecialRequired'));
+    });
+
+    it('display error message when password length is less than minimum length', () => {
+        component.passwordRules = {
+            minLength: { enabled: true, value: 8 }
+        };
+
+        fixture.detectChanges();
+
+        component.checkPasswordValidity('pAsswor');
+
+        expect(component.handlePassword.error).toBe(true);
+        expect(component.handlePassword.errorMsg).toBe(`${component.passwordRules.minLength.value} ${component.translate.instant('lang.passwordminLength')} !`);
+    });
 });

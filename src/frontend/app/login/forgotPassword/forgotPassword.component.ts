@@ -39,7 +39,7 @@ export class ForgotPasswordComponent implements OnInit {
         this.loading = true;
 
         this.http.post('../rest/password', { 'login': this.newLogin.login }).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.loadingForm = true;
                 this.notificationService.success(this.translate.instant('lang.requestSentByEmail'));
                 this.router.navigate(['/login']);
