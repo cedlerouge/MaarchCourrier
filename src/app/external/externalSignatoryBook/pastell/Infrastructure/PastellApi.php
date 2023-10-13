@@ -126,6 +126,35 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the type of the plugged connector
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getIparapheurType(PastellConfig $config): array
+    {
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur/' . $config->getConnector() . '/externalData/iparapheur_type',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = [];
+            foreach ($response['response'] as $iParapheurType) {
+                $return[] = $iParapheurType;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * Creating a folder of the document type
      * @param $config
      * @return array|string[]
      */
@@ -148,10 +177,20 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
-                $return = ['idFolder' => $response['response']['info']['id_d'] ?? ''];
+            $return = ['idFolder' => $response['response']['info']['id_d'] ?? ''];
 
         }
 
         return $return;
+    }
+
+    /**
+     * Getting subtype of the connector
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getIparapheurSousType(PastellConfig $config): array
+    {
+        return [];
     }
 }

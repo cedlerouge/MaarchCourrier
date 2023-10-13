@@ -25,8 +25,6 @@ class SendToPastell
      */
     public function sendDatas()
     {
-        //Pas de curl
         $check = $this->checkConfigPastell->checkPastellConfig();
-
     }
 }

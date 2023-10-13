@@ -41,6 +41,17 @@ interface PastellApiInterface
      * @param PastellConfig $config
      * @return array
      */
+    public function getIparapheurType(PastellConfig $config): array;
+
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
     public function createFolder(PastellConfig $config): array;
 
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getIparapheurSousType(PastellConfig $config): array;
 }
