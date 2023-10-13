@@ -45,9 +45,7 @@ class PastellConfigurationCheck
         if (empty($config->getEntity())) {
             return false;
         }
-
         $entities = $this->pastellApi->getEntity($config);
-
         if (!in_array($config->getEntity(), $entities)) {
             return false;
         }
@@ -55,18 +53,22 @@ class PastellConfigurationCheck
         if (empty($config->getConnector())) {
             return false;
         }
-
         $connectors = $this->pastellApi->getConnector($config);
-
         if (!in_array($config->getConnector(), $connectors)) {
             return false;
         }
 
+        if (empty($config->getDocumentType())) {
+            return false;
+        }
+        $flux = $this->pastellApi->getDocumentType($config);
+        if (!in_array($config->getDocumentType(), $flux)) {
+            return false;
+        }
+
+
+
         return true;
     }
 
-    public function checkType()
-    {
-
-    }
 }
