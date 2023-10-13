@@ -16,9 +16,7 @@ class PastellApi implements PastellApiInterface
 {
     /**
      * Récupération de la version de Pastell (permet de vérifier la connexion avec l'url, login et password)
-     * @param string $url
-     * @param string $login
-     * @param string $password
+     * @param PastellConfig $config
      * @return array
      */
     public function getVersion(PastellConfig $config): array
@@ -43,9 +41,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
+     * @param PastellConfig $config
      * @return array|string[]
      */
     public function getEntity(PastellConfig $config): array
@@ -73,17 +69,13 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
-     * @param int $entite
+     * @param PastellConfig $config
      * @return array|string[]
      */
     public function getConnector(PastellConfig $config): array
     {
-        $return = [];
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/', $config->getEntity() . '/connecteur',
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
@@ -95,19 +87,16 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
+            $return = [];
             foreach ($response['response'] as $connector){
-                $return = ['connectorId' => $connector['id_ce']];
+                $return[] = $connector['id_ce'];
             }
         }
         return $return;
     }
 
     /**
-     * @param string $url
-     * @param string $login
-     * @param string $password
-     * @param int $entite
-     * @param int $connector
+     * @param PastellConfig $config
      * @return array
      */
     public function getType(PastellConfig $config): array
