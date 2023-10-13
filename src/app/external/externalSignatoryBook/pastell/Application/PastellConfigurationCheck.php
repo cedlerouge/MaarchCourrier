@@ -52,6 +52,10 @@ class PastellConfigurationCheck
             return false;
         }
 
+        if (empty($config->getConnector())) {
+            return false;
+        }
+
         $connectors = $this->pastellApi->getConnector($config);
 
         if (!in_array($config->getConnector(), $connectors)) {
