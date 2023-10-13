@@ -45,6 +45,7 @@ class PastellServiceTest extends TestCase
             193,
             0,
             '',
+            '',
             ''
         );
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -68,6 +69,7 @@ class PastellServiceTest extends TestCase
             193,
             0,
             '',
+            '',
             ''
         );
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -90,6 +92,7 @@ class PastellServiceTest extends TestCase
             '',
             193,
             0,
+            '',
             '',
             ''
         );
@@ -131,6 +134,7 @@ class PastellServiceTest extends TestCase
             0,
             0,
             '',
+            '',
             ''
         );
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -169,7 +173,7 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testConfigurationIsValidIfConnectorIsNotFoundInPastell(): void
+    public function testConfigurationIsNotValidIfConnectorIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
         $pastellApiMock->entity = ['192', '193', '813'];
@@ -193,4 +197,37 @@ class PastellServiceTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    public function testConfigurationIsNotValidIfDocumentTypeIsNotFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            0,
+            0,
+            'ls-not-document-pdf',
+            '',
+            ''
+        );
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertFalse($result);
+    }
+
+    public function testConfigurationIsValidIfDocumentTypeIsFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertTrue($result);
+    }
+
 }

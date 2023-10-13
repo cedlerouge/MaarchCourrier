@@ -99,11 +99,10 @@ class PastellApi implements PastellApiInterface
      * @param PastellConfig $config
      * @return array
      */
-    public function getType(PastellConfig $config): array
+    public function getDocumentType(PastellConfig $config): array
     {
-        $return = [];
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite' . $config->getEntity() . '/connecteur' . $config->getConnector() . '/externalData/iparapheur_type',
+            'url' => $config->getUrl() . '/flux',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
@@ -115,8 +114,9 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
-            foreach ($response['response'] as $entite) {
-                $return = ['idEntity' => $entite['id_e']];
+            $return = [];
+            foreach ($response['response'] as $flux => $key) {
+                $return[] = $flux;
             }
         }
         return $return;

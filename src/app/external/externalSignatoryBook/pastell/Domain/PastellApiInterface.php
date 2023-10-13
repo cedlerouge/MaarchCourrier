@@ -31,6 +31,6 @@ interface PastellApiInterface
      */
     public function getConnector(PastellConfig $config): array;
 
-    public function getType(PastellConfig $config): array;
+    public function getDocumentType(PastellConfig $config): array;
 
 }

@@ -86,18 +86,19 @@
         <docustype>9</docustype>
     </signatoryBook>
     <signatoryBook>
-        <id>Pastell</id>
-        <login></login>
-        <password></password>
-        <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
-        <entityId>193</entityId>
-        <connectorId>776</connectorId>
-        <defaultType>XELIANS COURRIER</defaultType>
-        <defaultSousType>courrier</defaultSousType>
-        <errorCode>KO</errorCode>
-        <visaState>CachetOK</visaState>
-        <signState>Signe</signState>
-        <refusedVisa>RejetVisa</refusedVisa>
-        <refusedSign>RejetSignataire</refusedSign>
-    </signatoryBook>
+            <id>Pastell</id>
+            <login></login>
+            <password></password>
+            <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
+            <entityId>193</entityId>
+            <connectorId>776</connectorId>
+            <documentType>ls-document-pdf</documentType>
+            <iParapheurType>XELIANS COURRIER</iParapheurType>
+            <iParapheurSousType>courrier</iParapheurSousType>
+            <errorCode>KO</errorCode>
+            <visaState>CachetOK</visaState>
+            <signState>Signe</signState>
+            <refusedVisa>RejetVisa</refusedVisa>
+            <refusedSign>RejetSignataire</refusedSign>
+        </signatoryBook>
 </root>

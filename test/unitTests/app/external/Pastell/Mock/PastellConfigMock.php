@@ -23,8 +23,9 @@ class PastellConfigMock implements PastellConfigInterface
             'toto123',
             193,
             776,
+            'ls-document-pdf',
             'XELIANS COURRIER',
-            ''
+            'courrier'
         );
     }
 

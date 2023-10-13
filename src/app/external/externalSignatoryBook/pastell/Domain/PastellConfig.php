@@ -15,8 +15,9 @@ class PastellConfig
     private string $password;
     private int $entity;
     private int $connector;
-    private string $type;
-    private string $sousType;
+    private string $documentType;
+    private string $iParapheurtype;
+    private string $iParapheurSousType;
 
     /**
      * @param string $url
@@ -24,8 +25,9 @@ class PastellConfig
      * @param string $password
      * @param int $entity
      * @param int $connector
-     * @param string $type
-     * @param string $sousType
+     * @param string $documentType
+     * @param string $iParapheurtype
+     * @param string $iParapheurSousType
      */
     public function __construct(
         string $url,
@@ -33,8 +35,9 @@ class PastellConfig
         string $password,
         int    $entity,
         int    $connector,
-        string $type,
-        string $sousType
+        string $documentType,
+        string $iParapheurtype,
+        string $iParapheurSousType
     )
     {
         $this->url = $url;
@@ -42,8 +45,9 @@ class PastellConfig
         $this->password = $password;
         $this->entity = $entity;
         $this->connector = $connector;
-        $this->type = $type;
-        $this->sousType = $sousType;
+        $this->documentType = $documentType;
+        $this->iParapheurtype = $iParapheurtype;
+        $this->iParapheurSousType = $iParapheurSousType;
     }
 
     public function getUrl(): string
@@ -74,16 +78,21 @@ class PastellConfig
         return $this->connector;
     }
 
-
-    public function getType(): string
+    public function getDocumentType(): string
     {
-        return $this->type;
+        return $this->documentType;
     }
 
 
-    public function getSousType(): string
+    public function getIparapheurType(): string
     {
-        return $this->sousType;
+        return $this->iParapheurtype;
+    }
+
+
+    public function getIparapheurSousType(): string
+    {
+        return $this->iParapheurSousType;
     }
 
 }
