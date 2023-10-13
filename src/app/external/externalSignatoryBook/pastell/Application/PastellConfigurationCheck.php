@@ -66,7 +66,13 @@ class PastellConfigurationCheck
             return false;
         }
 
-
+        if (empty($config->getIparapheurType())) {
+            return false;
+        }
+        $iParapheurType = $this->pastellApi->getIparapheurType($config);
+        if (!in_array($config->getDocumentType(), $iParapheurType) === false) {
+            return false;
+        }
 
         return true;
     }
