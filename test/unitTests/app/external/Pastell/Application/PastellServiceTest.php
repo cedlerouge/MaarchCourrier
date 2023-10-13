@@ -161,7 +161,6 @@ class PastellServiceTest extends TestCase
     public function testConfigurationIsValidIfEntityIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->entity = ['192', '193', '813'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
@@ -173,6 +172,7 @@ class PastellServiceTest extends TestCase
     public function testConfigurationIsValidIfConnectorIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->entity = ['192', '193', '813'];
         $pastellApiMock->connector = ['34', '245', '813'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -185,7 +185,7 @@ class PastellServiceTest extends TestCase
     public function testConfigurationIsValidIfConnectorIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->connector = ['34', '245', '776'];
+        $pastellApiMock->entity = ['192', '193', '813'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 

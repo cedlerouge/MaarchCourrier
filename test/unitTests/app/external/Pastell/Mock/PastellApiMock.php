@@ -15,8 +15,8 @@ class PastellApiMock implements PastellApiInterface
 {
 
     public array $version = [];
-    public array $entity = [];
-    public array $connector = [];
+    public array $entity = ['192', '193', '813'];
+    public array $connector = ['193','776','952'];
     public array $type = [];
 
     /**
