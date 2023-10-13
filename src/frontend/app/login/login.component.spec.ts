@@ -172,6 +172,8 @@ describe('LoginComponent', () => {
             expect(login.value).toBe('bbain');
             expect(password.value).toBe('wrongpassword');
       
+            spyOn(notificationsService, 'handleSoftErrors');
+            const success = spyOn(notificationsService, 'success');
             component.onSubmit();
       
             // Use whenStable() to wait for all pending asynchronous activities to complete
@@ -180,7 +182,7 @@ describe('LoginComponent', () => {
                 const router = TestBed.inject(Router);
                 const navigateSpy = spyOn(router, 'navigate');
 
-                spyOn(notificationsService, 'handleSoftErrors');
+                expect(success).not.toHaveBeenCalled();
       
                 // Check if navigation is not called in case of authentication failure
                 expect(navigateSpy).not.toHaveBeenCalled();
