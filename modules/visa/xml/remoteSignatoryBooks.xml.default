@@ -90,9 +90,11 @@
         <login></login>
         <password></password>
         <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
-        <entity>MAARCH (GROUPE XELIANS) (92)</entity>
-        <defaultType>XELIANS COURRIER</defaultType>
-        <defaultSousType>courrier</defaultSousType>
+        <entityId>193</entityId>
+        <connectorId>776</connectorId>
+        <documentType>ls-document-pdf</documentType>
+        <iParapheurType>XELIANS COURRIER</iParapheurType>
+        <iParapheurSousType>courrier</iParapheurSousType>
         <errorCode>KO</errorCode>
         <visaState>CachetOK</visaState>
         <signState>Signe</signState>
