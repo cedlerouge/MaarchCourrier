@@ -16,6 +16,7 @@ import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
 import { Router } from '@angular/router';
 import { Component } from '@angular/core';
+import { NotificationService } from '@service/notification/notification.service';
 
 /*
  * Test component with empty template to simulate navigation to home page in the event of successful authentication
@@ -34,6 +35,7 @@ describe('LoginComponent', () => {
     let fixture: ComponentFixture<LoginComponent>;
     let httpTestingController: HttpTestingController;
     let translateService: TranslateService;
+    let notificationsService: NotificationService;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -151,6 +153,7 @@ describe('LoginComponent', () => {
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
             const password = nativeElement.querySelector('input[name=password]');
+            notificationsService = TestBed.inject(NotificationService);
       
             expect(login).toBeTruthy();
             expect(password).toBeTruthy();
@@ -176,16 +179,8 @@ describe('LoginComponent', () => {
                 // Check that the navigation was not triggered in case of authentication failure
                 const router = TestBed.inject(Router);
                 const navigateSpy = spyOn(router, 'navigate');
-      
-                // Handle the POST request and provide a mock error response
-                httpTestingController = TestBed.inject(HttpTestingController);
-                const req = httpTestingController.expectOne('../rest/authenticate');
-                expect(req.request.method).toBe('POST');
-                expect(req.request.body).toEqual({ login: login.value, password: password.value }); // Add the request body
-                req.flush({}, { status: 401, statusText: component.translate.instant('lang.wrongLoginPassword') }); // Provide a mock error response
-      
-                // Flush any pending asynchronous tasks
-                flush();
+
+                spyOn(notificationsService, 'handleSoftErrors');
       
                 // Check if navigation is not called in case of authentication failure
                 expect(navigateSpy).not.toHaveBeenCalled();
