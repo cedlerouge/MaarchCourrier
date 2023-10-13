@@ -37,13 +37,20 @@ class PastellApiMock implements PastellApiInterface
      */
     public array $flux = ['ls-document-pdf', 'test', 'not-pdf'];
 
-    public array $iParapheurType = ['XELIANS COURRIER','TEST','PASTELL'];
-    public array $iParapheurSousType = [];
+    /**
+     * @var array|string[]
+     */
+    public array $iParapheurType = ['XELIANS COURRIER', 'TEST', 'PASTELL'];
 
     /**
      * @var array
      */
     public array $folder;
+
+    /**
+     * @var array
+     */
+    public array $iParapheurSousType = [];
 
     /**
      * @param PastellConfig $config
@@ -85,17 +92,18 @@ class PastellApiMock implements PastellApiInterface
      * @param PastellConfig $config
      * @return array
      */
-    public function createFolder(PastellConfig $config): array
+    public function getIparapheurType(PastellConfig $config): array
     {
-        return $this->folder;
+        return $this->iParapheurType;
     }
+
     /**
      * @param PastellConfig $config
      * @return array
      */
-    public function getIparapheurType(PastellConfig $config): array
+    public function createFolder(PastellConfig $config): array
     {
-        return $this->iParapheurType;
+        return $this->folder;
     }
 
     /**

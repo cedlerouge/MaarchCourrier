@@ -11,8 +11,6 @@ declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Domain;
 
-use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
-
 interface PastellApiInterface
 {
     /**
@@ -39,9 +37,11 @@ interface PastellApiInterface
      */
     public function getDocumentType(PastellConfig $config): array;
 
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
     public function getIparapheurType(PastellConfig $config): array;
-
-    public function getIparapheurSousType(PastellConfig $config): array;
 
     /**
      * @param PastellConfig $config
@@ -49,4 +49,9 @@ interface PastellApiInterface
      */
     public function createFolder(PastellConfig $config): array;
 
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getIparapheurSousType(PastellConfig $config): array;
 }

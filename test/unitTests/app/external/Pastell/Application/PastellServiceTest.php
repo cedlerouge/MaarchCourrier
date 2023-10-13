@@ -228,6 +228,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfDocumentTypeIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -263,6 +266,9 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfIparapheurTypeIsMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -284,6 +290,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfIparapheurTypeIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -305,6 +314,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsValidIfIparapheurTypeIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -325,6 +337,4 @@ class PastellServiceTest extends TestCase
 
         $this->assertTrue($result);
     }
-
-
 }
