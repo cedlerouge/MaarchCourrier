@@ -9,11 +9,11 @@ import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { Observable, of } from 'rxjs';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
-import * as langFrJson from '../../../../lang/lang-fr.json';
 import { SharedModule } from '@appRoot/app-common.module';
 import { Router } from '@angular/router';
 import { ResetPasswordComponent } from './reset-password.component';
 import { MatIconRegistry } from '@angular/material/icon';
+import * as langFrJson from '../../../../lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -185,9 +185,8 @@ describe('Reset password component', () => {
 
         fixture.detectChanges();
 
-        component.checkPasswordValidity('Password123'); // Un mot de passe valide
+        component.checkPasswordValidity('Password123');
 
-        // Assert
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toBe(component.translate.instant('lang.passwordcomplexitySpecialRequired'));
     });
