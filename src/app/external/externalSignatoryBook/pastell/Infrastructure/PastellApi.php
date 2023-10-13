@@ -15,7 +15,7 @@ use SrcCore\models\CurlModel;
 class PastellApi implements PastellApiInterface
 {
     /**
-     * Récupération de la version de Pastell (permet de vérifier la connexion avec l'url, login et password)
+     * Getting Pastell version (Checking if URL, login and password are correct)
      * @param PastellConfig $config
      * @return array
      */
@@ -41,6 +41,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the connected entity
      * @param PastellConfig $config
      * @return array|string[]
      */
@@ -69,6 +70,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the plugged connector
      * @param PastellConfig $config
      * @return array|string[]
      */
@@ -96,6 +98,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the type of document
      * @param PastellConfig $config
      * @return array
      */
@@ -119,6 +122,37 @@ class PastellApi implements PastellApiInterface
                 $return[] = $flux;
             }
         }
+        return $return;
+    }
+
+    /**
+     * @param $config
+     * @return array|string[]
+     */
+    public function createFolder($config): array
+    {
+        $return = [];
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite' . $config->getEntity() . '/document',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers' => ['content-type:application/json'],
+            'method' => 'POST',
+            'queryParams' => ['type' => $config->getDocumentType()],
+            'body' => json_encode([])
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            foreach ($response['response'] as $folder) {
+                $return = ['idFolder' => $folder['id_d']];
+            }
+        }
+
         return $return;
     }
 
