@@ -11,6 +11,9 @@ namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 
+/**
+ *
+ */
 class PastellApiMock implements PastellApiInterface
 {
 
@@ -35,9 +38,19 @@ class PastellApiMock implements PastellApiInterface
     public array $flux = ['ls-document-pdf', 'test', 'not-pdf'];
 
     /**
+     * @var array|string[]
+     */
+    public array $iParapheurType = ['XELIANS COURRIER', 'TEST', 'PASTELL'];
+
+    /**
      * @var array
      */
     public array $folder;
+
+    /**
+     * @var array
+     */
+    public array $iParapheurSousType = [];
 
     /**
      * @param PastellConfig $config
@@ -79,8 +92,26 @@ class PastellApiMock implements PastellApiInterface
      * @param PastellConfig $config
      * @return array
      */
+    public function getIparapheurType(PastellConfig $config): array
+    {
+        return $this->iParapheurType;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
     public function createFolder(PastellConfig $config): array
     {
         return $this->folder;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @return array
+     */
+    public function getIparapheurSousType(PastellConfig $config): array
+    {
+        return $this->iParapheurSousType;
     }
 }

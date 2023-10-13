@@ -68,5 +68,4 @@ class PastellConfigurationCheck
 
         return true;
     }
-
 }
