@@ -92,7 +92,7 @@ describe('Reset password component', () => {
     it('set password', fakeAsync(() => {
         const nativeElement = fixture.nativeElement;
         const newPassword = nativeElement.querySelector('input[name=newPassword]');
-        const passwordConfirmation = nativeElement.querySelector('input[name=passwordConfirmation]');
+        const passwordConfirmation = nativeElement.querySelector('input[name=passwordConfirmation]');        
 
         fixture.detectChanges();
 
@@ -141,6 +141,8 @@ describe('Reset password component', () => {
     }));
 
     it('display an error message if newPassword or passwordConfirmation includes spaces', fakeAsync(() => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
+
         component.password.newPassword = 'password with space';
 
         fixture.detectChanges();
@@ -149,10 +151,12 @@ describe('Reset password component', () => {
     
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.spacesNotAllowed'));
+        expect(submit.disabled).toBeTruthy();
     }));
     
 
     it('display an error message if the password does not contain capital letters', () => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexityUpper: { enabled: true, value: 0 }
         };
@@ -163,9 +167,11 @@ describe('Reset password component', () => {
 
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.passwordcomplexityUpperRequired'));
+        expect(submit.disabled).toBeTruthy();
     });
 
     it('display an error message if the password does not contain any digits', () => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexityNumber: { enabled: true, value: 0 },
         };
@@ -176,9 +182,11 @@ describe('Reset password component', () => {
         
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toContain(component.translate.instant('lang.passwordcomplexityNumberRequired'));
+        expect(submit.disabled).toBeTruthy();
     });
 
     it('display an error message if the password does not contain special characters', () => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexitySpecial: { enabled: true, value: 0 },
         };
@@ -189,9 +197,11 @@ describe('Reset password component', () => {
 
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toBe(component.translate.instant('lang.passwordcomplexitySpecialRequired'));
+        expect(submit.disabled).toBeTruthy();
     });
 
     it('display error message when password length is less than minimum length', () => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             minLength: { enabled: true, value: 8 }
         };
@@ -202,5 +212,6 @@ describe('Reset password component', () => {
 
         expect(component.handlePassword.error).toBe(true);
         expect(component.handlePassword.errorMsg).toBe(`${component.passwordRules.minLength.value} ${component.translate.instant('lang.passwordminLength')} !`);
+        expect(submit.disabled).toBeTruthy();
     });
 });
