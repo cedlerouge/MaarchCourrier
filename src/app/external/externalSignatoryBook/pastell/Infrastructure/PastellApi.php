@@ -133,7 +133,7 @@ class PastellApi implements PastellApiInterface
     {
         $return = [];
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite' . $config->getEntity() . '/document',
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers' => ['content-type:application/json'],
             'method' => 'POST',
@@ -141,16 +141,15 @@ class PastellApi implements PastellApiInterface
             'body' => json_encode([])
         ]);
 
-        if ($response['code'] > 200) {
+        if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
             } else {
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
-            foreach ($response['response'] as $folder) {
-                $return = ['idFolder' => $folder['id_d']];
-            }
+                $return = ['idFolder' => $response['response']['info']['id_d'] ?? ''];
+
         }
 
         return $return;
