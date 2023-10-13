@@ -16,7 +16,6 @@ import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '../../../lang/lang-fr.json';
 import { Router } from '@angular/router';
 import { Component } from '@angular/core';
-import { NotificationService } from '@service/notification/notification.service';
 
 /*
  * Test component with empty template to simulate navigation to home page in the event of successful authentication
@@ -35,7 +34,6 @@ describe('LoginComponent', () => {
     let fixture: ComponentFixture<LoginComponent>;
     let httpTestingController: HttpTestingController;
     let translateService: TranslateService;
-    let notificationsService: NotificationService;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -92,7 +90,7 @@ describe('LoginComponent', () => {
     }));
 
     describe('Login test', () => {
-        it('focus on login and password inputs', () => {
+        it('Focus on login and password inputs', () => {
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
             const password = nativeElement.querySelector('input[name=password]');
@@ -102,7 +100,7 @@ describe('LoginComponent', () => {
             expect(login.getAttributeNode('autofocus').specified).toBeTrue();
         });
 
-        it('set login and password', fakeAsync(() => {
+        it('Verify that the login input field now has the expected value', fakeAsync(() => {
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
             const password = nativeElement.querySelector('input[name=password]');
@@ -123,7 +121,21 @@ describe('LoginComponent', () => {
             // Verify that the login input field now has the expected value
             expect(login.value).toBe('bbain');
             expect(password.value).toBe('maarch');
+        }));
 
+        it('Navigate to Home after sucessfull login', fakeAsync(() => {
+            const nativeElement = fixture.nativeElement;
+            const login = nativeElement.querySelector('input[name=login]');
+            const password = nativeElement.querySelector('input[name=password]');
+
+            // Set the value of the login input field
+            login.value = 'bbain';
+            password.value = 'maarch';
+
+            // Trigger an input event to notify Angular of the value change
+            login.dispatchEvent(new Event('input'));
+            password.dispatchEvent(new Event('input'));
+            fixture.detectChanges();
             component.onSubmit();
 
             // Use whenStable() to wait for all pending asynchronous activities to complete
@@ -149,14 +161,11 @@ describe('LoginComponent', () => {
             });
         }));
 
-        it('handles authentication failure with incorrect password', fakeAsync(() => {
+        it('Red gritter must apear with message when incorrect password typed', fakeAsync(() => {
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
             const password = nativeElement.querySelector('input[name=password]');
-            notificationsService = TestBed.inject(NotificationService);
-      
-            expect(login).toBeTruthy();
-            expect(password).toBeTruthy();
+            httpTestingController = TestBed.inject(HttpTestingController);
       
             // Set the value of the login input field
             login.value = 'bbain';
@@ -165,28 +174,16 @@ describe('LoginComponent', () => {
             // Trigger an input event to notify Angular of the value change
             login.dispatchEvent(new Event('input'));
             password.dispatchEvent(new Event('input'));
-      
             fixture.detectChanges();
-      
-            // Verify that the login input field now has the expected value
-            expect(login.value).toBe('bbain');
-            expect(password.value).toBe('wrongpassword');
-      
-            spyOn(notificationsService, 'handleSoftErrors');
-            const success = spyOn(notificationsService, 'success');
             component.onSubmit();
-      
-            // Use whenStable() to wait for all pending asynchronous activities to complete
-            fixture.whenStable().then(() => {
-                // Check that the navigation was not triggered in case of authentication failure
-                const router = TestBed.inject(Router);
-                const navigateSpy = spyOn(router, 'navigate');
-
-                expect(success).not.toHaveBeenCalled();
-      
-                // Check if navigation is not called in case of authentication failure
-                expect(navigateSpy).not.toHaveBeenCalled();
-            });
+            const req = httpTestingController.expectOne('../rest/authenticate');
+            req.flush({ "errors": "Authentication Failed" }, { status: 401, statusText: 'Unauthorized' });
+            fixture.detectChanges();
+            const hasErrorGritter = document.querySelectorAll('.mat-snack-bar-container.error-snackbar').length;
+            expect(hasErrorGritter).toEqual(1);
+            const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
+            expect(notifContent).toEqual("L'identifiant ou le mot de passe est incorrect<br>(ou l'utilisateur n'a pas le droit de se connecter)");
+            flush();
         }));
     });
 });
