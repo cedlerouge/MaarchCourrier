@@ -15,7 +15,7 @@ use SrcCore\models\CurlModel;
 class PastellApi implements PastellApiInterface
 {
     /**
-     * Récupération de la version de Pastell (permet de vérifier la connexion avec l'url, login et password)
+     * Getting Pastell version (Checking if URL, login and password are correct)
      * @param PastellConfig $config
      * @return array
      */
@@ -41,6 +41,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the connected entity
      * @param PastellConfig $config
      * @return array|string[]
      */
@@ -69,6 +70,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the plugged connector
      * @param PastellConfig $config
      * @return array|string[]
      */
@@ -88,7 +90,7 @@ class PastellApi implements PastellApiInterface
             }
         } else {
             $return = [];
-            foreach ($response['response'] as $connector){
+            foreach ($response['response'] as $connector) {
                 $return[] = $connector['id_ce'];
             }
         }
@@ -96,6 +98,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Getting the type of document
      * @param PastellConfig $config
      * @return array
      */
@@ -123,15 +126,19 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * @param PastellConfig $config
-     * @return array
+     * @param $config
+     * @return array|string[]
      */
-    public function getIparapheurType(PastellConfig $config): array
+    public function createFolder($config): array
     {
+        $return = [];
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur/' . $config->getConnector() . '/externalData/iparapheur_type',
+            'url' => $config->getUrl() . '/entite' . $config->getEntity() . '/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'headers' => ['content-type:application/json'],
+            'method' => 'POST',
+            'queryParams' => ['type' => $config->getDocumentType()],
+            'body' => json_encode([])
         ]);
 
         if ($response['code'] > 200) {
@@ -141,20 +148,11 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
-            $return = [];
-            foreach ($response['response'] as $iParapheurType) {
-                $return[] = $iParapheurType;
+            foreach ($response['response'] as $folder) {
+                $return = ['idFolder' => $folder['id_d']];
             }
         }
-        return $return;
-    }
 
-    /**
-     * @param PastellConfig $config
-     * @return array
-     */
-    public function getIparapheurSousType(PastellConfig $config): array
-    {
-        return [];
+        return $return;
     }
 }
