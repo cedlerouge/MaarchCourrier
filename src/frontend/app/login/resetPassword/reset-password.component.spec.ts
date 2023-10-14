@@ -140,7 +140,7 @@ describe('Reset password component', () => {
         });
     }));
 
-    it('display an error message if newPassword or passwordConfirmation includes spaces', fakeAsync(() => {
+    it('display error message if newPassword or passwordConfirmation includes spaces', fakeAsync(() => {
         const submit = fixture.nativeElement.querySelector('button[type=submit]');
 
         component.password.newPassword = 'password with space';
@@ -155,7 +155,7 @@ describe('Reset password component', () => {
     }));
     
 
-    it('display an error message if the password does not contain capital letters', () => {
+    it('display error message if the password does not contain capital letters', () => {
         const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexityUpper: { enabled: true, value: 0 }
@@ -170,7 +170,7 @@ describe('Reset password component', () => {
         expect(submit.disabled).toBeTruthy();
     });
 
-    it('display an error message if the password does not contain any digits', () => {
+    it('display error message if the password does not contain any digits', () => {
         const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexityNumber: { enabled: true, value: 0 },
@@ -185,7 +185,7 @@ describe('Reset password component', () => {
         expect(submit.disabled).toBeTruthy();
     });
 
-    it('display an error message if the password does not contain special characters', () => {
+    it('display error message if the password does not contain special characters', () => {
         const submit = fixture.nativeElement.querySelector('button[type=submit]');
         component.passwordRules = {
             complexitySpecial: { enabled: true, value: 0 },
@@ -214,4 +214,39 @@ describe('Reset password component', () => {
         expect(component.handlePassword.errorMsg).toBe(`${component.passwordRules.minLength.value} ${component.translate.instant('lang.passwordminLength')} !`);
         expect(submit.disabled).toBeTruthy();
     });
+
+    it('display error message when newPassword and passwordConfirmation are not identical', fakeAsync(() => {
+        const submit = fixture.nativeElement.querySelector('button[type=submit]');
+
+        component.password.newPassword = 'newPassword';
+        component.password.passwordConfirmation = 'newPasswordConfirm';
+
+        fixture.detectChanges();
+
+        const matHint: any = fixture.nativeElement.querySelectorAll('.passwordNotMatch')[0];
+
+        expect((matHint.innerHTML as string).trim()).toBe(component.translate.instant('lang.passwordNotMatch'));   
+        expect(submit.disabled).toBeTruthy();     
+    }));
+
+    it('Red gritter must apear with message when body token is empty', fakeAsync(() => {
+        component.token = '';
+    
+        component.password.newPassword = 'newPassword123';
+        component.updatePassword();
+
+        const req = httpTestingController.expectOne('../rest/password');
+    
+        req.flush({ errors: 'Body token is empty' }, { status: 401, statusText: 'Unauthorized' });
+        fixture.detectChanges();
+
+        const hasErrorGritter = document.querySelectorAll('.mat-snack-bar-container.error-snackbar').length;
+        const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
+
+        expect(hasErrorGritter).toEqual(1);
+        expect(notifContent).toEqual('Body token is empty');
+
+        flush();
+    }));
+    
 });
