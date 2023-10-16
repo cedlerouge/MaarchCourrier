@@ -70,7 +70,7 @@ class PastellConfigurationCheck
             return false;
         }
         $iParapheurType = $this->pastellApi->getIparapheurType($config);
-        if (!in_array($config->getDocumentType(), $iParapheurType) === false) {
+        if (!in_array($config->getIparapheurType(), $iParapheurType)) {
             return false;
         }
 

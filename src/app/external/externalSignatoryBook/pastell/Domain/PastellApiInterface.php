@@ -51,7 +51,8 @@ interface PastellApiInterface
 
     /**
      * @param PastellConfig $config
+     * @param string $idDocument
      * @return array
      */
-    public function getIparapheurSousType(PastellConfig $config): array;
+    public function getIparapheurSousType(PastellConfig $config, string $idDocument): array;
 }
