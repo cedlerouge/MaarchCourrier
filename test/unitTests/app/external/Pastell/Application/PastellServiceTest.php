@@ -210,6 +210,27 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testConfigurationIsNotValidIfConnectorIsMissing(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            193,
+            0,
+            '',
+            '',
+            ''
+        );
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertFalse($result);
+    }
+
     /**
      * Testing when connector is missing in config
      * @return void
