@@ -188,6 +188,27 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    public function testConfigurationIsNotValidIfConnectorIsMissing(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            193,
+            0,
+            '',
+            '',
+            ''
+        );
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+
+        $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertFalse($result);
+    }
+
     /**
      * @return void
      */
@@ -344,9 +365,9 @@ class PastellServiceTest extends TestCase
             'testurl',
             'toto',
             'toto123',
-            0,
-            0,
-            'ls-not-document-pdf',
+            193,
+            776,
+            'ls-document-pdf',
             'PELIANS COURRIER',
             ''
         );
