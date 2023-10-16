@@ -47,7 +47,6 @@ class PastellApi implements PastellApiInterface
      */
     public function getEntity(PastellConfig $config): array
     {
-        $return = [];
         //Récupération de l'entité accessible via l'utilisateur connecté
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite',
@@ -62,6 +61,7 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
+            $return = [];
             foreach ($response['response'] as $entite) {
                 $return = ['entityId' => $entite['id_e']];
             }
@@ -160,7 +160,6 @@ class PastellApi implements PastellApiInterface
      */
     public function createFolder($config): array
     {
-        $return = [];
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
@@ -193,7 +192,7 @@ class PastellApi implements PastellApiInterface
     public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' .  $idDocument . '/externalData/iparapheur_sous_type',
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/externalData/iparapheur_sous_type',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method' => 'GET'
         ]);
@@ -205,10 +204,35 @@ class PastellApi implements PastellApiInterface
                 $return = ["error" => 'An error occurred !'];
             }
         } else {
-            $return =  $response['response'] ?? '';
+            $return = $response['response'] ?? '';
 
         }
-
         return $return;
     }
+
+    public function getDocumentDetail(PastellConfig $config, string $idDocument): array
+    {
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument,
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET'
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return =
+                [
+                    'info' => $response['response']['info'] ?? '',
+                    'data' => $response['response']['data'] ?? '',
+                ];
+        }
+        return $return;
+
+    }
+
 }

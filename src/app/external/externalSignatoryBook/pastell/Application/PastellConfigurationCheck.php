@@ -42,35 +42,47 @@ class PastellConfigurationCheck
             return false;
         }
 
+        // Check Entity
         if (empty($config->getEntity())) {
             return false;
         }
         $entities = $this->pastellApi->getEntity($config);
-        if (!in_array($config->getEntity(), $entities)) {
+        if (!empty($entities['errors'])) {
+            return false;
+        } elseif (!in_array($config->getEntity(), $entities)) {
             return false;
         }
 
+        // Check connector
         if (empty($config->getConnector())) {
             return false;
         }
         $connectors = $this->pastellApi->getConnector($config);
-        if (!in_array($config->getConnector(), $connectors)) {
+        if (!empty($connectors['errors'])) {
+            return false;
+        } else if (!in_array($config->getConnector(), $connectors)) {
             return false;
         }
 
+        // Check document type
         if (empty($config->getDocumentType())) {
             return false;
         }
         $flux = $this->pastellApi->getDocumentType($config);
-        if (!in_array($config->getDocumentType(), $flux)) {
+        if (!empty($flux['errors'])) {
+            return false;
+        } elseif (!in_array($config->getDocumentType(), $flux)) {
             return false;
         }
 
+        // Check iParapheur type
         if (empty($config->getIparapheurType())) {
             return false;
         }
         $iParapheurType = $this->pastellApi->getIparapheurType($config);
-        if (!in_array($config->getIparapheurType(), $iParapheurType)) {
+        if (!empty($iParapheurType['errors'])) {
+            return false;
+        } elseif (!in_array($config->getIparapheurType(), $iParapheurType)) {
             return false;
         }
 
