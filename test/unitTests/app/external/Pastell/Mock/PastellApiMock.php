@@ -11,12 +11,8 @@ namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 
-/**
- *
- */
 class PastellApiMock implements PastellApiInterface
 {
-
     public array $version = [];
     public array $entity = ['192', '193', '813'];
     public array $connector = ['193', '776', '952'];
@@ -25,6 +21,7 @@ class PastellApiMock implements PastellApiInterface
     public array $folder = ['idFolder' => 'hfqvhv'];
     public array $iParapheurSousType = ['courrier', 'réponse au citoyen'];
     public array $documentDetails = [];
+    public array $mainFile = [];
 
     /**
      * @param PastellConfig $config
@@ -73,7 +70,7 @@ class PastellApiMock implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @return array
+     * @return array|string[]
      */
     public function createFolder(PastellConfig $config): array
     {
@@ -82,12 +79,32 @@ class PastellApiMock implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param array $idDocument
-     * @return array
+     * @param string $idDocument
+     * @return array|string[]
      */
     public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
     {
         return $this->iParapheurSousType;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array|string[]
+     */
+    public function editFolder(PastellConfig $config, string $idDocument): array
+    {
+        return $this->folder;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array
+     */
+    public function uploadMainFile(PastellConfig $config, string $idDocument): array
+    {
+        return $this->mainFile;
     }
 
     /**
