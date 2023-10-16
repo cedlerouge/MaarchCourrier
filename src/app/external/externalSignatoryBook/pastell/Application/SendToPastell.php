@@ -9,16 +9,10 @@
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
-use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
-use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
 
-/**
- *
- */
 class SendToPastell
 {
-
     private PastellConfigurationCheck $checkConfigPastell;
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
@@ -62,7 +56,6 @@ class SendToPastell
         } elseif (!in_array($config->getIparapheurSousType(), $IparapheurSousType)) {
             return false;
         }
-
         return true;
     }
 

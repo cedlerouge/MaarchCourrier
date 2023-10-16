@@ -1,32 +1,38 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ExternalSignatoryBookTrait
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ExternalSignatoryBookTrait
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Action\controllers;
 
 use Attachment\controllers\AttachmentController;
 use Attachment\models\AttachmentModel;
 use Convert\models\AdrModel;
+use Exception;
 use ExternalSignatoryBook\controllers\IxbusController;
 use ExternalSignatoryBook\controllers\IParapheurController;
 use ExternalSignatoryBook\controllers\FastParapheurController;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
 use ExternalSignatoryBook\controllers\XParaphController;
+use ExternalSignatoryBook\pastell\Application\SendToPastell;
 use Resource\models\ResModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 
 trait ExternalSignatoryBookTrait
 {
-    public static function sendExternalSignatoryBookAction(array $args)
+    /**
+     * @param array $args
+     * @return array|array[]|string[]
+     * @throws Exception
+     */
+    public static function sendExternalSignatoryBookAction(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -38,20 +44,20 @@ trait ExternalSignatoryBookTrait
         if (!empty($args['resources'])) {
             $hasMailing = AttachmentModel::get([
                 'select' => ['res_id', 'status'],
-                'where'  => ["res_id_master in (?)", "attachment_type not in (?)", "status = 'SEND_MASS'", "in_signature_book = 'true'"],
-                'data'   => [$args['resources'], ['signed_response']]
+                'where' => ["res_id_master in (?)", "attachment_type not in (?)", "status = 'SEND_MASS'", "in_signature_book = 'true'"],
+                'data' => [$args['resources'], ['signed_response']]
             ]);
             if (count($args['resources']) > 1 || !empty($hasMailing)) {
                 static $massData;
                 if ($massData === null) {
                     $customId = CoreConfigModel::getCustomId();
                     $massData = [
-                        'resources'     => [],
+                        'resources' => [],
                         'successStatus' => $args['action']['parameters']['successStatus'],
-                        'errorStatus'   => $args['action']['parameters']['errorStatus'],
-                        'userId'        => $GLOBALS['id'],
-                        'customId'      => $customId,
-                        'action'        => 'sendExternalSignatoryBookAction'
+                        'errorStatus' => $args['action']['parameters']['errorStatus'],
+                        'userId' => $GLOBALS['id'],
+                        'customId' => $customId,
+                        'action' => 'sendExternalSignatoryBookAction'
                     ];
                 }
 
@@ -72,11 +78,11 @@ trait ExternalSignatoryBookTrait
 
             if (!empty($config['id'])) {
                 $attachments = AttachmentModel::get([
-                    'select'    => [
+                    'select' => [
                         'res_id', 'status'
                     ],
-                    'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
-                    'data'      => [$args['resId'], ['signed_response']]
+                    'where' => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
+                    'data' => [$args['resId'], ['signed_response']]
                 ]);
 
                 foreach ($attachments as $attachment) {
@@ -91,14 +97,14 @@ trait ExternalSignatoryBookTrait
 
             $integratedResource = ResModel::get([
                 'select' => [1],
-                'where'  => ['integrations->>\'inSignatureBook\' = \'true\'', 'external_id->>\'signatureBookId\' is null', 'res_id = ?'],
-                'data'   => [$args['resId']]
+                'where' => ['integrations->>\'inSignatureBook\' = \'true\'', 'external_id->>\'signatureBookId\' is null', 'res_id = ?'],
+                'data' => [$args['resId']]
             ]);
             $mainDocumentSigned = AdrModel::getConvertedDocumentById([
                 'select' => [1],
-                'resId'  => $args['resId'],
+                'resId' => $args['resId'],
                 'collId' => 'letterbox_coll',
-                'type'   => 'SIGN'
+                'type' => 'SIGN'
             ]);
             if (!empty($mainDocumentSigned)) {
                 $integratedResource = false;
@@ -111,40 +117,45 @@ trait ExternalSignatoryBookTrait
 
             if ($config['id'] == 'maarchParapheur') {
                 $sentInfo = MaarchParapheurController::sendDatas([
-                    'config'      => $config,
+                    'config' => $config,
                     'resIdMaster' => $args['resId'],
-                    'objectSent'  => 'attachment',
-                    'userId'      => $GLOBALS['login'],
-                    'steps'       => $args['data']['steps'],
-                    'note'        => $args['note']['content'] ?? null
+                    'objectSent' => 'attachment',
+                    'userId' => $GLOBALS['login'],
+                    'steps' => $args['data']['steps'],
+                    'note' => $args['note']['content'] ?? null
                 ]);
             } elseif ($config['id'] == 'fastParapheur') {
                 $sentInfo = FastParapheurController::sendDatas([
-                    'config'        => $config,
-                    'resIdMaster'   => $args['resId'],
-                    'steps'         => $args['data']['steps'] ?? [],
-                    'workflowType'  => $args['data']['workflowType'] ?? null
+                    'config' => $config,
+                    'resIdMaster' => $args['resId'],
+                    'steps' => $args['data']['steps'] ?? [],
+                    'workflowType' => $args['data']['workflowType'] ?? null
                 ]);
             } elseif ($config['id'] == 'iParapheur') {
                 $sentInfo = IParapheurController::sendDatas([
-                    'config'      => $config,
+                    'config' => $config,
                     'resIdMaster' => $args['resId']
                 ]);
             } elseif ($config['id'] == 'ixbus') {
                 $sentInfo = IxbusController::sendDatas([
-                    'config'        => $config,
-                    'resIdMaster'   => $args['resId'],
-                    'referent'      => $args['data']['ixbus']['userId'],
-                    'natureId'      => $args['data']['ixbus']['nature'],
-                    'messageModel'  => $args['data']['ixbus']['messageModel'],
-                    'manSignature'  => $args['data']['ixbus']['signatureMode']
+                    'config' => $config,
+                    'resIdMaster' => $args['resId'],
+                    'referent' => $args['data']['ixbus']['userId'],
+                    'natureId' => $args['data']['ixbus']['nature'],
+                    'messageModel' => $args['data']['ixbus']['messageModel'],
+                    'manSignature' => $args['data']['ixbus']['signatureMode']
                 ]);
             } elseif ($config['id'] == 'xParaph') {
                 $sentInfo = XParaphController::sendDatas([
-                    'config'      => $config,
+                    'config' => $config,
                     'resIdMaster' => $args['resId'],
-                    'info'        => $args['data']['info'],
-                    'steps'       => $args['data']['steps'],
+                    'info' => $args['data']['info'],
+                    'steps' => $args['data']['steps'],
+                ]);
+            } elseif ($config['id'] == 'Pastell') {
+                $sentInfo = SendToPastell::sendDatas([
+                    'config' => $config,
+                    'resIdMaster' => $args['resId']
                 ]);
             }
             if (!empty($sentInfo['error'])) {
@@ -160,8 +171,8 @@ trait ExternalSignatoryBookTrait
             if (!empty($attachmentToFreeze['letterbox_coll'])) {
                 ResModel::update([
                     'postSet' => ['external_id' => "jsonb_set(external_id, '{signatureBookId}', '\"{$attachmentToFreeze['letterbox_coll'][$args['resId']]}\"'::text::jsonb)"],
-                    'where'   => ['res_id = ?'],
-                    'data'    => [$args['resId']]
+                    'where' => ['res_id = ?'],
+                    'data' => [$args['resId']]
                 ]);
             }
             if (!empty($attachmentToFreeze['attachments_coll'])) {
@@ -173,7 +184,6 @@ trait ExternalSignatoryBookTrait
                 }
             }
         }
-
         return ['history' => $historyInfo];
     }
 }
