@@ -8,6 +8,8 @@ import { AppService } from '@service/app.service';
 import { Router } from '@angular/router';
 import { FeatureTourService } from '@service/featureTour.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { FunctionsService } from '@service/functions.service';
+import { catchError, of, tap } from 'rxjs';
 
 declare let $: any;
 
@@ -27,9 +29,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
         public translate: TranslateService,
         public http: HttpClient,
         public dialog: MatDialog,
+        public appService: AppService,
+        public functions: FunctionsService,
         private notify: NotificationService,
         private headerService: HeaderService,
-        public appService: AppService,
         private router: Router,
         private featureTourService: FeatureTourService,
         private sanitizer: DomSanitizer
@@ -38,11 +41,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
     ngOnInit(): void {
         this.headerService.setHeader(this.translate.instant('lang.home'));
 
-        this.http.get('../rest/home')
-            .subscribe((data: any) => {
+        this.http.get('../rest/home').pipe(
+            tap((data: any) => {
                 this.homeData = data;
-                this.homeMessage = this.sanitizer.bypassSecurityTrustHtml(data['homeMessage']);
-            });
+                const sanitizedHtml = this.functions.sanitizeHtml(data['homeMessage']);
+                this.homeMessage = this.sanitizer.bypassSecurityTrustHtml(sanitizedHtml);
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     ngAfterViewInit(): void {

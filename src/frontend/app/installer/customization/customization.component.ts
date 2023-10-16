@@ -158,6 +158,7 @@ export class CustomizationComponent implements OnInit {
             plugins: [
                 'autolink'
             ],
+            extended_valid_elements: 'script[src|async|defer|type|charset]', // disables script execution in TinyMCE
             external_plugins: {
                 'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
             },
