@@ -45,12 +45,12 @@ class PastellApiMock implements PastellApiInterface
     /**
      * @var array
      */
-    public array $folder;
+    public array $folder = ['idFolder' => 'hfqvhv'];
 
     /**
      * @var array
      */
-    public array $iParapheurSousType = [];
+    public array $iParapheurSousType = ['courrier', 'réponse au citoyen'];
 
     /**
      * @param PastellConfig $config
@@ -108,9 +108,10 @@ class PastellApiMock implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
+     * @param array $idDocument
      * @return array
      */
-    public function getIparapheurSousType(PastellConfig $config): array
+    public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
     {
         return $this->iParapheurSousType;
     }
