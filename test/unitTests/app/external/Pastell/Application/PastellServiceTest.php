@@ -9,6 +9,7 @@
 namespace unitTests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
+use ExternalSignatoryBook\pastell\Application\SendToPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
@@ -334,6 +335,81 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
         $result = $pastellConfigCheck->checkPastellConfig();
+
+        $this->assertTrue($result);
+    }
+
+    public function testSendToPastellIsNotValidIfIdFolderIsMissing(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->folder = [];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+
+        $result = $sendToPastell->sendDocumentToPastell();
+
+        $this->assertFalse($result);
+    }
+
+    public function testSendToPastellIsValidIfIdFolderIsNotMissing(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->folder = [];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+
+        $result = $sendToPastell->sendDocumentToPastell();
+
+        $this->assertFalse($result);
+    }
+
+    public function testSendToPastellIsNotValidIfIparapheurSousTypeMissing(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->folder = [];
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+
+        $result = $sendToPastell->sendDocumentToPastell();
+
+        $this->assertFalse($result);
+    }
+
+    public function testSendToPastellIsNotValidIfIparapheurSousTypeIsNotFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigMock->pastellConfig = new PastellConfig(
+            'testurl',
+            'toto',
+            'toto123',
+            193,
+            776,
+            'ls-document-pdf',
+            'XELIANS COURRIER',
+            'courrrier'
+        );
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+
+        $result = $sendToPastell->sendDocumentToPastell();
+
+
+        $this->assertFalse($result);
+    }
+
+    public function testSendToPastellIsValidIfIparapheurSousTypeIsFoundInPastell(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+
+        $result = $sendToPastell->sendDocumentToPastell();
+
 
         $this->assertTrue($result);
     }

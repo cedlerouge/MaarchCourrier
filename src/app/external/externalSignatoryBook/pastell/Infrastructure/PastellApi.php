@@ -187,10 +187,28 @@ class PastellApi implements PastellApiInterface
     /**
      * Getting subtype of the connector
      * @param PastellConfig $config
+     * @param string $idDocument
      * @return array
      */
-    public function getIparapheurSousType(PastellConfig $config): array
+    public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
     {
-        return [];
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' .  $idDocument . '/externalData/iparapheur_sous_type',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET'
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return =  $response['response'] ?? '';
+
+        }
+
+        return $return;
     }
 }
