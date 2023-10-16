@@ -177,9 +177,6 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
         if (password.includes(' ')) {            
             this.handlePassword.error = true;
             this.handlePassword.errorMsg = this.translate.instant('lang.spacesNotAllowed');
-        } else {
-            this.handlePassword.error = false;
-            this.handlePassword.errorMsg = '';
         }
     }
 
