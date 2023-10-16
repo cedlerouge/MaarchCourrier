@@ -86,7 +86,7 @@
         <docustype>9</docustype>
     </signatoryBook>
     <signatoryBook>
-        <id>Pastell</id>
+        <id>pastell</id>
         <login></login>
         <password></password>
         <url>https://pastell.partenaire.libriciel.fr/api/v2</url>
