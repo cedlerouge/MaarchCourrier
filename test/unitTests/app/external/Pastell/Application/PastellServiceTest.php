@@ -114,11 +114,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-
         $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
-
     }
 
     /**
@@ -160,6 +158,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfEntityIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -167,11 +168,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-
         $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
-
     }
 
     /**
@@ -232,11 +231,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-
         $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
-
     }
 
     /**
@@ -309,11 +306,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-
         $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
-
     }
 
     /**
@@ -385,11 +380,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-
         $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
-
     }
 
     /**
@@ -437,11 +430,9 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-
         $result = $sendToPastell->sendDocumentToPastell();
 
         $this->assertFalse($result);
-
     }
 
     public function testSendToPastellIsValidIfIdFolderIsNotMissing(): void
@@ -489,7 +480,6 @@ class PastellServiceTest extends TestCase
 
         $result = $sendToPastell->sendDocumentToPastell();
 
-
         $this->assertFalse($result);
     }
 
@@ -504,7 +494,6 @@ class PastellServiceTest extends TestCase
         $result = $sendToPastell->sendDocumentToPastell();
 
         $this->assertFalse($result);
-
     }
 
     public function testSendToPastellIsValidIfIparapheurSousTypeIsFoundInPastell(): void
@@ -516,8 +505,6 @@ class PastellServiceTest extends TestCase
 
         $result = $sendToPastell->sendDocumentToPastell();
 
-
         $this->assertTrue($result);
     }
-
 }

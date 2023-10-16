@@ -8,9 +8,15 @@
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
+use Convert\controllers\ConvertPdfController;
+use Docserver\models\DocserverModel;
+use Exception;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
+use Resource\models\ResModel;
 use SrcCore\models\CurlModel;
+use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
 
 class PastellApi implements PastellApiInterface
 {
@@ -36,7 +42,6 @@ class PastellApi implements PastellApiInterface
         } else {
             $return = ['version' => $response['response']['version'] ?? ''];
         }
-
         return $return;
     }
 
@@ -160,6 +165,7 @@ class PastellApi implements PastellApiInterface
      */
     public function createFolder($config): array
     {
+        $return = [];
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
@@ -177,9 +183,7 @@ class PastellApi implements PastellApiInterface
             }
         } else {
             $return = ['idFolder' => $response['response']['info']['id_d'] ?? ''];
-
         }
-
         return $return;
     }
 
@@ -205,7 +209,72 @@ class PastellApi implements PastellApiInterface
             }
         } else {
             $return = $response['response'] ?? '';
+        }
+        return $return;
+    }
 
+    /**
+     * @throws Exception
+     */
+    public function editFolder(PastellConfig $config, string $idDocument): array
+    {
+        $signatory = DatabaseModel::select([
+            'select' => ['item_id'],
+            'table' => ['listinstance',],
+            'where' => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
+            'data' => [['resIdMaster'], 'sign']
+        ])[0];
+
+
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument,
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method' => 'PATCH',
+            'body' => http_build_query()
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'] ?? '';
+        }
+        return $return;
+    }
+
+    public function uploadMainFile(PastellConfig $config, string $idDocument): array
+    {
+        $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
+
+        if (empty($mainFileInfo['docserver_id']) || strtolower(pathinfo($mainFileInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+            return ['error' => 'Document ' . ['resIdMaster'] . ' is not converted in pdf'];
+        }
+        $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $mainFileInfo['docserver_id'], 'select' => ['path_template']]);
+        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $mainFileInfo['path']) . $mainFileInfo['filename'];
+
+        $bodyData = array(
+            'file_name' => 'Document principal.' . pathinfo($attachmentFilePath)['extension'],
+            'file_content' => file_get_contents($attachmentFilePath)
+        );
+
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method' => 'POST',
+            'body' => http_build_query($bodyData)
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
         }
         return $return;
     }
@@ -232,7 +301,5 @@ class PastellApi implements PastellApiInterface
                 ];
         }
         return $return;
-
     }
-
 }
