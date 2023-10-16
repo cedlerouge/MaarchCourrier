@@ -72,7 +72,7 @@ describe('Forgot password component', () => {
         expect(component).toBeTruthy();
     }));
 
-    describe('Set login', () => {
+    describe('Set on input, set login and check if login value is empty', () => {
         it('focus on login', () => {
             const nativeElement = fixture.nativeElement;
             const login = nativeElement.querySelector('input[name=login]');
@@ -124,6 +124,22 @@ describe('Forgot password component', () => {
                 // Flush any pending asynchronous tasks
                 flush();
             });
+        }));
+
+        it('check if submit button is disabled when login input contains only spaces', fakeAsync(() => {
+            const nativeElement = fixture.nativeElement;
+            const login = nativeElement.querySelector('input[name=login]');
+            const submit = nativeElement.querySelector('button[type=submit]');
+
+            expect(login).toBeTruthy();
+            
+            login.value = '    '; // login with only spaces
+
+            fixture.detectChanges();
+
+            component.containsSpaces(login.value);
+
+            expect(submit.disabled).toBeTruthy();
         }));
     });
 });

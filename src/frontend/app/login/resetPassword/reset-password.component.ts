@@ -174,10 +174,7 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
     }
 
     containsSpaces(password: string): any {
-        if (password.includes(' ')) {            
-            this.handlePassword.error = true;
-            this.handlePassword.errorMsg = this.translate.instant('lang.spacesNotAllowed');
-        }
+        this.handlePassword.error = password.trim() === '';
     }
 
     allowValidate(): boolean {
