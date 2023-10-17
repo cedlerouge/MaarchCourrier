@@ -210,7 +210,7 @@ create_major_tag:
 
 test-karma:
   stage: test
-  image: timbru31/node-chrome:16-slim
+  image: timbru31/node-chrome:18-slim
   before_script:
     - echo "Test karma"
   script:
