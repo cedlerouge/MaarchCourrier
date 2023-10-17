@@ -215,7 +215,7 @@ test-karma:
     - echo "Test karma"
   script:
     - npm i -g npm@8.15.0
-    - npm ci
+    - npm config set legacy-peer-deps true && npm ci
     - npm run karma:test-ci
   artifacts:
     reports:
