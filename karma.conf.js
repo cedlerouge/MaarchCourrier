@@ -26,6 +26,7 @@ module.exports = function (config) {
       },
       coverageReporter: {
         dir: require('path').join(__dirname, './coverage/maarch-courrier'),
+        outputFile: 'junit-coverage.xml',
         subdir: '.',
         reporters: [
           { type: 'html' },
