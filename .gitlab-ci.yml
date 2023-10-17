@@ -214,7 +214,7 @@ test-karma:
   script:
     - npm i -g npm@8.15.0
     - npm ci
-    - npm run test-ci
+    - npm run karma:test-ci
   artifacts:
     reports:
       junit: coverage/maarch-courrier/junit-coverage.xml
