@@ -215,11 +215,6 @@ test-karma:
     - npm i -g npm@8.15.0
     - npm ci
     - npm run test-ci
-  after_script:
-    # Clear memory and resources
-    - echo "Clearing memory and resources..."
-    - pkill -f chromium-browser  # Terminates all Chromium processes
-    - pkill -f node  # Terminates all Node.js processes
   artifacts:
     reports:
       junit: coverage/maarch-courrier/junit-coverage.xml
