@@ -1,6 +1,6 @@
 {
   "name": "maarchcourrier",
-  "version": "2301.1.5",
+  "version": "2301.1.6",
   "description": "MaarchCourrier",
   "engines": {
     "npm": ">=8.15.0",
@@ -34,6 +34,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@types/node": "^12.20.55",
+    "@types/ws": "^8.5.4",
     "angular2-draggable": "^2.3.2",
     "core-js": "^3.30.2",
     "tinymce": "^6.7.0",
