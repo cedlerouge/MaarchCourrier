@@ -21,6 +21,8 @@ export class ForgotPasswordComponent implements OnInit {
     };
     labelButton: string = this.translate.instant('lang.send');
 
+    hasError: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -35,25 +37,28 @@ export class ForgotPasswordComponent implements OnInit {
     }
 
     generateLink() {
-        this.labelButton = this.translate.instant('lang.generation');
         this.loading = true;
+        this.labelButton = this.translate.instant('lang.generation');
 
-        this.http.post('../rest/password', { 'login': this.newLogin.login })
-            .pipe(
-                tap((data: any) => {
-                    this.loadingForm = true;
-                    this.notificationService.success(this.translate.instant('lang.requestSentByEmail'));
-                    this.router.navigate(['/login']);
-                }),
-                finalize(() => {
-                    this.labelButton = this.translate.instant('lang.send');
-                    this.loading = false;
-                }),
-                catchError((err: any) => {
-                    this.notificationService.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+        this.http.post('../rest/password', { 'login': this.newLogin.login }).pipe(
+            tap(() => {
+                this.loadingForm = true;
+                this.notificationService.success(this.translate.instant('lang.requestSentByEmail'));
+                this.router.navigate(['/login']);
+            }),
+            finalize(() => {
+                this.labelButton = this.translate.instant('lang.send');
+                this.loading = false;
+            }),
+            catchError((err: any) => {
+                this.notificationService.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    containsSpaces(login: string): any {
+        this.hasError = login.trim() === '';
     }
 
     cancel() {

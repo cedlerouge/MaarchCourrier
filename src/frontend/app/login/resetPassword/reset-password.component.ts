@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
+import { of } from 'rxjs';
 
 @Component({
     templateUrl: 'reset-password.component.html',
@@ -24,8 +25,8 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
     };
     labelButton: string = this.translate.instant('lang.update');
 
-    hideNewPassword: Boolean = true;
-    hideNewPasswordConfirm: Boolean = true;
+    hideNewPassword: boolean = true;
+    hideNewPasswordConfirm: boolean = true;
 
     // HANDLE PASSWORD
     passwordRules: any = {
@@ -76,30 +77,32 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
 
         this.http.put('../rest/password', { 'token': this.token, 'password': this.password.newPassword })
             .pipe(
+                tap(() => {
+                    this.loadingForm = true;
+                    this.notificationService.success(this.translate.instant('lang.passwordChanged'));
+                    this.router.navigate(['/login']);
+                }),
                 finalize(() => {
                     this.labelButton = this.translate.instant('lang.update');
                     this.loading = false;
+                }),
+                catchError((err: any) => {
+                    this.notificationService.handleSoftErrors(err);
+                    return of(false);
                 })
-            )
-            .subscribe((data: any) => {
-                this.loadingForm = true;
-                this.notificationService.success(this.translate.instant('lang.passwordChanged'));
-                this.router.navigate(['/login']);
-            }, (err: any) => {
-                this.notificationService.handleSoftErrors(err);
-            });
+            ).subscribe();
     }
 
     checkPasswordValidity(password: string) {
         this.handlePassword.error = true;
 
-        if (!password.match(/[A-Z]/g) && this.passwordRules.complexityUpper.enabled) {
+        if (!password.match(/[A-Z]/g) && this.passwordRules?.complexityUpper?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexityUpperRequired');
-        } else if (!password.match(/[0-9]/g) && this.passwordRules.complexityNumber.enabled) {
+        } else if (!password.match(/[0-9]/g) && this.passwordRules?.complexityNumber?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexityNumberRequired');
-        } else if (!password.match(/[^A-Za-z0-9]/g) && this.passwordRules.complexitySpecial.enabled) {
+        } else if (!password.match(/[^A-Za-z0-9]/g) && this.passwordRules?.complexitySpecial?.enabled) {
             this.handlePassword.errorMsg = this.translate.instant('lang.passwordcomplexitySpecialRequired');
-        } else if (password.length < this.passwordRules.minLength.value && this.passwordRules.minLength.enabled) {
+        } else if (password.length < this.passwordRules?.minLength.value && this.passwordRules?.minLength?.enabled) {
             this.handlePassword.errorMsg = this.passwordRules.minLength.value + ' ' + this.translate.instant('lang.passwordminLength') + ' !';
         } else {
             this.handlePassword.error = false;
@@ -111,10 +114,10 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
         this.handlePassword.error = false;
         this.handlePassword.errorMsg = '';
 
-        this.http.get('../rest/passwordRules')
-            .subscribe((data: any) => {
-                const ruleTextArr: String[] = [];
-                const otherRuleTextArr: String[] = [];
+        this.http.get('../rest/passwordRules').pipe(
+            tap((data: any) => {
+                const ruleTextArr: string[] = [];
+                const otherRuleTextArr: string[] = [];
 
                 data.rules.forEach((rule: any) => {
                     if (rule.label === 'minLength') {
@@ -162,12 +165,19 @@ export class ResetPasswordComponent implements OnInit, AfterViewInit {
                 });
                 this.ruleText = ruleTextArr.join(', ');
                 this.otherRuleText = otherRuleTextArr.join('<br/>');
-            }, (err) => {
-                this.notificationService.handleErrors(err);
-            });
+            }),
+            catchError((err: any) => {
+                this.notificationService.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
-    allowValidate() {
+    containsSpaces(password: string): any {
+        this.handlePassword.error = password.trim() === '';
+    }
+
+    allowValidate(): boolean {
         if ((this.handlePassword.error || this.password.newPassword !== this.password.passwordConfirmation || this.password.newPassword.length === 0 || this.password.passwordConfirmation.length === 0)) {
             return true;
         } else {

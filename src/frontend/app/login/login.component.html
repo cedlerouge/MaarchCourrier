@@ -7,7 +7,7 @@
                 <p style="color: white;font-size: 14px;font-weight: bold;">{{authService.applicationName}}</p>
                 <div style="padding-left: 30px;padding-right: 30px;">
                     <mat-form-field *ngIf="['cas', 'keycloak', 'sso', 'azure_saml'].indexOf(authService.authMode) === -1" class="input-row login" appearance="outline" style="padding-bottom: 0px;">
-                        <input id="login" name="login" matInput [placeholder]="'lang.id' | translate" formControlName="login"
+                        <input autofocus id="login" name="login" matInput [placeholder]="'lang.id' | translate" formControlName="login"
                             type="text">
                     </mat-form-field>
                     <mat-form-field *ngIf="['cas', 'keycloak', 'sso', 'azure_saml'].indexOf(authService.authMode) === -1" class="input-row" appearance="outline">
