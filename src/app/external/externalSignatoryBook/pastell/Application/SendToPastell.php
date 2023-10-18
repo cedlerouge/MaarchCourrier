@@ -40,7 +40,7 @@ class SendToPastell
     {
         $config = $this->pastellConfig->getPastellConfig();
 
-        // Check folder creation
+        //Check folder creation
         $idFolder = $this->pastellApi->createFolder($config);
         if (empty($idFolder)) {
             return false;
@@ -49,7 +49,7 @@ class SendToPastell
         }
         $idFolder = $idFolder['idFolder'];
 
-        // Check iParapheur sous type
+        //Check iParapheur subtype
         $IparapheurSousType = $this->pastellApi->getIparapheurSousType($config, $idFolder);
         if (!empty($IparapheurSousType['errors'])) {
             return false;

@@ -15,8 +15,6 @@ use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use Resource\models\ResModel;
 use SrcCore\models\CurlModel;
-use SrcCore\models\DatabaseModel;
-use User\models\UserModel;
 
 class PastellApi implements PastellApiInterface
 {
@@ -52,7 +50,6 @@ class PastellApi implements PastellApiInterface
      */
     public function getEntity(PastellConfig $config): array
     {
-        //Récupération de l'entité accessible via l'utilisateur connecté
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
@@ -103,7 +100,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * Getting the type of document
+     * Getting the type of document that can be created
      * @param PastellConfig $config
      * @return array
      */
@@ -165,7 +162,6 @@ class PastellApi implements PastellApiInterface
      */
     public function createFolder($config): array
     {
-        $return = [];
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
@@ -188,7 +184,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * Getting subtype of the connector
+     * Getting subtype of the plugged connector
      * @param PastellConfig $config
      * @param string $idDocument
      * @return array
@@ -214,24 +210,26 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Sending datas to the created folder
      * @throws Exception
      */
     public function editFolder(PastellConfig $config, string $idDocument): array
     {
-        $signatory = DatabaseModel::select([
-            'select' => ['item_id'],
-            'table' => ['listinstance',],
-            'where' => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
-            'data' => [['resIdMaster'], 'sign']
-        ])[0];
+        $mainResource = ResModel::getById(['resId' => ['resIdMaster'], 'select' => ['subject', 'process_limit_date']]);
+        $dossierTitre = $mainResource['subject'] . ' - Référence: ' . ['resIdMaster'];
 
+        $data = array(
+            'libelle' => $dossierTitre,
+            'iparapheur_sous_type' => $config->getIparapheurSousType(),
+            'iparapheur_type' => $config->getIparapheurType()
+        );
 
         $response = CurlModel::exec([
             'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument,
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method' => 'PATCH',
-            'body' => http_build_query()
+            'body' => http_build_query($data)
         ]);
 
         if ($response['code'] > 200) {
@@ -246,6 +244,12 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * Uploading a file to be signed
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array|string[]
+     */
     public function uploadMainFile(PastellConfig $config, string $idDocument): array
     {
         $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
@@ -279,6 +283,12 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * Getting datas and state of a folder
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array|string[]
+     */
     public function getDocumentDetail(PastellConfig $config, string $idDocument): array
     {
         $response = CurlModel::exec([

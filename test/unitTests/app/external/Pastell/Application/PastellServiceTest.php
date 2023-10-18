@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
 class PastellServiceTest extends TestCase
 {
     /**
+     * Testing when configuration is empty
      * @return void
      */
     public function testConfigurationIsNotValidIfItIsEmpty(): void
@@ -33,6 +34,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when Pastell API URL is missing in config
      * @return void
      */
     public function testConfigurationIsNotValidIfUrlIsMissing(): void
@@ -57,6 +59,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when API login is missing in config
      * @return void
      */
     public function testConfigurationIsNotValidIfLoginIsMissing(): void
@@ -81,6 +84,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when API password is missing in config
      * @return void
      */
     public function testConfigurationIsNotValidIfPasswordIsMissing(): void
@@ -105,6 +109,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing a wrong Pastell API URL
      * @return void
      */
     public function testConfigurationIsNotValidIfUrlIsNotValid(): void
@@ -120,6 +125,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when entity is missing in config
      * @return void
      */
     public function testConfigurationIsNotValidIfEntityIsMissing(): void
@@ -144,6 +150,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing wrong entities
      * @return void
      */
     public function testConfigurationIsNotValidIfEntityIsNotFoundInPastell(): void
@@ -159,6 +166,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing non-valid entities
      * @return void
      */
     public function testConfigurationIsNotValidIfEntityIsNotValid(): void
@@ -174,6 +182,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing with the good entity
      * @return void
      */
     public function testConfigurationIsValidIfEntityIsFoundInPastell(): void
@@ -187,6 +196,10 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * Testing when connector is missing in config
+     * @return void
+     */
     public function testConfigurationIsNotValidIfConnectorIsMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -209,6 +222,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing with a bad connector
      * @return void
      */
     public function testConfigurationIsNotValidIfConnectorIsNotFoundInPastell(): void
@@ -224,6 +238,10 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * Testing with a non-valid connector
+     * @return void
+     */
     public function testConfigurationIsNotValidIfConnectorIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -237,6 +255,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing with the right connector
      * @return void
      */
     public function testConfigurationIsValidIfConnectorIsFoundInPastell(): void
@@ -252,6 +271,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when document type is missing in config
      * @return void
      */
     public function testConfigurationIsNotValidIfDocumentTypeIsMissing(): void
@@ -276,6 +296,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing when a bad document type
      * @return void
      */
     public function testConfigurationIsNotValidIfDocumentTypeIsNotFoundInPastell(): void
@@ -299,6 +320,10 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * Testing with a non-valid document type
+     * @return void
+     */
     public function testConfigurationIsNotValidIfDocumentTypeIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -312,6 +337,7 @@ class PastellServiceTest extends TestCase
     }
 
     /**
+     * Testing with the right connector
      * @return void
      */
     public function testConfigurationIsValidIfDocumentTypeIsFoundInPastell(): void
@@ -373,6 +399,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfIparapheurTypeIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -409,6 +438,10 @@ class PastellServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    /**
+     * Testing sending datas if id folder is missing
+     * @return void
+     */
     public function testSendToPastellIsNotValidIfIdFolderIsMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -422,6 +455,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfIdFolderIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -435,6 +471,10 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * Testing sending datas with the right id folder
+     * @return void
+     */
     public function testSendToPastellIsValidIfIdFolderIsNotMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -448,6 +488,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testSendToPastellIsNotValidIfIparapheurSousTypeMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -461,6 +504,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testSendToPastellIsNotValidIfIparapheurSousTypeIsNotFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -483,6 +529,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testConfigurationIsNotValidIfIparapheurSousTypeIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -496,6 +545,9 @@ class PastellServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * @return void
+     */
     public function testSendToPastellIsValidIfIparapheurSousTypeIsFoundInPastell(): void
     {
         $pastellApiMock = new PastellApiMock();

@@ -22,6 +22,7 @@ class PastellApiMock implements PastellApiInterface
     public array $iParapheurSousType = ['courrier', 'réponse au citoyen'];
     public array $documentDetails = [];
     public array $mainFile = [];
+    public array $dataFolder = [];
 
     /**
      * @param PastellConfig $config
@@ -94,7 +95,7 @@ class PastellApiMock implements PastellApiInterface
      */
     public function editFolder(PastellConfig $config, string $idDocument): array
     {
-        return $this->folder;
+        return $this->dataFolder;
     }
 
     /**
