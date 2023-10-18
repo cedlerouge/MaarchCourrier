@@ -34,6 +34,7 @@ class PastellConfigurationCheck
     {
         $config = $this->pastellConfig->getPastellConfig();
 
+        //Check version
         if (empty($config) || empty($config->getUrl()) || empty($config->getLogin()) || empty($config->getPassword())) {
             return false;
         }
@@ -42,7 +43,7 @@ class PastellConfigurationCheck
             return false;
         }
 
-        // Check Entity
+        //Check entity
         if (empty($config->getEntity())) {
             return false;
         }
@@ -53,7 +54,7 @@ class PastellConfigurationCheck
             return false;
         }
 
-        // Check connector
+        //Check connector
         if (empty($config->getConnector())) {
             return false;
         }
@@ -64,7 +65,7 @@ class PastellConfigurationCheck
             return false;
         }
 
-        // Check document type
+        //Check document type
         if (empty($config->getDocumentType())) {
             return false;
         }
@@ -75,7 +76,7 @@ class PastellConfigurationCheck
             return false;
         }
 
-        // Check iParapheur type
+        //Check iParapheur type
         if (empty($config->getIparapheurType())) {
             return false;
         }

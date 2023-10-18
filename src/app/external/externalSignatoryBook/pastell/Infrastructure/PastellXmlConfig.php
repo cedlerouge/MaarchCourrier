@@ -27,7 +27,7 @@ class PastellXmlConfig implements PastellConfigInterface
         $pastellConfig = null;
         if (file_exists($path)) {
             $loadedXml = simplexml_load_file($path);
-            $PastellConfig = $loadedXml->xpath('//signatoryBook[id=\'Pastell\']')[0] ?? null;
+            $PastellConfig = $loadedXml->xpath('//signatoryBook[id=\'pastell\']')[0] ?? null;
             if ($PastellConfig) {
                 $pastellConfig = new PastellConfig(
                     (string)$PastellConfig->url ?? null,
