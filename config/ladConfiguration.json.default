@@ -1,8 +1,8 @@
 {
     "config": {
         "mercureLadDirectory": "/opt/MercureLAD",
-        "contactsIndexesDirectory": "/data/ContactsIdx",
-        "contactsLexiconsDirectory": "/data/ContactsLexiques"
+        "contactsIndexesDirectory": "/opt/MercureLAD/Lexiques/ContactsIdx",
+        "contactsLexiconsDirectory": "/opt/MercureLAD/Lexiques/ContactsLexiques"
     },
     "contactsIndexation": {
         "id": {

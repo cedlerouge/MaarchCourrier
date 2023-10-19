@@ -28,7 +28,7 @@ use SrcCore\models\DatabasePDO;
 
 // ARGS
 // --customId    : instance id;
-// --fileConfig      : path of LAD file configuration;
+// --fileConfig      : path of LAD file configuration (optionnal);
 
 IndexContactsScript::initalize($argv);
 
@@ -42,6 +42,7 @@ class IndexContactsScript
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
             $customId = $args[$cmd+1];
+	        $fileConfiguration    = 'custom/'.$customId.'/config/ladConfiguration.json';
         }
 
         if (array_search('--fileConfig', $args) > 0) {
@@ -57,7 +58,7 @@ class IndexContactsScript
         DatabasePDO::reset();
         new DatabasePDO(['customId' => $args['customId']]);
 
-        $fileConfig = (!empty($args['fileConfig'])) ? $args['fileConfig'] : 'config/ladConfiguration.json';
+        $fileConfig = (!empty($args['fileConfig']) && is_file($args['fileConfig'])) ? $args['fileConfig'] : 'config/ladConfiguration.json';
 
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => $fileConfig]);
         if (empty($ladConfiguration)) {

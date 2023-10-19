@@ -98,6 +98,9 @@ class LadController
             'extension' => 'pdf'
         ]);
 
+        if (!empty($ladResult['errors'])) {
+            $response->withStatus(400)->withJson(['errors' => $ladResult['errors']]);
+        }
         if (!empty($ladResult['subject'])) {
             return $response->withStatus(204);
         }
@@ -125,7 +128,10 @@ class LadController
 
         $tmpFilename = 'lad' . rand() . '_' . rand();
 
-        file_put_contents($tmpPath.$tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
+        $writeFileResult = file_put_contents($tmpPath.$tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
+        if (!$writeFileResult){
+            return ['errors' => 'Document writing error in input directory'];
+        }
 
         //Mercure5 fileIn fileOut fileParams
         LogsController::add([
@@ -137,17 +143,18 @@ class LadController
             'eventType' => "LAD task",
             'eventId'   => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
         ]);
+        $outXmlFilename =$ladConfiguration['config']['mercureLadDirectory'] . '/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml';
 
         $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
             . $tmpPath.$tmpFilename . '.' . $aArgs['extension'] . ' '
-            . $ladConfiguration['config']['mercureLadDirectory'] . '/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml '
-            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.INI';
+            . $outXmlFilename. ' '
+            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.cfg';
 
         exec($command.' 2>&1', $output, $return);
 
         if ($return == 0) {
             $mappingMercure = $ladConfiguration['mappingLadFields'];
-            $outputXml = CoreConfigModel::getXmlLoaded(['path' => $ladConfiguration['config']['mercureLadDirectory'].'/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml']);
+            $outputXml = CoreConfigModel::getXmlLoaded(['path' => $outXmlFilename]);
             $mandatoryFields = [
                 'subject',
                 'documentDate',
@@ -158,37 +165,40 @@ class LadController
             foreach ($mandatoryFields as $f) {
                 $aReturn[$f] = "";
             }
-
             if ($outputXml) {
-                foreach ($outputXml->page as $page) {
-                    foreach ($page->field as $field) {
-                        $nameAttributeKey = 'n';
-                        $nameAttribute = (string)$field->attributes()->$nameAttributeKey;
-                        $disabledField = false;
-                        $normalizationRule = '';
-                        $normalizationFormat = null;
+                foreach ($outputXml->field as $field) {
+                    $nameAttributeKey = 'n';
+                    $nameAttribute = (string)$field->attributes()->$nameAttributeKey;
+                    $disabledField = false;
+                    $normalizationRule = '';
+                    $normalizationFormat = null;
 
-                        if (isset($mappingMercure[$nameAttribute])) {
-                            if (isset($mappingMercure[$nameAttribute]['disabled']))
-                                $disabledField = $mappingMercure[$nameAttribute]['disabled'];
-                            if (isset($mappingMercure[$nameAttribute]['normalizationRule']))
-                                $normalizationRule = $mappingMercure[$nameAttribute]['normalizationRule'];
-                            if (isset($mappingMercure[$nameAttribute]['normalizationFormat']))
-                                $normalizationFormat = $mappingMercure[$nameAttribute]['normalizationFormat'];
-                            if (isset($mappingMercure[$nameAttribute]['key']))
-                                $nameAttribute = $mappingMercure[$nameAttribute]['key'];
-                        }
-
-                        if (!$disabledField && (!array_key_exists($nameAttribute, $aReturn) || empty($aReturn[$nameAttribute]))) {
-                                $aReturn[$nameAttribute] = LadController::normalizeField((string)$field[0], $normalizationRule, $normalizationFormat);
-                        }
+                    if (isset($mappingMercure[$nameAttribute])) {
+                        if (isset($mappingMercure[$nameAttribute]['disabled']))
+                            $disabledField = $mappingMercure[$nameAttribute]['disabled'];
+                        if (isset($mappingMercure[$nameAttribute]['normalizationRule']))
+                            $normalizationRule = $mappingMercure[$nameAttribute]['normalizationRule'];
+                        if (isset($mappingMercure[$nameAttribute]['normalizationFormat']))
+                            $normalizationFormat = $mappingMercure[$nameAttribute]['normalizationFormat'];
+                        if (isset($mappingMercure[$nameAttribute]['key']))
+                            $nameAttribute = $mappingMercure[$nameAttribute]['key'];
                     }
 
-                    foreach ($page->SenderContact as $contact) {
-                        $aReturn["contactIdx"] = (string)$contact->Idx[0];
+                    if (!$disabledField && (!array_key_exists($nameAttribute, $aReturn) || empty($aReturn[$nameAttribute]))) {
+                            $aReturn[$nameAttribute] = LadController::normalizeField((string)$field[0], $normalizationRule, $normalizationFormat);
                     }
                 }
+
+                foreach ($outputXml->SenderContact as $contact) {
+                    $aReturn["contactIdx"] = (string)$contact->Idx[0];
+                }
             }
+
+            //Suppression du fichier source
+            unlink($tmpPath.$tmpFilename . '.' . $aArgs['extension']);
+
+            //Suppression du fichier xml
+            unlink($outXmlFilename);
         } else {
             LogsController::add([
                 'isTech'    => true,
