@@ -82,6 +82,10 @@ class IndexContactsScript
             mkdir($lexDirectory, 0775, true);
         }
 
+        if (!is_dir($ladConfiguration['config']['contactsIndexesDirectory'])){
+            mkdir($ladConfiguration['config']['contactsIndexesDirectory'], 0775, true);
+        }
+
         //Ouverture des index Lucene
         try {
             if (FullTextController::isDirEmpty($ladConfiguration['config']['contactsIndexesDirectory'])) {
