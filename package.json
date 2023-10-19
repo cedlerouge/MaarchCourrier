@@ -1,6 +1,6 @@
 {
   "name": "maarchcourrier",
-  "version": "2301.1.5",
+  "version": "2301.1.6",
   "description": "MaarchCourrier",
   "engines": {
     "npm": ">=8.15.0",
@@ -39,8 +39,8 @@
     "@types/node": "^12.20.55",
     "angular2-draggable": "^2.3.2",
     "core-js": "^3.30.2",
-    "tinymce": "^6.4.2",
-    "tinymce-i18n": "^22.12.27",
+    "tinymce": "^6.7.0",
+    "tinymce-i18n": "^23.10.09",
     "tslib": "^2.5.0",
     "zone.js": "^0.11.8"
   },

@@ -778,8 +778,8 @@ class ContactController
         // Ligne 2
         if (!empty($args['civility']) || !empty($args['firstname']) || !empty($args['lastname'])) {
             $afnorAddress[2] = ContactController::controlLengthNameAfnor([
-                'civility'      => $args['civility'],
-                'fullName'      => $args['firstname'].' '.$args['lastname'],
+                'civility'      => $args['civility'] ?? '',
+                'fullName'      => ($args['firstname'] ?? '') . ' ' . ($args['lastname'] ?? ''),
                 'strMaxLength'  => 38
             ]);
             $afnorAddress[2] = trim($afnorAddress[2]);

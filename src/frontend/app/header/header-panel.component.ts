@@ -6,6 +6,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { AppService } from '@service/app.service';
 import { Router } from '@angular/router';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     selector: 'app-header-panel',
@@ -24,6 +25,7 @@ export class HeaderPanelComponent implements OnInit {
         public translate: TranslateService,
         public headerService: HeaderService,
         public appService: AppService,
+        public functions: FunctionsService,
         private router: Router,
         private _location: Location
     ) { }
@@ -32,7 +34,18 @@ export class HeaderPanelComponent implements OnInit {
 
     goTo() {
         if (this.headerService.sideBarButton.route === '__GOBACK') {
-            this._location.back();
+            if (this.router.url.includes('fromSearch=true')) {
+                let searchTerm: string = '';
+                const storedCriteria = JSON.parse(sessionStorage.getItem('criteriaSearch_' + this.headerService.user.id));
+                if (!this.functions.empty(storedCriteria) && !this.functions.empty(storedCriteria.criteria.meta?.values)) {
+                    if (!this.functions.empty(storedCriteria.criteria.meta?.values)) {
+                        searchTerm = storedCriteria.criteria.meta.values;
+                    }
+                }
+                this.router.navigate(['/search'], { queryParams: {value: searchTerm } });
+            } else {
+                this._location.back();
+            }
         } else {
             this.router.navigate([this.headerService.sideBarButton.route]);
         }

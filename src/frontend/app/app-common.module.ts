@@ -94,6 +94,7 @@ import { SelectPageComponent } from '@plugins/list/select-page/select-page.compo
 import { MailEditorComponent } from '@plugins/mail-editor/mail-editor.component';
 import { SelectWithFilterComponent } from '@plugins/select-with-filter/select-with-filter.component';
 import { FilterComponent } from '@plugins/select-with-filter/filter/filter.component';
+import { SetPageComponent } from '@plugins/list/set-page/set-page/set-page.component';
 
 
 @NgModule({
@@ -163,6 +164,7 @@ import { FilterComponent } from '@plugins/select-with-filter/filter/filter.compo
         InputCorrespondentGroupComponent,
         MailSignaturesAdministrationComponent,
         SelectPageComponent,
+        SetPageComponent,
         MailEditorComponent,
         SelectWithFilterComponent,
         FilterComponent
@@ -223,6 +225,7 @@ import { FilterComponent } from '@plugins/select-with-filter/filter/filter.compo
         ColorGithubModule,
         MailSignaturesAdministrationComponent,
         SelectPageComponent,
+        SetPageComponent,
         MailEditorComponent,
         SelectWithFilterComponent,
         FilterComponent

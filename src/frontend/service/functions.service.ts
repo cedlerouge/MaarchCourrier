@@ -18,7 +18,7 @@ export class FunctionsService {
         private datePipe: DatePipe
     ) { }
 
-    empty(value: any) {
+    empty(value: any): boolean {
         if (value === null || value === undefined) {
             return true;
 
@@ -35,8 +35,17 @@ export class FunctionsService {
         }
     }
 
-    isDate(value: any) {
+    isDate(value: any): boolean {
         return value instanceof Date && !isNaN(value.valueOf());
+    }
+
+    isNumber(evt: any): boolean {
+        evt = (evt) ? evt : window.event;
+        const charCode = (evt.which) ? evt.which : evt.keyCode;
+        if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+            return false;
+        }
+        return true;
     }
 
     formatFrenchDateToTechnicalDate(date: string) {
@@ -156,5 +165,51 @@ export class FunctionsService {
 
     getDocBaseUrl() {
         return `https://docs.maarch.org/gitbook/html/MaarchCourrier/${environment.BASE_VERSION}`;
+    }
+
+    /**
+     * Sanitizes HTML content to remove all script elements, event attributes, and external script URLs.
+     * @param {string} html - The HTML content to be sanitized.
+     * @returns {string} - The sanitized HTML content without any scripts or related elements.
+    */
+    sanitizeHtml(html: string): string {
+        // Parse the input HTML string into a DOM object
+        const domParser = new DOMParser().parseFromString(html, 'text/html');
+
+        // Remove all <script> tags from the DOM
+        const scripts = domParser.querySelectorAll('script');
+        scripts.forEach((script: any) => {
+            script.remove();
+        });
+
+        // Remove event attributes (such as onclick, onerror, etc.) from all elements
+        const elementsWithEventAttributes = domParser.querySelectorAll('*');
+        elementsWithEventAttributes.forEach(element => {
+            element.removeAttribute('onabort');
+            element.removeAttribute('onblur');
+            element.removeAttribute('onchange');
+            element.removeAttribute('onclick');
+            element.removeAttribute('ondblclick');
+            element.removeAttribute('onerror');
+            element.removeAttribute('onfocus');
+            element.removeAttribute('onkeydown');
+            element.removeAttribute('onkeypress');
+            element.removeAttribute('onkeyup');
+            element.removeAttribute('onload');
+            element.removeAttribute('onmousedown');
+            element.removeAttribute('onmousemove');
+            element.removeAttribute('onmouseout');
+            element.removeAttribute('onmouseover');
+            element.removeAttribute('onmouseup');
+            element.removeAttribute('onreset');
+            element.removeAttribute('onresize');
+            element.removeAttribute('onscroll');
+            element.removeAttribute('onselect');
+            element.removeAttribute('onsubmit');
+            element.removeAttribute('onunload');
+        });
+
+        // Return the sanitized HTML content
+        return domParser.body.innerHTML;
     }
 }

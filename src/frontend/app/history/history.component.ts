@@ -12,6 +12,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { LatinisePipe } from 'ngx-pipes';
 import { PrivilegeService } from '@service/privileges.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-history-list',
@@ -44,6 +45,7 @@ export class HistoryComponent implements OnInit {
     resultsLength = 0;
 
     searchHistory = new UntypedFormControl();
+    currentPage = new UntypedFormControl();
     startDateFilter: any = '';
     endDateFilter: any = '';
     filterUrl: string = '';
@@ -62,6 +64,7 @@ export class HistoryComponent implements OnInit {
     loadingFilters: boolean = true;
 
     pageSize: number = 10;
+    pageLength: number = 0;
 
     private destroy$ = new Subject<boolean>();
 
@@ -73,7 +76,9 @@ export class HistoryComponent implements OnInit {
         public dialog: MatDialog,
         public functions: FunctionsService,
         private latinisePipe: LatinisePipe,
-        public privilegeService: PrivilegeService) { }
+        public router: Router,
+        public privilegeService: PrivilegeService
+    ) { }
 
     ngOnInit(): void {
         if (this.resId !== null) {
@@ -135,6 +140,8 @@ export class HistoryComponent implements OnInit {
                     this.isLoadingResults = false;
                     data = this.processPostData(data);
                     this.resultsLength = data.count;
+                    this.pageLength = Math.ceil(this.resultsLength / this.pageSize);
+                    this.currentPage.setValue(this.paginator.pageIndex + 1);
                     return data.history;
                 }),
                 catchError((err: any) => {

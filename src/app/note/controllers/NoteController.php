@@ -29,6 +29,7 @@ use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
 use Template\models\TemplateModel;
 use Resource\models\ResModel;
+use SrcCore\models\CoreConfigModel;
 
 class NoteController
 {
