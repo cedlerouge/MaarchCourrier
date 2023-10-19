@@ -24,8 +24,8 @@
     "reload-packages-addin-outlook": "cd plugins/addin-outlook && rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps true && npm ci && cd ../..",
     "reload-packages-prod": "rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps true && npm ci --production",
     "reload-packages-prod-addin-outlook": "cd plugins/addin-outlook && rm -Rf node_modules && npm cache clean --force && npm config set legacy-peer-deps true && npm ci --production && cd ../..",
-    "create-component": "echo Component name ? && read varname && ng g c $varname --module app --style=scss",
-    "create-component-admin": "echo Component name ? && read varname && ng g c administration/$varname --module administration --style=scss",
+    "create-component": "echo Component name ? && read varname && ng g c $varname --module app --style=scss --project=maarchCourrier",
+    "create-component-admin": "echo Component name ? && read varname && ng g c administration/$varname --module administration --style=scss --project=maarchCourrier",
     "cypress:open": "cypress open --config-file test/e2e/cypress-config.json",
     "cypress:run": "cypress run --browser chrome --headless --config-file test/e2e/cypress-config.json"
   },

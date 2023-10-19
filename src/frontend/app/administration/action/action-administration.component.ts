@@ -524,23 +524,27 @@ export class ActionAdministrationComponent implements OnInit {
         }
 
         if (this.creationMode) {
-            this.http.post('../rest/actions', this.action)
-                .subscribe(() => {
+            this.http.post('../rest/actions', this.action).pipe(
+                tap(() => {
                     this.router.navigate(['/administration/actions']);
                     this.notify.success(this.translate.instant('lang.actionAdded'));
-
-                }, (err) => {
-                    this.notify.error(err.error.errors);
-                });
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         } else {
-            this.http.put('../rest/actions/' + this.action.id, this.action)
-                .subscribe(() => {
+            this.http.put('../rest/actions/' + this.action.id, this.action).pipe(
+                tap(() => {
                     this.router.navigate(['/administration/actions']);
                     this.notify.success(this.translate.instant('lang.actionUpdated'));
-
-                }, (err) => {
-                    this.notify.error(err.error.errors);
-                });
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         }
     }
 
