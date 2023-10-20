@@ -18,8 +18,6 @@ import { UntypedFormControl } from '@angular/forms';
 })
 
 export class LadAdministrationMenuComponent implements OnInit {
-
-
     loading: boolean = false;
     dialogRef: MatDialogRef<any>;
 
@@ -46,8 +44,11 @@ export class LadAdministrationMenuComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        // this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
         this.initConfiguration();
+    }
+
+    public isLadEnabled() {
+        return this.config.enabledLad;
     }
 
     toggleLadConf() {

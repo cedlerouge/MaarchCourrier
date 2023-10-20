@@ -6,8 +6,8 @@ import { HeaderService } from '@service/header.service';
 
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
-import { MatDialog } from '@angular/material/dialog';
 import { AdministrationService } from '../administration.service';
+import { LadAdministrationMenuComponent } from './lad-administration-menu.component';
 
 @Component({
     templateUrl: 'lad-administration.component.html',
@@ -16,8 +16,10 @@ import { AdministrationService } from '../administration.service';
 
 export class LadAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
+    @ViewChild('ladMenuContent') ladMenuContent: LadAdministrationMenuComponent;
 
     loading: boolean = false;
+    ladEnabled: boolean;
 
     constructor(
         public translate: TranslateService,
@@ -25,7 +27,6 @@ export class LadAdministrationComponent implements OnInit {
         private notify: NotificationService,
         private headerService: HeaderService,
         public appService: AppService,
-        private dialog: MatDialog,
         public functions: FunctionsService,
         public adminService: AdministrationService,
         private viewContainerRef: ViewContainerRef
@@ -34,5 +35,8 @@ export class LadAdministrationComponent implements OnInit {
     ngOnInit(): void {
         this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.lad'));
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
+        setInterval(() => {
+            this.ladEnabled = this.ladMenuContent.isLadEnabled();
+        }, 500);
     }
 }
