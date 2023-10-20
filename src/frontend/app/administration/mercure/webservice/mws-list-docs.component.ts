@@ -1,4 +1,4 @@
-import {Component, OnInit, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -10,9 +10,8 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AdministrationService } from '../../administration.service';
-import {catchError, tap} from 'rxjs/operators';
-import {UntypedFormControl} from '@angular/forms';
-import {LadAdministrationMenuComponent} from '../lad-administration-menu.component';
+import { catchError, tap } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
     templateUrl: 'mws-list-docs.component.html',

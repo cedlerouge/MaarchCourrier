@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -8,8 +8,8 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { AdministrationService } from '../administration.service';
-import {catchError, tap} from 'rxjs/operators';
-import {UntypedFormControl, Validators} from '@angular/forms';
+import { catchError, tap } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
     selector: 'app-admin-menu-mercure',
@@ -40,12 +40,9 @@ export class LadAdministrationMenuComponent implements OnInit {
         public translate: TranslateService,
         public http: HttpClient,
         private notify: NotificationService,
-        private headerService: HeaderService,
         public appService: AppService,
-        private dialog: MatDialog,
         public functions: FunctionsService,
-        public adminService: AdministrationService,
-        private viewContainerRef: ViewContainerRef
+        public adminService: AdministrationService
     ) { }
 
     ngOnInit(): void {
@@ -54,7 +51,7 @@ export class LadAdministrationMenuComponent implements OnInit {
     }
 
     toggleLadConf() {
-        this.config.enabledLad === true ? this.config.enabledLad = false : this.config.enabledLad = true;
+        this.config.enabledLad = !this.config.enabledLad;
         this.saveConfiguration();
     }
 
@@ -73,7 +70,11 @@ export class LadAdministrationMenuComponent implements OnInit {
     saveConfiguration() {
         this.http.put('../rest/configurations/admin_mercure', this.config).pipe(
             tap(() => {
-                this.notify.success(this.translate.instant('lang.dataUpdated'));
+                if (!this.config.enabledLad) {
+                    this.notify.success(this.translate.instant('lang.ladDisabled'));
+                } else {
+                    this.notify.success(this.translate.instant('lang.ladEnabled'));
+                }
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
@@ -95,7 +96,7 @@ export class LadAdministrationMenuComponent implements OnInit {
     launchTest(){
         this.loading = true;
         this.http.post('../rest/administration/mercure/test', this.config).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.setLadConf(true);
                 this.loading = false;
             }),

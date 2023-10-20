@@ -6,10 +6,10 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { AdministrationService } from '../../administration.service';
-import {catchError, tap} from 'rxjs/operators';
-import {UntypedFormControl} from '@angular/forms';
+import { catchError, tap } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
 import { LadAdministrationMenuComponent } from '../lad-administration-menu.component';
 
 @Component({
@@ -74,7 +74,6 @@ export class MwsAdministrationComponent implements OnInit {
         this.http.get('../rest/configurations/admin_mercure').pipe(
             tap((data: any) => {
                 this.config = data.configuration.value;
-
                 this.checkAccount();
                 this.loading = false;
             }),
