@@ -9,8 +9,6 @@ import { FunctionsService } from '@service/functions.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AdministrationService } from '../administration.service';
 
-import { DocumentViewerComponent } from '../../viewer/document-viewer.component';
-
 @Component({
     templateUrl: 'lad-administration.component.html',
     styleUrls: ['./lad-administration.component.scss']
@@ -18,7 +16,6 @@ import { DocumentViewerComponent } from '../../viewer/document-viewer.component'
 
 export class LadAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
-    @ViewChild('appDocumentViewer', { static: false }) appDocumentViewer: DocumentViewerComponent;
 
     loading: boolean = false;
 

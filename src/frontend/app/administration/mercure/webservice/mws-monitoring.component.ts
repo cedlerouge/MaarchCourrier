@@ -10,8 +10,8 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { AdministrationService } from '../../administration.service';
-import {catchError, debounceTime, exhaustMap, filter, finalize, map, tap} from 'rxjs/operators';
-import {UntypedFormControl, Validators} from '@angular/forms';
+import { catchError, tap } from 'rxjs/operators';
+import { UntypedFormControl } from '@angular/forms';
 
 @Component({
     templateUrl: 'mws-monitoring.component.html',
@@ -101,7 +101,6 @@ export class MwsMonitoringComponent implements OnInit {
     loadSubscriptionState() {
         this.http.get('../rest/mercure/webservice/subscriptionState').pipe(
             tap((data: any) => {
-                console.log(data);
 
                 this.statusSubscription.nbPagesMax = data.nbMaxPages;
                 this.statusSubscription.startDate = data.creationDate.date;

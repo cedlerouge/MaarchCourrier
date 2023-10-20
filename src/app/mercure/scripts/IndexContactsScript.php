@@ -42,7 +42,8 @@ class IndexContactsScript
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
             $customId = $args[$cmd+1];
-	        $fileConfiguration    = 'custom/'.$customId.'/config/ladConfiguration.json';
+
+			$fileConfiguration    = 'custom/'.$customId.'/config/ladConfiguration.json';
         }
 
         if (array_search('--fileConfig', $args) > 0) {
@@ -58,6 +59,7 @@ class IndexContactsScript
         DatabasePDO::reset();
         new DatabasePDO(['customId' => $args['customId']]);
 
+
         $fileConfig = (!empty($args['fileConfig']) && is_file($args['fileConfig'])) ? $args['fileConfig'] : 'config/ladConfiguration.json';
 
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => $fileConfig]);
@@ -66,32 +68,35 @@ class IndexContactsScript
             return false;
         }
 
-        if (empty($ladConfiguration['config']['contactsLexiconsDirectory'])){
-            echo "/!\\ contactsLexiconsDirectory parameter is empty in configuration file \n";
-            return false;
-        }
+        $contactsIndexesDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsIdx";
+        $contactsLexiconsDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsLexiques";
 
-        if (empty($ladConfiguration['config']['contactsIndexesDirectory'])){
+        if (empty($contactsIndexesDirectory)) {
             echo "/!\\ contactsIndexesDirectory parameter is empty in configuration file \n";
             return false;
         }
 
+        if (empty($contactsLexiconsDirectory)) {
+            echo "/!\\ contactsLexiconsDirectory parameter is empty in configuration file \n";
+            return false;
+        }
+
         //Création des dossiers Lexiques et Index si non existants
-        $lexDirectory = $ladConfiguration['config']['contactsLexiconsDirectory'] . DIRECTORY_SEPARATOR . $args['customId'];
-        if (!is_dir($lexDirectory)){
+        $lexDirectory = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $args['customId'];
+        if (!is_dir($lexDirectory)) {
             mkdir($lexDirectory, 0775, true);
         }
 
-        if (!is_dir($ladConfiguration['config']['contactsIndexesDirectory'])){
-            mkdir($ladConfiguration['config']['contactsIndexesDirectory'], 0775, true);
+        if (!is_dir($contactsIndexesDirectory)) {
+            mkdir($contactsIndexesDirectory, 0775, true);
         }
 
         //Ouverture des index Lucene
         try {
-            if (FullTextController::isDirEmpty($ladConfiguration['config']['contactsIndexesDirectory'])) {
-                $index = \Zend_Search_Lucene::create($ladConfiguration['config']['contactsIndexesDirectory']);
+            if (FullTextController::isDirEmpty($contactsIndexesDirectory)) {
+                $index = \Zend_Search_Lucene::create($contactsIndexesDirectory);
             } else {
-                $index = \Zend_Search_Lucene::open($ladConfiguration['config']['contactsIndexesDirectory']);
+                $index = \Zend_Search_Lucene::open($contactsIndexesDirectory);
             }
 
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
@@ -104,10 +109,10 @@ class IndexContactsScript
 
         //Construction de la configuration
         $tabLexicon = $tabSelect = [];
-        foreach ($ladConfiguration['contactsIndexation'] as $fieldIndexation){
+        foreach ($ladConfiguration['contactsIndexation'] as $fieldIndexation) {
             $tabSelect[] = $fieldIndexation['database'];
 
-            if (!is_null($fieldIndexation['lexicon'])){
+            if (!is_null($fieldIndexation['lexicon'])) {
                 $tabLexicon[$fieldIndexation['lexicon']] = [];
             }
         }
@@ -121,8 +126,8 @@ class IndexContactsScript
         $cptIndex = 0;
 
         $listIdToUpdate = [];
-        foreach ($contactsToIndexes as $c){
-            if ($cptIndex%50 == 0){
+        foreach ($contactsToIndexes as $c) {
+            if ($cptIndex%50 == 0) {
                 echo "Indexation contact ".$cptIndex."/".count($contactsToIndexes)."\n";
             }
 
@@ -135,9 +140,9 @@ class IndexContactsScript
 
             $cIdx = new \Zend_Search_Lucene_Document();
 
-            foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation){
+            foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation) {
                 try {
-                    if ($key == "id"){
+                    if ($key == "id") {
                         $cIdx->addField(\Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (integer)$c['id']));
                     } else {
                         $cIdx->addField(\Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
@@ -148,8 +153,8 @@ class IndexContactsScript
                 }
 
                 //Ajout des informations aux lexiques
-                if (isset($tabLexicon[$fieldIndexation['lexicon']])){
-                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key])){
+                if (isset($tabLexicon[$fieldIndexation['lexicon']])) {
+                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key]))  {
                         $tabLexicon[$fieldIndexation['lexicon']][] = $c[$key];
                     }
                 }
@@ -190,13 +195,12 @@ class IndexContactsScript
         }
 
 
-        $flagFile = fopen($lexDirectory.DIRECTORY_SEPARATOR."lastindexation.flag", "w");
+        $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
 	if ($flagFile == false) {
 	    echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
 	} else {
-        fwrite($flagFile, date("d-m-Y H:i:s"));
-        fclose($flagFile);
-
+            fwrite($flagFile, date("d-m-Y H:i:s"));
+            fclose($flagFile);
 	}
         echo "Contacts indexation done !\n";
         return true;

@@ -19,6 +19,7 @@ use Contact\models\ContactModel;
 use Convert\controllers\FullTextController;
 use DateTime;
 use Group\controllers\PrivilegeController;
+use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\controllers\LogsController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
@@ -74,6 +75,26 @@ class LadController
         return $response->withJson($ladResult);
     }
 
+    private static function generateTestPdf()
+    {
+        $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+        if (file_exists($libPath)) {
+            require_once($libPath);
+        }
+        $pdf = new Fpdi('P', 'pt');
+        $pdf->setPrintHeader(false);
+        $pdf->AddPage();
+
+        $pdf->SetFont('', 'B', 14);
+        $pdf->Write(5, 'Objet : Courrier test');
+
+        $tmpDir = CoreConfigModel::getTmpPath();
+        $filePathOnTmp = $tmpDir . 'fileTestLad.pdf';
+        $pdf->Output($filePathOnTmp, 'F');
+
+        return $filePathOnTmp;
+    }
+
     public function testLad(Request $request, Response $response)
     {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
@@ -90,7 +111,7 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
-        $testFile = $ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Bernard_Pascontent.pdf';
+        $testFile = LadController::generateTestPdf();
         $encodedResource = base64_encode(file_get_contents($testFile));
 
         $ladResult = LadController::launchLad([
@@ -101,11 +122,8 @@ class LadController
         if (!empty($ladResult['errors'])) {
             $response->withStatus(400)->withJson(['errors' => $ladResult['errors']]);
         }
-        if (!empty($ladResult['subject'])) {
-            return $response->withStatus(204);
-        }
 
-        return $response->withStatus(400)->withJson(['errors' => 'LAD result is empty']);
+        return $response->withStatus(204);
     }
 
     public static function launchLad(array $aArgs)
@@ -143,6 +161,7 @@ class LadController
             'eventType' => "LAD task",
             'eventId'   => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
         ]);
+
         $outXmlFilename =$ladConfiguration['config']['mercureLadDirectory'] . '/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml';
 
         $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
@@ -154,6 +173,7 @@ class LadController
 
         if ($return == 0) {
             $mappingMercure = $ladConfiguration['mappingLadFields'];
+
             $outputXml = CoreConfigModel::getXmlLoaded(['path' => $outXmlFilename]);
             $mandatoryFields = [
                 'subject',
@@ -192,6 +212,8 @@ class LadController
                 foreach ($outputXml->SenderContact as $contact) {
                     $aReturn["contactIdx"] = (string)$contact->Idx[0];
                 }
+            } else {
+                return ['errors' => 'Output XML  LAD file doesn\'t exists'];
             }
 
             //Suppression du fichier source
@@ -244,6 +266,7 @@ class LadController
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
+
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
 
         if (empty($ladConfiguration)) {
@@ -263,10 +286,9 @@ class LadController
         ]);
         $countAllContacts = (int)$allContacts[0]['count'];
 
-        $lexDirectory = $ladConfiguration['config']['contactsLexiconsDirectory'] . DIRECTORY_SEPARATOR . $customId;
-        if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")) {
+        $lexDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsLexiques" . DIRECTORY_SEPARATOR . $customId;
+        if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")){
             $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "r");
-
             if ($flagFile === false) {
                 $dateIndexation = "";
             } else {

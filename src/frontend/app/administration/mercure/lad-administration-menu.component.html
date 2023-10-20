@@ -1,14 +1,5 @@
 <mat-nav-list>
     <h3 mat-subheader>{{'lang.actions' | translate}}</h3>
-    <a mat-list-item disableRipple="true" matTooltip="{{'lang.toogleLadConf' | translate}}">
-        <mat-icon color="primary" mat-list-icon>
-            <mat-slide-toggle [checked]="config.enabledLad" [disabled]="!config.enabledLad" color="primary"
-                              (change)="config.enabledLad ? toggleLadConf() : '';"></mat-slide-toggle>
-        </mat-icon>
-        <p mat-line [ngStyle]="{'opacity': config.enabledLad ? '' : '0.3'}" (click)="config.enabledLad ? toggleLadConf() : '';">
-            {{'lang.lad' | translate}} {{(config.enabledLad ? 'lang.enabled' : 'lang.disabled') | translate}}
-        </p>
-    </a>
 
     <a mat-list-item routerLink="/administration/mercure">
         <mat-icon color="primary" mat-list-icon class="fa fa-cogs"></mat-icon>
@@ -16,7 +7,7 @@
             {{'lang.informations' | translate}}
         </p>
     </a>
-    <a mat-list-item (click)="launchTest()">
+    <a mat-list-item *ngIf="!config.enabledLad" (click)="launchTest()" [ngStyle]="{'pointer-events': loading ? 'none' : 'auto'}">
         <mat-icon color="primary" mat-list-icon class="fas fa-paper-plane"></mat-icon>
         <p mat-line>
             {{'lang.testAndActivate' | translate}}
@@ -25,6 +16,14 @@
             <mat-spinner style="margin:auto;" [diameter]="24"></mat-spinner>
         </span>
     </a>
+
+    <a mat-list-item *ngIf="config.enabledLad" (click)="setLadConf(false)" >
+        <mat-icon color="warn" mat-list-icon class="fas fa-power-off"></mat-icon>
+        <p mat-line>
+            {{'lang.disableLad' | translate}}
+        </p>
+    </a>
+
     <a mat-list-item routerLink="/administration/mercure/contacts" >
         <mat-icon color="primary" mat-list-icon class="fa fa-address-book"></mat-icon>
         <p mat-line>
@@ -32,7 +31,6 @@
         </p>
     </a>
 </mat-nav-list>
-
 <!--
 <mat-divider></mat-divider>
 <mat-nav-list>
