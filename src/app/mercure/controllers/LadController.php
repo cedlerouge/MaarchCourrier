@@ -167,7 +167,7 @@ class LadController
         $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
             . $tmpPath.$tmpFilename . '.' . $aArgs['extension'] . ' '
             . $outXmlFilename. ' '
-            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.cfg';
+            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.INI';
 
         exec($command.' 2>&1', $output, $return);
 
