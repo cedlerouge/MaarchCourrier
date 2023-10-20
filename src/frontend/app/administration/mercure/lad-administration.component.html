@@ -1,6 +1,6 @@
 <mat-sidenav-container autosize class="maarch-container">
     <ng-template #adminMenuTemplate>
-        <app-admin-menu-mercure></app-admin-menu-mercure>
+        <app-admin-menu-mercure #ladMenuContent></app-admin-menu-mercure>
     </ng-template>
     <mat-sidenav-content>
         <div class="bg-head">
@@ -21,6 +21,8 @@
                     <mat-spinner style="margin:auto;"></mat-spinner>
                 </div>
                 <mat-card *ngIf="!loading" class="card-app-content">
+                    <app-maarch-message mode="success" *ngIf="ladEnabled"  [content]="'lang.ladEnabledMessage' | translate"></app-maarch-message>
+                    <app-maarch-message mode="danger" *ngIf="!ladEnabled"  [content]="'lang.ladDisabledMessage' | translate"></app-maarch-message>
                     <app-maarch-message [content]="'lang.ladDescriptionMessage' | translate"></app-maarch-message>
                 </mat-card>
             </div>
