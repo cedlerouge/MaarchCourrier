@@ -15,7 +15,7 @@ class PastellConfig
     private string $password;
     private int $entity;
     private int $connector;
-    private string $documentType;
+    private string $folderType;
     private string $iParapheurType;
     private string $iParapheurSousType;
 
@@ -45,7 +45,7 @@ class PastellConfig
         $this->password = $password;
         $this->entity = $entity;
         $this->connector = $connector;
-        $this->documentType = $documentType;
+        $this->folderType = $documentType;
         $this->iParapheurType = $iParapheurType;
         $this->iParapheurSousType = $iParapheurSousType;
     }
@@ -75,9 +75,9 @@ class PastellConfig
         return $this->connector;
     }
 
-    public function getDocumentType(): string
+    public function getFolderType(): string
     {
-        return $this->documentType;
+        return $this->folderType;
     }
 
     public function getIparapheurType(): string

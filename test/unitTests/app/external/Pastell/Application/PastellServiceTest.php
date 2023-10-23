@@ -450,7 +450,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -466,7 +466,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -483,7 +483,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -499,7 +499,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -524,7 +524,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -540,7 +540,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertFalse($result);
     }
@@ -555,7 +555,7 @@ class PastellServiceTest extends TestCase
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
 
-        $result = $sendToPastell->sendDocumentToPastell();
+        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertTrue($result);
     }
