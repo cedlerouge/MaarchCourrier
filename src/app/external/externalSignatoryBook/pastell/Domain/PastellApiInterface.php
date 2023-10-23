@@ -80,4 +80,5 @@ interface PastellApiInterface
     public function getXmlDetail(PastellConfig $config, string $idFolder): object;
     public function downloadFile(PastellConfig $config, string $idDocument): array;
 
+    public function verificationIParapheur(PastellConfig $config, string $idDocument): bool;
 }
