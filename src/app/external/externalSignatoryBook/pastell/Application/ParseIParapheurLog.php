@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
@@ -7,10 +9,8 @@ use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellStates;
 use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
-use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
 
-class RetrieveFromPastell
+class ParseIParapheurLog
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
@@ -18,7 +18,6 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
 
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
-    private ParseIParapheurLog $parseIParapheurLog;
 
     private PastellConfig $config;
     private PastellStates $pastellStates;
@@ -27,54 +26,26 @@ class RetrieveFromPastell
         PastellApiInterface $pastellApi,
         PastellConfigInterface $pastellConfig,
         PastellConfigurationCheck $pastellConfigCheck,
-        ProcessVisaWorkflowInterface $processVisaWorkflow,
-        ParseIParapheurLog $parseIParapheurLog
+        ProcessVisaWorkflowInterface $processVisaWorkflow
     )
     {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->processVisaWorkflow = $processVisaWorkflow;
-        $this->parseIParapheurLog = $parseIParapheurLog;
 
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
-    public function retrieve(array $idsToRetrieve): array
-    {
-        /**
-         * res_id
-         * external_id
-         * version
-         */
-
-        foreach ($idsToRetrieve as $key => $value) {
-
-            /**
-             * 1 appel action verif-iparapheur
-             * appel function parseLog
-             */
-            $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
-
-            $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
-
-            $idsToRetrieve[$key] = array_merge($value, $result);
-        }
-
-        /**
-         * key : resId
-         * value : retour de parseLogIparapheur
-         */
-        return $idsToRetrieve;
-    }
-
-    // TODO remove -> ParseIParapheurLog
     public function parseLogIparapheur(int $resId, string $idFolder): array
     {
         $return = [];
         // TODO si pas de xml trouvé, return status waiting
         $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
+//        if () {
+//            return
+//        }
 
         if ($iParapheurHistory->MessageRetour->codeRetour == $this->pastellStates->getErrorCode()) {
             return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
@@ -130,5 +101,4 @@ class RetrieveFromPastell
             'content' => $noteContent
         ];
     }
-
 }

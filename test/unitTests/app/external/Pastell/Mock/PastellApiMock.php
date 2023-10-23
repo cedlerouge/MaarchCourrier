@@ -140,4 +140,9 @@ class PastellApiMock implements PastellApiInterface
     {
         return $this->documentsDownload;
     }
+
+    public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
+    {
+        return true;
+    }
 }

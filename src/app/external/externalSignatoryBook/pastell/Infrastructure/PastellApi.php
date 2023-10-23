@@ -363,4 +363,9 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
+    {
+        // TODO: Implement verificationIParapheur() method.
+        return false;
+    }
 }
