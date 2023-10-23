@@ -111,6 +111,17 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
+            return $response->withStatus(400)->withJson(['errors' => 'L\'application Mercure5 n\'est pas présente dans la distribution ou n\'est pas exécutable']);
+        }
+
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
+            return $response->withStatus(400)->withJson(['errors' => 'L\'application ugrep n\'est pas présente dans la distribution ou n\'est pas exécutable']);
+        }
+
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet')) {
+            return $response->withStatus(400)->withJson(['errors' => 'L\'application uchardet n\'est pas présente dans la distribution ou n\'est pas exécutable']);
+        }
         $testFile = LadController::generateTestPdf();
         $encodedResource = base64_encode(file_get_contents($testFile));
 
@@ -120,7 +131,7 @@ class LadController
         ]);
 
         if (!empty($ladResult['errors'])) {
-            $response->withStatus(400)->withJson(['errors' => $ladResult['errors']]);
+            return $response->withStatus(400)->withJson(['errors' => $ladResult['errors']]);
         }
 
         return $response->withStatus(204);
@@ -222,6 +233,14 @@ class LadController
             //Suppression du fichier xml
             unlink($outXmlFilename);
         } else {
+            $tabErrors = [];
+
+            foreach ($output as $numLine => $lineOutput) {
+                if (strpos($lineOutput, 'error') || strpos($lineOutput, 'permission denied')) {
+                    $tabErrors[] = "[" . $numLine . "]" . $lineOutput;
+                }
+            }
+
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'mercure',
@@ -229,9 +248,11 @@ class LadController
                 'tableName' => '',
                 'recordId'  => '',
                 'eventType' => "LAD task",
-                'eventId'   => "LAD task error on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}, return : {$return}"
+                'eventId'   => "LAD task error on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}, return : {$return}, errors : " . implode(",", $tabErrors)
             ]);
-            $aReturn = ['output' => $output, 'return' => $return, 'cmd' => $command];
+            $aReturn = ['errors' => $tabErrors, 'output' => $output, 'return' => $return, 'cmd' => $command];
+
+            return $aReturn;
         }
 
         LogsController::add([
