@@ -76,4 +76,8 @@ interface PastellApiInterface
      * @return array
      */
     public function getDocumentDetail(PastellConfig $config, string $idDocument): array;
+
+    public function getXmlDetail(PastellConfig $config, string $idFolder): object;
+    public function downloadFile(PastellConfig $config, string $idDocument): array;
+
 }
