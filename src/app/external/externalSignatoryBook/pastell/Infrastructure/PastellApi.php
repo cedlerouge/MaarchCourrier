@@ -312,4 +312,55 @@ class PastellApi implements PastellApiInterface
         }
         return $return;
     }
+
+    public function getXmlDetail(PastellConfig $config, string $idFolder): object
+    {
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/iparapheur_historique',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET',
+            'isXml' => true
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'];
+        }
+        return $return;
+    }
+
+
+
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array
+     */
+    public function downloadFile(PastellConfig $config, string $idDocument): array
+    {
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method' => 'GET',
+            'fileResponse' => true
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = ['encodedFile' => base64_encode($response['response'])];
+        }
+        return $return;
+    }
+
 }

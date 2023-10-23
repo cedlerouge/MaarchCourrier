@@ -23,6 +23,9 @@ class PastellApiMock implements PastellApiInterface
     public array $documentDetails = [];
     public array $mainFile = [];
     public array $dataFolder = [];
+    public array $documentsDownload = [];
+    public object $journalXml;
+
 
     /**
      * @param PastellConfig $config
@@ -116,5 +119,25 @@ class PastellApiMock implements PastellApiInterface
     public function getDocumentDetail(PastellConfig $config, string $idDocument): array
     {
         return $this->documentDetails;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return object
+     */
+    public function getXmlDetail(PastellConfig $config, string $idFolder): object
+    {
+        return $this->journalXml ?? new \stdClass();
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array
+     */
+    public function downloadFile(PastellConfig $config, string $idDocument): array
+    {
+        return $this->documentsDownload;
     }
 }

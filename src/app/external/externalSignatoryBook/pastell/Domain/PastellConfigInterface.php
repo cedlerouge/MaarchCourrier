@@ -14,5 +14,6 @@ interface PastellConfigInterface
      * @return PastellConfig|null
      */
     public function getPastellConfig(): ?PastellConfig;
+    public function getPastellStates(): ?PastellStates;
 }
- 
+
