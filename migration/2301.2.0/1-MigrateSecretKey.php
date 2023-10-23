@@ -69,11 +69,19 @@ class MigrateSecretKey implements AutoUpdateInterface
 
             $customConfigPath = explode('/', $configPath);
             array_pop($customConfigPath);
-            $customConfigPath = implode('/', $customConfigPath);
-            $secretKeyPath = getcwd() . '/' . $customConfigPath . '/mc_secret.key';
+            $customConfigPath = getcwd() . '/' . implode('/', $customConfigPath);
+            $secretKeyPath = $customConfigPath . '/mc_secret.key';
+
+            if (!is_dir($customConfigPath)) {
+                throw new \Exception($this->logHeader . " [update] : This path '$customConfigPath' is not a folder");
+            } elseif (!is_writable($customConfigPath)) {
+                throw new \Exception($this->logHeader . " [update] : The folder '$customConfigPath' is not writable");
+            }
 
             if (!file_exists($secretKeyPath)) {
-                file_put_contents($secretKeyPath, $vhostEncryptKey);
+                if (file_put_contents($secretKeyPath, $vhostEncryptKey) === false) {
+                    throw new \Exception($this->logHeader . " [update] : Could not create secret key at '$secretKeyPath'");
+                }
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Migrate Secret Key',
