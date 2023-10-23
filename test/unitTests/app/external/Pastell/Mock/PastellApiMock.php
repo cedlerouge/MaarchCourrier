@@ -58,7 +58,7 @@ class PastellApiMock implements PastellApiInterface
      * @param PastellConfig $config
      * @return array
      */
-    public function getDocumentType(PastellConfig $config): array
+    public function getFolderType(PastellConfig $config): array
     {
         return $this->flux;
     }
@@ -83,40 +83,41 @@ class PastellApiMock implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array|string[]
      */
-    public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
+    public function getIparapheurSousType(PastellConfig $config, string $idFolder): array
     {
         return $this->iParapheurSousType;
     }
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
+     * @param string $title
      * @return array|string[]
      */
-    public function editFolder(PastellConfig $config, string $idDocument): array
+    public function editFolder(PastellConfig $config, string $idFolder, string $title): array
     {
         return $this->dataFolder;
     }
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array
      */
-    public function uploadMainFile(PastellConfig $config, string $idDocument): array
+    public function uploadMainFile(PastellConfig $config, string $idFolder): array
     {
         return $this->mainFile;
     }
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array
      */
-    public function getDocumentDetail(PastellConfig $config, string $idDocument): array
+    public function getFolderDetail(PastellConfig $config, string $idFolder): array
     {
         return $this->documentDetails;
     }

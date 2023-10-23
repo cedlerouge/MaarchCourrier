@@ -26,9 +26,9 @@ class PastellApi implements PastellApiInterface
     public function getVersion(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/version',
+            'url'       => $config->getUrl() . '/version',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 200) {
@@ -51,9 +51,9 @@ class PastellApi implements PastellApiInterface
     public function getEntity(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite',
+            'url'       => $config->getUrl() . '/entite',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 200) {
@@ -79,9 +79,9 @@ class PastellApi implements PastellApiInterface
     public function getConnector(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 200) {
@@ -100,16 +100,16 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * Getting the type of document that can be created
+     * Getting the type of folder(document) that can be created
      * @param PastellConfig $config
      * @return array
      */
-    public function getDocumentType(PastellConfig $config): array
+    public function getFolderType(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/flux',
+            'url'       => $config->getUrl() . '/flux',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 200) {
@@ -135,9 +135,9 @@ class PastellApi implements PastellApiInterface
     public function getIparapheurType(PastellConfig $config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur/' . $config->getConnector() . '/externalData/iparapheur_type',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/connecteur/' . $config->getConnector() . '/externalData/iparapheur_type',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 200) {
@@ -156,19 +156,19 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
-     * Creating a folder of the document type
+     * Creating a folder
      * @param $config
      * @return array|string[]
      */
     public function createFolder($config): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
-            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'headers' => ['content-type:application/json'],
-            'method' => 'POST',
-            'queryParams' => ['type' => $config->getDocumentType()],
-            'body' => json_encode([])
+            'url'         => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',
+            'basicAuth'   => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers'     => ['content-type:application/json'],
+            'method'      => 'POST',
+            'queryParams' => ['type' => $config->getFolderType()],
+            'body'        => json_encode([])
         ]);
 
         if ($response['code'] > 201) {
@@ -186,15 +186,15 @@ class PastellApi implements PastellApiInterface
     /**
      * Getting subtype of the plugged connector
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array
      */
-    public function getIparapheurSousType(PastellConfig $config, string $idDocument): array
+    public function getIparapheurSousType(PastellConfig $config, string $idFolder): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/externalData/iparapheur_sous_type',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/externalData/iparapheur_sous_type',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 201) {
@@ -213,23 +213,20 @@ class PastellApi implements PastellApiInterface
      * Sending datas to the created folder
      * @throws Exception
      */
-    public function editFolder(PastellConfig $config, string $idDocument): array
+    public function editFolder(PastellConfig $config, string $idFolder, string $title): array
     {
-        $mainResource = ResModel::getById(['resId' => ['resIdMaster'], 'select' => ['subject', 'process_limit_date']]);
-        $dossierTitre = $mainResource['subject'] . ' - Référence: ' . ['resIdMaster'];
-
-        $data = array(
-            'libelle' => $dossierTitre,
+        $data = array([
+            'libelle'              => $title,
             'iparapheur_sous_type' => $config->getIparapheurSousType(),
-            'iparapheur_type' => $config->getIparapheurType()
-        );
+            'iparapheur_type'      => $config->getIparapheurType()
+        ]);
 
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument,
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder,
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'method' => 'PATCH',
-            'body' => http_build_query($data)
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'PATCH',
+            'body'      => http_build_query($data)
         ]);
 
         if ($response['code'] > 200) {
@@ -247,10 +244,10 @@ class PastellApi implements PastellApiInterface
     /**
      * Uploading a file to be signed
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array|string[]
      */
-    public function uploadMainFile(PastellConfig $config, string $idDocument): array
+    public function uploadMainFile(PastellConfig $config, string $idFolder): array
     {
         $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
 
@@ -261,16 +258,16 @@ class PastellApi implements PastellApiInterface
         $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $mainFileInfo['path']) . $mainFileInfo['filename'];
 
         $bodyData = array(
-            'file_name' => 'Document principal.' . pathinfo($attachmentFilePath)['extension'],
+            'file_name'    => 'Document principal.' . pathinfo($attachmentFilePath)['extension'],
             'file_content' => file_get_contents($attachmentFilePath)
         );
 
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
+            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'method' => 'POST',
-            'body' => http_build_query($bodyData)
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+            'body'      => http_build_query($bodyData)
         ]);
 
         if ($response['code'] > 201) {
@@ -286,15 +283,15 @@ class PastellApi implements PastellApiInterface
     /**
      * Getting datas and state of a folder
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array|string[]
      */
-    public function getDocumentDetail(PastellConfig $config, string $idDocument): array
+    public function getFolderDetail(PastellConfig $config, string $idFolder): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument,
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder,
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET'
+            'method'    => 'GET'
         ]);
 
         if ($response['code'] > 201) {

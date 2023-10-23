@@ -200,8 +200,8 @@ Bt_getWorkBatch();
 Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated attachments from {$configRemoteSignatoryBook['id']}"]);
 $attachments = AttachmentModel::get([
     'select' => ['res_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'external_id->>\'signatureBookId\' as external_id', 'external_id->>\'xparaphDepot\' as xparaphdepot', 'format', 'res_id_master', 'title', 'identifier', 'attachment_type', 'recipient_id', 'recipient_type', 'typist', 'origin_id', 'relation'],
-    'where' => ['status = ?', 'external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\''],
-    'data' => ['FRZ']
+    'where'  => ['status = ?', 'external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\''],
+    'data'   => ['FRZ']
 ]);
 
 $nbAttachments = count($attachments);
@@ -235,7 +235,7 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated documents from {$configRemoteSignatoryBook['id']}"]);
 $resources = ResModel::get([
     'select' => ['res_id', 'external_id->>\'signatureBookId\' as external_id', '(external_state->>\'signatureBookWorkflow\')::jsonb->>\'fetchDate\' as external_state_fetch_date', 'subject', 'typist', 'version', 'alt_identifier'],
-    'where' => ['external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\'']
+    'where'  => ['external_id->>\'signatureBookId\' IS NOT NULL', 'external_id->>\'signatureBookId\' <> \'\'']
 ]);
 $nbResources = count($resources);
 Bt_writeLog(['level' => 'INFO', 'message' => "{$nbResources} documents to analyze"]);
@@ -295,17 +295,17 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
     $historyIdentifier = $value['identifier'] ?? $resId . ' (res_attachments)';
     if (!empty($value['log'])) {
         $return = Bt_createAttachment([
-            'resIdMaster' => $value['res_id_master'],
-            'title' => $value['logTitle'] . ' ' . $value['title'],
-            'chrono' => $value['identifier'],
-            'recipientId' => $value['recipient_id'],
-            'recipientType' => $value['recipient_type'],
-            'typist' => $value['typist'],
-            'format' => $value['logFormat'],
-            'type' => 'simple_attachment',
+            'resIdMaster'     => $value['res_id_master'],
+            'title'           => $value['logTitle'] . ' ' . $value['title'],
+            'chrono'          => $value['identifier'],
+            'recipientId'     => $value['recipient_id'],
+            'recipientType'   => $value['recipient_type'],
+            'typist'          => $value['typist'],
+            'format'          => $value['logFormat'],
+            'type'            => 'simple_attachment',
             'inSignatureBook' => false,
-            'encodedFile' => $value['log'],
-            'status' => 'TRA'
+            'encodedFile'     => $value['log'],
+            'status'          => 'TRA'
         ]);
         if (!empty($return['id'])) {
             Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of attachment created : {$return['id']}"]);
@@ -321,22 +321,22 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             DatabaseModel::delete([
                 'table' => 'res_attachments',
                 'where' => ['res_id_master = ?', 'status = ?', 'relation = ?', 'origin = ?'],
-                'data' => [$value['res_id_master'], 'SIGN', $value['relation'], $value['res_id'] . ',res_attachments']
+                'data'  => [$value['res_id_master'], 'SIGN', $value['relation'], $value['res_id'] . ',res_attachments']
             ]);
 
             $return = Bt_createAttachment([
-                'resIdMaster' => $value['res_id_master'],
-                'title' => $value['title'],
-                'chrono' => $value['identifier'],
-                'recipientId' => $value['recipient_id'],
-                'recipientType' => $value['recipient_type'],
-                'typist' => $value['typist'],
-                'format' => $value['format'],
-                'type' => 'signed_response',
-                'status' => 'TRA',
-                'encodedFile' => $value['encodedFile'],
-                'inSignatureBook' => true,
-                'originId' => $resId,
+                'resIdMaster'              => $value['res_id_master'],
+                'title'                    => $value['title'],
+                'chrono'                   => $value['identifier'],
+                'recipientId'              => $value['recipient_id'],
+                'recipientType'            => $value['recipient_type'],
+                'typist'                   => $value['typist'],
+                'format'                   => $value['format'],
+                'type'                     => 'signed_response',
+                'status'                   => 'TRA',
+                'encodedFile'              => $value['encodedFile'],
+                'inSignatureBook'          => true,
+                'originId'                 => $resId,
                 'signatory_user_serial_id' => $value['signatory_user_serial_id'] ?? null
             ]);
             if (!empty($return['id'])) {
@@ -345,10 +345,10 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
                 continue;
             }
             AttachmentModel::update([
-                'set' => ['status' => 'SIGN', 'in_signature_book' => 'false'],
+                'set'     => ['status' => 'SIGN', 'in_signature_book' => 'false'],
                 'postSet' => ['external_id' => "external_id - 'signatureBookId'"],
-                'where' => ['res_id = ?'],
-                'data' => [$resId]
+                'where'   => ['res_id = ?'],
+                'data'    => [$resId]
             ]);
             if (!empty($value['onlyVisa']) && $value['onlyVisa']) {
                 $status = $validatedStatusOnlyVisa;
@@ -370,8 +370,8 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
         if (!empty($value['encodedFile'])) {
             $adrPdf = AdrModel::getAttachments([
                 'select' => ['path', 'filename', 'docserver_id'],
-                'where' => ['res_id = ?', 'type = ?'],
-                'data' => [$resId, 'PDF']
+                'where'  => ['res_id = ?', 'type = ?'],
+                'data'   => [$resId, 'PDF']
             ]);
 
             $docserver = DocserverModel::getByDocserverId(['docserverId' => $adrPdf[0]['docserver_id'], 'select' => ['path_template']]);
@@ -385,16 +385,16 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             }
             if ($hashedOriginalFile != md5($value['encodedFile'])) {
                 $return = Bt_createAttachment([
-                    'resIdMaster' => $value['res_id_master'],
-                    'title' => '[REFUSE] ' . $value['title'],
-                    'chrono' => $value['identifier'],
-                    'recipientId' => $value['recipient_id'],
-                    'recipientType' => $value['recipient_type'],
-                    'typist' => $value['typist'],
-                    'format' => $value['format'],
-                    'type' => $value['attachment_type'],
-                    'status' => 'A_TRA',
-                    'encodedFile' => $value['encodedFile'],
+                    'resIdMaster'     => $value['res_id_master'],
+                    'title'           => '[REFUSE] ' . $value['title'],
+                    'chrono'          => $value['identifier'],
+                    'recipientId'     => $value['recipient_id'],
+                    'recipientType'   => $value['recipient_type'],
+                    'typist'          => $value['typist'],
+                    'format'          => $value['format'],
+                    'type'            => $value['attachment_type'],
+                    'status'          => 'A_TRA',
+                    'encodedFile'     => $value['encodedFile'],
                     'inSignatureBook' => false
                 ]);
                 if (!empty($return['id'])) {
@@ -405,20 +405,20 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
             }
         }
         ListInstanceModel::update([
-            'set' => ['process_date' => null],
+            'set'   => ['process_date' => null],
             'where' => ['res_id = ?', 'difflist_type = ?'],
-            'data' => [$value['res_id_master'], 'VISA_CIRCUIT']
+            'data'  => [$value['res_id_master'], 'VISA_CIRCUIT']
         ]);
         AttachmentModel::update([
-            'set' => ['status' => 'A_TRA'],
+            'set'     => ['status' => 'A_TRA'],
             'postSet' => ['external_id' => "external_id - 'signatureBookId'"],
-            'where' => ['res_id = ?'],
-            'data' => [$resId]
+            'where'   => ['res_id = ?'],
+            'data'    => [$resId]
         ]);
         ResModel::update([
-            'set' => ['status' => $refusedStatus],
+            'set'   => ['status' => $refusedStatus],
             'where' => ['res_id = ?'],
-            'data' => [$value['res_id_master']]
+            'data'  => [$value['res_id_master']]
         ]);
 
         $validateVisaWorkflow[$value['res_id_master']]['WorkflowCompleted'] = false;
@@ -428,18 +428,18 @@ foreach ($retrievedMails['noVersion'] as $resId => $value) {
         Bt_createNote(['notes' => $value['notes'] ?? null, 'resId' => $value['res_id_master']]);
         Bt_history([
             'table_name' => 'res_attachments',
-            'record_id' => $resId,
-            'info' => $historyInfo,
+            'record_id'  => $resId,
+            'info'       => $historyInfo,
             'event_type' => 'UP',
-            'event_id' => 'attachup'
+            'event_id'   => 'attachup'
         ]);
 
         Bt_history([
             'table_name' => 'res_letterbox',
-            'record_id' => $value['res_id_master'],
-            'info' => $historyInfo,
+            'record_id'  => $value['res_id_master'],
+            'info'       => $historyInfo,
             'event_type' => 'ACTION#1',
-            'event_id' => '1'
+            'event_id'   => '1'
         ]);
         $nbAttachRetrieved++;
     }
@@ -455,15 +455,15 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
 
     if (!empty($value['log'])) {
         $return = Bt_createAttachment([
-            'resIdMaster' => $value['res_id'],
-            'title' => $value['logTitle'] . ' ' . $value['subject'],
-            'chrono' => $value['alt_identifier'],
-            'typist' => $value['typist'],
-            'format' => $value['logFormat'],
-            'type' => 'simple_attachment',
+            'resIdMaster'     => $value['res_id'],
+            'title'           => $value['logTitle'] . ' ' . $value['subject'],
+            'chrono'          => $value['alt_identifier'],
+            'typist'          => $value['typist'],
+            'format'          => $value['logFormat'],
+            'type'            => 'simple_attachment',
             'inSignatureBook' => false,
-            'encodedFile' => $value['log'],
-            'status' => 'TRA'
+            'encodedFile'     => $value['log'],
+            'status'          => 'TRA'
         ]);
         if (!empty($return['id'])) {
             Bt_writeLog(['level' => 'INFO', 'message' => "Attachment log of main document created : {$return['id']}"]);
@@ -481,14 +481,14 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             DatabaseModel::delete([
                 'table' => 'adr_letterbox',
                 'where' => ['res_id = ?', 'type in (?)', 'version = ?'],
-                'data' => [$resId, $typeToDelete, $value['version']]
+                'data'  => [$resId, $typeToDelete, $value['version']]
             ]);
 
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId' => 'letterbox_coll',
+                'collId'          => 'letterbox_coll',
                 'docserverTypeId' => 'DOC',
                 'encodedResource' => $value['encodedFile'],
-                'format' => 'pdf'
+                'format'          => 'pdf'
             ]);
 
             if (empty($storeResult['errors'])) {
@@ -498,15 +498,15 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
                 continue;
             }
             DatabaseModel::insert([
-                'table' => 'adr_letterbox',
+                'table'         => 'adr_letterbox',
                 'columnsValues' => [
-                    'res_id' => $resId,
-                    'type' => $value['status'] === 'validatedNote' ? 'NOTE' : 'SIGN',
+                    'res_id'       => $resId,
+                    'type'         => $value['status'] === 'validatedNote' ? 'NOTE' : 'SIGN',
                     'docserver_id' => $storeResult['docserver_id'],
-                    'path' => $storeResult['destination_dir'],
-                    'filename' => $storeResult['file_destination_name'],
-                    'version' => $value['version'],
-                    'fingerprint' => empty($storeResult['fingerPrint']) ? null : $storeResult['fingerPrint']
+                    'path'         => $storeResult['destination_dir'],
+                    'filename'     => $storeResult['file_destination_name'],
+                    'version'      => $value['version'],
+                    'fingerprint'  => empty($storeResult['fingerPrint']) ? null : $storeResult['fingerPrint']
                 ]
             ]);
         } else {
@@ -542,17 +542,17 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
         }
         Bt_history([
             'table_name' => 'res_letterbox',
-            'record_id' => $resId,
-            'info' => $history,
+            'record_id'  => $resId,
+            'info'       => $history,
             'event_type' => 'ACTION#1',
-            'event_id' => '1'
+            'event_id'   => '1'
         ]);
         Bt_createNote(['notes' => $value['notes'] ?? null, 'resId' => $resId]);
         ResModel::update([
-            'set' => ['status' => $status],
+            'set'     => ['status' => $status],
             'postSet' => ['external_id' => "external_id - 'signatureBookId'"],
-            'where' => ['res_id = ?'],
-            'data' => [$resId]
+            'where'   => ['res_id = ?'],
+            'data'    => [$resId]
         ]);
         $nbDocRetrieved++;
     }
