@@ -66,13 +66,13 @@ class PastellConfigurationCheck
         }
 
         //Check document type
-        if (empty($config->getDocumentType())) {
+        if (empty($config->getFolderType())) {
             return false;
         }
-        $flux = $this->pastellApi->getDocumentType($config);
+        $flux = $this->pastellApi->getFolderType($config);
         if (!empty($flux['errors'])) {
             return false;
-        } elseif (!in_array($config->getDocumentType(), $flux)) {
+        } elseif (!in_array($config->getFolderType(), $flux)) {
             return false;
         }
 
