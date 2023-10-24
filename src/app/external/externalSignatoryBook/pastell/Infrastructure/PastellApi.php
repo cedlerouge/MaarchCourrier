@@ -370,8 +370,14 @@ class PastellApi implements PastellApiInterface
      */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
-        // TODO: Implement verificationIParapheur() method.
-        return false;
+        $response = CurlModel::exec([
+            'url' => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method' => 'POST',
+        ]);
+
+        return $response['code'] == 200;
     }
 
     /**

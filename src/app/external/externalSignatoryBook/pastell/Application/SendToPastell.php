@@ -27,6 +27,9 @@ class SendToPastell
      * @param PastellConfigurationCheck $checkConfigPastell
      * @param PastellApiInterface $pastellApi
      * @param PastellConfigInterface $pastellConfig
+     * @param ResourceDataInterface $resourceData
+     * @param ResourceFileInterface $resourceFile
+     * @param ProcessVisaWorkflowInterface $processVisaWorkflow
      */
     public function __construct(
         PastellConfigurationCheck    $checkConfigPastell,
