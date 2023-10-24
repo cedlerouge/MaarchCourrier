@@ -203,6 +203,11 @@ class PastellApiMock implements PastellApiInterface
         // TODO: Implement uploadAttachmentFile() method.
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return bool
+     */
     public function orientation(PastellConfig $config, string $idFolder): bool
     {
         return true;
