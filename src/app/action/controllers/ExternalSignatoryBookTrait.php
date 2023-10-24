@@ -154,9 +154,7 @@ trait ExternalSignatoryBookTrait
                 ]);
             } elseif ($config['id'] == 'pastell') {
                 $sendToPastell = SendDataToPastellFactory::sendDataToPastell();
-                $sentInfo = $sendToPastell->sendData([
-                    'resIdMaster' => $args['resId']
-                ]);
+                $sentInfo = $sendToPastell->sendData($args['resId']);
             }
             if (!empty($sentInfo['error'])) {
                 return ['errors' => [$sentInfo['error']]];

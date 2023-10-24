@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
@@ -14,21 +21,18 @@ class RetrieveFromPastell
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
-
     private PastellConfigurationCheck $pastellConfigCheck;
-
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
     private ParseIParapheurLog $parseIParapheurLog;
-
     private PastellConfig $config;
     private PastellStates $pastellStates;
 
     public function __construct(
-        PastellApiInterface $pastellApi,
-        PastellConfigInterface $pastellConfig,
-        PastellConfigurationCheck $pastellConfigCheck,
+        PastellApiInterface          $pastellApi,
+        PastellConfigInterface       $pastellConfig,
+        PastellConfigurationCheck    $pastellConfigCheck,
         ProcessVisaWorkflowInterface $processVisaWorkflow,
-        ParseIParapheurLog $parseIParapheurLog
+        ParseIParapheurLog           $parseIParapheurLog
     )
     {
         $this->pastellApi = $pastellApi;
@@ -41,6 +45,10 @@ class RetrieveFromPastell
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
+    /**
+     * @param array $idsToRetrieve
+     * @return array
+     */
     public function retrieve(array $idsToRetrieve): array
     {
         /**
@@ -69,6 +77,11 @@ class RetrieveFromPastell
         return $idsToRetrieve;
     }
 
+    /**
+     * @param int $resId
+     * @param string $idFolder
+     * @return array|string[]
+     */
     // TODO remove -> ParseIParapheurLog
     public function parseLogIparapheur(int $resId, string $idFolder): array
     {
@@ -83,10 +96,10 @@ class RetrieveFromPastell
         foreach ($iParapheurHistory->LogDossier as $historyLog) {
             $status = $historyLog->status;
             if ($status == $this->pastellStates->getSignState()) {
-                $return =  $this->handleValidate($resId, $idFolder, true);
+                $return = $this->handleValidate($resId, $idFolder, true);
                 break;
-            } elseif ($status == $this->pastellStates->getVisaState())  {
-                $return =  $this->handleValidate($resId, $idFolder, false);
+            } elseif ($status == $this->pastellStates->getVisaState()) {
+                $return = $this->handleValidate($resId, $idFolder, false);
                 break;
             } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
                 $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
@@ -101,10 +114,14 @@ class RetrieveFromPastell
         return $return;
     }
 
-
+    /**
+     * @param int $res
+     * @param string $idFolder
+     * @param bool $signed
+     * @return array
+     */
     public function handleValidate(int $res, string $idFolder, bool $signed): array
     {
-
         $file = $this->pastellApi->downloadFile($this->config, $idFolder);
         if (!empty($file['error'])) {
             return ['error' => $file['error']];
@@ -121,12 +138,17 @@ class RetrieveFromPastell
         ];
     }
 
+    /**
+     * @param string $nom
+     * @param string $annotation
+     * @return string[]
+     */
     public function handleRefused(string $nom, string $annotation): array
     {
         $noteContent = $nom . ' : ' . $annotation;
 
         return [
-            'status' => 'refused',
+            'status'  => 'refused',
             'content' => $noteContent
         ];
     }
