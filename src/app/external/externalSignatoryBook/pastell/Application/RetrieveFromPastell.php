@@ -43,10 +43,6 @@ class RetrieveFromPastell
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
-    /**
-     * @param array $idsToRetrieve
-     * @return array
-     */
     public function retrieve(array $idsToRetrieve): array
     {
         foreach ($idsToRetrieve as $key => $value) {
