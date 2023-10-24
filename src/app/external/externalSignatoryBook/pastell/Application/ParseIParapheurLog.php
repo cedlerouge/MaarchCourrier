@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
 declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Application;
@@ -14,11 +21,8 @@ class ParseIParapheurLog
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
-
     private PastellConfigurationCheck $pastellConfigCheck;
-
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
-
     private PastellConfig $config;
     private PastellStates $pastellStates;
 
@@ -38,6 +42,11 @@ class ParseIParapheurLog
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
+    /**
+     * @param int $resId
+     * @param string $idFolder
+     * @return array|string[]
+     */
     public function parseLogIparapheur(int $resId, string $idFolder): array
     {
         $return = [];
@@ -69,6 +78,12 @@ class ParseIParapheurLog
         return $return;
     }
 
+    /**
+     * @param int $res
+     * @param string $idFolder
+     * @param bool $signed
+     * @return array
+     */
     public function handleValidate(int $res, string $idFolder, bool $signed): array
     {
 
@@ -88,6 +103,11 @@ class ParseIParapheurLog
         ];
     }
 
+    /**
+     * @param string $nom
+     * @param string $annotation
+     * @return string[]
+     */
     public function handleRefused(string $nom, string $annotation): array
     {
         $noteContent = $nom . ' : ' . $annotation;
