@@ -22,6 +22,7 @@ use ExternalSignatoryBook\controllers\IParapheurController;
 use ExternalSignatoryBook\controllers\IxbusController;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
 use ExternalSignatoryBook\controllers\XParaphController;
+use ExternalSignatoryBook\pastell\Infrastructure\RetrieveFromPastellFactory;
 use Resource\models\ResModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
@@ -216,7 +217,7 @@ foreach ($attachments as $value) {
     }
 }
 
-//On récupère les pj signés dans le parapheur distant
+//On récupère les pj signées dans le parapheur distant
 if ($configRemoteSignatoryBook['id'] == 'ixbus') {
     $retrievedMails = IxbusController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 } elseif ($configRemoteSignatoryBook['id'] == 'iParapheur') {
@@ -228,7 +229,7 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 } elseif ($configRemoteSignatoryBook['id'] == 'xParaph') {
     $retrievedMails = XParaphController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
-    $retrieveFromPastell = \ExternalSignatoryBook\pastell\Infrastructure\RetrieveFromPastellFactory::create();
+    $retrieveFromPastell = RetrieveFromPastellFactory::create();
     $retrievedMails = $retrieveFromPastell->retrieve($idsToRetrieve);
 }
 
@@ -256,7 +257,7 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
     } elseif ($configRemoteSignatoryBook['id'] == 'ixbus') {
         $retrievedLetterboxMails = IxbusController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'resLetterbox']);
     } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
-        $retrieveFromPastell = \ExternalSignatoryBook\pastell\Infrastructure\RetrieveFromPastellFactory::create();
+        $retrieveFromPastell = RetrieveFromPastellFactory::create();
         $retrievedMails = $retrieveFromPastell->retrieve($idsToRetrieve);
     }
     $retrievedMails['resLetterbox'] = $retrievedLetterboxMails['resLetterbox'] ?? [];
@@ -559,7 +560,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
 }
 
 //valide circuit visa
-//Only, if all documents of letterbox are signed
+//Only if all documents of letterbox are signed
 if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($validateVisaWorkflow)) {
     foreach ($validateVisaWorkflow as $key => $value) {
         if (!empty($value['WorkflowCompleted'])) {

@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
@@ -44,6 +52,10 @@ class PastellXmlConfig implements PastellConfigInterface
         return $pastellConfig;
     }
 
+    /**
+     * @param array $args
+     * @return PastellStates|null
+     */
     public function getPastellStates(array $args = []): ?PastellStates
     {
         $customId = CoreConfigModel::getCustomId();

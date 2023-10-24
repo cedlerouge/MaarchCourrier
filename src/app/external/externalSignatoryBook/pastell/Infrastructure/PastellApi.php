@@ -8,12 +8,9 @@
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
-use Convert\controllers\ConvertPdfController;
-use Docserver\models\DocserverModel;
 use Exception;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
-use Resource\models\ResModel;
 use SrcCore\models\CurlModel;
 
 class PastellApi implements PastellApiInterface
@@ -213,13 +210,14 @@ class PastellApi implements PastellApiInterface
      * Sending datas to the created folder
      * @throws Exception
      */
-    public function editFolder(PastellConfig $config, string $idFolder, string $title): array
+    public function editFolder(PastellConfig $config, string $idFolder, string $title, string $sousType): array
     {
-        $data = array([
+        $data = [
             'libelle'              => $title,
-            'iparapheur_sous_type' => $config->getIparapheurSousType(),
-            'iparapheur_type'      => $config->getIparapheurType()
-        ]);
+            'iparapheur_sous_type' => $sousType,
+            'iparapheur_type'      => $config->getIparapheurType(),
+//            'envoi_signature'      => true // TODO obligatoire ????
+        ];
 
         $response = CurlModel::exec([
             'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder,
@@ -238,6 +236,7 @@ class PastellApi implements PastellApiInterface
         } else {
             $return = $response['response'] ?? '';
         }
+
         return $return;
     }
 
@@ -245,31 +244,33 @@ class PastellApi implements PastellApiInterface
      * Uploading a file to be signed
      * @param PastellConfig $config
      * @param string $idFolder
+     * @param string $filePath
      * @return array|string[]
      */
-    public function uploadMainFile(PastellConfig $config, string $idFolder): array
+    public function uploadMainFile(PastellConfig $config, string $idFolder, string $filePath): array
     {
-        $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
+//        $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
+//
+//        if (empty($mainFileInfo['docserver_id']) || strtolower(pathinfo($mainFileInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+//            return ['error' => 'Document ' . ['resIdMaster'] . ' is not converted in pdf'];
+//        }
+//        $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $mainFileInfo['docserver_id'], 'select' => ['path_template']]);
+//        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $mainFileInfo['path']) . $mainFileInfo['filename'];
 
-        if (empty($mainFileInfo['docserver_id']) || strtolower(pathinfo($mainFileInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
-            return ['error' => 'Document ' . ['resIdMaster'] . ' is not converted in pdf'];
-        }
-        $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $mainFileInfo['docserver_id'], 'select' => ['path_template']]);
-        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $mainFileInfo['path']) . $mainFileInfo['filename'];
-
-        $bodyData = array(
-            'file_name'    => 'Document principal.' . pathinfo($attachmentFilePath)['extension'],
-            'file_content' => file_get_contents($attachmentFilePath)
-        );
+        $bodyData = [
+            'file_name'    => 'Document principal.' . pathinfo($filePath)['extension'],
+            'file_content' => file_get_contents($filePath)
+        ];
 
         $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/document',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/document',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',
             'body'      => http_build_query($bodyData)
         ]);
 
+        $return = [];
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
@@ -310,13 +311,18 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return object|array|mixed|string[]
+     */
     public function getXmlDetail(PastellConfig $config, string $idFolder): object
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/iparapheur_historique',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/iparapheur_historique',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET',
-            'isXml' => true
+            'method'    => 'GET',
+            'isXml'     => true
         ]);
 
         if ($response['code'] > 201) {
@@ -331,9 +337,6 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
-
-
-
     /**
      * @param PastellConfig $config
      * @param string $idDocument
@@ -342,9 +345,9 @@ class PastellApi implements PastellApiInterface
     public function downloadFile(PastellConfig $config, string $idDocument): array
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
-            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method' => 'GET',
+            'url'          => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
+            'basicAuth'    => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method'       => 'GET',
             'fileResponse' => true
         ]);
 
@@ -360,9 +363,39 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return bool
+     */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
         // TODO: Implement verificationIParapheur() method.
         return false;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return bool
+     */
+    public function orientation(PastellConfig $config, string $idFolder): bool
+    {
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/orientation',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method'    => 'POST'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'];
+        }
+        return $return;
     }
 }
