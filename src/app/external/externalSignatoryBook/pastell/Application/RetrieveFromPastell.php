@@ -47,7 +47,7 @@ class RetrieveFromPastell
     {
         foreach ($idsToRetrieve as $key => $value) {
             $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
-            if ($verif === true){
+            if ($verif === true) {
                 $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
                 $idsToRetrieve[$key] = array_merge($value, $result);
             }

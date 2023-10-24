@@ -363,6 +363,11 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return bool
+     */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
         $response = CurlModel::exec([
