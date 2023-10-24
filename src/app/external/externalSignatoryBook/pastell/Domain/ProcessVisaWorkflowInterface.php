@@ -7,9 +7,16 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace ExternalSignatoryBook\pastell\Domain;
 
 interface ProcessVisaWorkflowInterface
 {
+    /**
+     * @param int $resIdMaster
+     * @param bool $processSignatory
+     * @return void
+     */
     public function processVisaWorkflow(int $resIdMaster, bool $processSignatory): void;
 }

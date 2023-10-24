@@ -6,6 +6,8 @@
  * This file is part of Maarch software.
  */
 
+declare(strict_types=1);
+
 namespace ExternalSignatoryBook\pastell\Domain;
 
 interface PastellConfigInterface
@@ -15,6 +17,9 @@ interface PastellConfigInterface
      */
     public function getPastellConfig(): ?PastellConfig;
 
+    /**
+     * @return PastellStates|null
+     */
     public function getPastellStates(): ?PastellStates;
 }
 

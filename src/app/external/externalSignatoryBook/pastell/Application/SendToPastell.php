@@ -19,9 +19,7 @@ class SendToPastell
     private PastellConfigurationCheck $checkConfigPastell;
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
-
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
-
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
 
