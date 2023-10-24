@@ -51,7 +51,7 @@ class ParseIParapheurLog
     {
         $return = [];
         $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
-        if (empty($iParapheurHistory) || !empty($iParapheurHistory->error)) {
+        if (!empty($iParapheurHistory->error)) {
             return ['status' => 'waiting'];
         }
 

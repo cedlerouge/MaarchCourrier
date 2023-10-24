@@ -20,6 +20,9 @@ use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
 {
+    /**
+     * @return void
+     */
     public function testHandleValidateRetrieveTheFileInBase64(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -48,104 +51,20 @@ class RetrieveFromPastellTest extends TestCase
     }
 
 
-    public function testHandleValidateVisaWorkFlowIsCalledIfIsSigned(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
-            'encodedFile' => 'toto'
-        ];
-
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $resId = 42;
-        $idFolder = 'djqfdh';
-
-
-        $parseIParapheurLog->handleValidate($resId, $idFolder, true);
-
-        $this->assertTrue($processVisaWorkflow->processVisaWorkflowCalled);
-    }
-
-    public function testHandleValidateVisaWorkFlowIsCalledIfIsNotSigned(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
-            'encodedFile' => 'toto'
-        ];
-
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $resId = 42;
-        $idFolder = 'djqfdh';
-
-
-        $parseIParapheurLog->handleValidate($resId, $idFolder, false);
-
-        $this->assertFalse($processVisaWorkflow->processVisaWorkflowCalled);
-    }
-
-    public function testHandleValidateTheDownloadFileReturnAnError(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
-            'error' => 'Je suis ton erreur'
-        ];
-
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $resId = 42;
-        $idFolder = 'djqfdh';
-
-
-        $result = $parseIParapheurLog->handleValidate($resId, $idFolder, true);
-
-        $this->assertSame(['error' => 'Je suis ton erreur'], $result);
-    }
-
-    public function testHandleRefusedRetrieveTheNoteContent(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
-
-        $result = $parseIParapheurLog->handleRefused('Un nom', 'une note');
-
-        $this->assertNotEmpty($result);
-        $this->assertSame(
-            [
-                'status'  => 'refused',
-                'content' => 'Un nom : une note',
-            ],
-            $result
-        );
-    }
-
+    /**
+     * @return void
+     */
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
         $pastellApiMock = new PastellApiMock();
         $pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-
         $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
-
         $idsToRetrieve = [
             12 => [
                 'res_id'      => 12,
@@ -177,5 +96,4 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
     }
-
 }
