@@ -68,20 +68,20 @@ class PastellXmlConfig implements PastellConfigInterface
         } else {
             $path = 'modules/visa/xml//remoteSignatoryBooks.xml';
         }
-        $pastellStat = null;
+        $pastellState = null;
         if (file_exists($path)) {
             $loadedXml = simplexml_load_file($path);
-            $pastellConfig = $loadedXml->xpath('//signatoryBook[id=\'pastell\']')[0] ?? null;
-            if ($pastellStat) {
-                $pastellStat = new PastellStates(
-                    (string)$pastellStat->errorCode ?? null,
-                    (string)$PastellConfig->visaState ?? null,
-                    (string)$PastellConfig->signState ?? null,
-                    (int)$PastellConfig->refusedVisa ?? null,
-                    (int)$PastellConfig->refusedSign ?? null,
+            $pastellState = $loadedXml->xpath('//signatoryBook[id=\'pastell\']')[0] ?? null;
+            if ($pastellState) {
+                $pastellState = new PastellStates(
+                    (string)$pastellState->errorCode ?? null,
+                    (string)$pastellState->visaState ?? null,
+                    (string)$pastellState->signState ?? null,
+                    (string)$pastellState->refusedVisa ?? null,
+                    (string)$pastellState->refusedSign ?? null,
                 );
             }
         }
-        return $pastellStat;
+        return $pastellState;
     }
 }

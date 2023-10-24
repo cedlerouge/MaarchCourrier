@@ -51,7 +51,7 @@ class ParseIParapheurLog
     {
         $return = [];
         $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
-        if (empty($iParapheurHistory)) {
+        if (empty($iParapheurHistory) || !empty($iParapheurHistory->error)) {
             return ['status' => 'waiting'];
         }
 
@@ -59,7 +59,7 @@ class ParseIParapheurLog
             return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
         }
 
-        foreach ($iParapheurHistory->LogDossier as $historyLog) {
+        foreach ($iParapheurHistory->LogDossier->LogDossier as $historyLog) {
             $status = $historyLog->status;
             if ($status == $this->pastellStates->getSignState()) {
                 $return = $this->handleValidate($resId, $idFolder, true);
@@ -70,7 +70,8 @@ class ParseIParapheurLog
             } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
                 $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
                 break;
-            } elseif (empty($return)) {
+            }
+            if (empty($return)) {
                 $return = ['status' => 'waiting'];
             }
         }

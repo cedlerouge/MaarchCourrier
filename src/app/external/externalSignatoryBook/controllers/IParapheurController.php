@@ -37,7 +37,7 @@ class IParapheurController
     public static function returnCurl($xmlPostString, $config)
     {
         $option = [
-            CURLOPT_SSLCERT         => $config['data']['certPath'],
+            //CURLOPT_SSLCERT         => $config['data']['certPath'],
             CURLOPT_SSLCERTTYPE     => $config['data']['certType'],
             CURLOPT_SSL_VERIFYPEER  => 'false',
             CURLOPT_USERPWD         => $config['data']['userId'] . ':' . $config['data']['password'],
@@ -47,14 +47,12 @@ class IParapheurController
             $option[CURLOPT_SSLCERTPASSWD] = $config['data']['certPass'];
         }
 
-        $curlReturn = CurlModel::execSOAP([
+        return CurlModel::execSOAP([
             'xmlPostString' => $xmlPostString,
             'url'           => $config['data']['url'],
             'options'       => $option,
             'delete_header' => true
         ]);
-
-        return $curlReturn;
     }
 
     public static function sendDatas($aArgs)
@@ -161,7 +159,7 @@ class IParapheurController
                 $collId    = 'letterbox_coll';
                 $dossierId = $resId . '_' . rand(0001, 9999);
                 unset($annexes['letterbox']);
-    
+
                 $response = IParapheurController::uploadFile([
                     'resId'        => $resId,
                     'collId'       => $collId,
@@ -172,7 +170,7 @@ class IParapheurController
                     'dossierId'    => $dossierId,
                     'title'        => $title
                 ]);
-    
+
                 if (!empty($response['error'])) {
                     return $response;
                 } else {
@@ -204,7 +202,7 @@ class IParapheurController
         }
 
         $b64Attachment = base64_encode(file_get_contents($attachmentFilePath));
-        
+
         if (!empty($aArgs['annexes']['letterbox'][0]['filePath'])) {
             $annexLetterboxMimeType = mime_content_type($aArgs['annexes']['letterbox'][0]['filePath']);
             if ($annexLetterboxMimeType) {
@@ -368,7 +366,7 @@ class IParapheurController
                 echo 'ExternalId is empty';
             }
         }
-        
+
         return $aArgs['idsToRetrieve'];
     }
 
@@ -384,7 +382,7 @@ class IParapheurController
                 'data'    => [$resIdMaster, 'VISA_CIRCUIT'],
                 'orderBY' => ['ORDER BY listinstance_id ASC']
             ]);
-    
+
             if (!empty($visaWorkflow)) {
                 foreach ($visaWorkflow as $listInstance) {
                     if ($listInstance['requested_signature']) {

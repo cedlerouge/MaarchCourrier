@@ -14,6 +14,8 @@ use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellStates;
 use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
+use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
 
 class RetrieveFromPastell
 {
@@ -46,13 +48,13 @@ class RetrieveFromPastell
     public function retrieve(array $idsToRetrieve): array
     {
         foreach ($idsToRetrieve as $key => $value) {
-            $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
-            if ($verif === true) {
-                $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
-                $idsToRetrieve[$key] = array_merge($value, $result);
+            $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
+            if (in_array('verif-iparapheur', $info['actionPossibles'])) {
+                 $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
             }
+            $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
+            $idsToRetrieve[$key] = array_merge($value, $result);
         }
-
         return $idsToRetrieve;
     }
 }
