@@ -149,6 +149,11 @@ class PastellApiMock implements PastellApiInterface
         return true;
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return bool
+     */
     public function orientation(PastellConfig $config, string $idFolder): bool
     {
         return true;
