@@ -24,7 +24,6 @@ class ParseIParapheurLogTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
         $resId = 42;
         $idFolder = 'djqfdh';
 
@@ -51,9 +50,10 @@ class ParseIParapheurLogTest extends TestCase
             'encodedFile' => 'toto'
         ];
         $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier[0]->status = 'toto';
-        $pastellApiMock->journalXml->LogDossier[1]->status = $state;
+        $pastellApiMock->journalXml->LogDossier = new \stdClass();
+        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
+        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
         $pastellApiMock->journalXml->MessageRetour = new \stdClass();
         $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
@@ -93,11 +93,12 @@ class ParseIParapheurLogTest extends TestCase
             'encodedFile' => 'toto'
         ];
         $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier[0]->status = 'toto';
-        $pastellApiMock->journalXml->LogDossier[1]->status = $state;
-        $pastellApiMock->journalXml->LogDossier[1]->nom = 'Nom';
-        $pastellApiMock->journalXml->LogDossier[1]->annotation = 'annotation';
+        $pastellApiMock->journalXml->LogDossier = new \stdClass();
+        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
+        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
+        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = 'Nom';
+        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->annotation = 'annotation';
         $pastellApiMock->journalXml->MessageRetour = new \stdClass();
         $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
@@ -125,9 +126,10 @@ class ParseIParapheurLogTest extends TestCase
             'encodedFile' => 'toto'
         ];
         $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier[0]->status = 'toto';
-        $pastellApiMock->journalXml->LogDossier[1]->status = 'blabla';
+        $pastellApiMock->journalXml->LogDossier = new \stdClass();
+        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
+        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = 'blabla';
         $pastellApiMock->journalXml->MessageRetour = new \stdClass();
         $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();

@@ -304,8 +304,10 @@ class PastellApi implements PastellApiInterface
         } else {
             $return =
                 [
-                    'info' => $response['response']['info'] ?? '',
-                    'data' => $response['response']['data'] ?? '',
+                    'info'            => $response['response']['info'] ?? '',
+                    'data'            => $response['response']['data'] ?? '',
+                    'actionPossibles' => $response['response']['action_possible'] ?? '',
+                    'lastAction'      => $response['response']['last_action'] ?? ''
                 ];
         }
         return $return;
@@ -314,7 +316,7 @@ class PastellApi implements PastellApiInterface
     /**
      * @param PastellConfig $config
      * @param string $idFolder
-     * @return object|array|mixed|string[]
+     * @return object|array
      */
     public function getXmlDetail(PastellConfig $config, string $idFolder): object
     {
@@ -326,10 +328,11 @@ class PastellApi implements PastellApiInterface
         ]);
 
         if ($response['code'] > 201) {
+            $return = new \stdClass();
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return->error =  $response['response']['error-message'];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return->error = 'An error occurred !';
             }
         } else {
             $return = $response['response'];

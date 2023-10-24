@@ -80,6 +80,11 @@ interface PastellApiInterface
      */
     public function getFolderDetail(PastellConfig $config, string $idFolder): array;
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return object|array
+     */
     public function getXmlDetail(PastellConfig $config, string $idFolder): object;
 
     public function downloadFile(PastellConfig $config, string $idDocument): array;
