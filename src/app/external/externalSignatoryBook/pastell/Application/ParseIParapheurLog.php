@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Copyright Maarch since 2008 under licence GPLv3.
- * See LICENCE.txt file at the root folder for more details.
- * This file is part of Maarch software.
- *
- */
-
 declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Application;
@@ -21,8 +14,11 @@ class ParseIParapheurLog
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
+
     private PastellConfigurationCheck $pastellConfigCheck;
+
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
+
     private PastellConfig $config;
     private PastellStates $pastellStates;
 
@@ -42,19 +38,13 @@ class ParseIParapheurLog
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
-    /**
-     * @param int $resId
-     * @param string $idFolder
-     * @return array|string[]
-     */
     public function parseLogIparapheur(int $resId, string $idFolder): array
     {
         $return = [];
-        // TODO si pas de xml trouvé, return status waiting
         $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
-//        if () {
-//            return
-//        }
+        if (empty($iParapheurHistory)) {
+            return ['status' => 'waiting'];
+        }
 
         if ($iParapheurHistory->MessageRetour->codeRetour == $this->pastellStates->getErrorCode()) {
             return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
@@ -71,24 +61,17 @@ class ParseIParapheurLog
             } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
                 $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
                 break;
+            } elseif (empty($return)) {
+                $return = ['status' => 'waiting'];
             }
-        }
-
-        if (empty($return)) {
-            $return = ['status' => 'waiting'];
         }
 
         return $return;
     }
 
-    /**
-     * @param int $res
-     * @param string $idFolder
-     * @param bool $signed
-     * @return array
-     */
     public function handleValidate(int $res, string $idFolder, bool $signed): array
     {
+
         $file = $this->pastellApi->downloadFile($this->config, $idFolder);
         if (!empty($file['error'])) {
             return ['error' => $file['error']];
@@ -105,11 +88,6 @@ class ParseIParapheurLog
         ];
     }
 
-    /**
-     * @param string $nom
-     * @param string $annotation
-     * @return string[]
-     */
     public function handleRefused(string $nom, string $annotation): array
     {
         $noteContent = $nom . ' : ' . $annotation;

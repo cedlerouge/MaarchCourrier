@@ -363,39 +363,15 @@ class PastellApi implements PastellApiInterface
         return $return;
     }
 
-    /**
-     * @param PastellConfig $config
-     * @param string $idDocument
-     * @return bool
-     */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
-        // TODO: Implement verificationIParapheur() method.
-        return false;
-    }
-
-    /**
-     * @param PastellConfig $config
-     * @param string $idFolder
-     * @return bool
-     */
-    public function orientation(PastellConfig $config, string $idFolder): bool
-    {
         $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/orientation',
+            'url' => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method'    => 'POST'
+            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method' => 'POST',
         ]);
 
-        if ($response['code'] > 200) {
-            if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
-            } else {
-                $return = ["error" => 'An error occurred !'];
-            }
-        } else {
-            $return = $response['response'];
-        }
-        return $return;
+        return $response['code'] == 200;
     }
 }

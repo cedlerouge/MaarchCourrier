@@ -45,112 +45,16 @@ class RetrieveFromPastell
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
-    /**
-     * @param array $idsToRetrieve
-     * @return array
-     */
     public function retrieve(array $idsToRetrieve): array
     {
-        /**
-         * res_id
-         * external_id
-         * version
-         */
-
         foreach ($idsToRetrieve as $key => $value) {
-
-            /**
-             * 1 appel action verif-iparapheur
-             * appel function parseLog
-             */
-            $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
-
-            $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
-
-            $idsToRetrieve[$key] = array_merge($value, $result);
-        }
-
-        /**
-         * key : resId
-         * value : retour de parseLogIparapheur
-         */
-        return $idsToRetrieve;
-    }
-
-    /**
-     * @param int $resId
-     * @param string $idFolder
-     * @return array|string[]
-     */
-    // TODO remove -> ParseIParapheurLog
-    public function parseLogIparapheur(int $resId, string $idFolder): array
-    {
-        $return = [];
-        // TODO si pas de xml trouvé, return status waiting
-        $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
-
-        if ($iParapheurHistory->MessageRetour->codeRetour == $this->pastellStates->getErrorCode()) {
-            return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
-        }
-
-        foreach ($iParapheurHistory->LogDossier as $historyLog) {
-            $status = $historyLog->status;
-            if ($status == $this->pastellStates->getSignState()) {
-                $return = $this->handleValidate($resId, $idFolder, true);
-                break;
-            } elseif ($status == $this->pastellStates->getVisaState()) {
-                $return = $this->handleValidate($resId, $idFolder, false);
-                break;
-            } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
-                $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
-                break;
+            $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+            if ($verif === true){
+                $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
+                $idsToRetrieve[$key] = array_merge($value, $result);
             }
         }
 
-        if (empty($return)) {
-            $return = ['status' => 'waiting'];
-        }
-
-        return $return;
+        return $idsToRetrieve;
     }
-
-    /**
-     * @param int $res
-     * @param string $idFolder
-     * @param bool $signed
-     * @return array
-     */
-    public function handleValidate(int $res, string $idFolder, bool $signed): array
-    {
-        $file = $this->pastellApi->downloadFile($this->config, $idFolder);
-        if (!empty($file['error'])) {
-            return ['error' => $file['error']];
-        }
-
-        if ($signed) {
-            $this->processVisaWorkflow->processVisaWorkflow($res, true);
-        }
-
-        return [
-            'status'      => 'validated',
-            'format'      => 'pdf',
-            'encodedFile' => $file['encodedFile']
-        ];
-    }
-
-    /**
-     * @param string $nom
-     * @param string $annotation
-     * @return string[]
-     */
-    public function handleRefused(string $nom, string $annotation): array
-    {
-        $noteContent = $nom . ' : ' . $annotation;
-
-        return [
-            'status'  => 'refused',
-            'content' => $noteContent
-        ];
-    }
-
 }
