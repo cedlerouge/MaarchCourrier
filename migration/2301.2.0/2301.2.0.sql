@@ -26,4 +26,21 @@ DELETE FROM parameters WHERE id = 'keepDestForRedirection';
 DELETE FROM docserver_types WHERE docserver_type_id = 'MIGRATION';
 INSERT INTO docserver_types (docserver_type_id, docserver_type_label, enabled, fingerprint_mode) VALUES ('MIGRATION', 'Sauvegarde des migrations', 'Y', NULL);
 DELETE FROM docservers WHERE docserver_id = 'MIGRATION';
-INSERT INTO docservers (id, docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) VALUES (13, 'MIGRATION', 'MIGRATION', 'Dêpot de sauvegarde des migrations', 'N', 50000000000, 0, '/opt/maarch/docservers/migration/', '2023-09-05 22:22:22.201904', 'migration');
+-- Insert the MIGRATION docserver with a dynamic path based on the FASTHD_MAN docserver
+INSERT INTO docservers (docserver_id, docserver_type_id, device_label, is_readonly, size_limit_number, actual_size_number, path_template, creation_date, coll_id) 
+VALUES ('MIGRATION', 'MIGRATION', 'Dépôt de sauvegarde des migrations', 'N', 50000000000, 0,
+    (
+        SELECT
+            CASE
+            WHEN position('/' in path_template) = 0 THEN path_template
+            ELSE
+                (
+                    SELECT string_agg(part, '/' ORDER BY ordinality)
+                    FROM unnest(string_to_array(path_template, '/')) WITH ORDINALITY AS t(part, ordinality)
+                    WHERE ordinality < (array_length(string_to_array(path_template, '/'), 1) - 1)
+                ) || '/migration/'
+            END
+        FROM docservers
+        WHERE docserver_id = 'FASTHD_MAN'
+    ),
+NOW(), 'migration');
