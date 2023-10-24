@@ -60,6 +60,7 @@ interface PastellApiInterface
      * @param PastellConfig $config
      * @param string $idFolder
      * @param string $title
+     * @param string $sousType
      * @return array
      */
     public function editFolder(PastellConfig $config, string $idFolder, string $title, string $sousType): array;
@@ -67,6 +68,7 @@ interface PastellApiInterface
     /**
      * @param PastellConfig $config
      * @param string $idFolder
+     * @param string $filePath
      * @return array
      */
     public function uploadMainFile(PastellConfig $config, string $idFolder, string $filePath): array;
@@ -84,5 +86,10 @@ interface PastellApiInterface
 
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool;
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return bool
+     */
     public function orientation(PastellConfig $config, string $idFolder): bool;
 }

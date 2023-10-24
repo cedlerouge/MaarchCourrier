@@ -13,5 +13,9 @@ namespace ExternalSignatoryBook\pastell\Domain;
 
 interface ResourceFileInterface
 {
+    /**
+     * @param int $resId
+     * @return string
+     */
     public function getMainResourceFilePath(int $resId): string;
 }

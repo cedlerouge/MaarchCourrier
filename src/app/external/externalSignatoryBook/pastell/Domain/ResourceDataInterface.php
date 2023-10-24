@@ -13,5 +13,9 @@ namespace ExternalSignatoryBook\pastell\Domain;
 
 interface ResourceDataInterface
 {
+    /**
+     * @param int $resId
+     * @return array
+     */
     public function getMainResourceData(int $resId): array;
 }
