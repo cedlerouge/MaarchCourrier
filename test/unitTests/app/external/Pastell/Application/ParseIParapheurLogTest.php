@@ -1,12 +1,5 @@
 <?php
 
-/**
- * Copyright Maarch since 2008 under licence GPLv3.
- * See LICENCE.txt file at the root folder for more details.
- * This file is part of Maarch software.
- *
- */
-
 namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
@@ -19,9 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 class ParseIParapheurLogTest extends TestCase
 {
-    /**
-     * @return void
-     */
     public function testParseLogIparapheurReturnCodeIsAnError(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -43,9 +33,6 @@ class ParseIParapheurLogTest extends TestCase
         $this->assertSame(['error' => 'Log KO in iParapheur : [INFO] error'], $result);
     }
 
-    /**
-     * @return array[]
-     */
     public function validatedStateProvider(): array
     {
         return [
@@ -88,9 +75,6 @@ class ParseIParapheurLogTest extends TestCase
         );
     }
 
-    /**
-     * @return array[]
-     */
     public function refusedStateProvider(): array
     {
         return [
@@ -134,9 +118,6 @@ class ParseIParapheurLogTest extends TestCase
         );
     }
 
-    /**
-     * @return void
-     */
     public function testParseLogIparapheurDocumentIsNotRefusedAndNotValidated(): void
     {
         $pastellApiMock = new PastellApiMock();
