@@ -15,7 +15,6 @@ use ExternalSignatoryBook\pastell\Domain\PastellStates;
 class PastellConfigMock implements PastellConfigInterface
 {
     public ?PastellConfig $pastellConfig = null;
-
     public ?PastellStates $pastellStates = null;
 
     public function __construct()

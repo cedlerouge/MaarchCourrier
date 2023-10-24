@@ -95,9 +95,10 @@ class PastellApiMock implements PastellApiInterface
      * @param PastellConfig $config
      * @param string $idFolder
      * @param string $title
+     * @param string $sousType
      * @return array|string[]
      */
-    public function editFolder(PastellConfig $config, string $idFolder, string $title): array
+    public function editFolder(PastellConfig $config, string $idFolder, string $title, string $sousType): array
     {
         return $this->dataFolder;
     }
@@ -105,9 +106,10 @@ class PastellApiMock implements PastellApiInterface
     /**
      * @param PastellConfig $config
      * @param string $idFolder
+     * @param string $filePath
      * @return array
      */
-    public function uploadMainFile(PastellConfig $config, string $idFolder): array
+    public function uploadMainFile(PastellConfig $config, string $idFolder, string $filePath): array
     {
         return $this->mainFile;
     }
@@ -143,6 +145,11 @@ class PastellApiMock implements PastellApiInterface
     }
 
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
+    {
+        return true;
+    }
+
+    public function orientation(PastellConfig $config, string $idFolder): bool
     {
         return true;
     }
