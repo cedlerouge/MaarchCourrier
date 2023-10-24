@@ -459,4 +459,29 @@ class PastellApi implements PastellApiInterface
 
         return $response['code'] == 200;
     }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return bool
+     */
+    public function orientation(PastellConfig $config, string $idFolder): bool
+    {
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/orientation',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method'    => 'POST'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'];
+        }
+        return $return;
+    }
 }
