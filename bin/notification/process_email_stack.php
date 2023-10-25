@@ -98,7 +98,7 @@ foreach ($emails as $key => $email) {
         if ($configuration['auth']) {
             $phpmailer->Username = $configuration['user'];
             if (!empty($configuration['password'])) {
-                $phpmailer->Password = \SrcCore\models\PasswordModel::decrypt(['cryptedPassword' => $configuration['password']]);
+                $phpmailer->Password = \SrcCore\controllers\PasswordController::decrypt(['encryptedData' => $configuration['password']]);
             }
         }
     } elseif ($configuration['type'] == 'sendmail') {

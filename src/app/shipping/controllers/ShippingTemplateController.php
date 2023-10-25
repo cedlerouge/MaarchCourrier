@@ -31,7 +31,7 @@ use SrcCore\controllers\LogsController;
 use SrcCore\models\CoreConfigModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
 use Firebase\JWT\JWT;
 
@@ -147,7 +147,7 @@ class ShippingTemplateController
         }
 
         if (!empty($body['account']['password'])) {
-            $body['account']['password'] = PasswordModel::encrypt(['password' => $body['account']['password']]);
+            $body['account']['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['account']['password']]);
         }
 
         $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
@@ -218,7 +218,7 @@ class ShippingTemplateController
         }
 
         if (!empty($body['account']['password'])) {
-            $body['account']['password'] = PasswordModel::encrypt(['password' => $body['account']['password']]);
+            $body['account']['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['account']['password']]);
         } else {
             $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id'], 'select' => ['account']]);
             $shippingInfo['account'] = json_decode($shippingInfo['account'], true);
@@ -922,7 +922,7 @@ class ShippingTemplateController
             'queryParams'   => [
                 'grant_type'    => 'password',
                 'username'      => $shippingTemplateAccount['id'],
-                'password'      => PasswordModel::decrypt(['cryptedPassword' => $shippingTemplateAccount['password']])
+                'password'      => PasswordController::decrypt(['encryptedData' => $shippingTemplateAccount['password']])
             ]
         ]);
         if ($curlAuth['code'] != 200) {

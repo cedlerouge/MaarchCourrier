@@ -39,7 +39,7 @@ use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
@@ -678,7 +678,7 @@ class EmailController
             if ($configuration['auth']) {
                 $phpmailer->Username = $configuration['user'];
                 if (!empty($configuration['password'])) {
-                    $phpmailer->Password = PasswordModel::decrypt(['cryptedPassword' => $configuration['password']]);
+                    $phpmailer->Password = PasswordController::decrypt(['encryptedData' => $configuration['password']]);
                 }
             }
         } elseif ($configuration['type'] == 'sendmail') {

@@ -56,7 +56,7 @@ class AuthenticationController
 
         $parameter = ParameterModel::getById(['id' => 'loginpage_message', 'select' => ['param_value_string']]);
 
-        $encryptKey = CoreConfigModel::getEncryptKey();
+        $encryptKeyChanged = CoreConfigModel::hasEncryptKeyChanged();
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         $authUri = null;
@@ -112,7 +112,7 @@ class AuthenticationController
             'instanceId'                => $hashedPath,
             'applicationName'           => $appName,
             'loginMessage'              => $parameter['param_value_string'] ?? null,
-            'changeKey'                 => $encryptKey == 'Security Key Maarch Courrier #2008',
+            'changeKey'                 => !$encryptKeyChanged,
             'authMode'                  => $loggingMethod['id'],
             'authUri'                   => $authUri,
             'lang'                      => CoreConfigModel::getLanguage(),

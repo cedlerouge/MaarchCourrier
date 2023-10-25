@@ -28,7 +28,7 @@ use Note\models\NoteModel;
 use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\TextFormatModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
@@ -247,7 +247,7 @@ class SendMessageExchangeController
                     }
                     $url = str_replace($prefix, '', $ArchivalAgencyCommunicationType['value']);
                     $login = $aArchivalAgencyCommunicationType['login'] ?? '';
-                    $password = !empty($aArchivalAgencyCommunicationType['password']) ? PasswordModel::decrypt(['cryptedPassword' => $aArchivalAgencyCommunicationType['password']]) : '';
+                    $password = !empty($aArchivalAgencyCommunicationType['password']) ? PasswordController::decrypt(['encryptedData' => $aArchivalAgencyCommunicationType['password']]) : '';
                     $ArchivalAgencyCommunicationType['value'] = $prefix;
                     if (!empty($login) && !empty($password)) {
                         $ArchivalAgencyCommunicationType['value'] .= $login . ':' . $password . '@';
@@ -547,6 +547,7 @@ class SendMessageExchangeController
         if (isset($aArgs['ArchivalAgency']['CommunicationType']['type'])) {
             $arcCommunicationObject          = new \stdClass();
             $arcCommunicationObject->Channel = $aArgs['ArchivalAgency']['CommunicationType']['type'];
+            $postUrl = '';
             if ($aArgs['ArchivalAgency']['CommunicationType']['type'] == 'url') {
                 $postUrl = '/rest/saveNumericPackage';
             }
