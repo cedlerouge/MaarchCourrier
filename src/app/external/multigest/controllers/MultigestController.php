@@ -306,7 +306,7 @@ class MultigestController
         $result = MultigestController::checkAccountWithCredentials([
             'sasId' => $body['sasId'],
             'login' => $body['login'],
-            'password' => empty($body['password']) ? '' : PasswordController::decrypt(['encryptedData' => $body['password']])
+            'password' => empty($body['password']) ? '' : $body['password']
         ]);
 
         if (!empty($result['errors'])) {
