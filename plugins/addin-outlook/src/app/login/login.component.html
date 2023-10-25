@@ -1,0 +1,12 @@
+<mat-spinner *ngIf="loading"></mat-spinner>
+<form *ngIf="!loading" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill" style="width:100%">
+        <mat-label>{{ 'lang.login' | translate }}</mat-label>
+        <input matInput formControlName="login">
+    </mat-form-field>
+    <mat-form-field appearance="fill" style="width:100%">
+        <mat-label>{{ 'lang.password' | translate}}</mat-label>
+        <input matInput type="password" formControlName="password">
+    </mat-form-field>
+    <button mat-raised-button type="submit" [disabled]="loginForm.invalid" color="primary">{{ 'lang.LOGIN' | translate}}</button>
+</form>

@@ -13,6 +13,7 @@ import { InternationalizationModule } from './service/translate/internationaliza
 import { MessageBoxComponent } from './plugins/messageBox/message-box.component';
 import { PanelComponent } from './panel/panel.component';
 import { LatinisePipe } from 'ngx-pipes';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
     declarations: [
@@ -20,6 +21,7 @@ import { LatinisePipe } from 'ngx-pipes';
         MessageBoxComponent,
         CustomSnackbarComponent,
         PanelComponent,
+        LoginComponent
     ],
     imports: [
         HttpClientModule,

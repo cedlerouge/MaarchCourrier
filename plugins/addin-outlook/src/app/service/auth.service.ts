@@ -97,12 +97,7 @@ export class AuthService {
                         this.applicationName = data.applicationName;
                         this.appUrl = data.maarchUrl;
                         this.setAppSession(data.instanceId);
-                        if (this.isAuth()) {
-                            this.updateUserInfo(this.getToken());
-                            resolve(true);
-                        } else {
-                            resolve(false);
-                        }
+                        resolve(true);
                     }),
                     catchError((err: any) => {
                         console.log(err);
@@ -135,9 +130,6 @@ export class AuthService {
     }
 
     isAuth(): boolean {
-        if (this.getToken() === null && this.connectionTry === null) {
-            this.tryConnection();
-        }
         return this.getToken() !== null;
     }
 
