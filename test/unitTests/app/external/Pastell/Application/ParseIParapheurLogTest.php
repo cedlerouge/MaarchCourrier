@@ -7,7 +7,7 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace unitTests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
@@ -135,6 +135,9 @@ class ParseIParapheurLogTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testParseLogIparapheurDocumentIsNotRefusedAndNotValidated(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -183,7 +186,6 @@ class ParseIParapheurLogTest extends TestCase
             $result
         );
     }
-
 
     /**
      * @return void
@@ -274,5 +276,4 @@ class ParseIParapheurLogTest extends TestCase
             $result
         );
     }
-
 }

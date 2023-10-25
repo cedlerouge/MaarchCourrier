@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Pastell States
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Domain;
 
 class PastellStates

@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Pastell API Interface
+ * @author dev@maarch.org
+ */
+
 declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Domain;
@@ -87,14 +92,24 @@ interface PastellApiInterface
      */
     public function getXmlDetail(PastellConfig $config, string $idFolder): object;
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return array
+     */
     public function downloadFile(PastellConfig $config, string $idDocument): array;
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return bool
+     */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool;
 
     /**
      * @param PastellConfig $config
      * @param string $idFolder
-     * @return bool
+     * @return array
      */
-    public function orientation(PastellConfig $config, string $idFolder): bool;
+    public function orientation(PastellConfig $config, string $idFolder): array;
 }

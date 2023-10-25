@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Send data to Pastell factory
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
@@ -22,10 +27,8 @@ class SendDataToPastellFactory
         $pastellApi = new PastellApi();
         $pastellConfig = new PastellXmlConfig();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApi, $pastellConfig);
-
         $resourceData = new ResourceDataDb();
         $resourceFile = new ResourceFile();
-
         $processVisaWorkflow = new ProcessVisaWorkflow();
 
         return new SendToPastell(

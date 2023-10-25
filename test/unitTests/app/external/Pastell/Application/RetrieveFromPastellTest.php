@@ -7,7 +7,7 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace unitTests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;

@@ -6,6 +6,11 @@
  * This file is part of Maarch software.
  */
 
+/**
+ * @brief Pastell Config
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Domain;
 
 class PastellConfig
