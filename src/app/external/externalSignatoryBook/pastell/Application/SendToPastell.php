@@ -6,6 +6,11 @@
  * This file is part of Maarch software.
  */
 
+/**
+ * @brief Send to Pastell
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
@@ -59,10 +64,10 @@ class SendToPastell
     {
         $config = $this->pastellConfig->getPastellConfig();
 
-        //Check folder creation
+        // Checking folder creation
         $idFolder = $this->pastellApi->createFolder($config);
         if (empty($idFolder)) {
-            return ['error' => 'blabla'];
+            return ['error' => 'Folder creation has failed'];
         } elseif (!empty($idFolder['errors'])) {
             return ['error' => $idFolder['errors']];
         }
@@ -79,18 +84,28 @@ class SendToPastell
          *  processVisaWorkflow
          */
         $editResult = $this->pastellApi->editFolder($config, $idFolder, $title, $sousType);
-
-        $uploadResult = $this->pastellApi->uploadMainFile($config, $idFolder, $filePath);
-
-        // orientation
-        $orientationResult = $this->pastellApi->orientation($config, $idFolder);
-
-        $this->processVisaWorkflow->processVisaWorkflow($resId, false);
-
+        if (!empty($editResult['error'])) {
+            return $editResult['error'];
+        } else {
+            // uploading main file
+            $uploadResult = $this->pastellApi->uploadMainFile($config, $idFolder, $filePath);
+            if (!empty($uploadResult['error'])) {
+                return $uploadResult['error'];
+            } else {
+                // Sending folder to iParapheur
+                $orientationResult = $this->pastellApi->orientation($config, $idFolder);
+                if (!empty($orientationResult['error'])) {
+                    return $orientationResult['error'];
+                } else {
+                    $this->processVisaWorkflow->processVisaWorkflow($resId, false);
+                }
+            }
+        }
         return ['idFolder' => $idFolder];
     }
 
     /**
+     * Sending data and main file to ExternalSignatoryBookTrait
      * @param int $resId
      * @return string[]
      */
@@ -106,35 +121,27 @@ class SendToPastell
 
         $config = $this->pastellConfig->getPastellConfig();
 
-        // TODO
         //Check iParapheur subtype
-//        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $idFolder);
-//        if (!empty($iParapheurSousType['errors'])) {
-//            return false;
-//        } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-//            return false;
-//        }
+        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
+        if (!empty($iParapheurSousType['error'])) {
+            return $iParapheurSousType['error'];
+        } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
+            return ['error' => 'Subtype does not exist in iParapheur'];
+        } else {
+            $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
 
-//        $response = [
-//            'sended' => [
-//                'letterbox_coll' => [
-//                    $resId => $idFolder
-//                ]
-//            ]
-//        ];
-
-        $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
-
-        return [
-            'sended' => [
-                'letterbox_coll' => [
-                    $resId => $idFolder['idFolder'] ?? null
+            return [
+                'sended' => [
+                    'letterbox_coll' => [
+                        $resId => $idFolder['idFolder'] ?? null
+                    ]
                 ]
-            ]
-        ];
+            ];
+        }
     }
 
     /**
+     * Getting data, file content and infos fom MC to be sent
      * @param int $resId
      * @param string $sousType
      * @param array $annexes
@@ -149,15 +156,31 @@ class SendToPastell
          *  -> sendToFolderToPastell
          */
 
-        // Recup data
+        // Getting data from MC (res_letterbox)
         $mainResource = $this->resourceData->getMainResourceData($resId);
 
-        // TODO Integre au parapheur ou non ?
+        // Checking if main document is integrated
+        if (!empty($mainResource)) {
+            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
+            $externalId = json_decode($mainResource['external_id'], true);
+
+            if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
+                $resId = $mainResource['res_id'];
+                $title = $mainResource['subject'];
+                // Getting path of the main file
+                $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
+                if (str_contains($mainResourceFilePath, 'Error')) {
+                    return ['Error' => 'Document ' . $resId . ' is not converted in pdf'];
+                } else {
+                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath);
+                }
+            }
+        }
 
         // Recup file path
-        $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
+        //$mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
 
-        return $this->sendFolderToPastell($resId, $mainResource['subject'], $sousType, $mainResourceFilePath);
+        //return $this->sendFolderToPastell($resId, $mainResource['subject'], $sousType, $mainResourceFilePath);
 
         //Récupération des infos du courrier côté MC
 //        $attachments = AttachmentModel::get([

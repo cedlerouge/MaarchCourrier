@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Pastell Visa Workflow Interface
+ * @author dev@maarch.org
+ */
+
 declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Domain;

@@ -12,7 +12,6 @@
  * @author dev@maarch.org
  */
 
-
 namespace ExternalSignatoryBook\pastell\Application;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;

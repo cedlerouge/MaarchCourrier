@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Resource file
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use Convert\controllers\ConvertPdfController;
@@ -16,15 +21,21 @@ use ExternalSignatoryBook\pastell\Domain\ResourceFileInterface;
 class ResourceFile implements ResourceFileInterface
 {
     /**
+     * Getting the file path of main file
      * @param int $resId
      * @return string
      */
     public function getMainResourceFilePath(int $resId): string
     {
-        // TODO check fingerprint ?
+        // No fingerprint for main file only attachments
 
         $adrMainInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => 'letterbox_coll']);
-        $letterboxPath = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]);
-        return $letterboxPath['path_template'] . str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
+        // Checking extension of file
+        if (empty($adrMainInfo['docserver_id']) || strtolower(pathinfo($adrMainInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+            return 'Error: Document ' . $resId . ' is not converted in pdf';
+        } else {
+            $letterboxPath = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]);
+            return $letterboxPath['path_template'] . str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
+        }
     }
 }
