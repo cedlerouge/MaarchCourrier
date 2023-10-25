@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Pastell XML Config
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;

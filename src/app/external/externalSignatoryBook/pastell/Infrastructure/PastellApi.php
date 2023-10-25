@@ -6,9 +6,13 @@
  * This file is part of Maarch software.
  */
 
+/**
+ * @brief Pastell API
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
-use Exception;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use SrcCore\models\CurlModel;
@@ -208,7 +212,11 @@ class PastellApi implements PastellApiInterface
 
     /**
      * Sending datas to the created folder
-     * @throws Exception
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @param string $title
+     * @param string $sousType
+     * @return array|string[]
      */
     public function editFolder(PastellConfig $config, string $idFolder, string $title, string $sousType): array
     {
@@ -216,7 +224,7 @@ class PastellApi implements PastellApiInterface
             'libelle'              => $title,
             'iparapheur_sous_type' => $sousType,
             'iparapheur_type'      => $config->getIparapheurType(),
-//            'envoi_signature'      => true // TODO obligatoire ????
+            'envoi_signature'      => true
         ];
 
         $response = CurlModel::exec([
@@ -249,14 +257,6 @@ class PastellApi implements PastellApiInterface
      */
     public function uploadMainFile(PastellConfig $config, string $idFolder, string $filePath): array
     {
-//        $mainFileInfo = ConvertPdfController::getConvertedPdfById(/*['resId' => , 'collId' => ]*/);
-//
-//        if (empty($mainFileInfo['docserver_id']) || strtolower(pathinfo($mainFileInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
-//            return ['error' => 'Document ' . ['resIdMaster'] . ' is not converted in pdf'];
-//        }
-//        $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $mainFileInfo['docserver_id'], 'select' => ['path_template']]);
-//        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $mainFileInfo['path']) . $mainFileInfo['filename'];
-
         $bodyData = [
             'file_name'    => 'Document principal.' . pathinfo($filePath)['extension'],
             'file_content' => file_get_contents($filePath)
@@ -277,6 +277,32 @@ class PastellApi implements PastellApiInterface
             } else {
                 $return = ["error" => 'An error occurred !'];
             }
+        }
+        return $return;
+    }
+
+    /**
+     * Sending folder to iParapheur
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return array
+     */
+    public function orientation(PastellConfig $config, string $idFolder): array
+    {
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/orientation',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'method'    => 'POST'
+        ]);
+
+        if ($response['code'] > 200) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'];
         }
         return $return;
     }
@@ -330,7 +356,7 @@ class PastellApi implements PastellApiInterface
         if ($response['code'] > 201) {
             $return = new \stdClass();
             if (!empty($response['response']['error-message'])) {
-                $return->error =  $response['response']['error-message'];
+                $return->error = $response['response']['error-message'];
             } else {
                 $return->error = 'An error occurred !';
             }
@@ -374,37 +400,12 @@ class PastellApi implements PastellApiInterface
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
         $response = CurlModel::exec([
-            'url' => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
+            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'headers' => ['Content-Type' => 'application/x-www-form-urlencoded'],
-            'method' => 'POST',
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'POST',
         ]);
 
         return $response['code'] == 200;
-    }
-
-    /**
-     * @param PastellConfig $config
-     * @param string $idFolder
-     * @return bool
-     */
-    public function orientation(PastellConfig $config, string $idFolder): bool
-    {
-        $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/orientation',
-            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
-            'method'    => 'POST'
-        ]);
-
-        if ($response['code'] > 200) {
-            if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
-            } else {
-                $return = ["error" => 'An error occurred !'];
-            }
-        } else {
-            $return = $response['response'];
-        }
-        return $return;
     }
 }

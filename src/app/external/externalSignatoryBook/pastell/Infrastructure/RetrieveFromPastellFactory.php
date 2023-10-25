@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Retrieve from Pastell factory
+ * @author dev@maarch.org
+ */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;

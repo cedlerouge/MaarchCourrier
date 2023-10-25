@@ -7,6 +7,11 @@
  *
  */
 
+/**
+ * @brief Resource data DB
+ * @author dev@maarch.org
+ */
+
 declare(strict_types=1);
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
