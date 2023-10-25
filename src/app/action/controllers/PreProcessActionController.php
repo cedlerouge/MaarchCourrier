@@ -57,7 +57,7 @@ use User\models\UserEntityModel;
 use User\models\UserModel;
 use ExportSeda\controllers\PreProcessActionSEDATrait;
 use Multigest\controllers\MultigestController;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SignatureBook\controllers\SignatureBookController;
 
 class PreProcessActionController
@@ -1844,7 +1844,7 @@ class PreProcessActionController
         $accountCheck = MultigestController::checkAccountWithCredentials([
             'sasId' => $entityInformations['multigest']['sasId'],
             'login' => $entityInformations['multigest']['login'],
-            'password' => empty($entityInformations['multigest']['password']) ? '' : PasswordModel::decrypt(['cryptedPassword' => $entityInformations['multigest']['password']])
+            'password' => empty($entityInformations['multigest']['password']) ? '' : PasswordController::decrypt(['encryptedData' => $entityInformations['multigest']['password']])
         ]);
         if (!empty($accountCheck['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $accountCheck['errors'], 'lang' => ($accountCheck['lang'] ?? null)]);

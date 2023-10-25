@@ -21,6 +21,10 @@ use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\PasswordModel;
 use SrcCore\models\ValidatorModel;
+use Exception;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\controllers\LogsController;
+
 
 class PasswordController
 {
@@ -99,5 +103,152 @@ class PasswordController
         }
 
         return true;
+    }
+
+    /**
+     * Encrypt data with the old vhost or new file encryption key
+     * 
+     * @param   array   $args{dataToEncrypt: string}
+     * 
+     * @throws  Exception   It can throws an exception
+     */
+    public static function encrypt(array $args): string
+    {
+        ValidatorModel::notEmpty($args, ['dataToEncrypt']);
+        ValidatorModel::stringType($args, ['dataToEncrypt']);
+
+        if (CoreConfigModel::useVhostEncryptKey()) {
+            return PasswordModel::encrypt(['password' => $args['dataToEncrypt']]);
+        } else {
+            return PasswordController::newEncrypt(['dataToEncrypt' => $args['dataToEncrypt']]);
+        }
+    }
+
+    /**
+     * Decrypt encrypted data with the old vhost or new file encryption key
+     *
+     * @param   array   $args{encryptedData: string}
+     * 
+     * @throws  Exception   It can throws an exception
+     */
+    public static function decrypt(array $args): string
+    {
+        ValidatorModel::notEmpty($args, ['encryptedData']);
+        ValidatorModel::stringType($args, ['encryptedData']);
+
+        if (CoreConfigModel::useVhostEncryptKey()) {
+            return PasswordModel::decrypt(['cryptedPassword' => $args['encryptedData']]);
+        } else {
+            return PasswordController::newDecrypt(['encryptedData' => $args['encryptedData']]);
+        }
+    }
+
+    /**
+     * @deprecated This function logic will be moved to PasswordController::encrypt() in future major versions.
+     * Please use PasswordController::encrypt() instead.
+     * 
+     * @return string
+     */
+    public static function newEncrypt(array $args): string
+    {
+        ValidatorModel::notEmpty($args, ['dataToEncrypt']);
+        ValidatorModel::stringType($args, ['dataToEncrypt']);
+
+        $encryptedResult = null;
+        $encryptKey      = CoreConfigModel::getEncryptKey();
+        $cipherMethod    = 'AES-256-CTR';
+
+        try {
+            $encryptKeyHash  = openssl_digest($encryptKey, 'sha256');
+
+            $initialisationVector = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipherMethod));
+            $encrypted = openssl_encrypt($args['dataToEncrypt'], $cipherMethod, $encryptKeyHash, OPENSSL_RAW_DATA, $initialisationVector);
+
+            if ($encrypted === false) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Encryption/Decryption',
+                    'level'     => 'ERROR',
+                    'eventType' => 'Decrypt',
+                    'eventId'   => 'Encryption failed: ' . openssl_error_string()
+                ]);
+                throw new Exception('Encryption failed: ' . openssl_error_string());
+            }
+
+            $encryptedResult = $initialisationVector . $encrypted;
+        } catch (Exception $e) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'Encryption/Decryption',
+                'level'     => 'ERROR',
+                'eventType' => 'Decrypt',
+                'eventId'   => 'Encryption Exception: ' . $e->getMessage()
+            ]);
+            throw new Exception('Encryption Exception: ' . $e->getMessage());
+        }
+
+        return base64_encode($encryptedResult);
+    }
+
+    /**
+     * @deprecated This function logic will be moved to PasswordController::decrypt() in future major versions.
+     * Please use PasswordController::decrypt() instead.
+     * 
+     * @return string
+     */
+    public static function newDecrypt(array $args): string
+    {
+        ValidatorModel::notEmpty($args, ['encryptedData']);
+        ValidatorModel::stringType($args, ['encryptedData']);
+
+        $decryptedResult = null;
+        $encryptKey      = CoreConfigModel::getEncryptKey();
+        $cipherMethod    = 'AES-256-CTR';
+        $encryptedData   = base64_decode($args['encryptedData']);
+
+        try {
+            $initialisationVectorLength = openssl_cipher_iv_length($cipherMethod);
+
+            // encrypted data integrity check on size of data
+            if (strlen($encryptedData) < $initialisationVectorLength) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Encryption/Decryption',
+                    'level'     => 'ERROR',
+                    'eventType' => 'Decrypt',
+                    'eventId'   => 'Decryption failed: data length '. strlen($encryptedData). ' is less than iv length ' . $initialisationVectorLength
+                ]);
+                throw new Exception('Decryption failed: data length '. strlen($encryptedData). ' is less than iv length ' . $initialisationVectorLength);
+            }
+
+            // Extract the initialisation vector and encrypted data
+            $initialisationVector   = substr($encryptedData, 0, $initialisationVectorLength);
+            $encryptedData          = substr($encryptedData, $initialisationVectorLength);
+            $encryptKeyHash         = openssl_digest($encryptKey, 'sha256');
+
+            $decryptedResult = openssl_decrypt($encryptedData, $cipherMethod, $encryptKeyHash, OPENSSL_RAW_DATA, $initialisationVector);
+
+            if ($decryptedResult === false) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => 'Encryption/Decryption',
+                    'level'     => 'ERROR',
+                    'eventType' => 'Decrypt',
+                    'eventId'   => 'Decryption failed: ' . openssl_error_string()
+                ]);
+                throw new Exception('Decryption failed: ' . openssl_error_string());
+            }
+        } catch (Exception $e) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'Encryption/Decryption',
+                'level'     => 'ERROR',
+                'eventType' => 'Decrypt',
+                'eventId'   => 'Decryption Exception: ' . $e->getMessage()
+            ]);
+            throw new Exception('Decryption Exception: ' . $e->getMessage());
+        }
+
+        return $decryptedResult;
     }
 }

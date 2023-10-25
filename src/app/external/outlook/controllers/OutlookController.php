@@ -24,7 +24,7 @@ use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\controllers\LanguageController;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use Status\models\StatusModel;
 use User\models\UserModel;
 
@@ -113,9 +113,9 @@ class OutlookController
             }
         }
 
-        $configuration['value']['tenantId']     = !empty($configuration['value']['tenantId']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]) : '';
-        $configuration['value']['clientId']     = !empty($configuration['value']['clientId']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientId']]) : '';
-        $configuration['value']['clientSecret'] = !empty($configuration['value']['clientSecret']) ? PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientSecret']]) : '';
+        $configuration['value']['tenantId']     = !empty($configuration['value']['tenantId']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['tenantId']]) : '';
+        $configuration['value']['clientId']     = !empty($configuration['value']['clientId']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['clientId']]) : '';
+        $configuration['value']['clientSecret'] = !empty($configuration['value']['clientSecret']) ? PasswordController::decrypt(['encryptedData' => $configuration['value']['clientSecret']]) : '';
 
         $configuration['value']['outlookConnectionSaved'] = false;
         if (!empty($configuration['value']['tenantId']) && !empty($configuration['value']['clientId']) && !empty($configuration['value']['clientSecret'])) {
@@ -171,9 +171,9 @@ class OutlookController
             'statusId'          => $body['statusId'],
             'attachmentTypeId'  => $body['attachmentTypeId'],
             'version'           => $body['version'],
-            'tenantId'          => !empty($body['tenantId']) ? PasswordModel::encrypt(['password' => $body['tenantId']]) : '',
-            'clientId'          => !empty($body['clientId']) ? PasswordModel::encrypt(['password' => $body['clientId']]) : '',
-            'clientSecret'      => !empty($body['clientSecret']) ? PasswordModel::encrypt(['password' => $body['clientSecret']]) : ''
+            'tenantId'          => !empty($body['tenantId']) ? PasswordController::encrypt(['password' => $body['tenantId']]) : '',
+            'clientId'          => !empty($body['clientId']) ? PasswordController::encrypt(['password' => $body['clientId']]) : '',
+            'clientSecret'      => !empty($body['clientSecret']) ? PasswordController::encrypt(['password' => $body['clientSecret']]) : ''
         ], JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook', 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_addin_outlook']);
@@ -221,9 +221,9 @@ class OutlookController
             'ewsHost'        => explode('/', $body['ewsUrl'])[0],
             'email'          => $body['userId'],
             'version'        => $configuration['value']['version'],
-            'tenantId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['tenantId']]),
-            'clientId'       => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientId']]),
-            'clientSecret'   => PasswordModel::decrypt(['cryptedPassword' => $configuration['value']['clientSecret']]),
+            'tenantId'       => PasswordController::decrypt(['encryptedData' => $configuration['value']['tenantId']]),
+            'clientId'       => PasswordController::decrypt(['encryptedData' => $configuration['value']['clientId']]),
+            'clientSecret'   => PasswordController::decrypt(['encryptedData' => $configuration['value']['clientSecret']]),
             'attachmentType' => $attachmentType['type_id']
         ];
 

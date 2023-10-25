@@ -33,7 +33,7 @@ use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
 
@@ -186,7 +186,7 @@ class AlfrescoController
             'id'        => $id,
             'label'     => $body['label'],
             'login'     => $body['login'],
-            'password'  => PasswordModel::encrypt(['password' => $body['password']]),
+            'password'  => PasswordController::encrypt(['dataToEncrypt' => $body['password']]),
             'nodeId'    => $body['nodeId']
         ];
         $account = json_encode($account);
@@ -238,7 +238,7 @@ class AlfrescoController
             'id'        => $args['id'],
             'label'     => $body['label'],
             'login'     => $body['login'],
-            'password'  => empty($body['password']) ? $alfresco['alfresco']['password'] : PasswordModel::encrypt(['password' => $body['password']]),
+            'password'  => empty($body['password']) ? $alfresco['alfresco']['password'] : PasswordController::encrypt(['dataToEncrypt' => $body['password']]),
             'nodeId'    => $body['nodeId']
         ];
         $account = json_encode($account);
@@ -312,7 +312,7 @@ class AlfrescoController
             if (empty($alfresco['alfresco']['password'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Account has no password']);
             }
-            $body['password'] = PasswordModel::decrypt(['cryptedPassword' => $alfresco['alfresco']['password']]);
+            $body['password'] = PasswordController::decrypt(['encryptedData' => $alfresco['alfresco']['password']]);
         }
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_alfresco']);
@@ -390,7 +390,7 @@ class AlfrescoController
         if (empty($entityInformations['alfresco'])) {
             return $response->withStatus(400)->withJson(['errors' => 'User primary entity has not enough alfresco informations']);
         }
-        $entityInformations['alfresco']['password'] = PasswordModel::decrypt(['cryptedPassword' => $entityInformations['alfresco']['password']]);
+        $entityInformations['alfresco']['password'] = PasswordController::decrypt(['encryptedData' => $entityInformations['alfresco']['password']]);
 
         $curlResponse = CurlModel::exec([
             'url'           => "{$alfrescoUri}/alfresco/versions/1/nodes/{$entityInformations['alfresco']['nodeId']}/children",
@@ -440,7 +440,7 @@ class AlfrescoController
         if (empty($entityInformations['alfresco'])) {
             return $response->withStatus(400)->withJson(['errors' => 'User primary entity has not enough alfresco informations']);
         }
-        $entityInformations['alfresco']['password'] = PasswordModel::decrypt(['cryptedPassword' => $entityInformations['alfresco']['password']]);
+        $entityInformations['alfresco']['password'] = PasswordController::decrypt(['encryptedData' => $entityInformations['alfresco']['password']]);
 
         $curlResponse = CurlModel::exec([
             'url'           => "{$alfrescoUri}/alfresco/versions/1/nodes/{$args['id']}/children",
@@ -497,7 +497,7 @@ class AlfrescoController
         if (empty($entityInformations['alfresco'])) {
             return $response->withStatus(400)->withJson(['errors' => 'User primary entity has not enough alfresco informations']);
         }
-        $entityInformations['alfresco']['password'] = PasswordModel::decrypt(['cryptedPassword' => $entityInformations['alfresco']['password']]);
+        $entityInformations['alfresco']['password'] = PasswordController::decrypt(['encryptedData' => $entityInformations['alfresco']['password']]);
 
         $search = addslashes($queryParams['search']);
         $body = [
@@ -559,7 +559,7 @@ class AlfrescoController
         if (empty($entityInformations['alfresco'])) {
             return ['errors' => 'User primary entity has not enough alfresco informations'];
         }
-        $entityInformations['alfresco']['password'] = PasswordModel::decrypt(['cryptedPassword' => $entityInformations['alfresco']['password']]);
+        $entityInformations['alfresco']['password'] = PasswordController::decrypt(['encryptedData' => $entityInformations['alfresco']['password']]);
 
         $document = ResModel::getById([
             'select'    => [

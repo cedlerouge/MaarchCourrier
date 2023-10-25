@@ -178,9 +178,12 @@ class CoreConfigModel
     /**
      * Get the Encrypt Key
      *
+     * @deprecated This function is deprecated and will be removed in future major versions.
+     * Please use getEncryptKey() instead.
+     *
      * @return string
      */
-    public static function getEncryptKey()
+    public static function getOldEncryptKey()
     {
         if (isset($_SERVER['MAARCH_ENCRYPT_KEY'])) {
             $encryptKey = $_SERVER['MAARCH_ENCRYPT_KEY'];
@@ -191,6 +194,51 @@ class CoreConfigModel
         }
 
         return $encryptKey;
+    }
+
+    /**
+     * @deprecated This function will be removed in future major versions.
+     * Please use getEncryptKey() instead.
+     *
+     * @return bool
+     */
+    public static function useVhostEncryptKey(): bool
+    {
+        $configPath = CoreConfigModel::getConfigPath();
+        $config = json_decode(file_get_contents($configPath), true)['config'];
+
+        return !isset($config['privateKeyPath']) || empty($config['privateKeyPath']);
+    }
+
+    /**
+     * Get the Encrypt Key
+     *
+     * @return string
+     */
+    public static function getEncryptKey(): string
+    {
+        $configPath = CoreConfigModel::getConfigPath();
+        $config = json_decode(file_get_contents($configPath), true)['config'];
+
+        $encryptKeyPath = $config['privateKeyPath'] ?? null;
+
+        if (empty($encryptKeyPath)) {
+            $encryptKey = CoreConfigModel::getOldEncryptKey();
+        } elseif (!empty($encryptKeyPath) && is_file($encryptKeyPath) && is_readable($encryptKeyPath)) {
+            $encryptKey = file_get_contents($encryptKeyPath);
+            $encryptKey = trim($encryptKey);
+        } else {
+            $encryptKey = "Security Key Maarch Courrier 2008";
+        }
+
+        return $encryptKey;
+    }
+
+    public static function hasEncryptKeyChanged(): bool
+    {
+        $encryptKey = CoreConfigModel::getEncryptKey();
+
+        return $encryptKey !== "Security Key Maarch Courrier #2008" && $encryptKey !== "Security Key Maarch Courrier 2008";
     }
 
     public static function getLibrariesDirectory()

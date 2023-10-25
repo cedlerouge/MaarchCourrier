@@ -28,7 +28,7 @@ use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use Status\models\StatusModel;
 use ContentManagement\controllers\DocumentEditorController;
 
@@ -90,7 +90,7 @@ class ConfigurationController
                     $data['password'] = $configuration['value']['password'];
                 }
             } elseif ($data['auth'] && !empty($data['password'])) {
-                $data['password'] = PasswordModel::encrypt(['password' => $data['password']]);
+                $data['password'] = PasswordController::encrypt(['dataToEncrypt' => $data['password']]);
             }
             $check = ConfigurationController::checkMailer($data);
             if (!empty($check['errors'])) {
@@ -296,8 +296,8 @@ class ConfigurationController
             ],
             'basketToRedirect' => $xmlConfig['basketRedirection_afterUpload'][0],
             'communications'   => [
-                'email'                 => $xmlConfig['m2m_communication_type']['email'],
-                'url'                   => $xmlConfig['m2m_communication_type']['url'],
+                'email'                 => $xmlConfig['m2m_communication_type']['email'] ?? null,
+                'url'                   => $xmlConfig['m2m_communication_type']['url'] ?? null,
                 'login'                 => $xmlConfig['m2m_login'][0] ?? null,
                 'passwordAlreadyExists' => !empty($xmlConfig['m2m_password'])
             ]
