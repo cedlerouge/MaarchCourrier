@@ -16,7 +16,6 @@ namespace Mercure\scripts;
 
 require 'vendor/autoload.php';
 
-use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
 use Convert\controllers\FullTextController;
 use SrcCore\models\CoreConfigModel;
@@ -41,14 +40,14 @@ class IndexContactsScript
 
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
-            $customId = $args[$cmd+1];
+            $customId = $args[$cmd + 1];
 
-			$fileConfiguration    = 'custom/'.$customId.'/config/ladConfiguration.json';
+            $fileConfiguration    = 'custom/' . $customId . '/config/ladConfiguration.json';
         }
 
         if (array_search('--fileConfig', $args) > 0) {
             $cmd = array_search('--fileConfig', $args);
-            $fileConfiguration = $args[$cmd+1];
+            $fileConfiguration = $args[$cmd + 1];
         }
 
         IndexContactsScript::generateIndex(['customId' => $customId, 'fileConfig' => $fileConfiguration]);
@@ -101,7 +100,6 @@ class IndexContactsScript
 
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
             \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-
         } catch (\Exception $e) {
             echo "/!\\ Open index directory failed \n";
             return false;
@@ -127,12 +125,12 @@ class IndexContactsScript
 
         $listIdToUpdate = [];
         foreach ($contactsToIndexes as $c) {
-            if ($cptIndex%50 == 0) {
-                echo "Indexation contact ".$cptIndex."/".count($contactsToIndexes)."\n";
+            if ($cptIndex % 50 == 0) {
+                echo "Indexation contact " . $cptIndex . "/" . count($contactsToIndexes) . "\n";
             }
 
             //Suppression de l'ID en cours
-            $term = new \Zend_Search_Lucene_Index_Term((integer)$c['id'], 'Idx');
+            $term = new \Zend_Search_Lucene_Index_Term((int)$c['id'], 'Idx');
             $terms = $index->termDocs($term);
             foreach ($terms as $value) {
                 $index->delete($value);
@@ -143,7 +141,7 @@ class IndexContactsScript
             foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation) {
                 try {
                     if ($key == "id") {
-                        $cIdx->addField(\Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (integer)$c['id']));
+                        $cIdx->addField(\Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (int)$c['id']));
                     } else {
                         $cIdx->addField(\Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
                     }
@@ -154,7 +152,7 @@ class IndexContactsScript
 
                 //Ajout des informations aux lexiques
                 if (isset($tabLexicon[$fieldIndexation['lexicon']])) {
-                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key]))  {
+                    if (!in_array($c[$key], $tabLexicon[$fieldIndexation['lexicon']]) && !empty($c[$key])) {
                         $tabLexicon[$fieldIndexation['lexicon']][] = $c[$key];
                     }
                 }
@@ -164,7 +162,7 @@ class IndexContactsScript
 
             $index->addDocument($cIdx);
             $index->commit();
-            if ((integer)$c['id'] % 50 === 0) {
+            if ((int)$c['id'] % 50 === 0) {
                 $index->optimize();
             }
 
@@ -182,26 +180,26 @@ class IndexContactsScript
 
         foreach ($tabLexicon as $keyLexicon => $l) {
             sort($l);
-            $lexiconFile = fopen($lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt", "w");
+            $lexiconFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
             if ($lexiconFile === false) {
-                echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory.DIRECTORY_SEPARATOR.$keyLexicon.".txt";
+                echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
                 return false;
             }
 
             foreach ($l as $entry) {
-                fwrite($lexiconFile, $entry."\n");
+                fwrite($lexiconFile, $entry . "\n");
             }
             fclose($lexiconFile);
         }
 
 
         $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
-	if ($flagFile == false) {
-	    echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
-	} else {
+        if ($flagFile == false) {
+            echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
+        } else {
             fwrite($flagFile, date("d-m-Y H:i:s"));
             fclose($flagFile);
-	}
+        }
         echo "Contacts indexation done !\n";
         return true;
     }

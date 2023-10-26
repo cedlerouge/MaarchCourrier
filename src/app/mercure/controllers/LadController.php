@@ -16,7 +16,6 @@ namespace Mercure\controllers;
 
 use Configuration\models\ConfigurationModel;
 use Contact\models\ContactModel;
-use Convert\controllers\FullTextController;
 use DateTime;
 use Group\controllers\PrivilegeController;
 use setasign\Fpdi\Tcpdf\Fpdi;
@@ -115,15 +114,15 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
             return $response->withStatus(400)->withJson(['errors' => 'L\'application Mercure5 n\'est pas présente dans la distribution ou n\'est pas exécutable']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
             return $response->withStatus(400)->withJson(['errors' => 'L\'application ugrep n\'est pas présente dans la distribution ou n\'est pas exécutable']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet')) {
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet')) {
             return $response->withStatus(400)->withJson(['errors' => 'L\'application uchardet n\'est pas présente dans la distribution ou n\'est pas exécutable']);
         }
         $testFile = LadController::generateTestPdf();
@@ -153,16 +152,16 @@ class LadController
             return ['errors' => 'LAD configuration file does not exist'];
         }
 
-        $tmpPath = $ladConfiguration['config']['mercureLadDirectory'] . '/IN/' . $customId.DIRECTORY_SEPARATOR;
+        $tmpPath = $ladConfiguration['config']['mercureLadDirectory'] . '/IN/' . $customId . DIRECTORY_SEPARATOR;
         if (!is_dir($tmpPath)) {
             mkdir($tmpPath, 0777);
-            mkdir($ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId.DIRECTORY_SEPARATOR, 0777);
+            mkdir($ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId . DIRECTORY_SEPARATOR, 0777);
         }
 
         $tmpFilename = 'lad' . rand() . '_' . rand();
 
-        $writeFileResult = file_put_contents($tmpPath.$tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
-        if (!$writeFileResult){
+        $writeFileResult = file_put_contents($tmpPath . $tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
+        if (!$writeFileResult) {
             return ['errors' => 'Document writing error in input directory'];
         }
 
@@ -177,14 +176,14 @@ class LadController
             'eventId'   => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
         ]);
 
-        $outXmlFilename =$ladConfiguration['config']['mercureLadDirectory'] . '/OUT/'.$customId.DIRECTORY_SEPARATOR.$tmpFilename.'.xml';
+        $outXmlFilename = $ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId . DIRECTORY_SEPARATOR . $tmpFilename . '.xml';
 
         $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
-            . $tmpPath.$tmpFilename . '.' . $aArgs['extension'] . ' '
-            . $outXmlFilename. ' '
+            . $tmpPath . $tmpFilename . '.' . $aArgs['extension'] . ' '
+            . $outXmlFilename . ' '
             . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.INI';
 
-        exec($command.' 2>&1', $output, $return);
+        exec($command . ' 2>&1', $output, $return);
 
         if ($return == 0) {
             $mappingMercure = $ladConfiguration['mappingLadFields'];
@@ -209,18 +208,22 @@ class LadController
                     $normalizationFormat = null;
 
                     if (isset($mappingMercure[$nameAttribute])) {
-                        if (isset($mappingMercure[$nameAttribute]['disabled']))
+                        if (isset($mappingMercure[$nameAttribute]['disabled'])) {
                             $disabledField = $mappingMercure[$nameAttribute]['disabled'];
-                        if (isset($mappingMercure[$nameAttribute]['normalizationRule']))
+                        }
+                        if (isset($mappingMercure[$nameAttribute]['normalizationRule'])) {
                             $normalizationRule = $mappingMercure[$nameAttribute]['normalizationRule'];
-                        if (isset($mappingMercure[$nameAttribute]['normalizationFormat']))
+                        }
+                        if (isset($mappingMercure[$nameAttribute]['normalizationFormat'])) {
                             $normalizationFormat = $mappingMercure[$nameAttribute]['normalizationFormat'];
-                        if (isset($mappingMercure[$nameAttribute]['key']))
+                        }
+                        if (isset($mappingMercure[$nameAttribute]['key'])) {
                             $nameAttribute = $mappingMercure[$nameAttribute]['key'];
+                        }
                     }
 
                     if (!$disabledField && (!array_key_exists($nameAttribute, $aReturn) || empty($aReturn[$nameAttribute]))) {
-                            $aReturn[$nameAttribute] = LadController::normalizeField((string)$field[0], $normalizationRule, $normalizationFormat);
+                        $aReturn[$nameAttribute] = LadController::normalizeField((string)$field[0], $normalizationRule, $normalizationFormat);
                     }
                 }
 
@@ -232,7 +235,7 @@ class LadController
             }
 
             //Suppression du fichier source
-            unlink($tmpPath.$tmpFilename . '.' . $aArgs['extension']);
+            unlink($tmpPath . $tmpFilename . '.' . $aArgs['extension']);
 
             //Suppression du fichier xml
             unlink($outXmlFilename);
@@ -290,7 +293,7 @@ class LadController
 
     private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null)
     {
-        switch ($normalizationRule){
+        switch ($normalizationRule) {
             case 'DATE':
                 $result = LadController::normalizeDate($fieldContent, $normalizationFormat);
                 break;
@@ -328,7 +331,7 @@ class LadController
         $countAllContacts = (int)$allContacts[0]['count'];
 
         $lexDirectory = $ladConfiguration['config']['mercureLadDirectory'] . "/Lexiques/ContactsLexiques" . DIRECTORY_SEPARATOR . $customId;
-        if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")){
+        if (is_file($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag")) {
             $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "r");
             if ($flagFile === false) {
                 $dateIndexation = "";
@@ -356,9 +359,11 @@ class LadController
         $result = LadController::replaceMonth($result);
 
         $result = LadController::getElementsDate($result);
-        if (!$result) return "";
+        if (!$result) {
+            return "";
+        }
 
-        $date = new DateTime($result['year']."-".$result['month']."-".$result['day']);
+        $date = new DateTime($result['year'] . "-" . $result['month'] . "-" . $result['day']);
 
         return $date->format($format);
     }
@@ -370,7 +375,7 @@ class LadController
         preg_match_all($strPattern, $dateString, $matches, PREG_SET_ORDER, 0);
 
         $dateElements = [];
-        if (isset($matches[0][1]) && !empty($matches[0][1])){
+        if (isset($matches[0][1]) && !empty($matches[0][1])) {
             $dateElements['day'] = $matches[0][1];
             $dateElements['month'] = $matches[0][2];
             $dateElements['year'] = $matches[0][3];
@@ -387,7 +392,8 @@ class LadController
         return str_replace($search, $replace, $content);
     }
 
-    private static function replaceMonth($dateString){
+    private static function replaceMonth($dateString)
+    {
         $search  = array('janvier', 'janv', 'fevrier', 'fev', 'mars', 'mar', 'avril', 'avr', 'mai', 'juin', 'juillet', 'juil', 'aout', 'aou', 'septembre', 'sept', 'octobre', 'oct', 'novembre', 'nov', 'decembre', 'dec');
         $replace = array('01', '01', '02', '02', '03', '03', '04', '04', '05', '06', '07', '07', '08', '08', '09', '09', '10', '10', '11', '11', '12', '12');
 
