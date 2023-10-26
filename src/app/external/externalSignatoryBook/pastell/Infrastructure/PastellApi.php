@@ -410,6 +410,7 @@ class PastellApi implements PastellApiInterface
     }
 
     /**
+     * Sending a folder with data and main file
      * @param PastellConfig|null $config
      * @param string $idDocument
      * @return bool
