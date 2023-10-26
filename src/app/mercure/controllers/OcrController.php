@@ -16,7 +16,6 @@ namespace Mercure\controllers;
 
 use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
-use Contact\models\ContactModel;
 use Convert\controllers\FullTextController;
 use Convert\models\AdrModel;
 use Docserver\controllers\DocserverController;
@@ -59,8 +58,7 @@ class OcrController
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],
                 'resId'      => $body['resId']
             ]);
-
-        } else if($body['type'] == 'attachment') {
+        } else if ($body['type'] == 'attachment') {
             $collId = 'attachments_coll';
             $infosDoc = AttachmentModel::getById([
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],
@@ -73,7 +71,7 @@ class OcrController
         //Test OCR file exists in parameters
         if (!empty($body['filename'])) {
             $testOcrFile = CoreConfigModel::getTmpPath() . "OCRFile_" . $body['filename'];
-            if(is_file($testOcrFile)){
+            if (is_file($testOcrFile)) {
                 $ocrConvert['convertedFile'] = $testOcrFile;
             }
         }
@@ -119,7 +117,7 @@ class OcrController
         }
         if ($collId == 'letterbox_coll') {
             $document = AdrModel::getConvertedDocumentById([
-                'select' => ['docserver_id','path', 'filename', 'fingerprint'],
+                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
                 'resId' => $body['resId'],
                 'collId' => $collId,
                 'type' => 'PDF'
@@ -145,7 +143,7 @@ class OcrController
             }
         } else {
             $document = AdrModel::getConvertedDocumentById([
-                'select' => ['docserver_id','path', 'filename', 'fingerprint'],
+                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
                 'resId' => $body['resId'],
                 'collId' => $collId,
                 'type' => 'PDF'
@@ -216,11 +214,11 @@ class OcrController
         } else {
             //Conversion en TIFF
             $tmpFile = CoreConfigModel::getTmpPath() . basename($pathToDocument) . rand() . '.tiff';
-            $cmdConvertTiff = "convert -density 300 ".escapeshellarg($pathToDocument)." -depth 8 -strip -background white -alpha off ".escapeshellarg($tmpFile);
+            $cmdConvertTiff = "convert -density 300 " . escapeshellarg($pathToDocument) . " -depth 8 -strip -background white -alpha off " . escapeshellarg($tmpFile);
 
             $outputConvert = null;
             $retvalConvert = null;
-            exec($cmdConvertTiff.' 2>&1', $outputConvert, $retvalConvert);
+            exec($cmdConvertTiff . ' 2>&1', $outputConvert, $retvalConvert);
 
             if (!is_file($tmpFile)) {
                 LogsController::add([
@@ -241,11 +239,11 @@ class OcrController
 
                 $outputConvert = null;
                 $retvalConvert = null;
-                exec($cmdConvertOcr.' 2>&1', $outputConvert, $retvalConvert);
+                exec($cmdConvertOcr . ' 2>&1', $outputConvert, $retvalConvert);
             }
         }
 
-        if (!is_file($tmpFileOcr.".pdf")) {
+        if (!is_file($tmpFileOcr . ".pdf")) {
             LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'mercure',
@@ -258,7 +256,7 @@ class OcrController
 
             return [
                 'errors' => '[OcrController] Error during conversion OCR',
-                'output' =>$outputConvert
+                'output' => $outputConvert
             ];
         }
 
@@ -273,6 +271,6 @@ class OcrController
             'eventId'   => "document : {$tmpFileOcr}.pdf"
         ]);
 
-        return ['output' => $outputConvert, 'return' => $retvalConvert, 'convertedFile' => $tmpFileOcr.".pdf"];
+        return ['output' => $outputConvert, 'return' => $retvalConvert, 'convertedFile' => $tmpFileOcr . ".pdf"];
     }
 }
