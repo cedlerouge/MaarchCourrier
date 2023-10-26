@@ -101,7 +101,7 @@ class IndexContactsScript
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
             \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
         } catch (\Exception $e) {
-            echo "/!\\ Open index directory failed \n";
+            echo $e->getMessage();
             return false;
         }
 
