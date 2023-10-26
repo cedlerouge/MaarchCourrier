@@ -330,10 +330,10 @@ class PastellApi implements PastellApiInterface
         } else {
             $return =
                 [
-                    'info'            => $response['response']['info'] ?? '',
-                    'data'            => $response['response']['data'] ?? '',
-                    'actionPossibles' => $response['response']['action_possible'] ?? '',
-                    'lastAction'      => $response['response']['last_action'] ?? ''
+                    'info'            => $response['response']['info'] ?? [],
+                    'data'            => $response['response']['data'] ?? [],
+                    'actionPossibles' => $response['response']['action_possible'] ?? [],
+                    'lastAction'      => $response['response']['last_action'] ?? []
                 ];
         }
         return $return;
