@@ -25,6 +25,7 @@ class PastellApiMock implements PastellApiInterface
     public array $dataFolder = [];
     public array $documentsDownload = [];
     public object $journalXml;
+    public array $orientation;
 
 
     /**
@@ -144,6 +145,11 @@ class PastellApiMock implements PastellApiInterface
         return $this->documentsDownload;
     }
 
+    /**
+     * @param PastellConfig $config
+     * @param string $idDocument
+     * @return bool
+     */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
         return true;
@@ -152,10 +158,15 @@ class PastellApiMock implements PastellApiInterface
     /**
      * @param PastellConfig $config
      * @param string $idFolder
-     * @return bool
+     * @return array
      */
-    public function orientation(PastellConfig $config, string $idFolder): bool
+    public function orientation(PastellConfig $config, string $idFolder): array
     {
-        return true;
+        return $this->orientation;
+    }
+
+    public function sendIparapheur(?PastellConfig $config, string $idDocument)
+    {
+        // TODO: Implement sendIparapheur() method.
     }
 }
