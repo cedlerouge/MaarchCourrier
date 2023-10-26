@@ -57,7 +57,10 @@ class RetrieveFromPastell
                 $idsToRetrieve[$key]['status'] = 'waiting';
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'])) {
-                    $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+                    $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+                    if ($verif !== true) {
+                            return ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (<termine>) ne permet pas de déclencher cette action'];
+                    }
                 }
                 $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
                 $idsToRetrieve[$key] = array_merge($value, $result);
