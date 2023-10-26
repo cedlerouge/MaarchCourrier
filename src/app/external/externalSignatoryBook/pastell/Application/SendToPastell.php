@@ -99,6 +99,10 @@ class SendToPastell
                 } else {
                     $this->processVisaWorkflow->processVisaWorkflow($resId, false);
                 }
+                $info = $this->pastellApi->getFolderDetail($config, $idFolder);
+                if (in_array('send-iparapheur', $info['actionPossibles'])) {
+                    $this->pastellApi->sendIparapheur($config, $idFolder);
+                }
             }
         }
         return ['idFolder' => $idFolder];

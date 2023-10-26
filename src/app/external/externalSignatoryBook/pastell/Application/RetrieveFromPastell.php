@@ -53,14 +53,15 @@ class RetrieveFromPastell
     {
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
-            if (in_array('verif-iparapheur', $info['actionPossibles'])) {
-                 $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+            if (!empty($info['error'])) {
+                $idsToRetrieve[$key]['status'] = 'waiting';
+            } else {
+                if (in_array('verif-iparapheur', $info['actionPossibles'])) {
+                    $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+                }
+                $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
+                $idsToRetrieve[$key] = array_merge($value, $result);
             }
-            if(in_array('send-iparapheur', $info['actionsPossibles'])) {
-                $this->pastellApi->sendIparapheur($this->config, $value['external_id']);
-            }
-            $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
-            $idsToRetrieve[$key] = array_merge($value, $result);
         }
         return $idsToRetrieve;
     }

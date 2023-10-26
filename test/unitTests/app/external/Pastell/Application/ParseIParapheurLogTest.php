@@ -263,7 +263,6 @@ class ParseIParapheurLogTest extends TestCase
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
 
         $result = $parseIParapheurLog->handleRefused('Un nom', 'une note');
 

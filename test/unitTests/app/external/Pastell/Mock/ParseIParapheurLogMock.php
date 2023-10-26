@@ -30,6 +30,15 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
             ];
         }
 
+        if ($resId === 152) {
+            return [
+                'res_id'      => 152,
+                'external_id' => 'chuchu',
+                'status'    =>  'refused',
+                'content'  => 'Un nom : une note'
+            ];
+        }
+
         return [
             'status' => 'waiting'
         ];
