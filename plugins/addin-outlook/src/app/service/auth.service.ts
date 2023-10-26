@@ -97,8 +97,7 @@ export class AuthService {
                     tap((data: any) => {
                         this.applicationName = data.applicationName;
                         this.appUrl = data.maarchUrl;
-                        // this.authMode = data.authMode;
-                        this.authMode = 'ldap';
+                        this.authMode = data.authMode;
                         this.setAppSession(data.instanceId);
                         resolve(true);
                     }),
