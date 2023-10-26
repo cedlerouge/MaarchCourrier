@@ -20,7 +20,12 @@ class PastellApiMock implements PastellApiInterface
     public array $iParapheurType = ['XELIANS COURRIER', 'TEST', 'PASTELL'];
     public array $folder = ['idFolder' => 'hfqvhv'];
     public array $iParapheurSousType = ['courrier', 'réponse au citoyen'];
-    public array $documentDetails = [];
+    public array $documentDetails = [
+        'info'            => [],
+        'data'            => [],
+        'actionPossibles' => ['verif-iparapheur'],
+        'lastAction'      => []
+    ];
     public array $mainFile = [];
     public array $dataFolder = [];
     public array $documentsDownload = [];
@@ -122,6 +127,10 @@ class PastellApiMock implements PastellApiInterface
      */
     public function getFolderDetail(PastellConfig $config, string $idFolder): array
     {
+        if ($idFolder === 'blabla') {
+            return ["error" => 'An error occurred !'];
+        }
+
         return $this->documentDetails;
     }
 

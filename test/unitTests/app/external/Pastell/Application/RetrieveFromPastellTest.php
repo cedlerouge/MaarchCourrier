@@ -50,10 +50,6 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
-
-    /**
-     * @return void
-     */
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -92,6 +88,59 @@ class RetrieveFromPastellTest extends TestCase
                     'format'      => 'pdf',
                     'encodedFile' => 'toto'
                 ],
+            ],
+            $result
+        );
+    }
+
+    public function testRetrieveOneResourceFoundButNotFinishOneSignedAndOneRefused(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
+        $idsToRetrieve = [
+            12  => [
+                'res_id'      => 12,
+                'external_id' => 'bloblo'
+            ],
+            42  => [
+                'res_id'      => 42,
+                'external_id' => 'djqfdh'
+            ],
+            152 => [
+                'res_id'      => 152,
+                'external_id' => 'chuchu'
+            ]
+        ];
+
+        $result = $retrieveToPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            [
+                12  => [
+                    'res_id'      => 12,
+                    'external_id' => 'bloblo',
+                    'status'      => 'waiting',
+                ],
+                42  => [
+                    'res_id'      => 42,
+                    'external_id' => 'djqfdh',
+                    'status'      => 'validated',
+                    'format'      => 'pdf',
+                    'encodedFile' => 'toto'
+                ],
+                152 => [
+                    'res_id'      => 152,
+                    'external_id' => 'chuchu',
+                    'status'    =>  'refused',
+                    'content'  => 'Un nom : une note'
+                ]
             ],
             $result
         );
