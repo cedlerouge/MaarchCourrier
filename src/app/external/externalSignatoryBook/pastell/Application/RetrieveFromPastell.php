@@ -45,7 +45,6 @@ class RetrieveFromPastell
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->processVisaWorkflow = $processVisaWorkflow;
         $this->parseIParapheurLog = $parseIParapheurLog;
-
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
@@ -56,6 +55,9 @@ class RetrieveFromPastell
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
             if (in_array('verif-iparapheur', $info['actionPossibles'])) {
                  $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
+            }
+            if(in_array('send-iparapheur', $info['actionsPossibles'])) {
+                $this->pastellApi->sendIparapheur($this->config, $value['external_id']);
             }
             $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
             $idsToRetrieve[$key] = array_merge($value, $result);

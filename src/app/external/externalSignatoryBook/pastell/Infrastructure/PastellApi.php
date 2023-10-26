@@ -408,4 +408,21 @@ class PastellApi implements PastellApiInterface
 
         return $response['code'] == 200;
     }
+
+    /**
+     * @param PastellConfig|null $config
+     * @param string $idDocument
+     * @return bool
+     */
+    public function sendIparapheur(?PastellConfig $config, string $idDocument): bool
+    {
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/send-iparapheur',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+        ]);
+
+        return $response['code'] == 200;
+    }
 }
