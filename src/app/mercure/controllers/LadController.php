@@ -72,6 +72,10 @@ class LadController
             ]);
         }
 
+        if (!empty($ladResult['errors'])) {
+            return $response->withStatus(400)->withJson(['errors' => $ladResult['errors']]);
+        }
+
         return $response->withJson($ladResult);
     }
 
@@ -235,8 +239,14 @@ class LadController
         } else {
             $tabErrors = [];
 
+            $tagsErrToCheck = [
+                'error',
+                'permission denied',
+                'sh: 1'
+            ];
+
             foreach ($output as $numLine => $lineOutput) {
-                if (strpos($lineOutput, 'error') || strpos($lineOutput, 'permission denied')) {
+                if (LadController::contains($lineOutput, $tagsErrToCheck)) {
                     $tabErrors[] = "[" . $numLine . "]" . $lineOutput;
                 }
             }
@@ -266,6 +276,16 @@ class LadController
         ]);
 
         return $aReturn;
+    }
+
+    private static function contains($strToCheck, array $arrTags)
+    {
+        foreach ($arrTags as $tag) {
+            if (stripos($strToCheck, $tag) !== false) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static function normalizeField($fieldContent, $normalizationRule, $normalizationFormat = null)

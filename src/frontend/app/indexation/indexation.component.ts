@@ -334,7 +334,7 @@ export class IndexationComponent implements OnInit, OnDestroy {
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
-                this.dialogRef.close();
+                this.indexingForm.loading = false;
                 return of(false);
             })
         ).subscribe();
