@@ -97,11 +97,14 @@ class SendToPastell
                 if (!empty($orientationResult['error'])) {
                     return $orientationResult['error'];
                 } else {
+                    $info = $this->pastellApi->getFolderDetail($config, $idFolder);
+                    if (in_array('send-iparapheur', $info['actionPossibles'])) {
+                        $sendIparapheur = $this->pastellApi->sendIparapheur($config, $idFolder);
+                        if (!$sendIparapheur) {
+                            return ['error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'];
+                        }
+                    }
                     $this->processVisaWorkflow->processVisaWorkflow($resId, false);
-                }
-                $info = $this->pastellApi->getFolderDetail($config, $idFolder);
-                if (in_array('send-iparapheur', $info['actionPossibles'])) {
-                    $this->pastellApi->sendIparapheur($config, $idFolder);
                 }
             }
         }
