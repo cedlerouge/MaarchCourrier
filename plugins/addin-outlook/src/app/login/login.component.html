@@ -1,5 +1,6 @@
 <mat-spinner *ngIf="loading"></mat-spinner>
-<form *ngIf="!loading" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+<app-maarch-message *ngIf="authService.authMode !== 'standard'" [content]="'lang.unsupportedAuthMode' | translate : {authMode : authService.authMode}" mode="danger"></app-maarch-message>
+<form *ngIf="!loading && authService.authMode === 'standard'" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <mat-form-field appearance="fill" style="width:100%">
         <mat-label>{{ 'lang.login' | translate }}</mat-label>
         <input matInput formControlName="login">

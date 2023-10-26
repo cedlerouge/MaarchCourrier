@@ -45,11 +45,18 @@ export class PanelComponent implements OnInit {
         public authService: AuthService,
         public translate: TranslateService,
         public functions: FunctionsService
-    ) { }
+    ) {
+        this.authService.catchEvent().pipe(
+            filter((res: string) => res === 'refresh token failed'), 
+            tap(() => {
+                this.isConnected = false;
+            })
+        ).subscribe()
+     }
 
     async ngOnInit() {
         await this.authService.getAppInfo();
-        this.isConnected = this.authService.isAuth();
+        this.isConnected = (this.authService.isAuth() && this.authService.authMode === 'standard');
         if (this.isConnected) {
             await this.initMailInfo();
         }

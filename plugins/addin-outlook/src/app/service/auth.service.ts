@@ -14,6 +14,7 @@ export class AuthService {
     applicationName: string = 'Maarch Courrier';
     appUrl: string = null;
     user: any = {};
+    authMode: string = '';
 
     connectionTry: any = null;
 
@@ -96,6 +97,8 @@ export class AuthService {
                     tap((data: any) => {
                         this.applicationName = data.applicationName;
                         this.appUrl = data.maarchUrl;
+                        // this.authMode = data.authMode;
+                        this.authMode = 'ldap';
                         this.setAppSession(data.instanceId);
                         resolve(true);
                     }),
@@ -119,6 +122,7 @@ export class AuthService {
                     this.updateUserInfo(data.token);
                 }),
                 catchError((error) => {
+                    this.setEvent('refresh token failed');
                     return of(false);
                 })
             );
