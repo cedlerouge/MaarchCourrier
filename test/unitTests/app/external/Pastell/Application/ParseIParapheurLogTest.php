@@ -275,4 +275,33 @@ class ParseIParapheurLogTest extends TestCase
             $result
         );
     }
+    /**
+     * @return void
+     */
+    public function testHandleValidateRetrieveTheFileInBase64(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $resId = 42;
+        $idFolder = 'djqfdh';
+
+
+        $result = $parseIParapheurLog->handleValidate($resId, $idFolder, false);
+
+        $this->assertNotEmpty($result);
+        $this->assertSame(
+            [
+                'status'      => 'validated',
+                'format'      => 'pdf',
+                'encodedFile' => 'toto'
+            ],
+            $result
+        );
+    }
 }
