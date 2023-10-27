@@ -31,6 +31,7 @@ class PastellApiMock implements PastellApiInterface
     public array $documentsDownload = [];
     public object $journalXml;
     public array $orientation = [];
+    public bool $verificationIparapheur = true;
 
 
     /**
@@ -161,7 +162,7 @@ class PastellApiMock implements PastellApiInterface
      */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
-        return true;
+        return $this->verificationIparapheur;
     }
 
     /**
