@@ -328,7 +328,6 @@ export class OtherParametersComponent implements OnInit {
         this.getDoctypes();
         this.getIndexingModels();
         this.getAttachmentTypes();
-        debugger;
         await this.getWatermarkConfiguration();
         await this.getEditorsConfiguration();
         await this.getAddinOutlookConfConfiguration();
