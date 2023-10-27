@@ -30,7 +30,7 @@ class PastellApiMock implements PastellApiInterface
     public array $dataFolder = [];
     public array $documentsDownload = [];
     public object $journalXml;
-    public array $orientation;
+    public array $orientation = [];
 
 
     /**
