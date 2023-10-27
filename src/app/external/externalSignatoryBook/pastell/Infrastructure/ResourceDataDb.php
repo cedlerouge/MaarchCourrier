@@ -31,6 +31,6 @@ class ResourceDataDb implements ResourceDataInterface
             'select' => ['res_id', 'path', 'filename', 'docserver_id', 'format', 'category_id', 'external_id', 'integrations', 'subject'],
             'where'  => ['res_id = ?'],
             'data'   => [$resId]
-        ]);
+        ])[0];
     }
 }

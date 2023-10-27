@@ -29,6 +29,7 @@ export class IParaphComponent implements OnInit {
     }
 
     isValidParaph() {
+        console.log('ATTCH', this.additionalsInfos.attachments);
         if (this.additionalsInfos.attachments.length === 0) {
             return false;
         } else {

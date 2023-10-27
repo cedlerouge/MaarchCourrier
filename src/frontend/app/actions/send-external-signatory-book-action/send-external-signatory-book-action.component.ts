@@ -136,6 +136,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         let realResSelected: string[];
         let datas: any;
         if (this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled)) {
+            this.authService.externalSignatoryBook.id = 'iParapheur';
             realResSelected = this[this.authService.externalSignatoryBook.id].getRessources();
             datas = this[this.authService.externalSignatoryBook.id].getDatas();
         } else {
@@ -171,10 +172,11 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
                 this.externalSignatoryBookComponent?.appExternalVisaWorkflow.getUserOtpsWorkflow()
             );
         } else {
+            console.log(this.authService);
             if (this[this.authService.externalSignatoryBook?.id] !== undefined) {
                 return this[this.authService.externalSignatoryBook?.id].isValidParaph();
             } else {
-                return false;
+                return true;
             }
         }
     }
