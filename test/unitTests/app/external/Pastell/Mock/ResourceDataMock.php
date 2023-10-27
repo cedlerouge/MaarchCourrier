@@ -18,7 +18,13 @@ class ResourceDataMock implements ResourceDataInterface
     public function getMainResourceData(int $resId): array
     {
         return [
-            'subject' => 'blabablblalba'
+            'res_id' => 42,
+            'subject'      => 'blabablblalba',
+            'integrations' => [
+                'inShipping' => false,
+                'inSignatureBook' => true
+            ],
+            'external_id'  => ''
         ];
     }
 }

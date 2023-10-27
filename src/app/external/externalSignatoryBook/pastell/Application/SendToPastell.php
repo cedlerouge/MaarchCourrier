@@ -68,21 +68,18 @@ class SendToPastell
         $idFolder = $this->pastellApi->createFolder($config);
         if (empty($idFolder)) {
             return ['error' => 'Folder creation has failed'];
-        } elseif (!empty($idFolder['errors'])) {
-            return ['error' => $idFolder['errors']];
+        } elseif (!empty($idFolder['error'])) {
+            return ['error' => $idFolder['error']];
         }
         $idFolder = $idFolder['idFolder'];
+        //Check iParapheur subtype
+        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
+        if (!empty($iParapheurSousType['error'])) {
+           return ['error' => $iParapheurSousType['error']];
+        } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
+          return ['error' => 'Subtype does not exist in iParapheur'];
+        }
 
-        /***
-         * patch
-         * send file
-         *
-         * annexe -> plus tard
-         *
-         * action envoi iparapheur
-         *
-         *  processVisaWorkflow
-         */
         $editResult = $this->pastellApi->editFolder($config, $idFolder, $title, $sousType);
         if (!empty($editResult['error'])) {
             return $editResult['error'];
@@ -128,13 +125,6 @@ class SendToPastell
 
         $config = $this->pastellConfig->getPastellConfig();
 
-        //Check iParapheur subtype
-        //$iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
-        //if (!empty($iParapheurSousType['error'])) {
-        //    return $iParapheurSousType['error'];
-        //} elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-          //  return ['error' => 'Subtype does not exist in iParapheur'];
-        //} else {
         $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
 
             return [
@@ -168,10 +158,9 @@ class SendToPastell
 
         // Checking if main document is integrated
         if (!empty($mainResource)) {
-            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
-            $externalId = json_decode($mainResource['external_id'], true);
+            $mainDocumentIntegration = $mainResource['integrations'];
 
-            if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
+            if ($mainDocumentIntegration['inSignatureBook'] && empty($mainResource['external_id'])) {
                 $resId = $mainResource['res_id'];
                 $title = $mainResource['subject'];
                 // Getting path of the main file
@@ -223,5 +212,6 @@ class SendToPastell
 //
 //            $this->sendFolderToPastell($resId, $title, $collId);
 //        }
+
     }
 }
