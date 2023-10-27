@@ -32,6 +32,12 @@ export class ExternalSignatoryBookManagerService {
                 this.signatoryBookEnabled = this.authService.externalSignatoryBook?.id;
                 this.serviceInjected = this.injector.get<FastParapheurService>(FastParapheurService);
             }
+        } else if (this.authService.externalSignatoryBook?.id === 'pastell') {
+            this.authService.externalSignatoryBook = {
+                id: 'iParapheur',
+                from: this.authService.externalSignatoryBook.id,
+                integratedWorkflow: this.authService.externalSignatoryBook.integratedWorkflow
+            };
         }
     }
 
