@@ -20,35 +20,6 @@ use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
 {
-    /**
-     * @return void
-     */
-    public function testHandleValidateRetrieveTheFileInBase64(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
-            'encodedFile' => 'toto'
-        ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $resId = 42;
-        $idFolder = 'djqfdh';
-
-
-        $result = $parseIParapheurLog->handleValidate($resId, $idFolder, false);
-
-        $this->assertNotEmpty($result);
-        $this->assertSame(
-            [
-                'status'      => 'validated',
-                'format'      => 'pdf',
-                'encodedFile' => 'toto'
-            ],
-            $result
-        );
-    }
 
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
@@ -138,10 +109,35 @@ class RetrieveFromPastellTest extends TestCase
                 152 => [
                     'res_id'      => 152,
                     'external_id' => 'chuchu',
-                    'status'    =>  'refused',
-                    'content'  => 'Un nom : une note'
+                    'status'      => 'refused',
+                    'content'     => 'Un nom : une note'
                 ]
             ],
+            $result
+        );
+    }
+
+    // ajout de test pour tester quand vérif est false
+    public function testRetrieveReturnAnErrorWhenVerifIParapheurIsNotTrue(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellApiMock->verificationIparapheur = false;
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
+        $idsToRetrieve = [
+            12 => [
+                'res_id'      => 12,
+                'external_id' => 'test'
+            ]
+        ];
+
+        $result = $retrieveToPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (termine) ne permet pas de déclencher cette action'],
             $result
         );
     }
