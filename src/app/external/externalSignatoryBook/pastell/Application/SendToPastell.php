@@ -95,7 +95,7 @@ class SendToPastell
                 // Sending folder to iParapheur
                 $orientationResult = $this->pastellApi->orientation($config, $idFolder);
                 if (!empty($orientationResult['error'])) {
-                    return $orientationResult['error'];
+                    return ['error' => $orientationResult['error']];
                 } else {
                     $info = $this->pastellApi->getFolderDetail($config, $idFolder);
                     if (in_array('send-iparapheur', $info['actionPossibles'])) {
@@ -129,13 +129,13 @@ class SendToPastell
         $config = $this->pastellConfig->getPastellConfig();
 
         //Check iParapheur subtype
-        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
-        if (!empty($iParapheurSousType['error'])) {
-            return $iParapheurSousType['error'];
-        } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-            return ['error' => 'Subtype does not exist in iParapheur'];
-        } else {
-            $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
+        //$iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
+        //if (!empty($iParapheurSousType['error'])) {
+        //    return $iParapheurSousType['error'];
+        //} elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
+          //  return ['error' => 'Subtype does not exist in iParapheur'];
+        //} else {
+        $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
 
             return [
                 'sended' => [
@@ -145,7 +145,7 @@ class SendToPastell
                 ]
             ];
         }
-    }
+    //}
 
     /**
      * Getting data, file content and infos fom MC to be sent
