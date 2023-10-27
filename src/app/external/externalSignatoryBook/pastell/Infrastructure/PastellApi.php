@@ -295,7 +295,7 @@ class PastellApi implements PastellApiInterface
             'method'    => 'POST'
         ]);
 
-        if ($response['code'] > 200) {
+        if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
             } else {
@@ -400,14 +400,14 @@ class PastellApi implements PastellApiInterface
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
         $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',
         ]);
 
 
-        return $response['code'] == 200;
+        return $response['code'] == 201;
     }
 
     /**

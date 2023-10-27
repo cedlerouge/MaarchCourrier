@@ -76,9 +76,9 @@ class ParseIParapheurLog
                 $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
                 break;
             }
-            if (empty($return)) {
-                $return = ['status' => 'waiting'];
-            }
+        }
+        if (empty($return)) {
+            $return = ['status' => 'waiting'];
         }
 
         return $return;

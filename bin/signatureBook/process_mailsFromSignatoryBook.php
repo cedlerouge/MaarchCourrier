@@ -229,8 +229,8 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 } elseif ($configRemoteSignatoryBook['id'] == 'xParaph') {
     $retrievedMails = XParaphController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
-    $retrieveFromPastell = RetrieveFromPastellFactory::create();
-    $retrievedMails = $retrieveFromPastell->retrieve($idsToRetrieve);
+   // $retrieveFromPastell = RetrieveFromPastellFactory::create();
+   // $retrievedMails = $retrieveFromPastell->retrieve($idsToRetrieve);
 }
 
 Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated documents from {$configRemoteSignatoryBook['id']}"]);
