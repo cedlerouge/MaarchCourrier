@@ -13,7 +13,9 @@
         <div id="adminMenu" *ngIf="!headerService.hideSideBar" style="display: contents;"></div>
     </mat-sidenav>
     <mat-sidenav-content>
-        <router-outlet></router-outlet>
+        <div style="display: contents;" *ngIf="coreLoaded">
+            <router-outlet></router-outlet>
+        </div>
     </mat-sidenav-content>
 </mat-sidenav-container>
 

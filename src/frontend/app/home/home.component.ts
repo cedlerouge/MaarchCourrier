@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,6 +10,7 @@ import { FeatureTourService } from '@service/featureTour.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { FunctionsService } from '@service/functions.service';
 import { catchError, of, tap } from 'rxjs';
+import { PluginManagerService } from '@service/plugin-manager.service';
 
 declare let $: any;
 
@@ -19,6 +20,7 @@ declare let $: any;
 })
 export class HomeComponent implements OnInit, AfterViewInit {
 
+    @ViewChild('remotePlugin2', { read: ViewContainerRef, static: true }) remotePlugin2: ViewContainerRef;
 
     loading: boolean = false;
 
@@ -35,10 +37,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
         private headerService: HeaderService,
         private router: Router,
         private featureTourService: FeatureTourService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private pluginManagerService: PluginManagerService
     ) { }
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
+        const comp = await this.pluginManagerService.initPlugin('outlook-plugin', this.remotePlugin2);
+        comp.maarchPluginService.test();
+
         this.headerService.setHeader(this.translate.instant('lang.home'));
 
         this.http.get('../rest/home').pipe(

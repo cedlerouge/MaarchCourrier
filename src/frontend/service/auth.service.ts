@@ -12,6 +12,7 @@ import { FunctionsService } from './functions.service';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { AdministrationService } from '@appRoot/administration/administration.service';
+import { PluginManagerService } from './plugin-manager.service';
 
 @Injectable({
     providedIn: 'root'
@@ -29,6 +30,7 @@ export class AuthService {
     noInstall: boolean = false;
     externalSignatoryBook: any = null;
     idleTime: number; // Inactivity time
+    plugins: string[];
 
     public userActivitySubscription: Subscription;
     public inactivitySubscription: Subscription;
@@ -44,6 +46,7 @@ export class AuthService {
         private localStorage: LocalStorageService,
         private privilegeService: PrivilegeService,
         private functionsService: FunctionsService,
+        private pluginManagerService: PluginManagerService,
         public dialog: MatDialog,
         public translate: TranslateService,
         public adminService: AdministrationService,
@@ -273,6 +276,7 @@ export class AuthService {
                         this.authUri = data.authUri;
                         this.maarchUrl = data.maarchUrl;
                         this.idleTime = data.idleTime;
+                        this.plugins = data.plugins;
 
                         if (this.authMode === 'keycloak') {
                             const keycloakState = this.localStorage.get('keycloakState');
@@ -282,6 +286,7 @@ export class AuthService {
                         }
                         this.applyMinorUpdate();
                         this.checkAppSecurity();
+                        this.pluginManagerService.storePlugins(data.plugins);
                     }),
                     catchError((err: any) => {
                         console.log(err);

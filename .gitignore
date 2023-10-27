@@ -13,4 +13,5 @@ node_modules/
 /tmp/*
 # vendor/ is not versioned on develop, but should be versioned in release branches
 vendor/
-coverage
+coverage/
+plugins/maarch-plugins/

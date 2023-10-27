@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ComponentRef, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { FunctionsService } from '@service/functions.service';
 import { TimeLimitPipe } from '../../plugins/timeLimit.pipe';
 import { TranslateService } from '@ngx-translate/core';
 import { LocalStorageService } from '@service/local-storage.service';
+import { PluginManagerService } from '@service/plugin-manager.service';
 
 @Component({
     templateUrl: 'login.component.html',
@@ -20,6 +21,8 @@ import { LocalStorageService } from '@service/local-storage.service';
     providers: [TimeLimitPipe]
 })
 export class LoginComponent implements OnInit {
+    @ViewChild('remotePlugin', { read: ViewContainerRef, static: true }) remotePlugin: ViewContainerRef;
+
     loginForm: UntypedFormGroup;
 
     loading: boolean = false;
@@ -40,10 +43,13 @@ export class LoginComponent implements OnInit {
         private notify: NotificationService,
         public dialog: MatDialog,
         private formBuilder: UntypedFormBuilder,
-        private timeLimit: TimeLimitPipe
+        private timeLimit: TimeLimitPipe,
+        private pluginManagerService: PluginManagerService
     ) { }
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
+        await this.pluginManagerService.initPlugin('sign-plugin', this.remotePlugin);
+
         this.headerService.hideSideBar = true;
         this.loginForm = this.formBuilder.group({
             login: [null, Validators.required],

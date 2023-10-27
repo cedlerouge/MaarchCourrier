@@ -1,14 +1,7 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { enableProdMode } from '@angular/core';
-
-// import 'hammerjs';
-
-import { AppModule } from './app/app.module';
-import { environment } from './environments/environment';
-
-if (environment.production) {
-    window.console.debug = function() {};
-    enableProdMode();
-}
-
-platformBrowserDynamic().bootstrapModule(AppModule);
+// import { loadRemoteEntry } from "@angular-architects/module-federation";
+Promise.all([
+    // load remote necessary distant module.
+    // loadRemoteEntry({ type: 'module', remoteEntry: 'http://localhost:4201/remoteEntry.js'})
+])
+    .then(() => import('./bootstrap'))
+    .catch(err => console.error('error', err));

@@ -11,6 +11,7 @@ import { environment } from '../environments/environment';
 import { TranslateService } from '@ngx-translate/core';
 import { DateAdapter } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
+import { PluginManagerService } from '@service/plugin-manager.service';
 
 /** Custom options the configure the tooltip's default show/hide delays. */
 export const myCustomTooltipDefaults: MatTooltipDefaultOptions = {
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     debugMode: boolean = false;
     loading: boolean = true;
+    coreLoaded: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -45,6 +47,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         public authService: AuthService,
         private adapter: DateAdapter<any>,
         public dialog: MatDialog,
+        private pluginManagerService: PluginManagerService
     ) {
         translate.setDefaultLang('fr');
         iconReg.addSvgIcon('maarchLogo', sanitizer.bypassSecurityTrustResourceUrl('../rest/images?image=onlyLogo'));
@@ -72,6 +75,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.translate.get('lang.langISO').subscribe((res: string) => {
             this.adapter.setLocale(res);
         });
+        this.coreLoaded = true;
     }
 
     ngAfterViewInit(): void {
