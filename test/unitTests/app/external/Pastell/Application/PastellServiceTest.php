@@ -13,6 +13,9 @@ use ExternalSignatoryBook\pastell\Application\SendToPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 
 class PastellServiceTest extends TestCase
@@ -448,11 +451,20 @@ class PastellServiceTest extends TestCase
         $pastellApiMock->folder = [];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertFalse($result);
+
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
+
+        $this->assertSame(['error' => 'Folder creation has failed'],$result);
     }
 
     /**
@@ -461,14 +473,22 @@ class PastellServiceTest extends TestCase
     public function testConfigurationIsNotValidIfIdFolderIsNotValid(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = ['errors' => 'Erreur lors de la récupération de l\'id du dossier'];
+        $pastellApiMock->folder = ['error' => 'Erreur lors de la récupération de l\'id du dossier'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertFalse($result);
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
+
+        $this->assertSame(['error' => 'Erreur lors de la récupération de l\'id du dossier'], $result);
     }
 
     /**
@@ -478,30 +498,45 @@ class PastellServiceTest extends TestCase
     public function testSendToPastellIsValidIfIdFolderIsNotMissing(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = [];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertFalse($result);
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
+
+        $this->assertSame(['idFolder' => 'hfqvhv'],$result);
     }
 
     /**
      * @return void
      */
-    public function testSendToPastellIsNotValidIfIparapheurSousTypeMissing(): void
+    public function testSendToPastellIsNotValidIfIparapheurSousTypeReturnAnError(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = [];
+        $pastellApiMock->iParapheurSousType = ['error' => 'An error occurred !'];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertFalse($result);
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
+
+        $this->assertSame(['error' => 'An error occurred !'],$result);
     }
 
     /**
@@ -522,27 +557,20 @@ class PastellServiceTest extends TestCase
             'courrrier'
         );
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertFalse($result);
-    }
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
 
-    /**
-     * @return void
-     */
-    public function testConfigurationIsNotValidIfIparapheurSousTypeIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->iParapheurSousType = ['errors' => 'Erreur lors de la récupération des sous types de iParapheur'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $this->assertSame(['error' => 'Subtype does not exist in iParapheur'],$result);
 
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
     }
 
     /**
@@ -553,10 +581,19 @@ class PastellServiceTest extends TestCase
         $pastellApiMock = new PastellApiMock();
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock, $resourceData, $resourceFile, $processVisaWorkflow);
 
-        $result = $sendToPastell->sendFolderToPastell();
+        $resId = 42;
+        $title = 'blablabla';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
 
-        $this->assertTrue($result);
+        $result = $sendToPastell->sendFolderToPastell($resId,$title, $sousType, $filePath);
+
+
+        $this->assertSame(['idFolder' => 'hfqvhv'],$result);
     }
 }

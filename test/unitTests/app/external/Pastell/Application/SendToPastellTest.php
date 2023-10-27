@@ -27,9 +27,6 @@ class SendToPastellTest extends TestCase
     public function testSendFolderReturnsIdFolderWhenCreated(): void
     {
         $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
-            'encodedFile' => 'toto'
-        ];
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
         $resourceData = new ResourceDataMock();
@@ -89,8 +86,10 @@ class SendToPastellTest extends TestCase
             $resourceFile,
             $processVisaWorkflow
         );
+        $resId = 42;
+        $sousType = 'courrier';
 
-        $result = $sendToPastell->sendResource(42, 'courrier');
+        $result = $sendToPastell->sendResource($resId, $sousType);
 
         $this->assertSame(['idFolder' => 'hfqvhv'], $result);
     }

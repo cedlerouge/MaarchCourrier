@@ -288,11 +288,11 @@ $validateVisaWorkflow = [];
 $nbAttachRetrieved = 0;
 $nbDocRetrieved = 0;
 
-$nbRetrievedMailsAttach = count($retrievedMails['noVersion']);
+$nbRetrievedMailsAttach = count($retrievedMails['noVersion'] ?? []);
 
 Bt_writeLog(['level' => 'INFO', 'message' => "{$nbRetrievedMailsAttach} attachments to process"]);
 
-foreach ($retrievedMails['noVersion'] as $resId => $value) {
+foreach ($retrievedMails['noVersion'] ?? [] as $resId => $value) {
     Bt_writeLog(['level' => 'INFO', 'message' => "Attachment : {$resId} ({$configRemoteSignatoryBook['id']} : {$value['external_id']})"]);
 
     $historyIdentifier = $value['identifier'] ?? $resId . ' (res_attachments)';
