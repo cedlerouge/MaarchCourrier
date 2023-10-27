@@ -58,6 +58,7 @@ export class PanelComponent implements OnInit {
         await this.authService.getAppInfo();
         this.isConnected = (this.authService.isAuth() && this.authService.authMode === 'standard');
         if (this.isConnected) {
+            this.authService.updateUserInfo(this.authService.getToken());
             await this.initMailInfo();
         }
         this.status = 'end';
