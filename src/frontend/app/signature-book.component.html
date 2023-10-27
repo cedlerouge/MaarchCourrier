@@ -98,9 +98,13 @@
                         style="position: absolute;right: 6px;top: 5px;">{{signatureBook.documents.length - 1}}</sup>
                     <i *ngIf="showTopLeftPanel" class="fa fa-chevron-up" aria-hidden="true"></i>
                 </div>
-                <div class="pjDetailsMore">
-                    <i class="fa fa-minus" style="margin-right: 25px; margin-left: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); zoomLeftDocument('out')"></i>
-                    <i class="fa fa-plus" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); zoomLeftDocument('in')"></i>
+                <div class="pjDetailsMore pjDetailsMore-left">
+                    <button style="line-height: 17px !important; height: 29px !important;" color="light" mat-icon-button (click)="$event.stopPropagation(); zoomLeftDocument('out')" [title]="'lang.zoomOut' | translate">
+                        <mat-icon class="fa fa-minus"></mat-icon>
+                    </button>
+                    <button style="line-height: 17px !important; height: 29px !important;" color="light" mat-icon-button (click)="$event.stopPropagation(); zoomLeftDocument('in')" [title]="'lang.zoomIn' | translate">
+                        <mat-icon class="fa fa-plus"></mat-icon>
+                    </button>
                 </div>
                 <pdf-viewer
                     *ngIf="leftViewerLink != '' && (leftSelectedThumbnail == 0 || signatureBook.documents[leftSelectedThumbnail].format == 'pdf' || signatureBook.documents[leftSelectedThumbnail].isConverted)"
@@ -222,13 +226,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="pjDetailsMore">
-                        <i *ngIf="!showTopRightPanel" class="fa fa-list-alt fa-2x" aria-hidden="true" [title]="'lang.showDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
-                        <i *ngIf="showTopRightPanel" class="fa fa-chevron-up" aria-hidden="true" style="margin-top: 5px; font-size: 15px; margin-right: 10px;" [title]="'lang.hideDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
+                    <div class="pjDetailsMore pjDetailsMore-right">
+                        <i *ngIf="!showTopRightPanel" class="fa fa-list-alt fa-2x" aria-hidden="true" style="margin-top: 6px;" [title]="'lang.showDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
+                        <i *ngIf="showTopRightPanel" class="fa fa-chevron-up" aria-hidden="true" style="margin-top: 12px; font-size: 15px; margin-left: 5px;" [title]="'lang.hideDetails' | translate" (click)="displayPanel('TOPRIGHT')"></i>
                         <ng-container *ngIf="!appDocumentViewer?.isEditingTemplate()">
                             <div class="divider" style="margin-left: 15px;"></div>
-                            <i class="zoomBtn fa fa-minus" [title]="'lang.zoomOut' | translate" (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('out')"></i>
-                            <i class="zoomBtn fa fa-plus" [title]="'lang.zoomIn' | translate" (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('in')"></i>
+                            <button color="light" style="margin-left: 5px;" mat-icon-button (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('out')" [title]="'lang.zoomOut' | translate">
+                                <mat-icon class="fa fa-minus"></mat-icon>
+                            </button>
+                            <button color="light" mat-icon-button (click)="$event.stopPropagation(); appDocumentViewer.zoomDocument('in')" [title]="'lang.zoomIn' | translate">
+                                <mat-icon class="fa fa-plus"></mat-icon>
+                            </button>
                         </ng-container>
                     </div>
                     <!-- <pdf-viewer *ngIf="rightViewerLink !== '' && signatureBook.attachments[rightSelectedThumbnail].isConverted"

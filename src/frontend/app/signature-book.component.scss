@@ -384,6 +384,16 @@
     -o-box-shadow: 0px 0px 10px 0px #656565;
     box-shadow: 0px 0px 10px 0px #656565;
     filter: progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=NaN, Strength=10);
+
+    &-left {
+        padding-top: 7px;
+        height: 43px;
+    }
+
+    &-right {
+        padding-top: 1px;
+        height: 40px;
+    }
 }
 
 .pjDetails div {
