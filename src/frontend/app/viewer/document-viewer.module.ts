@@ -10,15 +10,12 @@ import { EcplOnlyofficeViewerComponent } from '@plugins/onlyoffice-api-js/onlyof
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { CollaboraOnlineViewerComponent } from '@plugins/collabora-online/collabora-online-viewer.component';
 
-import { InternationalizationModule } from '@service/translate/internationalization.module';
-import { TranslateService } from '@ngx-translate/core';
 import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoint/office365-sharepoint-viewer.component';
 
 @NgModule({
     imports: [
         SharedModule,
-        PdfViewerModule,
-        InternationalizationModule
+        PdfViewerModule
     ],
     declarations: [
         DocumentViewerComponent,
@@ -35,8 +32,4 @@ import { Office365SharepointViewerComponent } from '@plugins/office365-sharepoin
         Office365SharepointViewerComponent
     ]
 })
-export class DocumentViewerModule {
-    constructor(translate: TranslateService) {
-        translate.setDefaultLang('fr');
-    }
-}
+export class DocumentViewerModule {}

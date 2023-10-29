@@ -19,6 +19,7 @@ import { PluginManagerService } from './plugin-manager.service';
 })
 export class AuthService {
 
+    lang: string = '';
     applicationName: string = '';
     loginMessage: string = '';
     authMode: string = 'standard';
@@ -215,136 +216,27 @@ export class AuthService {
         this.user = value;
     }
 
-    applyMinorUpdate() {
-        console.debug('applyMinorUpdate');
-        const loader = '<div id="updateLoading" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width: 200px;text-align: center;"><img src="assets/spinner.gif"></div>';
-        $('body').append(loader);
-        this.http.put('../rest/versionsUpdateSQL', {}).pipe(
-            finalize(() => $('#updateLoading').remove()),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
-    }
-
-    checkAppSecurity() {
-        console.debug('checkAppSecurity');
-        if (this.changeKey) {
-            setTimeout(() => {
-                this.dialog.open(AlertComponent, {
-                    panelClass: 'maarch-modal',
-                    autoFocus: false,
-                    disableClose: true,
-                    data: {
-                        mode: 'danger',
-                        title: this.translate.instant('lang.warnPrivateKeyTitle'),
-                        msg: this.translate.instant('lang.warnPrivateKey')
-                    }
-                });
-            }, 1000);
-        }
-    }
-
-    getLoginInformations(currentRoute: string): Observable<any> {
-        if (this.noInstall) {
-            if (currentRoute === '/install') {
-                return of(true);
-            } else {
-                this.router.navigate(['/install']);
-                return of(false);
-            }
-        } else if (this.getAppSession() !== null) {
-            return of(true);
-        } else {
-            return this.http
-                .get('../rest/authenticationInformations')
-                .pipe(
-                    tap((data: any) => {
-                        console.debug('getLoginInformations');
-                        this.setAppSession(data.instanceId);
-
-                        this.localStorage.save('lang', data.lang);
-                        this.translate.use(data.lang);
-                        this.mailServerOnline = data.mailServerOnline;
-                        this.changeKey = data.changeKey;
-                        this.applicationName = data.applicationName;
-                        this.loginMessage = this.functionsService.sanitizeHtml(data.loginMessage);
-                        this.externalSignatoryBook = data.externalSignatoryBook;
-                        this.setEvent('authenticationInformations');
-                        this.authMode = data.authMode;
-                        this.authUri = data.authUri;
-                        this.maarchUrl = data.maarchUrl;
-                        this.idleTime = data.idleTime;
-                        this.plugins = data.plugins;
-
-                        if (this.authMode === 'keycloak') {
-                            const keycloakState = this.localStorage.get('keycloakState');
-                            if (keycloakState === null || keycloakState === 'null') {
-                                this.localStorage.save('keycloakState', data.keycloakState);
-                            }
-                        }
-                        this.applyMinorUpdate();
-                        this.checkAppSecurity();
-                        this.pluginManagerService.storePlugins(data.plugins);
-                    }),
-                    catchError((err: any) => {
-                        console.log(err);
-                        return this.http.get('../rest/validUrl').pipe(
-                            map((data: any) => {
-                                if (!this.functionsService.empty(data.url)) {
-                                    window.location.href = data.url;
-                                    return false;
-                                } else if (data.lang === 'moreOneCustom') {
-                                    this.dialog.open(AlertComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.accessNotFound'), msg: this.translate.instant('lang.moreOneCustom'), hideButton: true } });
-                                    return false;
-                                } else if (data.lang === 'noConfiguration') {
-                                    this.noInstall = true;
-                                    if (currentRoute === '/install') {
-                                        return true;
-                                    } else {
-                                        console.log(this.router.url, 'navigate to install');
-                                        this.router.navigate(['/install']);
-                                        return false;
-                                    }
-                                } else {
-                                    // this.notify.handleSoftErrors(err);
-                                }
-                            })
-                        );
-                    })
-                );
-        }
-    }
-
     getCurrentUserInfo(): Observable<any> {
-        if (this.isAuth()) {
-            return of(true);
-        } else {
-            return this.http
-                .get('../rest/currentUser/profile')
-                .pipe(
-                    tap((data: any) => {
-                        console.debug('getCurrentUserInfo');
-                        this.headerService.user = {
-                            mode: data.mode,
-                            id: data.id,
-                            status: data.status,
-                            userId: data.user_id,
-                            mail: data.mail,
-                            firstname: data.firstname,
-                            lastname: data.lastname,
-                            entities: data.entities,
-                            groups: data.groups,
-                            preferences: data.preferences,
-                            privileges: data.privileges[0] === 'ALL_PRIVILEGES' ? this.privilegeService.getAllPrivileges(!data.lockAdvancedPrivileges, this.authMode) : data.privileges,
-                            featureTour: data.featureTour
-                        };
-                        this.headerService.nbResourcesFollowed = data.nbFollowedResources;
-                        this.privilegeService.resfreshUserShortcuts();
-                    })
-                );
-        }
+        return this.http.get('../rest/currentUser/profile').pipe(
+            tap((data: any) => {
+                this.headerService.user = {
+                    mode: data.mode,
+                    id: data.id,
+                    status: data.status,
+                    userId: data.user_id,
+                    mail: data.mail,
+                    firstname: data.firstname,
+                    lastname: data.lastname,
+                    entities: data.entities,
+                    groups: data.groups,
+                    preferences: data.preferences,
+                    privileges: data.privileges[0] === 'ALL_PRIVILEGES' ? this.privilegeService.getAllPrivileges(!data.lockAdvancedPrivileges, this.authMode) : data.privileges,
+                    featureTour: data.featureTour
+                };
+                this.headerService.nbResourcesFollowed = data.nbFollowedResources;
+                this.privilegeService.resfreshUserShortcuts();
+            })
+        );
     }
 
     clearFilters() {

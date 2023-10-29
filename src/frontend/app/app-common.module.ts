@@ -83,9 +83,6 @@ import { FolderActionListComponent } from './folder/folder-action-list/folder-ac
 
 import { LinkedResourceListComponent } from './linkedResource/linked-resource-list.component';
 
-import { InternationalizationModule } from '@service/translate/internationalization.module';
-import { TranslateService } from '@ngx-translate/core';
-
 import { RegisteredMailImportComponent } from '@appRoot/registeredMail/import/registered-mail-import.component';
 import { CriteriaToolComponent } from '@appRoot/search/criteria-tool/criteria-tool.component';
 import { ColorGithubModule } from 'ngx-color/github';
@@ -95,6 +92,7 @@ import { MailEditorComponent } from '@plugins/mail-editor/mail-editor.component'
 import { SelectWithFilterComponent } from '@plugins/select-with-filter/select-with-filter.component';
 import { FilterComponent } from '@plugins/select-with-filter/filter/filter.component';
 import { SetPageComponent } from '@plugins/list/set-page/set-page/set-page.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -107,7 +105,7 @@ import { SetPageComponent } from '@plugins/list/set-page/set-page/set-page.compo
         DragDropModule,
         AppServiceModule,
         NotificationModule,
-        InternationalizationModule,
+        TranslateModule,
         ColorGithubModule,
     ],
     declarations: [
@@ -228,12 +226,9 @@ import { SetPageComponent } from '@plugins/list/set-page/set-page/set-page.compo
         SetPageComponent,
         MailEditorComponent,
         SelectWithFilterComponent,
-        FilterComponent
+        FilterComponent,
+        TranslateModule,
     ],
     providers: []
 })
-export class SharedModule {
-    constructor(translate: TranslateService) {
-        translate.setDefaultLang('fr');
-    }
-}
+export class SharedModule {}

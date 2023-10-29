@@ -5,14 +5,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { Router } from '@angular/router';
 import { FeatureTourService } from '@service/featureTour.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { FunctionsService } from '@service/functions.service';
 import { catchError, of, tap } from 'rxjs';
-import { PluginManagerService } from '@service/plugin-manager.service';
-
-declare let $: any;
 
 @Component({
     templateUrl: 'home.component.html',
@@ -35,16 +31,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
         public functions: FunctionsService,
         private notify: NotificationService,
         private headerService: HeaderService,
-        private router: Router,
         private featureTourService: FeatureTourService,
-        private sanitizer: DomSanitizer,
-        private pluginManagerService: PluginManagerService
+        private sanitizer: DomSanitizer
     ) { }
 
     async ngOnInit(): Promise<void> {
-        const comp = await this.pluginManagerService.initPlugin('outlook-plugin', this.remotePlugin2);
-        comp.maarchPluginService.test();
-
         this.headerService.setHeader(this.translate.instant('lang.home'));
 
         this.http.get('../rest/home').pipe(

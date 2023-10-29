@@ -11,7 +11,7 @@
         "build": {
           "builder": "ngx-build-plus:browser",
           "options": {
-            "allowedCommonJsDependencies": ["pdfjs-dist/es5/web/pdf_viewer", "pdfjs-dist/es5/build/pdf", "papaparse/papaparse.min.js", "ng2-pdf-viewer", "clone-deep", "pdfjs-dist/build/pdf", "pdfjs-dist/web/pdf_viewer", "rfdc"],
+            "allowedCommonJsDependencies": ["pdfjs-dist/es5/web/pdf_viewer", "pdfjs-dist/es5/build/pdf", "papaparse/papaparse.min.js", "ng2-pdf-viewer", "clone-deep", "pdfjs-dist/build/pdf", "pdfjs-dist/web/pdf_viewer", "rfdc", "moment"],
             "outputPath": "dist",
             "index": "src/frontend/index.html",
             "polyfills": "src/frontend/polyfills.ts",

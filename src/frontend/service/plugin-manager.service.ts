@@ -29,11 +29,10 @@ export class PluginManagerService {
             try {
                 const plugin = await this.loadRemotePlugin(pluginName);
                 this.plugins[pluginName] = plugin;
-                console.debug(`PLUGIN ${pluginName} LOADED`);
+                console.info(`PLUGIN ${pluginName} LOADED`);
 
             } catch (err) {
-                console.warn(`PLUGIN ${pluginName} FAILED :`);
-                console.warn(err);
+                console.error(`PLUGIN ${pluginName} FAILED: ${err}`);
             }
         }
     }
@@ -42,9 +41,15 @@ export class PluginManagerService {
         if (!this.plugins[pluginName]) {
             return false;
         }
-        const remoteComponent: any = containerRef.createComponent(this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]);
-        remoteComponent.instance.init(this);
-        return remoteComponent.instance;
+        try {
+            const remoteComponent: any = containerRef.createComponent(this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]);
+            remoteComponent.instance.init(this);
+            return remoteComponent.instance;            
+        } catch (error) {
+            this.notificationService.error(`Init plugin ${pluginName} failed !`);
+            return false;
+        }
+
     }
 
     loadRemotePlugin(pluginName: string): Promise<any> {
