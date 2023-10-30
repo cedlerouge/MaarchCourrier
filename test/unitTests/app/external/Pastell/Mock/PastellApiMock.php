@@ -27,11 +27,17 @@ class PastellApiMock implements PastellApiInterface
         'lastAction'      => []
     ];
     public array $mainFile = [];
-    public array $dataFolder = [];
+    public array $dataFolder = [
+        'libelle',
+        'courrier',
+        'XELIANS COURRIER',
+        true
+    ];
     public array $documentsDownload = [];
     public object $journalXml;
     public array $orientation = [];
     public bool $verificationIparapheur = true;
+    public string $adrMainInfo = '';
 
 
     /**
@@ -175,8 +181,25 @@ class PastellApiMock implements PastellApiInterface
         return $this->orientation;
     }
 
+    /**
+     * @param PastellConfig|null $config
+     * @param string $idDocument
+     * @return void
+     */
     public function sendIparapheur(?PastellConfig $config, string $idDocument)
     {
         // TODO: Implement sendIparapheur() method.
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @param string $filePath
+     * @param int $nbAttachments
+     * @return array
+     */
+    public function uploadAttachmentFile(PastellConfig $config, string $idFolder, string $filePath, int $nbAttachments): array
+    {
+        // TODO: Implement uploadAttachmentFile() method.
     }
 }

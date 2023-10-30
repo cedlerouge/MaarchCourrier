@@ -81,6 +81,15 @@ interface PastellApiInterface
     /**
      * @param PastellConfig $config
      * @param string $idFolder
+     * @param string $filePath
+     * @param int $nbAttachments
+     * @return array
+     */
+    public function uploadAttachmentFile(PastellConfig $config, string $idFolder, string $filePath, int $nbAttachments): array;
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
      * @return array
      */
     public function getFolderDetail(PastellConfig $config, string $idFolder): array;

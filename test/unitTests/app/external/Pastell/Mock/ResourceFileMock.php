@@ -15,8 +15,19 @@ use ExternalSignatoryBook\pastell\Domain\ResourceFileInterface;
 
 class ResourceFileMock implements ResourceFileInterface
 {
+    public string $adrMainInfo = 'toto.pdf';
+
     public function getMainResourceFilePath(int $resId): string
     {
-        return 'toto.pdf';
+        return $this->adrMainInfo;
+    }
+
+    /**
+     * @param array $attachmentsResource
+     * @return array
+     */
+    public function getAttachmentsFilePath(array $attachmentsResource): array
+    {
+        // TODO: Implement getAttachmentsFilePath() method.
     }
 }

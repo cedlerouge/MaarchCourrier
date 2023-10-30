@@ -23,4 +23,10 @@ interface ResourceDataInterface
      * @return array
      */
     public function getMainResourceData(int $resId): array;
+
+    /**
+     * @param int $resId
+     * @return array
+     */
+    public function getAttachmentsData(int $resId): array;
 }
