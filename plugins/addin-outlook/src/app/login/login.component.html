@@ -1,13 +1,20 @@
 <mat-spinner *ngIf="loading"></mat-spinner>
-<app-maarch-message *ngIf="authService.authMode !== 'standard'" [content]="'lang.unsupportedAuthMode' | translate : {authMode : authService.authMode}" mode="danger"></app-maarch-message>
-<form *ngIf="!loading && authService.authMode === 'standard'" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <mat-form-field appearance="fill" style="width:100%">
-        <mat-label>{{ 'lang.login' | translate }}</mat-label>
-        <input matInput formControlName="login">
-    </mat-form-field>
-    <mat-form-field appearance="fill" style="width:100%">
-        <mat-label>{{ 'lang.password' | translate}}</mat-label>
-        <input matInput type="password" formControlName="password">
-    </mat-form-field>
-    <button mat-raised-button type="submit" [disabled]="loginForm.invalid" color="primary">{{ 'lang.LOGIN' | translate}}</button>
-</form>
+<div class="tuto-title">
+    Le plugin doit se connecter à votre application Maarch Courrier.
+</div>
+<div class="tuto-msg">
+    <div *ngIf="!loading">
+        <span class="tuto-label">Etape 1</span><br/>Accéder à <b><a [href]="authService.appUrl + 'dist/index.html#/profile?copyToken=true'" target="_blank">votre profile</a></b>.
+    </div>
+    <div *ngIf="!loading">
+        <span class="tuto-label">Etape 2</span><br/>Cliquer sur le bouton « <b>Copier mon jeton d'authentification</b> » 
+    </div>
+    <div *ngIf="!loading">
+        <span class="tuto-label">Etape 3</span><br/>Faites <kbd>Ctrl</kbd>+<kbd>v</kbd> dans le champ ci-dessous:
+    </div>
+</div>
+
+<mat-form-field *ngIf="!loading" appearance="fill" style="width:100%">
+    <mat-label>{{'lang.authTokens' | translate}}</mat-label>
+    <input matInput (paste)="setToken($event)">
+</mat-form-field>

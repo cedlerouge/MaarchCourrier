@@ -1,6 +1,7 @@
 import { Component, OnInit, NgZone, ViewChild, QueryList, ViewChildren, TemplateRef, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -14,6 +15,7 @@ import { AbsModalComponent } from './absModal/abs-modal.component';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of, Subscription } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 declare let $: any;
 
@@ -92,11 +94,23 @@ export class ProfileComponent implements OnInit {
         public appService: AppService,
         public authService: AuthService,
         private zone: NgZone,
+        private _activatedRoute: ActivatedRoute,
         private notify: NotificationService,
         private _formBuilder: UntypedFormBuilder,
         private viewContainerRef: ViewContainerRef,
         private functions: FunctionsService,
+        private clipboardService: Clipboard,
     ) {
+        _activatedRoute.queryParams.subscribe(
+            params => {
+                if (params['copyToken']) {
+                    setTimeout(() => {
+                        this.copyAuthToken();
+                    }, 2000);
+                }
+            }
+        );
+
         this.subscription = this.authService.catchEvent().subscribe((result: any) => {
             if (result === 'isAbsScheduled') {
                 this.haveAbsScheduled = result === 'isAbsScheduled' ? true : false;
@@ -376,5 +390,14 @@ export class ProfileComponent implements OnInit {
             this.user.baskets.find((item: any) => value.baskeToDel[0].basket_id === item.basket_id && value.baskeToDel[0].group_id === item.groupSerialId).userToDisplay = null;
         }
         this.user.redirectedBaskets = value.redirectedBaskets;
+    }
+
+    copyAuthToken() {
+        const tokens = {
+            token : this.authService.getToken(),
+            refreshToken : this.authService.getRefreshToken()
+        };
+        this.clipboardService.copy(JSON.stringify(tokens));
+        this.notify.success(this.translate.instant('lang.authTokensCopied'));
     }
 }

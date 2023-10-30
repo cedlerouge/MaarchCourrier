@@ -1,7 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
 import { NotificationService } from '../service/notification/notification.service';
 import { AuthService } from '../service/auth.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -38,36 +36,23 @@ export class LoginComponent implements OnInit {
         this.loading = false;
     }
 
-    onSubmit() {
+    setToken(event: ClipboardEvent) {
         this.loading = true;
-
-        let url = '../rest/authenticate';
-
-        this.http.post(
-            url,
-            {
-                'login': this.loginForm.get('login').value ,
-                'password': this.loginForm.get('password').value,
-            },
-            {
-                observe: 'response'
+        const clipboardData = event.clipboardData;
+        const pastedText = clipboardData.getData('text');
+        try {
+            const tokens = JSON.parse(pastedText);
+            if (tokens?.token && tokens?.refreshToken) {
+                this.authService.saveTokens(tokens.token, tokens.refreshToken);
+                this.authService.updateUserInfo(tokens.token);
+                this.success.emit(true); 
+            } else {
+                this.notificationService.error(this.translate.instant('lang.badTokens'));
+                this.loading = false;
             }
-        ).pipe(
-            tap(async (data: any) => {
-                this.authService.clearTokens();
-                this.authService.saveTokens(data.headers.get('Token'), data.headers.get('Refresh-Token'));
-                this.authService.updateUserInfo(data.headers.get('Token'));
-                this.success.emit(true);
-            }),
-            catchError((err: any) => {
-                if (err.error.errors === 'Authentication Failed') {
-                    this.notificationService.error(this.translate.instant('lang.wrongLoginPassword'));
-                } else {
-                    this.notificationService.handleSoftErrors(err);
-                }
-                return of(false);
-            }),
-            finalize(() => this.loading = false)
-        ).subscribe();
+        } catch (error) {
+            this.notificationService.error(this.translate.instant('lang.badTokens'));
+            this.loading = false;
+        }
     }
 }

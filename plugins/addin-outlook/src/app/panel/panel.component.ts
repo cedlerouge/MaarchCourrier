@@ -100,7 +100,7 @@ export class PanelComponent implements OnInit {
                 }),
                 catchError((err: any) => {
                     if (err.error.errors !== 'Document not found') {
-                        this.notificationService.handleErrors(err);
+                        this.notificationService.handleSoftErrors(err);
                     }
                     resolve(false);
                     return of(false);
@@ -170,7 +170,7 @@ export class PanelComponent implements OnInit {
                 }),
                 finalize(() => this.status = 'end'),
                 catchError((err: any) => {
-                    this.notificationService.handleErrors(err);
+                    this.notificationService.handleSoftErrors(err);
                     return of(false);
                 })
             ).subscribe();
@@ -202,7 +202,7 @@ export class PanelComponent implements OnInit {
                     resolve(true);
                 }),
                 catchError((err: any) => {
-                    this.notificationService.handleErrors(err);
+                    this.notificationService.handleSoftErrors(err);
                     return of(false);
                 })
             ).subscribe();

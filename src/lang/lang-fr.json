@@ -2751,5 +2751,9 @@
     "updateWorkflowWarning": "La modification du circuit de visa peut entraîner l'apparition ou la disparition de certaines actions.",
     "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br> La page sera rechargée après cette opération.",
     "pageNotFound": "La page n'existe pas",
-    "unsupportedAuthMode": "Le mode de connexion «{{authMode}}» n'est pas supporté"
+    "unsupportedAuthMode": "Le mode de connexion «{{authMode}}» n'est pas supporté",
+    "authTokensCopied": "Jetons d'authentification copiés",
+    "copyAuthToken": "Copier mon jeton d'authentification",
+    "authTokens": "Jetons d'authentification",
+    "badTokens": "Jetons invalide"
 }
