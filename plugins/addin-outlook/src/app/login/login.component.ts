@@ -5,6 +5,7 @@ import { AuthService } from '../service/auth.service';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '../service/functions.service';
 import { FormControl, FormGroup, UntypedFormGroup, Validators } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 
 @Component({
@@ -19,6 +20,7 @@ export class LoginComponent implements OnInit {
     loading: boolean = true;
 
     urlProfile: string = '';
+    tutoStep1Msg: SafeHtml = '';
 
     @Output() success = new EventEmitter<boolean>();
 
@@ -27,11 +29,15 @@ export class LoginComponent implements OnInit {
         private notificationService: NotificationService,
         public authService: AuthService,
         public translate: TranslateService,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private sanitizer: DomSanitizer,
     ) { }
 
     ngOnInit() {
-        this.urlProfile = `${this.authService.appUrl}/dist/index.html#/profile?copyToken=true`;
+        this.urlProfile = `${this.authService.appUrl}/dist/index.html#/profile`;
+        const tradTutoStep1 = this.translate.instant('lang.tutoStep1', {url : this.urlProfile});
+        this.tutoStep1Msg = this.sanitizer.bypassSecurityTrustHtml(tradTutoStep1);
+        
         this.loginForm = new FormGroup({
             login: new FormControl('', Validators.required),
             password: new FormControl('', Validators.required),
