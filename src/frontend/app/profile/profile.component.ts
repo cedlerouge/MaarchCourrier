@@ -101,16 +101,6 @@ export class ProfileComponent implements OnInit {
         private functions: FunctionsService,
         private clipboardService: Clipboard,
     ) {
-        _activatedRoute.queryParams.subscribe(
-            params => {
-                if (params['copyToken']) {
-                    setTimeout(() => {
-                        this.copyAuthToken();
-                    }, 2000);
-                }
-            }
-        );
-
         this.subscription = this.authService.catchEvent().subscribe((result: any) => {
             if (result === 'isAbsScheduled') {
                 this.haveAbsScheduled = result === 'isAbsScheduled' ? true : false;
