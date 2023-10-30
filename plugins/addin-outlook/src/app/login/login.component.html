@@ -3,14 +3,11 @@
     Le plugin doit se connecter à votre application Maarch Courrier.
 </div>
 <div class="tuto-msg">
-    <div *ngIf="!loading">
-        <span class="tuto-label">Etape 1</span><br/>Accéder à <b><a [href]="authService.appUrl + 'dist/index.html#/profile?copyToken=true'" target="_blank">votre profile</a></b>.
+    <div *ngIf="!loading" [innerHTML]="'lang.tutoStep1' | translate : {url : urlProfile}">
     </div>
-    <div *ngIf="!loading">
-        <span class="tuto-label">Etape 2</span><br/>Cliquer sur le bouton « <b>Copier mon jeton d'authentification</b> » 
+    <div *ngIf="!loading" [innerHTML]="'lang.tutoStep2' | translate"> 
     </div>
-    <div *ngIf="!loading">
-        <span class="tuto-label">Etape 3</span><br/>Faites <kbd>Ctrl</kbd>+<kbd>v</kbd> dans le champ ci-dessous:
+    <div *ngIf="!loading" [innerHTML]="'lang.tutoStep3' | translate">
     </div>
 </div>
 

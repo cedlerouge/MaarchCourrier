@@ -18,6 +18,8 @@ export class LoginComponent implements OnInit {
 
     loading: boolean = true;
 
+    urlProfile: string = '';
+
     @Output() success = new EventEmitter<boolean>();
 
     constructor(
@@ -29,6 +31,7 @@ export class LoginComponent implements OnInit {
     ) { }
 
     ngOnInit() {
+        this.urlProfile = `${this.authService.appUrl}/dist/index.html#/profile?copyToken=true`;
         this.loginForm = new FormGroup({
             login: new FormControl('', Validators.required),
             password: new FormControl('', Validators.required),
