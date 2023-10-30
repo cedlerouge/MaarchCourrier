@@ -19,8 +19,6 @@ use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellStates;
 use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
-use ExternalSignatoryBook\pastell\Infrastructure\PastellApi;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
 
 class RetrieveFromPastell
 {
@@ -32,6 +30,13 @@ class RetrieveFromPastell
     private PastellConfig $config;
     private PastellStates $pastellStates;
 
+    /**
+     * @param PastellApiInterface $pastellApi
+     * @param PastellConfigInterface $pastellConfig
+     * @param PastellConfigurationCheck $pastellConfigCheck
+     * @param ProcessVisaWorkflowInterface $processVisaWorkflow
+     * @param ParseIParapheurLog $parseIParapheurLog
+     */
     public function __construct(
         PastellApiInterface          $pastellApi,
         PastellConfigInterface       $pastellConfig,
@@ -49,6 +54,10 @@ class RetrieveFromPastell
         $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
+    /**
+     * @param array $idsToRetrieve
+     * @return array|string[]
+     */
     public function retrieve(array $idsToRetrieve): array
     {
         foreach ($idsToRetrieve as $key => $value) {
@@ -59,7 +68,7 @@ class RetrieveFromPastell
                 if (in_array('verif-iparapheur', $info['actionPossibles'])) {
                     $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
                     if ($verif !== true) {
-                            return ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (termine) ne permet pas de déclencher cette action'];
+                        return ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (termine) ne permet pas de déclencher cette action'];
                     }
                 }
                 $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);

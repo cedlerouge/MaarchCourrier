@@ -34,8 +34,8 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
             return [
                 'res_id'      => 152,
                 'external_id' => 'chuchu',
-                'status'    =>  'refused',
-                'content'  => 'Un nom : une note'
+                'status'      => 'refused',
+                'content'     => 'Un nom : une note'
             ];
         }
 

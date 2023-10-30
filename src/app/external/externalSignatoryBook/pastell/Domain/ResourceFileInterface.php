@@ -23,4 +23,10 @@ interface ResourceFileInterface
      * @return string
      */
     public function getMainResourceFilePath(int $resId): string;
+
+    /**
+     * @param array $attachmentsResource
+     * @return array
+     */
+    public function getAttachmentsFilePath(array $attachmentsResource): array;
 }
