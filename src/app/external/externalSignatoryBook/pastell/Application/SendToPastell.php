@@ -72,22 +72,25 @@ class SendToPastell
             return ['error' => $idFolder['error']];
         }
         $idFolder = $idFolder['idFolder'];
-        //Check iParapheur subtype
-        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $resId);
+
+        // Check iParapheur subtype
+        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $idFolder);
         if (!empty($iParapheurSousType['error'])) {
-           return ['error' => $iParapheurSousType['error']];
+            return ['error' => $iParapheurSousType['error']];
         } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-          return ['error' => 'Subtype does not exist in iParapheur'];
+            return ['error' => 'Subtype does not exist in iParapheur'];
         }
 
+        // Sending data to the folder
         $editResult = $this->pastellApi->editFolder($config, $idFolder, $title, $sousType);
         if (!empty($editResult['error'])) {
-            return $editResult['error'];
+            return ['error' => $editResult['error']];
         } else {
             // uploading main file
             $uploadResult = $this->pastellApi->uploadMainFile($config, $idFolder, $filePath);
             if (!empty($uploadResult['error'])) {
-                return $uploadResult['error'];
+                return ['error' => $uploadResult['error']];
+                // TODO uploading attachment if exists
             } else {
                 // Sending folder to iParapheur
                 $orientationResult = $this->pastellApi->orientation($config, $idFolder);
@@ -115,27 +118,19 @@ class SendToPastell
      */
     public function sendData(int $resId): array
     {
-        /**
-         *       Recup data du courrier
-         * foreach resIds
-         *      courrier est integré ?
-         *          non → continue
-         *          oui → appel fonction
-         */
-
         $config = $this->pastellConfig->getPastellConfig();
 
         $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
+        //Gérer les erreurs à renvoyer au trait
 
-            return [
-                'sended' => [
-                    'letterbox_coll' => [
-                        $resId => $idFolder['idFolder'] ?? null
-                    ]
+        return [
+            'sended' => [
+                'letterbox_coll' => [
+                    $resId => $idFolder['idFolder'] ?? null
                 ]
-            ];
-        }
-    //}
+            ]
+        ];
+    }
 
     /**
      * Getting data, file content and infos fom MC to be sent
@@ -146,72 +141,28 @@ class SendToPastell
      */
     public function sendResource(int $resId, string $sousType, array $annexes = []): array
     {
-        /**
-         * -> infos du courrier
-         * -> recup la PJ
-         *      for integre ? signable ?
-         *  -> sendToFolderToPastell
-         */
-
         // Getting data from MC (res_letterbox)
         $mainResource = $this->resourceData->getMainResourceData($resId);
+        //$attachmentsResource = $this->resourceData->getAttachmentsData($resId);
 
         // Checking if main document is integrated
         if (!empty($mainResource)) {
-            $mainDocumentIntegration = $mainResource['integrations'];
+            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
 
-            if ($mainDocumentIntegration['inSignatureBook'] && empty($mainResource['external_id'])) {
+            if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
                 $resId = $mainResource['res_id'];
                 $title = $mainResource['subject'];
                 // Getting path of the main file
                 $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
                 if (str_contains($mainResourceFilePath, 'Error')) {
                     return ['Error' => 'Document ' . $resId . ' is not converted in pdf'];
+                    //} elseif (!empty($attachmentsResource)) { // Getting attachments data
+                    //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
+                    // TODO
                 } else {
                     return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath);
                 }
             }
         }
-
-        // Recup file path
-        //$mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
-
-        //return $this->sendFolderToPastell($resId, $mainResource['subject'], $sousType, $mainResourceFilePath);
-
-        //Récupération des infos du courrier côté MC
-//        $attachments = AttachmentModel::get([
-//            'select' => ['res_id', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint', 'title'],
-//            'where'  => ['res_id_master = ?', 'attachment_type not in (?)', "status NOT IN ('DEL','OBS', 'FRZ', 'TMP', 'SEND_MASS')", "in_signature_book = 'true'"],
-//            'data'   => [$data['resIdMaster'], ['signed_response']]
-//        ]);
-//
-//        //Récupération du type de PJ
-//        $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
-//        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
-//
-//        foreach ($attachments as $key => $value) {
-//            if (!$attachmentTypes[$value['attachment_type']]) {
-//                $adrInfo = AdrModel::getConvertedDocumentById(['resId' => $value['res_id'], 'collId' => 'attachments_coll', 'type' => 'PDF']);
-//                $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]);
-//                $value['filePath'] = $annexeAttachmentPath['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $adrInfo['path']) . $adrInfo['filename'];
-//
-//                $docserverType = DocserverTypeModel::getById(['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-//                $fingerprint = StoreController::getFingerPrint(['filePath' => $value['filePath'], 'mode' => $docserverType['fingerprint_mode']]);
-//                if ($value['fingerprint'] != $fingerprint) {
-//                    return ['error' => 'Fingerprints do not match'];
-//                }
-//
-//                unset($attachments[$key]);
-//            }
-//        }
-//
-//        foreach ($attachments as $attachment) {
-//            $resId = $attachment['res_id'];
-//            $title = $attachment['title'];
-//            $collId = 'attachments_coll';
-//
-//            $this->sendFolderToPastell($resId, $title, $collId);
-//        }
-
     }
 }

@@ -15,16 +15,31 @@ use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 
 class ResourceDataMock implements ResourceDataInterface
 {
+    /**
+     * @param int $resId
+     * @return array
+     */
     public function getMainResourceData(int $resId): array
     {
+        $integrations = [
+            'inShipping'      => false,
+            'inSignatureBook' => true
+        ];
+
         return [
-            'res_id' => 42,
+            'res_id'       => 42,
             'subject'      => 'blabablblalba',
-            'integrations' => [
-                'inShipping' => false,
-                'inSignatureBook' => true
-            ],
+            'integrations' => json_encode($integrations),
             'external_id'  => ''
         ];
+    }
+
+    /**
+     * @param int $resId
+     * @return array
+     */
+    public function getAttachmentsData(int $resId): array
+    {
+        // TODO: Implement getAttachmentsData() method.
     }
 }

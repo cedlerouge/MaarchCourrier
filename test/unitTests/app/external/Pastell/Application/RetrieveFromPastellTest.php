@@ -9,7 +9,6 @@
 
 namespace unitTests\app\external\Pastell\Application;
 
-use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
@@ -21,6 +20,9 @@ use PHPUnit\Framework\TestCase;
 class RetrieveFromPastellTest extends TestCase
 {
 
+    /**
+     * @return void
+     */
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -64,6 +66,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testRetrieveOneResourceFoundButNotFinishOneSignedAndOneRefused(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -118,6 +123,10 @@ class RetrieveFromPastellTest extends TestCase
     }
 
     // ajout de test pour tester quand vérif est false
+
+    /**
+     * @return void
+     */
     public function testRetrieveReturnAnErrorWhenVerifIParapheurIsNotTrue(): void
     {
         $pastellApiMock = new PastellApiMock();

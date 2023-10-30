@@ -198,7 +198,7 @@ class PastellApi implements PastellApiInterface
             'method'    => 'GET'
         ]);
 
-        if ($response['code'] > 201) {
+        if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
                 $return = ["error" => $response['response']['error-message']];
             } else {
@@ -264,6 +264,39 @@ class PastellApi implements PastellApiInterface
 
         $response = CurlModel::exec([
             'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/document',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+            'body'      => http_build_query($bodyData)
+        ]);
+
+        $return = [];
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @param string $filePath
+     * @param int $nbAttachments
+     * @return array|string[]
+     */
+    public function uploadAttachmentFile(PastellConfig $config, string $idFolder, string $filePath, int $nbAttachments): array
+    {
+        $bodyData = [
+            'file_name'    => 'PJ.' . pathinfo($filePath)['extension'],
+            'file_content' => file_get_contents($filePath)
+        ];
+
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/annexe/' . $nbAttachments,
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',
@@ -405,7 +438,6 @@ class PastellApi implements PastellApiInterface
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',
         ]);
-
 
         return $response['code'] == 201;
     }

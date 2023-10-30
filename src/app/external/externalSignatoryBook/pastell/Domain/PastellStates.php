@@ -22,6 +22,13 @@ class PastellStates
     private string $refusedVisa;
     private string $refusedSign;
 
+    /**
+     * @param string $errorCode
+     * @param string $visaState
+     * @param string $signState
+     * @param string $refusedVisa
+     * @param string $refusedSign
+     */
     public function __construct(string $errorCode, string $visaState, string $signState, string $refusedVisa, string $refusedSign)
     {
         $this->errorCode = $errorCode;
@@ -55,5 +62,4 @@ class PastellStates
     {
         return $this->refusedSign;
     }
-
 }

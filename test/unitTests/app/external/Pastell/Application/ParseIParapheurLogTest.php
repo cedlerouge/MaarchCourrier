@@ -11,7 +11,6 @@ namespace unitTests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
-use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
