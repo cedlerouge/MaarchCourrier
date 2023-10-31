@@ -1,20 +1,22 @@
-import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { NotificationService } from '@service/notification/notification.service';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { HttpClient } from '@angular/common/http';
-import { NoteEditorComponent } from '../../notes/note-editor.component';
-import { XParaphComponent } from './x-paraph/x-paraph.component';
-import { MaarchParaphComponent } from './maarch-paraph/maarch-paraph.component';
-import { IParaphComponent } from './i-paraph/i-paraph.component';
-import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
-import { tap, finalize, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { SessionStorageService } from '@service/session-storage.service';
-import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import { FunctionsService } from '@service/functions.service';
-import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
-import { AuthService } from '@service/auth.service';
+import {Component, OnInit, Inject, ViewChild, ChangeDetectorRef} from '@angular/core';
+import {TranslateService} from '@ngx-translate/core';
+import {NotificationService} from '@service/notification/notification.service';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {HttpClient} from '@angular/common/http';
+import {NoteEditorComponent} from '../../notes/note-editor.component';
+import {XParaphComponent} from './x-paraph/x-paraph.component';
+import {MaarchParaphComponent} from './maarch-paraph/maarch-paraph.component';
+import {IParaphComponent} from './i-paraph/i-paraph.component';
+import {IxbusParaphComponent} from './ixbus-paraph/ixbus-paraph.component';
+import {tap, finalize, catchError} from 'rxjs/operators';
+import {of} from 'rxjs';
+import {SessionStorageService} from '@service/session-storage.service';
+import {
+    ExternalSignatoryBookManagerService
+} from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import {FunctionsService} from '@service/functions.service';
+import {FastParaphComponent} from './fast-paraph/fast-paraph.component';
+import {AuthService} from '@service/auth.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -23,13 +25,13 @@ import { AuthService } from '@service/auth.service';
 })
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
-    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', {static: false}) noteEditor: NoteEditorComponent;
 
-    @ViewChild('xParaph', { static: false }) xParaph: XParaphComponent;
-    @ViewChild('externalSignatoryBookComponent', { static: false }) externalSignatoryBookComponent: MaarchParaphComponent;
-    @ViewChild('fastParapheur', { static: false}) fastParapheur: FastParaphComponent;
-    @ViewChild('iParapheur', { static: false }) iParapheur: IParaphComponent;
-    @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
+    @ViewChild('xParaph', {static: false}) xParaph: XParaphComponent;
+    @ViewChild('externalSignatoryBookComponent', {static: false}) externalSignatoryBookComponent: MaarchParaphComponent;
+    @ViewChild('fastParapheur', {static: false}) fastParapheur: FastParaphComponent;
+    @ViewChild('iParapheur', {static: false}) iParapheur: IParaphComponent;
+    @ViewChild('ixbus', {static: false}) ixbus: IxbusParaphComponent;
 
     loading: boolean = false;
 
@@ -72,7 +74,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         private notify: NotificationService,
         private changeDetectorRef: ChangeDetectorRef,
         private sessionStorage: SessionStorageService
-    ) { }
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
@@ -144,7 +147,11 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             datas = this.externalSignatoryBook.getDatas(workflow, this.resourcesToSign, this.externalSignatoryBookComponent.appExternalVisaWorkflow.workflowType);
         }
 
-        this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote(), data: datas }).pipe(
+        this.http.put(this.data.processActionRoute, {
+            resources: realResSelected,
+            note: this.noteEditor.getNote(),
+            data: datas
+        }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(realResSelected);
@@ -181,7 +188,10 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     toggleIntegration(integrationId: string) {
         this.resourcesToSign = [];
-        this.http.put('../rest/resourcesList/integrations', { resources: this.data.resIds, integrations: { [integrationId]: !this.data.resource.integrations[integrationId] } }).pipe(
+        this.http.put('../rest/resourcesList/integrations', {
+            resources: this.data.resIds,
+            integrations: {[integrationId]: !this.data.resource.integrations[integrationId]}
+        }).pipe(
             tap(async () => {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
 
@@ -231,6 +241,13 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     getTitle(): string {
-        return this.authService.externalSignatoryBook !== null ? this.translate.instant('lang.' + this.authService.externalSignatoryBook.id) : this.translate.instant('lang.sendToExternalSignatoryBook');
+        if (!this.functions.empty(this.authService.externalSignatoryBook)) {
+            if (!this.functions.empty(this.authService.externalSignatoryBook?.from)) {
+                return this.translate.instant('lang.' + this.authService.externalSignatoryBook?.from);
+            } else {
+                return this.translate.instant('lang.' + this.authService.externalSignatoryBook.id);
+            }
+        }
+        return this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 }
