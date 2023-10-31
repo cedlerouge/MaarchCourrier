@@ -231,6 +231,13 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     }
 
     getTitle(): string {
-        return this.authService.externalSignatoryBook !== null ? this.translate.instant('lang.' + this.authService.externalSignatoryBook.id) : this.translate.instant('lang.sendToExternalSignatoryBook');
+        if (!this.functions.empty(this.authService.externalSignatoryBook)) {
+            if (!this.functions.empty(this.authService.externalSignatoryBook?.from)) {
+                return this.translate.instant('lang.' + this.authService.externalSignatoryBook?.from);
+            } else {
+                return this.translate.instant('lang.' + this.authService.externalSignatoryBook.id);
+            }
+        }
+        return this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 }
