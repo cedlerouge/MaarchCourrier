@@ -2811,5 +2811,8 @@
     "mercureContactInfo": "Pour plus d'information, consulter notre <b><a target=\"_blank\" href=\"https:/\/docs.maarch.org/MaarchCourrier/guat/guat_exploitation/lad.html\">documentation</a></b> ou nous <b><a href=\"mailto:info@maarch.org\" target=\"_blank\">contacter</a></b>",
     "mercureLadProcessingDocument": "Analyse du document par <b>MERCURE - LAD</b>",
     "pastell": "IParapheur via Pastell",
+    "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
+    "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>",
+    "defaultEditor": "Editeur par défaut",
     "pastell": "IParapheur via Pastell"
 }
