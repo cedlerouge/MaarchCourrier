@@ -181,7 +181,7 @@ class LadController
         $command = $ladConfiguration['config']['mercureLadDirectory'] . '/Mercure5 '
             . $tmpPath . $tmpFilename . '.' . $aArgs['extension'] . ' '
             . $outXmlFilename . ' '
-            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER.INI';
+            . $ladConfiguration['config']['mercureLadDirectory'] . '/MERCURE5_I1_LAD_COURRIER_v5.cfg';
 
         exec($command . ' 2>&1', $output, $return);
 
@@ -240,6 +240,14 @@ class LadController
             //Suppression du fichier xml
             unlink($outXmlFilename);
         } else {
+            if (is_file($outXmlFilename)) {
+                $outputXml = CoreConfigModel::getXmlLoaded(['path' => $outXmlFilename]);
+                foreach ($outputXml->status as $status) {
+                    if (strpos(strtolower($status), 'quota exceeded') !== false) {
+                        return ['errors' => 'Number of LAD request exceeded, please contact Maarch'];
+                    }
+                }
+            }
             $tabErrors = [];
 
             $tagsErrToCheck = [
