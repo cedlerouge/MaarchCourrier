@@ -123,9 +123,9 @@ interface PastellApiInterface
     public function orientation(PastellConfig $config, string $idFolder): array;
 
     /**
-     * @param PastellConfig|null $config
+     * @param PastellConfig $config
      * @param string $idDocument
      * @return mixed
      */
-    public function sendIparapheur(?PastellConfig $config, string $idDocument);
+    public function sendIparapheur(PastellConfig $config, string $idDocument);
 }
