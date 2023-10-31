@@ -8,7 +8,7 @@
         </p>
     </a>
     <a mat-list-item *ngIf="!config.enabledLad" (click)="launchTest()" [ngStyle]="{'pointer-events': loading ? 'none' : 'auto'}">
-        <mat-icon color="primary" mat-list-icon class="fas fa-paper-plane"></mat-icon>
+        <mat-icon mat-list-icon class="green fas fa-plug"></mat-icon>
         <p mat-line>
             {{'lang.testAndActivate' | translate}}
         </p>
@@ -18,9 +18,9 @@
     </a>
 
     <a mat-list-item *ngIf="config.enabledLad" (click)="setLadConf(false)" >
-        <mat-icon color="warn" mat-list-icon class="fas fa-power-off"></mat-icon>
+        <mat-icon color="warn" mat-list-icon class="fas fa-plug-circle-bolt"></mat-icon>
         <p mat-line>
-            {{'lang.disableLad' | translate}}
+            {{'lang.disableMercureLad' | translate}}
         </p>
     </a>
 
@@ -31,28 +31,3 @@
         </p>
     </a>
 </mat-nav-list>
-<!--
-<mat-divider></mat-divider>
-<mat-nav-list>
-    <h3 mat-subheader>{{'lang.mws' | translate}}</h3>
-
-    <a mat-list-item routerLink="/administration/mercure/webservice">
-        <mat-icon color="primary" mat-list-icon class="fa fa-cogs"></mat-icon>
-        <p mat-line>
-            {{'lang.mwsConfig' | translate}}
-        </p>
-    </a>
-    <a mat-list-item *ngIf="config.mws.tokenMws !== ''" routerLink="/administration/mercure/webservice/listDocs">
-        <mat-icon color="primary" mat-list-icon class="fa fa-th-list"></mat-icon>
-        <p mat-line>
-            {{'lang.mwsListDocs' | translate}}
-        </p>
-    </a>
-    <a mat-list-item *ngIf="config.mws.tokenMws !== ''" routerLink="/administration/mercure/webservice/monitoring">
-        <mat-icon color="primary" mat-list-icon class="fas fa-chart-pie"></mat-icon>
-        <p mat-line>
-            {{'lang.mwsMonitoring' | translate}}
-        </p>
-    </a>
-</mat-nav-list>
--->
