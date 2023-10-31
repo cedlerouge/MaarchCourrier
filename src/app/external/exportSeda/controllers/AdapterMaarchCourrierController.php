@@ -60,6 +60,8 @@ class AdapterMaarchCourrierController
 
         $postData = new \stdClass();
         $postData->base64 = base64_encode(file_get_contents($filePath));
+        $postData->extension = $pathParts['extension'];
+        $postData->size = filesize($filePath);
 
         $res[3] = json_encode($postData);
 
