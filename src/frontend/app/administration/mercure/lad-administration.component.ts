@@ -33,7 +33,7 @@ export class LadAdministrationComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.lad'));
+        this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.mercureLad'));
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
         setInterval(() => {
             this.ladEnabled = this.ladMenuContent.isLadEnabled();

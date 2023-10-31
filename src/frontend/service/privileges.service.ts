@@ -328,7 +328,7 @@ export class PrivilegeService {
         },
         {
             'id': 'admin_mercure',
-            'label': 'lang.mercure',
+            'label': 'lang.mercureLad',
             'comment': 'lang.adminLadDesc',
             'route': '/administration/mercure',
             'unit': 'supervision',
