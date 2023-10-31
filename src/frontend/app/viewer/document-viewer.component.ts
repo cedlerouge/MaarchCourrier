@@ -1524,11 +1524,15 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
     }
 
+    /**
+     * @param type - Zoom operation type : 'in' for zoom in and 'out' for zoom out.
+     */
     zoomDocument(type: string) {
+        const zoomFactor: number = 1.2; // Increases or decreases the zoom level by 20% for each click
         if (type === 'in') {
-            this.zoom = this.zoom + 0.5;
-        } else if (type === 'out' && this.zoom >= 0) {
-            this.zoom = this.zoom - 0.5;
+            this.zoom = this.zoom * zoomFactor;
+        } else if (type === 'out') {
+            this.zoom = this.zoom / zoomFactor;
         }
     }
 }
