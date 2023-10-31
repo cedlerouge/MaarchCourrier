@@ -17,6 +17,10 @@ class ResourceFileMock implements ResourceFileInterface
 {
     public string $adrMainInfo = 'toto.pdf';
 
+    /**
+     * @param int $resId
+     * @return string
+     */
     public function getMainResourceFilePath(int $resId): string
     {
         return $this->adrMainInfo;

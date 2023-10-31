@@ -54,11 +54,70 @@ class SendToPastell
     }
 
     /**
+     * Sending data and main file to ExternalSignatoryBookTrait
+     * @param int $resId
+     * @return string[]
+     */
+    public function sendData(int $resId): array
+    {
+        $config = $this->pastellConfig->getPastellConfig();
+
+        $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
+        if (!empty($idFolder['error'])) {
+            return ['error' => $idFolder['error']];
+        }
+
+        return [
+            'sended' => [
+                'letterbox_coll' => [
+                    $resId => $idFolder['idFolder'] ?? null
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * Getting data, file content and infos fom MC to be sent
+     * @param int $resId
+     * @param string $sousType
+     * @param array $annexes
+     * @return string[]|void
+     */
+    public function sendResource(int $resId, string $sousType, array $annexes = []): array
+    {
+        // Getting data from MC (res_letterbox)
+        $mainResource = $this->resourceData->getMainResourceData($resId);
+        //$attachmentsResource = $this->resourceData->getAttachmentsData($resId);
+
+        // Checking if main document is integrated
+        if (!empty($mainResource)) {
+            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
+
+            if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
+                $resId = $mainResource['res_id'];
+                $title = $mainResource['subject'];
+                // Getting path of the main file
+                $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
+                if (str_contains($mainResourceFilePath, 'Error')) {
+                    return ['Error' => 'Document ' . $resId . ' is not converted in pdf'];
+                    //} elseif (!empty($attachmentsResource)) { // Getting attachments data
+                    //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
+                    // TODO
+                } else {
+                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath);
+                }
+            }
+        } else {
+            return ["error" => 'No folder ID retrieved from Pastell'];
+        }
+    }
+
+    /**
      * @param int $resId
      * @param string $title
      * @param string $sousType
      * @param string $filePath
-     * @return array idFolder Pastell
+     * @return array|string[]
      */
     public function sendFolderToPastell(int $resId, string $title, string $sousType, string $filePath): array
     {
@@ -109,60 +168,5 @@ class SendToPastell
             }
         }
         return ['idFolder' => $idFolder];
-    }
-
-    /**
-     * Sending data and main file to ExternalSignatoryBookTrait
-     * @param int $resId
-     * @return string[]
-     */
-    public function sendData(int $resId): array
-    {
-        $config = $this->pastellConfig->getPastellConfig();
-
-        $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
-        //Gérer les erreurs à renvoyer au trait
-
-        return [
-            'sended' => [
-                'letterbox_coll' => [
-                    $resId => $idFolder['idFolder'] ?? null
-                ]
-            ]
-        ];
-    }
-
-    /**
-     * Getting data, file content and infos fom MC to be sent
-     * @param int $resId
-     * @param string $sousType
-     * @param array $annexes
-     * @return string[]|void
-     */
-    public function sendResource(int $resId, string $sousType, array $annexes = []): array
-    {
-        // Getting data from MC (res_letterbox)
-        $mainResource = $this->resourceData->getMainResourceData($resId);
-        //$attachmentsResource = $this->resourceData->getAttachmentsData($resId);
-
-        // Checking if main document is integrated
-        if (!empty($mainResource)) {
-            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
-
-            if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
-                $resId = $mainResource['res_id'];
-                $title = $mainResource['subject'];
-                // Getting path of the main file
-                $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
-                if (str_contains($mainResourceFilePath, 'Error')) {
-                    return ['Error' => 'Document ' . $resId . ' is not converted in pdf'];
-                    //} elseif (!empty($attachmentsResource)) { // Getting attachments data
-                    //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
-                    // TODO
-                } else {
-                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath);
-                }
-            }
-        }
     }
 }

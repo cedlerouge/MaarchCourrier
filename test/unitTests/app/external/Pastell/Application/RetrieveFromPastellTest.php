@@ -32,8 +32,19 @@ class RetrieveFromPastellTest extends TestCase
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
+        $parseIParapheurLog = new ParseIParapheurLogMock(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow
+        );
+        $retrieveToPastell = new RetrieveFromPastell(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow,
+            $parseIParapheurLog
+        );
         $idsToRetrieve = [
             12 => [
                 'res_id'      => 12,
@@ -78,8 +89,19 @@ class RetrieveFromPastellTest extends TestCase
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
+        $parseIParapheurLog = new ParseIParapheurLogMock(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow
+        );
+        $retrieveToPastell = new RetrieveFromPastell(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow,
+            $parseIParapheurLog
+        );
         $idsToRetrieve = [
             12  => [
                 'res_id'      => 12,
@@ -134,8 +156,19 @@ class RetrieveFromPastellTest extends TestCase
         $processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-        $retrieveToPastell = new RetrieveFromPastell($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow, $parseIParapheurLog);
+        $parseIParapheurLog = new ParseIParapheurLogMock(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow
+        );
+        $retrieveToPastell = new RetrieveFromPastell(
+            $pastellApiMock,
+            $pastellConfigMock,
+            $pastellConfigCheck,
+            $processVisaWorkflow,
+            $parseIParapheurLog
+        );
         $idsToRetrieve = [
             12 => [
                 'res_id'      => 12,

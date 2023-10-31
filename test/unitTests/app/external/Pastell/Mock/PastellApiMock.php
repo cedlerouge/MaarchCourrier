@@ -37,8 +37,8 @@ class PastellApiMock implements PastellApiInterface
     public object $journalXml;
     public array $orientation = [];
     public bool $verificationIparapheur = true;
+    public bool $sendIparapheur = true;
     public string $adrMainInfo = '';
-
 
     /**
      * @param PastellConfig $config
@@ -184,11 +184,11 @@ class PastellApiMock implements PastellApiInterface
     /**
      * @param PastellConfig|null $config
      * @param string $idDocument
-     * @return void
+     * @return bool
      */
-    public function sendIparapheur(?PastellConfig $config, string $idDocument)
+    public function sendIparapheur(PastellConfig $config, string $idDocument): bool
     {
-        // TODO: Implement sendIparapheur() method.
+        return $this->sendIparapheur;
     }
 
     /**

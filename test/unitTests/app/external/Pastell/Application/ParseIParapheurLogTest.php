@@ -164,6 +164,9 @@ class ParseIParapheurLogTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testParseLogIparapheurXmlDetailReturnAnError(): void
     {
         $pastellApiMock = new PastellApiMock();
@@ -202,7 +205,6 @@ class ParseIParapheurLogTest extends TestCase
         $resId = 42;
         $idFolder = 'djqfdh';
 
-
         $parseIParapheurLog->handleValidate($resId, $idFolder, true);
 
         $this->assertTrue($processVisaWorkflow->processVisaWorkflowCalled);
@@ -224,7 +226,6 @@ class ParseIParapheurLogTest extends TestCase
         $resId = 42;
         $idFolder = 'djqfdh';
 
-
         $parseIParapheurLog->handleValidate($resId, $idFolder, false);
 
         $this->assertFalse($processVisaWorkflow->processVisaWorkflowCalled);
@@ -245,7 +246,6 @@ class ParseIParapheurLogTest extends TestCase
         $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
-
 
         $result = $parseIParapheurLog->handleValidate($resId, $idFolder, true);
 
@@ -274,6 +274,7 @@ class ParseIParapheurLogTest extends TestCase
             $result
         );
     }
+
     /**
      * @return void
      */
@@ -289,7 +290,6 @@ class ParseIParapheurLogTest extends TestCase
         $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
-
 
         $result = $parseIParapheurLog->handleValidate($resId, $idFolder, false);
 
