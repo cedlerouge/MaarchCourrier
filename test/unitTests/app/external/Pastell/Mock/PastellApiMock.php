@@ -36,9 +36,12 @@ class PastellApiMock implements PastellApiInterface
     public array $documentsDownload = [];
     public object $journalXml;
     public array $orientation = [];
-    public bool $verificationIparapheur = true;
+    public string $verificationIparapheurFailedId = '';
     public bool $sendIparapheur = true;
     public string $adrMainInfo = '';
+
+    public array $uploadedAnnexes = [];
+    public array $uploadAnnexError = [];
 
     /**
      * @param PastellConfig $config
@@ -168,7 +171,7 @@ class PastellApiMock implements PastellApiInterface
      */
     public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
     {
-        return $this->verificationIparapheur;
+        return $this->verificationIparapheurFailedId !== $idDocument;
     }
 
     /**
@@ -200,7 +203,11 @@ class PastellApiMock implements PastellApiInterface
      */
     public function uploadAttachmentFile(PastellConfig $config, string $idFolder, string $filePath, int $nbAttachments): array
     {
-        // TODO: Implement uploadAttachmentFile() method.
+        if (empty($this->uploadAnnexError)) {
+            $this->uploadedAnnexes[] = ['nb' => $nbAttachments, 'filePath' => $filePath];
+        }
+
+        return $this->uploadAnnexError;
     }
 
     /**

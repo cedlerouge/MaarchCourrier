@@ -17,41 +17,33 @@ namespace ExternalSignatoryBook\pastell\Application;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
-use ExternalSignatoryBook\pastell\Domain\PastellStates;
-use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
 
 class RetrieveFromPastell
 {
     private PastellApiInterface $pastellApi;
     private PastellConfigInterface $pastellConfig;
     private PastellConfigurationCheck $pastellConfigCheck;
-    private ProcessVisaWorkflowInterface $processVisaWorkflow;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
-    private PastellStates $pastellStates;
 
     /**
      * @param PastellApiInterface $pastellApi
      * @param PastellConfigInterface $pastellConfig
      * @param PastellConfigurationCheck $pastellConfigCheck
-     * @param ProcessVisaWorkflowInterface $processVisaWorkflow
      * @param ParseIParapheurLog $parseIParapheurLog
      */
     public function __construct(
         PastellApiInterface          $pastellApi,
         PastellConfigInterface       $pastellConfig,
         PastellConfigurationCheck    $pastellConfigCheck,
-        ProcessVisaWorkflowInterface $processVisaWorkflow,
         ParseIParapheurLog           $parseIParapheurLog
     )
     {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
         $this->pastellConfigCheck = $pastellConfigCheck;
-        $this->processVisaWorkflow = $processVisaWorkflow;
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
-        $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
     /**
@@ -60,6 +52,12 @@ class RetrieveFromPastell
      */
     public function retrieve(array $idsToRetrieve): array
     {
+        if (!$this->pastellConfigCheck->checkPastellConfig()) {
+            return ['success' => [], 'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
+        }
+
+        $errors = [];
+
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
             if (!empty($info['error'])) {
@@ -68,13 +66,24 @@ class RetrieveFromPastell
                 if (in_array('verif-iparapheur', $info['actionPossibles'])) {
                     $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
                     if ($verif !== true) {
-                        return ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (termine) ne permet pas de déclencher cette action'];
+                        $errors[$key] = 'Action "verif-iparapheur" failed';
+                        unset($idsToRetrieve[$key]);
+                        continue;
                     }
                 }
+
                 $result = $this->parseIParapheurLog->parseLogIparapheur($value['res_id'], $value['external_id']);
+
+                if (!empty($result['error'])) {
+                    $errors[$key] = $result['error'];
+                    unset($idsToRetrieve[$key]);
+                    continue;
+                }
+
                 $idsToRetrieve[$key] = array_merge($value, $result);
             }
         }
-        return $idsToRetrieve;
+
+        return ['success' => $idsToRetrieve, 'error' => $errors];
     }
 }

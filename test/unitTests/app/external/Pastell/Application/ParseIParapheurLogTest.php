@@ -7,7 +7,7 @@
  *
  */
 
-namespace unitTests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
@@ -110,7 +110,7 @@ class ParseIParapheurLogTest extends TestCase
         $pastellApiMock->journalXml = new \stdClass();
         $pastellApiMock->journalXml->LogDossier = new \stdClass();
         $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'view'; // Status not validated and not refused
         $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
         $pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = 'Nom';
         $pastellApiMock->journalXml->LogDossier->LogDossier[1]->annotation = 'annotation';
@@ -183,7 +183,7 @@ class ParseIParapheurLogTest extends TestCase
 
         $this->assertSame(
             [
-                'status' => 'waiting',
+                'error' => 'Erreur',
             ],
             $result
         );
@@ -213,7 +213,7 @@ class ParseIParapheurLogTest extends TestCase
     /**
      * @return void
      */
-    public function testHandleValidateVisaWorkFlowIsCalledIfIsNotSigned(): void
+    public function testHandleValidateVisaWorkFlowIsNotCalledIfIsNotSigned(): void
     {
         $pastellApiMock = new PastellApiMock();
         $pastellApiMock->documentsDownload = [

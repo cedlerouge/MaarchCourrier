@@ -17,6 +17,8 @@ class ResourceFileMock implements ResourceFileInterface
 {
     public string $adrMainInfo = 'toto.pdf';
 
+    public string $attachmentFilePath = '';
+
     /**
      * @param int $resId
      * @return string
@@ -27,11 +29,12 @@ class ResourceFileMock implements ResourceFileInterface
     }
 
     /**
-     * @param array $attachmentsResource
-     * @return array
+     * @param int $resId
+     * @param string $fingerprint
+     * @return string
      */
-    public function getAttachmentsFilePath(array $attachmentsResource): array
+    public function getAttachmentFilePath(int $resId, string $fingerprint): string
     {
-        // TODO: Implement getAttachmentsFilePath() method.
+        return $this->attachmentFilePath;
     }
 }

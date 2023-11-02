@@ -7,7 +7,7 @@
  *
  */
 
-namespace unitTests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
@@ -19,6 +19,7 @@ use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceFileMock;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\SendToPastellSpy;
 use PHPUnit\Framework\TestCase;
 
 class SendToPastellTest extends TestCase
@@ -198,7 +199,7 @@ class SendToPastellTest extends TestCase
 
         $result = $sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['Error' => 'Document ' . $resId . ' is not converted in pdf'], $result);
+        $this->assertSame(['error' => 'Document ' . $resId . ' is not converted in pdf'], $result);
     }
 
     /**
@@ -498,5 +499,139 @@ class SendToPastellTest extends TestCase
             ['error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'],
             $result
         );
+    }
+
+    public function testNonSignableAttachementIsSentAsAnAnnex(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellApiMock->documentDetails['actionPossibles'] = ['send-iparapheur'];
+        $pastellApiMock->sendIparapheur = false;
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+
+        $resourceData->attachmentTypes = [
+            'type_signable'     => [
+                'signable' => true
+            ],
+            'type_not_signable' => [
+                'signable' => false
+            ]
+        ];
+        $resourceData->attachments = [
+            [
+                'res_id'          => 1,
+                'attachment_type' => 'type_not_signable',
+                'fingerprint'     => 'azerty'
+            ],
+            [
+                'res_id'          => 2,
+                'attachment_type' => 'type_signable',
+                'fingerprint'     => 'azerty'
+            ]
+        ];
+
+        $resourceFile = new ResourceFileMock();
+        $resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
+        $sendToPastell = new SendToPastellSpy(
+            $pastellConfigCheck,
+            $pastellApiMock,
+            $pastellConfigMock,
+            $resourceData,
+            $resourceFile,
+            $processVisaWorkflow
+        );
+
+        $resId = 0;
+        $sousType = 'courrier';
+
+        $sendToPastell->sendResource($resId, $sousType);
+
+        $this->assertSame(
+            [
+                '/path/to/attachment.pdf'
+            ],
+            $sendToPastell->annexes
+        );
+    }
+
+    public function testPastellIsCalledForEveryAnnexUploaded(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellApiMock->documentDetails['actionPossibles'] = ['send-iparapheur'];
+        $pastellApiMock->sendIparapheur = false;
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell(
+            $pastellConfigCheck,
+            $pastellApiMock,
+            $pastellConfigMock,
+            $resourceData,
+            $resourceFile,
+            $processVisaWorkflow
+        );
+
+        $resId = 0;
+        $title = '';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
+        $annexes = [
+            '/path/to/attachment1.pdf',
+            '/path/to/attachment2.pdf',
+        ];
+
+        $sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath, $annexes);
+
+        $this->assertSame(
+            [
+                [
+                    'nb' => 0,
+                    'filePath' => '/path/to/attachment1.pdf'
+                ],
+                [
+                    'nb' => 1,
+                    'filePath' => '/path/to/attachment2.pdf'
+                ]
+            ],
+            $pastellApiMock->uploadedAnnexes
+        );
+    }
+
+    public function testWhenAnnexUploadFailsWeUploadTheFolderAnyway(): void
+    {
+        $pastellApiMock = new PastellApiMock();
+        $pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
+        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $resourceData = new ResourceDataMock();
+        $resourceFile = new ResourceFileMock();
+        $sendToPastell = new SendToPastell(
+            $pastellConfigCheck,
+            $pastellApiMock,
+            $pastellConfigMock,
+            $resourceData,
+            $resourceFile,
+            $processVisaWorkflow
+        );
+
+        $pastellApiMock->uploadAnnexError = ['error' => 'Error uploading annex'];
+
+        $resId = 0;
+        $title = '';
+        $sousType = 'courrier';
+        $filePath = '/test/toto.pdf';
+        $annexes = [
+            '/path/to/attachment1.pdf',
+            '/path/to/attachment2.pdf',
+        ];
+
+        $result = $sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath, $annexes);
+
+        $this->assertSame([], $pastellApiMock->uploadedAnnexes);
+        $this->assertSame(['idFolder' => 'hfqvhv'], $result);
     }
 }

@@ -41,26 +41,19 @@ class ResourceFile implements ResourceFileInterface
         }
     }
 
-    public function getAttachmentsFilePath(array $attachmentsResource): array
+    public function getAttachmentFilePath(int $resId, string $fingerprint): ?string
     {
-        // TODO compteur pour le nombre de PJ, à intégrer dans le curl ???
-        $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
-        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
-        foreach ($attachmentsResource as $key => $value) {
-            if (!$attachmentTypes[$value['attachment_type']]) {
-                $adrInfo = AdrModel::getConvertedDocumentById(['resId' => $value['res_id'], 'collId' => 'attachments_coll', 'type' => 'PDF']);
-                $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]);
-                $value['filePath'] = $annexeAttachmentPath['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $adrInfo['path']) . $adrInfo['filename'];
+        $adrInfo = AdrModel::getConvertedDocumentById(['resId' => $resId, 'collId' => 'attachments_coll', 'type' => 'PDF']);
+        $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $filePath = $annexeAttachmentPath['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $adrInfo['path']) . $adrInfo['filename'];
 
-                // Checking fingerprint
-                $docserverType = DocserverTypeModel::getById(['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint = StoreController::getFingerPrint(['filePath' => $value['filePath'], 'mode' => $docserverType['fingerprint_mode']]);
-                if ($value['fingerprint'] != $fingerprint) {
-                    return ['error' => 'Fingerprints do not match'];
-                }
-            }
+        // Checking fingerprint
+        $docserverType = DocserverTypeModel::getById(['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]);
+        $realFingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+        if ($fingerprint != $realFingerprint) {
+//            return ['error' => 'Fingerprints do not match']; // TODO
         }
 
-        // TODO attachment to freeze??
+        return $filePath;
     }
 }

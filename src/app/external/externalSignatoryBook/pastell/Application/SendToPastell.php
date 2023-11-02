@@ -87,7 +87,20 @@ class SendToPastell
     {
         // Getting data from MC (res_letterbox)
         $mainResource = $this->resourceData->getMainResourceData($resId);
-        //$attachmentsResource = $this->resourceData->getAttachmentsData($resId);
+        $attachments = $this->resourceData->getIntegratedAttachmentsData($resId);
+        $attachmentTypes = $this->resourceData->getAttachmentTypes();
+
+        $annexes = [];
+        foreach ($attachments as $key => $attachment) {
+            $type = $attachmentTypes[$attachment['attachment_type']];
+            if (empty($type['signable'])) {
+                // Attachment is not signable, so it is an annex
+                $filePath = $this->resourceFile->getAttachmentFilePath($attachment['res_id'], $attachment['fingerprint']);
+
+                $annexes[] = $filePath;
+                unset($attachments[$key]);
+            }
+        }
 
         // Checking if main document is integrated
         if (!empty($mainResource)) {
@@ -99,16 +112,16 @@ class SendToPastell
                 // Getting path of the main file
                 $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
                 if (str_contains($mainResourceFilePath, 'Error')) {
-                    return ['Error' => 'Document ' . $resId . ' is not converted in pdf'];
+                    return ['error' => 'Document ' . $resId . ' is not converted in pdf'];
                     //} elseif (!empty($attachmentsResource)) { // Getting attachments data
                     //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
                     // TODO
                 } else {
-                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath);
+                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath, $annexes);
                 }
             }
         } else {
-            return ["error" => 'No folder ID retrieved from Pastell'];
+            return ["error" => 'No folder ID retrieved from Pastell']; // TODO changer message erreur
         }
     }
 
@@ -117,9 +130,10 @@ class SendToPastell
      * @param string $title
      * @param string $sousType
      * @param string $filePath
+     * @param array $annexes
      * @return array|string[]
      */
-    public function sendFolderToPastell(int $resId, string $title, string $sousType, string $filePath): array
+    public function sendFolderToPastell(int $resId, string $title, string $sousType, string $filePath, array $annexes = []): array
     {
         $config = $this->pastellConfig->getPastellConfig();
 
@@ -137,36 +151,44 @@ class SendToPastell
         if (!empty($iParapheurSousType['error'])) {
             return ['error' => $iParapheurSousType['error']];
         } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-            return ['error' => 'Subtype does not exist in iParapheur'];
+            return ['error' => 'Subtype does not exist in iParapheur']; // TODO !!!!
         }
 
         // Sending data to the folder
         $editResult = $this->pastellApi->editFolder($config, $idFolder, $title, $sousType);
         if (!empty($editResult['error'])) {
             return ['error' => $editResult['error']];
-        } else {
-            // uploading main file
-            $uploadResult = $this->pastellApi->uploadMainFile($config, $idFolder, $filePath);
-            if (!empty($uploadResult['error'])) {
-                return ['error' => $uploadResult['error']];
-                // TODO uploading attachment if exists
-            } else {
-                // Sending folder to iParapheur
-                $orientationResult = $this->pastellApi->orientation($config, $idFolder);
-                if (!empty($orientationResult['error'])) {
-                    return ['error' => $orientationResult['error']];
-                } else {
-                    $info = $this->pastellApi->getFolderDetail($config, $idFolder);
-                    if (in_array('send-iparapheur', $info['actionPossibles'])) {
-                        $sendIparapheur = $this->pastellApi->sendIparapheur($config, $idFolder);
-                        if (!$sendIparapheur) {
-                            return ['error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'];
-                        }
-                    }
-                    $this->processVisaWorkflow->processVisaWorkflow($resId, false);
-                }
+        }
+
+        // uploading main file
+        $uploadResult = $this->pastellApi->uploadMainFile($config, $idFolder, $filePath);
+        if (!empty($uploadResult['error'])) {
+            return ['error' => $uploadResult['error']];
+        }
+
+        $annexCount = 0;
+        foreach ($annexes as $annex) {
+            $uploadResult = $this->pastellApi->uploadAttachmentFile($config, $idFolder, $annex, $annexCount);
+            if (empty($uploadResult['error'])) {
+                $annexCount++;
             }
         }
+
+        // Sending folder to iParapheur
+        $orientationResult = $this->pastellApi->orientation($config, $idFolder);
+        if (!empty($orientationResult['error'])) {
+            return ['error' => $orientationResult['error']];
+        }
+
+        $info = $this->pastellApi->getFolderDetail($config, $idFolder);
+        if (in_array('send-iparapheur', $info['actionPossibles'])) {
+            $sendIparapheur = $this->pastellApi->sendIparapheur($config, $idFolder);
+            if (!$sendIparapheur) {
+                return ['error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'];
+            }
+        }
+        $this->processVisaWorkflow->processVisaWorkflow($resId, false);
+
         return ['idFolder' => $idFolder];
     }
 }

@@ -258,9 +258,10 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
         $retrievedLetterboxMails = IxbusController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'resLetterbox']);
     } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
         $retrieveFromPastell = RetrieveFromPastellFactory::create();
-        $retrievedLetterboxMails = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox']);
+        $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox']);
 
-        $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMails;
+        $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMailsFromPastell['success'];
+        $retrievedLetterboxMails['error']['resLetterbox'] = $retrievedLetterboxMailsFromPastell['error'];
     }
     $retrievedMails['resLetterbox'] = $retrievedLetterboxMails['resLetterbox'] ?? [];
     if (empty($retrievedMails['error'])) {
