@@ -78,6 +78,8 @@ export class NotificationService {
                     this.error(this.translate.instant('lang.documentOutOfPerimeter'));
                 } else if (err.error.errors === 'Resources out of perimeter') {
                     this.error(this.translate.instant('lang.documentsOutOfPerimeter'));
+                } else if (err.error.errors === 'Authentication Failed') {
+                    this.error(this.translate.instant('lang.sessionExpired'));
                 } else {
                     this.error(err.error.errors, err.url);
                 }
