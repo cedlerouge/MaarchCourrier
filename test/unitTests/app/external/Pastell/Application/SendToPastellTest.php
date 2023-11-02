@@ -77,7 +77,8 @@ class SendToPastellTest extends TestCase
                 'sended' => [
                     'letterbox_coll' => [
                         42 => 'hfqvhv' ?? null
-                    ]
+                    ],
+                    'attachments_coll' => []
                 ]
             ],
             $result
@@ -138,6 +139,46 @@ class SendToPastellTest extends TestCase
                 'sended' => [
                     'letterbox_coll' => [
                         42 => 'hfqvhv'
+                    ],
+                    'attachments_coll' => []
+                ]
+            ],
+            $result
+        );
+    }
+
+    public function testSendResourceWithSignableAttachments(): void
+    {
+        $this->resourceData->attachmentTypes = [
+            'type_signable'     => true,
+            'type_not_signable' => false
+        ];
+        $this->resourceData->attachments = [
+            [
+                'res_id'          => 1,
+                'attachment_type' => 'type_not_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Not signable PJ'
+            ],
+            [
+                'res_id'          => 2,
+                'attachment_type' => 'type_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Signable PJ'
+            ]
+        ];
+        $this->resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
+
+        $result = $this->sendToPastell->sendData(42);
+
+        $this->assertSame(
+            [
+                'sended' => [
+                    'letterbox_coll' => [
+                        42 => 'hfqvhv'
+                    ],
+                    'attachments_coll' => [
+                        2 => 'hfqvhv'
                     ]
                 ]
             ],
@@ -442,7 +483,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['idFolder' => 'hfqvhv'], $result);
+        $this->assertSame(['attachments' => [], 'resource' => 'hfqvhv'], $result);
     }
 
     /**
@@ -464,26 +505,16 @@ class SendToPastellTest extends TestCase
 
     public function testNonSignableAttachementIsSentAsAnAnnex(): void
     {
-        $this->pastellApiMock->documentDetails['actionPossibles'] = ['send-iparapheur'];
-        $this->pastellApiMock->sendIparapheur = false;
         $this->resourceData->attachmentTypes = [
-            'type_signable'     => [
-                'signable' => true
-            ],
-            'type_not_signable' => [
-                'signable' => false
-            ]
+            'type_signable'     => true,
+            'type_not_signable' => false
         ];
         $this->resourceData->attachments = [
             [
                 'res_id'          => 1,
                 'attachment_type' => 'type_not_signable',
-                'fingerprint'     => 'azerty'
-            ],
-            [
-                'res_id'          => 2,
-                'attachment_type' => 'type_signable',
-                'fingerprint'     => 'azerty'
+                'fingerprint'     => 'azerty',
+                'title'           => 'Not signable PJ'
             ]
         ];
         $this->resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
@@ -496,6 +527,88 @@ class SendToPastellTest extends TestCase
         $this->assertSame(
             [
                 '/path/to/attachment.pdf'
+            ],
+            $this->sendToPastell->annexes
+        );
+    }
+
+    public function testSignableAttachementsAreSentAsADocumentToSign(): void
+    {
+        $this->resourceData->attachmentTypes = [
+            'type_signable'     => true,
+            'type_not_signable' => false
+        ];
+        $this->resourceData->attachments = [
+            [
+                'res_id'          => 1,
+                'attachment_type' => 'type_not_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Not signable PJ'
+            ],
+            [
+                'res_id'          => 2,
+                'attachment_type' => 'type_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Signable PJ'
+            ]
+        ];
+        $this->resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
+
+        $resId = 0;
+        $sousType = 'courrier';
+
+        $result = $this->sendToPastell->sendResource($resId, $sousType);
+
+        $this->assertSame(
+            [
+                'attachments' => [
+                    2 => 'hfqvhv',
+                ],
+                'resource' => 'hfqvhv'
+            ],
+            $result
+        );
+        $this->assertSame(
+            [
+                'blabablblalba', // main resource title
+                'Signable PJ'
+            ],
+            $this->sendToPastell->titlesGiven
+        );
+    }
+
+    public function testMainResourceFileIsSentAsAnnexForSignableAttachments(): void
+    {
+        $this->resourceData->attachmentTypes = [
+            'type_signable' => true
+        ];
+        $this->resourceData->attachments = [
+            [
+                'res_id'          => 2,
+                'attachment_type' => 'type_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Signable PJ'
+            ]
+        ];
+        $this->resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
+
+        $resId = 0;
+        $sousType = 'courrier';
+
+        $result = $this->sendToPastell->sendResource($resId, $sousType);
+
+        $this->assertSame(
+            [
+                'attachments' => [
+                    2 => 'hfqvhv',
+                ],
+                'resource' => 'hfqvhv'
+            ],
+            $result
+        );
+        $this->assertSame(
+            [
+                'toto.pdf'
             ],
             $this->sendToPastell->annexes
         );

@@ -40,7 +40,6 @@ class PastellApiMock implements PastellApiInterface
     public array $orientation = [];
     public string $verificationIparapheurFailedId = '';
     public bool $sendIparapheur = true;
-    public string $adrMainInfo = '';
 
     public array $uploadedAnnexes = [];
     public array $uploadAnnexError = [];
