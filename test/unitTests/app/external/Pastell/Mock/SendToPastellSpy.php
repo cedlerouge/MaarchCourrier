@@ -12,10 +12,13 @@ class SendToPastellSpy extends SendToPastell
 
     public string $sousTypeGiven = '';
 
+    public array $titlesGiven = [];
+
     public function sendFolderToPastell(int $resId, string $title, string $sousType, string $filePath, array $annexes = []): array
     {
         $this->annexes = $annexes;
         $this->sousTypeGiven = $sousType;
+        $this->titlesGiven[] = $title;
 
         return parent::sendFolderToPastell($resId, $title, $sousType, $filePath, $annexes);
     }

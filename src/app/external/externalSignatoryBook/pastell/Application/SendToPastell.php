@@ -38,6 +38,7 @@ class SendToPastell
      * @param ResourceDataInterface $resourceData
      * @param ResourceFileInterface $resourceFile
      * @param ProcessVisaWorkflowInterface $processVisaWorkflow
+     * @param VisaCircuitDataInterface $visaCircuitData
      */
     public function __construct(
         PastellConfigurationCheck    $checkConfigPastell,
@@ -69,6 +70,7 @@ class SendToPastell
         }
 
         $config = $this->pastellConfig->getPastellConfig();
+
         $sousType = $config->getIparapheurSousType();
 
         $nextSignatory = $this->visaCircuitData->getNextSignatory($resId);
@@ -76,16 +78,17 @@ class SendToPastell
             $sousType = $nextSignatory['userId'];
         }
 
-        $idFolder = $this->sendResource($resId, $sousType);
-        if (!empty($idFolder['error'])) {
-            return ['error' => $idFolder['error']];
+        $sentResource = $this->sendResource($resId, $sousType);
+        if (!empty($sentResource['error'])) {
+            return ['error' => $sentResource['error']];
         }
 
         return [
             'sended' => [
                 'letterbox_coll' => [
-                    $resId => $idFolder['idFolder'] ?? null
-                ]
+                    $resId => $sentResource['resource'] ?? null
+                ],
+                'attachments_coll' => $sentResource['attachments']
             ]
         ];
     }
@@ -94,10 +97,9 @@ class SendToPastell
      * Getting data, file content and infos fom MC to be sent
      * @param int $resId
      * @param string $sousType
-     * @param array $annexes
      * @return string[]|void
      */
-    public function sendResource(int $resId, string $sousType, array $annexes = []): array
+    public function sendResource(int $resId, string $sousType): array
     {
         // Getting data from MC (res_letterbox)
         $mainResource = $this->resourceData->getMainResourceData($resId);
@@ -110,34 +112,62 @@ class SendToPastell
         $attachmentTypes = $this->resourceData->getAttachmentTypes();
 
         $annexes = [];
-        foreach ($attachments as $key => $attachment) {
+        $signAttachments = [];
+        foreach ($attachments as $attachment) {
             $type = $attachmentTypes[$attachment['attachment_type']];
-            if (empty($type['signable'])) {
-                // Attachment is not signable, so it is an annex
-                $filePath = $this->resourceFile->getAttachmentFilePath($attachment['res_id'], $attachment['fingerprint']);
+            $filePath = $this->resourceFile->getAttachmentFilePath($attachment['res_id'], $attachment['fingerprint']);
 
+            if (empty($type)) {
+                // Attachment is not signable, so it is an annex
                 $annexes[] = $filePath;
-                unset($attachments[$key]);
+            } else {
+                $signAttachments[] = [
+                    'resId' => $attachment['res_id'],
+                    'title' => $attachment['title'],
+                    'path'  => $filePath
+                ];
             }
         }
+
+        $sentDocuments = ['attachments' => [], 'resource' => []];
 
         // Checking if main document is integrated
         $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
 
+        $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
         if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
             $resId = $mainResource['res_id'];
             $title = $mainResource['subject'];
             // Getting path of the main file
-            $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
             if (str_contains($mainResourceFilePath, 'Error')) {
                 return ['error' => 'Document ' . $resId . ' is not converted in pdf'];
-                //} elseif (!empty($attachmentsResource)) { // Getting attachments data
-                //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
-                // TODO
-            } else {
-                return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath, $annexes);
             }
+
+            $sent = $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath, $annexes);
+            if (!empty($sent['error'])) {
+                return ['error' => $sent['error']];
+            }
+            $sentDocuments['resource'] = $sent['idFolder'] ?? null;
         }
+
+        $annexes[] = $mainResourceFilePath;
+
+        foreach ($signAttachments as $signAttachment) {
+            $sent = $this->sendFolderToPastell(
+                $resId,
+                $signAttachment['title'],
+                $sousType,
+                $signAttachment['path'],
+                $annexes
+            );
+
+            if (!empty($sent['error'])) {
+                return ['error' => $sent['error']];
+            }
+            $sentDocuments['attachments'][$signAttachment['resId']] = $sent['idFolder'] ?? null;
+        }
+
+        return $sentDocuments;
     }
 
     /**
