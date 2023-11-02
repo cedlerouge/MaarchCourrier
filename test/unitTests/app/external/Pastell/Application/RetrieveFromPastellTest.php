@@ -83,7 +83,7 @@ class RetrieveFromPastellTest extends TestCase
         );
         $this->assertSame(
             [
-               12 => 'Error when getting folder detail : An error occurred !'
+                12 => 'Error when getting folder detail : An error occurred !'
             ],
             $result['error']
         );
@@ -266,7 +266,7 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id'   => 'testKO',
                 'res_id_master' => 420
             ],
-            40  => [
+            40 => [
                 'res_id'        => 40,
                 'external_id'   => 'djqfdh',
                 'res_id_master' => 42
@@ -287,7 +287,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile'   => 'toto'
                     ]
                 ],
-                'error' => [
+                'error'   => [
                     43 => 'Could not parse log'
                 ],
             ],
