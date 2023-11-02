@@ -6,7 +6,7 @@ namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\VisaCircuitDataInterface;
 
-class VisaCircuitMock implements VisaCircuitDataInterface
+class VisaCircuitDataMock implements VisaCircuitDataInterface
 {
     public string $signatoryUserId = '';
 
