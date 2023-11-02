@@ -168,7 +168,7 @@
                 <i class="fa fa-chevron-left" aria-hidden="true" *ngIf="showLeftPanel"></i>
                 <i class="fa fa-chevron-right" aria-hidden="true" *ngIf="!showLeftPanel"></i>
             </div>
-            <div class="contentShow" style="overflow: none">
+            <div class="contentShow">
                 <div *ngIf="signatureBook.attachments[rightSelectedThumbnail] && !showAttachmentPanel"
                     style="height:100%;overflow: auto;">
                     <div [ngStyle]="{'display': showTopRightPanel ? 'block' : 'none'}" class="pjDetails">
