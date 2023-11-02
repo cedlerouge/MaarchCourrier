@@ -15,7 +15,7 @@
                     {{'lang.changeMyPassword' | translate}}
                 </p>
             </a>
-            <a mat-list-item (click)="copyAuthToken();">
+            <a mat-list-item [title]="'lang.copyAuthTokenDesc' | translate" (click)="copyAuthToken();">
                 <mat-icon color="primary" mat-list-icon class="fas fa-fingerprint"></mat-icon>
                 <p mat-line>
                     {{'lang.copyAuthToken' | translate}}
