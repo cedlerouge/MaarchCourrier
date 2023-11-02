@@ -1,6 +1,6 @@
 <mat-sidenav-container autosize class="maarch-container">
     <ng-template #adminMenuTemplate>
-        <app-admin-menu-mercure #ladMenuContent></app-admin-menu-mercure>
+        <app-admin-menu-mercure #ladMenuContent (setLadEnabledEv)="setLadEnabled($event)"></app-admin-menu-mercure>
     </ng-template>
     <mat-sidenav-content>
         <div class="bg-head">

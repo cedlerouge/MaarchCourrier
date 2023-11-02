@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 
 import { AppService } from '@service/app.service';
@@ -18,13 +17,12 @@ export class LadAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
     @ViewChild('ladMenuContent') ladMenuContent: LadAdministrationMenuComponent;
 
-    loading: boolean = false;
+    loading: boolean = true;
     ladEnabled: boolean;
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         private headerService: HeaderService,
         public appService: AppService,
         public functions: FunctionsService,
@@ -35,8 +33,10 @@ export class LadAdministrationComponent implements OnInit {
     ngOnInit(): void {
         this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.mercureLad'));
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
-        setInterval(() => {
-            this.ladEnabled = this.ladMenuContent.isLadEnabled();
-        }, 500);
+    }
+
+    setLadEnabled(state: boolean) {
+        this.ladEnabled = state;
+        this.loading = false;
     }
 }

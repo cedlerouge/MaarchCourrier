@@ -7,7 +7,7 @@
             {{'lang.informations' | translate}}
         </p>
     </a>
-    <a mat-list-item *ngIf="!config.enabledLad" (click)="launchTest()" [ngStyle]="{'pointer-events': loading ? 'none' : 'auto'}">
+    <a mat-list-item *ngIf="!config.enabledLad" (click)="launchTest()" [disabled]="loading">
         <mat-icon mat-list-icon class="green fas fa-plug"></mat-icon>
         <p mat-line>
             {{'lang.testAndActivate' | translate}}
@@ -17,11 +17,14 @@
         </span>
     </a>
 
-    <a mat-list-item *ngIf="config.enabledLad" (click)="setLadConf(false)" >
+    <a mat-list-item *ngIf="config.enabledLad" (click)="setLadConf(false)" [disabled]="loading">
         <mat-icon color="warn" mat-list-icon class="fas fa-plug-circle-bolt"></mat-icon>
         <p mat-line>
             {{'lang.disableMercureLad' | translate}}
         </p>
+        <span *ngIf="loading" style="display:flex;height:24px;width:24px;">
+            <mat-spinner style="margin:auto;" [diameter]="24"></mat-spinner>
+        </span>
     </a>
 
     <a mat-list-item routerLink="/administration/mercure/contacts" >
