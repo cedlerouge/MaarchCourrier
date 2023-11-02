@@ -158,10 +158,10 @@ class PastellApi implements PastellApiInterface
 
     /**
      * Creating a folder
-     * @param $config
+     * @param PastellConfig $config
      * @return array|string[]
      */
-    public function createFolder($config): array
+    public function createFolder(PastellConfig $config): array
     {
         $response = CurlModel::exec([
             'url'         => $config->getUrl() . '/entite/' . $config->getEntity() . '/document',

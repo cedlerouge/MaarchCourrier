@@ -33,10 +33,10 @@ class RetrieveFromPastell
      * @param ParseIParapheurLog $parseIParapheurLog
      */
     public function __construct(
-        PastellApiInterface          $pastellApi,
-        PastellConfigInterface       $pastellConfig,
-        PastellConfigurationCheck    $pastellConfigCheck,
-        ParseIParapheurLog           $parseIParapheurLog
+        PastellApiInterface       $pastellApi,
+        PastellConfigInterface    $pastellConfig,
+        PastellConfigurationCheck $pastellConfigCheck,
+        ParseIParapheurLog        $parseIParapheurLog
     )
     {
         $this->pastellApi = $pastellApi;

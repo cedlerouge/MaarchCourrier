@@ -16,7 +16,6 @@ use ExternalSignatoryBook\pastell\Domain\ResourceFileInterface;
 class ResourceFileMock implements ResourceFileInterface
 {
     public string $adrMainInfo = 'toto.pdf';
-
     public string $attachmentFilePath = '';
 
     /**

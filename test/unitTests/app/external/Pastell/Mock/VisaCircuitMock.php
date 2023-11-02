@@ -10,6 +10,10 @@ class VisaCircuitMock implements VisaCircuitDataInterface
 {
     public string $signatoryUserId = '';
 
+    /**
+     * @param int $resId
+     * @return string[]
+     */
     public function getNextSignatory(int $resId): array
     {
         return [

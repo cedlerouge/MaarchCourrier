@@ -30,5 +30,8 @@ interface ResourceDataInterface
      */
     public function getIntegratedAttachmentsData(int $resId): array;
 
+    /**
+     * @return array
+     */
     public function getAttachmentTypes(): array;
 }

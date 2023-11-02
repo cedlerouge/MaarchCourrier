@@ -26,13 +26,9 @@ class SendToPastellTest extends TestCase
 
     private PastellConfigMock $pastellConfigMock;
 
-    private ProcessVisaWorkflowSpy $processVisaWorkflowSpy;
-
     private ResourceDataMock $resourceData;
 
     private ResourceFileMock $resourceFile;
-
-    private VisaCircuitMock $visaCircuitMock;
 
     private SendToPastellSpy $sendToPastell;
 
@@ -103,6 +99,9 @@ class SendToPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testCannotSendDataWhenConfigurationIsInvalid(): void
     {
         $this->pastellConfigMock->pastellConfig = new PastellConfig(
@@ -126,6 +125,9 @@ class SendToPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testSendDataUsesNextSignatoryUserIdAsTheSousType(): void
     {
         $this->visaCircuitData->signatoryUserId = 'ppetit';
@@ -424,11 +426,11 @@ class SendToPastellTest extends TestCase
         $this->assertSame(
             [
                 [
-                    'nb' => 0,
+                    'nb'       => 0,
                     'filePath' => '/path/to/attachment1.pdf'
                 ],
                 [
-                    'nb' => 1,
+                    'nb'       => 1,
                     'filePath' => '/path/to/attachment2.pdf'
                 ]
             ],
@@ -436,6 +438,9 @@ class SendToPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testWhenAnnexUploadFailsWeUploadTheFolderAnyway(): void
     {
         $this->pastellApiMock->uploadAnnexError = ['error' => 'Error uploading annex'];
@@ -461,6 +466,9 @@ class SendToPastellTest extends TestCase
      * ----------------------------------------------------------------------------------------
      */
 
+    /**
+     * @return void
+     */
     public function testCannotSendResourceIfMainResourceDoesNotExist(): void
     {
         $this->resourceData->resourceExist = false;
@@ -502,7 +510,9 @@ class SendToPastellTest extends TestCase
         $this->assertSame(['error' => 'Document ' . $resId . ' is not converted in pdf'], $result);
     }
 
-
+    /**
+     * @return void
+     */
     public function testNonSignableAttachementIsSentAsAnAnnex(): void
     {
         $this->resourceData->attachmentTypes = [
