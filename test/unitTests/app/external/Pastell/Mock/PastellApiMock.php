@@ -34,13 +34,11 @@ class PastellApiMock implements PastellApiInterface
         true
     ];
     public string $sousTypeUsed = '';
-
     public array $documentsDownload = [];
     public object $journalXml;
     public array $orientation = [];
     public string $verificationIparapheurFailedId = '';
     public bool $sendIparapheur = true;
-
     public array $uploadedAnnexes = [];
     public array $uploadAnnexError = [];
 

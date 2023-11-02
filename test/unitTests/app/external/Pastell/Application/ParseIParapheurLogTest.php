@@ -18,25 +18,40 @@ use PHPUnit\Framework\TestCase;
 
 class ParseIParapheurLogTest extends TestCase
 {
+    private PastellApiMock $pastellApiMock;
+    private ProcessVisaWorkflowSpy $processVisaWorkflow;
+    private ParseIParapheurLog $parseIParapheurLog;
+
+    protected function setUp(): void
+    {
+        $this->pastellApiMock = new PastellApiMock();
+        $this->pastellApiMock->journalXml = new \stdClass();
+        $this->pastellApiMock->journalXml->MessageRetour = new \stdClass();
+        $this->pastellApiMock->journalXml->LogDossier = new \stdClass();
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
+        $this->processVisaWorkflow = new ProcessVisaWorkflowSpy();
+        $this->pastellConfigMock = new PastellConfigMock();
+        $pastellConfigCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
+        $this->parseIParapheurLog = new ParseIParapheurLog(
+            $this->pastellApiMock,
+            $this->pastellConfigMock,
+            $pastellConfigCheck,
+            $this->processVisaWorkflow
+        );
+    }
+
     /**
      * @return void
      */
     public function testParseLogIparapheurReturnCodeIsAnError(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->MessageRetour = new \stdClass();
-        $pastellApiMock->journalXml->MessageRetour->codeRetour = 'KO';
-        $pastellApiMock->journalXml->MessageRetour->severite = 'INFO';
-        $pastellApiMock->journalXml->MessageRetour->message = 'error';
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'KO';
+        $this->pastellApiMock->journalXml->MessageRetour->severite = 'INFO';
+        $this->pastellApiMock->journalXml->MessageRetour->message = 'error';
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
         $this->assertSame(['error' => 'Log KO in iParapheur : [INFO] error'], $result);
     }
@@ -57,25 +72,16 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testParseLogIparapheurDocumentIsValidated(string $state): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
-        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
-        $pastellApiMock->journalXml->MessageRetour = new \stdClass();
-        $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
+        $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
         $this->assertSame(
             [
@@ -103,27 +109,18 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testParseLogIparapheurDocumentIsRefused(string $state): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'view'; // Status not validated and not refused
-        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
-        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = 'Nom';
-        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->annotation = 'annotation';
-        $pastellApiMock->journalXml->MessageRetour = new \stdClass();
-        $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'view'; // Status not validated and not refused
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = 'Nom';
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->annotation = 'annotation';
+        $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
         $this->assertSame(
             [
@@ -139,22 +136,13 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testParseLogIparapheurDocumentIsNotRefusedAndNotValidated(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier = new \stdClass();
-        $pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
-        $pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
-        $pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = 'blabla';
-        $pastellApiMock->journalXml->MessageRetour = new \stdClass();
-        $pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = 'blabla';
+        $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
         $this->assertSame(
             [
@@ -169,17 +157,11 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testParseLogIparapheurXmlDetailReturnAnError(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->journalXml = new \stdClass();
-        $pastellApiMock->journalXml->error = 'Erreur';
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
+        $this->pastellApiMock->journalXml->error = 'Erreur';
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
         $this->assertSame(
             [
@@ -194,20 +176,15 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testHandleValidateVisaWorkFlowIsCalledIfIsSigned(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $parseIParapheurLog->handleValidate($resId, $idFolder, true);
+        $this->parseIParapheurLog->handleValidate($resId, $idFolder, true);
 
-        $this->assertTrue($processVisaWorkflow->processVisaWorkflowCalled);
+        $this->assertTrue($this->processVisaWorkflow->processVisaWorkflowCalled);
     }
 
     /**
@@ -215,20 +192,15 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testHandleValidateVisaWorkFlowIsNotCalledIfIsNotSigned(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $parseIParapheurLog->handleValidate($resId, $idFolder, false);
+        $this->parseIParapheurLog->handleValidate($resId, $idFolder, false);
 
-        $this->assertFalse($processVisaWorkflow->processVisaWorkflowCalled);
+        $this->assertFalse($this->processVisaWorkflow->processVisaWorkflowCalled);
     }
 
     /**
@@ -236,18 +208,13 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testHandleValidateTheDownloadFileReturnAnError(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'error' => 'Je suis ton erreur'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->handleValidate($resId, $idFolder, true);
+        $result = $this->parseIParapheurLog->handleValidate($resId, $idFolder, true);
 
         $this->assertSame(['error' => 'Je suis ton erreur'], $result);
     }
@@ -257,13 +224,7 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testHandleRefusedRetrieveTheNoteContent(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
-
-        $result = $parseIParapheurLog->handleRefused('Un nom', 'une note');
+        $result = $this->parseIParapheurLog->handleRefused('Un nom', 'une note');
 
         $this->assertNotEmpty($result);
         $this->assertSame(
@@ -280,18 +241,13 @@ class ParseIParapheurLogTest extends TestCase
      */
     public function testHandleValidateRetrieveTheFileInBase64(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLog($pastellApiMock, $pastellConfigMock, $pastellConfigCheck, $processVisaWorkflow);
         $resId = 42;
         $idFolder = 'djqfdh';
 
-        $result = $parseIParapheurLog->handleValidate($resId, $idFolder, false);
+        $result = $this->parseIParapheurLog->handleValidate($resId, $idFolder, false);
 
         $this->assertNotEmpty($result);
         $this->assertSame(

@@ -6,5 +6,9 @@ namespace ExternalSignatoryBook\pastell\Domain;
 
 interface VisaCircuitDataInterface
 {
+    /**
+     * @param int $resId
+     * @return array
+     */
     public function getNextSignatory(int $resId): array;
 }

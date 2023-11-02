@@ -21,11 +21,8 @@ use PHPUnit\Framework\TestCase;
 class RetrieveFromPastellTest extends TestCase
 {
     private PastellApiMock $pastellApiMock;
-
     private PastellConfigMock $pastellConfigMock;
-
     private ParseIParapheurLogMock $parseIParapheurLogMock;
-
     private RetrieveFromPastell $retrieveFromPastell;
 
     protected function setUp(): void
@@ -50,7 +47,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
-
+    /**
+     * @return void
+     */
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
         $this->pastellApiMock->documentsDownload = [
@@ -89,6 +88,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testRetrieveOneResourceFoundButNotFinishOneSignedAndOneRefused(): void
     {
         $this->pastellApiMock->documentsDownload = [
@@ -137,6 +139,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testWhenVerificationFailedForAResourceWeRetrieveTheErrorAndTheOtherResources(): void
     {
         $this->pastellApiMock->verificationIparapheurFailedId = 'testKO';
@@ -165,7 +170,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile' => 'toto'
                     ]
                 ],
-                'error' => [
+                'error'   => [
                     420 => 'Action "verif-iparapheur" failed'
                 ],
             ],
@@ -173,6 +178,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testWhenParsingTheHistoryFailedForAResourceWeRetrieveTheErrorAndTheOtherResources(): void
     {
         $this->parseIParapheurLogMock->errorResId = 420;
@@ -201,7 +209,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile' => 'toto'
                     ]
                 ],
-                'error' => [
+                'error'   => [
                     420 => 'Could not parse log'
                 ],
             ],
@@ -209,6 +217,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testCannotRetrieveResourcesFromPastellIfConfigurationIsNotValid(): void
     {
         $this->pastellConfigMock->pastellConfig = new PastellConfig(
@@ -238,7 +249,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->assertSame(
             [
                 'success' => [],
-                'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
+                'error'   => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
             ],
             $result
         );

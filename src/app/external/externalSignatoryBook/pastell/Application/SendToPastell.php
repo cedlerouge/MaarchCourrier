@@ -28,7 +28,6 @@ class SendToPastell
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
-
     private VisaCircuitDataInterface $visaCircuitData;
 
     /**
@@ -48,7 +47,8 @@ class SendToPastell
         ResourceFileInterface        $resourceFile,
         ProcessVisaWorkflowInterface $processVisaWorkflow,
         VisaCircuitDataInterface     $visaCircuitData
-    ) {
+    )
+    {
         $this->checkConfigPastell = $checkConfigPastell;
         $this->pastellConfig = $pastellConfig;
         $this->pastellApi = $pastellApi;

@@ -22,24 +22,13 @@ use SrcCore\models\CoreConfigModel;
 class PastellXmlConfig implements PastellConfigInterface
 {
     /**
-     * @param array $args
      * @return PastellConfig|null
      */
-    public function getPastellConfig(array $args = []): ?PastellConfig
+    public function getPastellConfig(): ?PastellConfig
     {
-        $customId = CoreConfigModel::getCustomId();
-        if (!empty($aArgs['customId'])) {
-            $customId = $aArgs['customId'];
-        }
-
-        if (file_exists("custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml")) {
-            $path = "custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml";
-        } else {
-            $path = 'modules/visa/xml//remoteSignatoryBooks.xml';
-        }
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         $pastellConfig = null;
-        if (file_exists($path)) {
-            $loadedXml = simplexml_load_file($path);
+        if (!empty($loadedXml)) {
             $PastellConfig = $loadedXml->xpath('//signatoryBook[id=\'pastell\']')[0] ?? null;
             if ($PastellConfig) {
                 $pastellConfig = new PastellConfig(
@@ -58,24 +47,13 @@ class PastellXmlConfig implements PastellConfigInterface
     }
 
     /**
-     * @param array $args
      * @return PastellStates|null
      */
-    public function getPastellStates(array $args = []): ?PastellStates
+    public function getPastellStates(): ?PastellStates
     {
-        $customId = CoreConfigModel::getCustomId();
-        if (!empty($aArgs['customId'])) {
-            $customId = $aArgs['customId'];
-        }
-
-        if (file_exists("custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml")) {
-            $path = "custom/{$customId}/modules/visa/xml/remoteSignatoryBooks.xml";
-        } else {
-            $path = 'modules/visa/xml//remoteSignatoryBooks.xml';
-        }
+        $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         $pastellState = null;
-        if (file_exists($path)) {
-            $loadedXml = simplexml_load_file($path);
+        if (!empty($loadedXml)) {
             $pastellState = $loadedXml->xpath('//signatoryBook[id=\'pastell\']')[0] ?? null;
             if ($pastellState) {
                 $pastellState = new PastellStates(

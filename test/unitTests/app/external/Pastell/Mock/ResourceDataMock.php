@@ -16,9 +16,7 @@ use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 class ResourceDataMock implements ResourceDataInterface
 {
     public bool $resourceExist = true;
-
     public array $attachments = [];
-
     public array $attachmentTypes = [];
 
     /**
@@ -53,6 +51,9 @@ class ResourceDataMock implements ResourceDataInterface
         return $this->attachments;
     }
 
+    /**
+     * @return array
+     */
     public function getAttachmentTypes(): array
     {
         return $this->attachmentTypes;

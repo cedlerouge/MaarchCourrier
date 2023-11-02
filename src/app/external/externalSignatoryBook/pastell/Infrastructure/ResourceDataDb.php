@@ -49,6 +49,9 @@ class ResourceDataDb implements ResourceDataInterface
         ]);
     }
 
+    /**
+     * @return array
+     */
     public function getAttachmentTypes(): array
     {
         $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
