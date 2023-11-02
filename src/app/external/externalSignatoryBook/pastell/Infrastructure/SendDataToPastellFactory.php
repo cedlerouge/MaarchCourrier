@@ -30,6 +30,7 @@ class SendDataToPastellFactory
         $resourceData = new ResourceDataDb();
         $resourceFile = new ResourceFile();
         $processVisaWorkflow = new ProcessVisaWorkflow();
+        $visaCircuitData = new VisaCircuitDataDb();
 
         return new SendToPastell(
             $pastellConfigCheck,
@@ -37,7 +38,8 @@ class SendDataToPastellFactory
             $pastellConfig,
             $resourceData,
             $resourceFile,
-            $processVisaWorkflow
+            $processVisaWorkflow,
+            $visaCircuitData
         );
     }
 }
