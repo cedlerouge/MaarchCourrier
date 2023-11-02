@@ -229,8 +229,14 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 } elseif ($configRemoteSignatoryBook['id'] == 'xParaph') {
     $retrievedMails = XParaphController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
-    // $retrieveFromPastell = RetrieveFromPastellFactory::create();
-    // $retrievedMails = $retrieveFromPastell->retrieve($idsToRetrieve);
+    $retrieveFromPastell = RetrieveFromPastellFactory::create();
+    $retrievedMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['noVersion']);
+
+    $retrievedMails['noVersion'] = $retrievedMailsFromPastell['success'];
+
+    if (!empty($retrievedMailsFromPastell['error'])) {
+        $retrievedMails['error']['noVersion'] = $retrievedMailsFromPastell['error'];
+    }
 }
 
 Bt_writeLog(['level' => 'INFO', 'message' => "Retrieve signed/annotated documents from {$configRemoteSignatoryBook['id']}"]);
@@ -261,7 +267,10 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
         $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox']);
 
         $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMailsFromPastell['success'];
-        $retrievedLetterboxMails['error']['resLetterbox'] = $retrievedLetterboxMailsFromPastell['error'];
+
+        if (!empty($retrievedLetterboxMailsFromPastell['error'])) {
+            $retrievedLetterboxMails['error']['resLetterbox'] = $retrievedLetterboxMailsFromPastell['error'];
+        }
     }
     $retrievedMails['resLetterbox'] = $retrievedLetterboxMails['resLetterbox'] ?? [];
     if (empty($retrievedMails['error'])) {
