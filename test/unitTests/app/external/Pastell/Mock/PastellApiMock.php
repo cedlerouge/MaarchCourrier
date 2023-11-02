@@ -33,6 +33,8 @@ class PastellApiMock implements PastellApiInterface
         'XELIANS COURRIER',
         true
     ];
+    public string $sousTypeUsed = '';
+
     public array $documentsDownload = [];
     public object $journalXml;
     public array $orientation = [];
@@ -116,6 +118,8 @@ class PastellApiMock implements PastellApiInterface
      */
     public function editFolder(PastellConfig $config, string $idFolder, string $title, string $sousType): array
     {
+        $this->sousTypeUsed = $sousType;
+
         return $this->dataFolder;
     }
 

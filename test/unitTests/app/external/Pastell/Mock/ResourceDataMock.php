@@ -15,6 +15,8 @@ use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 
 class ResourceDataMock implements ResourceDataInterface
 {
+    public bool $resourceExist = true;
+
     public array $attachments = [];
 
     public array $attachmentTypes = [];
@@ -25,6 +27,10 @@ class ResourceDataMock implements ResourceDataInterface
      */
     public function getMainResourceData(int $resId): array
     {
+        if (!$this->resourceExist) {
+            return [];
+        }
+
         $integrations = [
             'inShipping'      => false,
             'inSignatureBook' => true

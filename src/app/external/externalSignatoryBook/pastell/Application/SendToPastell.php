@@ -18,6 +18,7 @@ use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceFileInterface;
+use ExternalSignatoryBook\pastell\Domain\VisaCircuitDataInterface;
 
 class SendToPastell
 {
@@ -27,6 +28,8 @@ class SendToPastell
     private ProcessVisaWorkflowInterface $processVisaWorkflow;
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
+
+    private VisaCircuitDataInterface $visaCircuitData;
 
     /**
      * @param PastellConfigurationCheck $checkConfigPastell
@@ -42,15 +45,16 @@ class SendToPastell
         PastellConfigInterface       $pastellConfig,
         ResourceDataInterface        $resourceData,
         ResourceFileInterface        $resourceFile,
-        ProcessVisaWorkflowInterface $processVisaWorkflow
-    )
-    {
+        ProcessVisaWorkflowInterface $processVisaWorkflow,
+        VisaCircuitDataInterface     $visaCircuitData
+    ) {
         $this->checkConfigPastell = $checkConfigPastell;
         $this->pastellConfig = $pastellConfig;
         $this->pastellApi = $pastellApi;
         $this->resourceData = $resourceData;
         $this->resourceFile = $resourceFile;
         $this->processVisaWorkflow = $processVisaWorkflow;
+        $this->visaCircuitData = $visaCircuitData;
     }
 
     /**
@@ -60,9 +64,19 @@ class SendToPastell
      */
     public function sendData(int $resId): array
     {
-        $config = $this->pastellConfig->getPastellConfig();
+        if (!$this->checkConfigPastell->checkPastellConfig()) {
+            return ['error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
+        }
 
-        $idFolder = $this->sendResource($resId, $config->getIparapheurSousType());
+        $config = $this->pastellConfig->getPastellConfig();
+        $sousType = $config->getIparapheurSousType();
+
+        $nextSignatory = $this->visaCircuitData->getNextSignatory($resId);
+        if (!empty($nextSignatory['userId'])) {
+            $sousType = $nextSignatory['userId'];
+        }
+
+        $idFolder = $this->sendResource($resId, $sousType);
         if (!empty($idFolder['error'])) {
             return ['error' => $idFolder['error']];
         }
@@ -87,6 +101,11 @@ class SendToPastell
     {
         // Getting data from MC (res_letterbox)
         $mainResource = $this->resourceData->getMainResourceData($resId);
+
+        if (empty($mainResource)) {
+            return ['error' => 'Resource not found'];
+        }
+
         $attachments = $this->resourceData->getIntegratedAttachmentsData($resId);
         $attachmentTypes = $this->resourceData->getAttachmentTypes();
 
@@ -103,25 +122,21 @@ class SendToPastell
         }
 
         // Checking if main document is integrated
-        if (!empty($mainResource)) {
-            $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
+        $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
 
-            if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
-                $resId = $mainResource['res_id'];
-                $title = $mainResource['subject'];
-                // Getting path of the main file
-                $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
-                if (str_contains($mainResourceFilePath, 'Error')) {
-                    return ['error' => 'Document ' . $resId . ' is not converted in pdf'];
-                    //} elseif (!empty($attachmentsResource)) { // Getting attachments data
-                    //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
-                    // TODO
-                } else {
-                    return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath, $annexes);
-                }
+        if ($mainDocumentIntegration['inSignatureBook'] && empty(json_decode($mainResource['external_id'], true))) {
+            $resId = $mainResource['res_id'];
+            $title = $mainResource['subject'];
+            // Getting path of the main file
+            $mainResourceFilePath = $this->resourceFile->getMainResourceFilePath($resId);
+            if (str_contains($mainResourceFilePath, 'Error')) {
+                return ['error' => 'Document ' . $resId . ' is not converted in pdf'];
+                //} elseif (!empty($attachmentsResource)) { // Getting attachments data
+                //$attachmentsResourceFilePath = $this->resourceFile->getAttachmentsFilePath($attachmentsResource);
+                // TODO
+            } else {
+                return $this->sendFolderToPastell($resId, $title, $sousType, $mainResourceFilePath, $annexes);
             }
-        } else {
-            return ["error" => 'No folder ID retrieved from Pastell']; // TODO changer message erreur
         }
     }
 
@@ -147,11 +162,15 @@ class SendToPastell
         $idFolder = $idFolder['idFolder'];
 
         // Check iParapheur subtype
-        $iParapheurSousType = $this->pastellApi->getIparapheurSousType($config, $idFolder);
-        if (!empty($iParapheurSousType['error'])) {
-            return ['error' => $iParapheurSousType['error']];
-        } elseif (!in_array($config->getIparapheurSousType(), $iParapheurSousType)) {
-            return ['error' => 'Subtype does not exist in iParapheur']; // TODO !!!!
+        $iParapheurSousTypes = $this->pastellApi->getIparapheurSousType($config, $idFolder);
+        if (!empty($iParapheurSousTypes['error'])) {
+            return ['error' => $iParapheurSousTypes['error']];
+        } elseif (!in_array($sousType, $iParapheurSousTypes)) {
+            if (!in_array($config->getIparapheurSousType(), $iParapheurSousTypes)) {
+                return ['error' => 'Subtype does not exist in iParapheur'];
+            }
+
+            $sousType = $config->getIparapheurSousType();
         }
 
         // Sending data to the folder
