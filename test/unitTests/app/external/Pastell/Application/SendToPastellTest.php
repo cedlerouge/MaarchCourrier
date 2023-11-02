@@ -17,7 +17,7 @@ use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceFileMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\SendToPastellSpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\VisaCircuitMock;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\VisaCircuitDataMock;
 use PHPUnit\Framework\TestCase;
 
 class SendToPastellTest extends TestCase
@@ -32,6 +32,8 @@ class SendToPastellTest extends TestCase
 
     private SendToPastellSpy $sendToPastell;
 
+    private VisaCircuitDataMock $visaCircuitData;
+
 
     protected function setUp(): void
     {
@@ -41,7 +43,7 @@ class SendToPastellTest extends TestCase
         $this->processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $this->resourceData = new ResourceDataMock();
         $this->resourceFile = new ResourceFileMock();
-        $this->visaCircuitData = new VisaCircuitMock();
+        $this->visaCircuitData = new VisaCircuitDataMock();
         $this->sendToPastell = new SendToPastellSpy(
             $pastellConfigCheck,
             $this->pastellApiMock,
