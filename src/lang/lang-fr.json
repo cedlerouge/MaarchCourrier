@@ -787,7 +787,7 @@
     "inShipping": "Intégré à l'envoi Maileva",
     "inShipping_doc": "Intégrer le document principal à l'envoi Maileva",
     "inSignatureBook": "Intégré au parapheur",
-    "inSignatureBook_doc": "Faire viser / signer le document principal",
+    "inSignatureBook_doc": "Intégrer le document principal au parapheur pour visa/signature",
     "inactive": "Inactif",
     "inactives": "Inactif(s)",
     "incoming": "Courrier arrivée",
