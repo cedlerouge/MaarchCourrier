@@ -71,11 +71,6 @@ class RetrieveFromPastellTest extends TestCase
 
         $this->assertSame(
             [
-                12 => [
-                    'res_id'      => 12,
-                    'external_id' => 'blabla',
-                    'status'      => 'waiting',
-                ],
                 42 => [
                     'res_id'      => 42,
                     'external_id' => 'djqfdh',
@@ -85,6 +80,12 @@ class RetrieveFromPastellTest extends TestCase
                 ],
             ],
             $result['success']
+        );
+        $this->assertSame(
+            [
+               12 => 'Error when getting folder detail : An error occurred !'
+            ],
+            $result['error']
         );
     }
 
@@ -250,6 +251,45 @@ class RetrieveFromPastellTest extends TestCase
             [
                 'success' => [],
                 'error'   => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
+            ],
+            $result
+        );
+    }
+
+    public function testRetrievingAttachmentUseResIdMaster(): void
+    {
+        $this->parseIParapheurLogMock->errorResId = 420;
+
+        $idsToRetrieve = [
+            43 => [
+                'res_id'        => 43,
+                'external_id'   => 'testKO',
+                'res_id_master' => 420
+            ],
+            40  => [
+                'res_id'        => 40,
+                'external_id'   => 'djqfdh',
+                'res_id_master' => 42
+            ]
+        ];
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            [
+                'success' => [
+                    40 => [
+                        'res_id'        => 40,
+                        'external_id'   => 'djqfdh',
+                        'res_id_master' => 42,
+                        'status'        => 'validated',
+                        'format'        => 'pdf',
+                        'encodedFile'   => 'toto'
+                    ]
+                ],
+                'error' => [
+                    43 => 'Could not parse log'
+                ],
             ],
             $result
         );
