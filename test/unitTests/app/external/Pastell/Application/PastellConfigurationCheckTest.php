@@ -6,7 +6,7 @@
  * This file is part of Maarch software.
  */
 
-namespace unitTests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
@@ -14,7 +14,7 @@ use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use PHPUnit\Framework\TestCase;
 
-class PastellServiceTest extends TestCase
+class PastellConfigurationCheckTest extends TestCase
 {
     /**
      * Testing when configuration is empty

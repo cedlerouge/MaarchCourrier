@@ -15,6 +15,8 @@ use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 
 class ParseIParapheurLogMock extends ParseIParapheurLog
 {
+    public ?int $errorResId = null;
+
     /**
      * @param int $resId
      * @param string $idFolder
@@ -36,6 +38,12 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
                 'external_id' => 'chuchu',
                 'status'      => 'refused',
                 'content'     => 'Un nom : une note'
+            ];
+        }
+
+        if ($resId === $this->errorResId) {
+            return [
+                'error' => 'Could not parse log'
             ];
         }
 

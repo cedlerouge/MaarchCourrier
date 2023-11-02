@@ -7,10 +7,11 @@
  *
  */
 
-namespace unitTests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
+use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
@@ -19,32 +20,43 @@ use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
 {
+    private PastellApiMock $pastellApiMock;
 
-    /**
-     * @return void
-     */
+    private PastellConfigMock $pastellConfigMock;
+
+    private ParseIParapheurLogMock $parseIParapheurLogMock;
+
+    private RetrieveFromPastell $retrieveFromPastell;
+
+    protected function setUp(): void
+    {
+        $this->pastellApiMock = new PastellApiMock();
+        $processVisaWorkflowSpy = new ProcessVisaWorkflowSpy();
+        $this->pastellConfigMock = new PastellConfigMock();
+        $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
+
+        $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
+            $this->pastellApiMock,
+            $this->pastellConfigMock,
+            $pastellConfigurationCheck,
+            $processVisaWorkflowSpy
+        );
+
+        $this->retrieveFromPastell = new RetrieveFromPastell(
+            $this->pastellApiMock,
+            $this->pastellConfigMock,
+            $pastellConfigurationCheck,
+            $this->parseIParapheurLogMock
+        );
+    }
+
+
     public function testRetrieveOneResourceNotFoundAndOneSigned(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow
-        );
-        $retrieveToPastell = new RetrieveFromPastell(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow,
-            $parseIParapheurLog
-        );
+
         $idsToRetrieve = [
             12 => [
                 'res_id'      => 12,
@@ -56,7 +68,7 @@ class RetrieveFromPastellTest extends TestCase
             ]
         ];
 
-        $result = $retrieveToPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
 
         $this->assertSame(
             [
@@ -73,35 +85,16 @@ class RetrieveFromPastellTest extends TestCase
                     'encodedFile' => 'toto'
                 ],
             ],
-            $result
+            $result['success']
         );
     }
 
-    /**
-     * @return void
-     */
     public function testRetrieveOneResourceFoundButNotFinishOneSignedAndOneRefused(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->documentsDownload = [
+        $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
         ];
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow
-        );
-        $retrieveToPastell = new RetrieveFromPastell(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow,
-            $parseIParapheurLog
-        );
+
         $idsToRetrieve = [
             12  => [
                 'res_id'      => 12,
@@ -117,7 +110,7 @@ class RetrieveFromPastellTest extends TestCase
             ]
         ];
 
-        $result = $retrieveToPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
 
         $this->assertSame(
             [
@@ -140,46 +133,113 @@ class RetrieveFromPastellTest extends TestCase
                     'content'     => 'Un nom : une note'
                 ]
             ],
+            $result['success']
+        );
+    }
+
+    public function testWhenVerificationFailedForAResourceWeRetrieveTheErrorAndTheOtherResources(): void
+    {
+        $this->pastellApiMock->verificationIparapheurFailedId = 'testKO';
+
+        $idsToRetrieve = [
+            420 => [
+                'res_id'      => 420,
+                'external_id' => 'testKO'
+            ],
+            42  => [
+                'res_id'      => 42,
+                'external_id' => 'djqfdh'
+            ]
+        ];
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            [
+                'success' => [
+                    42 => [
+                        'res_id'      => 42,
+                        'external_id' => 'djqfdh',
+                        'status'      => 'validated',
+                        'format'      => 'pdf',
+                        'encodedFile' => 'toto'
+                    ]
+                ],
+                'error' => [
+                    420 => 'Action "verif-iparapheur" failed'
+                ],
+            ],
             $result
         );
     }
 
-    // ajout de test pour tester quand vérif est false
-
-    /**
-     * @return void
-     */
-    public function testRetrieveReturnAnErrorWhenVerifIParapheurIsNotTrue(): void
+    public function testWhenParsingTheHistoryFailedForAResourceWeRetrieveTheErrorAndTheOtherResources(): void
     {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->verificationIparapheur = false;
-        $processVisaWorkflow = new ProcessVisaWorkflowSpy();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $parseIParapheurLog = new ParseIParapheurLogMock(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow
-        );
-        $retrieveToPastell = new RetrieveFromPastell(
-            $pastellApiMock,
-            $pastellConfigMock,
-            $pastellConfigCheck,
-            $processVisaWorkflow,
-            $parseIParapheurLog
-        );
+        $this->parseIParapheurLogMock->errorResId = 420;
+
         $idsToRetrieve = [
-            12 => [
-                'res_id'      => 12,
-                'external_id' => 'test'
+            420 => [
+                'res_id'      => 420,
+                'external_id' => 'testKO'
+            ],
+            42  => [
+                'res_id'      => 42,
+                'external_id' => 'djqfdh'
             ]
         ];
 
-        $result = $retrieveToPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
 
         $this->assertSame(
-            ['error' => 'L\'action « verif-iparapheur »  n\'est pas permise : Le dernier état du document (termine) ne permet pas de déclencher cette action'],
+            [
+                'success' => [
+                    42 => [
+                        'res_id'      => 42,
+                        'external_id' => 'djqfdh',
+                        'status'      => 'validated',
+                        'format'      => 'pdf',
+                        'encodedFile' => 'toto'
+                    ]
+                ],
+                'error' => [
+                    420 => 'Could not parse log'
+                ],
+            ],
+            $result
+        );
+    }
+
+    public function testCannotRetrieveResourcesFromPastellIfConfigurationIsNotValid(): void
+    {
+        $this->pastellConfigMock->pastellConfig = new PastellConfig(
+            '',
+            '',
+            '',
+            0,
+            0,
+            '',
+            '',
+            ''
+        );
+
+        $idsToRetrieve = [
+            420 => [
+                'res_id'      => 420,
+                'external_id' => 'testKO'
+            ],
+            42  => [
+                'res_id'      => 42,
+                'external_id' => 'djqfdh'
+            ]
+        ];
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            [
+                'success' => [],
+                'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
+            ],
             $result
         );
     }

@@ -15,6 +15,10 @@ use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 
 class ResourceDataMock implements ResourceDataInterface
 {
+    public array $attachments = [];
+
+    public array $attachmentTypes = [];
+
     /**
      * @param int $resId
      * @return array
@@ -38,8 +42,13 @@ class ResourceDataMock implements ResourceDataInterface
      * @param int $resId
      * @return array
      */
-    public function getAttachmentsData(int $resId): array
+    public function getIntegratedAttachmentsData(int $resId): array
     {
-        // TODO: Implement getAttachmentsData() method.
+        return $this->attachments;
+    }
+
+    public function getAttachmentTypes(): array
+    {
+        return $this->attachmentTypes;
     }
 }

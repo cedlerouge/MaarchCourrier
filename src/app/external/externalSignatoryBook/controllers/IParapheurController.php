@@ -37,7 +37,7 @@ class IParapheurController
     public static function returnCurl($xmlPostString, $config)
     {
         $option = [
-            //CURLOPT_SSLCERT         => $config['data']['certPath'],
+            CURLOPT_SSLCERT         => $config['data']['certPath'],
             CURLOPT_SSLCERTTYPE     => $config['data']['certType'],
             CURLOPT_SSL_VERIFYPEER  => 'false',
             CURLOPT_USERPWD         => $config['data']['userId'] . ':' . $config['data']['password'],
