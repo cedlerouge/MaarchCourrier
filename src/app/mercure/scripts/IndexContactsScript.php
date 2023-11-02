@@ -59,7 +59,7 @@ class IndexContactsScript
         new DatabasePDO(['customId' => $args['customId']]);
 
 
-        $fileConfig = (!empty($args['fileConfig']) && is_file($args['fileConfig'])) ? $args['fileConfig'] : 'config/ladConfiguration.json';
+        $fileConfig = (!empty($args['fileConfig']) && is_file($args['fileConfig'])) ? $args['fileConfig'] : 'custom/' . $args['customId'] . '/config/ladConfiguration.json';
 
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => $fileConfig]);
         if (empty($ladConfiguration)) {
@@ -100,6 +100,7 @@ class IndexContactsScript
 
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
             \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
+
         } catch (\Exception $e) {
             echo $e->getMessage();
             return false;
@@ -115,6 +116,7 @@ class IndexContactsScript
             }
         }
 
+
         //Récupération des contacts
         $contactsToIndexes = ContactModel::get([
             'select'    => $tabSelect,
@@ -124,8 +126,9 @@ class IndexContactsScript
         $cptIndex = 0;
 
         $listIdToUpdate = [];
+        echo "[" . date("Y-m-d H:i:s") . "] Début de l'indexation \n";
         foreach ($contactsToIndexes as $c) {
-            if ($cptIndex % 50 == 0) {
+            if ($cptIndex % (count($contactsToIndexes) / 50) == 0) {
                 echo "Indexation contact " . $cptIndex . "/" . count($contactsToIndexes) . "\n";
             }
 
@@ -146,7 +149,7 @@ class IndexContactsScript
                         $cIdx->addField(\Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
                     }
                 } catch (\Exception $e) {
-                    echo '/!\\ Contact indexation Lucene failed : ' . $e;
+                    echo $e->getMessage();
                     return false;
                 }
 
@@ -162,24 +165,40 @@ class IndexContactsScript
 
             $index->addDocument($cIdx);
             $index->commit();
-            if ((int)$c['id'] % 50 === 0) {
-                $index->optimize();
-            }
 
             $listIdToUpdate[] = $c['id'];
+
+            if ((int)$c['id'] % 1000 === 0) {
+                $index->optimize();
+
+                ContactModel::update([
+                    'set'   => ['lad_indexation' => 1],
+                    'where' => ['id in (?)'],
+                    'data'  => [$listIdToUpdate]
+                ]);
+
+                $listIdToUpdate = [];
+            }
 
             $cptIndex++;
         }
 
-        //Modification du status d'indexation
-        ContactModel::update([
-            'set'   => ['lad_indexation' => 1],
-            'where' => ['id in (?)'],
-            'data'  => [$listIdToUpdate]
-        ]);
+        //Optimisation finale
+        $index->optimize();
+        echo "[" . date("Y-m-d H:i:s") . "] Fin de l'indexation \n";
 
+        if (count($listIdToUpdate) > 0) {
+            ContactModel::update([
+                'set'   => ['lad_indexation' => 1],
+                'where' => ['id in (?)'],
+                'data'  => [$listIdToUpdate]
+            ]);
+        }
+
+
+        echo "[" . date("Y-m-d H:i:s") . "] Ecriture des lexiques \n";
         foreach ($tabLexicon as $keyLexicon => $l) {
-            sort($l);
+            //sort($l);
             $lexiconFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
             if ($lexiconFile === false) {
                 echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
@@ -187,7 +206,7 @@ class IndexContactsScript
             }
 
             foreach ($l as $entry) {
-                fwrite($lexiconFile, $entry . "\n");
+                fwrite($lexiconFile, $entry."\n");
             }
             fclose($lexiconFile);
         }
@@ -199,8 +218,8 @@ class IndexContactsScript
         } else {
             fwrite($flagFile, date("d-m-Y H:i:s"));
             fclose($flagFile);
-        }
-        echo "Contacts indexation done !\n";
+	    }
+        echo "[" . date("Y-m-d H:i:s") . "] Script d'indexation terminé !\n";
         return true;
     }
 }

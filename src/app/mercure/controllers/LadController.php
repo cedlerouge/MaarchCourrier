@@ -234,8 +234,9 @@ class LadController
                 return ['errors' => 'Output XML  LAD file doesn\'t exists'];
             }
 
-            //Suppression du fichier source
-            unlink($tmpPath . $tmpFilename . '.' . $aArgs['extension']);
+            if (is_file($tmpPath.$tmpFilename . '.' . $aArgs['extension'])) {
+                unlink($tmpPath . $tmpFilename . '.' . $aArgs['extension']);
+            }
 
             //Suppression du fichier xml
             unlink($outXmlFilename);
