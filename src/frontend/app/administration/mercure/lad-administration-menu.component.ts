@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -8,7 +8,7 @@ import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { AdministrationService } from '../administration.service';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 
 @Component({
@@ -18,6 +18,9 @@ import { UntypedFormControl } from '@angular/forms';
 })
 
 export class LadAdministrationMenuComponent implements OnInit {
+
+    @Output() setLadEnabledEv = new EventEmitter<boolean>();
+
     loading: boolean = false;
     dialogRef: MatDialogRef<any>;
 
@@ -51,15 +54,11 @@ export class LadAdministrationMenuComponent implements OnInit {
         return this.config.enabledLad;
     }
 
-    toggleLadConf() {
-        this.config.enabledLad = !this.config.enabledLad;
-        this.saveConfiguration();
-    }
-
     initConfiguration() {
         this.http.get('../rest/configurations/admin_mercure').pipe(
             tap((data: any) => {
                 this.config = data.configuration.value;
+                this.setLadEnabledEv.emit(this.config.enabledLad);
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -68,26 +67,31 @@ export class LadAdministrationMenuComponent implements OnInit {
         ).subscribe();
     }
 
-    saveConfiguration() {
-        this.http.put('../rest/configurations/admin_mercure', this.config).pipe(
+    saveConfiguration(config: any) {
+        this.http.put('../rest/configurations/admin_mercure', config).pipe(
             tap(() => {
-                if (!this.config.enabledLad) {
-                    this.notify.success(this.translate.instant('lang.ladDisabled'));
+                if (!config.enabledLad) {
+                    this.notify.success(`${this.translate.instant('lang.mercureLad')} ${this.translate.instant('lang.disabled').toLowerCase()}`);
                 } else {
-                    this.notify.success(this.translate.instant('lang.ladEnabled'));
+                    this.notify.success(`${this.translate.instant('lang.mercureLad')} ${this.translate.instant('lang.enabled').toLowerCase()}`);
                 }
+                this.config = config;
+                this.setLadEnabledEv.emit(this.config.enabledLad);
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
                 return of(false);
-            })
+            }),
+            finalize(() => this.loading = false)
         ).subscribe();
     }
 
 
     setLadConf(activate: boolean){
-        this.config.enabledLad = activate;
-        this.saveConfiguration();
+        this.loading = true;
+        const config = JSON.parse(JSON.stringify(this.config));
+        config.enabledLad = activate;
+        this.saveConfiguration(config);
     }
 
     setConfig(conf: any){
@@ -99,7 +103,6 @@ export class LadAdministrationMenuComponent implements OnInit {
         this.http.post('../rest/administration/mercure/test', this.config).pipe(
             tap(() => {
                 this.setLadConf(true);
-                this.loading = false;
             }),
             catchError((err: any) => {
                 this.loading = false;

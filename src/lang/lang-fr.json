@@ -2800,13 +2800,13 @@
     "never": "Jamais",
     "whatIsMercure": "Qu'est-ce que MERCURE ?",
     "mercureDesc1": "MERCURE, intègre un logiciel de <b>lecture automatique de document</b> (LAD)",
-    "mercureDesc2": "MERCURE analyse le document importé et va <b>retourner les différentes méta-données</b> qu'il y a pu trouver grâce au fichier de mapping configuré.",
+    "mercureDesc2": "MERCURE analyse le document importé et va retourner <b>l'objet, la date et éventuellment le contact</b> qu'il y a pu trouver grâce au fichier de mapping configuré.",
     "mercureDesc3": "Maarch Courrier va ensuite se charger de <b>qualifier les bons champs</b> du formulaire d'enregistrement.",
     "mercureDesc4": "En complément, la base des contacts peut être indexé via un script afin de pouvoir <b>lier automatiquement un contact existant</b> suivant les informations trouvées sur le document.",
     "mercureDesc5": "Télécharger <b><a href=\"#\">MERCURE - LAD</a></b> et configurer le fichier <b>ladConfiguration.json</b> dans votre custom.",
     "howMercureWorks": "Comment fonctionne-t-il ?",
     "contactsDBIndexation": "Indexation de la base contacts",
     "howToInstallIt": "Comment l'installer ?",
-    "mercureLicenseDesc": "Le logiciel <b>MERCURE - LAD</b> est soumise à la <b>license MAARCH</b>, il est expressément <b>interdit</b> d'utiliser le module runtime <b>dans un autre produit ou un fork du logiciel libre Maarch Courrier</b> sans l'accord écrit express du Concédant.",
+    "mercureLicenseDesc": "Le logiciel <b>MERCURE - LAD</b> est soumise à la <b>license de redistribution MAARCH</b>, il est expressément <b>interdit</b> d'utiliser le module runtime <b>dans un autre produit ou un fork du logiciel libre Maarch Courrier</b> sans l'accord écrit express du Concédant.",
     "mercureContactInfo": "Pour plus d'information, consulter notre <b><a target=\"_blank\" href=\"https:/\/docs.maarch.org/MaarchCourrier/guat/guat_exploitation/lad.html\">documentation</a></b> ou nous <b><a href=\"mailto:info@maarch.org\" target=\"_blank\">contacter</a></b>"
 }
