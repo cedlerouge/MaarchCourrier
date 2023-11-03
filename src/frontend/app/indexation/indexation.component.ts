@@ -20,6 +20,7 @@ import { FunctionsService } from '@service/functions.service';
 import { of, Subscription } from 'rxjs';
 import { SelectIndexingModelComponent } from './select-indexing-model/select-indexing-model.component';
 import { IndexationAttachmentsListComponent } from '@appRoot/attachments/indexation/indexation-attachments-list.component';
+import { LadService } from '@service/lad.service';
 
 @Component({
     templateUrl: 'indexation.component.html',
@@ -80,7 +81,8 @@ export class IndexationComponent implements OnInit, OnDestroy {
         public actionService: ActionsService,
         private router: Router,
         private sortPipe: SortPipe,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private ladService: LadService
     ) {
 
         _activatedRoute.queryParams.subscribe(
@@ -302,11 +304,16 @@ export class IndexationComponent implements OnInit, OnDestroy {
     }
 
     async refreshDatas(event: string) {
-        if (event == 'launchLad' && this.currentIndexingModel.ladProcessing){
+        if (event === 'launchLad' && this.currentIndexingModel.ladProcessing){
             // Attendre que le formulaire soit chargé pour pouvoir lancer la LAD
             if (this.loadedForm){
-                this.launchLadProcess();
+                this.ladService.initLad();
+                const res = await this.ladService.launchLadProcess(this.appDocumentViewer.file);
+                if (res) {
+                    await this.indexingForm.fillWithLad(res);
+                }
                 this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
+                this.ladService.endLad();
             } else {
                 await this.sleep(500);
                 await this.refreshDatas(event);
@@ -314,29 +321,7 @@ export class IndexationComponent implements OnInit, OnDestroy {
         }
     }
 
-    sleep(ms){
+    sleep(ms: number){
         return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    launchLadProcess(){
-        this.indexingForm.loading = true;
-
-        const content = this.appDocumentViewer.file.base64src ?? this.appDocumentViewer.file.content;
-        const filename = (this.appDocumentViewer.file.name == 'pdf') ? this.appDocumentViewer.file.name : this.appDocumentViewer.file.name + '.pdf';
-
-        this.http.post('../rest/mercure/lad', { encodedResource: content, extension: 'pdf', filename: filename }).pipe(
-            tap((data: any) => {
-                if (data.message === null || typeof data.message === 'undefined'){
-                    this.indexingForm.fillWithLad(data);
-                } else {
-                    this.indexingForm.loading = false;
-                }
-            }),
-            catchError((err: any) => {
-                this.notify.handleSoftErrors(err);
-                this.indexingForm.loading = false;
-                return of(false);
-            })
-        ).subscribe();
     }
 }
