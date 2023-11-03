@@ -34,9 +34,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = ['version' => $response['response']['version'] ?? ''];
@@ -59,9 +59,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = [];
@@ -87,9 +87,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = [];
@@ -115,9 +115,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = [];
@@ -143,9 +143,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = [];
@@ -174,9 +174,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = ['idFolder' => $response['response']['info']['id_d'] ?? ''];
@@ -200,9 +200,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = $response['response'] ?? '';
@@ -237,9 +237,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 200) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = $response['response'] ?? '';

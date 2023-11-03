@@ -45,7 +45,7 @@ class PastellConfigurationCheck
             return false;
         }
         $version = $this->pastellApi->getVersion($config);
-        if (!empty($version['errors'])) {
+        if (!empty($version['Errors'])) {
             return false;
         }
 
@@ -54,7 +54,7 @@ class PastellConfigurationCheck
             return false;
         }
         $entities = $this->pastellApi->getEntity($config);
-        if (!empty($entities['errors'])) {
+        if (!empty($entities['Errors'])) {
             return false;
         } elseif (!in_array($config->getEntity(), $entities)) {
             return false;
@@ -65,7 +65,7 @@ class PastellConfigurationCheck
             return false;
         }
         $connectors = $this->pastellApi->getConnector($config);
-        if (!empty($connectors['errors'])) {
+        if (!empty($connectors['Errors'])) {
             return false;
         } else if (!in_array($config->getConnector(), $connectors)) {
             return false;
@@ -76,7 +76,7 @@ class PastellConfigurationCheck
             return false;
         }
         $flux = $this->pastellApi->getFolderType($config);
-        if (!empty($flux['errors'])) {
+        if (!empty($flux['Errors'])) {
             return false;
         } elseif (!in_array($config->getFolderType(), $flux)) {
             return false;
@@ -87,7 +87,7 @@ class PastellConfigurationCheck
             return false;
         }
         $iParapheurType = $this->pastellApi->getIparapheurType($config);
-        if (!empty($iParapheurType['errors'])) {
+        if (!empty($iParapheurType['Errors'])) {
             return false;
         } elseif (!in_array($config->getIparapheurType(), $iParapheurType)) {
             return false;
