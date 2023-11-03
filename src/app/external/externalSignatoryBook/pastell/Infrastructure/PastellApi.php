@@ -273,9 +273,9 @@ class PastellApi implements PastellApiInterface
         $return = [];
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         }
         return $return;
@@ -306,9 +306,9 @@ class PastellApi implements PastellApiInterface
         $return = [];
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         }
         return $return;
@@ -330,9 +330,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = $response['response'];
@@ -356,9 +356,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return =
@@ -401,13 +401,13 @@ class PastellApi implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array
      */
-    public function downloadFile(PastellConfig $config, string $idDocument): array
+    public function downloadFile(PastellConfig $config, string $idFolder): array
     {
         $response = CurlModel::exec([
-            'url'          => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/file/document',
+            'url'          => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/file/document',
             'basicAuth'    => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'method'       => 'GET',
             'fileResponse' => true
@@ -415,9 +415,9 @@ class PastellApi implements PastellApiInterface
 
         if ($response['code'] > 201) {
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return = ["Error" => $response['response']['error-message']];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return = ["Error" => 'An error occurred !'];
             }
         } else {
             $return = ['encodedFile' => base64_encode($response['response'])];
@@ -427,13 +427,13 @@ class PastellApi implements PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return bool
      */
-    public function verificationIParapheur(PastellConfig $config, string $idDocument): bool
+    public function verificationIParapheur(PastellConfig $config, string $idFolder): bool
     {
         $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/verif-iparapheur',
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/verif-iparapheur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',
@@ -444,14 +444,14 @@ class PastellApi implements PastellApiInterface
 
     /**
      * Sending a folder with data and main file
-     * @param PastellConfig|null $config
-     * @param string $idDocument
+     * @param PastellConfig $config
+     * @param string $idFolder
      * @return bool
      */
-    public function sendIparapheur(?PastellConfig $config, string $idDocument): bool
+    public function sendIparapheur(PastellConfig $config, string $idFolder): bool
     {
         $response = CurlModel::exec([
-            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idDocument . '/action/send-iparapheur',
+            'url'       => $config->getUrl() . '/api/v2' . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/send-iparapheur',
             'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
             'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
             'method'    => 'POST',

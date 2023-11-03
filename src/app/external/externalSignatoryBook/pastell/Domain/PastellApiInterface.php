@@ -103,17 +103,17 @@ interface PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return array
      */
-    public function downloadFile(PastellConfig $config, string $idDocument): array;
+    public function downloadFile(PastellConfig $config, string $idFolder): array;
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
+     * @param string $idFolder
      * @return bool
      */
-    public function verificationIParapheur(PastellConfig $config, string $idDocument): bool;
+    public function verificationIParapheur(PastellConfig $config, string $idFolder): bool;
 
     /**
      * @param PastellConfig $config
@@ -124,8 +124,8 @@ interface PastellApiInterface
 
     /**
      * @param PastellConfig $config
-     * @param string $idDocument
-     * @return mixed
+     * @param string $idFolder
+     * @return bool
      */
-    public function sendIparapheur(PastellConfig $config, string $idDocument);
+    public function sendIparapheur(PastellConfig $config, string $idFolder): bool;
 }
