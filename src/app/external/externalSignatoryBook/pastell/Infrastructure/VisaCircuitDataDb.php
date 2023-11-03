@@ -24,6 +24,8 @@ use User\models\UserModel;
 class VisaCircuitDataDb implements VisaCircuitDataInterface
 {
     /**
+     * @param int $resId
+     * @return null[]
      * @throws Exception
      */
     public function getNextSignatory(int $resId): array

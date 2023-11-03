@@ -113,7 +113,7 @@ class PastellConfigurationCheckTest extends TestCase
      */
     public function testConfigurationTestIsNotValidIfUrlIsNotValid(): void
     {
-        $this->pastellApiMock->version = ['errors' => 'Erreur lors de la récupération de la version'];
+        $this->pastellApiMock->version = ['Errors' => 'Erreur lors de la récupération de la version'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
@@ -176,7 +176,7 @@ class PastellConfigurationCheckTest extends TestCase
      */
     public function testConfigurationTestIsNotValidIfEntityIsNotValid(): void
     {
-        $this->pastellApiMock->entity = ['errors' => 'Erreur lors de la récupération des entités'];
+        $this->pastellApiMock->entity = ['Errors' => 'Erreur lors de la récupération des entités'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
@@ -268,7 +268,7 @@ class PastellConfigurationCheckTest extends TestCase
      */
     public function testConfigurationTestIsNotValidIfConnectorIsNotValid(): void
     {
-        $this->pastellApiMock->connector = ['errors' => 'Erreur lors de la récupération des connecteurs'];
+        $this->pastellApiMock->connector = ['Errors' => 'Erreur lors de la récupération des connecteurs'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
@@ -350,7 +350,7 @@ class PastellConfigurationCheckTest extends TestCase
      */
     public function testConfigurationTestIsNotValidIfDocumentTypeIsNotValid(): void
     {
-        $this->pastellApiMock->flux = ['errors' => 'Erreur lors de la récupération des types de documents'];
+        $this->pastellApiMock->flux = ['Errors' => 'Erreur lors de la récupération des types de documents'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
@@ -430,7 +430,7 @@ class PastellConfigurationCheckTest extends TestCase
      */
     public function testConfigurationTestIsNotValidIfIparapheurTypeIsNotValid(): void
     {
-        $this->pastellApiMock->iParapheurType = ['errors' => 'Erreur lors de la récupération des types de iParapheur'];
+        $this->pastellApiMock->iParapheurType = ['Errors' => 'Erreur lors de la récupération des types de iParapheur'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
