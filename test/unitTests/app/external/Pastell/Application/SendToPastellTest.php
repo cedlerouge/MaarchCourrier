@@ -89,13 +89,13 @@ class SendToPastellTest extends TestCase
      */
     public function testSendDataReturnsAnErrorWhenIdFolderIsMissing(): void
     {
-        $this->pastellApiMock->folder = ['Error' => 'No folder ID retrieved from Pastell'];
+        $this->pastellApiMock->folder = ['error' => 'No folder ID retrieved from Pastell'];
 
         $result = $this->sendToPastell->sendData(42);
 
         $this->assertSame(
             [
-                'Error' => 'No folder ID retrieved from Pastell'
+                'error' => 'No folder ID retrieved from Pastell'
             ],
             $result
         );
@@ -122,7 +122,7 @@ class SendToPastellTest extends TestCase
 
         $this->assertSame(
             [
-                'Error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'
+                'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'
             ],
             $result
         );
@@ -208,7 +208,7 @@ class SendToPastellTest extends TestCase
      */
     public function testConfigurationIsNotValidIfIdFolderIsNotValid(): void
     {
-        $this->pastellApiMock->folder = ['Error' => 'Erreur lors de la récupération de l\'id du dossier'];
+        $this->pastellApiMock->folder = ['error' => 'Erreur lors de la récupération de l\'id du dossier'];
 
         $resId = 42;
         $title = 'blablabla';
@@ -217,7 +217,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'Erreur lors de la récupération de l\'id du dossier'], $result);
+        $this->assertSame(['error' => 'Erreur lors de la récupération de l\'id du dossier'], $result);
     }
 
     /**
@@ -246,7 +246,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'Folder creation has failed'], $result);
+        $this->assertSame(['error' => 'Folder creation has failed'], $result);
     }
 
     /**
@@ -271,7 +271,7 @@ class SendToPastellTest extends TestCase
      */
     public function testSendToPastellIsNotValidIfIparapheurSousTypeReturnAnError(): void
     {
-        $this->pastellApiMock->iParapheurSousType = ['Error' => 'An error occurred !'];
+        $this->pastellApiMock->iParapheurSousType = ['error' => 'An error occurred !'];
 
         $resId = 42;
         $title = 'blablabla';
@@ -280,7 +280,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'An error occurred !'], $result);
+        $this->assertSame(['error' => 'An error occurred !'], $result);
     }
 
     /**
@@ -307,7 +307,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'Subtype does not exist in iParapheur'], $result);
+        $this->assertSame(['error' => 'Subtype does not exist in iParapheur'], $result);
     }
 
     /**
@@ -349,7 +349,7 @@ class SendToPastellTest extends TestCase
      */
     public function testSendToPastellIsNotSentIfEditFolderFailed(): void
     {
-        $this->pastellApiMock->dataFolder = ['Error' => 'An error occurred'];
+        $this->pastellApiMock->dataFolder = ['error' => 'An error occurred'];
 
         $resId = 42;
         $title = '';
@@ -358,7 +358,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'An error occurred'], $result);
+        $this->assertSame(['error' => 'An error occurred'], $result);
     }
 
     /**
@@ -367,7 +367,7 @@ class SendToPastellTest extends TestCase
      */
     public function testSendToPastellIsNoSentIfUploadingMainFileFailed(): void
     {
-        $this->pastellApiMock->mainFile = ['Error' => 'An error occurred'];
+        $this->pastellApiMock->mainFile = ['error' => 'An error occurred'];
 
         $resId = 42;
         $title = 'blablabla';
@@ -376,7 +376,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'An error occurred'], $result);
+        $this->assertSame(['error' => 'An error occurred'], $result);
     }
 
     /**
@@ -385,7 +385,7 @@ class SendToPastellTest extends TestCase
      */
     public function testSendToPastellIsNotSentIfOrientationFailed(): void
     {
-        $this->pastellApiMock->orientation = ['Error' => 'An error occurred'];
+        $this->pastellApiMock->orientation = ['error' => 'An error occurred'];
 
         $resId = 42;
         $title = '';
@@ -394,7 +394,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
-        $this->assertSame(['Error' => 'An error occurred'], $result);
+        $this->assertSame(['error' => 'An error occurred'], $result);
     }
 
     /**
@@ -414,7 +414,7 @@ class SendToPastellTest extends TestCase
         $result = $this->sendToPastell->sendFolderToPastell($resId, $title, $sousType, $filePath);
 
         $this->assertSame(
-            ['Error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'],
+            ['error' => 'L\'action « send-iparapheur »  n\'est pas permise : Le dernier état du document (send-iparapheur) ne permet pas de déclencher cette action'],
             $result
         );
     }
@@ -460,7 +460,7 @@ class SendToPastellTest extends TestCase
      */
     public function testWhenAnnexUploadFailsWeUploadTheFolderAnyway(): void
     {
-        $this->pastellApiMock->uploadAnnexError = ['Error' => 'Error uploading annex'];
+        $this->pastellApiMock->uploadAnnexError = ['error' => 'Error uploading annex'];
 
         $resId = 0;
         $title = '';
@@ -495,7 +495,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['Error' => 'Resource not found'], $result);
+        $this->assertSame(['error' => 'Resource not found'], $result);
     }
 
     /**
@@ -525,7 +525,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['Error' => 'Document ' . $resId . ' is not converted in pdf'], $result);
+        $this->assertSame(['error' => 'Document ' . $resId . ' is not converted in pdf'], $result);
     }
 
     /**
@@ -675,6 +675,6 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['Error' => 'Fingerprints do not match'], $result);
+        $this->assertSame(['error' => 'Fingerprints do not match'], $result);
     }
 }

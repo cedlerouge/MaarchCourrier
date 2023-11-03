@@ -43,7 +43,7 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
 
         if ($resId === $this->errorResId) {
             return [
-                'Error' => 'Could not parse log'
+                'error' => 'Could not parse log'
             ];
         }
 

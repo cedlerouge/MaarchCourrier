@@ -46,7 +46,7 @@ class ResourceFile implements ResourceFileInterface
      * @param string $fingerprint
      * @return string|null
      */
-    public function getAttachmentFilePath(int $resId, string $fingerprint): ?string
+    public function getAttachmentFilePath(int $resId, string $fingerprint): string
     {
         $adrInfo = AdrModel::getConvertedDocumentById(['resId' => $resId, 'collId' => 'attachments_coll', 'type' => 'PDF']);
         $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);

@@ -85,7 +85,7 @@ class RetrieveFromPastellTest extends TestCase
             [
                 12 => 'Error when getting folder detail : An error occurred !'
             ],
-            $result['Error']
+            $result['error']
         );
     }
 
@@ -171,7 +171,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile' => 'toto'
                     ]
                 ],
-                'Error'   => [
+                'error'   => [
                     420 => 'Action "verif-iparapheur" failed'
                 ],
             ],
@@ -210,7 +210,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile' => 'toto'
                     ]
                 ],
-                'Error'   => [
+                'error'   => [
                     420 => 'Could not parse log'
                 ],
             ],
@@ -250,7 +250,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->assertSame(
             [
                 'success' => [],
-                'Error'   => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
+                'error'   => 'Cannot retrieve resources from pastell : pastell configuration is invalid',
             ],
             $result
         );
@@ -287,7 +287,7 @@ class RetrieveFromPastellTest extends TestCase
                         'encodedFile'   => 'toto'
                     ]
                 ],
-                'Error'   => [
+                'error'   => [
                     43 => 'Could not parse log'
                 ],
             ],
