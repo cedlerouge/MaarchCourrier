@@ -52,14 +52,17 @@ class SendMessageController
         $tmpPath = CoreConfigModel::getTmpPath();
         file_put_contents($tmpPath . $messageObject->MessageIdentifier->value . ".xml", $DOMTemplate->saveXML());
 
-        if ($messageObject->DataObjectPackage && !$isForSeda) {
-            foreach ($messageObject->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
-                $base64_decoded = base64_decode($binaryDataObject->Attachment->value);
-                $file = fopen($tmpPath . $binaryDataObject->Attachment->filename, 'w');
-                fwrite($file, $base64_decoded);
-                fclose($file);
+        if (isset($messageObject->DataObjectPackage)) {
+            if ($messageObject->DataObjectPackage && !$isForSeda) {
+                foreach ($messageObject->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
+                    $base64_decoded = base64_decode($binaryDataObject->Attachment->value);
+                    $file = fopen($tmpPath . $binaryDataObject->Attachment->filename, 'w');
+                    fwrite($file, $base64_decoded);
+                    fclose($file);
+                }
             }
         }
+
         $filename = self::generateZip($messageObject, $tmpPath);
 
         return $filename;
@@ -102,7 +105,7 @@ class SendMessageController
             if ($attachment->type == "mainDocument") {
                 $messageObject->dataObjectPackage->label = $attachment->label;
                 $messageObject->dataObjectPackage->originatingSystemId = $attachment->id;
-                
+
                 $seda2Message->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0] = self::getArchiveUnit(
                     "File",
                     $messageObject->dataObjectPackage,
@@ -147,10 +150,11 @@ class SendMessageController
         $zip->open($filename, \ZipArchive::CREATE);
 
         $zip->addFile($tmpPath . $seda2Message->MessageIdentifier->value . ".xml", $seda2Message->MessageIdentifier->value . ".xml");
-
-        if ($seda2Message->DataObjectPackage) {
-            foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
-                $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
+        if (isset($messageObject->DataObjectPackage)) {
+            if ($seda2Message->DataObjectPackage) {
+                foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
+                    $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
+                }
             }
         }
 
@@ -416,7 +420,7 @@ class SendMessageController
                 $management->AppraisalRule->FinalAction = "Destroy";
             }
         }
-        
+
         if ($valueInData->accessRuleCode) {
             $management->AccessRule = new \stdClass();
             $management->AccessRule->Rule = new \stdClass();
@@ -441,7 +445,7 @@ class SendMessageController
     private static function getContactData($informations)
     {
         $contactData = new \stdClass();
-        
+
         if ($informations->civility) {
             $contactData->Gender = $informations->civility->label;
         }
