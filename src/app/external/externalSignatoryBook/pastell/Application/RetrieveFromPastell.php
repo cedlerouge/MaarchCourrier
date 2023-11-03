@@ -53,14 +53,14 @@ class RetrieveFromPastell
     public function retrieve(array $idsToRetrieve): array
     {
         if (!$this->pastellConfigCheck->checkPastellConfig()) {
-            return ['success' => [], 'Error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
+            return ['success' => [], 'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
         }
 
         $errors = [];
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
-            if (!empty($info['Error'])) {
-                $errors[$key] = 'Error when getting folder detail : ' . $info['Error'];
+            if (!empty($info['error'])) {
+                $errors[$key] = 'Error when getting folder detail : ' . $info['error'];
                 unset($idsToRetrieve[$key]);
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {
@@ -75,8 +75,8 @@ class RetrieveFromPastell
                 $resId = $value['res_id_master'] ?? $value['res_id'];
                 $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $value['external_id']);
 
-                if (!empty($result['Error'])) {
-                    $errors[$key] = $result['Error'];
+                if (!empty($result['error'])) {
+                    $errors[$key] = $result['error'];
                     unset($idsToRetrieve[$key]);
                     continue;
                 }
@@ -85,6 +85,6 @@ class RetrieveFromPastell
             }
         }
 
-        return ['success' => $idsToRetrieve, 'Error' => $errors];
+        return ['success' => $idsToRetrieve, 'error' => $errors];
     }
 }

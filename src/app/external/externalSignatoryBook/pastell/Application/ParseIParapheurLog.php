@@ -57,11 +57,11 @@ class ParseIParapheurLog
         $return = [];
         $iParapheurHistory = $this->pastellApi->getXmlDetail($this->config, $idFolder);
         if (!empty($iParapheurHistory->error)) {
-            return ['Error' => $iParapheurHistory->error];
+            return ['error' => $iParapheurHistory->error];
         }
 
         if ($iParapheurHistory->MessageRetour->codeRetour == $this->pastellStates->getErrorCode()) {
-            return ['Error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
+            return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
         }
 
         foreach ($iParapheurHistory->LogDossier->LogDossier as $historyLog) {
@@ -94,8 +94,8 @@ class ParseIParapheurLog
     {
 
         $file = $this->pastellApi->downloadFile($this->config, $idFolder);
-        if (!empty($file['Error'])) {
-            return ['Error' => $file['Error']];
+        if (!empty($file['error'])) {
+            return ['error' => $file['error']];
         }
 
         if ($signed) {

@@ -139,7 +139,7 @@ class PastellApiMock implements PastellApiInterface
     public function getFolderDetail(PastellConfig $config, string $idFolder): array
     {
         if ($idFolder === 'blabla') {
-            return ["Error" => 'An error occurred !'];
+            return ["error" => 'An error occurred !'];
         }
 
         return $this->documentDetails;

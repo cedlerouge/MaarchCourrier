@@ -53,7 +53,7 @@ class ParseIParapheurLogTest extends TestCase
 
         $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
 
-        $this->assertSame(['Error' => 'Log KO in iParapheur : [INFO] error'], $result);
+        $this->assertSame(['error' => 'Log KO in iParapheur : [INFO] error'], $result);
     }
 
     /**
@@ -165,7 +165,7 @@ class ParseIParapheurLogTest extends TestCase
 
         $this->assertSame(
             [
-                'Error' => 'Erreur',
+                'error' => 'Erreur',
             ],
             $result
         );
@@ -209,14 +209,14 @@ class ParseIParapheurLogTest extends TestCase
     public function testHandleValidateTheDownloadFileReturnAnError(): void
     {
         $this->pastellApiMock->documentsDownload = [
-            'Error' => 'Je suis ton erreur'
+            'error' => 'Je suis ton erreur'
         ];
         $resId = 42;
         $idFolder = 'djqfdh';
 
         $result = $this->parseIParapheurLog->handleValidate($resId, $idFolder, true);
 
-        $this->assertSame(['Error' => 'Je suis ton erreur'], $result);
+        $this->assertSame(['error' => 'Je suis ton erreur'], $result);
     }
 
     /**
