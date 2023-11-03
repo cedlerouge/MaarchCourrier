@@ -63,7 +63,7 @@ class RetrieveFromPastell
                 $errors[$key] = 'Error when getting folder detail : ' . $info['Error'];
                 unset($idsToRetrieve[$key]);
             } else {
-                if (in_array('verif-iparapheur', $info['actionPossibles'])) {
+                if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {
                     $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
                     if ($verif !== true) {
                         $errors[$key] = 'Action "verif-iparapheur" failed';
