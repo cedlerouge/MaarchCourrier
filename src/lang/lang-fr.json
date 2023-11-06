@@ -2802,7 +2802,7 @@
     "mercureDesc2": "MERCURE analyse le document importé et va retourner <b>l'objet, la date et éventuellment le contact</b> qu'il y a pu trouver grâce au fichier de mapping configuré.",
     "mercureDesc3": "Maarch Courrier va ensuite se charger de <b>qualifier les bons champs</b> du formulaire d'enregistrement.",
     "mercureDesc4": "En complément, la base des contacts peut être indexé via un script afin de pouvoir <b>lier automatiquement un contact existant</b> suivant les informations trouvées sur le document.",
-    "mercureDesc5": "Télécharger <b><a href=\"#\">MERCURE - LAD</a></b> et configurer le fichier <b>ladConfiguration.json</b> dans votre custom.",
+    "mercureDesc5": "Télécharger la dernière version de <b><a href=\"https://labs.maarch.org/maarch/maarchcourrier-mercure/-/tags\" target=\"_blank\">MERCURE - LAD</a></b> et configurer le fichier <b>ladConfiguration.json</b> dans votre custom.",
     "howMercureWorks": "Comment fonctionne-t-il ?",
     "contactsDBIndexation": "Indexation de la base contacts",
     "howToInstallIt": "Comment l'installer ?",
