@@ -680,9 +680,6 @@ class SendToPastellTest extends TestCase
         $this->assertSame(['error' => 'Fingerprints do not match'], $result);
     }
 
-    /**
-     * @return void
-     */
     public function testSendResourceReturnsErrorWhen(): void
     {
         $this->resourceData->mainResourceInSignatoryBook = false;
