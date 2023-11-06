@@ -100,5 +100,6 @@
         <signState>Signe</signState>
         <refusedVisa>RejetVisa</refusedVisa>
         <refusedSign>RejetSignataire</refusedSign>
+        <postAction>suppression</postAction>
     </signatoryBook>
 </root>

@@ -115,6 +115,7 @@ class SendToPastellTest extends TestCase
             0,
             '',
             '',
+            '',
             ''
         );
 
@@ -297,7 +298,8 @@ class SendToPastellTest extends TestCase
             776,
             'ls-document-pdf',
             'XELIANS COURRIER',
-            'default-do-not-exist'
+            'default-do-not-exist',
+            ''
         );
 
         $resId = 42;

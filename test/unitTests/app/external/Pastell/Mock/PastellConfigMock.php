@@ -27,7 +27,8 @@ class PastellConfigMock implements PastellConfigInterface
             776,
             'ls-document-pdf',
             'XELIANS COURRIER',
-            'courrier'
+            'courrier',
+            'suppression'
         );
         $this->pastellStates = new PastellStates(
             'KO',

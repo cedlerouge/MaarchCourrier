@@ -84,9 +84,11 @@ class RetrieveFromPastell
 
                 $idsToRetrieve[$key] = array_merge($value, $result);
 
+                // Deletion is automatic if postAction in conf is suppression
+                $postAction = $this->pastellConfig->getPastellConfig()->getPostAction();
                 if (
-                    $result['status'] == 'validated'
-                    || $result['status'] == 'refused'
+                    $postAction == 'suppression' &&
+                    ($result['status'] == 'validated' || $result['status'] == 'refused')
                 ) {
                     $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $resId);
                     if (!empty($deleteFolderResult['error'])) {

@@ -23,6 +23,7 @@ class PastellConfig
     private string $folderType;
     private string $iParapheurType;
     private string $iParapheurSousType;
+    private string $postAction;
 
     /**
      * @param string $url
@@ -33,6 +34,7 @@ class PastellConfig
      * @param string $documentType
      * @param string $iParapheurType
      * @param string $iParapheurSousType
+     * @param string $postAction
      */
     public function __construct(
         string $url,
@@ -42,7 +44,8 @@ class PastellConfig
         int    $connector,
         string $documentType,
         string $iParapheurType,
-        string $iParapheurSousType
+        string $iParapheurSousType,
+        string $postAction
     )
     {
         $this->url = $url;
@@ -53,6 +56,7 @@ class PastellConfig
         $this->folderType = $documentType;
         $this->iParapheurType = $iParapheurType;
         $this->iParapheurSousType = $iParapheurSousType;
+        $this->postAction = $postAction;
     }
 
     public function getUrl(): string
@@ -93,6 +97,11 @@ class PastellConfig
     public function getIparapheurSousType(): string
     {
         return $this->iParapheurSousType;
+    }
+
+    public function getPostAction(): string
+    {
+        return $this->postAction;
     }
 
 }
