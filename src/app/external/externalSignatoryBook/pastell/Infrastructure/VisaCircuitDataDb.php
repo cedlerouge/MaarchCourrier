@@ -35,7 +35,7 @@ class VisaCircuitDataDb implements VisaCircuitDataInterface
             'table'  => ['listinstance',],
             'where'  => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
             'data'   => [$resId, 'sign']
-        ])[0];
+        ])[0] ?? [];
 
         if (!empty($signatory['item_id'])) {
             $user = UserModel::getById(['id' => $signatory['item_id'], 'select' => ['user_id']]);
