@@ -41,6 +41,7 @@ class PastellApiMock implements PastellApiInterface
     public bool $sendIparapheur = true;
     public array $uploadedAnnexes = [];
     public array $uploadAnnexError = [];
+    public array $deletedFolder = [];
 
     /**
      * @param PastellConfig $config
@@ -209,5 +210,15 @@ class PastellApiMock implements PastellApiInterface
         }
 
         return $this->uploadAnnexError;
+    }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return array
+     */
+    public function deleteFolder(PastellConfig $config, string $idFolder): array
+    {
+        return $this->deletedFolder;
     }
 }

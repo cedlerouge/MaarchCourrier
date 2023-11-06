@@ -128,4 +128,11 @@ interface PastellApiInterface
      * @return bool
      */
     public function sendIparapheur(PastellConfig $config, string $idFolder): bool;
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return array
+     */
+    public function deleteFolder(PastellConfig $config, string $idFolder): array;
 }

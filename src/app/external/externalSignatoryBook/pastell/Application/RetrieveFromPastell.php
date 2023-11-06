@@ -17,6 +17,7 @@ namespace ExternalSignatoryBook\pastell\Application;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
+use ExternalSignatoryBook\pastell\Domain\PastellStates;
 
 class RetrieveFromPastell
 {
@@ -25,6 +26,7 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
+    private PastellStates $pastellStates;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -44,6 +46,7 @@ class RetrieveFromPastell
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
+        $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
     /**
@@ -82,6 +85,17 @@ class RetrieveFromPastell
                 }
 
                 $idsToRetrieve[$key] = array_merge($value, $result);
+
+                if (
+                    $result['status'] == $this->pastellStates->getSignState()
+                    || $result['status'] == $this->pastellStates->getRefusedSign()
+                    || $result['status'] == $this->pastellStates->getRefusedVisa()
+                ) {
+                    $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $resId);
+                    if (!empty($deleteFolderResult['error'])) {
+                        return ['error' => $deleteFolderResult['error']];
+                    }
+                }
             }
         }
 

@@ -459,4 +459,30 @@ class PastellApi implements PastellApiInterface
 
         return $response['code'] == 200;
     }
+
+    /**
+     * @param PastellConfig $config
+     * @param string $idFolder
+     * @return array|string[]
+     */
+    public function deleteFolder(PastellConfig $config, string $idFolder): array
+    {
+        $response = CurlModel::exec([
+            'url'       => $config->getUrl() . '/entite/' . $config->getEntity() . '/document/' . $idFolder . '/action/supression',
+            'basicAuth' => ['user' => $config->getLogin(), 'password' => $config->getPassword()],
+            'headers'   => ['Content-Type' => 'application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+        ]);
+
+        if ($response['code'] > 201) {
+            if (!empty($response['response']['error-message'])) {
+                $return = ["error" => $response['response']['error-message']];
+            } else {
+                $return = ["error" => 'An error occurred !'];
+            }
+        } else {
+            $return = $response['response'];
+        }
+        return $return;
+    }
 }
