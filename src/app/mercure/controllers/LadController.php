@@ -100,6 +100,9 @@ class LadController
 
     public function testLad(Request $request, Response $response)
     {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_mercure', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+        }
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
             return $response->withStatus(400)->withJson(['errors' => 'Mercure configuration is not enabled']);
@@ -114,17 +117,14 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
-            return $response->withStatus(400)->withJson(['errors' => 'L\'application Mercure5 n\'est pas présente dans la distribution ou n\'est pas exécutable']);
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
+            return $response->withStatus(400)->withJson(['errors' => 'Mercure5 exe is not present in the distribution or is not executable']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
-            return $response->withStatus(400)->withJson(['errors' => 'L\'application ugrep n\'est pas présente dans la distribution ou n\'est pas exécutable']);
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
+            return $response->withStatus(400)->withJson(['errors' => 'ugrep exe is not present in the distribution or is not executable']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'uchardet')) {
-            return $response->withStatus(400)->withJson(['errors' => 'L\'application uchardet n\'est pas présente dans la distribution ou n\'est pas exécutable']);
-        }
         $testFile = LadController::generateTestPdf();
         $encodedResource = base64_encode(file_get_contents($testFile));
 
