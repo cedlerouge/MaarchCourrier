@@ -18,7 +18,7 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $resourceExist = true;
     public array $attachments = [];
     public array $attachmentTypes = [];
-    public bool $mainResourceInSignatoryBook;
+    public bool $mainResourceInSignatoryBook = true;
 
     /**
      * @param int $resId
