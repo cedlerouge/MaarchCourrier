@@ -26,7 +26,6 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
-    private PastellStates $pastellStates;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -46,7 +45,6 @@ class RetrieveFromPastell
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
-        $this->pastellStates = $this->pastellConfig->getPastellStates();
     }
 
     /**
@@ -87,9 +85,8 @@ class RetrieveFromPastell
                 $idsToRetrieve[$key] = array_merge($value, $result);
 
                 if (
-                    $result['status'] == $this->pastellStates->getSignState()
-                    || $result['status'] == $this->pastellStates->getRefusedSign()
-                    || $result['status'] == $this->pastellStates->getRefusedVisa()
+                    $result['status'] == 'validated'
+                    || $result['status'] == 'refused'
                 ) {
                     $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $resId);
                     if (!empty($deleteFolderResult['error'])) {

@@ -298,19 +298,26 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
-    public function testDeleteFolderReturnsAnError(): void
+    /**
+     * @return void
+     */
+    public function testRetrieveIsNotValidWhenDeleteFolderReturnsAnError(): void
     {
+        $this->pastellApiMock->deletedFolder = ['error' => 'An error occurred !'];
+
         $idsToRetrieve = [
-            420 => [
-                'res_id'      => 420,
-                'external_id' => 'testKO'
-            ],
             42  => [
                 'res_id'      => 42,
-                'external_id' => 'djqfdh'
+                'external_id' => 'djqfdh',
+                'status' => 'validated'
             ]
         ];
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+
+        $this->assertSame(
+            [
+                'error'   => 'An error occurred !',
+            ], $result);
     }
 }
