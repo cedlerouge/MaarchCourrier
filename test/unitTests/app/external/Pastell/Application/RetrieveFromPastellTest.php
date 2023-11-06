@@ -256,6 +256,9 @@ class RetrieveFromPastellTest extends TestCase
         );
     }
 
+    /**
+     * @return void
+     */
     public function testRetrievingAttachmentUseResIdMaster(): void
     {
         $this->parseIParapheurLogMock->errorResId = 420;
@@ -293,5 +296,21 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+    }
+
+    public function testDeleteFolderReturnsAnError(): void
+    {
+        $idsToRetrieve = [
+            420 => [
+                'res_id'      => 420,
+                'external_id' => 'testKO'
+            ],
+            42  => [
+                'res_id'      => 42,
+                'external_id' => 'djqfdh'
+            ]
+        ];
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
     }
 }
