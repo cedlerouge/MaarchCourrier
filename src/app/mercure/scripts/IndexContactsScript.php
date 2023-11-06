@@ -100,7 +100,6 @@ class IndexContactsScript
 
             $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
             \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-
         } catch (\Exception $e) {
             echo $e->getMessage();
             return false;
@@ -211,7 +210,7 @@ class IndexContactsScript
             }
 
             foreach ($l as $entry) {
-                fwrite($lexiconFile, $entry."\n");
+                fwrite($lexiconFile, $entry . "\n");
             }
             fclose($lexiconFile);
         }
@@ -223,7 +222,7 @@ class IndexContactsScript
         } else {
             fwrite($flagFile, date("d-m-Y H:i:s"));
             fclose($flagFile);
-	    }
+        }
         echo "[" . date("Y-m-d H:i:s") . "] Script d'indexation terminé !\n";
         return true;
     }
