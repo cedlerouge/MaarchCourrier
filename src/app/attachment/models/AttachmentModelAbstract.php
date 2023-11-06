@@ -185,6 +185,26 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
+    public static function getLastVersionByOriginId(int $resIdMaster, int $originId)
+    {
+        $attachment = DatabaseModel::select([
+            'select'    => ['res_id_master', 'origin_id', 'status'],
+            'table'     => ['res_attachments'],
+            'where'     => ['res_id_master = ?', 'origin_id = ?'],
+            'data'      => [$resIdMaster, $originId],
+            'where'     => ['res_id = ? OR (res_id_master = ? AND origin_id = ?)'],
+            'data'      => [$originId, $resIdMaster, $originId],
+            'orderBy'   => ['relation DESC'],
+            'limit'     => 1
+        ]);
+
+        if (empty($attachment[0])) {
+            return [];
+        }
+
+        return $attachment[0];
+    }
+
     public static function delete(array $args)
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);

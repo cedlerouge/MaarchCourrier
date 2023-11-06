@@ -1244,7 +1244,7 @@ class AttachmentController
             if (!Validator::notEmpty()->intVal()->validate($body['originId'])) {
                 return ['errors' => 'Body originId is not an integer'];
             }
-            $origin = AttachmentModel::getById(['id' => $body['originId'], 'select' => ['res_id_master', 'origin_id', 'status']]);
+            $origin = AttachmentModel::getLastVersionByOriginId($body['resIdMaster'], $body['originId']);
             if (empty($origin)) {
                 return ['errors' => 'Body originId does not exist'];
             } elseif ($origin['res_id_master'] != $body['resIdMaster']) {
@@ -1255,8 +1255,8 @@ class AttachmentController
                     return ['errors' => 'Body originId has not an authorized status'];
                 }
             } else {
-                if (!empty($origin['origin_id'])) {
-                    return ['errors' => 'Body originId can not be a version, it must be the original version'];
+                if (in_array($origin['status'], ['SIGN', 'FRZ'])) {
+                    return ['errors' => "Body originId has not an authorized status. Origin status is either 'SIGN' or 'FRZ'"];
                 }
             }
         }
