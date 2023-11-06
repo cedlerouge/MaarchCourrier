@@ -318,7 +318,8 @@ class RetrieveFromPastellTest extends TestCase
 
         $this->assertSame(
             [
-                'error' => 'An error occurred !',
+                'success' => [],
+                'error'   => [42 => 'An error occurred !']
             ], $result);
     }
 }
