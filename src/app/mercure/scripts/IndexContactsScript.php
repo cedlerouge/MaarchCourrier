@@ -128,7 +128,8 @@ class IndexContactsScript
         $listIdToUpdate = [];
         echo "[" . date("Y-m-d H:i:s") . "] Début de l'indexation \n";
         foreach ($contactsToIndexes as $c) {
-            if ($cptIndex % (max(count($contactsToIndexes) / 50, 10)) == 0) {
+            $pasDisplayMsg = max((int) round(count($contactsToIndexes) / 50), 10);
+            if ($cptIndex % $pasDisplayMsg == 0) {
                 echo "Indexation contact " . $cptIndex . "/" . count($contactsToIndexes) . "\n";
             }
 

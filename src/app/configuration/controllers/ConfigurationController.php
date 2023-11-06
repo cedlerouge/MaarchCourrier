@@ -49,6 +49,10 @@ class ConfigurationController
         }
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => $args['privilege']]);
+        if (!$configuration['value']) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service ' . $args['privilege'] . ' is unknown']);
+        }
+
         $configuration['value'] = json_decode($configuration['value'], true);
         if ($args['privilege'] == 'admin_email_server') {
             if (!empty($configuration['value']['password'])) {
