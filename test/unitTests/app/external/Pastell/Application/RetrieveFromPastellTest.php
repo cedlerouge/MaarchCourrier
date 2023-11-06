@@ -231,6 +231,7 @@ class RetrieveFromPastellTest extends TestCase
             0,
             '',
             '',
+            '',
             ''
         );
 
@@ -306,10 +307,10 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellApiMock->deletedFolder = ['error' => 'An error occurred !'];
 
         $idsToRetrieve = [
-            42  => [
+            42 => [
                 'res_id'      => 42,
                 'external_id' => 'djqfdh',
-                'status' => 'validated'
+                'status'      => 'validated'
             ]
         ];
 
@@ -317,7 +318,7 @@ class RetrieveFromPastellTest extends TestCase
 
         $this->assertSame(
             [
-                'error'   => 'An error occurred !',
+                'error' => 'An error occurred !',
             ], $result);
     }
 }

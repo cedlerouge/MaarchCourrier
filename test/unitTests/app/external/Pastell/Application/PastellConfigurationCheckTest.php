@@ -55,6 +55,7 @@ class PastellConfigurationCheckTest extends TestCase
             0,
             '',
             '',
+            '',
             ''
         );
 
@@ -77,6 +78,7 @@ class PastellConfigurationCheckTest extends TestCase
             0,
             '',
             '',
+            '',
             ''
         );
 
@@ -97,6 +99,7 @@ class PastellConfigurationCheckTest extends TestCase
             '',
             193,
             0,
+            '',
             '',
             '',
             ''
@@ -132,6 +135,7 @@ class PastellConfigurationCheckTest extends TestCase
             'toto123',
             0,
             0,
+            '',
             '',
             '',
             ''
@@ -228,6 +232,7 @@ class PastellConfigurationCheckTest extends TestCase
             0,
             '',
             '',
+            '',
             ''
         );
 
@@ -302,6 +307,7 @@ class PastellConfigurationCheckTest extends TestCase
             776,
             '',
             '',
+            '',
             ''
         );
 
@@ -324,6 +330,7 @@ class PastellConfigurationCheckTest extends TestCase
             776,
             'ls-not-document-pdf',
             'XELIANS COURRIER',
+            '',
             ''
         );
 
@@ -382,6 +389,7 @@ class PastellConfigurationCheckTest extends TestCase
             776,
             'ls-document-pdf',
             '',
+            '',
             ''
         );
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
@@ -405,6 +413,7 @@ class PastellConfigurationCheckTest extends TestCase
             776,
             'ls-document-pdf',
             'PELIANS COURRIER',
+            '',
             ''
         );
 
@@ -451,7 +460,8 @@ class PastellConfigurationCheckTest extends TestCase
             776,
             'ls-document-pdf',
             'XELIANS COURRIER',
-            ''
+            '',
+            'suppression'
         );
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
