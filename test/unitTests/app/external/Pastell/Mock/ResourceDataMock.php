@@ -18,6 +18,7 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $resourceExist = true;
     public array $attachments = [];
     public array $attachmentTypes = [];
+    public bool $mainResourceInSignatoryBook;
 
     /**
      * @param int $resId
@@ -31,7 +32,7 @@ class ResourceDataMock implements ResourceDataInterface
 
         $integrations = [
             'inShipping'      => false,
-            'inSignatureBook' => true
+            'inSignatureBook' => $this->mainResourceInSignatoryBook
         ];
 
         return [

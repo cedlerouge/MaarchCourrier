@@ -92,7 +92,8 @@ class RetrieveFromPastell
                 ) {
                     $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $resId);
                     if (!empty($deleteFolderResult['error'])) {
-                        return ['error' => $deleteFolderResult['error']];
+                        $errors[$key] = $deleteFolderResult['error'];
+                        unset($idsToRetrieve[$key]);
                     }
                 }
             }
