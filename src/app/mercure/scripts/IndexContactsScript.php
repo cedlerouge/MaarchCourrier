@@ -127,11 +127,13 @@ class IndexContactsScript
 
         $listIdToUpdate = [];
         echo "[" . date("Y-m-d H:i:s") . "] Début de l'indexation \n";
-        foreach ($contactsToIndexes as $c) {
-            $pasDisplayMsg = max((int) round(count($contactsToIndexes) / 50), 10);
-            if ($cptIndex % $pasDisplayMsg == 0) {
-                echo "Indexation contact " . $cptIndex . "/" . count($contactsToIndexes) . "\n";
-            }
+
+        echo "0/0";
+
+        foreach ($contactsToIndexes as $key => $c) {
+            echo "\e[2K"; # clear whole line
+            echo "\e[1G"; # move cursor to column 1
+            echo "Indexation contact " . ($key + 1) . "/" . count($contactsToIndexes);
 
             //Suppression de l'ID en cours
             $term = new \Zend_Search_Lucene_Index_Term((int)$c['id'], 'Idx');
@@ -170,6 +172,7 @@ class IndexContactsScript
             $listIdToUpdate[] = $c['id'];
 
             if ((int)$c['id'] % 1000 === 0) {
+                echo " (optimisation ...)";
                 $index->optimize();
 
                 ContactModel::update([
@@ -185,6 +188,7 @@ class IndexContactsScript
         }
 
         //Optimisation finale
+        echo " (optimisation ...)";
         $index->optimize();
         echo "[" . date("Y-m-d H:i:s") . "] Fin de l'indexation \n";
 
