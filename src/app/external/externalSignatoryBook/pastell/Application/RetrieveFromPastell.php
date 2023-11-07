@@ -90,7 +90,7 @@ class RetrieveFromPastell
                     $postAction == 'suppression' &&
                     ($result['status'] == 'validated' || $result['status'] == 'refused')
                 ) {
-                    $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $resId);
+                    $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $value['external_id']);
                     if (!empty($deleteFolderResult['error'])) {
                         $errors[$key] = $deleteFolderResult['error'];
                         unset($idsToRetrieve[$key]);
