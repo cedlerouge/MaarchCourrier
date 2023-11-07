@@ -680,7 +680,7 @@ class SendToPastellTest extends TestCase
         $this->assertSame(['error' => 'Fingerprints do not match'], $result);
     }
 
-    public function testSendResourceReturnsErrorWhen(): void
+    public function testSendResourceReturnsAnErrorWhenThereIsASignableAttachmentAndMainDocumentIsNotInSignatoryAndThereIsAnErrorDuringFolderCreation(): void
     {
         $this->resourceData->mainResourceInSignatoryBook = false;
         $this->pastellApiMock->folder = ['error' => 'erreur'];
@@ -705,5 +705,34 @@ class SendToPastellTest extends TestCase
         $this->assertSame(['Signable PJ'], $this->sendToPastell->titlesGiven);
 
         $this->assertSame(['error' => 'erreur'], $result);
+    }
+
+    public function testSendResourceReturnsAnEmptyArrayWhenAttachmentIsNotSignableAndMainResourceIsNotInSignatory(): void
+    {
+        $this->resourceData->mainResourceInSignatoryBook = false;
+        $this->resourceData->attachmentTypes = [
+            'type_signable' => false
+        ];
+        $this->resourceData->attachments = [
+            [
+                'res_id'          => 2,
+                'attachment_type' => 'type_signable',
+                'fingerprint'     => 'azerty',
+                'title'           => 'Signable PJ'
+            ]
+        ];
+        $this->resourceFile->attachmentFilePath = '/path/to/attachment.pdf';
+
+        $resId = 0;
+        $sousType = 'courrier';
+
+        $result = $this->sendToPastell->sendResource($resId, $sousType);
+
+        $this->assertSame([], $this->sendToPastell->titlesGiven);
+
+        $this->assertSame([
+            'attachments' => [],
+            'resource'    => []
+        ], $result);
     }
 }
