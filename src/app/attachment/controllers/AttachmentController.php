@@ -415,7 +415,8 @@ class AttachmentController
         return $response->withJson(['attachments' => $attachments, 'mailevaEnabled' => $mailevaEnabled]);
     }
 
-    public function canUpdateAttachment(array $args) {
+    public function canUpdateAttachment(array $args)
+    {
         $attachment = $args['attachment'];
 
         $canUpdate = $GLOBALS['id'] == $attachment['typist'];
@@ -462,7 +463,8 @@ class AttachmentController
 
     }
 
-    public function canDeleteAttachment(array $args) {
+    public function canDeleteAttachment(array $args)
+    {
         $attachment = $args['attachment'];
 
         $canDelete = $GLOBALS['id'] == $attachment['typist'];
@@ -1257,6 +1259,10 @@ class AttachmentController
                     return ['errors' => 'Body originId has not an authorized status'];
                 }
             } else {
+                if (!empty($origin['origin_id'])) {
+                    return ['errors' => 'Body originId can not be a version, it must be the original version'];
+                }
+
                 if (in_array($origin['status'], ['SIGN', 'FRZ'])) {
                     return ['errors' => "Body originId has not an authorized status. Origin status is either 'SIGN' or 'FRZ'"];
                 }
