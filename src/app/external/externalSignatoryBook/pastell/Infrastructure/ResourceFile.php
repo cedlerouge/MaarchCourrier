@@ -55,7 +55,7 @@ class ResourceFile implements ResourceFileInterface
         // Checking fingerprint
         $docserverType = DocserverTypeModel::getById(['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]);
         $realFingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
-        if ($fingerprint != $realFingerprint) {
+        if ($adrInfo['fingerprint'] != $realFingerprint) {
             return 'Error: Fingerprints do not match';
         }
 
