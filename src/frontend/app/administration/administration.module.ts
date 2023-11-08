@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from '../app-common.module';
 
-import { InternationalizationModule } from '@service/translate/internationalization.module';
-
 import { AdministrationRoutingModule } from './administration-routing.module';
 // import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { JoyrideModule } from 'ngx-joyride';
@@ -72,7 +70,6 @@ import { UsersAdministrationComponent } from './user/users-administration.compon
 import { UsersAdministrationRedirectModalComponent } from './user/redirect-modal/users-administration-redirect-modal.component';
 import { UsersImportComponent } from './user/import/users-import.component';
 import { UsersExportComponent } from './user/export/users-export.component';
-import { TranslateService } from '@ngx-translate/core';
 import { EntitiesExportComponent } from './entity/export/entities-export.component';
 import { RegisteredMailComponent } from './registered-mail/registered-mail.component';
 import { IssuingSiteListComponent } from './registered-mail/issuing-site/issuing-site-list.component';
@@ -94,7 +91,6 @@ import { HistoryExportComponent } from './history/export/history-export.componen
     imports: [
         SharedModule,
         // NgxChartsModule,
-        InternationalizationModule,
         JoyrideModule.forChild(),
         AdministrationRoutingModule,
         DocumentViewerModule
@@ -189,8 +185,4 @@ import { HistoryExportComponent } from './history/export/history-export.componen
         AdministrationService
     ]
 })
-export class AdministrationModule {
-    constructor(translate: TranslateService) {
-        translate.setDefaultLang('fr');
-    }
-}
+export class AdministrationModule {}

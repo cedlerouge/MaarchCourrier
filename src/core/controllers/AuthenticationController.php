@@ -53,6 +53,7 @@ class AuthenticationController
         $appName   = CoreConfigModel::getApplicationName();
         $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $maarchUrl = $configFile['config']['maarchUrl'] ?? '';
+        $plugins = $configFile['config']['plugins'] ?? [];
 
         $parameter = ParameterModel::getById(['id' => 'loginpage_message', 'select' => ['param_value_string']]);
 
@@ -107,7 +108,7 @@ class AuthenticationController
         if (!empty($file['config']['idleTime'])) {
             $idleTime = (int) $file['config']['idleTime'];
         }
-        
+
         $return = [
             'instanceId'                => $hashedPath,
             'applicationName'           => $appName,
@@ -120,7 +121,8 @@ class AuthenticationController
             'maarchUrl'                 => $maarchUrl,
             'externalSignatoryBook'     => $externalSignatoryBook,
             'idleTime'                  => $idleTime,
-            'migrating'                 => VersionUpdateController::isMigrating()
+            'migrating'                 => VersionUpdateController::isMigrating(),
+            'plugins'                   => $plugins
         ];
 
         if (!empty($keycloakState)) {
