@@ -87,13 +87,23 @@ import { MultigestAdministrationComponent } from './multigest/multigest-administ
 import { MultigestListAdministrationComponent } from './multigest/multigest-list-administration.component';
 import { HistoryExportComponent } from './history/export/history-export.component';
 
+//modules LAD
+import { LadAdministrationComponent } from './mercure/lad-administration.component';
+import { LadAdministrationMenuComponent } from './mercure/lad-administration-menu.component';
+import { LadContactsManagementComponent } from './mercure/ladContactsManagement/lad-contacts-management.component';
+import { MwsAdministrationComponent } from './mercure/webservice/mws-administration.component';
+import { MwsListDocsComponent } from './mercure/webservice/mws-list-docs.component';
+import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+
 @NgModule({
     imports: [
         SharedModule,
         // NgxChartsModule,
         JoyrideModule.forChild(),
         AdministrationRoutingModule,
-        DocumentViewerModule
+        DocumentViewerModule,
+        NgxChartsModule
     ],
     declarations: [
         AccountLinkComponent,
@@ -179,7 +189,13 @@ import { HistoryExportComponent } from './history/export/history-export.componen
         MaarchToMaarchParametersComponent,
         MultigestAdministrationComponent,
         MultigestListAdministrationComponent,
-        HistoryExportComponent
+        HistoryExportComponent,
+        LadAdministrationComponent,
+        LadContactsManagementComponent,
+        MwsAdministrationComponent,
+        MwsListDocsComponent,
+        MwsMonitoringComponent,
+        LadAdministrationMenuComponent
     ],
     providers: [
         AdministrationService

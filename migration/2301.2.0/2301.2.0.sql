@@ -31,3 +31,13 @@ VALUES ('MIGRATION', 'MIGRATION', 'Dépôt de sauvegarde des migrations', 'N', 5
         WHERE docserver_id = 'FASTHD_MAN'
     ),
 NOW(), 'migration');
+
+ALTER TABLE contacts DROP COLUMN IF EXISTS lad_indexation;
+ALTER TABLE contacts ADD COLUMN lad_indexation BOOLEAN DEFAULT FALSE NOT NULL;
+
+ALTER TABLE indexing_models DROP COLUMN IF EXISTS lad_processing;
+ALTER TABLE indexing_models ADD COLUMN lad_processing BOOLEAN DEFAULT FALSE NOT NULL;
+
+DELETE FROM configurations WHERE privilege = 'admin_mercure';
+INSERT INTO configurations (privilege, value) VALUES ('admin_mercure', '{"mws": {"url": "","login": "","password": "","tokenMws": "","loginMaarch": "","passwordMaarch": ""},"enabledLad": false,"mwsLadPriority": false}');
+

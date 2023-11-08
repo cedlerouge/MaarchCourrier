@@ -43,6 +43,8 @@ import { RegisteredMailRecipientInputComponent } from '../app/administration/reg
 /* MODAL*/
 import { AlertComponent } from '../plugins/modal/alert.component';
 import { ConfirmComponent } from '../plugins/modal/confirm.component';
+import { LoaderComponent } from '../plugins/modal/loader.component';
+
 
 /* PLUGIN COMPONENT*/
 import { NotesListComponent } from './notes/notes-list.component';
@@ -128,6 +130,7 @@ import { TranslateModule } from '@ngx-translate/core';
         MessageBoxComponent,
         AlertComponent,
         ConfirmComponent,
+        LoaderComponent,
         PluginAutocompleteComponent,
         FieldListComponent,
         PluginSelectSearchComponent,
