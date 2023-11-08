@@ -7,6 +7,8 @@
 -- *************************************************************************--
 --DATABASE_BACKUP|configurations
 
+UPDATE users SET preferences = preferences - 'outlookPassword' WHERE preferences->>'outlookPassword' IS NOT NULL;
+
 UPDATE configurations SET value = jsonb_set(value, '{default}', '""'::jsonb, TRUE) WHERE privilege = 'admin_document_editors';
 
 -- New storage zone
