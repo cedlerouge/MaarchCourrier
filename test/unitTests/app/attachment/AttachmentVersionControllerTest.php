@@ -139,8 +139,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
         $response = $attachmentController->create($fullRequest, new Response());
-        $responseBody = json_decode((string)$response->getBody());
-        self::$versionAttachmentId = $responseBody->id;
+        $responseBody = json_decode((string)$response->getBody(), true);
 
         // ASSERT
         // Attendu : Impossible de rajouter une nouvelle version à une PJ qui est déjà une version d'une autre
@@ -208,7 +207,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
         $response = $attachmentController->create($fullRequest, new Response());
-        $responseBody = json_decode((string)$response->getBody());
+        $responseBody = json_decode((string)$response->getBody(),true);
 
         // ASSERT
         // Attendu : Impossible de rajouter une nouvelle version à une PJ dont le statut est signé (SIGN)
