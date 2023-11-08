@@ -20,6 +20,7 @@ use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
+use Exception;
 use MessageExchange\models\MessageExchangeModel;
 use Parameter\models\ParameterModel;
 use Resource\controllers\ResController;
@@ -27,12 +28,18 @@ use Resource\controllers\ResourceListController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
-use Slim\Http\Request;
-use Slim\Http\Response;
-use SrcCore\models\CoreConfigModel;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 
 trait PreProcessActionSEDATrait
 {
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkSendToRecordManagement(Request $request, Response $response, array $aArgs)
     {
         $body = $request->getParsedBody();
@@ -222,6 +229,12 @@ trait PreProcessActionSEDATrait
         return $response->withJson($resourcesInformations);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     */
     public function checkAcknowledgementRecordManagement(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
