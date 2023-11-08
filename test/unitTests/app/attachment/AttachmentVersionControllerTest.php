@@ -36,6 +36,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA'
         ];
@@ -53,6 +54,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA',
             'originId'     => self::$originalAttachmentId
@@ -94,6 +96,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA'
         ];
@@ -110,6 +113,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA',
             'originId'     => self::$originalAttachmentId
@@ -127,6 +131,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA',
             'originId'     => self::$versionAttachmentId
@@ -160,6 +165,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA'
         ];
@@ -176,6 +182,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'TRA',
             'originId'     => self::$originalAttachmentId
@@ -193,6 +200,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'TRA',
             'originId'     => self::$signedVersionAttachmentId
@@ -225,6 +233,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA'
         ];
@@ -241,6 +250,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'A_TRA',
             'originId'     => self::$originalAttachmentId
@@ -258,6 +268,7 @@ class AttachmentVersionControllerTest extends CourrierTestCase
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
+            'recipientType'=> 'user',
             'format'       => 'txt',
             'status'       => 'TRA',
             'originId'     => self::$originalAttachmentId
