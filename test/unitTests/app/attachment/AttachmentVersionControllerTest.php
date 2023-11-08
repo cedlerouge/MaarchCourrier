@@ -188,21 +188,19 @@ class AttachmentVersionControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response = $attachmentController->create($fullRequest, new Response());
-        $responseBody = json_decode((string)$response->getBody());
-        self::$signedVersionAttachmentId = $responseBody->id;
+        $attachmentController->create($fullRequest, new Response());
 
         // ACT : Ajout de la version à partir de la réponse signée
         $args = [
-            'title'        => 'Nouvelle PJ signée - v2',
-            'type'         => 'signed_response',
+            'title'        => 'Nouvelle PJ - v2',
+            'type'         => 'response_project',
             'resIdMaster'  => 100,
             'encodedFile'  => $encodedFile,
             'recipientId'  => 19,
             'recipientType'=> 'user',
             'format'       => 'txt',
-            'status'       => 'TRA',
-            'originId'     => self::$signedVersionAttachmentId
+            'status'       => 'A_TRA',
+            'originId'     => self::$originalAttachmentId
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
