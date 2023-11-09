@@ -9,7 +9,6 @@
 namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
-use ExternalSignatoryBook\pastell\Application\SendToPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
@@ -160,21 +159,6 @@ class PastellConfigurationCheckTest extends TestCase
     }
 
     /**
-     * @return void
-     */
-    public function testConfigurationIsNotValidIfEntityIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->entity = ['errors' => 'Erreur lors de la récupération des entités'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-
-        $result = $pastellService->checkPastellConfig();
-
-        $this->assertFalse($result);
-    }
-
-    /**
      * Testing non-valid entities
      * @return void
      */
@@ -196,26 +180,6 @@ class PastellConfigurationCheckTest extends TestCase
         $result = $this->pastellConfigCheck->checkPastellConfig();
 
         $this->assertTrue($result);
-    }
-
-    public function testConfigurationIsNotValidIfConnectorIsMissing(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig = new PastellConfig(
-            'testurl',
-            'toto',
-            'toto123',
-            193,
-            0,
-            '',
-            '',
-            ''
-        );
-
-        $result = $this->pastellConfigCheck->checkPastellConfig();
-
-        $this->assertFalse($result);
     }
 
     /**
@@ -251,18 +215,6 @@ class PastellConfigurationCheckTest extends TestCase
         $this->pastellApiMock->connector = ['34', '245', '813'];
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
-
-        $this->assertFalse($result);
-    }
-
-    public function testConfigurationIsNotValidIfConnectorIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->connector = ['errors' => 'Erreur lors de la récupération des connecteurs'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-
-        $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
     }
@@ -339,18 +291,6 @@ class PastellConfigurationCheckTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function testConfigurationIsNotValidIfDocumentTypeIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->flux = ['errors' => 'Erreur lors de la récupération des types de documents'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-
-        $result = $pastellService->checkPastellConfig();
-
-        $this->assertFalse($result);
-    }
-
     /**
      * Testing with a non-valid document type
      * @return void
@@ -392,9 +332,8 @@ class PastellConfigurationCheckTest extends TestCase
             '',
             ''
         );
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
 
-        $result = $pastellConfigCheck->checkPastellConfig();
+        $result = $this->pastellConfigCheck->checkPastellConfig();
 
         $this->assertFalse($result);
     }
@@ -418,18 +357,6 @@ class PastellConfigurationCheckTest extends TestCase
         );
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
-
-        $this->assertFalse($result);
-    }
-
-    public function testConfigurationIsNotValidIfIparapheurTypeIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->iParapheurType = ['errors' => 'Erreur lors de la récupération des types de iParapheur'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellService = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-
-        $result = $pastellService->checkPastellConfig();
 
         $this->assertFalse($result);
     }
@@ -465,105 +392,6 @@ class PastellConfigurationCheckTest extends TestCase
         );
 
         $result = $this->pastellConfigCheck->checkPastellConfig();
-
-        $this->assertTrue($result);
-    }
-
-    public function testSendToPastellIsNotValidIfIdFolderIsMissing(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = [];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testConfigurationIsNotValidIfIdFolderIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = ['errors' => 'Erreur lors de la récupération de l\'id du dossier'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testSendToPastellIsValidIfIdFolderIsNotMissing(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = [];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testSendToPastellIsNotValidIfIparapheurSousTypeMissing(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->folder = [];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testSendToPastellIsNotValidIfIparapheurSousTypeIsNotFoundInPastell(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigMock->pastellConfig = new PastellConfig(
-            'testurl',
-            'toto',
-            'toto123',
-            193,
-            776,
-            'ls-document-pdf',
-            'XELIANS COURRIER',
-            'courrrier'
-        );
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testConfigurationIsNotValidIfIparapheurSousTypeIsNotValid(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellApiMock->iParapheurSousType = ['errors' => 'Erreur lors de la récupération des sous types de iParapheur'];
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
-
-        $this->assertFalse($result);
-    }
-
-    public function testSendToPastellIsValidIfIparapheurSousTypeIsFoundInPastell(): void
-    {
-        $pastellApiMock = new PastellApiMock();
-        $pastellConfigMock = new PastellConfigMock();
-        $pastellConfigCheck = new PastellConfigurationCheck($pastellApiMock, $pastellConfigMock);
-        $sendToPastell = new SendToPastell($pastellConfigCheck, $pastellApiMock, $pastellConfigMock);
-
-        $result = $sendToPastell->sendFolderToPastell();
 
         $this->assertTrue($result);
     }

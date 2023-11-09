@@ -2814,5 +2814,7 @@
     "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
     "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>",
     "defaultEditor": "Editeur par défaut",
+    "spacesNotAllowed": "Les espaces ne sont pas autorisés",
+    "pageNotFound": "La page n'existe pas",
     "pastell": "IParapheur via Pastell"
 }
