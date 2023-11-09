@@ -1,20 +1,24 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief User Controller
-* @author dev@maarch.org
-*/
+ * @brief User Controller
+ * @author dev@maarch.org
+ */
 
 namespace ExportSeda\controllers;
 
+use DateTime;
+use DOMDocument;
+use Exception;
 use SrcCore\models\CoreConfigModel;
+use stdClass;
 
 class SendMessageController
 {
@@ -37,13 +41,13 @@ class SendMessageController
     }
 
 
-    public static function generateMessageFile($aArgs = [], $isForSeda = false)
+    public static function generateMessageFile($aArgs = [], $isForSeda = false): string
     {
         $messageObject = $aArgs['messageObject'];
-        $type          = $aArgs['type'];
+        $type = $aArgs['type'];
 
-        $DOMTemplate = new \DOMDocument();
-        $DOMTemplate->load('src/app/external/exportSeda/resources/'.$type.'.xml');
+        $DOMTemplate = new DOMDocument();
+        $DOMTemplate->load('src/app/external/exportSeda/resources/' . $type . '.xml');
         $DOMTemplateProcessor = new DOMTemplateProcessorController($DOMTemplate);
         $DOMTemplateProcessor->setSource($type, $messageObject);
         $DOMTemplateProcessor->merge();
@@ -65,14 +69,14 @@ class SendMessageController
         return $filename;
     }
 
-    public static function generateSedaFile($aArgs = [])
+    public static function generateSedaFile($aArgs = []): array
     {
         $tmpPath = CoreConfigModel::getTmpPath();
 
         $messageObject = $aArgs['messageObject'];
-        $type          = $aArgs['type'];
+        $type = $aArgs['type'];
 
-        $seda2Message = self::initMessage(new \stdClass);
+        $seda2Message = self::initMessage(new stdClass);
 
         $seda2Message->MessageIdentifier->value = $messageObject->messageIdentifier;
         $seda2Message->ArchivalAgreement->value = $messageObject->archivalAgreement;
@@ -102,7 +106,7 @@ class SendMessageController
             if ($attachment->type == "mainDocument") {
                 $messageObject->dataObjectPackage->label = $attachment->label;
                 $messageObject->dataObjectPackage->originatingSystemId = $attachment->id;
-                
+
                 $seda2Message->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0] = self::getArchiveUnit(
                     "File",
                     $messageObject->dataObjectPackage,
@@ -131,7 +135,7 @@ class SendMessageController
         $filename = self::generateMessageFile(["messageObject" => $seda2Message, "type" => $type], true);
 
         $arrayReturn = [
-            "messageObject" => $seda2Message,
+            "messageObject"   => $seda2Message,
             "encodedFilePath" => $filename,
             "messageFilename" => $seda2Message->MessageIdentifier->value
         ];
@@ -139,10 +143,10 @@ class SendMessageController
         return $arrayReturn;
     }
 
-    private static function generateZip($seda2Message, $tmpPath)
+    private static function generateZip($seda2Message, $tmpPath): string
     {
         $zip = new \ZipArchive();
-        $filename = $tmpPath.$seda2Message->MessageIdentifier->value. ".zip";
+        $filename = $tmpPath . $seda2Message->MessageIdentifier->value . ".zip";
 
         $zip->open($filename, \ZipArchive::CREATE);
 
@@ -159,30 +163,30 @@ class SendMessageController
 
     private static function initMessage($messageObject)
     {
-        $date = new \DateTime;
-        $messageObject->Date = $date->format(\DateTime::ATOM);
-        $messageObject->MessageIdentifier = new \stdClass();
+        $date = new DateTime;
+        $messageObject->Date = $date->format(DateTime::ATOM);
+        $messageObject->MessageIdentifier = new stdClass();
         $messageObject->MessageIdentifier->value = "";
 
-        $messageObject->TransferringAgency = new \stdClass();
-        $messageObject->TransferringAgency->Identifier = new \stdClass();
+        $messageObject->TransferringAgency = new stdClass();
+        $messageObject->TransferringAgency->Identifier = new stdClass();
 
-        $messageObject->ArchivalAgency = new \stdClass();
-        $messageObject->ArchivalAgency->Identifier = new \stdClass();
+        $messageObject->ArchivalAgency = new stdClass();
+        $messageObject->ArchivalAgency->Identifier = new stdClass();
 
-        $messageObject->ArchivalAgreement = new \stdClass();
+        $messageObject->ArchivalAgreement = new stdClass();
 
-        $messageObject->DataObjectPackage = new \stdClass();
+        $messageObject->DataObjectPackage = new stdClass();
         $messageObject->DataObjectPackage->BinaryDataObject = [];
-        $messageObject->DataObjectPackage->DescriptiveMetadata = new \stdClass();
-        $messageObject->DataObjectPackage->ManagementMetadata = new \stdClass();
+        $messageObject->DataObjectPackage->DescriptiveMetadata = new stdClass();
+        $messageObject->DataObjectPackage->ManagementMetadata = new stdClass();
 
         return $messageObject;
     }
 
-    private static function getBinaryDataObject($filePath, $id)
+    private static function getBinaryDataObject($filePath, $id): stdClass
     {
-        $binaryDataObject = new \stdClass();
+        $binaryDataObject = new stdClass();
 
         $pathInfo = pathinfo($filePath);
         if ($filePath) {
@@ -190,23 +194,26 @@ class SendMessageController
         }
 
         $binaryDataObject->id = "res_" . $id;
-        $binaryDataObject->MessageDigest = new \stdClass();
+        $binaryDataObject->MessageDigest = new stdClass();
         $binaryDataObject->MessageDigest->value = hash_file('sha256', $filePath);
         $binaryDataObject->MessageDigest->algorithm = "sha256";
         $binaryDataObject->Size = filesize($filePath);
 
-        $binaryDataObject->Attachment = new \stdClass();
+        $binaryDataObject->Attachment = new stdClass();
         $binaryDataObject->Attachment->filename = $filename;
 
-        $binaryDataObject->FileInfo = new \stdClass();
+        $binaryDataObject->FileInfo = new stdClass();
         $binaryDataObject->FileInfo->Filename = $filename;
 
-        $binaryDataObject->FormatIdentification = new \stdClass();
+        $binaryDataObject->FormatIdentification = new stdClass();
         $binaryDataObject->FormatIdentification->MimeType = mime_content_type($filePath);
 
         return $binaryDataObject;
     }
 
+    /**
+     * @throws Exception
+     */
     private static function getArchiveUnit(
         $type,
         $object = null,
@@ -214,8 +221,9 @@ class SendMessageController
         $archiveUnitId = null,
         $dataObjectReferenceId = null,
         $relatedObjectReference = null
-    ) {
-        $archiveUnit = new \stdClass();
+    ): stdClass
+    {
+        $archiveUnit = new stdClass();
 
         if ($archiveUnitId) {
             $archiveUnit->id = $archiveUnitId;
@@ -238,7 +246,7 @@ class SendMessageController
 
 
         if ($dataObjectReferenceId) {
-            $archiveUnit->DataObjectReference = new \stdClass();
+            $archiveUnit->DataObjectReference = new stdClass();
             $archiveUnit->DataObjectReference->DataObjectReferenceId = $dataObjectReferenceId;
         }
 
@@ -252,7 +260,7 @@ class SendMessageController
                             "Item",
                             $attachment,
                             null,
-                            $archiveUnitId. '_attachment_' . $i,
+                            $archiveUnitId . '_attachment_' . $i,
                             $attachment->res_id
                         );
                     }
@@ -268,16 +276,19 @@ class SendMessageController
         return $archiveUnit;
     }
 
-    private static function getContent($type, $object = null, $relatedObjectReference = null)
+    /**
+     * @throws Exception
+     */
+    private static function getContent($type, $object = null, $relatedObjectReference = null): stdClass
     {
-        $content = new \stdClass();
+        $content = new stdClass();
 
         switch ($type) {
             case 'RecordGrp':
                 $content->DescriptionLevel = $type;
                 $content->Title = [];
                 if ($object) {
-                    $content->Title[] = $object->label;
+                    $content->Title[] = $object->originatorAgency->label;
                     $content->DocumentType = 'Document Principal';
                 } else {
                     $content->DocumentType = 'Dossier';
@@ -286,16 +297,16 @@ class SendMessageController
             case 'File':
                 $content->DescriptionLevel = $type;
 
-                $sentDate = new \DateTime($object->modificationDate);
-                $acquiredDate = new \DateTime($object->creationDate);
+                $sentDate = new DateTime($object->modificationDate);
+                $acquiredDate = new DateTime($object->creationDate);
                 if ($object->documentDate) {
-                    $receivedDate = new \DateTime($object->documentDate);
+                    $receivedDate = new DateTime($object->documentDate);
                 } else {
-                    $receivedDate = new \DateTime($object->receivedDate);
+                    $receivedDate = new DateTime($object->receivedDate);
                 }
-                $content->SentDate = $sentDate->format(\DateTime::ATOM);
-                $content->ReceivedDate = $receivedDate->format(\DateTime::ATOM);
-                $content->AcquiredDate = $acquiredDate->format(\DateTime::ATOM);
+                $content->SentDate = $sentDate->format(DateTime::ATOM);
+                $content->ReceivedDate = $receivedDate->format(DateTime::ATOM);
+                $content->AcquiredDate = $acquiredDate->format(DateTime::ATOM);
 
                 $content->Addressee = [];
                 $content->Sender = [];
@@ -315,10 +326,10 @@ class SendMessageController
 
                 if ($object->folders) {
                     $content->FilePlanPosition = [];
-                    $content->FilePlanPosition[] = new \stdClass;
-                    $content->FilePlanPosition[0]->value="";
+                    $content->FilePlanPosition[] = new stdClass;
+                    $content->FilePlanPosition[0]->value = "";
                     foreach ($object->folders as $folder) {
-                        $content->FilePlanPosition[0]->value .= "/".$folder;
+                        $content->FilePlanPosition[0]->value .= "/" . $folder;
                     }
                 }
 
@@ -341,35 +352,35 @@ class SendMessageController
 
                 if ($type == "attachment") {
                     $content->DocumentType = "Pièce jointe";
-                    $date = new \DateTime($object->creation_date);
+                    $date = new DateTime($object->creation_date);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "note") {
                     $content->DocumentType = "Note";
-                    $date = new \DateTime($object->creation_date);
+                    $date = new DateTime($object->creation_date);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "email") {
                     $content->DocumentType = "Courriel";
-                    $date = new \DateTime($object->creation_date);
+                    $date = new DateTime($object->creation_date);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "response") {
                     $content->DocumentType = "Réponse";
-                    $date = new \DateTime($object->creation_date);
+                    $date = new DateTime($object->creation_date);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "summarySheet") {
                     $content->DocumentType = "Fiche de liaison";
-                    $date = new \DateTime($object->creation_date);
+                    $date = new DateTime($object->creationDate);
                     $content->CreatedDate = $date->format('Y-m-d');
                 }
                 break;
         }
 
-        if (isset($relatedObjectReference) && !empty((array) $relatedObjectReference)) {
-            $content->RelatedObjectReference = new \stdClass();
+        if (isset($relatedObjectReference) && !empty((array)$relatedObjectReference)) {
+            $content->RelatedObjectReference = new stdClass();
             $content->RelatedObjectReference->References = [];
 
             foreach ($relatedObjectReference as $ref) {
                 if ($ref) {
-                    $reference = new \stdClass();
+                    $reference = new stdClass();
                     $reference->ExternalReference = $ref->chrono;
                     $content->RelatedObjectReference->References[] = $reference;
                 }
@@ -377,8 +388,8 @@ class SendMessageController
         }
 
         if (isset($object->originatorAgency)) {
-            $content->OriginatingAgency = new \stdClass();
-            $content->OriginatingAgency->Identifier = new \stdClass();
+            $content->OriginatingAgency = new stdClass();
+            $content->OriginatingAgency->Identifier = new stdClass();
             $content->OriginatingAgency->Identifier->value = $object->originatorAgency->id;
 
             if (empty($content->OriginatingAgency->Identifier->value)) {
@@ -387,7 +398,7 @@ class SendMessageController
         }
 
         if (isset($object->history)) {
-            $content->CustodialHistory = new \stdClass();
+            $content->CustodialHistory = new stdClass();
             $content->CustodialHistory->CustodialHistoryItem = [];
             foreach ($object->history as $history) {
                 $content->CustodialHistory->CustodialHistoryItem[] = self::getCustodialHistoryItem($history);
@@ -401,12 +412,12 @@ class SendMessageController
         return $content;
     }
 
-    private static function getManagement($valueInData = null)
+    private static function getManagement($valueInData = null): stdClass
     {
-        $management = new \stdClass();
+        $management = new stdClass();
 
-        $management->AppraisalRule = new \stdClass();
-        $management->AppraisalRule->Rule = new \stdClass();
+        $management->AppraisalRule = new stdClass();
+        $management->AppraisalRule->Rule = new stdClass();
         if ($valueInData->retentionRule) {
             $management->AppraisalRule->Rule->value = $valueInData->retentionRule;
             $management->AppraisalRule->StartDate = date("Y-m-d");
@@ -416,10 +427,10 @@ class SendMessageController
                 $management->AppraisalRule->FinalAction = "Destroy";
             }
         }
-        
-        if ($valueInData->accessRuleCode) {
-            $management->AccessRule = new \stdClass();
-            $management->AccessRule->Rule = new \stdClass();
+
+        if (isset($valueInData->accessRuleCode)) {
+            $management->AccessRule = new stdClass();
+            $management->AccessRule->Rule = new stdClass();
             $management->AccessRule->Rule->value = $valueInData->accessRuleCode;
             $management->AccessRule->StartDate = date("Y-m-d");
         }
@@ -427,22 +438,25 @@ class SendMessageController
         return $management;
     }
 
-    private static function getCustodialHistoryItem($history)
+    /**
+     * @throws Exception
+     */
+    private static function getCustodialHistoryItem($history): stdClass
     {
-        $date = new \DateTime($history->event_date);
+        $date = new DateTime($history->event_date);
 
-        $custodialHistoryItem = new \stdClass();
+        $custodialHistoryItem = new stdClass();
         $custodialHistoryItem->value = $history->info;
         $custodialHistoryItem->when = $date->format('Y-m-d');
 
         return $custodialHistoryItem;
     }
 
-    private static function getContactData($informations)
+    private static function getContactData($informations): stdClass
     {
-        $contactData = new \stdClass();
-        
-        if ($informations->civility) {
+        $contactData = new stdClass();
+
+        if (isset($informations->civility)) {
             $contactData->Gender = $informations->civility->label;
         }
         if ($informations->firstname) {
