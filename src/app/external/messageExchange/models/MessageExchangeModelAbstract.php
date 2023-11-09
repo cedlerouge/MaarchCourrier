@@ -14,6 +14,7 @@
 
 namespace MessageExchange\models;
 
+use Exception;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 use Docserver\models\DocserverModel;
@@ -23,7 +24,10 @@ use Docserver\controllers\DocserverController;
 
 abstract class MessageExchangeModelAbstract
 {
-    public static function get(array $args = [])
+    /**
+     * @throws Exception
+     */
+    public static function get(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($args, ['limit', 'offset']);
@@ -41,6 +45,9 @@ abstract class MessageExchangeModelAbstract
         return $emails;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getMessageByReference($aArgs = [])
     {
         ValidatorModel::notEmpty($aArgs, ['reference']);
@@ -57,10 +64,13 @@ abstract class MessageExchangeModelAbstract
         if (empty($aReturn[0])) {
             return [];
         }
-       
+
         return $aReturn[0];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getMessageByIdentifier($aArgs = [])
     {
         ValidatorModel::notEmpty($aArgs, ['messageId']);
@@ -77,11 +87,14 @@ abstract class MessageExchangeModelAbstract
         if (empty($aReturn[0])) {
             return [];
         }
-       
+
         return $aReturn[0];
     }
 
-    public static function updateStatusMessage(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function updateStatusMessage(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['status','messageId']);
 
@@ -97,7 +110,10 @@ abstract class MessageExchangeModelAbstract
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -111,7 +127,10 @@ abstract class MessageExchangeModelAbstract
         return true;
     }
 
-    public static function deleteUnitIdentifier(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function deleteUnitIdentifier(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -125,7 +144,10 @@ abstract class MessageExchangeModelAbstract
         return true;
     }
 
-    public static function updateOperationDateMessage(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function updateOperationDateMessage(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['operation_date','message_id']);
 
@@ -141,7 +163,10 @@ abstract class MessageExchangeModelAbstract
         return true;
     }
 
-    public static function updateReceptionDateMessage(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function updateReceptionDateMessage(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['reception_date','message_id']);
 
@@ -159,7 +184,7 @@ abstract class MessageExchangeModelAbstract
 
     /*** Generates a local unique identifier
     @return string The unique id*/
-    public static function generateUniqueId()
+    public static function generateUniqueId(): string
     {
         $parts = explode('.', microtime(true));
         $sec   = $parts[0];
@@ -174,7 +199,7 @@ abstract class MessageExchangeModelAbstract
         return $uniqueId;
     }
 
-    public static function insertMessage($args = [])
+    public static function insertMessage($args = []): array
     {
         $messageObject = $args['data'];
         $type          = $args['type'];
@@ -253,27 +278,30 @@ abstract class MessageExchangeModelAbstract
                     'recipient_org_identifier'     => $messageObject->ArchivalAgency->Identifier->value,
                     'recipient_org_name'           => $aArgs['RecipientOrgNAme'],
                     'archival_agreement_reference' => $messageObject->ArchivalAgreement->value,
-                    'reply_code'                   => $messageObject->ReplyCode,
+                    'reply_code'                   => $messageObject->ReplyCode ?? null,
                     'size'                         => '0',
                     'data'                         => json_encode($messageObjectToSave),
                     'active'                       => 'true',
                     'archived'                     => 'false',
                     'res_id_master'                => $resIdMaster,
-                    'docserver_id'                 => $docserverId,
-                    'path'                         => $filepath,
-                    'filename'                     => $filename,
-                    'fingerprint'                  => $fingerprint,
-                    'filesize'                     => $filesize
+                    'docserver_id'                 => $docserverId ?? null,
+                    'path'                         => $filepath ?? null,
+                    'filename'                     => $filename ?? null,
+                    'fingerprint'                  => $fingerprint ?? null,
+                    'filesize'                     => $filesize ?? null
                 ]
                 ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['error' => $e];
         }
 
         return ['messageId' => $messageObject->messageId];
     }
 
-    public static function getUnitIdentifierByMessageId(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getUnitIdentifierByMessageId(array $args): array
     {
         ValidatorModel::notEmpty($args, ['messageId']);
         ValidatorModel::stringType($args, ['messageId']);
@@ -288,7 +316,10 @@ abstract class MessageExchangeModelAbstract
         return $messages;
     }
 
-    public static function getUnitIdentifierByResId(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getUnitIdentifierByResId(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
 
@@ -302,7 +333,10 @@ abstract class MessageExchangeModelAbstract
         return $messages;
     }
 
-    public static function insertUnitIdentifier(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function insertUnitIdentifier(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['messageId', 'tableName', 'resId']);
         ValidatorModel::stringType($args, ['messageId', 'tableName', 'disposition']);
@@ -314,7 +348,7 @@ abstract class MessageExchangeModelAbstract
                 'message_id'   => $args['messageId'],
                 'tablename'    => $args['tableName'],
                 'res_id'       => $args['resId'],
-                'disposition'  => $args['disposition']
+                'disposition'  => $args['disposition'] ?? null
             ]
         ]);
 
