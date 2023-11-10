@@ -118,7 +118,7 @@ class SedaController
                 'creationDate'     => $attachment['creation_date'],
                 'otherInfo'        => $attachment['identifier']
             ];
-            if ($args['getFile']) {
+            if ($args['getFile'] ?? false) {
                 $attachment = ExportSEDATrait::getAttachmentFilePath(['data' => $attachment]);
                 $tmpAttachment['filePath'] = $attachment['filePath'];
             }
