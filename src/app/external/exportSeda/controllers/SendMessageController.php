@@ -19,6 +19,7 @@ use DOMDocument;
 use Exception;
 use SrcCore\models\CoreConfigModel;
 use stdClass;
+use ZipArchive;
 
 class SendMessageController
 {
@@ -146,10 +147,10 @@ class SendMessageController
 
     private static function generateZip($seda2Message, $tmpPath): string
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $filename = $tmpPath . $seda2Message->MessageIdentifier->value . ".zip";
 
-        $zip->open($filename, \ZipArchive::CREATE);
+        $zip->open($filename, ZipArchive::CREATE);
 
         $zip->addFile($tmpPath . $seda2Message->MessageIdentifier->value . ".xml", $seda2Message->MessageIdentifier->value . ".xml");
 
@@ -354,19 +355,19 @@ class SendMessageController
 
                 if ($type == "attachment") {
                     $content->DocumentType = "Pièce jointe";
-                    $date = new DateTime($object->creation_date);
+                    $date = new DateTime($object->creationDate);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "note") {
                     $content->DocumentType = "Note";
-                    $date = new DateTime($object->creation_date);
+                    $date = new DateTime($object->creationDate);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "email") {
                     $content->DocumentType = "Courriel";
-                    $date = new DateTime($object->creation_date);
+                    $date = new DateTime($object->creationDate);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "response") {
                     $content->DocumentType = "Réponse";
-                    $date = new DateTime($object->creation_date);
+                    $date = new DateTime($object->creationDate);
                     $content->CreatedDate = $date->format('Y-m-d');
                 } elseif ($type == "summarySheet") {
                     $content->DocumentType = "Fiche de liaison";
