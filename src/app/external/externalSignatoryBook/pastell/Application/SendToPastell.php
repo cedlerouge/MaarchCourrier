@@ -85,7 +85,7 @@ class SendToPastell
 
         return [
             'sended' => [
-                'letterbox_coll' => [
+                'letterbox_coll'   => [
                     $resId => $sentResource['resource'] ?? null
                 ],
                 'attachments_coll' => $sentResource['attachments']
@@ -116,7 +116,9 @@ class SendToPastell
         foreach ($attachments as $attachment) {
             $type = $attachmentTypes[$attachment['attachment_type']];
             $filePath = $this->resourceFile->getAttachmentFilePath($attachment['res_id'], $attachment['fingerprint']);
-            if (str_contains($filePath, 'Error')) {
+            if (str_contains($filePath, 'Error: Document')) {
+                return ['error' => 'Error: Document is not converted in pdf'];
+            } elseif (str_contains($filePath, 'Error: Fingerprints')) {
                 return ['error' => 'Fingerprints do not match'];
             }
 

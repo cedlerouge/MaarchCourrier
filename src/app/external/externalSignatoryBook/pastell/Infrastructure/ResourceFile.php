@@ -49,6 +49,9 @@ class ResourceFile implements ResourceFileInterface
     public function getAttachmentFilePath(int $resId, string $fingerprint): string
     {
         $adrInfo = AdrModel::getConvertedDocumentById(['resId' => $resId, 'collId' => 'attachments_coll', 'type' => 'PDF']);
+        if (empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+            return 'Error: Document ' . $resId . ' is not converted in pdf';
+        }
         $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
         $filePath = $annexeAttachmentPath['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $adrInfo['path']) . $adrInfo['filename'];
 

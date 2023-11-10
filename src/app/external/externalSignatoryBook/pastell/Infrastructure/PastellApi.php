@@ -291,7 +291,7 @@ class PastellApi implements PastellApiInterface
     public function uploadAttachmentFile(PastellConfig $config, string $idFolder, string $filePath, int $nbAttachments): array
     {
         $bodyData = [
-            'file_name'    => 'PJ.' . pathinfo($filePath)['extension'],
+            'file_name'    => 'PJ' . ($nbAttachments + 1) . '.' . pathinfo($filePath)['extension'],
             'file_content' => file_get_contents($filePath)
         ];
 
