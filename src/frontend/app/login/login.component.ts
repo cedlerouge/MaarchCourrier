@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Validators, UntypedFormGroup, UntypedFormBuilder } from '@angular/forms';
+import { Validators, UntypedFormGroup, FormControl } from '@angular/forms';
 import { tap, catchError } from 'rxjs/operators';
 import { AuthService } from '@service/auth.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { environment } from '../../environments/environment';
-import { of } from 'rxjs';
+import { lastValueFrom, of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
 import { TimeLimitPipe } from '../../plugins/timeLimit.pipe';
@@ -39,27 +39,21 @@ export class LoginComponent implements OnInit {
         private functionsService: FunctionsService,
         private notify: NotificationService,
         public dialog: MatDialog,
-        private formBuilder: UntypedFormBuilder,
-        private timeLimit: TimeLimitPipe
-    ) { }
-
-    ngOnInit(): void {
-        this.headerService.hideSideBar = true;
-        this.loginForm = this.formBuilder.group({
-            login: [null, Validators.required],
-            password: [null, Validators.required]
+        private timeLimit: TimeLimitPipe,
+        
+    ) { 
+        this.loginForm = new UntypedFormGroup({
+            login: new FormControl(null, Validators.required),
+            password: new FormControl(null, Validators.required)
         });
+    }
+
+    async ngOnInit(): Promise<void> {
+
+        this.headerService.hideSideBar = true;
 
         this.environment = environment;
-        if (this.authService.getToken() !== null) {
-            if (!this.functionsService.empty(this.authService.getToken()?.split('.')[1]) && !this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id))) {
-                this.router.navigate([this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id)]);
-            } else {
-                this.router.navigate(['/home']);
-            }
-        } else {
-            this.initConnection();
-        }
+        this.initConnection();
     }
 
     onSubmit(ssoToken = null) {
@@ -81,10 +75,10 @@ export class LoginComponent implements OnInit {
                 observe: 'response'
             }
         ).pipe(
-            tap((data: any) => {
+            tap(async (data: any) => {
                 this.localStorage.resetLocal();
                 this.authService.saveTokens(data.headers.get('Token'), data.headers.get('Refresh-Token'));
-                this.authService.setUser({});
+                await lastValueFrom(this.authService.getCurrentUserInfo());
                 if (this.authService.getCachedUrl()) {
                     this.router.navigateByUrl(this.authService.getCachedUrl());
                     this.authService.cleanCachedUrl();

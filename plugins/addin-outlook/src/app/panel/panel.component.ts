@@ -19,6 +19,7 @@ export class PanelComponent implements OnInit {
 
     inApp: boolean = false;
     resId: number = null;
+    isConnected: boolean = false;
 
     displayResInfo: any = {};
     displayMailInfo: any = {};
@@ -35,6 +36,9 @@ export class PanelComponent implements OnInit {
 
     serviceRequest: any = {};
 
+    login: string = '';
+    password: string = '';
+
     constructor(
         public http: HttpClient,
         private notificationService: NotificationService,
@@ -42,24 +46,31 @@ export class PanelComponent implements OnInit {
         public translate: TranslateService,
         public functions: FunctionsService
     ) {
-        this.authService.catchEvent().subscribe(async (result: any) => {
-            if (result === 'connected') {
-                this.inApp = await this.checkMailInApp();
+        this.authService.catchEvent().pipe(
+            filter((res: string) => res === 'refresh token failed'), 
+            tap(() => {
+                this.isConnected = false;
+            })
+        ).subscribe()
+     }
 
-                if (!this.inApp) {
-                    this.initMailInfo();
-                    this.status = 'end';
-                }
-            } else if (result === 'not connected') {
-                this.status = 'end';
-            }
-        });
+    async ngOnInit() {
+        await this.authService.getAppInfo();
+        this.isConnected = (this.authService.isAuth() && this.authService.authMode === 'standard');
+        if (this.isConnected) {
+            this.authService.updateUserInfo(this.authService.getToken());
+            await this.initMailInfo();
+        }
+        this.status = 'end';
     }
 
-    ngOnInit() {
-        const res = this.authService.getConnection();
-        if (!res) {
-            this.authService.tryConnection();
+
+    async initMailInfo() {
+        this.status = 'loading';
+        this.inApp = await this.checkMailInApp();
+
+        if (!this.inApp) {
+            this.getMailInfo();
         }
     }
 
@@ -88,20 +99,18 @@ export class PanelComponent implements OnInit {
                     resolve(result);
                 }),
                 catchError((err: any) => {
-                    if (err.error.errors === 'Document not found') {
-                        this.status = 'end';
-                        this.initMailInfo();
-                    } else {
-                        this.notificationService.handleErrors(err);
+                    if (err.error.errors !== 'Document not found') {
+                        this.notificationService.handleSoftErrors(err);
                     }
                     resolve(false);
                     return of(false);
-                })
+                }),
+                finalize(() => this.status = 'end')
             ).subscribe();
         });
     }
 
-    async initMailInfo() {
+    async getMailInfo() {
         await this.getConfiguration();
         this.displayResInfo = {
             typist: `${this.authService.user.firstname} ${this.authService.user.lastname}`,
@@ -161,7 +170,7 @@ export class PanelComponent implements OnInit {
                 }),
                 finalize(() => this.status = 'end'),
                 catchError((err: any) => {
-                    this.notificationService.handleErrors(err);
+                    this.notificationService.handleSoftErrors(err);
                     return of(false);
                 })
             ).subscribe();
@@ -193,7 +202,7 @@ export class PanelComponent implements OnInit {
                     resolve(true);
                 }),
                 catchError((err: any) => {
-                    this.notificationService.handleErrors(err);
+                    this.notificationService.handleSoftErrors(err);
                     return of(false);
                 })
             ).subscribe();
@@ -221,5 +230,35 @@ export class PanelComponent implements OnInit {
 
     originalOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => {
         return 0;
+    }
+
+    onSubmit() {
+        this.status = 'loading';
+
+        let url = '../rest/authenticate';
+
+        this.http.post(
+            url,
+            {
+                'login': this.login,
+                'password': this.password,
+            },
+            {
+                observe: 'response'
+            }
+        ).pipe(
+            tap(async (data: any) => {
+                this.authService.clearTokens();
+                this.authService.saveTokens(data.headers.get('Token'), data.headers.get('Refresh-Token'));
+                this.authService.updateUserInfo(data.headers.get('Token'));
+                await this.initMailInfo();
+                this.isConnected = this.authService.isAuth();
+            }),
+            catchError((err: any) => {
+                this.notificationService.handleSoftErrors(err);
+                return of(false);
+            }),
+            finalize(() => this.status = 'end')
+        ).subscribe();
     }
 }

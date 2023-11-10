@@ -41,7 +41,9 @@
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-inferrable-types": "off",
                 "@typescript-eslint/no-var-requires": "off",
-                "object-curly-spacing": ["warn", "always"]
+                "object-curly-spacing": ["warn", "always"],
+                "no-restricted-syntax": "off",
+                "no-console": ["error", { "allow": ["info", "warn", "error", "debug"] }]
             }
         },
         {

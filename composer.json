@@ -22,6 +22,7 @@
             "History\\"                 : "src/app/history/",
             "Home\\"                    : "src/app/home/",
             "IndexingModel\\"           : "src/app/indexingModel/",
+            "Mercure\\"			: "src/app/mercure/",
             "Note\\"                    : "src/app/note/",
             "Notification\\"            : "src/app/notification/",
             "Parameter\\"               : "src/app/parameter/",

@@ -253,6 +253,9 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                         content: this.getBase64Document(this.base64ToArrayBuffer(data.encodedResource)),
                         src: this.base64ToArrayBuffer(data.encodedResource)
                     };
+
+                    // Envoi à la LAD si fichier temporaire (scan2maarch)
+                    this.triggerEvent.emit('launchLad');
                     this.noConvertedFound = false;
                     this.loading = false;
                 }),
@@ -354,6 +357,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                     if (this.file.type !== 'application/pdf') {
                         this.convertDocument(this.file);
                     } else {
+                        this.triggerEvent.emit('launchLad');
                         this.file.src = value.target.result;
                         this.loading = false;
                     }
@@ -502,6 +506,9 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                             } else {
                                 this.file.base64src = res.encodedResource;
                                 this.file.src = this.base64ToArrayBuffer(res.encodedResource);
+                                // Appel LAD après conversion
+                                this.triggerEvent.emit('launchLad');
+
                                 this.loading = false;
                             }
                         }

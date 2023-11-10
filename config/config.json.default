@@ -9,7 +9,8 @@
         "customID" : "",
         "maarchUrl" : "https://demo.maarchcourrier.com/",
         "lockAdvancedPrivileges" : true,
-        "privateKeyPath": "/var/www/html/MaarchCourrier/config/mc_secret.key"
+        "privateKeyPath": "/var/www/html/MaarchCourrier/config/mc_secret.key",
+        "plugins": []
     },
     "database": [
         {

@@ -403,6 +403,24 @@ export class ContactAutocompleteComponent implements OnInit {
         this.myControl.setValue('');
     }
 
+    setContactLad(contact: any) {
+        this.options = contact;
+
+        this.valuesToDisplay[contact.type][contact.id] = contact;
+
+        const tmpArray = [];
+        tmpArray['type'] = contact.type;
+        tmpArray['id'] = contact.id;
+        tmpArray['label'] = this.getFormatedContact(contact.type, contact.id);
+
+        this.controlAutocomplete.setValue(tmpArray);
+
+        this.setFormValue(contact);
+
+        this.myControl.setValue('');
+        this.afterContactSelected.emit(contact);
+    }
+
     private _filter(value: string): string[] {
         if (typeof value === 'string') {
             const filterValue = this.latinisePipe.transform(value.toLowerCase());

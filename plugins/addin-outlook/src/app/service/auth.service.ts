@@ -14,6 +14,7 @@ export class AuthService {
     applicationName: string = 'Maarch Courrier';
     appUrl: string = null;
     user: any = {};
+    authMode: string = '';
 
     connectionTry: any = null;
 
@@ -96,13 +97,9 @@ export class AuthService {
                     tap((data: any) => {
                         this.applicationName = data.applicationName;
                         this.appUrl = data.maarchUrl;
+                        this.authMode = data.authMode;
                         this.setAppSession(data.instanceId);
-                        if (this.isAuth()) {
-                            this.updateUserInfo(this.getToken());
-                            resolve(true);
-                        } else {
-                            resolve(false);
-                        }
+                        resolve(true);
                     }),
                     catchError((err: any) => {
                         console.log(err);
@@ -124,6 +121,7 @@ export class AuthService {
                     this.updateUserInfo(data.token);
                 }),
                 catchError((error) => {
+                    this.setEvent('refresh token failed');
                     return of(false);
                 })
             );
@@ -135,9 +133,6 @@ export class AuthService {
     }
 
     isAuth(): boolean {
-        if (this.getToken() === null && this.connectionTry === null) {
-            this.tryConnection();
-        }
         return this.getToken() !== null;
     }
 
