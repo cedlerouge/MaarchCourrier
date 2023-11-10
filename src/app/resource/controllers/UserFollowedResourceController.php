@@ -35,6 +35,7 @@ class UserFollowedResourceController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
+        $newFollow = 0;
         foreach ($body['resources'] as $resId) {
             $following = UserFollowedResourceModel::get([
                 'where' => ['user_id = ?', 'res_id = ?'],
@@ -43,6 +44,8 @@ class UserFollowedResourceController
 
             if (!empty($following)) {
                 continue;
+            } else {
+                $newFollow++;
             }
 
             UserFollowedResourceModel::create([
@@ -51,7 +54,7 @@ class UserFollowedResourceController
             ]);
         }
 
-        return $response->withStatus(204);
+        return $response->withJson(['followed' => $newFollow]);
     }
 
     public function unFollow(Request $request, Response $response)
