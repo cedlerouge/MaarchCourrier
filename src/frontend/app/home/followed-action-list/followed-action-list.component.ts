@@ -98,7 +98,16 @@ export class FollowedActionListComponent implements OnInit {
     }
 
     unFollow() {
-        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.stopFollowingAlert') } });
+        this.dialogRef = this.dialog.open(ConfirmComponent,
+            {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: this.translate.instant('lang.untrackThisMail'),
+                    msg: this.translate.instant('lang.stopFollowingAlert')
+                }
+            });
 
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
