@@ -17,11 +17,13 @@ namespace Resource\controllers;
 use Attachment\models\AttachmentModel;
 use Contact\controllers\ContactController;
 use CustomField\models\CustomFieldModel;
+use DateTime;
 use Docserver\models\DocserverModel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
 use Group\controllers\PrivilegeController;
 use History\models\HistoryModel;
@@ -44,6 +46,9 @@ use BroadcastList\models\BroadcastListRoleModel;
 
 class SummarySheetController
 {
+    /**
+     * @throws Exception
+     */
     public function createList(Request $request, Response $response)
     {
         set_time_limit(240);
@@ -167,6 +172,9 @@ class SummarySheetController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function createSummarySheet(Fpdi $pdf, array $args)
     {
         ValidatorModel::notEmpty($args, ['resource', 'login']);
@@ -698,7 +706,6 @@ class SummarySheetController
                                     $rolesItems[$role['id']]['item'][] = $item;
                                     $rolesItems[$role['id']]['label'] = $role['label'];
                                     $nbItems++;
-                                    continue;
                                 }
                             }
                         }
@@ -1098,7 +1105,7 @@ class SummarySheetController
 
                     $pdf->SetFont('', '', 10);
                     foreach ($historyList as $history) {
-                        $date = new \DateTime($history['event_date']);
+                        $date = new DateTime($history['event_date']);
                         $date = $date->format('d/m/Y H:i:s');
                         $label = $date . " - " . UserModel::getLabelledUserById(['id' => $history['user_id']]) . "\n" . $history['info'];
                         $pdf->MultiCell(0, 40, $label, 1, 'L', false);
@@ -1108,7 +1115,7 @@ class SummarySheetController
         }
     }
 
-    public static function prepareData(array $args)
+    public static function prepareData(array $args): array
     {
         $units = $args['units'];
         $tmpIds = $args['resourcesIds'];
