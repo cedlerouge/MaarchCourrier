@@ -160,7 +160,6 @@ export class ActionsListComponent implements OnInit {
             tap((data: any) =>  {
                 this.notify.success(this.translate.instant('lang.followedMail'));
                 this.headerService.nbResourcesFollowed += data.followed;
-                console.log('data',data);
                 this.refreshList();
             }),	
             catchError((err: any) => {	
