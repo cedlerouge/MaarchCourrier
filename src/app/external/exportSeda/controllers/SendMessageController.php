@@ -149,7 +149,7 @@ class SendMessageController
 
         $zip->addFile($tmpPath . $seda2Message->MessageIdentifier->value . ".xml", $seda2Message->MessageIdentifier->value . ".xml");
 
-        if (isset($messageObject->DataObjectPackage) && $seda2Message->DataObjectPackage) {
+        if (isset($seda2Message->DataObjectPackage) && $seda2Message->DataObjectPackage) {
             foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
                 $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
             }
