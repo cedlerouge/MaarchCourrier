@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief User Controller
-* @author dev@maarch.org
-*/
+ * @brief User Controller
+ * @author dev@maarch.org
+ */
 
 namespace ExportSeda\controllers;
 
@@ -40,10 +40,10 @@ class SendMessageController
     public static function generateMessageFile($aArgs = [], $isForSeda = false)
     {
         $messageObject = $aArgs['messageObject'];
-        $type          = $aArgs['type'];
+        $type = $aArgs['type'];
 
         $DOMTemplate = new \DOMDocument();
-        $DOMTemplate->load('src/app/external/exportSeda/resources/'.$type.'.xml');
+        $DOMTemplate->load('src/app/external/exportSeda/resources/' . $type . '.xml');
         $DOMTemplateProcessor = new DOMTemplateProcessorController($DOMTemplate);
         $DOMTemplateProcessor->setSource($type, $messageObject);
         $DOMTemplateProcessor->merge();
@@ -52,14 +52,12 @@ class SendMessageController
         $tmpPath = CoreConfigModel::getTmpPath();
         file_put_contents($tmpPath . $messageObject->MessageIdentifier->value . ".xml", $DOMTemplate->saveXML());
 
-        if (isset($messageObject->DataObjectPackage)) {
-            if ($messageObject->DataObjectPackage && !$isForSeda) {
-                foreach ($messageObject->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
-                    $base64_decoded = base64_decode($binaryDataObject->Attachment->value);
-                    $file = fopen($tmpPath . $binaryDataObject->Attachment->filename, 'w');
-                    fwrite($file, $base64_decoded);
-                    fclose($file);
-                }
+        if (isset($messageObject->DataObjectPackage) && $messageObject->DataObjectPackage && !$isForSeda) {
+            foreach ($messageObject->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
+                $base64_decoded = base64_decode($binaryDataObject->Attachment->value);
+                $file = fopen($tmpPath . $binaryDataObject->Attachment->filename, 'w');
+                fwrite($file, $base64_decoded);
+                fclose($file);
             }
         }
 
@@ -73,7 +71,7 @@ class SendMessageController
         $tmpPath = CoreConfigModel::getTmpPath();
 
         $messageObject = $aArgs['messageObject'];
-        $type          = $aArgs['type'];
+        $type = $aArgs['type'];
 
         $seda2Message = self::initMessage(new \stdClass);
 
@@ -145,18 +143,18 @@ class SendMessageController
     private static function generateZip($seda2Message, $tmpPath)
     {
         $zip = new \ZipArchive();
-        $filename = $tmpPath.$seda2Message->MessageIdentifier->value. ".zip";
+        $filename = $tmpPath . $seda2Message->MessageIdentifier->value . ".zip";
 
         $zip->open($filename, \ZipArchive::CREATE);
 
         $zip->addFile($tmpPath . $seda2Message->MessageIdentifier->value . ".xml", $seda2Message->MessageIdentifier->value . ".xml");
-        if (isset($messageObject->DataObjectPackage)) {
-            if ($seda2Message->DataObjectPackage) {
-                foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
-                    $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
-                }
+
+        if (isset($messageObject->DataObjectPackage) && $seda2Message->DataObjectPackage) {
+            foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
+                $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
             }
         }
+        
 
         return $filename;
     }
@@ -218,7 +216,8 @@ class SendMessageController
         $archiveUnitId = null,
         $dataObjectReferenceId = null,
         $relatedObjectReference = null
-    ) {
+    )
+    {
         $archiveUnit = new \stdClass();
 
         if ($archiveUnitId) {
@@ -256,7 +255,7 @@ class SendMessageController
                             "Item",
                             $attachment,
                             null,
-                            $archiveUnitId. '_attachment_' . $i,
+                            $archiveUnitId . '_attachment_' . $i,
                             $attachment->res_id
                         );
                     }
@@ -320,9 +319,9 @@ class SendMessageController
                 if ($object->folders) {
                     $content->FilePlanPosition = [];
                     $content->FilePlanPosition[] = new \stdClass;
-                    $content->FilePlanPosition[0]->value="";
+                    $content->FilePlanPosition[0]->value = "";
                     foreach ($object->folders as $folder) {
-                        $content->FilePlanPosition[0]->value .= "/".$folder;
+                        $content->FilePlanPosition[0]->value .= "/" . $folder;
                     }
                 }
 
@@ -367,7 +366,7 @@ class SendMessageController
                 break;
         }
 
-        if (isset($relatedObjectReference) && !empty((array) $relatedObjectReference)) {
+        if (isset($relatedObjectReference) && !empty((array)$relatedObjectReference)) {
             $content->RelatedObjectReference = new \stdClass();
             $content->RelatedObjectReference->References = [];
 
