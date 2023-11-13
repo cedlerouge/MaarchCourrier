@@ -25,6 +25,8 @@ class InstallerControllerTest extends CourrierTestCase
             }
         }
         file_put_contents($dir, json_encode($custom, JSON_PRETTY_PRINT));
+        $GLOBALS['customId'] = null;
+        CoreConfigModelHelper::setCustomId(null);
     }
 
     public function testCreatingACustomPrivateKeyIsNotTheDefaultKey()

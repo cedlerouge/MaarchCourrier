@@ -738,7 +738,7 @@ class InstallerController
         try {
             $random = random_bytes(64 );
         } catch (Exception $e) {
-            \SrcCore\controllers\LogsController::add([
+            LogsController::add([
                 'isTech'    => true,
                 'moduleId'  => 'generateKey',
                 'level'     => 'ERROR',
@@ -754,6 +754,7 @@ class InstallerController
         /**
          * Key file creation and rights modification
          */
+
         $path = "custom/{$customId}/config/mcPrivateKey.key";
         $fpPrivateKey = file_put_contents($path, $random);
         if ($fpPrivateKey === false) {

@@ -19,23 +19,23 @@ use Configuration\models\ConfigurationModel;
 
 class CoreConfigModel
 {
+    protected static $customId;
+
     public static function getCustomId()
     {
-        static $customId;
-
         // Use for script
         if (!empty($GLOBALS['customId'])) {
-            $customId = $GLOBALS['customId'];
-            return $customId;
+            self::$customId = $GLOBALS['customId'];
+            return self::$customId;
         }
 
-        if ($customId !== null) {
-            return $customId;
+        if (self::$customId !== null) {
+            return self::$customId;
         }
 
         if (!is_file('custom/custom.json') || empty($_SERVER['SCRIPT_NAME']) || empty($_SERVER['SERVER_ADDR'])) {
-            $customId = '';
-            return $customId;
+            self::$customId = '';
+            return self::$customId;
         }
 
         $explodeUrl = explode('/', $_SERVER['SCRIPT_NAME']);
@@ -46,16 +46,16 @@ class CoreConfigModel
         $jsonFile = json_decode($jsonFile, true);
         foreach ($jsonFile as $value) {
             if (!empty($value['path']) && $value['path'] == $path) {
-                $customId = $value['id'];
-                return $customId;
+                self::$customId = $value['id'];
+                return self::$customId;
             } elseif ($value['uri'] == $_SERVER['HTTP_HOST'] || ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])) {
-                $customId = $value['id'];
-                return $customId;
+                self::$customId = $value['id'];
+                return self::$customId;
             }
         }
 
-        $customId = '';
-        return $customId;
+        self::$customId = '';
+        return self::$customId;
     }
 
     public static function getConfigPath()
