@@ -1,22 +1,22 @@
-import {Component, OnInit, Inject, ViewChild, ChangeDetectorRef} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {NotificationService} from '@service/notification/notification.service';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {HttpClient} from '@angular/common/http';
-import {NoteEditorComponent} from '../../notes/note-editor.component';
-import {XParaphComponent} from './x-paraph/x-paraph.component';
-import {MaarchParaphComponent} from './maarch-paraph/maarch-paraph.component';
-import {IParaphComponent} from './i-paraph/i-paraph.component';
-import {IxbusParaphComponent} from './ixbus-paraph/ixbus-paraph.component';
-import {tap, finalize, catchError} from 'rxjs/operators';
-import {of} from 'rxjs';
-import {SessionStorageService} from '@service/session-storage.service';
+import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { TranslateService } from '@ngx-translate/core';
+import { NotificationService } from '@service/notification/notification.service';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { HttpClient } from '@angular/common/http';
+import { NoteEditorComponent } from '../../notes/note-editor.component';
+import { XParaphComponent } from './x-paraph/x-paraph.component';
+import { MaarchParaphComponent } from './maarch-paraph/maarch-paraph.component';
+import { IParaphComponent } from './i-paraph/i-paraph.component';
+import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
+import { tap, finalize, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { SessionStorageService } from '@service/session-storage.service';
 import {
     ExternalSignatoryBookManagerService
 } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import {FunctionsService} from '@service/functions.service';
-import {FastParaphComponent} from './fast-paraph/fast-paraph.component';
-import {AuthService} from '@service/auth.service';
+import { FunctionsService } from '@service/functions.service';
+import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -25,13 +25,13 @@ import {AuthService} from '@service/auth.service';
 })
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
-    @ViewChild('noteEditor', {static: false}) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
 
-    @ViewChild('xParaph', {static: false}) xParaph: XParaphComponent;
-    @ViewChild('externalSignatoryBookComponent', {static: false}) externalSignatoryBookComponent: MaarchParaphComponent;
-    @ViewChild('fastParapheur', {static: false}) fastParapheur: FastParaphComponent;
-    @ViewChild('iParapheur', {static: false}) iParapheur: IParaphComponent;
-    @ViewChild('ixbus', {static: false}) ixbus: IxbusParaphComponent;
+    @ViewChild('xParaph', { static: false }) xParaph: XParaphComponent;
+    @ViewChild('externalSignatoryBookComponent', { static: false }) externalSignatoryBookComponent: MaarchParaphComponent;
+    @ViewChild('fastParapheur', { static: false }) fastParapheur: FastParaphComponent;
+    @ViewChild('iParapheur', { static: false }) iParapheur: IParaphComponent;
+    @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
 
     loading: boolean = false;
 
@@ -190,7 +190,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         this.resourcesToSign = [];
         this.http.put('../rest/resourcesList/integrations', {
             resources: this.data.resIds,
-            integrations: {[integrationId]: !this.data.resource.integrations[integrationId]}
+            integrations: { [integrationId]: !this.data.resource.integrations[integrationId] }
         }).pipe(
             tap(async () => {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
