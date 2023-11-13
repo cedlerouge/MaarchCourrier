@@ -23,7 +23,7 @@ export class NotificationService {
     constructor(public translate: TranslateService, private router: Router, public snackBar: MatSnackBar) {
     }
     success(message: string) {
-        if (message) {
+        if (message !== undefined) {
             const duration = this.getMessageDuration(message, 2000);
             this.showMessage(message, '', 'success', 'info-circle', duration);
         }
