@@ -2,16 +2,14 @@
 
 namespace MaarchCourrier\Tests\core;
 
-use MaarchCourrier\Tests\core\Mock\AuthenticationControllerMock;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\InstallerController;
 use SrcCore\http\Response;
-use SrcCore\models\CoreConfigModel;
 
 class InstallerControllerTest extends CourrierTestCase
 {
-    private static string $custom = 'create_custom_test6';
+    private static string $custom = 'create_custom_test';
 
     protected function tearDown(): void
     {
@@ -29,7 +27,7 @@ class InstallerControllerTest extends CourrierTestCase
         file_put_contents($dir, json_encode($custom, JSON_PRETTY_PRINT));
     }
 
-    public function testCreatingACustomSetARandomPrivateKey()
+    public function testCreatingACustomPrivateKeyIsNotTheDefaultKey()
     {
 
         $installController = new InstallerController();
