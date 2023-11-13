@@ -156,17 +156,17 @@ export class ActionsListComponent implements OnInit {
     }
 
     follow() {
-        this.http.post('../rest/resources/follow', { resources: this.selectedRes }).pipe(	
+        this.http.post('../rest/resources/follow', { resources: this.selectedRes }).pipe(
             tap((data: any) =>  {
                 this.notify.success(this.translate.instant('lang.followedMail'));
                 this.headerService.nbResourcesFollowed += data.followed;
                 this.refreshList();
-            }),	
-            catchError((err: any) => {	
-                this.notify.handleErrors(err);	
-                return of(false);	
-            })	
-        ).subscribe(); 
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
         
 
