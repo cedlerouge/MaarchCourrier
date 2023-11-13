@@ -704,7 +704,7 @@ class SendToPastellTest extends TestCase
 
         $result = $this->sendToPastell->sendResource($resId, $sousType);
 
-        $this->assertSame(['error' => 'Error: Document is not converted in pdf'], $result);
+        $this->assertSame(['error' => 'Error: Document ' . $this->resourceData->attachments[0]['title'] . ' is not converted in pdf'], $result);
     }
 
     /**
