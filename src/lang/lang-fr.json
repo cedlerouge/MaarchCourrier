@@ -1772,7 +1772,7 @@
     "prerequisite": "Pré-requis",
     "prerequisiteCheck": "Contrôle des pré-requis de l'application",
     "stepPrerequisite_desc": "L'installation de Maarch Courrier nécessite un certain nombre de pré-requis au niveau de l'installation de PHP. Pour plus d'informations",
-    "install_phpVersionValid": "Version minimum de PHP (>= 7.3)",
+    "install_phpVersionValid": "Version minimum de PHP (>= 7.4)",
     "install_unoconv": "unoconv",
     "install_unoconv_desc": "Outils de conversion de documents bureautiques soffice/unoconv installés",
     "install_pdoPgsql": "pdo_pgsql",
