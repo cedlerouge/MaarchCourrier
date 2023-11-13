@@ -15,20 +15,20 @@
     </button>
     <mat-divider></mat-divider>
 
-    <button *ngIf="contextMode" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="currentResource.mailTracking === false && selectedRes.length == 1">
+    <button *ngIf="contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()">
         <mat-icon class="far fa-star fa-2x"></mat-icon>
         <span>{{'lang.untrackThisMail' | translate}}</span>
     </button>
-    <button *ngIf="contextMode" mat-menu-item class="followAction" (click)="follow()" [disabled]="currentResource.mailTracking === true && selectedRes.length == 1">
+    <button *ngIf="contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()">
         <mat-icon class="fas fa-star fa-2x"></mat-icon>
         <span>{{'lang.trackThisMail' | translate}}</span>
     </button>
  
-    <button *ngIf="!contextMode" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="this.selectedRes.length == 0">
+    <button *ngIf="!contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="this.selectedRes.length == 0">
         <mat-icon class="far fa-star fa-2x"></mat-icon>
         <span>{{'lang.untrackThisMail' | translate}}</span>
     </button>
-    <button *ngIf="!contextMode" mat-menu-item class="followAction" (click)="follow()" [disabled]="this.selectedRes.length == 0">
+    <button *ngIf="!contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()" [disabled]="this.selectedRes.length == 0">
         <mat-icon class="fas fa-star fa-2x"></mat-icon>
         <span>{{'lang.trackThisMail' | translate}}</span>
     </button>
