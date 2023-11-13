@@ -759,8 +759,11 @@ class InstallerController
         if ($fpPrivateKey === false) {
             return null;
         }
+        if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {
+            exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . ($path));
+        }
+        umask(0022);
         chmod($path, 0400);
-        exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . ($path));
 
         return $path;
     }
