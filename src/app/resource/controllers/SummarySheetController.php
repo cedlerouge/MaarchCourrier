@@ -25,6 +25,7 @@ use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Exception;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
+use finfo;
 use Group\controllers\PrivilegeController;
 use History\models\HistoryModel;
 use IndexingModel\models\IndexingModelFieldModel;
@@ -158,7 +159,7 @@ class SummarySheetController
         }
 
         $fileContent = $pdf->Output('', 'S');
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($fileContent);
 
         $queryParams = $request->getQueryParams();

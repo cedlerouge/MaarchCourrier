@@ -34,6 +34,9 @@ use User\models\UserModel;
 
 class SedaController
 {
+    /**
+     * @throws \Exception
+     */
     public static function initArchivalData($args = []): array
     {
         $date = new \DateTime();
