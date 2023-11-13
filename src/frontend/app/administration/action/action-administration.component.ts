@@ -44,7 +44,7 @@ export class ActionAdministrationComponent implements OnInit {
 
     availableFillCustomFields: Array<any> = [];
     fillcustomFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
-    selectedFieldItems = {selectedFieldsId: [], selectedFieldsValue: []};
+    selectedFieldItems = { selectedFieldsId: [], selectedFieldsValue: [] };
 
     selectedValue: any;
     arMode: any;
@@ -421,10 +421,10 @@ export class ActionAdministrationComponent implements OnInit {
         if (!this.functions.empty(fieldItemValue.selectedValues)) {
             const contactExist = fieldItemValue.selectedValues.find((elem: any) => elem.id === contact.id && elem.type === contact.type);
             if (this.functions.empty(contactExist)) {
-                fieldItemValue.selectedValues.push({id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ')});
+                fieldItemValue.selectedValues.push({ id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ') });
             }
         } else {
-            fieldItemValue.selectedValues = [{id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ')}];
+            fieldItemValue.selectedValues = [{ id: contact.id, type: contact.type, label: arrInfo.filter(info => !this.functions.empty(info)).join(' ') }];
         }
     }
 
@@ -483,7 +483,7 @@ export class ActionAdministrationComponent implements OnInit {
             this.selectedFieldItems.selectedFieldsValue.forEach((item: any) => {
                 if (!this.functions.empty(item.selectedValues)) {
                     item.selectedValues = (item.type === 'date' && item.today !== undefined && item.today) ? '_TODAY' : item.selectedValues;
-                    fillRequiredFields.push({id: item.id, value: item.selectedValues});
+                    fillRequiredFields.push({ id: item.id, value: item.selectedValues });
                 }
             });
             this.action.parameters = { fillRequiredFields: fillRequiredFields };
