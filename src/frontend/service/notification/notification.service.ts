@@ -23,31 +23,28 @@ export class NotificationService {
     constructor(public translate: TranslateService, private router: Router, public snackBar: MatSnackBar) {
     }
     success(message: string) {
-        if (typeof message === 'string') {
+        if (message) {
             const duration = this.getMessageDuration(message, 2000);
-            const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
-                duration: duration,
-                panelClass: 'success-snackbar',
-                verticalPosition : 'top',
-                data: { message: message, icon: 'info-circle', close: () => {
-                    snackBar.dismiss();
-                } }
-            });
+            this.showMessage(message, '', 'success', 'info-circle', duration);
         }
     }
 
     error(message: string, url: string = null) {
-        if (typeof message === 'string') {
+        if (message !== undefined) {
             const duration = this.getMessageDuration(message, 4000);
-            const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
-                duration: duration,
-                panelClass: 'error-snackbar',
-                verticalPosition : 'top',
-                data: { url: url, message: message, icon: 'exclamation-triangle', close: () => {
-                    snackBar.dismiss();
-                } }
-            });
+            this.showMessage(message, url, 'error', 'exclamation-triangle', duration);
         }
+    }
+
+    showMessage(message: string, url: string = '', type: string, icon: string, duration: number): void {
+        const snackBar = this.snackBar.openFromComponent(CustomSnackbarComponent, {
+            duration: duration,
+            panelClass: `${type}-snackbar`,
+            verticalPosition : 'top',
+            data: { url: url, message: message, icon: icon, close: () => {
+                snackBar.dismiss();
+            } }
+        });
     }
 
     handleErrors(err: any) {

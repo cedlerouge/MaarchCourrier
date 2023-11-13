@@ -15,7 +15,7 @@
                         {{'lang.makeActionOn' | translate}}
                         <b *ngIf="data.resIds.length === 0" color="primary"
                             class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                        <b *ngIf="data.resIds.length == 1" color="primary"
+                        <b *ngIf="data.resIds.length === 1" color="primary"
                             class="highlight">{{data.resource.chrono}}</b>
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
@@ -58,7 +58,7 @@
                             [additionalsInfos]="additionalsInfos"
                             [externalSignatoryBookDatas]="externalSignatoryBookDatas"></app-x-paraph>
                         <div class="col-md-12"
-                            *ngIf="additionalsInfos.noAttachment.length != 0 && externalSignatoryBookDatas.objectSent == 'attachment'">
+                            *ngIf="additionalsInfos.noAttachment.length !== 0 && externalSignatoryBookDatas.objectSent === 'attachment'">
                             <div>
                                 <div class="alert-message alert-message-danger mailList" role="alert">
                                     <p>
