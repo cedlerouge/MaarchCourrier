@@ -247,11 +247,11 @@ export class ActionsService implements OnDestroy {
                 objToSend.canGoToNextRes = objToSend.inLocalStorage;
             } else {
                 objToSend.showToggle = objToSend.canGoToNextRes = false;
-                this.sessionStorage.clearAllById({basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction});
+                this.sessionStorage.clearAllById({ basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction });
             }
         } else {
             objToSend.showToggle = objToSend.canGoToNextRes = false;
-            this.sessionStorage.clearAllById({basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction});
+            this.sessionStorage.clearAllById({ basketId: this.currentBasketId, groupId: this.currentGroupId, action: this.currentAction });
         }
         return objToSend;
     }
@@ -638,7 +638,7 @@ export class ActionsService implements OnDestroy {
         const dialogRef = this.dialog.open(SendExternalSignatoryBookActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
-            width: '580px',
+            width: this.currentResIds.length === 1 ? '' : '580px',
             data: this.setDatasActionToSend()
         });
         dialogRef.afterClosed().pipe(
