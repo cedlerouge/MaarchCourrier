@@ -14,6 +14,7 @@
 
 namespace SrcCore\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
@@ -275,7 +276,7 @@ class InstallerController
         return $response->withJson(['customs' => $customs]);
     }
 
-    public function createCustom(Request $request, Response $response)
+    public function createCustom(Request $request, Response $response): Response
     {
         if (!empty($GLOBALS['id']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'create_custom', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Route forbidden']);
@@ -326,6 +327,11 @@ class InstallerController
         $config['config']['customID']               = $body['customId'];
         $config['config']['maarchUrl']              = '';
         $config['config']['lockAdvancedPrivileges'] = true;
+
+        $keyPath = $this->generatePrivateKey($body['customId']);
+        if ($keyPath !== null) {
+            $config['config']['privateKeyPath'] = $keyPath;
+        }
 
         $fp = fopen("custom/{$body['customId']}/config/config.json", 'w');
         fwrite($fp, json_encode($config, JSON_PRETTY_PRINT));
@@ -722,5 +728,40 @@ class InstallerController
         $url .= $body['customId'] . '/dist/index.html';
 
         return $response->withJson(['url' => $url]);
+    }
+
+    private function generatePrivateKey(string $customId): ?string
+    {
+        /***
+         * Private key generation
+         */
+        try {
+            $random = random_bytes(64 );
+        } catch (Exception $e) {
+            \SrcCore\controllers\LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'generateKey',
+                'level'     => 'ERROR',
+                'tableName' => '',
+                'recordId'  => '',
+                'eventType' => 'InstallerController',
+                'eventId'   => $e['message']
+            ]);
+            return null;
+        }
+        $random = bin2hex($random);
+
+        /**
+         * Key file creation and rights modification
+         */
+        $path = "custom/{$customId}/config/mcPrivateKey.key";
+        $fpPrivateKey = file_put_contents($path, $random);
+        if ($fpPrivateKey === false) {
+            return null;
+        }
+        chmod($path, 0400);
+        exec('chown ' . escapeshellarg($GLOBALS['apacheUserAndGroup']) . ' ' . ($path));
+
+        return $path;
     }
 }
