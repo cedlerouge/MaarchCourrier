@@ -1,5 +1,5 @@
 <div class="mat-dialog-content-container">
-    <h1 mat-dialog-title style="padding-left: 0px; padding-right: 0px">
+    <h1 mat-dialog-title class="externalSignatoryBookTitle">
         {{data.action.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
             {{getTitle()}}
          </div>
@@ -20,7 +20,15 @@
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
                     </div>
-                    <div *ngIf="data.resIds.length > 0" style="padding:10px;display: flex;flex-direction: column;">
+                    <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
+                        <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
+                            mat-icon-button title="{{'lang.attachments' | translate}}"
+                            (click)="snav2?.toggle()">
+                            <mat-icon fontSet="fas"
+                                [matBadge]="attachmentsList?.attachmentsClone?.length"
+                                fontIcon="fa-paperclip fa-2x">
+                            </mat-icon>
+                        </button>
                         <mat-checkbox color="primary" *ngFor="let inteKey of integrationsInfo | keyvalue"
                             (click)="toggleIntegration(inteKey.key)"
                             [checked]="data.resource.integrations[inteKey.key]">{{'lang.' + inteKey.key + '_doc' | translate}}
@@ -87,6 +95,41 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
+                [opened]="true"
+                [ngStyle]="{'width': '600px'}"
+                style="overflow-x:hidden;">
+                <!-- <button mat-icon-button [title]="'Fermer le panneau latéral'" (click)="snav2.close()" style="font-size: 20px;color:#666; float: right;">
+                    <mat-icon class="fa fa-arrow-right"></mat-icon>
+                </button> -->
+                <div *ngIf="attachmentsList.attachmentsClone.length > 0" class="attachInSignatoryBook">
+                    <mat-checkbox color="primary"
+                        [title]="'lang.attachmentsInSignatoryBook' | translate"
+                        [checked]="inSignatoryBook.value"
+                        (change)="inSignatoryBook.setValue(!inSignatoryBook.value)">
+                        {{'lang.attachmentsInSignatoryBook' | translate}}
+                    </mat-checkbox>
+                </div>
+                <mat-radio-group *ngIf="attachmentsList.attachmentsClone.length > 0 && inSignatoryBook.value" class="integrationTarget"
+                    [(ngModel)]="integrationTarget"
+                    (change)="attachmentsList.setTaget($event.value)"
+                    color="primary">
+                    <mat-radio-button value="all" color="primary" [title]="'lang.allIntegratedAttachments' | translate">
+                        {{'lang.allIntegratedAttachments' | translate}}
+                    </mat-radio-button>
+                    <mat-radio-button value="sign" color="primary" [title]="'lang.attachmentToSign' | translate">
+                        {{'lang.attachmentToSign' | translate}}
+                    </mat-radio-button>
+                    <mat-radio-button value="annex" color="primary" [title]="'lang.attachmentAnnex' | translate">
+                        {{'lang.attachmentAnnex' | translate}}
+                    </mat-radio-button>
+                </mat-radio-group>
+                <app-attachments-list #attachmentsList
+                    [resId]="data.resIds[0]"
+                    [inSignatoryBook]="inSignatoryBook"
+                    (afterActionAttachment)="afterAttachmentToggle($event)">
+                </app-attachments-list>
+            </mat-sidenav>
         </mat-sidenav-container>
     </div>
     <span class="divider-modal"></span>
