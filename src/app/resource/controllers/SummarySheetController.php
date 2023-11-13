@@ -426,7 +426,7 @@ class SummarySheetController
                             }
                             $value = !empty($customValue) ? '<b>' . $customValue . '</b>' : '<i>' . _UNDEFINED . '</i>';
                         } else {
-                            $value = $customFieldsValues[$customFieldsId] ?? null ? '<b>' . $customFieldsValues[$customFieldsId] . '</b>' : '<i>' . _UNDEFINED . '</i>';
+                            $value = ($customFieldsValues[$customFieldsId] ?? null) ? '<b>' . $customFieldsValues[$customFieldsId] . '</b>' : '<i>' . _UNDEFINED . '</i>';
                         }
 
                         $nextLine = ($nextLine + 1) % 2;
