@@ -70,6 +70,9 @@ class SendMessageController
         return $filename;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function generateSedaFile($aArgs = []): array
     {
         $tmpPath = CoreConfigModel::getTmpPath();

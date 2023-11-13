@@ -34,6 +34,8 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use SrcCore\models\ValidatorModel;
+use stdClass;
+use ZipArchive;
 
 trait ExportSEDATrait
 {
@@ -164,8 +166,8 @@ trait ExportSEDATrait
             ]);
 
             if (count($args['resources']) > 1) {
-                $zip = new \ZipArchive();
-                if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
+                $zip = new ZipArchive();
+                if ($zip->open($zipFilename, ZipArchive::CREATE) === true) {
                     $zip->addFile($sedaPackage['encodedFilePath'], 'sedaPackage' . $resource['res_id'] . '.zip');
                     $zip->close();
 
@@ -202,6 +204,9 @@ trait ExportSEDATrait
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public static function makeSedaPackage($args = []): array
     {
         $initData = SedaController::initArchivalData([
@@ -329,23 +334,23 @@ trait ExportSEDATrait
 
     public static function saveMessage($args = []): array
     {
-        $data = new \stdClass();
+        $data = new stdClass();
 
         $data->messageId = $args['messageObject']->MessageIdentifier->value;
         $data->date = $args['messageObject']->Date;
 
-        $data->MessageIdentifier = new \stdClass();
+        $data->MessageIdentifier = new stdClass();
         $data->MessageIdentifier->value = $args['messageObject']->MessageIdentifier->value;
 
-        $data->TransferringAgency = new \stdClass();
-        $data->TransferringAgency->Identifier = new \stdClass();
+        $data->TransferringAgency = new stdClass();
+        $data->TransferringAgency->Identifier = new stdClass();
         $data->TransferringAgency->Identifier->value = $args['messageObject']->TransferringAgency->Identifier->value;
 
-        $data->ArchivalAgency = new \stdClass();
-        $data->ArchivalAgency->Identifier = new \stdClass();
+        $data->ArchivalAgency = new stdClass();
+        $data->ArchivalAgency->Identifier = new stdClass();
         $data->ArchivalAgency->Identifier->value = $args['messageObject']->ArchivalAgency->Identifier->value;
 
-        $data->ArchivalAgreement = new \stdClass();
+        $data->ArchivalAgreement = new stdClass();
         $data->ArchivalAgreement->value = $args['messageObject']->ArchivalAgreement->value;
 
         if (isset($args['messageObject']->ReplyCode)){
@@ -469,6 +474,9 @@ trait ExportSEDATrait
         return ['filePath' => $filePath];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getSummarySheetFilePath($args = []): array
     {
         $units = [];
@@ -559,7 +567,7 @@ trait ExportSEDATrait
         if (!is_array($data)) {
             return $data;
         }
-        $object = new \stdClass();
+        $object = new stdClass();
         foreach ($data as $name => $value) {
             if (isset($name)) {
                 $object->{$name} = self::array2object($value);
@@ -568,6 +576,9 @@ trait ExportSEDATrait
         return $object;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function generateSEDAPackage(array $args): array
     {
         $data = [];
