@@ -23,15 +23,15 @@ export class ActionsListComponent implements OnInit {
     @ViewChild(MatMenuTrigger, { static: false }) contextMenu: MatMenuTrigger;
     @Output() triggerEvent = new EventEmitter<string>();
 
-    @Input('selectedRes') selectedRes: any;
-    @Input('totalRes') totalRes: number;
-    @Input('contextMode') contextMode: boolean;
-    @Input('currentBasketInfo') currentBasketInfo: any;
-    @Input('currentResource') currentResource: any = {};
+    @Input() selectedRes: any;
+    @Input() totalRes: number;
+    @Input() contextMode: boolean;
+    @Input() currentBasketInfo: any;
+    @Input() currentResource: any = {};
 
-    @Output('refreshEvent') refreshEvent = new EventEmitter<string>();
-    @Output('refreshEventAfterAction') refreshEventAfterAction = new EventEmitter<string>();
-    @Output('refreshPanelFolders') refreshPanelFolders = new EventEmitter<string>();
+    @Output() refreshEvent = new EventEmitter<string>();
+    @Output() refreshEventAfterAction = new EventEmitter<string>();
+    @Output() refreshPanelFolders = new EventEmitter<string>();
 
     dialogRef: MatDialogRef<any>;
 
@@ -142,7 +142,15 @@ export class ActionsListComponent implements OnInit {
     }
 
     unFollow() {
-        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.stopFollowingAlert') } });
+        this.dialogRef = this.dialog.open(ConfirmComponent, {
+            panelClass: 'maarch-modal',
+            autoFocus: false,
+            disableClose: true,
+            data: {
+                title: this.translate.instant('lang.untrackThisMail'),
+                msg: this.translate.instant('lang.stopFollowingAlert')
+            }
+        });
 
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
@@ -154,6 +162,21 @@ export class ActionsListComponent implements OnInit {
             })
         ).subscribe();
     }
+
+    follow() {
+        this.http.post('../rest/resources/follow', { resources: this.selectedRes }).pipe(
+            tap((data: any) =>  {
+                this.notify.success(this.translate.instant('lang.followedMail'));
+                this.headerService.nbResourcesFollowed += data.followed;
+                this.refreshList();
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
 
     toggleFreezing(value) {
         this.http.put('../rest/archival/freezeRetentionRule', { resources: this.selectedRes, freeze : value }).pipe(

@@ -823,12 +823,15 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * @param type - Zoom operation type : 'in' for zoom in and 'out' for zoom out.
+     */
     zoomLeftDocument(type: string) {
+        const zoomFactor: number = 1.2; // Increases or decreases the zoom level by 20% for each click
         if (type === 'in') {
-            this.zoomLeft = this.zoomLeft + 0.5;
-        } else if (type === 'out' && this.zoomLeft >= 0) {
-            this.zoomLeft = this.zoomLeft - 0.5;
+            this.zoomLeft = this.zoomLeft * zoomFactor;
+        } else if (type === 'out') {
+            this.zoomLeft = this.zoomLeft / zoomFactor;
         }
-
     }
 }

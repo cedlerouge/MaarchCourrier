@@ -410,8 +410,9 @@ class StoreController
         $shouldBeInSignatureBook = $attachmentsTypes[$args['type']]['signable'];
 
         if ($args['type'] == 'signed_response') {
-            $linkSign = "{$args['originId']},res_attachments";
-            AttachmentModel::update(['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$args['originId']]]);
+            $origin = AttachmentModel::getLastVersionByOriginId($args['resIdMaster'], $args['originId']);
+            $linkSign = "{$origin['res_id']},res_attachments";
+            AttachmentModel::update(['set' => ['status' => 'SIGN'], 'where' => ['res_id = ?'], 'data' => [$origin['res_id']]]);
             unset($args['originId']);
         }
 

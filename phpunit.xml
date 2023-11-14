@@ -22,6 +22,7 @@
       <file>test/unitTests/app/administration/AdministrationControllerTest.php</file>
       <file>test/unitTests/app/attachment/AttachmentControllerTest.php</file>
       <file>test/unitTests/app/attachment/AttachmentTypeControllerTest.php</file>
+      <file>test/unitTests/app/attachment/AttachmentVersionControllerTest.php</file>
       <file>test/unitTests/app/basket/BasketControllerTest.php</file>
       <file>test/unitTests/app/contact/ContactControllerTest.php</file>
       <file>test/unitTests/app/contact/ContactCustomFieldControllerTest.php</file>

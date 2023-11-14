@@ -14,10 +14,26 @@
         <span>{{action.label}}</span>
     </button>
     <mat-divider></mat-divider>
-    <button mat-menu-item class="followAction" (click)="unFollow()" [disabled]="selectedRes.length === 0">
+
+    <button *ngIf="contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()">
         <mat-icon class="far fa-star fa-2x"></mat-icon>
         <span>{{'lang.untrackThisMail' | translate}}</span>
     </button>
+    <button *ngIf="contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()">
+        <mat-icon class="fas fa-star fa-2x"></mat-icon>
+        <span>{{'lang.trackThisMail' | translate}}</span>
+    </button>
+ 
+    <button *ngIf="!contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="this.selectedRes.length == 0">
+        <mat-icon class="far fa-star fa-2x"></mat-icon>
+        <span>{{'lang.untrackThisMail' | translate}}</span>
+    </button>
+    <button *ngIf="!contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()" [disabled]="this.selectedRes.length == 0">
+        <mat-icon class="fas fa-star fa-2x"></mat-icon>
+        <span>{{'lang.trackThisMail' | translate}}</span>
+    </button>
+
+    
     <mat-divider></mat-divider>
     <button *ngIf="privilegeService.hasCurrentUserPrivilege('freeze_retention_rule')" mat-menu-item
         [matMenuTriggerFor]="freezeRentalRule" [disabled]="selectedRes.length === 0"
