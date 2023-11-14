@@ -178,8 +178,12 @@ export class CoreDialogComponent implements OnInit {
                         }
                         resolve(true);
                     }),
-                    catchError(async () => {
-                        resolve(this.checkValidUrl());
+                    catchError(async (err) => {
+                        if (err.status === 500) {
+                            this.notify.handleSoftErrors(err);
+                        } else {
+                            resolve(this.checkValidUrl());
+                        }
                         return of(false);
                     })
                 )

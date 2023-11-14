@@ -90,7 +90,7 @@ class DatabasePDO
                         continue;
                     } else {
                         LogsController::add([
-                            'isSql'         => true,
+                            'isSql'         => false,
                             'level'         => 'ERROR',
                             'sqlException'  => $PDOException->getMessage()
                         ]);
