@@ -99,12 +99,14 @@
                 [opened]="true"
                 [ngStyle]="{'width': '600px'}"
                 style="overflow-x:hidden;">
-                <!-- <button mat-icon-button [title]="'Fermer le panneau latéral'" (click)="snav2.close()" style="font-size: 20px;color:#666; float: right;">
-                    <mat-icon class="fa fa-arrow-right"></mat-icon>
-                </button> -->
+                <!-- <div style="display: flex; position: relative; top: -11px; margin-bottom: -17px; left: 2px;">
+                    <button mat-icon-button [title]="'Fermer le panneau latéral'" (click)="snav2.close()" style="font-size: 20px;color:#666">
+                        <mat-icon class="fa fa-arrow-right"></mat-icon>
+                    </button>
+                </div> -->
                 <div *ngIf="attachmentsList.attachmentsClone.length > 0" class="attachInSignatoryBook">
                     <mat-checkbox color="primary"
-                        [title]="'lang.attachmentsInSignatoryBook' | translate"
+                        [title]="'lang.attachmentsInSignatoryBookDesc' | translate"
                         [checked]="inSignatoryBook.value"
                         (change)="inSignatoryBook.setValue(!inSignatoryBook.value)">
                         {{'lang.attachmentsInSignatoryBook' | translate}}
