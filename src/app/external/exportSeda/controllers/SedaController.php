@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Seda Controller
-* @author dev@maarch.org
-*/
+ * @brief Seda Controller
+ * @author dev@maarch.org
+ */
 
 namespace ExportSeda\controllers;
 
@@ -34,18 +34,21 @@ use User\models\UserModel;
 
 class SedaController
 {
-    public static function initArchivalData($args = [])
+    /**
+     * @throws \Exception
+     */
+    public static function initArchivalData($args = []): array
     {
         $date = new \DateTime();
 
         $return = [
-            'data' => [
-                'entity' => [
+            'data'           => [
+                'entity'   => [
                     'label'               => $args['entity']['entity_label'],
                     'producerService'     => $args['entity']['producer_service'],
                     'senderArchiveEntity' => $args['senderOrgRegNumber'],
                 ],
-                'doctype' => [
+                'doctype'  => [
                     'label'                     => $args['doctype']['description'],
                     'retentionRule'             => $args['doctype']['retention_rule'],
                     'retentionFinalDisposition' => $args['doctype']['retention_final_disposition']
@@ -62,10 +65,10 @@ class SedaController
         $document = $args['resource'];
         if (!empty($document['docserver_id']) && !empty($document['filename'])) {
             $convertedDocument = AdrModel::getDocuments([
-                'select'    => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
-                'data'      => [$args['resource']['res_id'], 'SIGN', $document['version']],
-                'limit'     => 1
+                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
+                'where'  => ['res_id = ?', 'type = ?', 'version = ?'],
+                'data'   => [$args['resource']['res_id'], 'SIGN', $document['version']],
+                'limit'  => 1
             ]);
             $document = $convertedDocument[0] ?? $document;
 
@@ -103,7 +106,7 @@ class SedaController
                 'otherInfo'        => $args['resource']['alt_identifier']
             ];
 
-            if ($args['getFile']) {
+            if ($args['getFile'] ?? false) {
                 $return['archiveUnits'][0]['filePath'] = $pathToDocument;
             }
         }
@@ -118,7 +121,7 @@ class SedaController
                 'creationDate'     => $attachment['creation_date'],
                 'otherInfo'        => $attachment['identifier']
             ];
-            if ($args['getFile']) {
+            if ($args['getFile'] ?? false) {
                 $attachment = ExportSEDATrait::getAttachmentFilePath(['data' => $attachment]);
                 $tmpAttachment['filePath'] = $attachment['filePath'];
             }
@@ -172,7 +175,7 @@ class SedaController
             'creationDate'     => $date->format('Y-m-d H:i:s'),
             'otherInfo'        => null
         ];
-        if ($args['getFile']) {
+        if ($args['getFile'] ?? false) {
             $summarySheet = ExportSEDATrait::getSummarySheetFilePath(['resId' => $args['resource']['res_id']]);
             $tmpSummarySheet['filePath'] = $summarySheet['filePath'];
         }
@@ -196,7 +199,7 @@ class SedaController
             $entities = [0];
         }
 
-        $folderLimit = $args['massAction'] ? 1 : 0;
+        $folderLimit = ($args['massAction'] ?? false) ? 1 : 0;
         $folders = FolderModel::getWithEntitiesAndResources([
             'select'  => ['DISTINCT(folders.id)', 'folders.label'],
             'where'   => ['res_id = ?', '(entity_id in (?) OR keyword = ?)', 'folders.public = TRUE'],
@@ -214,7 +217,7 @@ class SedaController
         return ['archivalData' => $return];
     }
 
-    public static function getRecipientArchiveEntities($args = [])
+    public static function getRecipientArchiveEntities($args = []): array
     {
         $archiveEntities = [];
         if (strtolower($args['config']['exportSeda']['sae']) == 'maarchrm') {
@@ -253,9 +256,9 @@ class SedaController
             if (is_array($args['config']['exportSeda']['externalSAE']['archiveEntities'])) {
                 foreach ($args['config']['exportSeda']['externalSAE']['archiveEntities'] as $archiveEntity) {
                     $archiveEntities[] = [
-                            'id'    => $archiveEntity['id'],
-                            'label' => $archiveEntity['label']
-                        ];
+                        'id'    => $archiveEntity['id'],
+                        'label' => $archiveEntity['label']
+                    ];
                 }
             }
         }
@@ -263,7 +266,7 @@ class SedaController
         return ['archiveEntities' => $archiveEntities];
     }
 
-    public static function getArchivalAgreements($args = [])
+    public static function getArchivalAgreements($args = []): array
     {
         $archivalAgreements = [];
         if (strtolower($args['config']['exportSeda']['sae']) == 'maarchrm') {
@@ -298,8 +301,8 @@ class SedaController
             foreach ($curlResponse['response'] as $retentionRule) {
                 if ($retentionRule['depositorOrgRegNumber'] == $args['senderArchiveEntity'] && in_array($producerService['producerServiceInfo']['orgId'], $retentionRule['originatorOrgIds'])) {
                     $archivalAgreements[] = [
-                        'id'            => $retentionRule['reference'],
-                        'label'         => $retentionRule['name'],
+                        'id'                     => $retentionRule['reference'],
+                        'label'                  => $retentionRule['name'],
                         'archiveEntityRegNumber' => $retentionRule['archiverOrgRegNumber']
                     ];
                 }
@@ -318,7 +321,7 @@ class SedaController
         return ['archivalAgreements' => $archivalAgreements];
     }
 
-    public static function getProducerServiceInfo($args = [])
+    public static function getProducerServiceInfo($args = []): array
     {
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/organization/organization/Search?term=' . $args['producerServiceName'],
@@ -431,10 +434,10 @@ class SedaController
 
         if ($body['binding'] === null) {
             $binding = null;
-            $info    = _RESET_BINDING_DOCUMENT;
+            $info = _RESET_BINDING_DOCUMENT;
         } else {
             $binding = $body['binding'] ? 'true' : 'false';
-            $info    = $body['binding'] ? _SET_BINDING_DOCUMENT : _SET_NON_BINDING_DOCUMENT;
+            $info = $body['binding'] ? _SET_BINDING_DOCUMENT : _SET_NON_BINDING_DOCUMENT;
         }
 
         ResModel::update([
@@ -487,7 +490,7 @@ class SedaController
         $documents = array_column($documents, 'alt_identifier', 'res_id');
 
         $freeze = $body['freeze'] ? 'true' : 'false';
-        $info   = $body['freeze'] ? _FREEZE_RETENTION_RULE : _UNFREEZE_RETENTION_RULE;
+        $info = $body['freeze'] ? _FREEZE_RETENTION_RULE : _UNFREEZE_RETENTION_RULE;
 
         ResModel::update([
             'set'   => [

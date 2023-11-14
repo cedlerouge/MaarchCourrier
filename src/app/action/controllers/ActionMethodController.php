@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ActionController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ActionController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Action\controllers;
 
@@ -17,6 +16,8 @@ use Action\models\ActionModel;
 use Action\models\BasketPersistenceModel;
 use Action\models\ResMarkAsReadModel;
 use Alfresco\controllers\AlfrescoController;
+use DateTime;
+use Exception;
 use Multigest\controllers\MultigestController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
@@ -101,7 +102,10 @@ class ActionMethodController
         'noConfirmAction'                           => null
     ];
 
-    public static function terminateAction(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function terminateAction(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id', 'resources']);
         ValidatorModel::intVal($args, ['id']);
@@ -138,7 +142,7 @@ class ActionMethodController
         $resLetterboxData = array_column($resLetterboxData, null, 'res_id');
 
         foreach ($args['resources'] as $resource) {
-            if (!empty(trim($args['note']['content']))) {
+            if (isset($args['note']['content']) && !empty(trim($args['note']['content']))) {
                 $noteId = NoteModel::create([
                     'resId'     => $resource,
                     'user_id'   => $GLOBALS['id'],
@@ -191,7 +195,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function closeMailAction(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function closeMailAction(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -201,6 +208,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function closeMailWithAttachmentsOrNotesAction(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
@@ -222,7 +232,10 @@ class ActionMethodController
         return ActionMethodController::closeMailAction($aArgs);
     }
 
-    public static function updateAcknowledgementSendDateAction(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function updateAcknowledgementSendDateAction(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId', 'data']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -232,7 +245,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function updateDepartureDateAction(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function updateDepartureDateAction(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -242,13 +258,16 @@ class ActionMethodController
         return true;
     }
 
-    public static function disabledBasketPersistenceAction(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function disabledBasketPersistenceAction(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
 
         BasketPersistenceModel::delete([
-            'where' => ['res_id = ?',  'user_id = ?'],
+            'where' => ['res_id = ?', 'user_id = ?'],
             'data'  => [$aArgs['resId'], $GLOBALS['id']]
         ]);
 
@@ -261,7 +280,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function enabledBasketPersistenceAction(array $aArgs)
+    /**
+     * @throws Exception
+     */
+    public static function enabledBasketPersistenceAction(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -280,7 +302,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function resMarkAsReadAction(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function resMarkAsReadAction(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
         ValidatorModel::intVal($args, ['resId']);
@@ -289,7 +314,7 @@ class ActionMethodController
         if (is_numeric($args['data']['basketId'])) {
             $basket = BasketModel::getById(['id' => $args['data']['basketId'], 'select' => ['basket_id']]);
         }
-        
+
         ResMarkAsReadModel::delete([
             'where' => ['res_id = ?', 'user_id = ?', '(basket_id = ? OR basket_id = ?)'],
             'data'  => [$args['resId'], $GLOBALS['id'], $args['data']['basketId'], $basket['basket_id']]
@@ -308,6 +333,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function redirect(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
@@ -334,7 +362,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function redirectInitiatorEntityAction(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function redirectInitiatorEntityAction(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -347,21 +378,21 @@ class ActionMethodController
                 $destUser = ListTemplateModel::getWithItems(['where' => ['entity_id = ?', 'item_mode = ?', 'type = ?'], 'data' => [$entityInfo['id'], 'dest', 'diffusionList']]);
                 if (!empty($destUser)) {
                     ListInstanceModel::update([
-                        'set' => [
+                        'set'   => [
                             'item_mode' => 'cc'
                         ],
                         'where' => ['item_mode = ?', 'res_id = ?'],
                         'data'  => ['dest', $args['resId']]
                     ]);
                     ListInstanceModel::create([
-                        'res_id'          => $args['resId'],
-                        'sequence'        => 0,
-                        'item_id'         => $destUser[0]['item_id'],
-                        'item_type'       => 'user_id',
-                        'item_mode'       => 'dest',
-                        'added_by_user'   => $GLOBALS['id'],
-                        'viewed'          => 0,
-                        'difflist_type'   => 'entity_id'
+                        'res_id'        => $args['resId'],
+                        'sequence'      => 0,
+                        'item_id'       => $destUser[0]['item_id'],
+                        'item_type'     => 'user_id',
+                        'item_mode'     => 'dest',
+                        'added_by_user' => $GLOBALS['id'],
+                        'viewed'        => 0,
+                        'difflist_type' => 'entity_id'
                     ]);
                     $destUser = $destUser[0]['item_id'];
                 } else {
@@ -379,16 +410,19 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function sendSignatureBook(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $circuit = ListInstanceModel::get([
-            'select'    => ['requested_signature', 'signatory', 'process_date'],
-            'where'     => ['res_id = ?', 'difflist_type = ?'],
-            'data'      => [$args['resId'], 'VISA_CIRCUIT'],
-            'orderBy'   => ['listinstance_id']
+            'select'  => ['requested_signature', 'signatory', 'process_date'],
+            'where'   => ['res_id = ?', 'difflist_type = ?'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
+            'orderBy' => ['listinstance_id']
         ]);
         if (empty($circuit)) {
             return ['errors' => ['No available circuit']];
@@ -429,9 +463,9 @@ class ActionMethodController
             }
         }
 
-        $resource       = ResModel::getById(['select' => ['integrations'], 'resId' => $args['resId']]);
-        $integrations   = json_decode($resource['integrations'], true);
-        $resourceIn     = !empty($integrations['inSignatureBook']);
+        $resource = ResModel::getById(['select' => ['integrations'], 'resId' => $args['resId']]);
+        $integrations = json_decode($resource['integrations'], true);
+        $resourceIn = !empty($integrations['inSignatureBook']);
 
         $signableAttachmentsTypes = [];
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
@@ -442,9 +476,9 @@ class ActionMethodController
         }
 
         $attachments = AttachmentModel::get([
-            'select'  => ['res_id', 'status'],
-            'where'   => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
-            'data'    => [$args['resId'], $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
+            'select' => ['res_id', 'status'],
+            'where'  => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
+            'data'   => [$args['resId'], $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
         ]);
         if (empty($attachments) && !$resourceIn) {
             return ['errors' => ['No available attachments']];
@@ -475,17 +509,20 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function continueVisaCircuit(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
         $listInstance = ListInstanceModel::get([
-            'select'    => ['listinstance_id', 'item_id'],
-            'where'     => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data'      => [$args['resId'], 'VISA_CIRCUIT'],
-            'orderBy'   => ['listinstance_id'],
-            'limit'     => 1
+            'select'  => ['listinstance_id', 'item_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
+            'orderBy' => ['listinstance_id'],
+            'limit'   => 1
         ]);
         if (empty($listInstance[0])) {
             return ['errors' => ['No available circuit']];
@@ -503,10 +540,10 @@ class ActionMethodController
         ]);
 
         $circuit = ListInstanceModel::get([
-            'select'    => ['requested_signature', 'item_id', 'listinstance_id'],
-            'where'     => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data'      => [$args['resId'], 'VISA_CIRCUIT'],
-            'orderBy'   => ['listinstance_id']
+            'select'  => ['requested_signature', 'item_id', 'listinstance_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
+            'orderBy' => ['listinstance_id']
         ]);
 
         $skipList = [];
@@ -525,7 +562,7 @@ class ActionMethodController
         if (!empty($skipList)) {
             ListInstanceModel::update([
                 'set'   => [
-                    'process_date' => 'CURRENT_TIMESTAMP',
+                    'process_date'    => 'CURRENT_TIMESTAMP',
                     'process_comment' => _USER_SKIPPED
                 ],
                 'where' => ['listinstance_id in (?)'],
@@ -539,9 +576,9 @@ class ActionMethodController
 
         if ($nextValid['requested_signature'] == true) {
             $attachments = AttachmentModel::get([
-                'select'  => ['res_id'],
-                'where'   => ['res_id_master = ?', 'in_signature_book = ?', 'status = ?'],
-                'data'    => [$args['resId'], true, 'SEND_MASS']
+                'select' => ['res_id'],
+                'where'  => ['res_id_master = ?', 'in_signature_book = ?', 'status = ?'],
+                'data'   => [$args['resId'], true, 'SEND_MASS']
             ]);
             if (!empty($attachments)) {
                 static $massData;
@@ -566,7 +603,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function sendExternalNoteBookAction(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function sendExternalNoteBookAction(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -587,12 +627,12 @@ class ActionMethodController
 
             $processingUserInfo = MaarchParapheurController::getUserById(['config' => $config, 'id' => $args['data']['processingUser']]);
             $sentInfo = MaarchParapheurController::sendDatas([
-                'config'          => $config,
-                'resIdMaster'     => $args['resId'],
-                'processingUser'  => $args['data']['processingUser'],
-                'objectSent'      => 'mail',
-                'userId'          => $GLOBALS['login'],
-                'note'            => $args['note']['content'] ?? null
+                'config'         => $config,
+                'resIdMaster'    => $args['resId'],
+                'processingUser' => $args['data']['processingUser'],
+                'objectSent'     => 'mail',
+                'userId'         => $GLOBALS['login'],
+                'note'           => $args['note']['content'] ?? null
             ]);
             if (!empty($sentInfo['error'])) {
                 return ['errors' => [$sentInfo['error']]];
@@ -614,6 +654,9 @@ class ActionMethodController
         return ['history' => $historyInfo];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function rejectVisaBackToPrevious(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -670,6 +713,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function resetVisa(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -700,6 +746,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function interruptVisa(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -707,11 +756,11 @@ class ActionMethodController
 
 
         $listInstances = ListInstanceModel::get([
-            'select'   => ['listinstance_id', 'item_id'],
-            'where'    => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data'     => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['listinstance_id', 'item_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
-            'limit'    => 1
+            'limit'   => 1
         ]);
 
         if (!empty($listInstances[0])) {
@@ -737,7 +786,7 @@ class ActionMethodController
 
         ListInstanceModel::update([
             'set'   => [
-                'process_date' => 'CURRENT_TIMESTAMP',
+                'process_date'    => 'CURRENT_TIMESTAMP',
                 'process_comment' => _INTERRUPTED_WORKFLOW
             ],
             'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
@@ -747,6 +796,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function sendToOpinionCircuit(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -766,8 +818,8 @@ class ActionMethodController
             return ["errors" => ["Opinion limit date is missing"]];
         }
 
-        $opinionLimitDate = new \DateTime($args['data']['opinionLimitDate']);
-        $today = new \DateTime('today');
+        $opinionLimitDate = new DateTime($args['data']['opinionLimitDate']);
+        $today = new DateTime('today');
         if ($opinionLimitDate < $today) {
             return ['errors' => ["Opinion limit date is not a valid date"]];
         }
@@ -781,6 +833,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function sendToParallelOpinion(array $args)
     {
         if (empty($args['resId'])) {
@@ -795,8 +850,8 @@ class ActionMethodController
             return ["errors" => ["Opinion limit date is missing"]];
         }
 
-        $opinionLimitDate = new \DateTime($args['data']['opinionLimitDate']);
-        $today = new \DateTime('today');
+        $opinionLimitDate = new DateTime($args['data']['opinionLimitDate']);
+        $today = new DateTime('today');
         if ($opinionLimitDate < $today) {
             return ['errors' => ["Opinion limit date is not a valid date"]];
         }
@@ -838,17 +893,17 @@ class ActionMethodController
             }
 
             ListInstanceModel::create([
-                'res_id'                => $args['resId'],
-                'sequence'              => $key,
-                'item_id'               => $instance['item_id'],
-                'item_type'             => 'user_id',
-                'item_mode'             => $instance['item_mode'],
-                'added_by_user'         => $GLOBALS['id'],
-                'difflist_type'         => 'entity_id',
-                'process_date'          => null,
-                'process_comment'       => null,
-                'requested_signature'   => false,
-                'viewed'                => empty($instance['viewed']) ? 0 : $instance['viewed']
+                'res_id'              => $args['resId'],
+                'sequence'            => $key,
+                'item_id'             => $instance['item_id'],
+                'item_type'           => 'user_id',
+                'item_mode'           => $instance['item_mode'],
+                'added_by_user'       => $GLOBALS['id'],
+                'difflist_type'       => 'entity_id',
+                'process_date'        => null,
+                'process_comment'     => null,
+                'requested_signature' => false,
+                'viewed'              => empty($instance['viewed']) ? 0 : $instance['viewed']
             ]);
         }
 
@@ -863,6 +918,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function continueOpinionCircuit(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -888,12 +946,12 @@ class ActionMethodController
             $currentUser = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $GLOBALS['id']]);
             $stepUser = UserModel::get([
                 'select' => ['firstname', 'lastname'],
-                'where' => ['id = ?'],
-                'data' => [$currentStep['item_id']]
+                'where'  => ['id = ?'],
+                'data'   => [$currentStep['item_id']]
             ]);
             $stepUser = $stepUser[0];
 
-            $message = ' ' . _AVIS_SENT . " " . _BY ." "
+            $message = ' ' . _AVIS_SENT . " " . _BY . " "
                 . $currentUser['firstname'] . ' ' . $currentUser['lastname']
                 . " " . _INSTEAD_OF . " "
                 . $stepUser['firstname'] . ' ' . $stepUser['lastname'];
@@ -908,10 +966,10 @@ class ActionMethodController
         ]);
 
         $circuit = ListInstanceModel::get([
-            'select'    => ['requested_signature', 'item_id', 'listinstance_id'],
-            'where'     => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data'      => [$args['resId'], 'AVIS_CIRCUIT'],
-            'orderBy'   => ['listinstance_id']
+            'select'  => ['requested_signature', 'item_id', 'listinstance_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'AVIS_CIRCUIT'],
+            'orderBy' => ['listinstance_id']
         ]);
 
         $skipList = [];
@@ -930,7 +988,7 @@ class ActionMethodController
         if (!empty($skipList)) {
             ListInstanceModel::update([
                 'set'   => [
-                    'process_date' => 'CURRENT_TIMESTAMP',
+                    'process_date'    => 'CURRENT_TIMESTAMP',
                     'process_comment' => _USER_SKIPPED
                 ],
                 'where' => ['listinstance_id in (?)'],
@@ -949,16 +1007,19 @@ class ActionMethodController
         return ['history' => $message];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function giveOpinionParallel(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
 
         $currentStep = ListInstanceModel::get([
-            'select'  => ['listinstance_id', 'item_id'],
-            'where'   => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
-            'data'    => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
-            'limit'   => 1
+            'select' => ['listinstance_id', 'item_id'],
+            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
+            'data'   => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
+            'limit'  => 1
         ]);
 
         if (empty($currentStep)) {
@@ -980,6 +1041,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function validateParallelOpinionDiffusion(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -989,8 +1053,8 @@ class ActionMethodController
             return ["errors" => ["Opinion limit date is missing"]];
         }
 
-        $opinionLimitDate = new \DateTime($args['data']['opinionLimitDate']);
-        $today = new \DateTime('today');
+        $opinionLimitDate = new DateTime($args['data']['opinionLimitDate']);
+        $today = new DateTime('today');
         if ($opinionLimitDate < $today) {
             return ['errors' => ["Opinion limit date is not a valid date"]];
         }
@@ -1094,7 +1158,10 @@ class ActionMethodController
         return true;
     }
 
-    public static function sendResourceAlfresco(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function sendResourceAlfresco(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -1117,6 +1184,9 @@ class ActionMethodController
         return ['history' => $sent['history']];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function sendResourceMultigest(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -1140,6 +1210,9 @@ class ActionMethodController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function reconcile(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
@@ -1168,10 +1241,10 @@ class ActionMethodController
 
         if ($targetResource['category_id'] == 'outgoing') {
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId'            => 'letterbox_coll',
-                'docserverTypeId'   => 'DOC',
-                'encodedResource'   => base64_encode(file_get_contents($pathToDocument)),
-                'format'            => $resource['format']
+                'collId'          => 'letterbox_coll',
+                'docserverTypeId' => 'DOC',
+                'encodedResource' => base64_encode(file_get_contents($pathToDocument)),
+                'format'          => $resource['format']
             ]);
             if (!empty($storeResult['errors'])) {
                 return ['errors' => ["[storeResourceOnDocServer] {$storeResult['errors']}"]];
@@ -1179,45 +1252,45 @@ class ActionMethodController
 
             AdrModel::deleteDocumentAdr(['where' => ['res_id = ?', 'type in (?)', 'version = ?'], 'data' => [$args['data']['resId'], ['SIGN', 'TNL'], $targetResource['version']]]);
             AdrModel::createDocumentAdr([
-                'resId'         => $args['data']['resId'],
-                'type'          => 'SIGN',
-                'docserverId'   => $storeResult['docserver_id'],
-                'path'          => $storeResult['directory'],
-                'filename'      => $storeResult['file_destination_name'],
-                'version'       => $targetResource['version'],
-                'fingerprint'   => $storeResult['fingerPrint']
+                'resId'       => $args['data']['resId'],
+                'type'        => 'SIGN',
+                'docserverId' => $storeResult['docserver_id'],
+                'path'        => $storeResult['directory'],
+                'filename'    => $storeResult['file_destination_name'],
+                'version'     => $targetResource['version'],
+                'fingerprint' => $storeResult['fingerPrint']
             ]);
         } else {
             $id = StoreController::storeAttachment([
-                'encodedFile'   => base64_encode(file_get_contents($pathToDocument)),
-                'type'          => 'response_project',
-                'resIdMaster'   => $args['data']['resId'],
-                'title'         => $resource['subject'],
-                'format'        => $resource['format'],
-                'status'        => 'SIGN'
+                'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
+                'type'        => 'response_project',
+                'resIdMaster' => $args['data']['resId'],
+                'title'       => $resource['subject'],
+                'format'      => $resource['format'],
+                'status'      => 'SIGN'
             ]);
             if (empty($id) || !empty($id['errors'])) {
                 return ['errors' => ['[storeAttachment] ' . $id['errors']]];
             }
             ConvertPdfController::convert([
-                'resId'     => $id,
-                'collId'    => 'attachments_coll'
+                'resId'  => $id,
+                'collId' => 'attachments_coll'
             ]);
 
             $id = StoreController::storeAttachment([
-                'encodedFile'   => base64_encode(file_get_contents($pathToDocument)),
-                'type'          => 'signed_response',
-                'resIdMaster'   => $args['data']['resId'],
-                'title'         => $resource['subject'],
-                'originId'      => $id,
-                'format'        => $resource['format']
+                'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
+                'type'        => 'signed_response',
+                'resIdMaster' => $args['data']['resId'],
+                'title'       => $resource['subject'],
+                'originId'    => $id,
+                'format'      => $resource['format']
             ]);
             if (empty($id) || !empty($id['errors'])) {
                 return ['errors' => ['[storeAttachment] ' . $id['errors']]];
             }
             ConvertPdfController::convert([
-                'resId'     => $id,
-                'collId'    => 'attachments_coll'
+                'resId'  => $id,
+                'collId' => 'attachments_coll'
             ]);
         }
 
