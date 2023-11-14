@@ -171,7 +171,7 @@ class UserFollowedResourceControllerTest extends CourrierTestCase
 
         $response     = $usersFollowedResourcesController->follow($fullRequest, new Response());
 
-        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
 
         $GLOBALS['login'] = 'ccharles';
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
