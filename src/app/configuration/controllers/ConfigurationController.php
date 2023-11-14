@@ -334,6 +334,8 @@ class ConfigurationController
                     'ssl'      => (string)$value->ssl == "true" ? true : false
                 ];
             }
+        } else {
+            $config['annuary']['annuaries'] = [];
         }
 
         return $response->withJson(['configuration' => $config]);
