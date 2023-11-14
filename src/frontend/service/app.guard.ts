@@ -74,7 +74,6 @@ export class AppGuard implements CanActivate {
                 } else {
                     this.headerService.sideBarAdmin = false;
                 }
-                console.log(this.headerService.sideBarAdmin);
                 
                 this.authService.setCachedUrl(state.url.replace(/^\//g, ''));
                 $state = true;
