@@ -334,6 +334,8 @@ class ConfigurationController
                     'ssl'      => (string)$value->ssl == "true" ? true : false
                 ];
             }
+        } else {
+            $config['annuary']['annuaries'] = [];
         }
 
         return $response->withJson(['configuration' => $config]);
@@ -406,7 +408,7 @@ class ConfigurationController
         $xmlConfig = ReceiveMessageExchangeController::readXmlConfig();
         $communication = [];
         $login = '';
-        $password = $xmlConfig['m2m_password'] ?? '';
+        $password = $xmlConfig['m2m_password'][0] ?? '';
         if(!empty($body['communications']['login'])) {
             $login = $body['communications']['login'];
         }

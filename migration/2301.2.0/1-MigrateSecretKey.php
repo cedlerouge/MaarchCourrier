@@ -256,26 +256,27 @@ class MigrateSecretKey implements AutoUpdateInterface
         if (empty($configuration)) {
             return ['errors' => 'Server Mail configuration is missing'];
         }
-
         // Change password encryption
-        $configuration = json_decode($configuration['value'], true);
+        if (!empty($configuration['password'])) {
+            $configuration = json_decode($configuration['value'], true);
 
-        $password = $this->oldDecrypt($configuration['password'], $oldEncryptKey);
-        if (!empty($password['errors'])) {
-            $this->rollbackSteps['configFile'] = true;
-            return ['errors' => $password['errors']];
+            $password = $this->oldDecrypt($configuration['password'], $oldEncryptKey);
+            if (!empty($password['errors'])) {
+                $this->rollbackSteps['configFile'] = true;
+                return ['errors' => $password['errors']];
+            }
+    
+            $configuration['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
+    
+            // Update config
+            ConfigurationModel::update([
+                'set' => [
+                    'value' => json_encode($configuration)
+                ],
+                'where' => ['privilege = ?'],
+                'data' => ['admin_email_server']
+            ]);    
         }
-
-        $configuration['password'] = PasswordController::encrypt(['dataToEncrypt' => $password]);
-
-        // Update config
-        ConfigurationModel::update([
-            'set' => [
-                'value' => json_encode($configuration)
-            ],
-            'where' => ['privilege = ?'],
-            'data' => ['admin_email_server']
-        ]);
 
         return true;
     }

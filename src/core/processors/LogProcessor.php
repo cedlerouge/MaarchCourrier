@@ -70,7 +70,7 @@ class LogProcessor
             }
         }
 
-        $record['QUERY'] = $this->lineData['sqlQuery'];
+        $record['QUERY'] = $this->lineData['sqlQuery'] ?? ':noSqlQuery';
         $record['DATA'] = $sqlData;
         $record['EXCEPTION'] = $this->lineData['sqlException'] ?? ':noSqlException';
 
