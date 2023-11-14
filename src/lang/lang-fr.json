@@ -2823,5 +2823,6 @@
     "annexTargetDesc": "Pièce jointe intégrée au parapheur en annexe",
     "allIntegratedAttachments": "Toutes",
     "attachmentToSign": "Pour visa/signature",
-    "attachmentAnnex": "En annexe"
+    "attachmentAnnex": "En annexe",
+    "attachmentsInSignatoryBookDesc": "Afficher les pièces jointes intégrées au parapheur"
 }
