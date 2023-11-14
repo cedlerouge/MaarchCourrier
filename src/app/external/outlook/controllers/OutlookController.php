@@ -171,9 +171,9 @@ class OutlookController
             'statusId'          => $body['statusId'],
             'attachmentTypeId'  => $body['attachmentTypeId'],
             'version'           => $body['version'],
-            'tenantId'          => !empty($body['tenantId']) ? PasswordController::encrypt(['password' => $body['tenantId']]) : '',
-            'clientId'          => !empty($body['clientId']) ? PasswordController::encrypt(['password' => $body['clientId']]) : '',
-            'clientSecret'      => !empty($body['clientSecret']) ? PasswordController::encrypt(['password' => $body['clientSecret']]) : ''
+            'tenantId'          => !empty($body['tenantId']) ? PasswordController::encrypt(['dataToEncrypt' => $body['tenantId']]) : '',
+            'clientId'          => !empty($body['clientId']) ? PasswordController::encrypt(['dataToEncrypt' => $body['clientId']]) : '',
+            'clientSecret'      => !empty($body['clientSecret']) ? PasswordController::encrypt(['dataToEncrypt' => $body['clientSecret']]) : ''
         ], JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => 'admin_addin_outlook', 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => 'admin_addin_outlook']);
