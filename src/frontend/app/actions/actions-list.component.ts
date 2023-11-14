@@ -176,7 +176,7 @@ export class ActionsListComponent implements OnInit {
             })
         ).subscribe();
     }
-        
+
 
     toggleFreezing(value) {
         this.http.put('../rest/archival/freezeRetentionRule', { resources: this.selectedRes, freeze : value }).pipe(
