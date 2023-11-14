@@ -477,3 +477,6 @@ define('_ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', array(
     "n'existe plus dans le parapheur externe"
 ));
 define('_EXTERNAL_USER', "Utilisateur externe");
+define('_ERROR_ATTACHMENT_FILE_MISSING', "Le fichier joint est manquant");
+define('_ERROR_ATTACHMENT_WRONG_BASE64', "Erreur d'encodage du fichier joint");
+define('_ERROR_CONTACT_UNKNOW', "Contact inconnu");

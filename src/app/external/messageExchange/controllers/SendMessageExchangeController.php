@@ -547,10 +547,11 @@ class SendMessageExchangeController
         if (isset($aArgs['ArchivalAgency']['CommunicationType']['type'])) {
             $arcCommunicationObject          = new \stdClass();
             $arcCommunicationObject->Channel = $aArgs['ArchivalAgency']['CommunicationType']['type'];
+            $arcCommunicationObject->value   = $aArgs['ArchivalAgency']['CommunicationType']['value'];
             if ($aArgs['ArchivalAgency']['CommunicationType']['type'] == 'url') {
                 $postUrl = '/rest/saveNumericPackage';
+                $arcCommunicationObject->value   .= $postUrl;
             }
-            $arcCommunicationObject->value   = $aArgs['ArchivalAgency']['CommunicationType']['value'].$postUrl;
 
             $archivalAgencyObject->OrganizationDescriptiveMetadata->Communication = [$arcCommunicationObject];
         }

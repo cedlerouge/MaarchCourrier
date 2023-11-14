@@ -302,17 +302,20 @@ class ConfigurationController
         $config['annuary']['enabled']      = $xmlConfig['annuaries']['enabled'] == "true" ? true : false;
         $config['annuary']['organization'] = $xmlConfig['annuaries']['organization'] ?? null;
 
-        if (!is_array($xmlConfig['annuaries']['annuary'])) {
-            $xmlConfig['annuaries']['annuary'] = [$xmlConfig['annuaries']['annuary']];
-        }
-        foreach ($xmlConfig['annuaries']['annuary'] as $value) {
-            $config['annuary']['annuaries'][] = [
-                'uri'      => (string)$value->uri,
-                'baseDN'   => (string)$value->baseDN,
-                'login'    => (string)$value->login,
-                'password' => (string)$value->password,
-                'ssl'      => (string)$value->ssl == "true" ? true : false
-            ];
+        if (isset($xmlConfig['annuaries']['annuary'])) {
+            if (!is_array($xmlConfig['annuaries']['annuary'])) {
+                $xmlConfig['annuaries']['annuary'] = [$xmlConfig['annuaries']['annuary']];
+            }
+
+            foreach ($xmlConfig['annuaries']['annuary'] as $value) {
+                $config['annuary']['annuaries'][] = [
+                    'uri'      => (string)$value->uri,
+                    'baseDN'   => (string)$value->baseDN,
+                    'login'    => (string)$value->login,
+                    'password' => (string)$value->password,
+                    'ssl'      => (string)$value->ssl == "true" ? true : false
+                ];
+            }
         }
 
         return $response->withJson(['configuration' => $config]);

@@ -57,7 +57,7 @@ class SendMessageController
         $tmpPath = CoreConfigModel::getTmpPath();
         file_put_contents($tmpPath . $messageObject->MessageIdentifier->value . ".xml", $DOMTemplate->saveXML());
 
-        if ($messageObject->DataObjectPackage && !$isForSeda) {
+        if (isset($messageObject->DataObjectPackage) && $messageObject->DataObjectPackage && !$isForSeda) {
             foreach ($messageObject->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
                 $base64_decoded = base64_decode($binaryDataObject->Attachment->value);
                 $file = fopen($tmpPath . $binaryDataObject->Attachment->filename, 'w');
@@ -65,6 +65,7 @@ class SendMessageController
                 fclose($file);
             }
         }
+
         $filename = self::generateZip($messageObject, $tmpPath);
 
         return $filename;
@@ -156,11 +157,12 @@ class SendMessageController
 
         $zip->addFile($tmpPath . $seda2Message->MessageIdentifier->value . ".xml", $seda2Message->MessageIdentifier->value . ".xml");
 
-        if ($seda2Message->DataObjectPackage) {
+        if (isset($seda2Message->DataObjectPackage) && $seda2Message->DataObjectPackage) {
             foreach ($seda2Message->DataObjectPackage->BinaryDataObject as $binaryDataObject) {
                 $zip->addFile($tmpPath . $binaryDataObject->Attachment->filename, $binaryDataObject->Attachment->filename);
             }
         }
+
 
         return $filename;
     }
