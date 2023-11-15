@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, flushMicrotasks, tick } from "@angular/core/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
-import * as langFrJson from '../../../lang/lang-fr.json';
 import { AttachmentsListComponent } from "./attachments-list.component";
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { BrowserModule, By } from "@angular/platform-browser";
@@ -13,10 +12,8 @@ import { HttpClient } from "@angular/common/http";
 import { AdministrationService } from "@appRoot/administration/administration.service";
 import { FoldersService } from "@appRoot/folder/folders.service";
 import { PrivilegeService } from "@service/privileges.service";
-import { CoreDialogComponent } from "@appRoot/core-dialog/core-dialog.component";
-import { IconService } from "@service/icons.service";
-import { MatDialog } from "@angular/material/dialog";
 import { ConfirmComponent } from "@plugins/modal/confirm.component";
+import * as langFrJson from '../../../lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -186,8 +183,26 @@ describe('AttachmentsListComponent', () => {
             const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
             expect(notifContent).toEqual(component.translate.instant('lang.actionDone'));
 
-            fixture.detectChanges();
+            fixture.detectChanges();            
             flush();
+        }));
+
+        it('display signTarget or annexTarget by signable boolean for each integrated attachment', fakeAsync(() => {
+            loadAttachments();
+
+            fixture.detectChanges();
+            tick(100);
+
+            const integrationTarget: any[] = fixture.nativeElement.querySelectorAll('span[name=integrationTarget');
+            expect(integrationTarget.length).toBeGreaterThan(0);
+
+            component.attachments.filter((attachment: any) => attachment.inSignatureBook).forEach((attachment: any, index: number) => {
+                if (attachment.signable) {                    
+                    expect(integrationTarget[index].innerHTML.trim()).toEqual(component.translate.instant('lang.signTarget'));
+                } else {                    
+                    expect(integrationTarget[index].innerHTML.trim()).toEqual(component.translate.instant('lang.annexTarget'));
+                }
+            });
         }));
     })
 

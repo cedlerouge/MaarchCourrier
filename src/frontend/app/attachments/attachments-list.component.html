@@ -57,7 +57,7 @@
                 <div class="stateInfo">
                     <i title="{{'lang.inSignatureBook' | translate}}" class="fas fa-file-signature" *ngIf="attachment.inSignatureBook"></i>&nbsp;
                     <i title="{{'lang.inShipping' | translate}}" class="fa fa-shipping-fast" *ngIf="attachment.inSendAttach"></i>
-                    <span *ngIf="attachment.inSignatureBook"
+                    <span name="integrationTarget" *ngIf="attachment.inSignatureBook"
                         class="integrationTarget"
                         [title]="attachment.signable ? attachmentTargets[0].description : attachmentTargets[1].description">
                         {{attachment.signable ? attachmentTargets[0].label : attachmentTargets[1].label}}
