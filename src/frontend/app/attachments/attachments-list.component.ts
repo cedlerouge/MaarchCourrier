@@ -257,9 +257,8 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     deleteAttachment(attachment: any) {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') } });
-
-        dialogRef.afterClosed().pipe(
+        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') } });
+        this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete(`../rest/attachments/${attachment.resId}`)),
             tap(() => {
