@@ -393,7 +393,8 @@ class ContactController
                     'modification_date'     => 'CURRENT_TIMESTAMP',
                     'custom_fields'         => !empty($body['customFields']) ? json_encode($body['customFields']) : null,
                     'external_id'           => $externalId,
-                    'sector'                => $sector['label'] ?? null
+                    'sector'                => $sector['label'] ?? null,
+                    'lad_indexation'        => 0
                 ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]

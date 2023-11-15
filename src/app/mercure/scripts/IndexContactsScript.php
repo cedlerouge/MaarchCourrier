@@ -26,8 +26,9 @@ use SrcCore\models\DatabasePDO;
 // Launch indexation contacts : php src/app/mercure/scripts/IndexContactsScript.php --customId yourcustom --fileConfig 'config/ladConfiguration.json'
 
 // ARGS
-// --customId    : instance id;
-// --fileConfig      : path of LAD file configuration (optionnal);
+// --customId   : instance id;
+// --fileConfig : path of LAD file configuration (optionnal);
+// --force      : Forcer la réindexation de toute la base (optionnal);
 
 IndexContactsScript::initalize($argv);
 
@@ -36,13 +37,14 @@ class IndexContactsScript
     public static function initalize(array $args)
     {
         $customId = '';
-        $fileConfiguration    = '';
+        $fileConfiguration = '';
+        $isForce = false;
 
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
             $customId = $args[$cmd + 1];
 
-            $fileConfiguration    = 'custom/' . $customId . '/config/ladConfiguration.json';
+            $fileConfiguration = 'custom/' . $customId . '/config/ladConfiguration.json';
         }
 
         if (array_search('--fileConfig', $args) > 0) {
@@ -50,7 +52,11 @@ class IndexContactsScript
             $fileConfiguration = $args[$cmd + 1];
         }
 
-        IndexContactsScript::generateIndex(['customId' => $customId, 'fileConfig' => $fileConfiguration]);
+        if (array_search('--force', $args) > 0) {
+            $isForce = true;
+        }
+
+        IndexContactsScript::generateIndex(['customId' => $customId, 'fileConfig' => $fileConfiguration, 'indexAll' => $isForce]);
     }
 
     public static function generateIndex(array $args)
@@ -112,14 +118,27 @@ class IndexContactsScript
 
             if (!is_null($fieldIndexation['lexicon'])) {
                 $tabLexicon[$fieldIndexation['lexicon']] = [];
+
+                //Initialiser le lexique si le fichier Lexique existe déjà
+                if (!$args['indexAll'] && is_file($lexDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt")) {
+                    $lexique = fopen($lexDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt", "r");
+
+                    while (($entreeLexique = fgets($lexique)) !== false) {
+                        if (!empty($entreeLexique)) {
+                            $tabLexicon[$fieldIndexation['lexicon']][] = trim($entreeLexique);
+                        }
+                    }
+
+                    fclose($lexique);
+                }
             }
         }
 
-
         //Récupération des contacts
         $contactsToIndexes = ContactModel::get([
-            'select'    => $tabSelect,
-            'orderBy'   => ['id']
+            'select' => $tabSelect,
+            'orderBy' => ['id'],
+            'where' => (!$args['indexAll']) ? ['lad_indexation is false'] : []
         ]);
 
         $cptIndex = 0;
@@ -175,9 +194,9 @@ class IndexContactsScript
                 $index->optimize();
 
                 ContactModel::update([
-                    'set'   => ['lad_indexation' => 1],
+                    'set' => ['lad_indexation' => 1],
                     'where' => ['id in (?)'],
-                    'data'  => [$listIdToUpdate]
+                    'data' => [$listIdToUpdate]
                 ]);
 
                 $listIdToUpdate = [];
@@ -193,9 +212,9 @@ class IndexContactsScript
 
         if (count($listIdToUpdate) > 0) {
             ContactModel::update([
-                'set'   => ['lad_indexation' => 1],
+                'set' => ['lad_indexation' => 1],
                 'where' => ['id in (?)'],
-                'data'  => [$listIdToUpdate]
+                'data' => [$listIdToUpdate]
             ]);
         }
 
