@@ -86,6 +86,7 @@ class IndexContactsScript
             mkdir($lexDirectory, 0775, true);
         }
 
+        $contactsIndexesDirectory .= DIRECTORY_SEPARATOR . $args['customId'];
         if (!is_dir($contactsIndexesDirectory)) {
             mkdir($contactsIndexesDirectory, 0775, true);
         }
