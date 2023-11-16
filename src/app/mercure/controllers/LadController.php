@@ -32,15 +32,15 @@ class LadController
     {
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
-            return $response->withJson(['errors' => 'Mercure configuration is not enabled']);
+            return $response->withJson(['enabled' => false]);
         }
 
         $configuration = json_decode($configuration['value'], true);
         if (empty($configuration['enabledLad'])) {
-            return $response->withJson(['errors' => 'Mercure LAD is not enabled']);
+            return $response->withJson(['enabled' => false]);
         }
 
-        return $response->withJson(['message' => 'LAD is enabled']);
+        return $response->withJson(['enabled' => true]);
     }
 
     public function ladRequest(Request $request, Response $response)

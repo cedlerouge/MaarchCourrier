@@ -57,8 +57,7 @@ export class LadService {
         return new Promise((resolve) => {
             this.http.get('../rest/mercure/lad/isEnabled').pipe(
                 tap((data: any) => {
-                    const result = data.errors !== undefined ? false : true;
-                    resolve(result);
+                    resolve(data.enabled);
                 }),
                 catchError((err: any) => {
                     return of(false);
