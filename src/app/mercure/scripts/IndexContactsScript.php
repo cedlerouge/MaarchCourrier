@@ -26,9 +26,9 @@ use SrcCore\models\DatabasePDO;
 // Launch indexation contacts : php src/app/mercure/scripts/IndexContactsScript.php --customId yourcustom --fileConfig 'config/ladConfiguration.json'
 
 // ARGS
-// --customId   : instance id;
-// --fileConfig : path of LAD file configuration (optionnal);
-// --force      : Forcer la réindexation de toute la base (optionnal);
+// --customId   : Instance id;
+// --fileConfig : Path of LAD file configuration (optionnal);
+// --reindexAll : Re-index all contacts database (optionnal);
 
 IndexContactsScript::initalize($argv);
 
@@ -38,7 +38,7 @@ class IndexContactsScript
     {
         $customId = '';
         $fileConfiguration = '';
-        $isForce = false;
+        $reindexAll = false;
 
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
@@ -52,11 +52,11 @@ class IndexContactsScript
             $fileConfiguration = $args[$cmd + 1];
         }
 
-        if (array_search('--force', $args) > 0) {
-            $isForce = true;
+        if (array_search('--reindexAll', $args) > 0) {
+            $reindexAll = true;
         }
 
-        IndexContactsScript::generateIndex(['customId' => $customId, 'fileConfig' => $fileConfiguration, 'indexAll' => $isForce]);
+        IndexContactsScript::generateIndex(['customId' => $customId, 'fileConfig' => $fileConfiguration, 'indexAll' => $reindexAll]);
     }
 
     public static function generateIndex(array $args)
@@ -205,42 +205,45 @@ class IndexContactsScript
             $cptIndex++;
         }
 
-        //Optimisation finale
-        echo " (optimisation ...)";
-        $index->optimize();
-        echo "[" . date("Y-m-d H:i:s") . "] Fin de l'indexation \n";
+        if (count($contactsToIndexes) > 0) {
+            // Optimisation finale
+            echo " (optimisation ...)\n";
+            $index->optimize();
+            echo "[" . date("Y-m-d H:i:s") . "] Fin de l'indexation \n";
 
-        if (count($listIdToUpdate) > 0) {
-            ContactModel::update([
-                'set' => ['lad_indexation' => 1],
-                'where' => ['id in (?)'],
-                'data' => [$listIdToUpdate]
-            ]);
-        }
-
-
-        echo "[" . date("Y-m-d H:i:s") . "] Ecriture des lexiques \n";
-        foreach ($tabLexicon as $keyLexicon => $l) {
-            //sort($l);
-            $lexiconFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
-            if ($lexiconFile === false) {
-                echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
-                return false;
+            if (count($listIdToUpdate) > 0) {
+                ContactModel::update([
+                    'set' => ['lad_indexation' => 1],
+                    'where' => ['id in (?)'],
+                    'data' => [$listIdToUpdate]
+                ]);
             }
 
-            foreach ($l as $entry) {
-                fwrite($lexiconFile, $entry . "\n");
+
+            echo "[" . date("Y-m-d H:i:s") . "] Ecriture des lexiques \n";
+            foreach ($tabLexicon as $keyLexicon => $l) {
+                //sort($l);
+                $lexiconFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
+                if ($lexiconFile === false) {
+                    echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
+                    return false;
+                }
+
+                foreach ($l as $entry) {
+                    fwrite($lexiconFile, $entry . "\n");
+                }
+                fclose($lexiconFile);
             }
-            fclose($lexiconFile);
-        }
 
-
-        $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
-        if ($flagFile == false) {
-            echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
+            $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
+            if ($flagFile == false) {
+                echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
+            } else {
+                fwrite($flagFile, date("d-m-Y H:i:s"));
+                fclose($flagFile);
+            }
         } else {
-            fwrite($flagFile, date("d-m-Y H:i:s"));
-            fclose($flagFile);
+            echo "\n";
         }
         echo "[" . date("Y-m-d H:i:s") . "] Script d'indexation terminé !\n";
         return true;
