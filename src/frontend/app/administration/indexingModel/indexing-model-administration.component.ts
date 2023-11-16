@@ -13,6 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
 import { FunctionsService } from '@service/functions.service';
+import { LadService } from '@service/lad.service';
 
 @Component({
     templateUrl: 'indexing-model-administration.component.html',
@@ -79,13 +80,14 @@ export class IndexingModelAdministrationComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
+        private ladService: LadService
     ) {
 
     }
 
     ngOnInit(): void {
         this.route.params.subscribe(async (params) => {
-            await this.getLadConfiguration();
+            this.ladEnabled = await this.ladService.isEnabled();
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
 
@@ -289,20 +291,5 @@ export class IndexingModelAdministrationComponent implements OnInit {
                 id : ent.serialId,
             })));
         }
-    }
-
-    getLadConfiguration(){
-        return new Promise((resolve) => {
-            this.http.get('../rest/mercure/lad/isEnabled').pipe(
-                tap((data: any) => {
-                    this.ladEnabled = (data.errors == null)
-                    resolve(this.ladEnabled);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
     }
 }

@@ -52,4 +52,18 @@ export class LadService {
             ).subscribe();
         });
     }
+
+    isEnabled(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/mercure/lad/isEnabled').pipe(
+                tap((data: any) => {
+                    const result = data.errors !== undefined ? false : true;
+                    resolve(result);
+                }),
+                catchError((err: any) => {
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
 }

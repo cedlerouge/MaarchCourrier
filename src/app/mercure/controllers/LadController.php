@@ -40,7 +40,7 @@ class LadController
             return $response->withStatus(200)->withJson(['errors' => 'Mercure LAD is not enabled']);
         }
 
-        return $response->withStatus(204);
+        return $response->withJson(['message' => 'LAD is enabled']);
     }
 
     public function ladRequest(Request $request, Response $response)
