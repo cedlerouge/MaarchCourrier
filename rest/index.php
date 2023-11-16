@@ -400,6 +400,7 @@ $app->get('/languages/{lang}', \SrcCore\controllers\LanguageController::class . 
 //Lecture Automatique de Documents
 $app->post('/administration/mercure/test', \Mercure\controllers\LadController::class . ':testLad');
 $app->post('/mercure/lad', \Mercure\controllers\LadController::class . ':ladRequest');
+$app->get('/mercure/lad/isEnabled', \Mercure\controllers\LadController::class . ':isEnabled');
 $app->get('/mercure/lad/contactIndexations', \Mercure\controllers\LadController::class . ':getContactsIndexationState');
 $app->get('/mercure/webservice/account', \Mercure\controllers\MwsController::class . ':checkAccount');
 $app->get('/mercure/webservice/subscriptionState', \Mercure\controllers\MwsController::class . ':loadSubscriptionState');

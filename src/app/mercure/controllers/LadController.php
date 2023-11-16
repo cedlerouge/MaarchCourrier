@@ -28,6 +28,21 @@ use SrcCore\models\ValidatorModel;
 
 class LadController
 {
+    public function isEnabled(Request $request, Response $response)
+    {
+        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
+        if (empty($configuration)) {
+            return $response->withJson(['enabled' => false]);
+        }
+
+        $configuration = json_decode($configuration['value'], true);
+        if (empty($configuration['enabledLad'])) {
+            return $response->withJson(['enabled' => false]);
+        }
+
+        return $response->withJson(['enabled' => true]);
+    }
+
     public function ladRequest(Request $request, Response $response)
     {
         $body = $request->getParsedBody();
@@ -117,11 +132,11 @@ class LadController
             return $response->withStatus(400)->withJson(['errors' => 'Mercure module directory does not exist']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'Mercure5')) {
             return $response->withStatus(400)->withJson(['errors' => 'Mercure5 exe is not present in the distribution or is not executable']);
         }
 
-        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep' ) || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
+        if (!is_file($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep') || !is_executable($ladConfiguration['config']['mercureLadDirectory'] . DIRECTORY_SEPARATOR . 'ugrep')) {
             return $response->withStatus(400)->withJson(['errors' => 'ugrep exe is not present in the distribution or is not executable']);
         }
 
@@ -167,13 +182,13 @@ class LadController
 
         //Mercure5 fileIn fileOut fileParams
         LogsController::add([
-            'isTech'    => true,
-            'moduleId'  => 'mercure',
-            'level'     => 'INFO',
+            'isTech' => true,
+            'moduleId' => 'mercure',
+            'level' => 'INFO',
             'tableName' => '',
-            'recordId'  => '',
+            'recordId' => '',
             'eventType' => "LAD task",
-            'eventId'   => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
+            'eventId' => "Launch LAD on file {$tmpPath}{$tmpFilename}.{$aArgs['extension']}"
         ]);
 
         $outXmlFilename = $ladConfiguration['config']['mercureLadDirectory'] . '/OUT/' . $customId . DIRECTORY_SEPARATOR . $tmpFilename . '.xml';
@@ -234,7 +249,7 @@ class LadController
                 return ['errors' => 'Output XML  LAD file doesn\'t exists'];
             }
 
-            if (is_file($tmpPath.$tmpFilename . '.' . $aArgs['extension'])) {
+            if (is_file($tmpPath . $tmpFilename . '.' . $aArgs['extension'])) {
                 unlink($tmpPath . $tmpFilename . '.' . $aArgs['extension']);
             }
 
@@ -264,13 +279,13 @@ class LadController
             }
 
             LogsController::add([
-                'isTech'    => true,
-                'moduleId'  => 'mercure',
-                'level'     => 'ERROR',
+                'isTech' => true,
+                'moduleId' => 'mercure',
+                'level' => 'ERROR',
                 'tableName' => '',
-                'recordId'  => '',
+                'recordId' => '',
                 'eventType' => "LAD task",
-                'eventId'   => "LAD task error on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}, return : {$return}, errors : " . implode(",", $tabErrors)
+                'eventId' => "LAD task error on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}, return : {$return}, errors : " . implode(",", $tabErrors)
             ]);
             $aReturn = ['errors' => $tabErrors, 'output' => $output, 'return' => $return, 'cmd' => $command];
 
@@ -278,13 +293,13 @@ class LadController
         }
 
         LogsController::add([
-            'isTech'    => true,
-            'moduleId'  => 'mercure',
-            'level'     => 'INFO',
+            'isTech' => true,
+            'moduleId' => 'mercure',
+            'level' => 'INFO',
             'tableName' => '',
-            'recordId'  => '',
+            'recordId' => '',
             'eventType' => "LAD task",
-            'eventId'   => "LAD task success on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}"
+            'eventId' => "LAD task success on file {$tmpPath}{$tmpFilename} . {$aArgs['extension']}"
         ]);
 
         return $aReturn;
@@ -328,14 +343,14 @@ class LadController
 
         $customId = CoreConfigModel::getCustomId();
         $indexedContacts = ContactModel::get([
-            'select'    => ['COUNT(*)'],
-            'where'     => ['lad_indexation = ? '],
-            'data'      => [true]
+            'select' => ['COUNT(*)'],
+            'where' => ['lad_indexation = ? '],
+            'data' => [true]
         ]);
         $countIndexedContacts = (int)$indexedContacts[0]['count'];
 
         $allContacts = ContactModel::get([
-            'select'    => ['COUNT(*)']
+            'select' => ['COUNT(*)']
         ]);
         $countAllContacts = (int)$allContacts[0]['count'];
 
@@ -353,10 +368,10 @@ class LadController
         }
 
         return $response->withJson([
-            'dateIndexation'            => $dateIndexation,
-            'countIndexedContacts'      => $countIndexedContacts,
-            'countAllContacts'          => $countAllContacts,
-            'pctIndexationContacts'     => ($countIndexedContacts * 100) / $countAllContacts,
+            'dateIndexation' => $dateIndexation,
+            'countIndexedContacts' => $countIndexedContacts,
+            'countAllContacts' => $countAllContacts,
+            'pctIndexationContacts' => ($countIndexedContacts * 100) / $countAllContacts,
         ]);
     }
 
@@ -395,7 +410,7 @@ class LadController
 
     private static function stripAccents($content)
     {
-        $search  = array('À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ò', 'ó', 'ô', 'õ', 'ö', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ');
+        $search = array('À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ð', 'ò', 'ó', 'ô', 'õ', 'ö', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ');
         $replace = array('A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y');
 
         return str_replace($search, $replace, $content);
@@ -403,7 +418,7 @@ class LadController
 
     private static function replaceMonth($dateString)
     {
-        $search  = array('janvier', 'janv', 'fevrier', 'fev', 'mars', 'mar', 'avril', 'avr', 'mai', 'juin', 'juillet', 'juil', 'aout', 'aou', 'septembre', 'sept', 'octobre', 'oct', 'novembre', 'nov', 'decembre', 'dec');
+        $search = array('janvier', 'janv', 'fevrier', 'fev', 'mars', 'mar', 'avril', 'avr', 'mai', 'juin', 'juillet', 'juil', 'aout', 'aou', 'septembre', 'sept', 'octobre', 'oct', 'novembre', 'nov', 'decembre', 'dec');
         $replace = array('01', '01', '02', '02', '03', '03', '04', '04', '05', '06', '07', '07', '08', '08', '09', '09', '10', '10', '11', '11', '12', '12');
 
         return str_replace($search, $replace, $dateString);

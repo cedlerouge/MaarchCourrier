@@ -304,7 +304,7 @@ export class IndexationComponent implements OnInit, OnDestroy {
     }
 
     async refreshDatas(event: string) {
-        if (event === 'launchLad' && this.currentIndexingModel.ladProcessing){
+        if (event === 'launchLad' && this.currentIndexingModel.ladProcessing && await this.ladService.isEnabled()){
             // Attendre que le formulaire soit chargé pour pouvoir lancer la LAD
             if (this.loadedForm){
                 this.ladService.initLad();
