@@ -194,7 +194,7 @@ class IndexContactsScript
                 $index->optimize();
 
                 ContactModel::update([
-                    'set' => ['lad_indexation' => 1],
+                    'set' => ['lad_indexation' => 'true'],
                     'where' => ['id in (?)'],
                     'data' => [$listIdToUpdate]
                 ]);
