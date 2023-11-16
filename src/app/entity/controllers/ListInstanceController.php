@@ -533,6 +533,10 @@ class ListInstanceController
                         }
                     }
                     $listInstance['item_mode'] = $listInstance['requested_signature'] ? 'sign' : 'visa';
+
+                    if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $user['id']])) {
+                        $body['canSuspend'] = true;
+                    }
                 } else {
                     if (!PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $user['id']])) {
                         DatabaseModel::rollbackTransaction();
@@ -561,7 +565,7 @@ class ListInstanceController
                 }
             }
 
-            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign) {
+            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign && $body['canSuspend'] === false) {
                 DatabaseModel::rollbackTransaction();
                 return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances requires at least one sign user", 'lang' => 'signUserRequired']);
             }
