@@ -87,9 +87,9 @@ class IndexContactsScript
         }
 
         //Création des dossiers Lexiques et Index si non existants
-        $lexDirectory = $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $args['customId'];
-        if (!is_dir($lexDirectory)) {
-            mkdir($lexDirectory, 0775, true);
+        $contactsLexiconsDirectory .= DIRECTORY_SEPARATOR . $args['customId'];
+        if (!is_dir($contactsLexiconsDirectory)) {
+            mkdir($contactsLexiconsDirectory, 0775, true);
         }
 
         $contactsIndexesDirectory .= DIRECTORY_SEPARATOR . $args['customId'];
@@ -121,8 +121,8 @@ class IndexContactsScript
                 $tabLexicon[$fieldIndexation['lexicon']] = [];
 
                 //Initialiser le lexique si le fichier Lexique existe déjà
-                if (!$args['indexAll'] && is_file($lexDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt")) {
-                    $lexique = fopen($lexDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt", "r");
+                if (!$args['indexAll'] && is_file($contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt")) {
+                    $lexique = fopen($contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt", "r");
 
                     while (($entreeLexique = fgets($lexique)) !== false) {
                         if (!empty($entreeLexique)) {
@@ -224,9 +224,9 @@ class IndexContactsScript
             echo "[" . date("Y-m-d H:i:s") . "] Ecriture des lexiques \n";
             foreach ($tabLexicon as $keyLexicon => $l) {
                 //sort($l);
-                $lexiconFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
+                $lexiconFile = fopen($contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt", "w");
                 if ($lexiconFile === false) {
-                    echo "Erreur dans la génération du fichier de lexique : " . $lexDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
+                    echo "Erreur dans la génération du fichier de lexique : " . $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $keyLexicon . ".txt";
                     return false;
                 }
 
@@ -236,9 +236,9 @@ class IndexContactsScript
                 fclose($lexiconFile);
             }
 
-            $flagFile = fopen($lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
+            $flagFile = fopen($contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag", "w");
             if ($flagFile == false) {
-                echo "Erreur d'écriture du fichier " . $lexDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
+                echo "Erreur d'écriture du fichier " . $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag" . " !\n";
             } else {
                 fwrite($flagFile, date("d-m-Y H:i:s"));
                 fclose($flagFile);
