@@ -293,9 +293,9 @@ export class IndexingModelAdministrationComponent implements OnInit {
 
     getLadConfiguration(){
         return new Promise((resolve) => {
-            this.http.get('../rest/configurations/admin_mercure').pipe(
+            this.http.get('../rest/mercure/lad/isEnabled').pipe(
                 tap((data: any) => {
-                    this.ladEnabled = data.configuration.value.enabledLad;
+                    this.ladEnabled = (data.errors == null)
                     resolve(this.ladEnabled);
                 }),
                 catchError((err: any) => {
