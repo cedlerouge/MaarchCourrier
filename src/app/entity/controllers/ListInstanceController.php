@@ -18,6 +18,7 @@ use Entity\models\EntityModel;
 use Entity\models\ListInstanceHistoryDetailModel;
 use Entity\models\ListInstanceHistoryModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
@@ -35,8 +36,8 @@ use SignatureBook\controllers\SignatureBookController;
 class ListInstanceController
 {
     const MAPPING_TYPES = [
-            'visaCircuit'       => 'VISA_CIRCUIT',
-            'opinionCircuit'    => 'AVIS_CIRCUIT'
+        'visaCircuit'    => 'VISA_CIRCUIT',
+        'opinionCircuit' => 'AVIS_CIRCUIT'
     ];
 
     public function getByResId(Request $request, Response $response, array $args)
@@ -62,9 +63,9 @@ class ListInstanceController
             }
         }
         $hasHistory = ListInstanceHistoryDetailModel::get([
-            'select'    => [1],
-            'where'     => ['difflist_type = ?', 'res_id = ?'],
-            'data'      => ['entity_id', $args['resId']]
+            'select' => [1],
+            'where'  => ['difflist_type = ?', 'res_id = ?'],
+            'data'   => ['entity_id', $args['resId']]
         ]);
 
         return $response->withJson(['listInstance' => $listInstances, 'hasHistory' => !empty($hasHistory)]);
@@ -84,7 +85,7 @@ class ListInstanceController
             $listInstances[$key]['isValid'] = !empty($user) && !in_array($user['status'], ['SPD', 'DEL']);
 
             $listInstances[$key]['item_type'] = 'user';
-            $itemLabel = $listInstances[$key]['item_firstname'].' '.$listInstances[$key]['item_lastname'];
+            $itemLabel = $listInstances[$key]['item_firstname'] . ' ' . $listInstances[$key]['item_lastname'];
 
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
@@ -99,10 +100,10 @@ class ListInstanceController
             }
         }
         $hasHistory = ListInstanceHistoryDetailModel::get([
-            'select'    => [1],
-            'where'     => ['difflist_type = ?', 'res_id = ?'],
-            'data'      => ['VISA_CIRCUIT', $aArgs['resId']],
-            'groupBy'   => ['listinstance_history_id']
+            'select'  => [1],
+            'where'   => ['difflist_type = ?', 'res_id = ?'],
+            'data'    => ['VISA_CIRCUIT', $aArgs['resId']],
+            'groupBy' => ['listinstance_history_id']
         ]);
 
         return $response->withJson(['circuit' => $listInstances, 'hasHistory' => count($hasHistory) > 1]);
@@ -122,7 +123,7 @@ class ListInstanceController
             $listInstances[$key]['isValid'] = !empty($user) && !in_array($user['status'], ['SPD', 'DEL']);
 
             $listInstances[$key]['item_type'] = 'user';
-            $itemLabel = $listInstances[$key]['item_firstname'].' '.$listInstances[$key]['item_lastname'];
+            $itemLabel = $listInstances[$key]['item_firstname'] . ' ' . $listInstances[$key]['item_lastname'];
 
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
@@ -154,7 +155,7 @@ class ListInstanceController
             $listInstances[$key]['isValid'] = !empty($user) && !in_array($user['status'], ['SPD', 'DEL']);
 
             $listInstances[$key]['item_type'] = 'user';
-            $itemLabel = $listInstances[$key]['item_firstname'].' '.$listInstances[$key]['item_lastname'];
+            $itemLabel = $listInstances[$key]['item_firstname'] . ' ' . $listInstances[$key]['item_lastname'];
 
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
@@ -212,7 +213,10 @@ class ListInstanceController
         return $response->withStatus(204);
     }
 
-    public static function updateListInstance(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function updateListInstance(array $args): array
     {
         ValidatorModel::notEmpty($args, ['data', 'userId']);
         ValidatorModel::arrayType($args, ['data']);
@@ -236,9 +240,9 @@ class ListInstanceController
             }
 
             $listInstances = ListInstanceModel::get([
-                'select'    => ['*'],
-                'where'     => ['res_id = ?', 'difflist_type = ?'],
-                'data'      => [$listInstanceByRes['resId'], 'entity_id']
+                'select' => ['*'],
+                'where'  => ['res_id = ?', 'difflist_type = ?'],
+                'data'   => [$listInstanceByRes['resId'], 'entity_id']
             ]);
 
             $recipientFound = false;
@@ -317,34 +321,34 @@ class ListInstanceController
                 }
 
                 ListInstanceModel::create([
-                    'res_id'                => $listInstanceByRes['resId'],
-                    'sequence'              => $key,
-                    'item_id'               => $instance['item_id'],
-                    'item_type'             => $instance['item_type'],
-                    'item_mode'             => $instance['item_mode'],
-                    'added_by_user'         => $args['userId'],
-                    'difflist_type'         => 'entity_id',
-                    'process_date'          => null,
-                    'process_comment'       => null,
-                    'requested_signature'   => false,
-                    'viewed'                => empty($instance['viewed']) ? 0 : $instance['viewed'],
-                    'delegate'              => $instance['delegate'] ?? null
+                    'res_id'              => $listInstanceByRes['resId'],
+                    'sequence'            => $key,
+                    'item_id'             => $instance['item_id'],
+                    'item_type'           => $instance['item_type'],
+                    'item_mode'           => $instance['item_mode'],
+                    'added_by_user'       => $args['userId'],
+                    'difflist_type'       => 'entity_id',
+                    'process_date'        => null,
+                    'process_comment'     => null,
+                    'requested_signature' => false,
+                    'viewed'              => empty($instance['viewed']) ? 0 : $instance['viewed'],
+                    'delegate'            => $instance['delegate'] ?? null
                 ]);
 
                 if ($instance['item_mode'] == 'dest') {
-                    $set          = ['dest_user' => $instance['item_id']];
-                    $entities     = UserEntityModel::get(['select' => ['entity_id', 'primary_entity'], 'where' => ['user_id = ?'], 'data' => [$instance['item_id']]]);
-                    $entitiesId   = array_column($entities, 'entity_id');
+                    $set = ['dest_user' => $instance['item_id']];
+                    $entities = UserEntityModel::get(['select' => ['entity_id', 'primary_entity'], 'where' => ['user_id = ?'], 'data' => [$instance['item_id']]]);
+                    $entitiesId = array_column($entities, 'entity_id');
                     $userEntities = [];
                     if (!empty($entitiesId)) {
                         $userEntities = EntityModel::get(['select' => ['id', 'entity_id'], 'where' => ['entity_id in (?)'], 'data' => [$entitiesId]]);
                     }
                     $userEntities = array_column($userEntities, 'entity_id', 'id');
-                    if (!empty($userEntities[$listInstanceByRes['destination']])) {
+                    if (!empty($listInstanceByRes['destination']) && !empty($userEntities[$listInstanceByRes['destination']])) {
                         $set['destination'] = $userEntities[$listInstanceByRes['destination']];
                     } else {
                         $changeDestination = true;
-                        $resource          = ResModel::getById(['select' => ['destination'], 'resId' => $listInstanceByRes['resId']]);
+                        $resource = ResModel::getById(['select' => ['destination'], 'resId' => $listInstanceByRes['resId']]);
                         foreach ($entities as $entity) {
                             if ($entity['entity_id'] == $resource['destination']) {
                                 $changeDestination = false;
@@ -391,16 +395,16 @@ class ListInstanceController
             $listInstanceHistoryId = ListInstanceHistoryModel::create(['resId' => $listInstanceByRes['resId'], 'userId' => $args['userId']]);
             foreach ($listInstances as $listInstance) {
                 ListInstanceHistoryDetailModel::create([
-                    'listinstance_history_id'   => $listInstanceHistoryId,
-                    'res_id'                    => $listInstance['res_id'],
-                    'sequence'                  => $listInstance['sequence'],
-                    'item_id'                   => $listInstance['item_id'],
-                    'item_type'                 => $listInstance['item_type'],
-                    'item_mode'                 => $listInstance['item_mode'],
-                    'added_by_user'             => $listInstance['added_by_user'],
-                    'difflist_type'             => 'entity_id',
-                    'process_date'              => null,
-                    'process_comment'           => null
+                    'listinstance_history_id' => $listInstanceHistoryId,
+                    'res_id'                  => $listInstance['res_id'],
+                    'sequence'                => $listInstance['sequence'],
+                    'item_id'                 => $listInstance['item_id'],
+                    'item_type'               => $listInstance['item_type'],
+                    'item_mode'               => $listInstance['item_mode'],
+                    'added_by_user'           => $listInstance['added_by_user'],
+                    'difflist_type'           => 'entity_id',
+                    'process_date'            => null,
+                    'process_comment'         => null
                 ]);
             }
         }
@@ -410,6 +414,9 @@ class ListInstanceController
         return ['success' => 'success'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function updateCircuits(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -447,11 +454,11 @@ class ListInstanceController
             }
 
             if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
-                $last = count($resource['listInstances']) -1;
-                if (empty($resource['listInstances'][$last]['process_date']) && $resource['listInstances'][$last]['requested_signature'] == false) {
+                $last = count($resource['listInstances']) - 1;
+                if (empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['requested_signature']) {
                     DatabaseModel::rollbackTransaction();
                     return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
-                } elseif (!empty($resource['listInstances'][$last]['process_date']) && $resource['listInstances'][$last]['signatory'] == false) {
+                } elseif (!empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['signatory']) {
                     DatabaseModel::rollbackTransaction();
                     return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
                 }
@@ -535,14 +542,14 @@ class ListInstanceController
                 }
 
                 $listInstances[] = [
-                    'item_id'               => $listInstance['item_id'],
-                    'item_type'             => $listInstance['item_type'],
-                    'item_mode'             => $listInstance['item_mode'],
-                    'process_date'          => null,
-                    'process_comment'       => $listInstance['process_comment'] ?? null,
-                    'requested_signature'   => $listInstance['requested_signature'] ?? false,
-                    'signatory'             => $listInstance['signatory'] ?? false,
-                    'delegate'              => $listInstance['delegate'] ?? null
+                    'item_id'             => $listInstance['item_id'],
+                    'item_type'           => $listInstance['item_type'],
+                    'item_mode'           => $listInstance['item_mode'],
+                    'process_date'        => null,
+                    'process_comment'     => $listInstance['process_comment'] ?? null,
+                    'requested_signature' => $listInstance['requested_signature'] ?? false,
+                    'signatory'           => $listInstance['signatory'] ?? false,
+                    'delegate'            => $listInstance['delegate'] ?? null
                 ];
 
                 if ($args['type'] == 'visaCircuit') {
@@ -604,32 +611,32 @@ class ListInstanceController
             $listInstanceHistoryId = ListInstanceHistoryModel::create(['resId' => $resource['resId'], 'userId' => $GLOBALS['id']]);
             foreach ($listInstances as $key => $listInstance) {
                 ListInstanceModel::create([
-                    'res_id'                => $resource['resId'],
-                    'sequence'              => $key,
-                    'item_id'               => $listInstance['item_id'],
-                    'item_type'             => $listInstance['item_type'],
-                    'item_mode'             => $listInstance['item_mode'],
-                    'added_by_user'         => $GLOBALS['id'],
-                    'difflist_type'         => $args['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT',
-                    'process_date'          => $listInstance['process_date'],
-                    'process_comment'       => $listInstance['process_comment'],
-                    'requested_signature'   => $listInstance['requested_signature'],
-                    'signatory'             => $listInstance['signatory'],
-                    'delegate'              => $listInstance['delegate']
+                    'res_id'              => $resource['resId'],
+                    'sequence'            => $key,
+                    'item_id'             => $listInstance['item_id'],
+                    'item_type'           => $listInstance['item_type'],
+                    'item_mode'           => $listInstance['item_mode'],
+                    'added_by_user'       => $GLOBALS['id'],
+                    'difflist_type'       => $args['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT',
+                    'process_date'        => $listInstance['process_date'],
+                    'process_comment'     => $listInstance['process_comment'],
+                    'requested_signature' => $listInstance['requested_signature'],
+                    'signatory'           => $listInstance['signatory'],
+                    'delegate'            => $listInstance['delegate']
                 ]);
                 ListInstanceHistoryDetailModel::create([
-                    'listinstance_history_id'   => $listInstanceHistoryId,
-                    'res_id'                    => $resource['resId'],
-                    'sequence'                  => $key,
-                    'item_id'                   => $listInstance['item_id'],
-                    'item_type'                 => $listInstance['item_type'],
-                    'item_mode'                 => $listInstance['item_mode'],
-                    'added_by_user'             => $GLOBALS['id'],
-                    'difflist_type'             => $args['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT',
-                    'process_date'              => $listInstance['process_date'],
-                    'process_comment'           => $listInstance['process_comment'],
-                    'requested_signature'       => $listInstance['requested_signature'],
-                    'signatory'                 => $listInstance['signatory']
+                    'listinstance_history_id' => $listInstanceHistoryId,
+                    'res_id'                  => $resource['resId'],
+                    'sequence'                => $key,
+                    'item_id'                 => $listInstance['item_id'],
+                    'item_type'               => $listInstance['item_type'],
+                    'item_mode'               => $listInstance['item_mode'],
+                    'added_by_user'           => $GLOBALS['id'],
+                    'difflist_type'           => $args['type'] == 'visaCircuit' ? 'VISA_CIRCUIT' : 'AVIS_CIRCUIT',
+                    'process_date'            => $listInstance['process_date'],
+                    'process_comment'         => $listInstance['process_comment'],
+                    'requested_signature'     => $listInstance['requested_signature'],
+                    'signatory'               => $listInstance['signatory']
                 ]);
             }
         }
