@@ -30,6 +30,7 @@ use SrcCore\models\ValidatorModel;
 use Stevenmaguire\OAuth2\Client\Provider\Keycloak;
 use User\controllers\UserController;
 use User\models\UserModel;
+use VersionUpdate\controllers\VersionUpdateController;
 
 class AuthenticationController
 {
@@ -52,10 +53,11 @@ class AuthenticationController
         $appName   = CoreConfigModel::getApplicationName();
         $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $maarchUrl = $configFile['config']['maarchUrl'] ?? '';
+        $plugins = $configFile['config']['plugins'] ?? [];
 
         $parameter = ParameterModel::getById(['id' => 'loginpage_message', 'select' => ['param_value_string']]);
 
-        $encryptKey = CoreConfigModel::getEncryptKey();
+        $encryptKeyChanged = CoreConfigModel::hasEncryptKeyChanged();
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         $authUri = null;
@@ -106,19 +108,21 @@ class AuthenticationController
         if (!empty($file['config']['idleTime'])) {
             $idleTime = (int) $file['config']['idleTime'];
         }
-        
+
         $return = [
             'instanceId'                => $hashedPath,
             'applicationName'           => $appName,
             'loginMessage'              => $parameter['param_value_string'] ?? null,
-            'changeKey'                 => $encryptKey == 'Security Key Maarch Courrier #2008',
+            'changeKey'                 => !$encryptKeyChanged,
             'authMode'                  => $loggingMethod['id'],
             'authUri'                   => $authUri,
             'lang'                      => CoreConfigModel::getLanguage(),
             'mailServerOnline'          => $emailConfiguration['online'] ?? false,
             'maarchUrl'                 => $maarchUrl,
             'externalSignatoryBook'     => $externalSignatoryBook,
-            'idleTime'                  => $idleTime
+            'idleTime'                  => $idleTime,
+            'migrating'                 => VersionUpdateController::isMigrating(),
+            'plugins'                   => $plugins
         ];
 
         if (!empty($keycloakState)) {

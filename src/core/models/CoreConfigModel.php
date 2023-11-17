@@ -19,23 +19,23 @@ use Configuration\models\ConfigurationModel;
 
 class CoreConfigModel
 {
+    protected static $customId;
+
     public static function getCustomId()
     {
-        static $customId;
-
         // Use for script
         if (!empty($GLOBALS['customId'])) {
-            $customId = $GLOBALS['customId'];
-            return $customId;
+            self::$customId = $GLOBALS['customId'];
+            return self::$customId;
         }
 
-        if ($customId !== null) {
-            return $customId;
+        if (self::$customId !== null) {
+            return self::$customId;
         }
 
         if (!is_file('custom/custom.json') || empty($_SERVER['SCRIPT_NAME']) || empty($_SERVER['SERVER_ADDR'])) {
-            $customId = '';
-            return $customId;
+            self::$customId = '';
+            return self::$customId;
         }
 
         $explodeUrl = explode('/', $_SERVER['SCRIPT_NAME']);
@@ -46,16 +46,16 @@ class CoreConfigModel
         $jsonFile = json_decode($jsonFile, true);
         foreach ($jsonFile as $value) {
             if (!empty($value['path']) && $value['path'] == $path) {
-                $customId = $value['id'];
-                return $customId;
+                self::$customId = $value['id'];
+                return self::$customId;
             } elseif ($value['uri'] == $_SERVER['HTTP_HOST'] || ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])) {
-                $customId = $value['id'];
-                return $customId;
+                self::$customId = $value['id'];
+                return self::$customId;
             }
         }
 
-        $customId = '';
-        return $customId;
+        self::$customId = '';
+        return self::$customId;
     }
 
     public static function getConfigPath()
@@ -178,9 +178,12 @@ class CoreConfigModel
     /**
      * Get the Encrypt Key
      *
+     * @deprecated This function is deprecated and will be removed in future major versions.
+     * Please use getEncryptKey() instead.
+     *
      * @return string
      */
-    public static function getEncryptKey()
+    public static function getOldEncryptKey()
     {
         if (isset($_SERVER['MAARCH_ENCRYPT_KEY'])) {
             $encryptKey = $_SERVER['MAARCH_ENCRYPT_KEY'];
@@ -191,6 +194,51 @@ class CoreConfigModel
         }
 
         return $encryptKey;
+    }
+
+    /**
+     * @deprecated This function will be removed in future major versions.
+     * Please use getEncryptKey() instead.
+     *
+     * @return bool
+     */
+    public static function useVhostEncryptKey(): bool
+    {
+        $configPath = CoreConfigModel::getConfigPath();
+        $config = json_decode(file_get_contents($configPath), true)['config'];
+
+        return !isset($config['privateKeyPath']) || empty($config['privateKeyPath']);
+    }
+
+    /**
+     * Get the Encrypt Key
+     *
+     * @return string
+     */
+    public static function getEncryptKey(): string
+    {
+        $configPath = CoreConfigModel::getConfigPath();
+        $config = json_decode(file_get_contents($configPath), true)['config'];
+
+        $encryptKeyPath = $config['privateKeyPath'] ?? null;
+
+        if (empty($encryptKeyPath)) {
+            $encryptKey = CoreConfigModel::getOldEncryptKey();
+        } elseif (!empty($encryptKeyPath) && is_file($encryptKeyPath) && is_readable($encryptKeyPath)) {
+            $encryptKey = file_get_contents($encryptKeyPath);
+            $encryptKey = trim($encryptKey);
+        } else {
+            $encryptKey = "Security Key Maarch Courrier 2008";
+        }
+
+        return $encryptKey;
+    }
+
+    public static function hasEncryptKeyChanged(): bool
+    {
+        $encryptKey = CoreConfigModel::getEncryptKey();
+
+        return $encryptKey !== "Security Key Maarch Courrier #2008" && $encryptKey !== "Security Key Maarch Courrier 2008";
     }
 
     public static function getLibrariesDirectory()

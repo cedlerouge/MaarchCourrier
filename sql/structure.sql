@@ -784,6 +784,7 @@ CREATE TABLE contacts
     custom_fields jsonb DEFAULT '{}',
     external_id jsonb DEFAULT '{}',
     sector CHARACTER VARYING(256),
+    lad_indexation BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT contacts_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);
@@ -1421,6 +1422,7 @@ CREATE TABLE indexing_models
     master INTEGER DEFAULT NULL,
     enabled BOOLEAN DEFAULT TRUE NOT NULL,
     mandatory_file BOOLEAN DEFAULT FALSE NOT NULL,
+    lad_processing BOOLEAN DEFAULT FALSE NOT NULL,
     CONSTRAINT indexing_models_pkey PRIMARY KEY (id)
 )
 WITH (OIDS=FALSE);

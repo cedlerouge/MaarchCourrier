@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from '../app-common.module';
 
-import { InternationalizationModule } from '@service/translate/internationalization.module';
-
 import { AdministrationRoutingModule } from './administration-routing.module';
 // import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { JoyrideModule } from 'ngx-joyride';
@@ -72,7 +70,6 @@ import { UsersAdministrationComponent } from './user/users-administration.compon
 import { UsersAdministrationRedirectModalComponent } from './user/redirect-modal/users-administration-redirect-modal.component';
 import { UsersImportComponent } from './user/import/users-import.component';
 import { UsersExportComponent } from './user/export/users-export.component';
-import { TranslateService } from '@ngx-translate/core';
 import { EntitiesExportComponent } from './entity/export/entities-export.component';
 import { RegisteredMailComponent } from './registered-mail/registered-mail.component';
 import { IssuingSiteListComponent } from './registered-mail/issuing-site/issuing-site-list.component';
@@ -90,14 +87,23 @@ import { MultigestAdministrationComponent } from './multigest/multigest-administ
 import { MultigestListAdministrationComponent } from './multigest/multigest-list-administration.component';
 import { HistoryExportComponent } from './history/export/history-export.component';
 
+//modules LAD
+import { LadAdministrationComponent } from './mercure/lad-administration.component';
+import { LadAdministrationMenuComponent } from './mercure/lad-administration-menu.component';
+import { LadContactsManagementComponent } from './mercure/ladContactsManagement/lad-contacts-management.component';
+import { MwsAdministrationComponent } from './mercure/webservice/mws-administration.component';
+import { MwsListDocsComponent } from './mercure/webservice/mws-list-docs.component';
+import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+
 @NgModule({
     imports: [
         SharedModule,
         // NgxChartsModule,
-        InternationalizationModule,
         JoyrideModule.forChild(),
         AdministrationRoutingModule,
-        DocumentViewerModule
+        DocumentViewerModule,
+        NgxChartsModule
     ],
     declarations: [
         AccountLinkComponent,
@@ -183,14 +189,16 @@ import { HistoryExportComponent } from './history/export/history-export.componen
         MaarchToMaarchParametersComponent,
         MultigestAdministrationComponent,
         MultigestListAdministrationComponent,
-        HistoryExportComponent
+        HistoryExportComponent,
+        LadAdministrationComponent,
+        LadContactsManagementComponent,
+        MwsAdministrationComponent,
+        MwsListDocsComponent,
+        MwsMonitoringComponent,
+        LadAdministrationMenuComponent
     ],
     providers: [
         AdministrationService
     ]
 })
-export class AdministrationModule {
-    constructor(translate: TranslateService) {
-        translate.setDefaultLang('fr');
-    }
-}
+export class AdministrationModule {}

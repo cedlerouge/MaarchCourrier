@@ -198,7 +198,12 @@ class CurlModel
         $formatedResponse = $response;
 
         if ($args['isXml']) {
-            $formatedResponse = simplexml_load_string($response);
+            $formatedResponse = @simplexml_load_string($response);
+
+            // If we cannot parse the response as a xml, we try to parse it as a json
+            if ($formatedResponse === false) {
+                $formatedResponse = json_decode($response, true);
+            }
         } elseif (in_array('Accept: application/zip', $args['headers'])) {
             $formatedResponse = trim($response);
         } elseif(empty($args['fileResponse'])) {

@@ -8,7 +8,9 @@
             <div class="indexing-form-container">
                 <app-indexing-form *ngIf="currentIndexingModel.id !== undefined" #indexingForm
                     [groupId]="currentGroupId" [indexingFormId]="currentIndexingModel.id"
-                    (retrieveDocumentEvent)="appDocumentViewer.saveDocService()" (resourceToLinkEvent)="resourceToLink = $event"></app-indexing-form>
+                    (retrieveDocumentEvent)="appDocumentViewer.saveDocService()" (resourceToLinkEvent)="resourceToLink = $event"
+                    (loadingFormEndEvent)="setLoadedForm()"
+                ></app-indexing-form>
             </div>
             <div class="actions-indexing-form">
                 <ng-container
@@ -79,7 +81,7 @@
             <div class="content">
                 <app-document-viewer
                     [style.display]="this.currentIndexingModel.category !== 'registeredMail' ? 'block' : 'none'"
-                    #appDocumentViewer [editMode]="true" [tmpFilename]="tmpFilename" (triggerEvent)="refreshDatas()"
+                    #appDocumentViewer [editMode]="true" [tmpFilename]="tmpFilename" (triggerEvent)="refreshDatas($event)"
                     style="height:100%;width:100%;">
                 </app-document-viewer>
                 <div *ngIf="this.currentIndexingModel.category === 'registeredMail'"

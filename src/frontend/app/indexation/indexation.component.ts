@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy } from '@angular/core';
+import {Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, AfterViewInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -20,6 +20,7 @@ import { FunctionsService } from '@service/functions.service';
 import { of, Subscription } from 'rxjs';
 import { SelectIndexingModelComponent } from './select-indexing-model/select-indexing-model.component';
 import { IndexationAttachmentsListComponent } from '@appRoot/attachments/indexation/indexation-attachments-list.component';
+import { LadService } from '@service/lad.service';
 
 @Component({
     templateUrl: 'indexation.component.html',
@@ -39,6 +40,7 @@ export class IndexationComponent implements OnInit, OnDestroy {
     @ViewChild('appDocumentViewer', { static: false }) appDocumentViewer: DocumentViewerComponent;
 
     loading: boolean = false;
+    loadedForm: boolean = false;
 
 
     indexingModels: any[] = [];
@@ -79,7 +81,8 @@ export class IndexationComponent implements OnInit, OnDestroy {
         public actionService: ActionsService,
         private router: Router,
         private sortPipe: SortPipe,
-        public functions: FunctionsService
+        public functions: FunctionsService,
+        private ladService: LadService
     ) {
 
         _activatedRoute.queryParams.subscribe(
@@ -296,8 +299,29 @@ export class IndexationComponent implements OnInit, OnDestroy {
         }
     }
 
-    refreshDatas() {
-        this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
+    setLoadedForm(){
+        this.loadedForm = true;
     }
 
+    async refreshDatas(event: string) {
+        if (event === 'launchLad' && this.currentIndexingModel.ladProcessing && await this.ladService.isEnabled()){
+            // Attendre que le formulaire soit chargé pour pouvoir lancer la LAD
+            if (this.loadedForm){
+                this.ladService.initLad();
+                const res = await this.ladService.launchLadProcess(this.appDocumentViewer.file);
+                if (res) {
+                    await this.indexingForm.fillWithLad(res);
+                }
+                this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
+                this.ladService.endLad();
+            } else {
+                await this.sleep(500);
+                await this.refreshDatas(event);
+            }
+        }
+    }
+
+    sleep(ms: number){
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 }

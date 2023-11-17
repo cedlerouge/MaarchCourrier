@@ -11,7 +11,7 @@ export class MessageBoxComponent implements OnInit {
     /**
      * Style of alert
      */
-    @Input() mode: 'info' | 'danger' | 'success' = 'info';
+    @Input() mode: 'info' | 'danger' | 'success' | 'warning' = 'info';
 
     /**
      * Content of alert box

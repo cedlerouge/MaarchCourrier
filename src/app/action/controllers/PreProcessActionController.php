@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   Pre Process Action Controller
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   Pre Process Action Controller
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Action\controllers;
 
@@ -30,6 +29,7 @@ use Doctype\models\DoctypeModel;
 use Email\controllers\EmailController;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use ExternalSignatoryBook\controllers\IxbusController;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
 use Group\controllers\PrivilegeController;
@@ -57,7 +57,7 @@ use User\models\UserEntityModel;
 use User\models\UserModel;
 use ExportSeda\controllers\PreProcessActionSEDATrait;
 use Multigest\controllers\MultigestController;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SignatureBook\controllers\SignatureBookController;
 
 class PreProcessActionController
@@ -77,14 +77,14 @@ class PreProcessActionController
         $parameters = json_decode($action['parameters'], true);
 
         $keywords = [
-            'ALL_ENTITIES'          => '@all_entities',
-            'ENTITIES_JUST_BELOW'   => '@immediate_children[@my_primary_entity]',
-            'ENTITIES_BELOW'        => '@subentities[@my_entities]',
-            'ALL_ENTITIES_BELOW'    => '@subentities[@my_primary_entity]',
-            'ENTITIES_JUST_UP'      => '@parent_entity[@my_primary_entity]',
-            'MY_ENTITIES'           => '@my_entities',
-            'MY_PRIMARY_ENTITY'     => '@my_primary_entity',
-            'SAME_LEVEL_ENTITIES'   => '@sisters_entities[@my_primary_entity]'
+            'ALL_ENTITIES'        => '@all_entities',
+            'ENTITIES_JUST_BELOW' => '@immediate_children[@my_primary_entity]',
+            'ENTITIES_BELOW'      => '@subentities[@my_entities]',
+            'ALL_ENTITIES_BELOW'  => '@subentities[@my_primary_entity]',
+            'ENTITIES_JUST_UP'    => '@parent_entity[@my_primary_entity]',
+            'MY_ENTITIES'         => '@my_entities',
+            'MY_PRIMARY_ENTITY'   => '@my_primary_entity',
+            'SAME_LEVEL_ENTITIES' => '@sisters_entities[@my_primary_entity]'
         ];
 
         $users = [];
@@ -93,9 +93,9 @@ class PreProcessActionController
 
         foreach (['ENTITY', 'USERS'] as $mode) {
             $entityRedirects = GroupBasketRedirectModel::get([
-                'select'    => ['entity_id', 'keyword'],
-                'where'     => ['basket_id = ?', 'group_id = ?', 'action_id = ?', 'redirect_mode = ?'],
-                'data'      => [$basket['basket_id'], $group['group_id'], $args['actionId'], $mode]
+                'select' => ['entity_id', 'keyword'],
+                'where'  => ['basket_id = ?', 'group_id = ?', 'action_id = ?', 'redirect_mode = ?'],
+                'data'   => [$basket['basket_id'], $group['group_id'], $args['actionId'], $mode]
             ]);
 
             $allowedEntities = [];
@@ -129,10 +129,10 @@ class PreProcessActionController
             if ($mode == 'USERS') {
                 if (!empty($allowedEntities)) {
                     $users = UserEntityModel::getWithUsers([
-                        'select'    => ['DISTINCT users.id', 'users.user_id', 'firstname', 'lastname'],
-                        'where'     => ['users_entities.entity_id in (?)', 'status not in (?)'],
-                        'data'      => [$allowedEntities, ['DEL', 'ABS', 'SPD']],
-                        'orderBy'   => ['lastname', 'firstname']
+                        'select'  => ['DISTINCT users.id', 'users.user_id', 'firstname', 'lastname'],
+                        'where'   => ['users_entities.entity_id in (?)', 'status not in (?)'],
+                        'data'    => [$allowedEntities, ['DEL', 'ABS', 'SPD']],
+                        'orderBy' => ['lastname', 'firstname']
                     ]);
 
                     foreach ($users as $key => $user) {
@@ -180,8 +180,8 @@ class PreProcessActionController
             return $response->withStatus(400)->withJson(['errors' => 'Action does not exist']);
         }
         $parameters = json_decode($action['parameters'], true);
-        $mode       = $parameters['mode'] ?? 'auto';
-        $data       = $request->getQueryParams();
+        $mode = $parameters['mode'] ?? 'auto';
+        $data = $request->getQueryParams();
 
         if (empty($data['mode']) && $mode == 'both') {
             $currentMode = 'auto';
@@ -209,16 +209,16 @@ class PreProcessActionController
         $sendEmail = 0;
         $sendPaper = 0;
         $noSendAR = [
-            'number'    => 0,
-            'list'      => [],
+            'number' => 0,
+            'list'   => [],
         ];
         $alreadyGenerated = [
-            'number'    => 0,
-            'list'      => [],
+            'number' => 0,
+            'list'   => [],
         ];
         $alreadySend = [
-            'number'    => 0,
-            'list'      => [],
+            'number' => 0,
+            'list'   => [],
         ];
 
         $data['resources'] = array_slice($data['resources'], 0, 500);
@@ -253,19 +253,19 @@ class PreProcessActionController
 
             if (empty($resource)) {
                 $noSendAR['number'] += 1;
-                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => '', 'info' => _DOCUMENT_NOT_FOUND ];
+                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => '', 'info' => _DOCUMENT_NOT_FOUND];
                 continue;
             }
 
             if (!ResController::hasRightByResId(['resId' => [$resId], 'userId' => $GLOBALS['id']])) {
                 $noSendAR['number'] += 1;
-                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _DOCUMENT_OUT_PERIMETER ];
+                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _DOCUMENT_OUT_PERIMETER];
                 continue;
             }
 
             if ($resource['category_id'] != 'incoming') {
                 $noSendAR['number'] += 1;
-                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NOT_INCOMING_CATEGORY ];
+                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NOT_INCOMING_CATEGORY];
                 continue;
             }
 
@@ -288,17 +288,17 @@ class PreProcessActionController
                 $templateAttachmentType = 'simple';
             }
 
-            $entity   = EntityModel::getByEntityId(['select' => ['id', 'entity_label', 'email'], 'entityId' => $resource['destination']]);
+            $entity = EntityModel::getByEntityId(['select' => ['id', 'entity_label', 'email'], 'entityId' => $resource['destination']]);
             $template = TemplateModel::getWithAssociation([
-                'select'    => ['template_content', 'template_path', 'template_file_name', 'options'],
-                'where'     => ['template_target = ?', 'template_attachment_type = ?', 'value_field = ?'],
-                'data'      => ['acknowledgementReceipt', $templateAttachmentType, $resource['destination']]
+                'select' => ['template_content', 'template_path', 'template_file_name', 'options'],
+                'where'  => ['template_target = ?', 'template_attachment_type = ?', 'value_field = ?'],
+                'data'   => ['acknowledgementReceipt', $templateAttachmentType, $resource['destination']]
             ]);
             $acknowledgementOptions = !empty($template[0]) ? json_decode($template[0]['options'], true) : null;
             if ($currentMode == 'auto') {
                 if (empty($template[0])) {
                     $noSendAR['number'] += 1;
-                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' .$entity['entity_label'] ];
+                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' . $entity['entity_label']];
                     continue;
                 }
 
@@ -308,9 +308,9 @@ class PreProcessActionController
 
             //Verify sending
             $acknowledgements = AcknowledgementReceiptModel::get([
-                'select'    => ['res_id', 'type', 'format', 'creation_date', 'send_date'],
-                'where'     => ['res_id = ?', 'type = ?'],
-                'data'      => [$resId, $templateAttachmentType],
+                'select' => ['res_id', 'type', 'format', 'creation_date', 'send_date'],
+                'where'  => ['res_id = ?', 'type = ?'],
+                'data'   => [$resId, $templateAttachmentType],
             ]);
 
             if (!empty($acknowledgements)) {
@@ -339,18 +339,18 @@ class PreProcessActionController
             //Verify associated contact
             $contactsToProcess = ResourceContactModel::get([
                 'select' => ['item_id'],
-                'where' => ['res_id = ?', 'type = ?', 'mode = ?'],
-                'data' => [$resId, 'contact', 'sender']
+                'where'  => ['res_id = ?', 'type = ?', 'mode = ?'],
+                'data'   => [$resId, 'contact', 'sender']
             ]);
             $contactsToProcess = array_column($contactsToProcess, 'item_id');
 
-            //Verify contact informations
+            //Verify contact information
             $email = 0;
             $paper = 0;
             foreach ($contactsToProcess as $contactToProcess) {
                 if (empty($contactToProcess)) {
                     $noSendAR['number'] += 1;
-                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_CONTACT ];
+                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_CONTACT];
                     continue 2;
                 }
 
@@ -358,14 +358,14 @@ class PreProcessActionController
 
                 if (empty($contact['email']) && (empty($contact['address_street']) || empty($contact['address_town']) || empty($contact['address_postcode']))) {
                     $noSendAR['number'] += 1;
-                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _USER_MISSING_INFORMATIONS ];
+                    $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _USER_MISSING_INFORMATIONS];
                     continue 2;
                 }
 
                 if (!empty($contact['email'])) {
                     if (empty($template[0]['template_content']) && $currentMode == 'auto') {
                         $noSendAR['number'] += 1;
-                        $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_EMAIL_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' . $entity['entity_label'] ];
+                        $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_EMAIL_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' . $entity['entity_label']];
                         continue 2;
                     } else {
                         $email += 1;
@@ -373,7 +373,7 @@ class PreProcessActionController
                 } elseif (!empty($contact['address_street']) && !empty($contact['address_town']) && !empty($contact['address_postcode'])) {
                     if ((!file_exists($pathToDocument) || !is_file($pathToDocument)) && $currentMode == 'auto') {
                         $noSendAR['number'] += 1;
-                        $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_PAPER_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' . $entity['entity_label'] ];
+                        $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_PAPER_TEMPLATE . ' \'' . $templateAttachmentType . '\' ' . _FOR_ENTITY . ' ' . $entity['entity_label']];
                         continue 2;
                     } else {
                         $paper += 1;
@@ -412,7 +412,7 @@ class PreProcessActionController
                 $sendList[] = $resId;
             } else {
                 $noSendAR['number'] += 1;
-                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_SENDERS ];
+                $noSendAR['list'][] = ['resId' => $resId, 'alt_identifier' => $resource['alt_identifier'], 'info' => _NO_SENDERS];
             }
         }
 
@@ -446,6 +446,13 @@ class PreProcessActionController
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkExternalSignatoryBook(Request $request, Response $response, array $aArgs)
     {
         $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
@@ -477,18 +484,18 @@ class PreProcessActionController
 
             $signatureBookEnabled = $config['id'];
             $additionalsInfos = [
-                'attachments'   => [],
-                'noAttachment'  => []
+                'attachments'  => [],
+                'noAttachment' => []
             ];
             if ($signatureBookEnabled == 'ixbus') {
                 $additionalsInfos['ixbus'] = IxbusController::getInitializeDatas($config);
             }
             $availableResources = [];
-            if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus'])) {
+            if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus', 'pastell'])) {
                 if (is_array($data['resources']) && count($data['resources']) == 1) {
                     $resDestination = ResModel::getById([
-                        'select'   => ['destination'],
-                        'resId'    => $data['resources'][0]
+                        'select' => ['destination'],
+                        'resId'  => $data['resources'][0]
                     ]);
                     if (!empty($resDestination['destination'])) {
                         $destination = EntityModel::getByEntityId(['entityId' => $resDestination['destination'], 'select' => ['id']]);
@@ -510,13 +517,13 @@ class PreProcessActionController
                     $attachments = [];
                     if (!empty($attachmentTypes)) {
                         $attachments = AttachmentModel::get([
-                            'select'    => [
+                            'select' => [
                                 'res_id', 'title', 'identifier', 'attachment_type',
                                 'status', 'typist', 'docserver_id', 'path', 'filename', 'creation_date',
                                 'validation_date', 'relation', 'origin_id'
                             ],
-                            'where'     => ["res_id_master = ?", "attachment_type in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
-                            'data'      => [$resId, $attachmentTypes]
+                            'where'  => ["res_id_master = ?", "attachment_type in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
+                            'data'   => [$resId, $attachmentTypes]
                         ]);
                     }
 
@@ -539,7 +546,7 @@ class PreProcessActionController
                         $additionalsInfos['noAttachment'][] = ['alt_identifier' => $noAttachmentsResource['alt_identifier'], 'res_id' => $resId, 'reason' => 'noAttachmentInSignatoryBook'];
                     } else {
                         foreach ($attachments as $value) {
-                            $resIdAttachment  = $value['res_id'];
+                            $resIdAttachment = $value['res_id'];
                             $collId = 'attachments_coll';
 
                             $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resIdAttachment, 'collId' => $collId]);
@@ -587,7 +594,7 @@ class PreProcessActionController
                     }
                 }
             } elseif ($signatureBookEnabled == 'xParaph') {
-                $userInfos  = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id']]);
+                $userInfos = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['external_id']]);
                 $externalId = json_decode($userInfos['external_id'], true);
                 $additionalsInfos['accounts'] = [];
                 if (!empty($externalId['xParaph'])) {
@@ -602,13 +609,13 @@ class PreProcessActionController
 
                     // Check attachments
                     $attachments = AttachmentModel::get([
-                        'select'    => [
+                        'select' => [
                             'res_id', 'title', 'identifier', 'attachment_type',
                             'status', 'typist', 'docserver_id', 'path', 'filename', 'creation_date',
                             'validation_date', 'relation', 'origin_id'
                         ],
-                        'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP')", "in_signature_book = 'true'"],
-                        'data'      => [$resId, ['signed_response']]
+                        'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP')", "in_signature_book = 'true'"],
+                        'data'   => [$resId, ['signed_response']]
                     ]);
 
                     if (empty($attachments)) {
@@ -616,7 +623,7 @@ class PreProcessActionController
                     } else {
                         foreach ($attachments as $value) {
                             $resIdAttachment = $value['res_id'];
-                            $collId          = 'attachments_coll';
+                            $collId = 'attachments_coll';
 
                             $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resIdAttachment, 'collId' => $collId]);
                             if (empty($adrInfo['docserver_id'])) {
@@ -650,15 +657,22 @@ class PreProcessActionController
         $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
 
         return $response->withJson([
-            'signatureBookEnabled'  => $signatureBookEnabled,
-            'additionalsInfos'      => $additionalsInfos,
-            'errors'                => $errors,
-            'minimumVisaRole'       => $minimumVisaRole,
-            'maximumSignRole'       => $maximumSignRole,
-            'availableResources'    => $availableResources
+            'signatureBookEnabled' => $signatureBookEnabled,
+            'additionalsInfos'     => $additionalsInfos,
+            'errors'               => $errors,
+            'minimumVisaRole'      => $minimumVisaRole,
+            'maximumSignRole'      => $maximumSignRole,
+            'availableResources'   => $availableResources
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkExternalNoteBook(Request $request, Response $response, array $aArgs)
     {
         $errors = ResourceListController::listControl(['groupId' => $aArgs['groupId'], 'userId' => $aArgs['userId'], 'basketId' => $aArgs['basketId'], 'currentUserId' => $GLOBALS['id']]);
@@ -738,6 +752,12 @@ class PreProcessActionController
         return $response->withJson(['additionalsInfos' => $additionalsInfos, 'errors' => $errors]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkShippings(Request $request, Response $response)
     {
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
@@ -767,8 +787,8 @@ class PreProcessActionController
         ]);
 
         $aTemplates = [];
-        $entities   = [];
-        $resources  = [];
+        $entities = [];
+        $resources = [];
         $canNotSend = [];
 
         foreach ($aDestination as $values) {
@@ -794,8 +814,8 @@ class PreProcessActionController
 
             $hasRegisteredMail = false;
             foreach ($aTemplates as $key => $value) {
-                $aTemplates[$key]['options']  = json_decode($value['options'], true);
-                $aTemplates[$key]['fee']      = json_decode($value['fee'], true);
+                $aTemplates[$key]['options'] = json_decode($value['options'], true);
+                $aTemplates[$key]['fee'] = json_decode($value['fee'], true);
                 if (strpos($aTemplates[$key]['options']['sendMode'], 'digital_registered_mail') !== false) {
                     $hasRegisteredMail = true;
                 }
@@ -804,24 +824,24 @@ class PreProcessActionController
         $invalidEntityAddress = false;
         if (!empty($hasRegisteredMail)) {
             $addressEntity = UserModel::getPrimaryEntityById([
-                'id'        => $GLOBALS['id'],
-                'select'    => [
+                'id'     => $GLOBALS['id'],
+                'select' => [
                     'entities.entity_id', 'entities.short_label', 'entities.address_number', 'entities.address_street', 'entities.address_additional1', 'entities.address_additional2', 'entities.address_postcode', 'entities.address_town', 'entities.address_country'
                 ]
             ]);
             $entityRoot = EntityModel::getEntityRootById(['entityId' => $addressEntity['entity_id']]);
             $addressEntity = ContactController::getContactAfnor([
-                'company'               => $entityRoot['entity_label'],
-                'civility'              => '',
-                'firstname'             => $addressEntity['short_label'],
-                'lastname'              => '',
-                'address_number'        => $addressEntity['address_number'],
-                'address_street'        => $addressEntity['address_street'],
-                'address_additional1'   => $addressEntity['address_additional1'],
-                'address_additional2'   => $addressEntity['address_additional2'],
-                'address_postcode'      => $addressEntity['address_postcode'],
-                'address_town'          => $addressEntity['address_town'],
-                'address_country'       => $addressEntity['address_country']
+                'company'             => $entityRoot['entity_label'],
+                'civility'            => '',
+                'firstname'           => $addressEntity['short_label'],
+                'lastname'            => '',
+                'address_number'      => $addressEntity['address_number'],
+                'address_street'      => $addressEntity['address_street'],
+                'address_additional1' => $addressEntity['address_additional1'],
+                'address_additional2' => $addressEntity['address_additional2'],
+                'address_postcode'    => $addressEntity['address_postcode'],
+                'address_town'        => $addressEntity['address_town'],
+                'address_country'     => $addressEntity['address_country']
             ]);
             if ((empty($addressEntity[1]) && empty($addressEntity[2])) || empty($addressEntity[6]) || !preg_match("/^\d{5}\s/", $addressEntity[6])) {
                 $invalidEntityAddress = true;
@@ -830,13 +850,13 @@ class PreProcessActionController
 
         if (!empty($aTemplates)) {
             $aAttachments = AttachmentModel::get([
-                'select'    => ['max(relation) as relation', 'res_id_master', 'title', 'res_id', 'identifier as chrono', 'recipient_id', 'recipient_type'],
-                'where'     => ['res_id_master in (?)', 'status not in (?)', 'in_send_attach = ?'],
-                'data'      => [$data['resources'], ['OBS', 'DEL', 'TMP', 'FRZ'], true],
-                'groupBy'   => ['res_id_master', 'title', 'res_id', 'chrono', 'recipient_id', 'recipient_type']
+                'select'  => ['max(relation) as relation', 'res_id_master', 'title', 'res_id', 'identifier as chrono', 'recipient_id', 'recipient_type'],
+                'where'   => ['res_id_master in (?)', 'status not in (?)', 'in_send_attach = ?'],
+                'data'    => [$data['resources'], ['OBS', 'DEL', 'TMP', 'FRZ'], true],
+                'groupBy' => ['res_id_master', 'title', 'res_id', 'chrono', 'recipient_id', 'recipient_type']
             ]);
 
-            $resourcesInfo   = ResModel::get(['select' => ['alt_identifier', 'res_id'], 'where' => ['res_id in (?)'], 'data' => [$data['resources']]]);
+            $resourcesInfo = ResModel::get(['select' => ['alt_identifier', 'res_id'], 'where' => ['res_id in (?)'], 'data' => [$data['resources']]]);
             $resourcesChrono = array_column($resourcesInfo, 'alt_identifier', 'res_id');
 
             foreach ($data['resources'] as $valueResId) {
@@ -846,8 +866,8 @@ class PreProcessActionController
                         $documentToSend = true;
                         $attachmentId = $attachment['res_id'];
                         $convertedDocument = ConvertPdfController::getConvertedPdfById([
-                            'resId'     => $attachmentId,
-                            'collId'    => 'attachments_coll'
+                            'resId'  => $attachmentId,
+                            'collId' => 'attachments_coll'
                         ]);
                         if (empty($convertedDocument['docserver_id']) || strtolower(pathinfo($convertedDocument['filename'], PATHINFO_EXTENSION)) != 'pdf') {
                             $canNotSend[] = ['resId' => $valueResId, 'chrono' => $resourcesChrono[$valueResId], 'reason' => 'noAttachmentConversion', 'attachmentIdentifier' => $attachment['chrono']];
@@ -902,7 +922,7 @@ class PreProcessActionController
                 if (!empty($integrations['inShipping']) && empty($resInfo['docserver_id'])) {
                     $documentToSend = true;
                     $canNotSend[] = [
-                        'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
+                        'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
                     ];
                 } elseif (!empty($integrations['inShipping']) && !empty($resInfo['docserver_id'])) {
                     $documentToSend = true;
@@ -913,21 +933,21 @@ class PreProcessActionController
                     ]);
                     if (empty($convertedDocument['docserver_id']) || strtolower(pathinfo($convertedDocument['filename'], PATHINFO_EXTENSION)) != 'pdf') {
                         $canNotSend[] = [
-                            'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
+                            'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
                         ];
                     } else {
                         $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
                         $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
                         if (!is_file($pathToDocument)) {
                             $canNotSend[] = [
-                                'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
+                                'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailConversion'
                             ];
                         } else {
                             $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
                             $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
                             if ($convertedDocument['fingerprint'] != $fingerprint) {
                                 $canNotSend[] = [
-                                    'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'fingerprintsDoNotMatch'
+                                    'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'fingerprintsDoNotMatch'
                                 ];
                             } else {
                                 $resourceContacts = ResourceContactModel::get([
@@ -936,24 +956,24 @@ class PreProcessActionController
                                 ]);
                                 if (empty($resourceContacts)) {
                                     $canNotSend[] = [
-                                        'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailContact'
+                                        'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailContact'
                                     ];
                                 } else {
                                     foreach ($resourceContacts as $resourceContact) {
                                         $contact = ContactModel::getById(['select' => ['*'], 'id' => $resourceContact['item_id']]);
                                         if (empty($contact)) {
                                             $canNotSend[] = [
-                                                'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailContact'
+                                                'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noMailContact'
                                             ];
                                         } elseif (!empty($contact['address_country']) && strtoupper(trim($contact['address_country'])) != 'FRANCE') {
                                             $canNotSend[] = [
-                                                'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noFranceContact'
+                                                'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'noFranceContact'
                                             ];
                                         } else {
                                             $afnorAddress = ContactController::getContactAfnor($contact);
                                             if ((empty($afnorAddress[1]) && empty($afnorAddress[2])) || empty($afnorAddress[6]) || !preg_match("/^\d{5}\s/", $afnorAddress[6])) {
                                                 $canNotSend[] = [
-                                                    'resId'  => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'incompleteAddressForPostal'
+                                                    'resId' => $valueResId, 'chrono' => $resInfo['chrono'], 'reason' => 'incompleteAddressForPostal'
                                                 ];
                                             }
                                         }
@@ -984,14 +1004,21 @@ class PreProcessActionController
         }
 
         return $response->withJson([
-            'shippingTemplates'     => $aTemplates,
-            'entities'              => $entitiesInfos,
-            'resources'             => $resources,
-            'canNotSend'            => $canNotSend,
-            'invalidEntityAddress'  => $invalidEntityAddress
+            'shippingTemplates'    => $aTemplates,
+            'entities'             => $entitiesInfos,
+            'resources'            => $resources,
+            'canNotSend'           => $canNotSend,
+            'invalidEntityAddress' => $invalidEntityAddress
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkInitiatorEntity(Request $request, Response $response, array $args)
     {
         $errors = ResourceListController::listControl(['groupId' => $args['groupId'], 'userId' => $args['userId'], 'basketId' => $args['basketId'], 'currentUserId' => $GLOBALS['id']]);
@@ -1029,6 +1056,13 @@ class PreProcessActionController
         return $response->withJson(['withEntity' => $withEntity, 'withoutEntity' => $withoutEntity]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkAttachmentsAndNotes(Request $request, Response $response, array $args)
     {
         $errors = ResourceListController::listControl(['groupId' => $args['groupId'], 'userId' => $args['userId'], 'basketId' => $args['basketId'], 'currentUserId' => $GLOBALS['id']]);
@@ -1047,9 +1081,9 @@ class PreProcessActionController
         $noAttachmentsNotes = [];
 
         $attachments = AttachmentModel::get([
-            'select' => ['count(1) as nb', 'res_id_master'],
-            'where'  => ['res_id_master in (?)', 'status != ?'],
-            'data'   => [$data['resources'], 'DEL'],
+            'select'  => ['count(1) as nb', 'res_id_master'],
+            'where'   => ['res_id_master in (?)', 'status != ?'],
+            'data'    => [$data['resources'], 'DEL'],
             'groupBy' => ['res_id_master']
         ]);
 
@@ -1075,6 +1109,13 @@ class PreProcessActionController
         return $response->withJson(['hasAttachmentsNotes' => $hasAttachmentsNotes, 'noAttachmentsNotes' => $noAttachmentsNotes]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkSignatureBook(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1113,9 +1154,9 @@ class PreProcessActionController
             $attachments = [];
             if (!empty($signableAttachmentsTypes)) {
                 $attachments = AttachmentModel::get([
-                    'select'    => ['status'],
-                    'where'     => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
-                    'data'      => [$resId, $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
+                    'select' => ['status'],
+                    'where'  => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
+                    'data'   => [$resId, $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
                 ]);
             }
 
@@ -1151,6 +1192,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformations, 'minimumVisaRole' => $minimumVisaRole, 'maximumSignRole' => $maximumSignRole, 'workflowSignatoryRole' => $workflowSignatoryRole, 'lockVisaCircuit' => $lockVisaCircuit]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkContinueVisaCircuit(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1199,9 +1247,9 @@ class PreProcessActionController
                 $attachments = [];
                 if (!empty($signableAttachmentsTypes)) {
                     $attachments = AttachmentModel::get([
-                        'select'    => ['status'],
-                        'where'     => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
-                        'data'      => [$resId, $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
+                        'select' => ['status'],
+                        'where'  => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
+                        'data'   => [$resId, $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
                     ]);
                 }
 
@@ -1217,6 +1265,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformations]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkRejectVisa(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1289,6 +1344,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformation]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkInterruptResetVisa(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1339,6 +1401,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformation]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkValidateParallelOpinion(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1374,11 +1443,11 @@ class PreProcessActionController
             }
 
             $opinionNote = NoteModel::get([
-                'select'    => ['note_text', 'user_id', 'creation_date'],
-                'where'     => ['identifier in (?)', 'note_text like (?)'],
-                'data'      => [$resource['res_id'], '['._TO_AVIS.']%'],
-                'order_by'  => ['creation_date desc'],
-                'limit'     => 1
+                'select'   => ['note_text', 'user_id', 'creation_date'],
+                'where'    => ['identifier in (?)', 'note_text like (?)'],
+                'data'     => [$resource['res_id'], '[' . _TO_AVIS . ']%'],
+                'order_by' => ['creation_date desc'],
+                'limit'    => 1
             ]);
 
             if (empty($opinionNote)) {
@@ -1386,7 +1455,7 @@ class PreProcessActionController
                 continue;
             }
 
-            $note = str_replace('['._TO_AVIS.'] ', '', $opinionNote[0]['note_text']);
+            $note = str_replace('[' . _TO_AVIS . '] ', '', $opinionNote[0]['note_text']);
             $userInfo = UserModel::getLabelledUserById(['id' => $opinionNote[0]['user_id']]);
             $resourcesInformation['success'][] = ['alt_identifier' => $resource['alt_identifier'], 'res_id' => $resource['res_id'], 'avisUserAsk' => $userInfo, 'note' => $note, 'opinionLimitDate' => $resource['opinion_limit_date']];
         }
@@ -1394,6 +1463,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformation]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkGiveParallelOpinion(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1433,11 +1509,11 @@ class PreProcessActionController
             }
 
             $opinionNote = NoteModel::get([
-                'select'    => ['user_id', 'note_text'],
-                'where'     => ['identifier = ?', "note_text like ?"],
-                'data'      => [$resId, '['._TO_AVIS.']%'],
-                'order_by'  => ['creation_date desc'],
-                'limit'     => 1
+                'select'   => ['user_id', 'note_text'],
+                'where'    => ['identifier = ?', "note_text like ?"],
+                'data'     => [$resId, '[' . _TO_AVIS . ']%'],
+                'order_by' => ['creation_date desc'],
+                'limit'    => 1
             ]);
 
             if (empty($opinionNote)) {
@@ -1446,9 +1522,9 @@ class PreProcessActionController
             }
 
             $isInCircuit = ListInstanceModel::get([
-                'select'  => [1],
-                'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null', 'item_id = ?', 'item_mode = ?'],
-                'data'    => [$resId, 'entity_id', $args['userId'], 'avis']
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is null', 'item_id = ?', 'item_mode = ?'],
+                'data'   => [$resId, 'entity_id', $args['userId'], 'avis']
             ]);
             if (empty($isInCircuit)) {
                 $resourcesInformation['error'][] = ['alt_identifier' => $resource['alt_identifier'], 'res_id' => $resId, 'reason' => 'userNotInDiffusionList'];
@@ -1465,6 +1541,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformation]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkContinueOpinionCircuit(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1504,9 +1587,9 @@ class PreProcessActionController
             }
 
             $opinionNote = NoteModel::get([
-                'select'    => ['note_text', 'user_id'],
-                'where'     => ['identifier = ?', "note_text like '[" . _TO_AVIS . "]%'"],
-                'data'      => [$resId]
+                'select' => ['note_text', 'user_id'],
+                'where'  => ['identifier = ?', "note_text like '[" . _TO_AVIS . "]%'"],
+                'data'   => [$resId]
             ]);
 
             if (empty($opinionNote)) {
@@ -1560,6 +1643,13 @@ class PreProcessActionController
         return $response->withJson(['isDestinationChanging' => $changeDestination]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public static function checkConfirmWithFieldsAction(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1628,6 +1718,13 @@ class PreProcessActionController
         return $response->withJson(['fillCustomFields' => $fillCustomFields]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public static function checkCloseWithFieldsAction(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1706,6 +1803,13 @@ class PreProcessActionController
         return $response->withJson(['errors' => $emptyFields, 'success' => $canClose]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkReconcile(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1744,6 +1848,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformation]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkSendAlfresco(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1800,6 +1911,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformations]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkSendMultigest(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1842,9 +1960,9 @@ class PreProcessActionController
         }
 
         $accountCheck = MultigestController::checkAccountWithCredentials([
-            'sasId' => $entityInformations['multigest']['sasId'],
-            'login' => $entityInformations['multigest']['login'],
-            'password' => empty($entityInformations['multigest']['password']) ? '' : PasswordModel::decrypt(['cryptedPassword' => $entityInformations['multigest']['password']])
+            'sasId'    => $entityInformations['multigest']['sasId'],
+            'login'    => $entityInformations['multigest']['login'],
+            'password' => empty($entityInformations['multigest']['password']) ? '' : PasswordController::decrypt(['encryptedData' => $entityInformations['multigest']['password']])
         ]);
         if (!empty($accountCheck['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $accountCheck['errors'], 'lang' => ($accountCheck['lang'] ?? null)]);
@@ -1869,6 +1987,13 @@ class PreProcessActionController
         return $response->withJson(['resourcesInformations' => $resourcesInformations]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return \Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function checkPrintDepositList(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -1966,7 +2091,12 @@ class PreProcessActionController
         return $response->withJson(['types' => $data, 'cannotGenerate' => $cannotGenerate, 'canGenerate' => $canGenerate]);
     }
 
-    private static function getNonLockedResources(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getNonLockedResources(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resources', 'userId']);
         ValidatorModel::arrayType($args, ['resources']);

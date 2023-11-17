@@ -28,7 +28,7 @@ use Shipping\models\ShippingModel;
 use Shipping\models\ShippingTemplateModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
 
@@ -197,7 +197,7 @@ trait ShippingTrait
             'queryParams'   => [
                 'grant_type'    => 'password',
                 'username'      => $shippingTemplate['account']['id'],
-                'password'      => PasswordModel::decrypt(['cryptedPassword' => $shippingTemplate['account']['password']])
+                'password'      => PasswordController::decrypt(['encryptedData' => $shippingTemplate['account']['password']])
             ]
         ]);
         if ($curlAuth['code'] != 200) {

@@ -242,7 +242,11 @@ class UserController
 
         $preferences = ['documentEdition' => 'java'];
         $allowedMethods = DocumentEditorController::getAllowedMethods();
-        if (in_array('onlyoffice', $allowedMethods)) {
+        $default = $allowedMethods['default'];
+        unset($allowedMethods['default']);
+        if (!empty($default)) {
+            $preferences = ['documentEdition' => $default];
+        } elseif (in_array('onlyoffice', $allowedMethods)) {
             $preferences = ['documentEdition' => 'onlyoffice'];
         }
         $body['preferences'] = json_encode($preferences);
@@ -881,7 +885,7 @@ class UserController
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
-        
+
         $user = UserModel::getByLowerLogin(['login' => $aArgs['userId'], 'select' => ['status']]);
 
         if (empty($user)) {
@@ -1595,7 +1599,7 @@ class UserController
                 'attachmentType'    => $template['template_attachment_type']
             ];
         }
-        
+
         return $response->withJson(['templates' => $templates]);
     }
 
@@ -1718,7 +1722,7 @@ class UserController
         ];
 
         $fields = [];
-        
+
         $body = $request->getParsedBody();
         if (empty($body['data'])) {
             foreach ($defaultFields as $field) {
@@ -2178,7 +2182,7 @@ class UserController
     public static function getSignatures($args = [])
     {
         $signatures = [];
-        
+
         $signatureModels = UserEmailSignatureModel::getByUserId(['userId' => $GLOBALS['id']]);
         foreach ($signatureModels as $signature) {
             $signatureTmp = [

@@ -504,6 +504,7 @@ export class SentNumericPackagePageComponent implements OnInit {
         numericPackage.notes = this.numericPackageAttach.filter((attach: any) => attach.type === 'notes').map((attach: any) => attach.id);
         numericPackage.senderEmail = this.currentSender.id;
 
+        numericPackage.status = this.numericPackageStatus;
         return numericPackage;
     }
 

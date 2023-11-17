@@ -13,6 +13,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
 import { FunctionsService } from '@service/functions.service';
+import { LadService } from '@service/lad.service';
 
 @Component({
     templateUrl: 'indexing-model-administration.component.html',
@@ -40,7 +41,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
         default: false,
         owner: 0,
         private: false,
-        mandatoryFile: false
+        mandatoryFile: false,
+        ladProcessing: false
     };
 
     indexingModelClone: any;
@@ -66,6 +68,8 @@ export class IndexingModelAdministrationComponent implements OnInit {
         state: {selected: false}
     };
 
+    ladEnabled: boolean = false;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -76,12 +80,14 @@ export class IndexingModelAdministrationComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
+        private ladService: LadService
     ) {
 
     }
 
     ngOnInit(): void {
         this.route.params.subscribe(async (params) => {
+            this.ladEnabled = await this.ladService.isEnabled();
             if (typeof params['id'] === 'undefined') {
                 this.creationMode = true;
 

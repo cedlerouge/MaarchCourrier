@@ -152,13 +152,19 @@ class PasswordModel
         return true;
     }
 
+    /**
+     * @deprecated This function is deprecated and will be removed in future major versions.
+     * Please use PasswordController::encrypt() instead.
+     *
+     * @return string
+     */
     public static function encrypt(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['password']);
         ValidatorModel::stringType($aArgs, ['password']);
 
         $enc_key = CoreConfigModel::getEncryptKey();
-        
+
         $cipher_method = 'AES-128-CTR';
         $enc_iv        = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher_method));
         $crypted_token = openssl_encrypt($aArgs['password'], $cipher_method, $enc_key, 0, $enc_iv) . "::" . bin2hex($enc_iv);
@@ -166,17 +172,33 @@ class PasswordModel
         return $crypted_token;
     }
 
+    /**
+     * @deprecated This function is deprecated and will be removed in future major versions.
+     * Please use PasswordController::decrypt() instead.
+     *
+     * @return string
+     */
     public static function decrypt(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['cryptedPassword']);
         ValidatorModel::stringType($aArgs, ['cryptedPassword']);
 
         $enc_key = CoreConfigModel::getEncryptKey();
-        
+
         $cipher_method = 'AES-128-CTR';
 
-        list($crypted_token, $enc_iv) = explode("::", $aArgs['cryptedPassword']);
-        $token = openssl_decrypt($crypted_token, $cipher_method, $enc_key, 0, hex2bin($enc_iv));
+        $token = null;
+        try {
+            $cryptedPasswordParts = explode("::", $aArgs['cryptedPassword']);
+            if (count($cryptedPasswordParts) !== 2) {
+                throw new \Exception("Invalid format: cryptedPassword should contain two parts separated by '::'");
+            }
+            list($crypted_token, $enc_iv) = $cryptedPasswordParts;
+
+            $token = openssl_decrypt($crypted_token, $cipher_method, $enc_key, 0, hex2bin($enc_iv));
+        } catch (\Throwable $th) {
+            throw new \Exception($th->getMessage());
+        }
 
         return $token;
     }

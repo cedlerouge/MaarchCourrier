@@ -28,7 +28,7 @@ use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\PasswordModel;
+use SrcCore\controllers\PasswordController;
 use Status\models\StatusModel;
 use ContentManagement\controllers\DocumentEditorController;
 
@@ -49,6 +49,10 @@ class ConfigurationController
         }
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => $args['privilege']]);
+        if (!$configuration['value']) {
+            return $response->withStatus(403)->withJson(['errors' => 'Service ' . $args['privilege'] . ' is unknown']);
+        }
+
         $configuration['value'] = json_decode($configuration['value'], true);
         if ($args['privilege'] == 'admin_email_server') {
             if (!empty($configuration['value']['password'])) {
@@ -76,7 +80,7 @@ class ConfigurationController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!in_array($args['privilege'], ['admin_email_server', 'admin_search', 'admin_sso', 'admin_document_editors', 'admin_parameters_watermark', 'admin_shippings', 'admin_organization_email_signatures'])) {
+        if (!in_array($args['privilege'], ['admin_email_server', 'admin_search', 'admin_sso', 'admin_document_editors', 'admin_parameters_watermark', 'admin_shippings', 'admin_organization_email_signatures', 'admin_mercure'])) {
             return $response->withStatus(403)->withJson(['errors' => 'Unknown privilege']);
         }
 
@@ -90,7 +94,7 @@ class ConfigurationController
                     $data['password'] = $configuration['value']['password'];
                 }
             } elseif ($data['auth'] && !empty($data['password'])) {
-                $data['password'] = PasswordModel::encrypt(['password' => $data['password']]);
+                $data['password'] = PasswordController::encrypt(['dataToEncrypt' => $data['password']]);
             }
             $check = ConfigurationController::checkMailer($data);
             if (!empty($check['errors'])) {
@@ -140,6 +144,8 @@ class ConfigurationController
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
             }
+            $default = $data['default'];
+            unset($data['default']);
             foreach ($data as $key => $editor) {
                 if ($key == 'java') {
                     $data[$key] = [];
@@ -221,8 +227,20 @@ class ConfigurationController
                     return $response->withStatus(400)->withJson(['errors' => "Body signature['content'] is empty or not string"]);
                 }
             }
+        } elseif ($args['privilege'] == 'admin_lad'){
+            if (!Validator::notEmpty()->arrayType()->validate($data)) {
+                return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
+            } elseif (!Validator::boolType()->validate($data['enabled'] ?? null)) {
+                return $response->withStatus(400)->withJson(['errors' => "Body enabled is not set or not a boolean"]);
+            }
+            $data = [
+                'enabled' => $data['enabled'],
+            ];
         }
 
+        if (!empty($default)) {
+            $data['default'] = $default;
+        }
         $data = json_encode($data, JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => $args['privilege'], 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => $args['privilege']]);
@@ -291,8 +309,8 @@ class ConfigurationController
             ],
             'basketToRedirect' => $xmlConfig['basketRedirection_afterUpload'][0],
             'communications'   => [
-                'email'                 => $xmlConfig['m2m_communication_type']['email'],
-                'url'                   => $xmlConfig['m2m_communication_type']['url'],
+                'email'                 => $xmlConfig['m2m_communication_type']['email'] ?? null,
+                'url'                   => $xmlConfig['m2m_communication_type']['url'] ?? null,
                 'login'                 => $xmlConfig['m2m_login'][0] ?? null,
                 'passwordAlreadyExists' => !empty($xmlConfig['m2m_password'])
             ]
@@ -302,17 +320,22 @@ class ConfigurationController
         $config['annuary']['enabled']      = $xmlConfig['annuaries']['enabled'] == "true" ? true : false;
         $config['annuary']['organization'] = $xmlConfig['annuaries']['organization'] ?? null;
 
-        if (!is_array($xmlConfig['annuaries']['annuary'])) {
-            $xmlConfig['annuaries']['annuary'] = [$xmlConfig['annuaries']['annuary']];
-        }
-        foreach ($xmlConfig['annuaries']['annuary'] as $value) {
-            $config['annuary']['annuaries'][] = [
-                'uri'      => (string)$value->uri,
-                'baseDN'   => (string)$value->baseDN,
-                'login'    => (string)$value->login,
-                'password' => (string)$value->password,
-                'ssl'      => (string)$value->ssl == "true" ? true : false
-            ];
+        if (isset($xmlConfig['annuaries']['annuary'])) {
+            if (!is_array($xmlConfig['annuaries']['annuary'])) {
+                $xmlConfig['annuaries']['annuary'] = [$xmlConfig['annuaries']['annuary']];
+            }
+
+            foreach ($xmlConfig['annuaries']['annuary'] as $value) {
+                $config['annuary']['annuaries'][] = [
+                    'uri'      => (string)$value->uri,
+                    'baseDN'   => (string)$value->baseDN,
+                    'login'    => (string)$value->login,
+                    'password' => (string)$value->password,
+                    'ssl'      => (string)$value->ssl == "true" ? true : false
+                ];
+            }
+        } else {
+            $config['annuary']['annuaries'] = [];
         }
 
         return $response->withJson(['configuration' => $config]);
@@ -385,7 +408,7 @@ class ConfigurationController
         $xmlConfig = ReceiveMessageExchangeController::readXmlConfig();
         $communication = [];
         $login = '';
-        $password = $xmlConfig['m2m_password'] ?? '';
+        $password = $xmlConfig['m2m_password'][0] ?? '';
         if(!empty($body['communications']['login'])) {
             $login = $body['communications']['login'];
         }

@@ -7,6 +7,16 @@ import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+    byPassToken: any[] = [
+        {
+            route: '../rest/authenticate',
+            method: ['POST']
+        },
+        {
+            route: '../rest/authenticate/token',
+            method: ['GET']
+        },
+    ];
     private isRefreshing = false;
     private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
         null
@@ -55,26 +65,31 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
-        // Add current token in header request
-        request = this.addAuthHeader(request);
+        if (this.byPassToken.filter(url => request.url.indexOf(url.route) > -1 && url.method.indexOf(request.method) > -1).length > 0) {
+            return next.handle(request);
+        } else {
+            // Add current token in header request
+            request = this.addAuthHeader(request);
 
-        // Handle response
-        return next.handle(request).pipe(
-            catchError(error => {
-                // Disconnect user if bad token process
-                if (error.status === 401) {
-                    return this.handle401Error(request, next);
-                } else {
-                    const response = new HttpErrorResponse({
-                        error: error.error,
-                        status: error.status,
-                        statusText: error.statusText,
-                        headers: error.headers,
-                        url: error.url,
-                    });
-                    return Promise.reject(response);
-                }
-            })
-        );
+            // Handle response
+            return next.handle(request).pipe(
+                catchError(error => {
+                    // Disconnect user if bad token process
+                    if (error.status === 401) {
+                        return this.handle401Error(request, next);
+                    } else {
+                        const response = new HttpErrorResponse({
+                            error: error.error,
+                            status: error.status,
+                            statusText: error.statusText,
+                            headers: error.headers,
+                            url: error.url,
+                        });
+                        return Promise.reject(response);
+                    }
+                })
+            );
+        }
+        
     }
 }

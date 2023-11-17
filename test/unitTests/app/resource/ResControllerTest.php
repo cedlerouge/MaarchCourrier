@@ -1440,7 +1440,7 @@ class ResControllerTest extends CourrierTestCase
 
         $this->assertSame(0, $responseBody['linkedResources']);
         $this->assertSame(0, $responseBody['attachments']);
-        $this->assertSame(0, $responseBody['diffusionList']);
+        $this->assertSame(2, $responseBody['diffusionList']);
         $this->assertSame(0, $responseBody['visaCircuit']);
         $this->assertSame(0, $responseBody['opinionCircuit']);
         $this->assertSame(0, $responseBody['notes']);

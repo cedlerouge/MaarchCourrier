@@ -38,6 +38,10 @@ $requestUri = explode('/rest', $requestUri);
 $requestUriBasePath = $requestUri[0] ?? '';
 $app->setBasePath($requestUriBasePath . '/rest');
 
+//Migration
+$versionUpdateMiddleware = new \VersionUpdate\middlewares\VersionUpdateMiddleware();
+$app->add($versionUpdateMiddleware);
+
 //Authentication
 $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandlerInterface $requestHandler) {
     $response = new \SrcCore\http\Response();
@@ -393,6 +397,15 @@ $app->put('/languages', \SrcCore\controllers\CoreController::class . ':generateL
 //Languages
 $app->get('/languages/{lang}', \SrcCore\controllers\LanguageController::class . ':getByLang');
 
+//Lecture Automatique de Documents
+$app->post('/administration/mercure/test', \Mercure\controllers\LadController::class . ':testLad');
+$app->post('/mercure/lad', \Mercure\controllers\LadController::class . ':ladRequest');
+$app->get('/mercure/lad/isEnabled', \Mercure\controllers\LadController::class . ':isEnabled');
+$app->get('/mercure/lad/contactIndexations', \Mercure\controllers\LadController::class . ':getContactsIndexationState');
+$app->get('/mercure/webservice/account', \Mercure\controllers\MwsController::class . ':checkAccount');
+$app->get('/mercure/webservice/subscriptionState', \Mercure\controllers\MwsController::class . ':loadSubscriptionState');
+$app->get('/mercure/webservice/documents/{token}', \Mercure\controllers\MwsController::class . ':loadListDocs');
+
 //ListInstances
 $app->put('/listinstances', \Entity\controllers\ListInstanceController::class . ':update');
 
@@ -640,7 +653,7 @@ $app->get('/followedResources/filters', \Resource\controllers\UserFollowedResour
 //VersionsUpdate
 $app->get('/versionsUpdate', \VersionUpdate\controllers\VersionUpdateController::class . ':get');
 $app->put('/versionsUpdate', \VersionUpdate\controllers\VersionUpdateController::class . ':update');
-$app->put('/versionsUpdateSQL', \VersionUpdate\controllers\VersionUpdateController::class . ':updateSQLVersion');
+$app->put('/versionsUpdateSQL', \VersionUpdate\controllers\VersionUpdateController::class . ':autoUpdateLauncher');
 
 //CurrentUser
 $app->get('/currentUser/profile', \User\controllers\UserController::class . ':getProfile');

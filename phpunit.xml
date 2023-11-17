@@ -11,13 +11,18 @@
     </report>
   </coverage>
   <testsuites>
-    <testsuite name="Maarch Test Suite">
+    <testsuite name="MaarchAcceptanceTest">
+      <file>test/acceptanceTests/core/MigrationControllerAcceptanceTest.php</file>
+    </testsuite>
+    <testsuite name="MaarchTestSuite">
       <directory>test/unitTests/core/</directory>
+      <directory>test/unitTests/app/external/Pastell/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
       <file>test/unitTests/app/administration/AdministrationControllerTest.php</file>
       <file>test/unitTests/app/attachment/AttachmentControllerTest.php</file>
       <file>test/unitTests/app/attachment/AttachmentTypeControllerTest.php</file>
+      <file>test/unitTests/app/attachment/AttachmentVersionControllerTest.php</file>
       <file>test/unitTests/app/basket/BasketControllerTest.php</file>
       <file>test/unitTests/app/contact/ContactControllerTest.php</file>
       <file>test/unitTests/app/contact/ContactCustomFieldControllerTest.php</file>

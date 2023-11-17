@@ -39,6 +39,12 @@ class CourrierTestCase extends TestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    public function changeCustom(string $customId)
+    {
+        $GLOBALS['customId'] = $customId;
+    }
+
+
     public function createRequestWithBody(
         string $method,
         array $body = [],

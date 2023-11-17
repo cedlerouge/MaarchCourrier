@@ -126,7 +126,11 @@ export class PrerequisiteComponent implements OnInit {
                 this.prerequisites = data.prerequisites;
                 Object.keys(this.packagesList).forEach(group => {
                     this.packagesList[group].forEach((item: any, key: number) => {
-                        this.packagesList[group][key].state = this.prerequisites[this.packagesList[group][key].label] ? 'ok' : 'ko';
+                        if (this.packagesList[group][key].label === 'displayErrors') {
+                            this.packagesList[group][key].state = this.prerequisites[this.packagesList[group][key].label] ? 'ok' : 'warning';
+                        } else {
+                            this.packagesList[group][key].state = this.prerequisites[this.packagesList[group][key].label] ? 'ok' : 'ko';
+                        }
                         if (this.packagesList[group][key].label === 'phpVersionValid') {
                             this.translate.setTranslation(this.translate.getDefaultLang(), {
                                 lang: {
@@ -180,5 +184,10 @@ export class PrerequisiteComponent implements OnInit {
 
     getInfoToInstall(): any[] {
         return [];
+    }
+
+    isWarningPackage(): boolean {
+        const phpConfiguration: any[] = this.packagesList['phpConfiguration'];
+        return phpConfiguration.find((item: any) => item.label === 'displayErrors').state === 'warning';
     }
 }

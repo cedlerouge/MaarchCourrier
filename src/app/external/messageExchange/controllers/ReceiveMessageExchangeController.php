@@ -154,7 +154,7 @@ class ReceiveMessageExchangeController
     public function createFile($aArgs = [])
     {
         if (!self::checkNeededParameters(['data' => $aArgs, 'needed' => ['base64', 'extension', 'size']])) {
-            return ['errors' => 'Bad Request'];
+            return ['errors' => 'Bad Request : base64, extension or size argument is missing'];
         }
 
         $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => $aArgs['base64']]);

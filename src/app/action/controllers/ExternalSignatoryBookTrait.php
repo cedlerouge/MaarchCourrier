@@ -1,32 +1,38 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ExternalSignatoryBookTrait
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ExternalSignatoryBookTrait
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Action\controllers;
 
 use Attachment\controllers\AttachmentController;
 use Attachment\models\AttachmentModel;
 use Convert\models\AdrModel;
+use Exception;
 use ExternalSignatoryBook\controllers\IxbusController;
 use ExternalSignatoryBook\controllers\IParapheurController;
 use ExternalSignatoryBook\controllers\FastParapheurController;
 use ExternalSignatoryBook\controllers\MaarchParapheurController;
 use ExternalSignatoryBook\controllers\XParaphController;
+use ExternalSignatoryBook\pastell\Infrastructure\SendDataToPastellFactory;
 use Resource\models\ResModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 
 trait ExternalSignatoryBookTrait
 {
-    public static function sendExternalSignatoryBookAction(array $args)
+    /**
+     * @param array $args
+     * @return array|array[]|string[]
+     * @throws Exception
+     */
+    public static function sendExternalSignatoryBookAction(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -72,11 +78,11 @@ trait ExternalSignatoryBookTrait
 
             if (!empty($config['id'])) {
                 $attachments = AttachmentModel::get([
-                    'select'    => [
+                    'select' => [
                         'res_id', 'status'
                     ],
-                    'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
-                    'data'      => [$args['resId'], ['signed_response']]
+                    'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
+                    'data'   => [$args['resId'], ['signed_response']]
                 ]);
 
                 foreach ($attachments as $attachment) {
@@ -120,10 +126,10 @@ trait ExternalSignatoryBookTrait
                 ]);
             } elseif ($config['id'] == 'fastParapheur') {
                 $sentInfo = FastParapheurController::sendDatas([
-                    'config'        => $config,
-                    'resIdMaster'   => $args['resId'],
-                    'steps'         => $args['data']['steps'] ?? [],
-                    'workflowType'  => $args['data']['workflowType'] ?? null
+                    'config'       => $config,
+                    'resIdMaster'  => $args['resId'],
+                    'steps'        => $args['data']['steps'] ?? [],
+                    'workflowType' => $args['data']['workflowType'] ?? null
                 ]);
             } elseif ($config['id'] == 'iParapheur') {
                 $sentInfo = IParapheurController::sendDatas([
@@ -132,12 +138,12 @@ trait ExternalSignatoryBookTrait
                 ]);
             } elseif ($config['id'] == 'ixbus') {
                 $sentInfo = IxbusController::sendDatas([
-                    'config'        => $config,
-                    'resIdMaster'   => $args['resId'],
-                    'referent'      => $args['data']['ixbus']['userId'],
-                    'natureId'      => $args['data']['ixbus']['nature'],
-                    'messageModel'  => $args['data']['ixbus']['messageModel'],
-                    'manSignature'  => $args['data']['ixbus']['signatureMode']
+                    'config'       => $config,
+                    'resIdMaster'  => $args['resId'],
+                    'referent'     => $args['data']['ixbus']['userId'],
+                    'natureId'     => $args['data']['ixbus']['nature'],
+                    'messageModel' => $args['data']['ixbus']['messageModel'],
+                    'manSignature' => $args['data']['ixbus']['signatureMode']
                 ]);
             } elseif ($config['id'] == 'xParaph') {
                 $sentInfo = XParaphController::sendDatas([
@@ -146,6 +152,9 @@ trait ExternalSignatoryBookTrait
                     'info'        => $args['data']['info'],
                     'steps'       => $args['data']['steps'],
                 ]);
+            } elseif ($config['id'] == 'pastell') {
+                $sendToPastell = SendDataToPastellFactory::sendDataToPastell();
+                $sentInfo = $sendToPastell->sendData($args['resId']);
             }
             if (!empty($sentInfo['error'])) {
                 return ['errors' => [$sentInfo['error']]];
@@ -167,13 +176,12 @@ trait ExternalSignatoryBookTrait
             if (!empty($attachmentToFreeze['attachments_coll'])) {
                 foreach ($attachmentToFreeze['attachments_coll'] as $resId => $externalId) {
                     AttachmentModel::freezeAttachment([
-                        'resId' => $resId,
+                        'resId'      => $resId,
                         'externalId' => $externalId
                     ]);
                 }
             }
         }
-
         return ['history' => $historyInfo];
     }
 }

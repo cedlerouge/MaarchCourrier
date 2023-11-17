@@ -253,6 +253,9 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                         content: this.getBase64Document(this.base64ToArrayBuffer(data.encodedResource)),
                         src: this.base64ToArrayBuffer(data.encodedResource)
                     };
+
+                    // Envoi à la LAD si fichier temporaire (scan2maarch)
+                    this.triggerEvent.emit('launchLad');
                     this.noConvertedFound = false;
                     this.loading = false;
                 }),
@@ -354,6 +357,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                     if (this.file.type !== 'application/pdf') {
                         this.convertDocument(this.file);
                     } else {
+                        this.triggerEvent.emit('launchLad');
                         this.file.src = value.target.result;
                         this.loading = false;
                     }
@@ -502,6 +506,9 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                             } else {
                                 this.file.base64src = res.encodedResource;
                                 this.file.src = this.base64ToArrayBuffer(res.encodedResource);
+                                // Appel LAD après conversion
+                                this.triggerEvent.emit('launchLad');
+
                                 this.loading = false;
                             }
                         }
@@ -1524,11 +1531,15 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
     }
 
+    /**
+     * @param type - Zoom operation type : 'in' for zoom in and 'out' for zoom out.
+     */
     zoomDocument(type: string) {
+        const zoomFactor: number = 1.2; // Increases or decreases the zoom level by 20% for each click
         if (type === 'in') {
-            this.zoom = this.zoom + 0.5;
-        } else if (type === 'out' && this.zoom >= 0) {
-            this.zoom = this.zoom - 0.5;
+            this.zoom = this.zoom * zoomFactor;
+        } else if (type === 'out') {
+            this.zoom = this.zoom / zoomFactor;
         }
     }
 }
