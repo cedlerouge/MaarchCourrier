@@ -534,7 +534,7 @@ class ListInstanceController
                     }
                     $listInstance['item_mode'] = $listInstance['requested_signature'] ? 'sign' : 'visa';
 
-                    if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $user['id']])) {
+                    if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $user['id']])) {
                         $body['canSuspend'] = true;
                     }
                 } else {
