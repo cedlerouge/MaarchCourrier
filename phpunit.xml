@@ -17,6 +17,7 @@
     <testsuite name="MaarchTestSuite">
       <directory>test/unitTests/core/</directory>
       <directory>test/unitTests/app/external/Pastell/</directory>
+      <file>test/unitTests/app/resource/Application/RetrieveFileFromDocserverTest.php</file>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
       <file>test/unitTests/app/administration/AdministrationControllerTest.php</file>
