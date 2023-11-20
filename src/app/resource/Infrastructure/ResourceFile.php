@@ -14,12 +14,10 @@
 
 namespace Resource\Infrastructure;
 
-use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Resource\Domain\ResourceFileInterface;
 use Resource\controllers\StoreController;
-use Resource\Domain\ResourceDataInterface;
 use Resource\models\ResModel;
 
 class ResourceFile implements ResourceFileInterface
@@ -53,6 +51,9 @@ class ResourceFile implements ResourceFileInterface
      */
     public function folderExists(string $folderPath): bool
     {
+        if (empty($folderPath)) {
+            return false;
+        }
         return is_dir($folderPath);
     }
 
@@ -65,6 +66,9 @@ class ResourceFile implements ResourceFileInterface
      */
     public function fileExists(string $filePath): bool
     {
+        if (empty($filePath)) {
+            return false;
+        }
         return file_exists($filePath);
     }
 

@@ -27,11 +27,6 @@ class ResourceFileMock implements ResourceFileInterface
     public string $documentFingerprint  = 'file fingerprint';
     public ?string $mainFilePath  = null;
 
-    // public function __construct()
-    // {
-    //     $this->mainFilePath = $this->docserverPath . $this->documentFilePath . $this->documentFilename;
-    // }
-
     /**
      * Build file path from document and docserver
      * 
@@ -65,6 +60,9 @@ class ResourceFileMock implements ResourceFileInterface
      */
     public function folderExists(string $folderPath): bool
     {
+        if (empty($folderPath)) {
+            return false;
+        }
         return $this->doesRessourceDocserverExist;
     }
 
@@ -77,6 +75,9 @@ class ResourceFileMock implements ResourceFileInterface
      */
     public function fileExists(string $filePath): bool
     {
+        if (empty($filePath)) {
+            return false;
+        }
         return $this->doesRessourceFileExistInDocserver;
     }
 
