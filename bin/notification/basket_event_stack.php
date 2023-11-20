@@ -1,13 +1,33 @@
 <?php
 // WARNING: logs for this file are only enabled if config.json log level is set to INFO or DEBUG!
 
+use Basket\models\BasketModel;
+use Basket\models\GroupBasketModel;
+use Basket\models\RedirectBasketModel;
+use ContentManagement\controllers\MergeController;
+use Entity\models\EntityModel;
+use Entity\models\ListInstanceModel;
+use Group\models\GroupModel;
+use History\models\BatchHistoryModel;
+use Notification\models\NotificationModel;
+use Notification\models\NotificationsEmailsModel;
+use Notification\models\NotificationsEventsModel;
+use Parameter\models\ParameterModel;
+use SrcCore\controllers\LogsController;
+use SrcCore\controllers\PreparedClauseController;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabaseModel;
+use SrcCore\models\DatabasePDO;
+use User\controllers\UserController;
+use User\models\UserModel;
+
 $options = getopt("c:n:", ["config:", "notif:"]);
 
 controlOptions($options);
 
 $txt = '';
 foreach (array_keys($options) as $key) {
-    if (isset($options[$key]) && $options[$key] == false) {
+    if (isset($options[$key]) && !$options[$key]) {
         $txt .= $key . '=false,';
     } else {
         $txt .= $key . '=' . $options[$key] . ',';
@@ -25,32 +45,32 @@ if (!is_file($options['config'])) {
 $file = file_get_contents($options['config']);
 $file = json_decode($file, true);
 
-$customID   = $file['config']['customID'] ?? null;
-$maarchUrl  = $file['config']['maarchUrl'];
+$customID = $file['config']['customID'] ?? null;
+$maarchUrl = $file['config']['maarchUrl'];
 
 chdir($file['config']['maarchDirectory']);
 
 require 'vendor/autoload.php';
 
 
-\SrcCore\models\DatabasePDO::reset();
-new \SrcCore\models\DatabasePDO(['customId' => $customID]);
+DatabasePDO::reset();
+new DatabasePDO(['customId' => $customID]);
 
 setBatchNumber();
 
-$language = \SrcCore\models\CoreConfigModel::getLanguage();
+$language = CoreConfigModel::getLanguage();
 
 if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
     require_once("custom/{$customID}/src/core/lang/lang-{$language}.php");
 }
 require_once("src/core/lang/lang-{$language}.php");
 
-\User\controllers\UserController::setAbsences();
+UserController::setAbsences();
 
 //=========================================================================================================================================
 //FIRST STEP
 writeLog(['message' => "Loading configuration for notification {$notificationId}", 'level' => 'INFO']);
-$notification = \Notification\models\NotificationModel::getByNotificationId(['notificationId' => $notificationId, 'select' => ['*']]);
+$notification = NotificationModel::getByNotificationId(['notificationId' => $notificationId, 'select' => ['*']]);
 if (empty($notification)) {
     writeLog(['message' => "Notification {$notificationId} does not exist", 'level' => 'ERROR', 'history' => true]);
     exit();
@@ -69,12 +89,12 @@ if (!empty($notification['attachfor_type']) || $notification['attachfor_type'] !
 
 //=========================================================================================================================================
 //SECOND STEP
-$baskets = \Basket\models\BasketModel::get(['select' => ['basket_id', 'basket_clause'], 'where' => ['flag_notif = ?'], 'data' => ['Y']]);
+$baskets = BasketModel::get(['select' => ['basket_id', 'basket_clause'], 'where' => ['flag_notif = ?'], 'data' => ['Y']]);
 
 foreach ($baskets as $basket) {
     writeLog(['message' => "Basket {$basket['basket_id']} in progress", 'level' => 'INFO']);
 
-    $groups = \Basket\models\GroupBasketModel::get(['select' => ['group_id'], 'where' => ['basket_id = ?'], 'data' => [$basket['basket_id']]]);
+    $groups = GroupBasketModel::get(['select' => ['group_id'], 'where' => ['basket_id = ?'], 'data' => [$basket['basket_id']]]);
     $nbGroups = count($groups);
 
     foreach ($groups as $group) {
@@ -83,15 +103,15 @@ foreach ($baskets as $basket) {
         if ($notification['diffusion_type'] == 'group' && !in_array($group['group_id'], $diffusionParams)) {
             continue;
         }
-        $groupInfo = \Group\models\GroupModel::getByGroupId(['groupId' => $group['group_id'], 'select' => ['id']]);
-        $users = \Group\models\GroupModel::getUsersById(['select' => ['users.user_id', 'users.id'], 'id' => $groupInfo['id']]);
+        $groupInfo = GroupModel::getByGroupId(['groupId' => $group['group_id'], 'select' => ['id']]);
+        $users = GroupModel::getUsersById(['select' => ['users.user_id', 'users.id'], 'id' => $groupInfo['id']]);
 
         if ($notification['diffusion_type'] == 'entity' && !empty($diffusionParams)) {
 
-            $usersOfEntities = \Entity\models\EntityModel::getWithUserEntities([
-                'select'    => ['user_id as id'],
-                'where'     => ['entities.entity_id in (?)'],
-                'data'      => [$diffusionParams]
+            $usersOfEntities = EntityModel::getWithUserEntities([
+                'select' => ['user_id as id'],
+                'where'  => ['entities.entity_id in (?)'],
+                'data'   => [$diffusionParams]
             ]);
             $users = array_filter(array_unique($usersOfEntities, SORT_REGULAR), function ($userOfEntities) use ($users) {
                 foreach ($users as $user) {
@@ -105,14 +125,14 @@ foreach ($baskets as $basket) {
 
         if ($notification['diffusion_type'] == 'dest_user') {
 
-            $tmpUsersOfInstance = \Entity\models\ListInstanceModel::get([
-                'select'    => ['distinct(item_id)', 'item_type'],
-                'where'     => ['difflist_type = ?', 'item_mode = ?'],
-                'data'      => ['entity_id', 'dest']
+            $tmpUsersOfInstance = ListInstanceModel::get([
+                'select' => ['distinct(item_id)', 'item_type'],
+                'where'  => ['difflist_type = ?', 'item_mode = ?'],
+                'data'   => ['entity_id', 'dest']
             ]);
             $usersTmp = $users;
             $users = array_filter($usersTmp, function ($userTmp) use ($tmpUsersOfInstance) {
-                foreach($tmpUsersOfInstance as $usersOfInstance) {
+                foreach ($tmpUsersOfInstance as $usersOfInstance) {
                     if ($usersOfInstance['item_id'] == $userTmp['id']) {
                         return true;
                     }
@@ -126,37 +146,37 @@ foreach ($baskets as $basket) {
                 continue;
             } else {
 
-                $tmpUsersOrEntitiesOfInstance = \Entity\models\ListInstanceModel::get([
-                    'select'    => ['distinct(item_id)', 'item_type'],
-                    'where'     => ['difflist_type = ?', 'item_mode = ?'],
-                    'data'      => ['entity_id', 'cc']
+                $tmpUsersOrEntitiesOfInstance = ListInstanceModel::get([
+                    'select' => ['distinct(item_id)', 'item_type'],
+                    'where'  => ['difflist_type = ?', 'item_mode = ?'],
+                    'data'   => ['entity_id', 'cc']
                 ]);
                 $usersTmp = $users;
                 $users = [];
                 foreach ($usersTmp as $userTmp) {
-                    foreach ($tmpUsersOrEntitiesOfInstance as $userOrentity) {
-                        if ($userOrentity['item_type'] == 'user_id' && $userOrentity['item_id'] == $userTmp['id']) {
+                    foreach ($tmpUsersOrEntitiesOfInstance as $userOrEntity) {
+                        if ($userOrEntity['item_type'] == 'user_id' && $userOrEntity['item_id'] == $userTmp['id']) {
 
-                            if(!in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
+                            if (!in_array($userTmp['user_id'], array_column($users, 'user_id'))) {
                                 $users[] = ['user_id' => $userTmp['user_id'], 'id' => $userTmp['id']];
                                 continue;
                             }
-                        } else if ($userOrentity['item_type'] == 'entity_id') {
+                        } else if ($userOrEntity['item_type'] == 'entity_id') {
 
-                            $usersOfEntity = \Entity\models\EntityModel::getWithUserEntities([
-                                'select'    => ['user_id as id'],
-                                'where'     => ['entities.id = ?'],
-                                'data'      => [$userOrentity['item_id']]
+                            $usersOfEntity = EntityModel::getWithUserEntities([
+                                'select' => ['user_id as id'],
+                                'where'  => ['entities.id = ?'],
+                                'data'   => [$userOrEntity['item_id']]
                             ]);
-                            if(!empty($usersOfEntity)) {
-                                $usersFromEntity = \User\models\UserModel::get([
-                                    'select'    => ['id', 'user_id'],
-                                    'where'     => ['id IN (?)'],
-                                    'data'      => [array_column($usersOfEntity, 'id')]
+                            if (!empty($usersOfEntity)) {
+                                $usersFromEntity = UserModel::get([
+                                    'select' => ['id', 'user_id'],
+                                    'where'  => ['id IN (?)'],
+                                    'data'   => [array_column($usersOfEntity, 'id')]
                                 ]);
                                 foreach ($usersFromEntity as $userFromEntity) {
 
-                                    if(!in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
+                                    if (!in_array($userFromEntity['user_id'], array_column($users, 'user_id'))) {
                                         $users[] = ['user_id' => $userFromEntity['user_id'], 'id' => $userFromEntity['id']];
                                         continue;
                                     }
@@ -177,21 +197,21 @@ foreach ($baskets as $basket) {
                 continue;
             }
 
-            $realUserId     = null;
-            $userId         = $userToNotify['id'];
-            $whereClause    = \SrcCore\controllers\PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $userToNotify['id']]);
-            $redirectedBasket = \Basket\models\RedirectBasketModel::get([
+            $realUserId = null;
+            $userId = $userToNotify['id'];
+            $whereClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $userToNotify['id']]);
+            $redirectedBasket = RedirectBasketModel::get([
                 'select' => ['actual_user_id'],
                 'where'  => ['owner_user_id = ?', 'basket_id = ?', 'group_id = ?'],
                 'data'   => [$userToNotify['id'], $basket['basket_id'], $groupInfo['id']]
             ]);
             if (!empty($redirectedBasket)) {
                 $realUserId = $userToNotify['id'];
-                $userId     = $redirectedBasket[0]['actual_user_id'];
+                $userId = $redirectedBasket[0]['actual_user_id'];
             }
 
             $resourcesWhere = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$whereClause, 'status IN (?)'] : [$whereClause];
-            $resourcesData  = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$diffusionParams] : [];
+            $resourcesData = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$diffusionParams] : [];
             $resources = \Resource\models\ResModel::getOnView([
                 'select' => ['res_id'],
                 'where'  => $resourcesWhere,
@@ -205,13 +225,13 @@ foreach ($baskets as $basket) {
 
                 $info = "Notification [{$basket['basket_id']}] pour {$userToNotify['user_id']}";
                 if (!empty($realUserId)) {
-                    $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', '(user_id = ? OR user_id = ?)'], 'data' => [$info, $userToNotify['id'], $userId]]);
+                    $notificationEvents = NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', '(user_id = ? OR user_id = ?)'], 'data' => [$info, $userToNotify['id'], $userId]]);
                 } else {
-                    $notificationEvents = \Notification\models\NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', 'user_id = ?'], 'data' => [$info, $userToNotify['id']]]);
+                    $notificationEvents = NotificationsEventsModel::get(['select' => ['record_id'], 'where' => ['event_info = ?', 'user_id = ?'], 'data' => [$info, $userToNotify['id']]]);
                 }
 
                 $aRecordId = array_column($notificationEvents, 'record_id', 'record_id');
-                $aValues   = [];
+                $aValues = [];
                 foreach ($resources as $resource) {
                     if (empty($aRecordId[$resource['res_id']])) {
                         $aValues[] = [
@@ -226,7 +246,7 @@ foreach ($baskets as $basket) {
                 }
                 if (!empty($aValues)) {
                     writeLog(['message' => $info, 'level' => 'DEBUG']);
-                    \SrcCore\models\DatabaseModel::insertMultiple([
+                    DatabaseModel::insertMultiple([
                         'table'   => 'notif_event_stack',
                         'columns' => ['table_name', 'notification_sid', 'record_id', 'user_id', 'event_info', 'event_date'],
                         'values'  => $aValues
@@ -239,9 +259,9 @@ foreach ($baskets as $basket) {
 
 writeLog(['message' => "Scanning events for notification {$notification['notification_sid']}", 'level' => 'INFO']);
 
-$events = \Notification\models\NotificationsEventsModel::get(['select' => ['*'], 'where' => ['notification_sid = ?', 'exec_date is NULL'], 'data' => [$notification['notification_sid']]]);
+$events = NotificationsEventsModel::get(['select' => ['*'], 'where' => ['notification_sid = ?', 'exec_date is NULL'], 'data' => [$notification['notification_sid']]]);
 $totalEventsToProcess = count($events);
-$currentEvent         = 0;
+$currentEvent = 0;
 if ($totalEventsToProcess === 0) {
     writeLog(['message' => "No event to process", 'level' => 'INFO', 'history' => true]);
     exit();
@@ -253,7 +273,7 @@ $tmpNotifs = [];
 //=========================================================================================================================================
 //THIRD STEP
 $usersId = array_column($events, 'user_id');
-$usersInfo = \User\models\UserModel::get(['select' => ['*'], 'where' => ['id in (?)'], 'data' => [$usersId]]);
+$usersInfo = UserModel::get(['select' => ['*'], 'where' => ['id in (?)'], 'data' => [$usersId]]);
 $usersInfo = array_column($usersInfo, null, 'id');
 foreach ($events as $event) {
     preg_match_all('#\[(\w+)]#', $event['event_info'], $result);
@@ -266,7 +286,7 @@ foreach ($events as $event) {
     }
 
     $event['res_id'] = $res_id;
-    $user_id         = $event['user_id'];
+    $user_id = $event['user_id'];
 
     $userInfo = $usersInfo[$user_id];
     if (!isset($tmpNotifs[$userInfo['user_id']])) {
@@ -286,7 +306,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
     $events = [];
     $lastBasketToProcess = array_key_last($tmpNotif['baskets']);
     foreach ($tmpNotif['baskets'] as $basketId => $basket_list) {
-        $baskets = \Basket\models\BasketModel::getByBasketId(['select' => ['basket_name'], 'basketId' => $basketId]);
+        $baskets = BasketModel::getByBasketId(['select' => ['basket_name'], 'basketId' => $basketId]);
         $subject = $baskets['basket_name'];
 
         // Add the basket name associated with each event -> for the merge variable 'res_letterbox.basketName'
@@ -317,11 +337,11 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
             'res_table'    => 'res_letterbox',
             'res_view'     => 'res_view_letterbox'
         ];
-        $html = \ContentManagement\controllers\MergeController::mergeNotification(['templateId' => $notification['template_id'], 'params' => $params]);
+        $html = MergeController::mergeNotification(['templateId' => $notification['template_id'], 'params' => $params]);
 
         if (strlen($html) === 0) {
             foreach ($tmpNotif['events'] as $event) {
-                \Notification\models\NotificationsEventsModel::update([
+                NotificationsEventsModel::update([
                     'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'FAILED: Error when merging template'],
                     'where' => ['event_stack_sid = ?'],
                     'data'  => [$event['event_stack_sid']]
@@ -331,7 +351,7 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
             exit();
         }
 
-        $recipient_mail     = $tmpNotif['recipient']['mail'];
+        $recipient_mail = $tmpNotif['recipient']['mail'];
         if (!empty($recipient_mail)) {
             $html = str_replace("&#039;", "'", $html);
             $html = str_replace('&amp;', '&', $html);
@@ -345,15 +365,15 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
                     if ($event['res_id'] != '') {
                         $resourceToAttach = \Resource\models\ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
                         if (!empty($resourceToAttach['docserver_id'])) {
-                            $docserver        = \Docserver\models\DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
-                            $path             = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resourceToAttach['path']) . $resourceToAttach['filename'];
+                            $docserver = \Docserver\models\DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
+                            $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resourceToAttach['path']) . $resourceToAttach['filename'];
                             $path = str_replace('//', '/', $path);
                             $path = str_replace('\\', '/', $path);
                             $attachments[] = $path;
                         }
                     }
                 }
-                writeLog(['message' => count($attachments). " attachment(s) added", 'level' => 'INFO']);
+                writeLog(['message' => count($attachments) . " attachment(s) added", 'level' => 'INFO']);
             }
 
             $arrayPDO = [
@@ -364,11 +384,11 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
             if (count($attachments) > 0) {
                 $arrayPDO['attachments'] = implode(',', $attachments);
             }
-            \Notification\models\NotificationsEmailsModel::create($arrayPDO);
+            NotificationsEmailsModel::create($arrayPDO);
 
             $notificationSuccess = array_column($events, 'event_stack_sid');
             if (!empty($notificationSuccess)) {
-                \Notification\models\NotificationsEventsModel::update([
+                NotificationsEventsModel::update([
                     'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'SUCCESS'],
                     'where' => ['event_stack_sid IN (?)'],
                     'data'  => [$notificationSuccess]
@@ -403,23 +423,26 @@ function controlOptions(array &$options)
 
 function setBatchNumber()
 {
-    $parameter = \Parameter\models\ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'basket_event_stack_id']);
+    $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'basket_event_stack_id']);
     if (!empty($parameter)) {
         $GLOBALS['wb'] = $parameter['param_value_int'] + 1;
     } else {
-        \Parameter\models\ParameterModel::create(['id' => 'basket_event_stack_id', 'param_value_int' => 1]);
+        ParameterModel::create(['id' => 'basket_event_stack_id', 'param_value_int' => 1]);
         $GLOBALS['wb'] = 1;
     }
 }
 
 function updateBatchNumber()
 {
-    \Parameter\models\ParameterModel::update(['id' => 'basket_event_stack_id', 'param_value_int' => $GLOBALS['wb']]);
+    ParameterModel::update(['id' => 'basket_event_stack_id', 'param_value_int' => $GLOBALS['wb']]);
 }
 
+/**
+ * @throws Exception
+ */
 function writeLog(array $args)
 {
-    \SrcCore\controllers\LogsController::add([
+    LogsController::add([
         'isTech'    => true,
         'moduleId'  => 'Notification',
         'level'     => $args['level'] ?? 'INFO',
@@ -430,6 +453,6 @@ function writeLog(array $args)
     ]);
 
     if (!empty($args['history'])) {
-        \History\models\BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
+        BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
     }
 }
