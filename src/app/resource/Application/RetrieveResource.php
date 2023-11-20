@@ -63,14 +63,16 @@ class RetrieveResource
                 $document['version'], 
                 ['docserver_id', 'path', 'filename', 'fingerprint']
             );
+            $subject = $document['subject'];
             $document = $signdDocument[0] ?? $document;
+            $document['subject'] = $subject;
         }
 
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id']);
         if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
             return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
         }
-        
+
         $filePath = $this->resourceFile->buildFilePath($document['docserver_id'], $document['path'], $document['filename']);
         if (!$this->resourceFile->fileExists($filePath)) {
             return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
