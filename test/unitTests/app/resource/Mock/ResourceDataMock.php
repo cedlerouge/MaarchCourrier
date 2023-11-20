@@ -14,10 +14,6 @@ use SrcCore\models\TextFormatModel;
 
 class ResourceDataMock implements ResourceDataInterface
 {
-    public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
-    public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
-    public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
-
     public bool $doesRessourceExist = true;
     public bool $doesRessourceFileExistInDatabase = true;
     public bool $doesRessourceDocserverExist = true;
