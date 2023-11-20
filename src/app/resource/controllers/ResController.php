@@ -757,7 +757,7 @@ class ResController extends ResourceControlController
         $originalMainFile = $retrieveResource->getOriginalMainFile($args['resId'], $signedVersion);
 
         if (!empty($originalMainFile['error'])) {
-            return $response->withStatus(404)->withJson(['errors' => $originalMainFile['error']]);
+            return $response->withStatus($originalMainFile['code'])->withJson(['errors' => $originalMainFile['error']]);
         }
         $formatFilename = $originalMainFile['formatFilename'];
         $pathInfo       = $originalMainFile['pathInfo'];

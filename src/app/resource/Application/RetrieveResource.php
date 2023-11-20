@@ -51,9 +51,9 @@ class RetrieveResource
     {
         $document = $this->resourceData->getMainResourceData($resId, ['docserver_id', 'path', 'filename', 'version', 'fingerprint', 'subject']);
         if (empty($document)) {
-            return ['error' => $this->resourceData::ERROR_RESOURCE_DOES_NOT_EXIST];
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOES_NOT_EXIST];
         } elseif (empty($document['filename'])) {
-            return ['error' => $this->resourceData::ERROR_RESOURCE_HAS_NO_FILE];
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_HAS_NO_FILE];
         }
 
         $signdDocument = null;
@@ -68,12 +68,12 @@ class RetrieveResource
 
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id']);
         if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
-            return ['error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
         }
         
         $filePath = $this->resourceFile->buildFilePath($document['docserver_id'], $document['path'], $document['filename']);
         if (!$this->resourceFile->fileExists($filePath)) {
-            return ['error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
+            return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
         }
 
         $fingerprint = $this->resourceFile->getFingerPrint($docserver['docserver_type_id'], $filePath);
@@ -82,14 +82,14 @@ class RetrieveResource
         }
 
         if ($document['fingerprint'] != $fingerprint) {
-            return ['error' => $this->resourceFile::ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH];
+            return ['code' => 403, 'error' => $this->resourceFile::ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH];
         }
 
         $filename = $this->resourceData->formatFilename($document['subject']);
 
         $fileContent = $this->resourceFile->getFileContent($filePath);
         if ($fileContent === false) {
-            return ['error' => $this->resourceFile::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER];
+            return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER];
         }
 
         return ['formatFilename' => $filename, 'pathInfo' => pathinfo($filePath), 'fileContent' => $fileContent];
