@@ -16,7 +16,6 @@ namespace Resource\Application;
 
 use Resource\Domain\ResourceDataInterface;
 use Resource\Domain\ResourceFileInterface;
-use SrcCore\models\TextFormatModel;
 
 class RetrieveResource
 {
@@ -26,7 +25,7 @@ class RetrieveResource
     public function __construct (
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface
-    ){
+    ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
     }
