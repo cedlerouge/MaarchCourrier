@@ -90,7 +90,7 @@ class RetrieveResource
         $filename = $this->resourceData->formatFilename($document['subject']);
 
         $fileContent = $this->resourceFile->getFileContent($filePath);
-        if ($fileContent === false) {
+        if ($fileContent === 'false') {
             return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER];
         }
 

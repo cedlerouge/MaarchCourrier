@@ -105,18 +105,18 @@ class ResourceFileMock implements ResourceFileInterface
      *
      * @param string $filePath The path to the file.
      *
-     * @return string|false Returns the content of the file as a string if successful, or false on failure.
+     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */
-    public function getFileContent(string $filePath): string|false
+    public function getFileContent(string $filePath): string
     {
         if (empty($filePath)) {
-            return false;
+            return 'false';
         }
 
         if (!$this->doesRessourceFileGetContentFaile) {
             return $this->mainResourceOriginalFileContent;
         } else {
-            return false;
+            return 'false';
         }
     }
 }
