@@ -29,6 +29,29 @@ export class ToolsListComponent implements OnInit {
     @Input() selectedRes: any;
     @Input() totalRes: number;
 
+    @Input() from: string;
+
+    toolsListButtons: any[] = [
+        {
+            label: this.translate.instant('lang.summarySheets'),
+            icon: 'fas fa-scroll',
+            allowedSources: ['basket', 'search'],
+            click: () => this.openSummarySheet(),
+        },
+        {
+            label: this.translate.instant('lang.exportDatas'),
+            icon: 'fa fa-file-download',
+            allowedSources: ['basket', 'search', 'folder'],
+            click: () => this.openExport()
+        },
+        {
+            label: this.translate.instant('lang.printedFolder'),
+            icon: 'fa fa-print',
+            allowedSources: ['basket', 'search'],
+            click: () => this.openPrintedFolderPrompt()
+        }
+    ];
+
     priorities: any[] = [];
     categories: any[] = [];
     entitiesList: any[] = [];

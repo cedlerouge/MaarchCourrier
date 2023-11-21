@@ -42,7 +42,7 @@
                             </span>
                             <span>
                                 <app-tools-list #actionsList [selectedRes]="selectedRes"
-                                    [currentBasketInfo]="currentBasketInfo"></app-tools-list>
+                                    [currentBasketInfo]="currentBasketInfo" [from]="'basket'"></app-tools-list>
                             </span>
                             <span>
                                 <app-actions-list #actionsList (refreshEvent)="refreshDao()"
