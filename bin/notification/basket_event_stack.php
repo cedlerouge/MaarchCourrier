@@ -276,7 +276,7 @@ $usersId = array_column($events, 'user_id');
 $usersInfo = UserModel::get(['select' => ['*'], 'where' => ['id in (?)'], 'data' => [$usersId]]);
 $usersInfo = array_column($usersInfo, null, 'id');
 foreach ($events as $event) {
-    preg_match_all('#\[(\w+)]#', $event['event_info'], $result);
+    preg_match_all('/\[([^]]+)\]/', $event['event_info'], $result);
     $basket_id = $result[1];
 
     if ($event['table_name'] == 'res_letterbox' || $event['table_name'] == 'res_view_letterbox') {
