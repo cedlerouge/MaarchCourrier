@@ -48,7 +48,7 @@
 <div class="table-head">
     <div class="table-head-result">
         <mat-checkbox *ngIf="!singleSelection" color="primary"
-            [checked]="selectedRes.length == resultsLength && selectedRes.length > 0"
+            [checked]="selectedRes.length === resultsLength && selectedRes.length > 0"
             [indeterminate]="selectedRes.length > 0 && selectedRes.length < resultsLength"
             style="margin: 10px;padding-right: 10px;" title="{{'lang.selectAllResInBasket' | translate}}"
             (change)="toggleAllRes($event)">
@@ -65,7 +65,7 @@
         </span>
         <span>
             <span>
-                <app-tools-list #actionsList [selectedRes]="selectedRes"></app-tools-list>
+                <app-tools-list #actionsList [selectedRes]="selectedRes" [from]="'search'"></app-tools-list>
             </span>
             <span *ngIf="actionMode">
                 <app-followed-action-list #actionsList [contextMode]="false"  [currentFolderInfo]="folderInfo"
@@ -91,8 +91,8 @@
                                 padding-right: 5px;"
                         [class.hasEvent]="data.event && data.displayValue !== ('lang.undefined' | translate)"
                         (click)="launchEventSubData(data, row)">
-                        <ng-container *ngIf="data.value == 'getCreationAndProcessLimitDates'">
-                            <ng-container *ngIf="row.closing_date != ('lang.undefined' | translate)">
+                        <ng-container *ngIf="data.value === 'getCreationAndProcessLimitDates'">
+                            <ng-container *ngIf="row.closing_date !== ('lang.undefined' | translate)">
                                 <i class="fa fa-calendar" title="{{'lang.creationDate' | translate}}"></i>&nbsp;<span
                                     [class.highlightResult]="data.displayValue.creationDateHighlighted"
                                     [innerHTML]="data.displayValue.creationDate | timeAgo"
@@ -102,7 +102,7 @@
                                     [innerHTML]="row.closing_date | timeAgo"
                                     title='{{row.closing_date | fullDate}}'></span>
                             </ng-container>
-                            <ng-container *ngIf="row.closing_date == ('lang.undefined' | translate)">
+                            <ng-container *ngIf="row.closing_date === ('lang.undefined' | translate)">
                                 <i class="fa fa-calendar" title="{{'lang.creationDate' | translate}}"></i>&nbsp;<span
                                     [class.highlightResult]="data.displayValue.creationDateHighlighted"
                                     [innerHTML]="data.displayValue.creationDate | timeAgo"
@@ -114,18 +114,18 @@
                                     title='{{data.displayValue.processLimitDate | fullDate}}'></span>
                             </ng-container>
                         </ng-container>
-                        <ng-container *ngIf="data.icon != ''">
+                        <ng-container *ngIf="data.icon !== ''">
                             <i class="fa {{data.icon}}" title="{{data.label}}"></i>
                             &nbsp;
                         </ng-container>
-                        <ng-container *ngIf="data.value == 'getCategory'">
+                        <ng-container *ngIf="data.value === 'getCategory'">
                             <span *ngIf="!('lang.' + data.displayValue | translate)" style="opacity: 0.5"
                                 title="id: {{data.displayValue}}">{{'lang.undefined' | translate}}</span>
                             <span *ngIf="('lang.' + data.displayValue | translate)"
                                 title="{{'lang.' + data.displayValue | translate}}">{{'lang.' + data.displayValue | translate}}</span>
                         </ng-container>
                         <ng-container
-                            *ngIf="data.value != 'getCategory' && data.value != 'getCreationAndProcessLimitDates'">
+                            *ngIf="data.value !== 'getCategory' && data.value !== 'getCreationAndProcessLimitDates'">
                             <span *ngIf="!data.value.includes('Date')" title="{{data.displayTitle}}"
                                 [innerHTML]="data.displayValue"></span>
                             <span *ngIf="data.value.includes('Date')" [innerHTML]="data.displayValue | timeAgo"></span>
@@ -160,19 +160,19 @@
                     <span *ngIf="!appService.getViewMode()" (click)="launch(row);" class="main-info-data"
                         style="width:200px;text-align:center;cursor:pointer;">
                         <ng-container
-                            *ngIf="row.chrono == ('lang.undefined' | translate) && row.barcode != ('lang.undefined' | translate)">
+                            *ngIf="row.chrono === ('lang.undefined' | translate) && row.barcode !== ('lang.undefined' | translate)">
                             <span style="color: rgba(0,0,0,0.4);font-size: 90%;">
                                 <i title="{{'lang.barcode' | translate}}" class="fas fa-barcode"></i>&nbsp;<span
                                     title="{{row.barcode_title}}"
                                     [innerHTML]="row.barcode"></span>
                             </span>
                         </ng-container>
-                        <ng-container *ngIf="row.chrono != ('lang.undefined' | translate)">
+                        <ng-container *ngIf="row.chrono !== ('lang.undefined' | translate)">
                             <span title="{{row.chrono_title}}" [innerHTML]="row.chrono"></span>
                         </ng-container>
                     </span>
                     <span class="main-info-data" (click)="launch(row);" style="font-weight:bold;flex:1;cursor:pointer;"
-                        [class.undefined]="row.subject == ('lang.undefined' | translate)"
+                        [class.undefined]="row.subject === ('lang.undefined' | translate)"
                         title="{{row.subject_title}}" [innerHTML]="row.subject">
                     </span>
                     <span *ngIf="!router.url.includes('search')" class="main-info-actions" style="margin-right: 20px;">
@@ -189,34 +189,34 @@
                     <span *ngIf="sidenavRight !== undefined" class="main-info-action">
                         <button mat-icon-button title="{{'lang.mailsSentAlt' | translate}}"
                             (click)="$event.stopPropagation();togglePanel('sentResources',row)"
-                            [class.noData]="row.countSentResources == 0">
-                            <mat-icon matBadgeHidden="{{row.countSentResources == 0}}" fontSet="fas"
-                                matBadge="{{row.countSentResources}}" fontIcon="fa-envelope fa-2x" [color]="sidenavRight.opened && row.checked && currentMode == 'sentResources' ? 'primary' : ''">
+                            [class.noData]="row.countSentResources === 0">
+                            <mat-icon matBadgeHidden="{{row.countSentResources === 0}}" fontSet="fas"
+                                matBadge="{{row.countSentResources}}" fontIcon="fa-envelope fa-2x" [color]="sidenavRight.opened && row.checked && currentMode === 'sentResources' ? 'primary' : ''">
                             </mat-icon>
                         </button>
                         <button mat-icon-button [class.highlightResultIcon]="row.inNotes"
                             title="{{'lang.notes' | translate}}"
                             (click)="$event.stopPropagation();togglePanel('note',row)"
-                            [class.noData]="row.countNotes == 0">
-                            <mat-icon matBadgeHidden="{{row.countNotes == 0}}" fontSet="fas"
+                            [class.noData]="row.countNotes === 0">
+                            <mat-icon matBadgeHidden="{{row.countNotes === 0}}" fontSet="fas"
                                 matBadge="{{row.countNotes}}" fontIcon="fa-comments fa-2x"
-                                [color]="sidenavRight.opened && row.checked && currentMode == 'note' ? 'primary' : ''">
+                                [color]="sidenavRight.opened && row.checked && currentMode === 'note' ? 'primary' : ''">
                             </mat-icon>
                         </button>
                         <button mat-icon-button title="{{'lang.attachments' | translate}}"
                             [class.highlightResultIcon]="row.inAttachments"
                             (click)="$event.stopPropagation();togglePanel('attachment',row)"
-                            [class.noData]="row.countAttachments == 0">
-                            <mat-icon matBadgeHidden="{{row.countAttachments == 0}}" fontSet="fas"
+                            [class.noData]="row.countAttachments === 0">
+                            <mat-icon matBadgeHidden="{{row.countAttachments === 0}}" fontSet="fas"
                                 matBadge="{{row.countAttachments}}" fontIcon="fa-paperclip fa-2x"
-                                [color]="sidenavRight.opened && row.checked && currentMode == 'attachment' ? 'primary' : ''">
+                                [color]="sidenavRight.opened && row.checked && currentMode === 'attachment' ? 'primary' : ''">
                             </mat-icon>
                         </button>
                         <button mat-icon-button title="{{'lang.diffusionList' | translate}}"
                             [class.highlightResultIcon]="row.inDiffusions"
                             (click)="$event.stopPropagation();togglePanel('diffusion',row)">
                             <mat-icon fontSet="fas" fontIcon="fa-sitemap fa-2x"
-                                [color]="sidenavRight.opened && row.checked && currentMode == 'diffusion' ? 'primary' : ''">
+                                [color]="sidenavRight.opened && row.checked && currentMode === 'diffusion' ? 'primary' : ''">
                             </mat-icon>
                         </button>
                         <button mat-icon-button *ngIf="!appService.getViewMode()"
@@ -242,7 +242,7 @@
             </td>
         </ng-container>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsBasket;" (contextmenu)="open($event,row);"
-            class="rowData" style="cursor: pointer;" [class.locked]="row.isLocked == true" cdkDrag
+            class="rowData" style="cursor: pointer;" [class.locked]="row.isLocked === true" cdkDrag
             [cdkDragDisabled]="!row.allowed" (cdkDragStarted)="selectSpecificRes(row);" [cdkDragData]="row">
             <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
             <div class="dragPreview" *cdkDragPreview><i class="fas fa-envelope-open-text fa-2x"></i>

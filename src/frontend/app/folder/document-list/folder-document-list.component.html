@@ -67,6 +67,9 @@
                             <app-select-page [paginator]="paginatorResultList"></app-select-page>
                         </span>
                         <span>
+                            <app-tools-list #actionsList [selectedRes]="selectedRes" [from]="'folder'"></app-tools-list>
+                        </span>
+                        <span>
                             <app-folder-action-list #actionsList [contextMode]="false" [currentFolderInfo]="folderInfo"
                                 [totalRes]="allResInBasket.length" [selectedRes]="selectedRes"
                                 (refreshEvent)="refreshDaoAfterAction()"
@@ -134,7 +137,7 @@
                                                 (click)="$event.stopPropagation();togglePanel('sentResources',row)"
                                                 [class.noData]="row.countSentResources == 0">
                                                 <mat-icon matBadgeHidden="{{row.countSentResources == 0}}" fontSet="fas"
-                                                    matBadge="{{row.countSentResources}}" fontIcon="fa-envelope fa-2x" [color]="sidenavRight.opened && row.checked && currentMode == 'sentResources' ? 'primary' : ''">
+                                                    matBadge="{{row.countSentResources}}" fontIcon="fa-envelope fa-2x" [color]="sidenavRight.opened && row.checked && currentMode === 'sentResources' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{'lang.notes' | translate}}"
@@ -142,7 +145,7 @@
                                                 [class.noData]="row.countNotes == 0">
                                                 <mat-icon matBadgeHidden="{{row.countNotes == 0}}" fontSet="fas"
                                                     matBadge="{{row.countNotes}}" fontIcon="fa-comments fa-2x"
-                                                    [color]="snav2.opened && row.checked && currentMode == 'note' ? 'primary' : ''">
+                                                    [color]="snav2.opened && row.checked && currentMode === 'note' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{'lang.attachments' | translate}}"
@@ -150,13 +153,13 @@
                                                 [class.noData]="row.countAttachments == 0">
                                                 <mat-icon matBadgeHidden="{{row.countAttachments == 0}}" fontSet="fas"
                                                     matBadge="{{row.countAttachments}}" fontIcon="fa-paperclip fa-2x"
-                                                    [color]="snav2.opened && row.checked && currentMode == 'attachment' ? 'primary' : ''">
+                                                    [color]="snav2.opened && row.checked && currentMode === 'attachment' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{'lang.diffusionList' | translate}}"
                                                 (click)="$event.stopPropagation();togglePanel('diffusion',row)">
                                                 <mat-icon fontSet="fas" fontIcon="fa-sitemap fa-2x"
-                                                    [color]="snav2.opened && row.checked && currentMode == 'diffusion' ? 'primary' : ''">
+                                                    [color]="snav2.opened && row.checked && currentMode === 'diffusion' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{row.hasDocument ? ('lang.viewResource' | translate) : ('lang.noDocument' | translate)}}" (click)="$event.stopPropagation();viewDocument(row)"
