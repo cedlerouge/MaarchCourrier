@@ -23,7 +23,7 @@ class RetrieveResourceFactory
      */
     public static function create(): RetrieveResource
     {
-        $resourceData = new ResourceDataDatabase();
+        $resourceData = new ResourceData();
         $resourceFile = new ResourceFile();
 
         return new RetrieveResource($resourceData, $resourceFile);

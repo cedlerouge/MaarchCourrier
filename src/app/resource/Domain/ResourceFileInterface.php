@@ -63,9 +63,19 @@ interface ResourceFileInterface
     /**
      * Retrieves file content.
      *
-     * @param string $filePath The path to the file.
+     * @param   string  $filePath   The path to the file.
      *
-     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
+     * @return  string|'false'  Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */
     public function getFileContent(string $filePath): string;
+
+    /**
+     * Retrieves file content with watermark.
+     *
+     * @param   int     $resId          Resource id.
+     * @param   string  $ffileContent   The path to the file.
+     *
+     * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
+     */
+    public function getWatermark(int $resId, string $fileContent): string;
 }

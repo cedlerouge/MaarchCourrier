@@ -19,6 +19,7 @@ interface ResourceDataInterface
     public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
     public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
     public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
+    public const ADR_RESOURCE_TYPES = ['PDF', 'SIGN', 'NOTE'];
 
     /**
      * @param   int     $resId
@@ -53,7 +54,25 @@ interface ResourceDataInterface
 
     /**
      * @param   string  $name
+     * @param   int     $maxLength  Default value is 250 length
      * @return  string
      */
-    public function formatFilename(string $name): string;
+    public function formatFilename(string $name, int $maxLength = 250): string;
+
+    /**
+     * Return the converted pdf from resource
+     * 
+     * @param   int     $resId  Resource id
+     * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
+     * @return  array
+     */
+    public function getConvertedPdfById(int $resId, string $collId): array;
+
+    /**
+     * @param   int     $resId      Resource id
+     * @param   string  $type       Resource converted format
+     * @param   int     $version    Resource version
+     * @return  array
+     */
+    public function getResourceVersion(int $resId, string $type, int $version): array;
 }

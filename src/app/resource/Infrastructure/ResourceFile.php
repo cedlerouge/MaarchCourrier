@@ -18,6 +18,7 @@ use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Resource\Domain\ResourceFileInterface;
 use Resource\controllers\StoreController;
+use Resource\controllers\WatermarkController;
 use Resource\models\ResModel;
 
 class ResourceFile implements ResourceFileInterface
@@ -121,5 +122,21 @@ class ResourceFile implements ResourceFileInterface
         }
 
         return file_get_contents($filePath);
+    }
+
+    /**
+     * Retrieves file content with watermark.
+     *
+     * @param   int     $resId  Resource id.
+     * @param   string  $path   The path to the file.
+     *
+     * @return  string|null   Returns the content of the file as a string if successful, or a string with value null on failure.
+     */
+    public function getWatermark(int $resId, string $path): string
+    {
+        if ($resId <= 0) {
+            return 'null';
+        }
+        return WatermarkController::watermarkResource(['resId' => $resId, 'path' => $path]);
     }
 }
