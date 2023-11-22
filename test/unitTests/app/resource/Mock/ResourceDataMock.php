@@ -45,7 +45,8 @@ class ResourceDataMock implements ResourceDataInterface
             'filename'      => '0001_960655724.pdf',
             'fingerprint'   => 'file fingerprint',
             'format'        => 'pdf',
-            'typist'        => 1
+            'typist'        => 1,
+            'version'       => 1
         ];
     }
 
