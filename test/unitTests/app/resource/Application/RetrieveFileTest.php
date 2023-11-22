@@ -195,7 +195,7 @@ class RetrieveFileTest extends TestCase
 
         // Assert
         $this->assertNotEmpty($result);
-        $this->assertSame($result, $this->resourceFileMock->mainResourceOriginalFileContent);
+        $this->assertSame($result, $this->resourceFileMock->mainResourceFileContent);
     }
 
     /**

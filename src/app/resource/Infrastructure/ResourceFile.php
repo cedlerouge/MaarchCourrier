@@ -14,6 +14,7 @@
 
 namespace Resource\Infrastructure;
 
+use Convert\controllers\ConvertThumbnailController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Resource\Domain\ResourceFileInterface;
@@ -138,5 +139,25 @@ class ResourceFile implements ResourceFileInterface
             return 'null';
         }
         return WatermarkController::watermarkResource(['resId' => $resId, 'path' => $path]);
+    }
+
+    /**
+     * Convert resource to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertToThumbnail(int $resId): array
+    {
+        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
+
+        if (isset($check['errors'])) {
+            return ['error' => $check['errors']];
+        } else {
+            return ['success' => $check];
+        }
     }
 }

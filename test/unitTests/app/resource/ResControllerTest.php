@@ -1405,7 +1405,7 @@ class ResControllerTest extends CourrierTestCase
 
         $this->assertEmpty($responseBody);
 
-        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => -2]);
+        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);

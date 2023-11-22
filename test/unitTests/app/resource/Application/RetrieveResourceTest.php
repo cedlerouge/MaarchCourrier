@@ -113,7 +113,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetOriginalMainFileWithResourceDoesNotExistExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceExist = false;
+        $this->resourceDataMock->doesResourceExist = false;
 
         // Act
         $result = $this->retrieveResource->getOriginalMainFile(1);
@@ -129,7 +129,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetOriginalMainFileWithResourceHasNoFileReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceFileExistInDatabase = false;
+        $this->resourceDataMock->doesResourceFileExistInDatabase = false;
         
         // Act
         $result = $this->retrieveResource->getOriginalMainFile(1);
@@ -145,7 +145,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetOriginalMainFileWithResourceUnknownDocserverReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceDocserverExist = false;
+        $this->resourceDataMock->doesResourceDocserverExist = false;
         
         // Act
         $result = $this->retrieveResource->getOriginalMainFile(1);
@@ -193,7 +193,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetOriginalMainFileWithResourceFailedToGetContentFromDocserverExpectError(): void
     {
         // Arrange
-        $this->resourceFileMock->doesRessourceFileGetContentFail = true;
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
         
         // Act
         $result = $this->retrieveResource->getOriginalMainFile(1);
@@ -209,7 +209,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetMainFileWithResourceDoesNotExistExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceExist = false;
+        $this->resourceDataMock->doesResourceExist = false;
 
         // Act
         $result = $this->retrieveResource->getMainFile(1);
@@ -225,7 +225,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetMainFileWithResourceHasNoFileReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceFileExistInDatabase = false;
+        $this->resourceDataMock->doesResourceFileExistInDatabase = false;
         
         // Act
         $result = $this->retrieveResource->getMainFile(1);
@@ -241,7 +241,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetMainFileWithResourceUnknownDocserverReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceDocserverExist = false;
+        $this->resourceDataMock->doesResourceDocserverExist = false;
         
         // Act
         $result = $this->retrieveResource->getMainFile(1);
@@ -290,7 +290,7 @@ class RetrieveResourceTest extends TestCase
     {
         // Arrange
         $this->resourceFileMock->doesWatermarkInResourceFileContentFail =true;
-        $this->resourceFileMock->doesRessourceFileGetContentFail = true;
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
         
         // Act
         $result = $this->retrieveResource->getMainFile(1);
@@ -299,12 +299,6 @@ class RetrieveResourceTest extends TestCase
         $this->assertNotEmpty($result['error']);
         $this->assertSame($result['error'], $this->resourceFileMock::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER);
     }
-
-
-
-
-
-
 
     /**
      * @return void
@@ -327,7 +321,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetVersionMainFileWithResourceDoesNotExistExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceExist = false;
+        $this->resourceDataMock->doesResourceExist = false;
 
         // Act
         $result = $this->retrieveResource->getVersionMainFile(1, 0, '');
@@ -343,7 +337,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetVersionMainFileWithResourceHasNoFileReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceFileExistInDatabase = false;
+        $this->resourceDataMock->doesResourceFileExistInDatabase = false;
         
         // Act
         $result = $this->retrieveResource->getVersionMainFile(1, 0, 'smt');
@@ -390,7 +384,7 @@ class RetrieveResourceTest extends TestCase
     public function testGetVersionMainFileWithResourceUnknownDocserverReferenceInDatabaseExpectError(): void
     {
         // Arrange
-        $this->resourceDataMock->doesRessourceDocserverExist = false;
+        $this->resourceDataMock->doesResourceDocserverExist = false;
         
         // Act
         $result = $this->retrieveResource->getVersionMainFile(1, 1, 'PDF');
@@ -439,7 +433,7 @@ class RetrieveResourceTest extends TestCase
     {
         // Arrange
         $this->resourceFileMock->doesWatermarkInResourceFileContentFail =true;
-        $this->resourceFileMock->doesRessourceFileGetContentFail = true;
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
         
         // Act
         $result = $this->retrieveResource->getVersionMainFile(1, 1, 'PDF');
@@ -447,5 +441,110 @@ class RetrieveResourceTest extends TestCase
         // Assert
         $this->assertNotEmpty($result['error']);
         $this->assertSame($result['error'], $this->resourceFileMock::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithResId0ExpectError(): void
+    {
+        // Arrange
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(0);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'resId' parameter must be greater than 0");
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithResourceHasNoFileExpectNoThumbnailFile(): void
+    {
+        // Arrange
+        $this->resourceDataMock->returnResourceWithoutFile = true;
+        $this->resourceFileMock->returnResourceThumbnailFileContent = true;
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result['formatFilename']);
+        $this->assertNotEmpty($result['fileContent']);
+        $this->assertSame($result['formatFilename'], 'maarch.png');
+        $this->assertSame($result['fileContent'], $this->resourceFileMock->noThumbnailFileContent);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithGlobalUserHasNoRightsExpectNoThumbnailFile(): void
+    {
+        // Arrange
+        $this->resourceDataMock->doesUserHasRights = false;
+        $this->resourceFileMock->returnResourceThumbnailFileContent = true;
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result['formatFilename']);
+        $this->assertNotEmpty($result['fileContent']);
+        $this->assertSame($result['formatFilename'], 'maarch.png');
+        $this->assertSame($result['fileContent'], $this->resourceFileMock->noThumbnailFileContent);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithNoDocumentVersionAndThumbnailConvertionFailedExpectError(): void
+    {
+        // Arrange
+        $this->resourceDataMock->doesResourceVersionExist = false;
+        $this->resourceFileMock->doesResourceConvertToThumbnailFailed = true;
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], 'Convertion to thumbnail failed');
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithResourceUnknownDocserverReferenceInDatabaseExpectError(): void
+    {
+        // Arrange
+        $this->resourceDataMock->doesResourceDocserverExist = false;
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], $this->resourceDataMock::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileWithResourceFailedToGetContentFromDocserverExpectNoThumbnailFile(): void
+    {
+        // Arrange
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
+        $this->resourceFileMock->returnResourceThumbnailFileContent = true;
+        
+        // Act
+        $result = $this->retrieveResource->getThumbnailFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result['formatFilename']);
+        $this->assertNotEmpty($result['fileContent']);
+        $this->assertSame($result['formatFilename'], 'maarch.png');
+        $this->assertSame($result['fileContent'], $this->resourceFileMock->noThumbnailFileContent);
     }
 }

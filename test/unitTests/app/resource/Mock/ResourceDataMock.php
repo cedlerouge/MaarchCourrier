@@ -15,10 +15,12 @@ use SrcCore\models\TextFormatModel;
 
 class ResourceDataMock implements ResourceDataInterface
 {
-    public bool $doesRessourceExist = true;
-    public bool $doesRessourceFileExistInDatabase = true;
-    public bool $doesRessourceDocserverExist = true;
+    public bool $doesResourceExist = true;
+    public bool $doesResourceFileExistInDatabase = true;
+    public bool $doesResourceDocserverExist = true;
     public bool $doesResourceVersionExist = true;
+    public bool $returnResourceWithoutFile = false;
+    public bool $doesUserHasRights = true;
 
     /**
      * @param   int     $resId
@@ -30,15 +32,15 @@ class ResourceDataMock implements ResourceDataInterface
         if ($resId <= 0) {
             return ['error' => "The 'resId' parameter must be greater than 0"];
         }
-        if (!$this->doesRessourceExist) {
+        if (!$this->doesResourceExist) {
             return [];
         }
 
-        if (!$this->doesRessourceFileExistInDatabase) {
+        if (!$this->doesResourceFileExistInDatabase) {
             return ['resId' => 1];
-        }       
+        }
 
-        return [
+        $data = [
             'subject'       => 'Maarch Courrier Test',
             'docserver_id'  => 'FASTHD',
             'path'          => '2021/03/0001/',
@@ -48,6 +50,16 @@ class ResourceDataMock implements ResourceDataInterface
             'typist'        => 1,
             'version'       => 1
         ];
+
+        if ($this->returnResourceWithoutFile) {
+            $data['docserver_id']   = null;
+            $data['path']           = null;
+            $data['filename']       = null;
+            $data['fingerprint']    = null;
+            $data['format']         = null;
+        }
+
+        return $data;
     }
 
     /**
@@ -77,7 +89,7 @@ class ResourceDataMock implements ResourceDataInterface
         if (empty($docserverId)) {
             return ['error' => "The 'docserverId' parameter can not be empty"];
         }
-        if (!$this->doesRessourceDocserverExist) {
+        if (!$this->doesResourceDocserverExist) {
             return [];
         }
 
@@ -149,7 +161,7 @@ class ResourceDataMock implements ResourceDataInterface
         }
 
         if (!$this->doesResourceVersionExist) {
-            return ['error' => 'Type has no file'];
+            return [];
         }
 
         return [
@@ -158,5 +170,17 @@ class ResourceDataMock implements ResourceDataInterface
             'filename'      => '0001_960655724.pdf',
             'fingerprint'   => 'file fingerprint'
         ];
+    }
+
+    /**
+     * Check if user has rights over the resource
+     * 
+     * @param   int     $resId      Resource id
+     * @param   int     $userId     User id
+     * @return  bool
+     */
+    public function hasRightByResId(int $resId, int $userId): bool
+    {
+        return $this->doesUserHasRights;
     }
 }

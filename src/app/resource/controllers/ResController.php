@@ -720,49 +720,25 @@ class ResController extends ResourceControlController
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
+    
+        $retrieveResource = RetrieveResourceFactory::create();
+        $thumbnailFile = $retrieveResource->getThumbnailFile($args['resId']);
 
-        $pathToThumbnail = 'dist/assets/noThumbnail.png';
-
-        $document = ResModel::getById(['select' => ['filename', 'version'], 'resId' => $args['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
+        if (!empty($thumbnailFile['error'])) {
+            return $response->withStatus($thumbnailFile['code'])->withJson(['errors' => $thumbnailFile['error']]);
         }
+        $formatFilename = $thumbnailFile['formatFilename'];
+        $fileContent    = $thumbnailFile['fileContent'];
 
-        if (!empty($document['filename']) && ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
-            $tnlAdr = AdrModel::getDocuments(['select' => ['docserver_id', 'path', 'filename'], 'where' => ['res_id = ?', 'type = ?', 'version = ?'], 'data' => [$args['resId'], 'TNL', $document['version']]]);
-            if (empty($tnlAdr[0])) {
-                $control = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $args['resId']]);
-                if (!empty($control['errors'])) {
-                    return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
-                }
-                $tnlAdr = AdrModel::getDocuments(['select' => ['docserver_id', 'path', 'filename'], 'where' => ['res_id = ?', 'type = ?', 'version = ?'], 'data' => [$args['resId'], 'TNL', $document['version']]]);
-            }
 
-            if (!empty($tnlAdr[0])) {
-                $docserver = DocserverModel::getByDocserverId(['docserverId' => $tnlAdr[0]['docserver_id'], 'select' => ['path_template']]);
-                if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-                }
-
-                $pathToThumbnail = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $tnlAdr[0]['path']) . $tnlAdr[0]['filename'];
-            }
-        }
-
-        $fileContent = @file_get_contents($pathToThumbnail);
-        if ($fileContent === false) {
-            $pathToThumbnail = 'dist/assets/noThumbnail.png';
-            $fileContent = @file_get_contents($pathToThumbnail);
-        }
-
-        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToThumbnail]);
+        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $mimeAndSize['errors']]);
         }
         $mimeType = $mimeAndSize['mime'];
-        $pathInfo = pathinfo($pathToThumbnail);
 
         $response->write($fileContent);
-        $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.{$pathInfo['extension']}");
+        $response = $response->withAddedHeader('Content-Disposition', "inline; filename=$formatFilename");
 
         return $response->withHeader('Content-Type', $mimeType);
     }

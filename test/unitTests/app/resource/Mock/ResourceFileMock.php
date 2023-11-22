@@ -13,20 +13,24 @@ use Resource\Domain\ResourceFileInterface;
 
 class ResourceFileMock implements ResourceFileInterface
 {
-    public bool $doesRessourceExist = true;
-    public bool $doesRessourceFileExistInDatabase = true;
+    public bool $doesResourceExist = true;
+    public bool $doesResourceFileExistInDatabase = true;
     public bool $doesFolderExist = true;
     public bool $doesFileExist = true;
-    public bool $doesRessourceFileFingerprintMatch = true;
-    public bool $doesRessourceFileGetContentFail = false;
+    public bool $doesResourceFileFingerprintMatch = true;
+    public bool $doesResourceFileGetContentFail = false;
     public bool $doesWatermarkInResourceFileContentFail = false;
+    public bool $doesResourceConvertToThumbnailFailed = false;
+    public bool $returnResourceThumbnailFileContent = false;
 
-    public string $mainResourceOriginalFileContent = 'original file content';
+    public string $mainResourceFileContent = 'original file content';
     public string $mainWatermarkInResourceFileContent = 'watermark in file content';
     public string $docserverPath = 'install/samples/resources/';
     public string $documentFilePath  = '2021/03/0001/';
     public string $documentFilename  = '0001_960655724.pdf';
     public string $documentFingerprint  = 'file fingerprint';
+    public string $resourceThumbnailFileContent  = 'resource thumbnail of an img';
+    public string $noThumbnailFileContent  = 'thumbnail of no img';
     public ?string $mainFilePath  = null;
 
     /**
@@ -116,11 +120,18 @@ class ResourceFileMock implements ResourceFileInterface
             return 'false';
         }
 
-        if (!$this->doesRessourceFileGetContentFail) {
-            return $this->mainResourceOriginalFileContent;
-        } else {
+        if ($this->doesResourceFileGetContentFail) {
+            if ($this->returnResourceThumbnailFileContent && strpos($filePath, 'noThumbnail.png') !== false) {
+                return $this->noThumbnailFileContent;
+            }
             return 'false';
         }
+
+        if ($this->returnResourceThumbnailFileContent && strpos($filePath, 'noThumbnail.png') !== false) {
+            return $this->noThumbnailFileContent;
+        }
+
+        return $this->returnResourceThumbnailFileContent ? $this->resourceThumbnailFileContent : $this->mainResourceFileContent;
     }
 
     /**
@@ -141,6 +152,28 @@ class ResourceFileMock implements ResourceFileInterface
             return $this->mainWatermarkInResourceFileContent;
         } else {
             return 'null';
+        }
+    }
+
+    /**
+     * Convert resource to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertToThumbnail(int $resId): array
+    {
+        if ($resId <= 0) {
+            return 'null';
+        }
+
+        if ($this->doesResourceConvertToThumbnailFailed) {
+            return ['error' => 'Convertion to thumbnail failed'];
+        } else {
+            return ['success' => true];
         }
     }
 }

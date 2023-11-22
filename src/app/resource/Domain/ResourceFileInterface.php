@@ -78,4 +78,15 @@ interface ResourceFileInterface
      * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
      */
     public function getWatermark(int $resId, string $fileContent): string;
+
+    /**
+     * Convert resource to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertToThumbnail(int $resId): array;
 }

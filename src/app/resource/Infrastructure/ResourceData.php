@@ -17,6 +17,7 @@ namespace Resource\Infrastructure;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
+use Resource\controllers\ResController;
 use Resource\Domain\ResourceDataInterface;
 use Resource\models\ResModel;
 use SrcCore\models\TextFormatModel;
@@ -150,9 +151,18 @@ class ResourceData implements ResourceDataInterface
             'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
             'data'      => [$resId, $type, $version]
         ]);
-        if (empty($document[0])) {
-            return ['error' => 'Type has no file'];
-        }
-        return $document[0];
+        return $document[0] ?? [];
+    }
+
+    /**
+     * Check if user has rights over the resource
+     * 
+     * @param   int     $resId      Resource id
+     * @param   int     $userId     User id
+     * @return  bool
+     */
+    public function hasRightByResId(int $resId, int $userId): bool
+    {
+        return ResController::hasRightByResId(['resId' => [$resId], 'userId' => $userId]);
     }
 }

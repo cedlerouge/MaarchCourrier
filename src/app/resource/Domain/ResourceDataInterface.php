@@ -19,7 +19,7 @@ interface ResourceDataInterface
     public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
     public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
     public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
-    public const ADR_RESOURCE_TYPES = ['PDF', 'SIGN', 'NOTE'];
+    public const ADR_RESOURCE_TYPES = ['PDF', 'TNL', 'SIGN', 'NOTE'];
     public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
 
     /**
@@ -76,4 +76,13 @@ interface ResourceDataInterface
      * @return  array
      */
     public function getResourceVersion(int $resId, string $type, int $version): array;
+
+    /**
+     * Check if user has rights over the resource
+     * 
+     * @param   int     $resId      Resource id
+     * @param   int     $userId     User id
+     * @return  bool
+     */
+    public function hasRightByResId(int $resId, int $userId): bool;
 }
