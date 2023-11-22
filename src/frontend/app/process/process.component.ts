@@ -30,7 +30,6 @@ import { TechnicalInformationComponent } from '@appRoot/indexation/technical-inf
 import { NotesListComponent } from '@appRoot/notes/notes-list.component';
 import { AuthService } from '@service/auth.service';
 import { SessionStorageService } from '@service/session-storage.service';
-import { resolve } from 'dns';
 
 
 @Component({
