@@ -191,6 +191,25 @@ class ListInstanceController
             return $response->withStatus(400)->withJson(['errors' => 'Body is not set or not an array']);
         }
 
+        $listinstanceCtrl = [];
+        foreach ($body as $keyRes => $listInstanceByRes) {
+            if (!array_key_exists($keyRes, $listinstanceCtrl)) {
+                $listinstanceCtrl[$keyRes] = [];
+            }
+
+            foreach ($listInstanceByRes['listInstances'] as $itemListinstance) {
+                if (!array_key_exists($itemListinstance['item_mode'], $listinstanceCtrl[$keyRes])) {
+                    $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
+                }
+
+                if (in_array($itemListinstance['item_type'] . '#' . $itemListinstance['item_id'], $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']])) {
+                    return $response->withStatus(400)->withJson(['errors' => 'Some users/entities are present at least twice with the same role']);
+                } else {
+                    $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'];
+                }
+            }
+        }
+
         $controller = ListInstanceController::updateListInstance(['data' => $body, 'userId' => $GLOBALS['id'], 'fullRight' => $fullRight]);
         if (!empty($controller['errors'])) {
             return $response->withStatus($controller['code'])->withJson(['errors' => $controller['errors']]);
