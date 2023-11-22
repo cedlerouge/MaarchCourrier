@@ -20,6 +20,7 @@ interface ResourceDataInterface
     public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
     public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
     public const ADR_RESOURCE_TYPES = ['PDF', 'SIGN', 'NOTE'];
+    public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
 
     /**
      * @param   int     $resId

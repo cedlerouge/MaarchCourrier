@@ -250,6 +250,9 @@ class RetrieveResource
         if (!empty($document['error'])) {
             return ['code' => 400, 'error' => $document['error']];
         }
+        if (!empty($document) && $version > $document['version']) {
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_INCORRECT_VERSION];
+        }
 
         $subject = $document['subject'];
 
