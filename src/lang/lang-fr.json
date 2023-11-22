@@ -2823,6 +2823,6 @@
     "tutoStep1": "<span class=\"tuto-label\">Etape 1</span><br/>Accéder à <b><a href=\"{{url}}\" target=\"_blank\">votre profil</a></b>.",
     "tutoStep2": "<span class=\"tuto-label\">Etape 2</span><br/>Cliquer sur le bouton « <b>Copier mon jeton d'authentification</b> »",
     "tutoStep3": "<span class=\"tuto-label\">Etape 3</span><br/>Faites <kbd>Ctrl</kbd>+<kbd>v</kbd> dans le champ ci-dessous:",
-    "copyAuthTokenDesc": "Copie les jetons d'authentification dans votre press-papier. Nécessaire notamment pour le module d'envoi via outlook.",
+    "copyAuthTokenDesc": "Copie les jetons d'authentification dans votre presse-papier. Nécessaire notamment pour le module d'envoi via outlook.",
     "duplicateUsersWithSameMode": "Certains utilisateurs sont présents au moins deux fois avec le même rôle."
 }
