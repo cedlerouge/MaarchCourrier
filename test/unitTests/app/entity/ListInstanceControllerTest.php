@@ -539,6 +539,27 @@ class ListInstanceControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    public function testCannotUpdateListinstanceIfComponentsOfListinstanceAreNotAnArray()
+    {
+        $listInstanceController = new ListInstanceController();
+        $body = [
+            [
+                'resId' => self::$resourceId,
+                'listInstances' => [
+                    'item_id' => 10,
+                    'item_mode' => 'avis',
+                    'item_type' => 'user'
+                ]
+            ]
+        ];
+
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
+        $this->assertSame(400, $response->getStatusCode());
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $this->assertSame('listInstances component is empty or not an object', $responseBody['errors']);
+    }
+
     public function testCannotSetParallelOpinionCircuitWithSameUserAndRole()
     {
         $listInstanceController = new ListInstanceController();
@@ -549,7 +570,7 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $body = [
             [
-                'resId' => 100,
+                'resId' => self::$resourceId,
                 'listInstances' => [
                     [
                         'difflist_type' => "entity_id",

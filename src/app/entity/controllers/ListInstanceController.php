@@ -199,6 +199,10 @@ class ListInstanceController
 
             if (isset($listInstanceByRes['listInstances'])) {
                 foreach ($listInstanceByRes['listInstances'] as $itemListinstance) {
+                    if (!Validator::arrayType()->notEmpty()->validate($itemListinstance)) {
+                        return $response->withStatus(400)->withJson(['errors' => 'listInstances component is empty or not an object']);
+                    }
+
                     if (!array_key_exists($itemListinstance['item_mode'], $listinstanceCtrl[$keyRes])) {
                         $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
                     }
