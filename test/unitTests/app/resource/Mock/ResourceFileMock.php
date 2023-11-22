@@ -15,12 +15,14 @@ class ResourceFileMock implements ResourceFileInterface
 {
     public bool $doesRessourceExist = true;
     public bool $doesRessourceFileExistInDatabase = true;
-    public bool $doesRessourceDocserverExist = true;
-    public bool $doesRessourceFileExistInDocserver = true;
+    public bool $doesFolderExist = true;
+    public bool $doesFileExist = true;
     public bool $doesRessourceFileFingerprintMatch = true;
-    public bool $doesRessourceFileGetContentFaile = false;
+    public bool $doesRessourceFileGetContentFail = false;
+    public bool $doesWatermarkInResourceFileContentFail = false;
 
     public string $mainResourceOriginalFileContent = 'original file content';
+    public string $mainWatermarkInResourceFileContent = 'watermark in file content';
     public string $docserverPath = 'install/samples/resources/';
     public string $documentFilePath  = '2021/03/0001/';
     public string $documentFilename  = '0001_960655724.pdf';
@@ -63,7 +65,7 @@ class ResourceFileMock implements ResourceFileInterface
         if (empty($folderPath)) {
             return false;
         }
-        return $this->doesRessourceDocserverExist;
+        return $this->doesFolderExist;
     }
 
     /**
@@ -78,7 +80,7 @@ class ResourceFileMock implements ResourceFileInterface
         if (empty($filePath)) {
             return false;
         }
-        return $this->doesRessourceFileExistInDocserver;
+        return $this->doesFileExist;
     }
 
     /**
@@ -114,10 +116,31 @@ class ResourceFileMock implements ResourceFileInterface
             return 'false';
         }
 
-        if (!$this->doesRessourceFileGetContentFaile) {
+        if (!$this->doesRessourceFileGetContentFail) {
             return $this->mainResourceOriginalFileContent;
         } else {
             return 'false';
+        }
+    }
+
+    /**
+     * Retrieves file content with watermark.
+     *
+     * @param   int     $resId          Resource id.
+     * @param   string  $ffileContent   The path to the file.
+     *
+     * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
+     */
+    public function getWatermark(int $resId, string $fileContent): string
+    {
+        if ($resId <= 0) {
+            return 'null';
+        }
+
+        if (!$this->doesWatermarkInResourceFileContentFail) {
+            return $this->mainWatermarkInResourceFileContent;
+        } else {
+            return 'null';
         }
     }
 }
