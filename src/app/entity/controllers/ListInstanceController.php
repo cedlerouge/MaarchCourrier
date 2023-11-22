@@ -197,15 +197,17 @@ class ListInstanceController
                 $listinstanceCtrl[$keyRes] = [];
             }
 
-            foreach ($listInstanceByRes['listInstances'] as $itemListinstance) {
-                if (!array_key_exists($itemListinstance['item_mode'], $listinstanceCtrl[$keyRes])) {
-                    $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
-                }
+            if (isset($listInstanceByRes['listInstances'])) {
+                foreach ($listInstanceByRes['listInstances'] as $itemListinstance) {
+                    if (!array_key_exists($itemListinstance['item_mode'], $listinstanceCtrl[$keyRes])) {
+                        $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
+                    }
 
-                if (in_array($itemListinstance['item_type'] . '#' . $itemListinstance['item_id'], $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Some users/entities are present at least twice with the same role']);
-                } else {
-                    $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'];
+                    if (in_array($itemListinstance['item_type'] . '#' . $itemListinstance['item_id'], $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']])) {
+                        return $response->withStatus(400)->withJson(['errors' => 'Some users/entities are present at least twice with the same role']);
+                    } else {
+                        $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'];
+                    }
                 }
             }
         }
