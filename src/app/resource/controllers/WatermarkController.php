@@ -26,9 +26,9 @@ class WatermarkController
 {
     public static function watermarkResource(array $args)
     {
-        ValidatorModel::notEmpty($args, ['resId', 'path']);
+        ValidatorModel::notEmpty($args, ['resId', 'fileContent']);
         ValidatorModel::intVal($args, ['resId']);
-        ValidatorModel::stringType($args, ['path']);
+        ValidatorModel::stringType($args, ['fileContent']);
 
         $configuration = ConfigurationModel::getByPrivilege(['select' => ['value'], 'privilege' => 'admin_parameters_watermark']);
         if (empty($configuration)) {
@@ -56,31 +56,36 @@ class WatermarkController
             $text = str_replace("[{$value}]", $tmp, $text);
         }
 
+        $preProcessWatermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_preprocess_watermark.pdf";
+        file_put_contents($preProcessWatermarkFile, $args['fileContent']);
+
+        $flattenedFile = null;
         $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+
         if (!empty($libPath)) {
             require_once($libPath);
 
             $flattenedFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
             $writer = new \SetaPDF_Core_Writer_File($flattenedFile);
-            $document = \SetaPDF_Core_Document::loadByFilename($args['path'], $writer);
+            $document = \SetaPDF_Core_Document::loadByFilename($preProcessWatermarkFile, $writer);
 
             $formFiller = new \SetaPDF_FormFiller($document);
             $fields = $formFiller->getFields();
             $fields->flatten();
             $document->save()->finish();
 
-            $args['path'] = $flattenedFile;
+            unlink($preProcessWatermarkFile);
+            $preProcessWatermarkFile = $flattenedFile;
         }
 
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
         if (file_exists($libPath)) {
             require_once($libPath);
         }
+
         try {
-            $watermarkFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "_watermark.pdf";
-            file_put_contents($watermarkFile, file_get_contents($args['path']));
             $pdf = new Fpdi('P', 'pt');
-            $nbPages = $pdf->setSourceFile($watermarkFile);
+            $nbPages = $pdf->setSourceFile($preProcessWatermarkFile);
             $pdf->setPrintHeader(false);
             for ($i = 1; $i <= $nbPages; $i++) {
                 $page = $pdf->importPage($i, 'CropBox');
@@ -107,8 +112,12 @@ class WatermarkController
             $fileContent = null;
         }
 
+        // remove tmp files
         if (!empty($flattenedFile) && is_file($flattenedFile)) {
             unlink($flattenedFile);
+        }
+        if (!empty($preProcessWatermarkFile) && is_file($preProcessWatermarkFile)) {
+            unlink($preProcessWatermarkFile);
         }
 
         return $fileContent;
