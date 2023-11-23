@@ -20,11 +20,13 @@ class ResourceDataType
     Public const SIGNED = 'SIGNED';
     Public const CONVERTED = 'CONVERTED';
     Public const VERSION = 'VERSION';
+    public const VERSION_BY_PAGE = 'VERSION_BY_PAGE';
 
     public const TYPES = [
         ResourceDataType::DEFAULT,
         ResourceDataType::SIGNED,
         ResourceDataType::CONVERTED,
-        ResourceDataType::VERSION
+        ResourceDataType::VERSION,
+        ResourceDataType::VERSION_BY_PAGE
     ];
 }

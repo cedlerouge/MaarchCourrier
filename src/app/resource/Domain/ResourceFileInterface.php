@@ -20,6 +20,8 @@ interface ResourceFileInterface
     public const ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER = 'Document not found in docserver';
     public const ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH = 'Fingerprints do not match';
     public const ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER = 'Failed to get document on docserver';
+    public const ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE = 'Thumbnail not found in docserver or not readable';
+    public const ERROR_RESOURCE_PAGE_NOT_FOUND = "Page not found in docserver";
 
     /**
      * Build file path from document and docserver
@@ -83,10 +85,35 @@ interface ResourceFileInterface
      * Convert resource to thumbnail.
      * 
      * @param   int     $resId  Resource id.
+     * 
      * @return  array{
      *      error?:     string, If an error occurs.
      *      success?:   true    If successful.
      * }
      */
     public function convertToThumbnail(int $resId): array;
+
+    /**
+     * Convert resource page to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @param   string  $type   Resource type.
+     * @param   int     $page   Resource page number.
+     * 
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array;
+
+    /**
+     * Retrieves the number of pages in a pdf file
+     * 
+     * @param   string  $filePath   Resource path.
+     * 
+     * @return  int     Number of pages.
+     * @throws  Exception|PdfParserException
+     */
+    public function getTheNumberOfPagesInThePdfFile(string $filePath): int;
 }

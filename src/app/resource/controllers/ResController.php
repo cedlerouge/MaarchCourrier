@@ -748,83 +748,19 @@ class ResController extends ResourceControlController
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
-
-        $document = ResModel::getById(['select' => ['filename', 'version'], 'resId' => $args['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
+        if (!Validator::intVal()->validate($args['page'])) {
+            return $response->withStatus(403)->withJson(['errors' => 'page param is not an integer']);
         }
 
-        if (!ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
-        }
+        $retrieveResource = RetrieveResourceFactory::create();
+        $thumbnailFileByPage = $retrieveResource->getThumbnailFileByPage($args['resId'], $args['page']);
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => 'TNL_MLB', 'select' => ['path_template']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
+        if (!empty($thumbnailFileByPage['error'])) {
+            return $response->withStatus($thumbnailFileByPage['code'])->withJson(['errors' => $thumbnailFileByPage['error']]);
         }
-
-        $control = ConvertThumbnailController::convertOnePage(['type' => 'resource', 'resId' => $args['resId'], 'page' => $args['page']]);
-        if (!empty($control['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
-        }
-        $adr = AdrModel::getDocuments([
-            'select'  => ['path', 'filename'],
-            'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'TNL' . $args['page']]
-        ]);
-        $pathToThumbnail = $docserver['path_template'] . $adr[0]['path'] . $adr[0]['filename'];
-        if (!is_file($pathToThumbnail) || !is_readable($pathToThumbnail)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Thumbnail not found on docserver or not readable', 'lang' => 'thumbnailNotFound']);
-        }
-
-        $fileContent = file_get_contents($pathToThumbnail);
-        if ($fileContent === false) {
-            return $response->withStatus(404)->withJson(['errors' => 'Page not found on docserver']);
-        }
-
-        $base64Content = base64_encode($fileContent);
-
-        $adrPdf = AdrModel::getDocuments([
-            'select'  => ['path', 'filename', 'docserver_id'],
-            'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'PDF'],
-            'orderBy' => ['version desc']
-        ]);
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $adrPdf[0]['docserver_id'], 'select' => ['path_template']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-        }
-        $pathToPdf = $docserver['path_template'] . $adrPdf[0]['path'] . $adrPdf[0]['filename'];
-        $pathToPdf = str_replace('#', '/', $pathToPdf);
-
-        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
-        if (!empty($libPath)) {
-            require_once($libPath);
-
-            $document = \SetaPDF_Core_Document::loadByFilename($pathToPdf);
-            $pages = $document->getCatalog()->getPages();
-            $pageCount = count($pages);
-        } else {
-            try {
-                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
-                if (file_exists($libPath)) {
-                    require_once($libPath);
-                }
-                $pdf = new Fpdi('P', 'pt');
-                $pageCount = $pdf->setSourceFile($pathToPdf);
-            } catch (\Exception $e) {
-                LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => 'resources',
-                    'level'     => 'ERROR',
-                    'tableName' => 'res_letterbox',
-                    'recordId'  => $args['resId'],
-                    'eventType' => 'thumbnail',
-                    'eventId'   => $e->getMessage()
-                ]);
-                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
-            }
-        }
+        $fileContent    = $thumbnailFileByPage['fileContent'];
+        $pageCount      = $thumbnailFileByPage['pageCount'];
+        $base64Content  = base64_encode($fileContent);
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
     }

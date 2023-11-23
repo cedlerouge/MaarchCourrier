@@ -159,7 +159,31 @@ class ResourceDataMock implements ResourceDataInterface
         if ($version <= 0) {
             return ['error' => "The 'version' parameter must be greater than 0"];
         }
+        if (!$this->doesResourceVersionExist) {
+            return [];
+        }
 
+        return [
+            'docserver_id'  => 'FASTHD',
+            'path'          => '2021/03/0001/',
+            'filename'      => '0001_960655724.pdf',
+            'fingerprint'   => 'file fingerprint'
+        ];
+    }
+
+    /**
+     * @param   int     $resId  Resource id
+     * @param   string  $type   Resource converted format
+     * @return  array
+     */
+    public function getLatestResourceVersion(int $resId, string $type): array
+    {
+        if ($resId <= 0) {
+            return ['error' => "The 'resId' parameter must be greater than 0"];
+        }
+        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
+            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES)];
+        }
         if (!$this->doesResourceVersionExist) {
             return [];
         }

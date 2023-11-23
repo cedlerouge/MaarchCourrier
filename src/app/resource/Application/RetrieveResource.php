@@ -17,6 +17,7 @@ namespace Resource\Application;
 use Resource\Domain\ResourceDataInterface;
 use Resource\Domain\ResourceDataType;
 use Resource\Domain\ResourceFileInterface;
+use SrcCore\controllers\LogsController;
 
 class RetrieveResource
 {
@@ -36,14 +37,15 @@ class RetrieveResource
      *
      * @param int    $resId            The ID of the resource.
      * @param string $resourceDataType The type of resource data (e.g., 'DEFAULT', 'CONVERTED', 'SIGNED', 'VERSION').
-     * @param int    $version          (Optional) The version of the resource data. Required for 'SIGNED' and 'VERSION' types.
-     * @param string $type             (Optional) The type of resource for 'VERSION' type (e.g., 'PDF', 'TNL', 'SIGN', 'NOTE').
+     * @param int    $version          (Optional) The version of the resource data. Required for 'SIGNED', 'VERSION' and 'VERSION_BY_PAGE' types.
+     * @param string $type             (Optional) The type of resource for 'VERSION' type (e.g., 'PDF', 'TNL', 'SIGN', 'NOTE') and 'VERSION_BY_PAGE' type ('TNL').
+     * @param int    $page             (Optional) The number of the page for the type of resource 'VERSION_BY_PAGE'.
      *
      * @return array An associative array containing resource data or an error message.
      *               The structure of the array depends on the specified 'resourceDataType'.
      *               Possible keys include: 'error', 'docserver_id', 'path', 'filename', 'version', 'fingerprint', 'subject', 'format', 'typist'.
      */
-    public function getResourceDataByType(int $resId, string $resourceDataType, int $version = 0, string $type = 'PDF'): array
+    public function getResourceDataByType(int $resId, string $resourceDataType, int $version = 0, string $type = 'PDF', int $page = 0): array
     {
         if ($resId <= 0) {
             return ['error' => "The 'resId' parameter must be greater than 0"];
@@ -52,13 +54,19 @@ class RetrieveResource
             return ['error' => "The 'resourceDataType' parameter should be : " . implode(', ', ResourceDataType::TYPES)];
         }
         if (ResourceDataType::SIGNED === $resourceDataType && $version <= 0) {
-            return ['error' => "The 'version' parameter must be greater than 0 for ResourceDataType is signed"];
+            return ['error' => "The 'version' parameter must be greater than 0 for ResourceDataType is SIGNED"];
         }
         if (ResourceDataType::VERSION === $resourceDataType && $version <= 0) {
-            return ['error' => "The 'version' parameter must be greater than 0 for ResourceDataType is version"];
+            return ['error' => "The 'version' parameter must be greater than 0 for ResourceDataType is VERSION"];
         }
         if (ResourceDataType::VERSION === $resourceDataType && !in_array($type, ResourceDataInterface::ADR_RESOURCE_TYPES)) {
             return ['error' => "The 'type' parameter must be one of theses types: " . implode(', ', ResourceDataInterface::ADR_RESOURCE_TYPES)];
+        }
+        if (ResourceDataType::VERSION_BY_PAGE === $resourceDataType && $type !== 'TNL') {
+            return ['error' => "The 'type' parameter must be 'TNL'"];
+        }
+        if (ResourceDataType::VERSION_BY_PAGE === $resourceDataType && $type === 'TNL' && $page <= 0) {
+            return ['error' => "The 'page' parameter must be greater than 0 for ResourceDataType is VERSION_BY_PAGE"];
         }
 
         $document = [];
@@ -85,6 +93,9 @@ class RetrieveResource
                 break;
             case ResourceDataType::VERSION:
                 $document = $this->resourceData->getResourceVersion($resId, $type, $version);
+                break;
+            case ResourceDataType::VERSION_BY_PAGE:
+                $document = $this->resourceData->getResourceVersion($resId, $type . $page, $version);
                 break;
         }
 
@@ -302,6 +313,18 @@ class RetrieveResource
         return ['formatFilename' => $filename, 'pathInfo' => pathinfo($filePath), 'fileContent' => $fileContent];
     }
 
+    /**
+     * Retrieves thumbnail of resource.
+     * 
+     * @param   int     $resId      The ID of the resource.
+     * 
+     * @return  array{
+     *     fileContent?:    string, The content of the original file. Present only if no errors occurred.
+     *     formatFilename?: string, Formated filename. Present only if no errors occurred.
+     *     error?:          string, If an error occurs. Possible values include ERROR_RESOURCE_DOES_NOT_EXIST,
+     *                      ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST.
+     * }
+     */
     public function getThumbnailFile(int $resId): array
     {
         $document = $this->getResourceDataByType($resId, ResourceDataType::DEFAULT);
@@ -327,11 +350,10 @@ class RetrieveResource
             }
 
             if (!empty($tnlDocument)) {
-                $docserver = $this->resourceData->getDocserverDataByDocserverId($tnlDocument['docserver_id'], ['path_template']);
-                if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
-                    return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
+                $pathToThumbnail = $this->resourceFile->buildFilePath($tnlDocument['docserver_id'], $tnlDocument['path'], $tnlDocument['filename']);
+                if (!$this->resourceFile->fileExists($pathToThumbnail)) {
+                    return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
                 }
-                $pathToThumbnail = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $tnlDocument['path']) . $tnlDocument['filename'];
             }
         }
 
@@ -344,5 +366,103 @@ class RetrieveResource
         }
 
         return ['formatFilename' => "maarch.{$pathInfo['extension']}", 'fileContent' => $fileContent];
+    }
+
+    /**
+     * Retrieves thumbnail of resource by page number.
+     * 
+     * @param   int $resId  The ID of the resource.
+     * @param   int $page   The ID of the resource.
+     * 
+     * @return  array{
+     *     fileContent?:    string, The content of the original file. Present only if no errors occurred.
+     *     pageCount?:      int,    Number of pages from resource file. Present only if no errors occurred.
+     *     error?:          string, If an error occurs. Possible values include ERROR_RESOURCE_DOES_NOT_EXIST,
+     *                      ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST.
+     * }
+     */
+    public function getThumbnailFileByPage(int $resId, int $page): array
+    {
+        $document = $this->getResourceDataByType($resId, ResourceDataType::DEFAULT);
+        if (!empty($document['error'])) {
+            return ['code' => 400, 'error' => $document['error']];
+        } elseif (empty($document)) {
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOES_NOT_EXIST];
+        }
+
+        if (!$this->resourceData->hasRightByResId($resId, $GLOBALS['id'])) {
+            return ['code' => 403, 'error' => $this->resourceData::ERROR_RESOURCE_OUT_OF_PERIMETER];
+        }
+
+        $control = $this->resourceFile->convertOnePageToThumbnail($resId, 'resource', $page);
+        if (!empty($control['error'])) {
+            return ['code' => 400, 'error' => $control['error']];
+        }
+
+        $adr = $this->getResourceDataByType($resId, ResourceDataType::VERSION_BY_PAGE, $document['version'], 'TNL', $page);
+        if (!empty($adr['error'])) {
+            return ['code' => 400, 'error' => $adr['error']];
+        }
+
+        $pathToThumbnail = $this->resourceFile->buildFilePath($adr['docserver_id'], $adr['path'], $adr['filename']);
+        if (!$this->resourceFile->fileExists($pathToThumbnail)) {
+            return ['code' => 400, 'error' => $this->resourceFile::ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE];
+        }
+
+        $fileContent = $this->resourceFile->getFileContent($pathToThumbnail);
+        if ($fileContent === 'false') {
+            return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_PAGE_NOT_FOUND];
+        }
+
+        $latestResourceVersionPdf = $this->getLatestResourceVersion($resId);
+        if (!empty($latestResourceVersionPdf['error'])) {
+            return ['code' => $latestResourceVersionPdf['code'], 'error' => $latestResourceVersionPdf['error']];
+        }
+
+        $pageCount = 0;
+        try {
+            $pageCount = $this->resourceFile->getTheNumberOfPagesInThePdfFile($latestResourceVersionPdf['filePath']);
+        } catch (\Throwable $th) {
+            LogsController::add([
+                'isTech'    => true,
+                'moduleId'  => 'resources',
+                'level'     => 'ERROR',
+                'tableName' => 'res_letterbox',
+                'recordId'  => $resId,
+                'eventType' => 'thumbnail',
+                'eventId'   => $th->getMessage()
+            ]);
+            return ['code' => 400, 'error' => $th->getMessage()];
+        }
+
+        return ['fileContent' => $fileContent, 'pageCount' => $pageCount];
+    }
+
+    /**
+     * Retrieves the last version of resource by type.
+     * 
+     * @param   int     $resId  The ID of the resource.
+     * @param   string  $type   The type of the resource (e.g., 'PDF', 'TNL', 'SIGN', 'NOTE'). Default value is 'PDF'.
+     * 
+     * @return  array{
+     *     resource?:   array,  Resource information. Present only if no errors occurred.
+     *     filePath?:   string, Resource file path from docserver. Present only if no errors occurred.
+     *     error?:      string, If an error occurs. Possible values include ERROR_RESOURCE_DOES_NOT_EXIST,
+     *                  ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST, ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER.
+     * }
+     */
+    private function getLatestResourceVersion(int $resId, string $type = 'PDF'): array
+    {
+        $document = $this->resourceData->getLatestResourceVersion($resId, $type);
+        if (!empty($document['error'])) {
+            return ['code' => 400, 'error' => $document['error']];
+        }
+
+        $filePath = $this->resourceFile->buildFilePath($document['docserver_id'], $document['path'], $document['filename']);
+        if (!$this->resourceFile->fileExists($filePath)) {
+            return ['code' => 400, 'error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
+        }
+
+        return ['resource' => $document, 'filePath' => $filePath];
     }
 }

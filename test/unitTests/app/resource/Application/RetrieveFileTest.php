@@ -228,4 +228,174 @@ class RetrieveFileTest extends TestCase
         $this->assertNotEmpty($result);
         $this->assertSame($result, 'null');
     }
+
+    /**
+     * @return void
+     */
+    public function testConvertToThumbnailWithResIdIsNotValidExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertToThumbnail(0);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'resId' parameter must be greater than 0");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertToThumbnailAndConvertionReturnAnErrorExpectError(): void
+    {
+        // Arrange
+        $this->resourceFileMock->doesResourceConvertToThumbnailFailed = true;
+
+        // Act
+        $result = $this->resourceFileMock->convertToThumbnail(1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "Convertion to thumbnail failed");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertToThumbnailWithNoErrorsExpectSuccess(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertToThumbnail(1);
+
+        // Assert
+        $this->assertNotEmpty($result['success']);
+        $this->assertSame($result['success'], true);
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailWithResIdIsNotValidExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(0, 'resource', 1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'resId' parameter must be greater than 0");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailWithTypeParamIsEmptyExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(1, '', 1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'type' is empty or not 'resource', 'attachment'");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailWithTypeParamIsUnknowTypeExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(1, 'thumbnail', 1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'type' is empty or not 'resource', 'attachment'");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailWithPageParamIsNotValidExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(1, 'resource', 0);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'page' parameter must be greater than 0");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailAndConvertionReturnAnErrorExpectError(): void
+    {
+        // Arrange
+        $this->resourceFileMock->doesResourceConvertOnePageToThumbnailFailed = true;
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(1, 'resource', 1);
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "Convertion one page to thumbnail failed");
+    }
+
+    /**
+     * @return void
+     */
+    public function testConvertOnePageToThumbnailWithNoErrorsExpectSuccess(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceFileMock->convertOnePageToThumbnail(1, 'resource', 1);
+
+        // Assert
+        $this->assertNotEmpty($result['success']);
+        $this->assertSame($result['success'], true);
+    }
+
+    /**
+     * @expectedException
+     * @return void
+     */
+    public function testGetTheNumberOfPagesInThePdfFileWithFilePathParamIsEmptyExpectExceptionThrown(): void
+    {
+        // Arrange
+
+        // Assert
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Throw an exception when get pdf file");
+        
+        // Act
+        $this->resourceFileMock->getTheNumberOfPagesInThePdfFile('');
+    }
+
+    /**
+     * @expectedException
+     * @return void
+     */
+    public function testGetTheNumberOfPagesInThePdfFileAndCanNotReadFileExpectExceptionThrown(): void
+    {
+        // Arrange
+        $this->resourceFileMock->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile = true;
+
+        // Assert
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage("Throw an exception when parsing pdf file");
+        
+        // Act
+        $this->resourceFileMock->getTheNumberOfPagesInThePdfFile('/some/invalid/file/path/sample.pdf');
+    }
 }

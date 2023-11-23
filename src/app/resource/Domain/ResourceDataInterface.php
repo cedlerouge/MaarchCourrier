@@ -16,6 +16,7 @@ namespace Resource\Domain;
 
 interface ResourceDataInterface
 {
+    public const ERROR_RESOURCE_OUT_OF_PERIMETER = "Document out of perimeter";
     public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
     public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
     public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
@@ -76,6 +77,13 @@ interface ResourceDataInterface
      * @return  array
      */
     public function getResourceVersion(int $resId, string $type, int $version): array;
+
+    /**
+     * @param   int     $resId  Resource id
+     * @param   string  $type   Resource converted format
+     * @return  array
+     */
+    public function getLatestResourceVersion(int $resId, string $type): array;
 
     /**
      * Check if user has rights over the resource

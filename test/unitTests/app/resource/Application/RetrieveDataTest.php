@@ -332,4 +332,69 @@ class RetrieveDataTest extends TestCase
         $this->assertArrayHasKey('filename', $result);
         $this->assertArrayHasKey('fingerprint', $result);
     }
+
+    /**
+     * @return void
+     */
+    public function testGetLatestResourceVersionWithResIdIs0ExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceDataMock->getLatestResourceVersion(0, 'something');
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'resId' parameter must be greater than 0");
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetLatestResourceVersionWithTypeParamEmptyExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceDataMock->getLatestResourceVersion(1, '');
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'type' parameter should be : " . implode(', ', ResourceDataInterface::ADR_RESOURCE_TYPES));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetLatestResourceVersionWithTypeParamHasWrongTypeExpectError(): void
+    {
+        // Arrange
+
+        // Act
+        $result = $this->resourceDataMock->getLatestResourceVersion(1, 'ME');
+
+        // Assert
+        $this->assertNotEmpty($result['error']);
+        $this->assertSame($result['error'], "The 'type' parameter should be : " . implode(', ', ResourceDataInterface::ADR_RESOURCE_TYPES));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetLatestResourceVersionWithAllParamsAreValidExpectReturnResource(): void
+    {
+        // Arrange
+        $type = ResourceDataInterface::ADR_RESOURCE_TYPES[0];
+
+        // Act
+        $result = $this->resourceDataMock->getLatestResourceVersion(1, $type);
+
+        // Assert
+        $this->assertNotEmpty($result);
+        $this->assertArrayNotHasKey('error', $result);
+        $this->assertArrayHasKey('docserver_id', $result);
+        $this->assertArrayHasKey('path', $result);
+        $this->assertArrayHasKey('filename', $result);
+        $this->assertArrayHasKey('fingerprint', $result);
+    }
 }

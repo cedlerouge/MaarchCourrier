@@ -9,6 +9,7 @@
 
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
+use Exception;
 use Resource\Domain\ResourceFileInterface;
 
 class ResourceFileMock implements ResourceFileInterface
@@ -21,7 +22,9 @@ class ResourceFileMock implements ResourceFileInterface
     public bool $doesResourceFileGetContentFail = false;
     public bool $doesWatermarkInResourceFileContentFail = false;
     public bool $doesResourceConvertToThumbnailFailed = false;
+    public bool $doesResourceConvertOnePageToThumbnailFailed = false;
     public bool $returnResourceThumbnailFileContent = false;
+    public bool $triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile = false;
 
     public string $mainResourceFileContent = 'original file content';
     public string $mainWatermarkInResourceFileContent = 'watermark in file content';
@@ -167,7 +170,7 @@ class ResourceFileMock implements ResourceFileInterface
     public function convertToThumbnail(int $resId): array
     {
         if ($resId <= 0) {
-            return 'null';
+            return ['error' => "The 'resId' parameter must be greater than 0"];
         }
 
         if ($this->doesResourceConvertToThumbnailFailed) {
@@ -175,5 +178,57 @@ class ResourceFileMock implements ResourceFileInterface
         } else {
             return ['success' => true];
         }
+    }
+
+    /**
+     * Convert resource page to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @param   string  $type   Resource type.
+     * @param   int     $page   Resource page number.
+     * 
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array
+    {
+        if ($resId <= 0) {
+            return ['error' => "The 'resId' parameter must be greater than 0"];
+        }
+        if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
+            return ['error' => "The 'type' is empty or not 'resource', 'attachment'"];
+        }
+        if ($page <= 0) {
+            return ['error' => "The 'page' parameter must be greater than 0"];
+        }
+
+        if ($this->doesResourceConvertOnePageToThumbnailFailed) {
+            return ['error' => 'Convertion one page to thumbnail failed'];
+        } else {
+            return ['success' => true];
+        }
+    }
+
+    /**
+     * Retrieves the number of pages in a pdf file
+     * 
+     * @param   string  $filePath   Resource path.
+     * 
+     * @return  int     Number of pages.
+     * @throws  Exception|PdfParserException
+     */
+    public function getTheNumberOfPagesInThePdfFile(string $filePath): int
+    {
+        if (empty($filePath)) {
+            throw new Exception("Throw an exception when get pdf file");
+        }
+
+        if ($this->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile) {
+            throw new Exception("Throw an exception when parsing pdf file");
+        }
+
+        return 1;
     }
 }

@@ -139,8 +139,9 @@ class ResourceData implements ResourceDataInterface
         if ($resId <= 0) {
             return ['error' => "The 'resId' parameter must be greater than 0"];
         }
-        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
-            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES)];
+        $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
+        if (empty($type) || (!in_array($type, $this::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
+            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'"];
         }
         if ($version <= 0) {
             return ['error' => "The 'version' parameter must be greater than 0"];
@@ -150,6 +151,29 @@ class ResourceData implements ResourceDataInterface
             'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
             'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
             'data'      => [$resId, $type, $version]
+        ]);
+        return $document[0] ?? [];
+    }
+
+    /**
+     * @param   int     $resId  Resource id
+     * @param   string  $type   Resource converted format
+     * @return  array
+     */
+    public function getLatestResourceVersion(int $resId, string $type): array
+    {
+        if ($resId <= 0) {
+            return ['error' => "The 'resId' parameter must be greater than 0"];
+        }
+        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
+            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES)];
+        }
+        
+        $document = AdrModel::getDocuments([
+            'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
+            'where'     => ['res_id = ?', 'type = ?'],
+            'data'      => [$resId, $type],
+            'orderBy'   => ['version desc']
         ]);
         return $document[0] ?? [];
     }

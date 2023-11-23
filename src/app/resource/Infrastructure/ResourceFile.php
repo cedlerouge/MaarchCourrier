@@ -21,6 +21,8 @@ use Resource\Domain\ResourceFileInterface;
 use Resource\controllers\StoreController;
 use Resource\controllers\WatermarkController;
 use Resource\models\ResModel;
+use setasign\Fpdi\Fpdi;
+use SrcCore\models\CoreConfigModel;
 
 class ResourceFile implements ResourceFileInterface
 {
@@ -159,5 +161,61 @@ class ResourceFile implements ResourceFileInterface
         } else {
             return ['success' => $check];
         }
+    }
+
+    /**
+     * Convert resource page to thumbnail.
+     * 
+     * @param   int     $resId  Resource id.
+     * @param   string  $type   Resource type, 'resource' or 'attachment'.
+     * @param   int     $page   Resource page number.
+     * @return  array{
+     *      error?:     string, If an error occurs.
+     *      success?:   true    If successful.
+     * }
+     */
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array
+    {
+        if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
+            return ['error' => "The 'type' is empty or not 'resource', 'attachment'"];
+        }
+
+        $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
+        if (isset($check['errors'])) {
+            return ['error' => $check['errors']];
+        } else {
+            return ['success' => $check];
+        }
+    }
+
+    /**
+     * Retrieves the number of pages in a pdf file
+     * 
+     * @param   string  $filePath   Resource path.
+     * 
+     * @return  int     Number of pages.
+     * @throws  Exception|PdfParserException
+     */
+    public function getTheNumberOfPagesInThePdfFile(string $filePath): int
+    {
+        $pageCount = 0;
+        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
+
+        if (!empty($libPath)) {
+            require_once($libPath);
+
+            $document = \SetaPDF_Core_Document::loadByFilename($filePath);
+            $pages = $document->getCatalog()->getPages();
+            $pageCount = count($pages);
+        } else {
+            $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+            if (file_exists($libPath)) {
+                require_once($libPath);
+            }
+            $pdf = new Fpdi('P', 'pt');
+            $pageCount = $pdf->setSourceFile($filePath);
+        }
+
+        return $pageCount;
     }
 }
