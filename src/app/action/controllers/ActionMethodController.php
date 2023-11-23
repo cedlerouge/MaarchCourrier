@@ -62,44 +62,44 @@ class ActionMethodController
     use ExportSEDATrait;
 
     const COMPONENTS_ACTIONS = [
-        'confirmAction' => null,
-        'closeMailAction' => 'closeMailAction',
-        'closeMailWithAttachmentsOrNotesAction' => 'closeMailWithAttachmentsOrNotesAction',
-        'redirectAction' => 'redirect',
-        'closeAndIndexAction' => 'closeMailAction',
-        'updateDepartureDateAction' => 'updateDepartureDateAction',
-        'enabledBasketPersistenceAction' => 'enabledBasketPersistenceAction',
-        'disabledBasketPersistenceAction' => 'disabledBasketPersistenceAction',
-        'resMarkAsReadAction' => 'resMarkAsReadAction',
-        'sendExternalSignatoryBookAction' => 'sendExternalSignatoryBookAction',
-        'sendExternalNoteBookAction' => 'sendExternalNoteBookAction',
-        'createAcknowledgementReceiptsAction' => 'createAcknowledgementReceipts',
-        'updateAcknowledgementSendDateAction' => 'updateAcknowledgementSendDateAction',
-        'sendShippingAction' => 'createMailevaShippings',
-        'sendSignatureBookAction' => 'sendSignatureBook',
-        'continueVisaCircuitAction' => 'continueVisaCircuit',
-        'redirectInitiatorEntityAction' => 'redirectInitiatorEntityAction',
-        'rejectVisaBackToPreviousAction' => 'rejectVisaBackToPrevious',
-        'resetVisaAction' => 'resetVisa',
-        'interruptVisaAction' => 'interruptVisa',
-        'sendToParallelOpinion' => 'sendToParallelOpinion',
-        'sendToOpinionCircuitAction' => 'sendToOpinionCircuit',
-        'continueOpinionCircuitAction' => 'continueOpinionCircuit',
-        'giveOpinionParallelAction' => 'giveOpinionParallel',
-        'validateParallelOpinionDiffusionAction' => 'validateParallelOpinionDiffusion',
-        'reconcileAction' => 'reconcile',
-        'sendAlfrescoAction' => 'sendResourceAlfresco',
-        'sendMultigestAction' => 'sendResourceMultigest',
-        'saveRegisteredMailAction' => 'saveAndPrintRegisteredMail',
-        'saveAndPrintRegisteredMailAction' => 'saveAndPrintRegisteredMail',
-        'saveAndIndexRegisteredMailAction' => 'saveAndPrintRegisteredMail',
-        'printRegisteredMailAction' => 'printRegisteredMail',
-        'printDepositListAction' => 'printDepositList',
-        'sendToRecordManagementAction' => 'sendToRecordManagement',
+        'confirmAction'                             => null,
+        'closeMailAction'                           => 'closeMailAction',
+        'closeMailWithAttachmentsOrNotesAction'     => 'closeMailWithAttachmentsOrNotesAction',
+        'redirectAction'                            => 'redirect',
+        'closeAndIndexAction'                       => 'closeMailAction',
+        'updateDepartureDateAction'                 => 'updateDepartureDateAction',
+        'enabledBasketPersistenceAction'            => 'enabledBasketPersistenceAction',
+        'disabledBasketPersistenceAction'           => 'disabledBasketPersistenceAction',
+        'resMarkAsReadAction'                       => 'resMarkAsReadAction',
+        'sendExternalSignatoryBookAction'           => 'sendExternalSignatoryBookAction',
+        'sendExternalNoteBookAction'                => 'sendExternalNoteBookAction',
+        'createAcknowledgementReceiptsAction'       => 'createAcknowledgementReceipts',
+        'updateAcknowledgementSendDateAction'       => 'updateAcknowledgementSendDateAction',
+        'sendShippingAction'                        => 'createMailevaShippings',
+        'sendSignatureBookAction'                   => 'sendSignatureBook',
+        'continueVisaCircuitAction'                 => 'continueVisaCircuit',
+        'redirectInitiatorEntityAction'             => 'redirectInitiatorEntityAction',
+        'rejectVisaBackToPreviousAction'            => 'rejectVisaBackToPrevious',
+        'resetVisaAction'                           => 'resetVisa',
+        'interruptVisaAction'                       => 'interruptVisa',
+        'sendToParallelOpinion'                     => 'sendToParallelOpinion',
+        'sendToOpinionCircuitAction'                => 'sendToOpinionCircuit',
+        'continueOpinionCircuitAction'              => 'continueOpinionCircuit',
+        'giveOpinionParallelAction'                 => 'giveOpinionParallel',
+        'validateParallelOpinionDiffusionAction'    => 'validateParallelOpinionDiffusion',
+        'reconcileAction'                           => 'reconcile',
+        'sendAlfrescoAction'                        => 'sendResourceAlfresco',
+        'sendMultigestAction'                       => 'sendResourceMultigest',
+        'saveRegisteredMailAction'                  => 'saveAndPrintRegisteredMail',
+        'saveAndPrintRegisteredMailAction'          => 'saveAndPrintRegisteredMail',
+        'saveAndIndexRegisteredMailAction'          => 'saveAndPrintRegisteredMail',
+        'printRegisteredMailAction'                 => 'printRegisteredMail',
+        'printDepositListAction'                    => 'printDepositList',
+        'sendToRecordManagementAction'              => 'sendToRecordManagement',
         'checkAcknowledgmentRecordManagementAction' => 'checkAcknowledgmentRecordManagement',
-        'checkReplyRecordManagementAction' => 'checkReplyRecordManagement',
-        'resetRecordManagementAction' => 'checkReplyRecordManagement',
-        'noConfirmAction' => null
+        'checkReplyRecordManagementAction'          => 'checkReplyRecordManagement',
+        'resetRecordManagementAction'               => 'checkReplyRecordManagement',
+        'noConfirmAction'                           => null
     ];
 
     /**
@@ -129,23 +129,23 @@ class ActionMethodController
         }
 
         ResModel::update([
-            'set' => $set,
+            'set'   => $set,
             'where' => ['res_id in (?)'],
-            'data' => [$args['resources']]
+            'data'  => [$args['resources']]
         ]);
 
         $resLetterboxData = ResModel::get([
             'select' => ['external_id', 'destination', 'res_id'],
-            'where' => ['res_id in (?)'],
-            'data' => [$args['resources']]
+            'where'  => ['res_id in (?)'],
+            'data'   => [$args['resources']]
         ]);
         $resLetterboxData = array_column($resLetterboxData, null, 'res_id');
 
         foreach ($args['resources'] as $resource) {
             if (isset($args['note']['content']) && !empty(trim($args['note']['content']))) {
                 $noteId = NoteModel::create([
-                    'resId' => $resource,
-                    'user_id' => $GLOBALS['id'],
+                    'resId'     => $resource,
+                    'user_id'   => $GLOBALS['id'],
                     'note_text' => $args['note']['content']
                 ]);
 
@@ -158,20 +158,20 @@ class ActionMethodController
                 if (!empty($noteId)) {
                     HistoryController::add([
                         'tableName' => "notes",
-                        'recordId' => $noteId,
+                        'recordId'  => $noteId,
                         'eventType' => "ADD",
-                        'info' => _NOTE_ADDED . " (" . $noteId . ")",
-                        'moduleId' => 'notes',
-                        'eventId' => 'noteadd'
+                        'info'      => _NOTE_ADDED . " (" . $noteId . ")",
+                        'moduleId'  => 'notes',
+                        'eventId'   => 'noteadd'
                     ]);
 
                     HistoryController::add([
                         'tableName' => 'res_letterbox',
-                        'recordId' => $resource,
+                        'recordId'  => $resource,
                         'eventType' => 'ADD',
-                        'info' => _NOTE_ADDED,
-                        'moduleId' => 'resource',
-                        'eventId' => 'resourceModification'
+                        'info'      => _NOTE_ADDED,
+                        'moduleId'  => 'resource',
+                        'eventId'   => 'resourceModification'
                     ]);
                 }
             }
@@ -181,11 +181,11 @@ class ActionMethodController
                 $info = empty($args['basketName']) ? $info : "{$args['basketName']} : {$info}";
                 HistoryController::add([
                     'tableName' => 'res_letterbox',
-                    'recordId' => $resource,
+                    'recordId'  => $resource,
                     'eventType' => 'ACTION#' . $args['id'],
-                    'info' => $info,
-                    'moduleId' => 'resource',
-                    'eventId' => $args['id']
+                    'info'      => $info,
+                    'moduleId'  => 'resource',
+                    'eventId'   => $args['id']
                 ]);
 
                 MessageExchangeReviewController::sendMessageExchangeReview(['resource' => $resLetterboxData[$resource], 'action_id' => $args['id'], 'userId' => $GLOBALS['login']]);
@@ -219,8 +219,8 @@ class ActionMethodController
 
         $attachments = AttachmentModel::get([
             'select' => [1],
-            'where' => ['res_id_master = ?', 'status != ?'],
-            'data' => [$aArgs['resId'], 'DEL'],
+            'where'  => ['res_id_master = ?', 'status != ?'],
+            'data'   => [$aArgs['resId'], 'DEL'],
         ]);
 
         $notes = NoteModel::getByUserIdForResource(['select' => ['user_id', 'id'], 'resId' => $aArgs['resId'], 'userId' => $GLOBALS['id']]);
@@ -268,12 +268,12 @@ class ActionMethodController
 
         BasketPersistenceModel::delete([
             'where' => ['res_id = ?', 'user_id = ?'],
-            'data' => [$aArgs['resId'], $GLOBALS['id']]
+            'data'  => [$aArgs['resId'], $GLOBALS['id']]
         ]);
 
         BasketPersistenceModel::create([
-            'res_id' => $aArgs['resId'],
-            'user_id' => $GLOBALS['id'],
+            'res_id'        => $aArgs['resId'],
+            'user_id'       => $GLOBALS['id'],
             'is_persistent' => 'N'
         ]);
 
@@ -290,12 +290,12 @@ class ActionMethodController
 
         BasketPersistenceModel::delete([
             'where' => ['res_id = ?', 'user_id = ?'],
-            'data' => [$aArgs['resId'], $GLOBALS['id']]
+            'data'  => [$aArgs['resId'], $GLOBALS['id']]
         ]);
 
         BasketPersistenceModel::create([
-            'res_id' => $aArgs['resId'],
-            'user_id' => $GLOBALS['id'],
+            'res_id'        => $aArgs['resId'],
+            'user_id'       => $GLOBALS['id'],
             'is_persistent' => 'Y'
         ]);
 
@@ -317,7 +317,7 @@ class ActionMethodController
 
         ResMarkAsReadModel::delete([
             'where' => ['res_id = ?', 'user_id = ?', '(basket_id = ? OR basket_id = ?)'],
-            'data' => [$args['resId'], $GLOBALS['id'], $args['data']['basketId'], $basket['basket_id']]
+            'data'  => [$args['resId'], $GLOBALS['id'], $args['data']['basketId'], $basket['basket_id']]
         ]);
 
         if (empty($basket['basket_id'])) {
@@ -325,8 +325,8 @@ class ActionMethodController
         }
 
         ResMarkAsReadModel::create([
-            'res_id' => $args['resId'],
-            'user_id' => $GLOBALS['id'],
+            'res_id'    => $args['resId'],
+            'user_id'   => $GLOBALS['id'],
             'basket_id' => $basket['basket_id']
         ]);
 
@@ -351,8 +351,8 @@ class ActionMethodController
 
         $listInstances = array_merge($listInstances, $args['data']['listInstances']);
         $controller = ListInstanceController::updateListInstance([
-            'data' => [['resId' => $args['resId'], 'listInstances' => $listInstances, 'destination' => $args['data']['destination']]],
-            'userId' => $GLOBALS['id'],
+            'data'      => [['resId' => $args['resId'], 'listInstances' => $listInstances, 'destination' => $args['data']['destination']]],
+            'userId'    => $GLOBALS['id'],
             'fullRight' => true
         ]);
         if (!empty($controller['errors'])) {
@@ -378,20 +378,20 @@ class ActionMethodController
                 $destUser = ListTemplateModel::getWithItems(['where' => ['entity_id = ?', 'item_mode = ?', 'type = ?'], 'data' => [$entityInfo['id'], 'dest', 'diffusionList']]);
                 if (!empty($destUser)) {
                     ListInstanceModel::update([
-                        'set' => [
+                        'set'   => [
                             'item_mode' => 'cc'
                         ],
                         'where' => ['item_mode = ?', 'res_id = ?'],
-                        'data' => ['dest', $args['resId']]
+                        'data'  => ['dest', $args['resId']]
                     ]);
                     ListInstanceModel::create([
-                        'res_id' => $args['resId'],
-                        'sequence' => 0,
-                        'item_id' => $destUser[0]['item_id'],
-                        'item_type' => 'user_id',
-                        'item_mode' => 'dest',
+                        'res_id'        => $args['resId'],
+                        'sequence'      => 0,
+                        'item_id'       => $destUser[0]['item_id'],
+                        'item_type'     => 'user_id',
+                        'item_mode'     => 'dest',
                         'added_by_user' => $GLOBALS['id'],
-                        'viewed' => 0,
+                        'viewed'        => 0,
                         'difflist_type' => 'entity_id'
                     ]);
                     $destUser = $destUser[0]['item_id'];
@@ -400,9 +400,9 @@ class ActionMethodController
                 }
 
                 ResModel::update([
-                    'set' => ['destination' => $resource['initiator'], 'dest_user' => $destUser],
+                    'set'   => ['destination' => $resource['initiator'], 'dest_user' => $destUser],
                     'where' => ['res_id = ?'],
-                    'data' => [$args['resId']]
+                    'data'  => [$args['resId']]
                 ]);
             }
         }
@@ -419,9 +419,9 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $circuit = ListInstanceModel::get([
-            'select' => ['requested_signature', 'signatory', 'process_date'],
-            'where' => ['res_id = ?', 'difflist_type = ?'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['requested_signature', 'signatory', 'process_date'],
+            'where'   => ['res_id = ?', 'difflist_type = ?'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id']
         ]);
         if (empty($circuit)) {
@@ -477,8 +477,8 @@ class ActionMethodController
 
         $attachments = AttachmentModel::get([
             'select' => ['res_id', 'status'],
-            'where' => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
-            'data' => [$args['resId'], $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
+            'where'  => ['res_id_master = ?', 'attachment_type in (?)', 'in_signature_book = ?', 'status not in (?)'],
+            'data'   => [$args['resId'], $signableAttachmentsTypes, true, ['OBS', 'DEL', 'FRZ']]
         ]);
         if (empty($attachments) && !$resourceIn) {
             return ['errors' => ['No available attachments']];
@@ -491,12 +491,12 @@ class ActionMethodController
                 if ($massData === null) {
                     $customId = CoreConfigModel::getCustomId();
                     $massData = [
-                        'resources' => [],
+                        'resources'     => [],
                         'successStatus' => $args['action']['parameters']['successStatus'],
-                        'errorStatus' => $args['action']['parameters']['errorStatus'],
-                        'userId' => $GLOBALS['id'],
-                        'customId' => $customId,
-                        'action' => 'generateMailing'
+                        'errorStatus'   => $args['action']['parameters']['errorStatus'],
+                        'userId'        => $GLOBALS['id'],
+                        'customId'      => $customId,
+                        'action'        => 'generateMailing'
                     ];
                 }
 
@@ -518,11 +518,11 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $listInstance = ListInstanceModel::get([
-            'select' => ['listinstance_id', 'item_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['listinstance_id', 'item_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
-            'limit' => 1
+            'limit'   => 1
         ]);
         if (empty($listInstance[0])) {
             return ['errors' => ['No available circuit']];
@@ -534,15 +534,15 @@ class ActionMethodController
         }
 
         ListInstanceModel::update([
-            'set' => $set,
+            'set'   => $set,
             'where' => ['listinstance_id = ?'],
-            'data' => [$listInstance[0]['listinstance_id']]
+            'data'  => [$listInstance[0]['listinstance_id']]
         ]);
 
         $circuit = ListInstanceModel::get([
-            'select' => ['requested_signature', 'item_id', 'listinstance_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['requested_signature', 'item_id', 'listinstance_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id']
         ]);
 
@@ -561,12 +561,12 @@ class ActionMethodController
 
         if (!empty($skipList)) {
             ListInstanceModel::update([
-                'set' => [
-                    'process_date' => 'CURRENT_TIMESTAMP',
+                'set'   => [
+                    'process_date'    => 'CURRENT_TIMESTAMP',
                     'process_comment' => _USER_SKIPPED
                 ],
                 'where' => ['listinstance_id in (?)'],
-                'data' => [$skipList]
+                'data'  => [$skipList]
             ]);
         }
 
@@ -577,20 +577,20 @@ class ActionMethodController
         if ($nextValid['requested_signature'] == true) {
             $attachments = AttachmentModel::get([
                 'select' => ['res_id'],
-                'where' => ['res_id_master = ?', 'in_signature_book = ?', 'status = ?'],
-                'data' => [$args['resId'], true, 'SEND_MASS']
+                'where'  => ['res_id_master = ?', 'in_signature_book = ?', 'status = ?'],
+                'data'   => [$args['resId'], true, 'SEND_MASS']
             ]);
             if (!empty($attachments)) {
                 static $massData;
                 if ($massData === null) {
                     $customId = CoreConfigModel::getCustomId();
                     $massData = [
-                        'resources' => [],
+                        'resources'     => [],
                         'successStatus' => $args['action']['parameters']['successStatus'],
-                        'errorStatus' => $args['action']['parameters']['errorStatus'],
-                        'userId' => $GLOBALS['id'],
-                        'customId' => $customId,
-                        'action' => 'generateMailing'
+                        'errorStatus'   => $args['action']['parameters']['errorStatus'],
+                        'userId'        => $GLOBALS['id'],
+                        'customId'      => $customId,
+                        'action'        => 'generateMailing'
                     ];
                 }
 
@@ -627,12 +627,12 @@ class ActionMethodController
 
             $processingUserInfo = MaarchParapheurController::getUserById(['config' => $config, 'id' => $args['data']['processingUser']]);
             $sentInfo = MaarchParapheurController::sendDatas([
-                'config' => $config,
-                'resIdMaster' => $args['resId'],
+                'config'         => $config,
+                'resIdMaster'    => $args['resId'],
                 'processingUser' => $args['data']['processingUser'],
-                'objectSent' => 'mail',
-                'userId' => $GLOBALS['login'],
-                'note' => $args['note']['content'] ?? null
+                'objectSent'     => 'mail',
+                'userId'         => $GLOBALS['login'],
+                'note'           => $args['note']['content'] ?? null
             ]);
             if (!empty($sentInfo['error'])) {
                 return ['errors' => [$sentInfo['error']]];
@@ -646,8 +646,8 @@ class ActionMethodController
         if (!empty($attachmentToFreeze)) {
             ResModel::update([
                 'postSet' => ['external_id' => "jsonb_set(external_id, '{signatureBookId}', '{$attachmentToFreeze['letterbox_coll'][$args['resId']]}'::text::jsonb)"],
-                'where' => ['res_id = ?'],
-                'data' => [$args['resId']]
+                'where'   => ['res_id = ?'],
+                'data'    => [$args['resId']]
             ]);
         }
 
@@ -663,11 +663,11 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $listInstances = ListInstanceModel::get([
-            'select' => ['listinstance_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['listinstance_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id desc'],
-            'limit' => 1
+            'limit'   => 1
         ]);
 
         $listInstancesIdsToReset = [];
@@ -680,9 +680,9 @@ class ActionMethodController
             }
         } else {
             $hasPrevious = ListInstanceModel::get([
-                'select' => ['listinstance_id', 'item_id'],
-                'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
-                'data' => [$args['resId'], 'VISA_CIRCUIT'],
+                'select'  => ['listinstance_id', 'item_id'],
+                'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
+                'data'    => [$args['resId'], 'VISA_CIRCUIT'],
                 'orderBy' => ['listinstance_id desc'],
             ]);
             if (empty($hasPrevious)) {
@@ -704,9 +704,9 @@ class ActionMethodController
 
         if (!empty($listInstancesIdsToReset)) {
             ListInstanceModel::update([
-                'set' => ['process_date' => null, 'process_comment' => null, 'delegate' => null],
+                'set'   => ['process_date' => null, 'process_comment' => null, 'delegate' => null],
                 'where' => ['listinstance_id in (?)'],
-                'data' => [$listInstancesIdsToReset]
+                'data'  => [$listInstancesIdsToReset]
             ]);
         }
 
@@ -722,11 +722,11 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $inCircuit = ListInstanceModel::get([
-            'select' => [1],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => [1],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
-            'limit' => 1
+            'limit'   => 1
         ]);
         if (empty($inCircuit[0])) {
             $hasCircuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'VISA_CIRCUIT']]);
@@ -738,9 +738,9 @@ class ActionMethodController
         }
 
         ListInstanceModel::update([
-            'set' => ['process_date' => null, 'process_comment' => null],
+            'set'   => ['process_date' => null, 'process_comment' => null],
             'where' => ['res_id = ?', 'difflist_type = ?'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT']
+            'data'  => [$args['resId'], 'VISA_CIRCUIT']
         ]);
 
         return true;
@@ -756,11 +756,11 @@ class ActionMethodController
 
 
         $listInstances = ListInstanceModel::get([
-            'select' => ['listinstance_id', 'item_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT'],
+            'select'  => ['listinstance_id', 'item_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
-            'limit' => 1
+            'limit'   => 1
         ]);
 
         if (!empty($listInstances[0])) {
@@ -771,9 +771,9 @@ class ActionMethodController
                 $set['delegate'] = $GLOBALS['id'];
             }
             ListInstanceModel::update([
-                'set' => $set,
+                'set'   => $set,
                 'where' => ['listinstance_id = ?'],
-                'data' => [$listInstances['listinstance_id']]
+                'data'  => [$listInstances['listinstance_id']]
             ]);
         } else {
             $hasCircuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'VISA_CIRCUIT']]);
@@ -785,12 +785,12 @@ class ActionMethodController
         }
 
         ListInstanceModel::update([
-            'set' => [
-                'process_date' => 'CURRENT_TIMESTAMP',
+            'set'   => [
+                'process_date'    => 'CURRENT_TIMESTAMP',
                 'process_comment' => _INTERRUPTED_WORKFLOW
             ],
             'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'VISA_CIRCUIT']
+            'data'  => [$args['resId'], 'VISA_CIRCUIT']
         ]);
 
         return true;
@@ -806,8 +806,8 @@ class ActionMethodController
 
         $listinstances = ListInstanceModel::get([
             'select' => [1],
-            'where' => ['res_id = ?', 'difflist_type = ?'],
-            'data' => [$args['resId'], 'AVIS_CIRCUIT']
+            'where'  => ['res_id = ?', 'difflist_type = ?'],
+            'data'   => [$args['resId'], 'AVIS_CIRCUIT']
         ]);
 
         if (empty($listinstances)) {
@@ -825,9 +825,9 @@ class ActionMethodController
         }
 
         ResModel::update([
-            'set' => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
+            'set'   => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
             'where' => ['res_id = ?'],
-            'data' => [$args['resId']]
+            'data'  => [$args['resId']]
         ]);
 
         return true;
@@ -884,7 +884,7 @@ class ActionMethodController
 
         ListInstanceModel::delete([
             'where' => ['res_id = ?', 'difflist_type = ?', 'item_mode in (?)'],
-            'data' => [$args['resId'], 'entity_id', ['avis', 'avis_copy', 'avis_info']]
+            'data'  => [$args['resId'], 'entity_id', ['avis', 'avis_copy', 'avis_info']]
         ]);
 
         foreach ($args['data']['opinionCircuit'] as $key => $instance) {
@@ -900,26 +900,26 @@ class ActionMethodController
             }
 
             ListInstanceModel::create([
-                'res_id' => $args['resId'],
-                'sequence' => $key,
-                'item_id' => $instance['item_id'],
-                'item_type' => 'user_id',
-                'item_mode' => $instance['item_mode'],
-                'added_by_user' => $GLOBALS['id'],
-                'difflist_type' => 'entity_id',
-                'process_date' => null,
-                'process_comment' => null,
+                'res_id'              => $args['resId'],
+                'sequence'            => $key,
+                'item_id'             => $instance['item_id'],
+                'item_type'           => 'user_id',
+                'item_mode'           => $instance['item_mode'],
+                'added_by_user'       => $GLOBALS['id'],
+                'difflist_type'       => 'entity_id',
+                'process_date'        => null,
+                'process_comment'     => null,
                 'requested_signature' => false,
-                'viewed' => empty($instance['viewed']) ? 0 : $instance['viewed']
+                'viewed'              => empty($instance['viewed']) ? 0 : $instance['viewed']
             ]);
         }
 
         DatabaseModel::commitTransaction();
 
         ResModel::update([
-            'set' => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
+            'set'   => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
             'where' => ['res_id = ?'],
-            'data' => [$args['resId']]
+            'data'  => [$args['resId']]
         ]);
 
         return true;
@@ -934,11 +934,11 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $currentStep = ListInstanceModel::get([
-            'select' => ['listinstance_id', 'item_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'AVIS_CIRCUIT'],
+            'select'  => ['listinstance_id', 'item_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'AVIS_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
-            'limit' => 1
+            'limit'   => 1
         ]);
 
         if (empty($currentStep)) {
@@ -953,8 +953,8 @@ class ActionMethodController
             $currentUser = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $GLOBALS['id']]);
             $stepUser = UserModel::get([
                 'select' => ['firstname', 'lastname'],
-                'where' => ['id = ?'],
-                'data' => [$currentStep['item_id']]
+                'where'  => ['id = ?'],
+                'data'   => [$currentStep['item_id']]
             ]);
             $stepUser = $stepUser[0];
 
@@ -967,15 +967,15 @@ class ActionMethodController
         }
 
         ListInstanceModel::update([
-            'set' => $set,
+            'set'   => $set,
             'where' => ['listinstance_id = ?'],
-            'data' => [$currentStep['listinstance_id']]
+            'data'  => [$currentStep['listinstance_id']]
         ]);
 
         $circuit = ListInstanceModel::get([
-            'select' => ['requested_signature', 'item_id', 'listinstance_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data' => [$args['resId'], 'AVIS_CIRCUIT'],
+            'select'  => ['requested_signature', 'item_id', 'listinstance_id'],
+            'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$args['resId'], 'AVIS_CIRCUIT'],
             'orderBy' => ['listinstance_id']
         ]);
 
@@ -994,12 +994,12 @@ class ActionMethodController
 
         if (!empty($skipList)) {
             ListInstanceModel::update([
-                'set' => [
-                    'process_date' => 'CURRENT_TIMESTAMP',
+                'set'   => [
+                    'process_date'    => 'CURRENT_TIMESTAMP',
                     'process_comment' => _USER_SKIPPED
                 ],
                 'where' => ['listinstance_id in (?)'],
-                'data' => [$skipList]
+                'data'  => [$skipList]
             ]);
         }
 
@@ -1024,9 +1024,9 @@ class ActionMethodController
 
         $currentStep = ListInstanceModel::get([
             'select' => ['listinstance_id', 'item_id'],
-            'where' => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
-            'data' => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
-            'limit' => 1
+            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
+            'data'   => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
+            'limit'  => 1
         ]);
 
         if (empty($currentStep)) {
@@ -1040,9 +1040,9 @@ class ActionMethodController
         }
 
         ListInstanceModel::update([
-            'set' => $set,
+            'set'   => $set,
             'where' => ['listinstance_id = ?'],
-            'data' => [$currentStep['listinstance_id']]
+            'data'  => [$currentStep['listinstance_id']]
         ]);
 
         return true;
@@ -1067,10 +1067,10 @@ class ActionMethodController
         }
 
         $latestNote = NoteModel::get([
-            'where' => ['identifier = ?', "note_text like '[" . _TO_AVIS . "]%'"],
-            'data' => [$args['resId']],
+            'where'  => ['identifier = ?', "note_text like '[" . _TO_AVIS . "]%'"],
+            'data'   => [$args['resId']],
             'oderBy' => ['creation_date desc'],
-            'limit' => 1
+            'limit'  => 1
         ]);
 
         if (empty($latestNote)) {
@@ -1083,12 +1083,12 @@ class ActionMethodController
 
             NoteModel::delete([
                 'where' => ['id = ?'],
-                'data' => [$latestNote['id']]
+                'data'  => [$latestNote['id']]
             ]);
 
             NoteModel::create([
-                'resId' => $args['resId'],
-                'user_id' => $GLOBALS['id'],
+                'resId'     => $args['resId'],
+                'user_id'   => $GLOBALS['id'],
                 'note_text' => $newNote
             ]);
         } else {
@@ -1096,12 +1096,12 @@ class ActionMethodController
             $newNote = $latestNote['note_text'] . '← ' . _VALIDATE_BY . ' ' . $user['firstname'] . ' ' . $user['lastname'];
 
             NoteModel::update([
-                'set' => [
-                    'note_text' => $newNote,
+                'set'   => [
+                    'note_text'     => $newNote,
                     'creation_date' => 'CURRENT_TIMESTAMP'
                 ],
                 'where' => ['id = ?'],
-                'data' => [$latestNote['id']]
+                'data'  => [$latestNote['id']]
             ]);
         }
 
@@ -1123,7 +1123,7 @@ class ActionMethodController
 
             ListInstanceModel::delete([
                 'where' => ['res_id = ?', 'difflist_type = ?', 'item_mode in (?)'],
-                'data' => [$args['resId'], 'entity_id', ['avis', 'avis_copy', 'avis_info']]
+                'data'  => [$args['resId'], 'entity_id', ['avis', 'avis_copy', 'avis_info']]
             ]);
 
             foreach ($args['data']['opinionWorkflow'] as $key => $instance) {
@@ -1139,17 +1139,17 @@ class ActionMethodController
                 }
 
                 ListInstanceModel::create([
-                    'res_id' => $args['resId'],
-                    'sequence' => $key,
-                    'item_id' => $instance['item_id'],
-                    'item_type' => 'user_id',
-                    'item_mode' => $instance['item_mode'],
-                    'added_by_user' => $GLOBALS['id'],
-                    'difflist_type' => 'entity_id',
-                    'process_date' => null,
-                    'process_comment' => null,
+                    'res_id'              => $args['resId'],
+                    'sequence'            => $key,
+                    'item_id'             => $instance['item_id'],
+                    'item_type'           => 'user_id',
+                    'item_mode'           => $instance['item_mode'],
+                    'added_by_user'       => $GLOBALS['id'],
+                    'difflist_type'       => 'entity_id',
+                    'process_date'        => null,
+                    'process_comment'     => null,
                     'requested_signature' => false,
-                    'viewed' => empty($instance['viewed']) ? 0 : $instance['viewed']
+                    'viewed'              => empty($instance['viewed']) ? 0 : $instance['viewed']
                 ]);
             }
 
@@ -1157,9 +1157,9 @@ class ActionMethodController
         }
 
         ResModel::update([
-            'set' => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
+            'set'   => ['opinion_limit_date' => $args['data']['opinionLimitDate']],
             'where' => ['res_id = ?'],
-            'data' => [$args['resId']]
+            'data'  => [$args['resId']]
         ]);
 
         return true;
@@ -1176,13 +1176,13 @@ class ActionMethodController
         $sent = AlfrescoController::sendResource(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'folderId' => $args['data']['folderId'], 'folderName' => $args['data']['folderName']]);
         if (!empty($sent['errors'])) {
             LogsController::add([
-                'isTech' => true,
-                'moduleId' => 'alfresco',
-                'level' => 'ERROR',
+                'isTech'    => true,
+                'moduleId'  => 'alfresco',
+                'level'     => 'ERROR',
                 'tableName' => '',
-                'recordId' => '',
+                'recordId'  => '',
                 'eventType' => 'Error Exec Curl : ' . $sent['errors'],
-                'eventId' => 'Alfresco Error'
+                'eventId'   => 'Alfresco Error'
             ]);
 
             return ['errors' => [$sent['errors']]];
@@ -1202,13 +1202,13 @@ class ActionMethodController
         $sent = MultigestController::sendResource(['resId' => $args['resId'], 'userId' => $GLOBALS['id']]);
         if (!empty($sent['errors'])) {
             LogsController::add([
-                'isTech' => true,
-                'moduleId' => 'multigest',
-                'level' => 'ERROR',
+                'isTech'    => true,
+                'moduleId'  => 'multigest',
+                'level'     => 'ERROR',
                 'tableName' => '',
-                'recordId' => '',
+                'recordId'  => '',
                 'eventType' => 'Error sending to Multigest : ' . $sent['errors'],
-                'eventId' => 'Multigest Error'
+                'eventId'   => 'Multigest Error'
             ]);
 
             return ['errors' => [$sent['errors']]];
@@ -1248,10 +1248,10 @@ class ActionMethodController
 
         if ($targetResource['category_id'] == 'outgoing') {
             $storeResult = DocserverController::storeResourceOnDocServer([
-                'collId' => 'letterbox_coll',
+                'collId'          => 'letterbox_coll',
                 'docserverTypeId' => 'DOC',
                 'encodedResource' => base64_encode(file_get_contents($pathToDocument)),
-                'format' => $resource['format']
+                'format'          => $resource['format']
             ]);
             if (!empty($storeResult['errors'])) {
                 return ['errors' => ["[storeResourceOnDocServer] {$storeResult['errors']}"]];
@@ -1259,44 +1259,44 @@ class ActionMethodController
 
             AdrModel::deleteDocumentAdr(['where' => ['res_id = ?', 'type in (?)', 'version = ?'], 'data' => [$args['data']['resId'], ['SIGN', 'TNL'], $targetResource['version']]]);
             AdrModel::createDocumentAdr([
-                'resId' => $args['data']['resId'],
-                'type' => 'SIGN',
+                'resId'       => $args['data']['resId'],
+                'type'        => 'SIGN',
                 'docserverId' => $storeResult['docserver_id'],
-                'path' => $storeResult['directory'],
-                'filename' => $storeResult['file_destination_name'],
-                'version' => $targetResource['version'],
+                'path'        => $storeResult['directory'],
+                'filename'    => $storeResult['file_destination_name'],
+                'version'     => $targetResource['version'],
                 'fingerprint' => $storeResult['fingerPrint']
             ]);
         } else {
             $id = StoreController::storeAttachment([
                 'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
-                'type' => 'response_project',
+                'type'        => 'response_project',
                 'resIdMaster' => $args['data']['resId'],
-                'title' => $resource['subject'],
-                'format' => $resource['format'],
-                'status' => 'SIGN'
+                'title'       => $resource['subject'],
+                'format'      => $resource['format'],
+                'status'      => 'SIGN'
             ]);
             if (empty($id) || !empty($id['errors'])) {
                 return ['errors' => ['[storeAttachment] ' . $id['errors']]];
             }
             ConvertPdfController::convert([
-                'resId' => $id,
+                'resId'  => $id,
                 'collId' => 'attachments_coll'
             ]);
 
             $id = StoreController::storeAttachment([
                 'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
-                'type' => 'signed_response',
+                'type'        => 'signed_response',
                 'resIdMaster' => $args['data']['resId'],
-                'title' => $resource['subject'],
-                'originId' => $id,
-                'format' => $resource['format']
+                'title'       => $resource['subject'],
+                'originId'    => $id,
+                'format'      => $resource['format']
             ]);
             if (empty($id) || !empty($id['errors'])) {
                 return ['errors' => ['[storeAttachment] ' . $id['errors']]];
             }
             ConvertPdfController::convert([
-                'resId' => $id,
+                'resId'  => $id,
                 'collId' => 'attachments_coll'
             ]);
         }

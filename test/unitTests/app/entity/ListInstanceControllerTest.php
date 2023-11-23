@@ -33,31 +33,31 @@ class ListInstanceControllerTest extends CourrierTestCase
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
         $args = [
-            'modelId' => 1,
-            'status' => 'NEW',
-            'encodedFile' => $encodedFile,
-            'format' => 'txt',
-            'confidentiality' => false,
-            'documentDate' => '2019-01-01 17:18:47',
-            'arrivalDate' => '2019-01-01 17:18:47',
+            'modelId'          => 1,
+            'status'           => 'NEW',
+            'encodedFile'      => $encodedFile,
+            'format'           => 'txt',
+            'confidentiality'  => false,
+            'documentDate'     => '2019-01-01 17:18:47',
+            'arrivalDate'      => '2019-01-01 17:18:47',
             'processLimitDate' => '2029-01-01',
-            'doctype' => 102,
-            'destination' => 15,
-            'initiator' => 15,
-            'subject' => 'Du matin au soir, ils disent du mal de la vie, et ils ne peuvent se résoudre à la quitter !',
-            'typist' => 19,
-            'priority' => 'poiuytre1357nbvc',
-            'diffusionList' => [
+            'doctype'          => 102,
+            'destination'      => 15,
+            'initiator'        => 15,
+            'subject'          => 'Du matin au soir, ils disent du mal de la vie, et ils ne peuvent se résoudre à la quitter !',
+            'typist'           => 19,
+            'priority'         => 'poiuytre1357nbvc',
+            'diffusionList'    => [
                 [
-                    'id' => 11,
+                    'id'   => 11,
                     'type' => 'user',
                     'mode' => 'dest'
                 ], [
-                    'id' => 6,
+                    'id'   => 6,
                     'type' => 'entity_id',
                     'mode' => 'cc'
                 ], [
-                    'id' => 10,
+                    'id'   => 10,
                     'type' => 'user',
                     'mode' => 'avis',
                 ]
@@ -83,7 +83,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ["item_id" => 17, "requested_signature" => false],
                         ["item_id" => 18, "requested_signature" => true]
@@ -99,10 +99,10 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         [
-                            'item_id' => 10,
+                            'item_id'   => 10,
                             'item_mode' => 'avis',
                             'item_type' => 'user'
                         ]
@@ -177,7 +177,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => '', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -194,7 +194,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 17, 'requested_signature' => false, 'process_comment' => 'too long !!#######################################################################################################################################################################################################################################################'],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -211,7 +211,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'mscott', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -228,7 +228,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'bbain', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -245,7 +245,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'bbain', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -475,10 +475,10 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $body = [
             [
-                'resId' => self::$resourceId,
+                'resId'         => self::$resourceId,
                 'listInstances' => [
                     [
-                        'item_id' => 10,
+                        'item_id'   => 10,
                         'item_mode' => 'dest',
                         'item_type' => 'user'
                     ]
@@ -492,10 +492,10 @@ class ListInstanceControllerTest extends CourrierTestCase
         // Errors
         $body = [
             [
-                'resId' => self::$resourceId,
+                'resId'         => self::$resourceId,
                 'listInstances' => [
                     [
-                        'item_id' => 10,
+                        'item_id'   => 10,
                         'item_mode' => 'avis',
                         'item_type' => 'user'
                     ]
@@ -544,9 +544,9 @@ class ListInstanceControllerTest extends CourrierTestCase
         $listInstanceController = new ListInstanceController();
         $body = [
             [
-                'resId' => self::$resourceId,
+                'resId'         => self::$resourceId,
                 'listInstances' => [
-                    'item_id' => 10,
+                    'item_id'   => 10,
                     'item_mode' => 'avis',
                     'item_type' => 'user'
                 ]
@@ -570,35 +570,35 @@ class ListInstanceControllerTest extends CourrierTestCase
 
         $body = [
             [
-                'resId' => self::$resourceId,
+                'resId'         => self::$resourceId,
                 'listInstances' => [
                     [
-                        'difflist_type' => "entity_id",
-                        'item_id' => 19,
-                        'item_mode' => "dest",
-                        'item_type' => "user",
-                        'process_date' => null,
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 19,
+                        'item_mode'       => "dest",
+                        'item_type'       => "user",
+                        'process_date'    => null,
                         'process_comment' => null
                     ], [
-                        'difflist_type' => "entity_id",
-                        'item_id' => 1,
-                        'item_mode' => "cc",
-                        'item_type' => "entity",
-                        'process_date' => null,
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 1,
+                        'item_mode'       => "cc",
+                        'item_type'       => "entity",
+                        'process_date'    => null,
                         'process_comment' => null
                     ], [
-                        'difflist_type' => "entity_id",
-                        'item_id' => 10,
-                        'item_mode' => "avis",
-                        'item_type' => "user",
-                        'process_date' => null,
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
                         'process_comment' => null
                     ], [
-                        'difflist_type' => "entity_id",
-                        'item_id' => 10,
-                        'item_mode' => "avis",
-                        'item_type' => "user",
-                        'process_date' => null,
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
                         'process_comment' => null
                     ]
                 ]
@@ -650,12 +650,12 @@ class ListInstanceControllerTest extends CourrierTestCase
         DatabaseModel::delete([
             'table' => 'res_letterbox',
             'where' => ['res_id = ?'],
-            'data' => [self::$resourceId]
+            'data'  => [self::$resourceId]
         ]);
         DatabaseModel::delete([
             'table' => 'listinstance',
             'where' => ['res_id = ?'],
-            'data' => [self::$resourceId]
+            'data'  => [self::$resourceId]
         ]);
 
         $res = ResModel::getById(['resId' => self::$resourceId, 'select' => ['*']]);
