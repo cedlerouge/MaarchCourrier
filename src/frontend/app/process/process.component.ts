@@ -1016,7 +1016,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
                 tap((data: any) => {
                     const allResourcesUnlock: number[] = [...data.resourcesToProcess];
                     const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
-                    
+
                     const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
                     let indexLoop: number = index;
                     do {
@@ -1026,11 +1026,10 @@ export class ProcessComponent implements OnInit, OnDestroy {
                             break;
                         }
                     } while (!allResourcesUnlock.includes(this.allResources[indexLoop]));
-            
+
                     if (indexLoop === -1) {
                         this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
-                    }
-                    else {
+                    } else {
                         this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[indexLoop]]);
                     }
                 }),
