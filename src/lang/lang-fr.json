@@ -2810,7 +2810,6 @@
     "mercureLicenseDesc": "Le logiciel <b>MERCURE - LAD</b> est soumise à la <b>license de redistribution MAARCH</b>, il est expressément <b>interdit</b> d'utiliser le module runtime <b>dans un autre produit ou un fork du logiciel libre Maarch Courrier</b> sans l'accord écrit express du Concédant.",
     "mercureContactInfo": "Pour plus d'information, consulter notre <b><a target=\"_blank\" href=\"https:/\/docs.maarch.org/MaarchCourrier/guat/guat_exploitation/lad.html\">documentation</a></b> ou nous <b><a href=\"mailto:info@maarch.org\" target=\"_blank\">contacter</a></b>",
     "mercureLadProcessingDocument": "Analyse du document par <b>MERCURE - LAD</b>",
-    "pastell": "IParapheur via Pastell",
     "isWarningPackage": "Le paramètre <b>display_errors</b> n'est pas activé. Les erreurs liées à la configuration de PHP ne seront plus remontés.",
     "migrationProcessing": "<b>L'application n'est pas accessible en raison d'une migration en cours.</b> <br>",
     "defaultEditor": "Editeur par défaut",
@@ -2823,5 +2822,15 @@
     "tutoStep1": "<span class=\"tuto-label\">Etape 1</span><br/>Accéder à <b><a href=\"{{url}}\" target=\"_blank\">votre profil</a></b>.",
     "tutoStep2": "<span class=\"tuto-label\">Etape 2</span><br/>Cliquer sur le bouton « <b>Copier mon jeton d'authentification</b> »",
     "tutoStep3": "<span class=\"tuto-label\">Etape 3</span><br/>Faites <kbd>Ctrl</kbd>+<kbd>v</kbd> dans le champ ci-dessous:",
-    "copyAuthTokenDesc": "Copie les jetons d'authentification dans votre press-papier. Nécessaire notamment pour le module d'envoi via outlook."
+    "copyAuthTokenDesc": "Copie les jetons d'authentification dans votre press-papier. Nécessaire notamment pour le module d'envoi via outlook.",
+    "pastell": "IParapheur via Pastell",
+    "attachmentsInSignatoryBook": "Pièces jointes intégrées au parapheur",
+    "signTarget": "Visa/Signature",
+    "signTargetDesc": "Pièce jointe intégrée au parapheur pour visa/signature",
+    "annexTarget": "Annexe",
+    "annexTargetDesc": "Pièce jointe intégrée au parapheur en annexe",
+    "allIntegratedAttachments": "Toutes",
+    "attachmentToSign": "Pour visa/signature",
+    "attachmentAnnex": "En annexe",
+    "attachmentsInSignatoryBookDesc": "Afficher les pièces jointes intégrées au parapheur"
 }

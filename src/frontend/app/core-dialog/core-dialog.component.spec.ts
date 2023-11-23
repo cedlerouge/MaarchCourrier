@@ -17,6 +17,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { LatinisePipe } from 'ngx-pipes';
 import { DatePipe } from '@angular/common';
 import { AdministrationService } from '@appRoot/administration/administration.service';
+import { SharedModule } from '@appRoot/app-common.module';
 
 describe('CoreDialogComponent', () => {
     let component: CoreDialogComponent;
@@ -24,7 +25,14 @@ describe('CoreDialogComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [InternationalizationModule, AppMaterialModule, RouterTestingModule, BrowserAnimationsModule, HttpClientTestingModule],
+            imports: [
+                SharedModule,
+                InternationalizationModule,
+                AppMaterialModule,
+                RouterTestingModule,
+                BrowserAnimationsModule,
+                HttpClientTestingModule
+            ],
             providers: [
                 AuthService,
                 HeaderService,
@@ -49,7 +57,7 @@ describe('CoreDialogComponent', () => {
         fixture.detectChanges();
     });
 
-    fit('should create', () => {
+    it('should create', () => {
         expect(component).toBeTruthy();
     });
 });
