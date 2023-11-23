@@ -137,7 +137,7 @@ class RetrieveResource
             $document['subject'] = $subject;
         }
 
-        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id']);
+        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id', 'is_encrypted']);
         if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
             return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
         }
@@ -158,7 +158,7 @@ class RetrieveResource
 
         $filename = $this->resourceData->formatFilename($document['subject']);
 
-        $fileContent = $this->resourceFile->getFileContent($filePath);
+        $fileContent = $this->resourceFile->getFileContent($filePath, $docserver['is_encrypted']);
         if ($fileContent === 'false') {
             return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER];
         }
@@ -202,7 +202,7 @@ class RetrieveResource
             return ['code' => 400, 'error' => $document['error']];
         }
 
-        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id']);
+        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id', 'is_encrypted']);
         if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
             return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
         }
@@ -221,9 +221,11 @@ class RetrieveResource
             return ['code' => 403, 'error' => $this->resourceFile::ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH];
         }
 
-        $fileContent = $this->resourceFile->getWatermark($resId, $filePath);
+        $fileContentWithNoWatermark = $this->resourceFile->getFileContent($filePath, $docserver['is_encrypted']);
+
+        $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
         if (empty($fileContent) || $fileContent === 'null') {
-            $fileContent = $this->resourceFile->getFileContent($filePath);
+            $fileContent = $fileContentWithNoWatermark;
         }
         
         if ($fileContent === 'false') {
@@ -280,7 +282,7 @@ class RetrieveResource
             return ['code' => 400, 'error' => 'Type has no file'];
         }
 
-        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id']);
+        $docserver = $this->resourceData->getDocserverDataByDocserverId($document['docserver_id'], ['path_template', 'docserver_type_id', 'is_encrypted']);
         if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
             return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
         }
@@ -299,9 +301,11 @@ class RetrieveResource
             return ['code' => 403, 'error' => $this->resourceFile::ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH];
         }
 
-        $fileContent = $this->resourceFile->getWatermark($resId, $filePath);
+        $fileContentWithNoWatermark = $this->resourceFile->getFileContent($filePath, $docserver['is_encrypted']);
+
+        $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
         if (empty($fileContent) || $fileContent === 'null') {
-            $fileContent = $this->resourceFile->getFileContent($filePath);
+            $fileContent = $fileContentWithNoWatermark;
         }
         
         if ($fileContent === 'false') {
@@ -334,6 +338,7 @@ class RetrieveResource
             return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOES_NOT_EXIST];
         }
 
+        $isDocserverEncrypted = false;
         $noThumbnailPath = 'dist/assets/noThumbnail.png';
         $pathToThumbnail = $noThumbnailPath;
 
@@ -350,6 +355,9 @@ class RetrieveResource
             }
 
             if (!empty($tnlDocument)) {
+                $checkDocserver = $this->resourceData->getDocserverDataByDocserverId($tnlDocument['docserver_id'], ['is_encrypted']);
+                $isDocserverEncrypted = $checkDocserver['is_encrypted'] ?? false;
+                
                 $pathToThumbnail = $this->resourceFile->buildFilePath($tnlDocument['docserver_id'], $tnlDocument['path'], $tnlDocument['filename']);
                 if (!$this->resourceFile->fileExists($pathToThumbnail)) {
                     return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER];
@@ -358,7 +366,7 @@ class RetrieveResource
         }
 
         $pathInfo = pathinfo($pathToThumbnail);
-        $fileContent = $this->resourceFile->getFileContent($pathToThumbnail);
+        $fileContent = $this->resourceFile->getFileContent($pathToThumbnail, $isDocserverEncrypted);
 
         if ($fileContent === 'false') {
             $pathInfo = pathinfo($noThumbnailPath);
@@ -404,12 +412,17 @@ class RetrieveResource
             return ['code' => 400, 'error' => $adr['error']];
         }
 
+        $adrDocserver = $this->resourceData->getDocserverDataByDocserverId($adr['docserver_id'], ['path_template', 'docserver_type_id', 'is_encrypted']);
+        if (empty($docserver['path_template']) || !$this->resourceFile->folderExists($docserver['path_template'])) {
+            return ['code' => 400, 'error' => $this->resourceData::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST];
+        }
+
         $pathToThumbnail = $this->resourceFile->buildFilePath($adr['docserver_id'], $adr['path'], $adr['filename']);
         if (!$this->resourceFile->fileExists($pathToThumbnail)) {
             return ['code' => 400, 'error' => $this->resourceFile::ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE];
         }
 
-        $fileContent = $this->resourceFile->getFileContent($pathToThumbnail);
+        $fileContent = $this->resourceFile->getFileContent($pathToThumbnail, $adrDocserver['is_encrypted']);
         if ($fileContent === 'false') {
             return ['code' => 404, 'error' => $this->resourceFile::ERROR_RESOURCE_PAGE_NOT_FOUND];
         }

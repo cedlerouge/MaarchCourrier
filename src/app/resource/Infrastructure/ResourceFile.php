@@ -22,6 +22,7 @@ use Resource\controllers\StoreController;
 use Resource\controllers\WatermarkController;
 use Resource\models\ResModel;
 use setasign\Fpdi\Fpdi;
+use SrcCore\controllers\PasswordController;
 use SrcCore\models\CoreConfigModel;
 
 class ResourceFile implements ResourceFileInterface
@@ -114,33 +115,46 @@ class ResourceFile implements ResourceFileInterface
     /**
      * Retrieves file content.
      *
-     * @param string $filePath The path to the file.
+     * @param   string  $filePath       The path to the file.
+     * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
      *
      * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */
-    public function getFileContent(string $filePath): string
+    public function getFileContent(string $filePath, bool $isEncrypted = false): string
     {
         if (empty($filePath)) {
             return 'false';
         }
 
-        return file_get_contents($filePath);
+        $fileContent = file_get_contents($filePath);
+        if ($fileContent === false) {
+            return 'false';
+        }
+
+        if ($isEncrypted) {
+            $fileContent = PasswordController::decrypt(['encryptedData' => $fileContent]);
+        }
+
+        return $fileContent;
     }
 
     /**
      * Retrieves file content with watermark.
      *
-     * @param   int     $resId  Resource id.
-     * @param   string  $path   The path to the file.
+     * @param   int     $resId          Resource id.
+     * @param   string  $fileContent    Resource file content.
      *
-     * @return  string|null   Returns the content of the file as a string if successful, or a string with value null on failure.
+     * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
      */
-    public function getWatermark(int $resId, string $path): string
+    public function getWatermark(int $resId, string $fileContent): string
     {
         if ($resId <= 0) {
             return 'null';
         }
-        return WatermarkController::watermarkResource(['resId' => $resId, 'path' => $path]);
+        if ($fileContent === 'false') {
+            return 'null';
+        }
+        return WatermarkController::watermarkResource(['resId' => $resId, 'fileContent' => $fileContent]);
     }
 
     /**
