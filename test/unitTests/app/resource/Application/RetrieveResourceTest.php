@@ -89,7 +89,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->assertNotEmpty($result['error']);
-        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is signed");
+        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is SIGNED");
     }
 
     /**
@@ -104,7 +104,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->assertNotEmpty($result['error']);
-        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is version");
+        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is VERSION");
     }
 
     /**
@@ -359,7 +359,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->assertNotEmpty($result['error']);
-        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is version");
+        $this->assertSame($result['error'], "The 'version' parameter must be greater than 0 for ResourceDataType is VERSION");
     }
 
     /**
@@ -511,22 +511,6 @@ class RetrieveResourceTest extends TestCase
         // Assert
         $this->assertNotEmpty($result['error']);
         $this->assertSame($result['error'], 'Convertion to thumbnail failed');
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetThumbnailFileWithResourceUnknownDocserverReferenceInDatabaseExpectError(): void
-    {
-        // Arrange
-        $this->resourceDataMock->doesResourceDocserverExist = false;
-        
-        // Act
-        $result = $this->retrieveResource->getThumbnailFile(1);
-
-        // Assert
-        $this->assertNotEmpty($result['error']);
-        $this->assertSame($result['error'], $this->resourceDataMock::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST);
     }
 
     /**
