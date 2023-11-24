@@ -113,11 +113,12 @@ class ResourceFileMock implements ResourceFileInterface
     /**
      * Retrieves file content.
      *
-     * @param string $filePath The path to the file.
+     * @param   string  $filePath       The path to the file.
+     * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
      *
-     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
+     * @return  string|'false'  Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */
-    public function getFileContent(string $filePath): string
+    public function getFileContent(string $filePath, bool $isEncrypted = false): string
     {
         if (empty($filePath)) {
             return 'false';

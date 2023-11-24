@@ -21,6 +21,7 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $doesResourceVersionExist = true;
     public bool $returnResourceWithoutFile = false;
     public bool $doesUserHasRights = true;
+    public bool $isResourceDocserverEncrypted = false;
 
     /**
      * @param   int     $resId
@@ -93,7 +94,7 @@ class ResourceDataMock implements ResourceDataInterface
             return [];
         }
 
-        return ['path_template' => '/tmp', 'docserver_type_id' => 'DOC'];
+        return ['path_template' => '/tmp', 'docserver_type_id' => 'DOC', 'is_encrypted' => $this->isResourceDocserverEncrypted];
     }
 
     /**
