@@ -146,8 +146,7 @@
 
 .attachInSignatoryBook {
     display:flow-root;
-    // position: sticky;
-    top: 0px;
+    top: 0;
     z-index: 2;
     background-color: white;
     .mat-checkbox {
@@ -161,7 +160,6 @@
     border-radius: 0px;
     color: black;
     font-weight: bold;
-    border-radius: 50px;
     background-color: white;
     left: 16%;
 }

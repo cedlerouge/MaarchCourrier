@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from "@angular/core/testing"
 import { SendExternalSignatoryBookActionComponent } from "./send-external-signatory-book-action.component";
-import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
 import { BrowserModule, By } from "@angular/platform-browser";
