@@ -23,7 +23,7 @@
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
                         <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
                             mat-icon-button title="{{'lang.attachments' | translate}}"
-                            (click)="snav2?.toggle()">
+                            (click)="snav2?.toggle(); updateCssClass()">
                             <mat-icon fontSet="fas"
                                 [matBadge]="attachmentsList?.attachmentsClone?.length"
                                 fontIcon="fa-paperclip fa-2x">
@@ -99,11 +99,6 @@
                 [opened]="true"
                 [ngStyle]="{'width': '600px'}"
                 style="overflow-x:hidden;">
-                <!-- <div style="display: flex; position: relative; top: -11px; margin-bottom: -17px; left: 2px;">
-                    <button mat-icon-button [title]="'Fermer le panneau latéral'" (click)="snav2.close()" style="font-size: 20px;color:#666">
-                        <mat-icon class="fa fa-arrow-right"></mat-icon>
-                    </button>
-                </div> -->
                 <div *ngIf="attachmentsList.attachmentsClone.length > 0" class="attachInSignatoryBook">
                     <mat-checkbox color="primary"
                         [title]="'lang.attachmentsInSignatoryBookDesc' | translate"

@@ -277,4 +277,14 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             this.attachmentsList.currentFilter = '';
         }
     }
+
+    updateCssClass() {
+        const element = document.querySelector('.maarch-modal');
+        if (!this.snav2.opened) {
+            element.setAttribute('style', 'width: 600px');
+        } else {
+            element.setAttribute('style', 'width: auto');
+        }
+        
+    }
 }
