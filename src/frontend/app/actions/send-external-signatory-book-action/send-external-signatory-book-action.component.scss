@@ -146,6 +146,7 @@
 
 .attachInSignatoryBook {
     display:flow-root;
+    position: sticky;
     top: 0;
     z-index: 2;
     background-color: white;
@@ -185,8 +186,12 @@
 }
 
 .integrationTarget {
+    display: list-item;
+    position: sticky;
     padding: 7px;
-    margin-left: 10%;
+    top: 35px;
+    background-color: white;
+    z-index: 1;
 }
 
 .mat-radio-group .mat-radio-button:not(:first-child) {

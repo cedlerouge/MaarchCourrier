@@ -260,9 +260,21 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         return this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 
-    async afterAttachmentToggle(event: any) {
+    async afterAttachmentToggle() {
         await this.checkExternalSignatureBook();
-        this.inSignatoryBook.setValue(true);
-        this.attachmentsList.setTaget(this.integrationTarget);
+        this.inSignatoryBook.setValue(this.inSignatoryBook.value);
+        if (this.inSignatoryBook.value) {
+            this.attachmentsList.setTaget(this.integrationTarget);
+        }
+    }
+
+    toggleValue(value: any) {
+        this.inSignatoryBook.setValue(!this.inSignatoryBook.value);
+        if (value.checked) {
+            // reset filters
+            this.integrationTarget = 'all';
+            this.attachmentsList.setTaget(this.integrationTarget);
+            this.attachmentsList.currentFilter = '';
+        }
     }
 }

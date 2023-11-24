@@ -108,7 +108,7 @@
                     <mat-checkbox color="primary"
                         [title]="'lang.attachmentsInSignatoryBookDesc' | translate"
                         [checked]="inSignatoryBook.value"
-                        (change)="inSignatoryBook.setValue(!inSignatoryBook.value)">
+                        (change)="toggleValue($event)">
                         {{'lang.attachmentsInSignatoryBook' | translate}}
                     </mat-checkbox>
                 </div>
@@ -129,7 +129,7 @@
                 <app-attachments-list #attachmentsList
                     [resId]="data.resIds[0]"
                     [inSignatoryBook]="inSignatoryBook"
-                    (afterActionAttachment)="afterAttachmentToggle($event)">
+                    (afterActionAttachment)="afterAttachmentToggle()">
                 </app-attachments-list>
             </mat-sidenav>
         </mat-sidenav-container>

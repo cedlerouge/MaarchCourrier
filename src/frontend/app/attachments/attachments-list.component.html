@@ -28,15 +28,15 @@
             <div class="pjToolsContent">
                 <span *ngIf="attachment.relation > 1" color="primary" class="versionButton">{{'lang.version' | translate}} <b
                         color="secondary">{{attachment.relation}}</b></span>
-                <button name="menuPjAction" color="primary" class="actionsButton" mat-icon-button [matMenuTriggerFor]="menuPjAction">
+                <button name="menuPjAction" color="primary" class="actionsButton" mat-icon-button [matMenuTriggerFor]="menuPjAction" #menuTrigger="matMenuTrigger">
                     <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v"></mat-icon>
                 </button>
                 <mat-menu #menuPjAction="matMenu">
-                    <button name="putInSignatureBook" mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment)">
+                    <button name="putInSignatureBook" mat-menu-item [disabled]="attachment.status === 'FRZ' || !attachment.canUpdate" (click)="$event.stopPropagation(); setInSignatureBook(attachment); menuTrigger.closeMenu()">
                         <mat-checkbox color="primary" [checked]="attachment.inSignatureBook"></mat-checkbox>
                         {{'lang.putInSignatureBook' | translate}}
                     </button>
-                    <button mat-menu-item (click)="$event.stopPropagation(); setInSendAttachment(attachment)" [disabled]="!mailevaEnabled">
+                    <button mat-menu-item (click)="$event.stopPropagation(); setInSendAttachment(attachment); menuTrigger.closeMenu()" [disabled]="!mailevaEnabled">
                         <mat-checkbox color="primary" [checked]="attachment.inSendAttach"
                             [disabled]="!mailevaEnabled">
                         </mat-checkbox>
