@@ -193,7 +193,7 @@ describe('AttachmentsListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const integrationTarget: any[] = fixture.nativeElement.querySelectorAll('span[name=integrationTarget');
+            const integrationTarget: any[] = fixture.nativeElement.querySelectorAll('span[name=integrationTarget]');
             expect(integrationTarget.length).toBeGreaterThan(0);
 
             component.attachments.filter((attachment: any) => attachment.inSignatureBook).forEach((attachment: any, index: number) => {
