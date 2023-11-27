@@ -8,7 +8,7 @@
         <div *ngIf="loading" class="loading" style="display:flex;height:100%;">
             <mat-spinner style="margin:auto;"></mat-spinner>
         </div>
-        <mat-sidenav-container *ngIf="authService.externalSignatoryBook !== null" autosize style="height:100%;">
+        <mat-sidenav-container *ngIf="!functions.empty(authService.externalSignatoryBook)" autosize style="height:100%;">
             <mat-sidenav-content style="background: white;">
                 <div class="row" style="margin: 0;">
                     <div class="col-md-12">
@@ -21,7 +21,7 @@
                             {{'lang.elements' | translate}}</b> ?
                     </div>
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
-                        <button *ngIf="!loading &&  data.resIds.length === 1" class="attachmentIcon" color="primary"
+                        <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
                             mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
                             (click)="snav2?.toggle()">
                             <mat-icon fontSet="fas"
@@ -95,7 +95,7 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav *ngIf="!loading && data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
                 [opened]="true"
                 [ngStyle]="{'width': '550px'}"
                 style="overflow-x:hidden;">
