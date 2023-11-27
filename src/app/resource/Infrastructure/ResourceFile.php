@@ -132,7 +132,7 @@ class ResourceFile implements ResourceFileInterface
         }
 
         if ($isEncrypted) {
-            $fileContent = PasswordController::decrypt(['encryptedData' => $fileContent]);
+            $fileContent = PasswordController::decrypt(['encryptedData' => base64_encode($fileContent)]);
         }
 
         return $fileContent;
