@@ -151,6 +151,7 @@
     z-index: 2;
     background-color: white;
     border-bottom: 1px solid #ebebeb;
+    margin-bottom: 5px;
     .mat-checkbox {
         margin-left: 13px;
         margin-top: 7px;
@@ -194,6 +195,7 @@
     background-color: white;
     z-index: 1;
     border-bottom: 1px solid #ebebeb;
+    margin-bottom: 5px;
 }
 
 .mat-radio-group .mat-radio-button:not(:first-child) {
