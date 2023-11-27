@@ -641,6 +641,18 @@ export class ActionsService implements OnDestroy {
             width: this.currentResIds.length === 1 ? '' : '580px',
             data: this.setDatasActionToSend()
         });
+        // Subscribe to the sidenavStateChanged event of the SendExternalSignatoryBookActionComponent instance
+        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {            
+            // Check if the sidenav is closed/opened
+            if (!isSidenavOpened) {
+                // If closed, update the size of the dialog to a fixed width of '580px'
+                dialogRef.updateSize('580px');
+            } else {
+                // If opened, update the size of the dialog to its default or empty value
+                // This might be used to let the dialog size adjust based on its content or other factors
+                dialogRef.updateSize('');
+            }
+        });
         dialogRef.afterClosed().pipe(
             tap((resIds: any) => {
                 this.unlockResourceAfterActionModal(resIds);

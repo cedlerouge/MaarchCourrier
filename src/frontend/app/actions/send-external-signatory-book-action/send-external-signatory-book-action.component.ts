@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -37,6 +37,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
     @ViewChild('attachmentsList', { static: false }) attachmentsList: AttachmentsListComponent;
     @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
+
+    @Output() sidenavStateChanged = new EventEmitter<boolean>();
 
     loading: boolean = false;
 
@@ -280,5 +282,10 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     getIntegratedAttachments(): number {
         return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA').length;
+    }
+
+    onSidenavStateChanged(): void {        
+        this.snav2?.toggle();
+        this.sidenavStateChanged.emit(this.snav2?.opened);
     }
 }

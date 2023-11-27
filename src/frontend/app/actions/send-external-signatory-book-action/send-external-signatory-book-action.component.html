@@ -23,7 +23,7 @@
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
                         <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
                             mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
-                            (click)="snav2?.toggle()">
+                            (click)="onSidenavStateChanged()">
                             <mat-icon fontSet="fas"
                                 [matBadge]="getIntegratedAttachments()"
                                 fontIcon="fa-paperclip fa-2x">
@@ -95,7 +95,11 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="appService.getViewMode() ? 'over' : 'side'"
                 [opened]="true"
                 [ngStyle]="{'width': '550px'}"
                 style="overflow-x:hidden;">
