@@ -123,7 +123,7 @@ describe('SendExternalSignatoryBookActionComponent', () => {
 
         fixture.detectChanges();
         tick(300);
-        flush();        
+        flush();
         
         fixture.whenStable().finally(() => {
             loadAttachments(component, fixture);

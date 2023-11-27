@@ -11,9 +11,7 @@ import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
-import {
-    ExternalSignatoryBookManagerService
-} from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { AuthService } from '@service/auth.service';
