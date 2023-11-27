@@ -21,11 +21,11 @@
                             {{'lang.elements' | translate}}</b> ?
                     </div>
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
-                        <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
-                            mat-icon-button title="{{'lang.attachments' | translate}}"
-                            (click)="snav2?.toggle(); updateCssClass()">
+                        <button *ngIf="!loading &&  data.resIds.length === 1" class="attachmentIcon" color="primary"
+                            mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
+                            (click)="snav2?.toggle()">
                             <mat-icon fontSet="fas"
-                                [matBadge]="attachmentsList?.attachmentsClone?.length"
+                                [matBadge]="getIntegratedAttachments()"
                                 fontIcon="fa-paperclip fa-2x">
                             </mat-icon>
                         </button>
@@ -95,9 +95,9 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
+            <mat-sidenav *ngIf="!loading && data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
                 [opened]="true"
-                [ngStyle]="{'width': '600px'}"
+                [ngStyle]="{'width': '550px'}"
                 style="overflow-x:hidden;">
                 <div *ngIf="attachmentsList.attachmentsClone.length > 0" class="attachInSignatoryBook">
                     <mat-checkbox color="primary"

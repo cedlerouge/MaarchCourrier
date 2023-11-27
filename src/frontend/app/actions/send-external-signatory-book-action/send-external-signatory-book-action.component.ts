@@ -278,13 +278,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         }
     }
 
-    updateCssClass() {
-        const element = document.querySelector('.maarch-modal');
-        if (!this.snav2.opened) {
-            element.setAttribute('style', 'width: 600px');
-        } else {
-            element.setAttribute('style', 'width: auto');
-        }
-        
+    getIntegratedAttachments(): number {
+        return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA').length;
     }
 }
