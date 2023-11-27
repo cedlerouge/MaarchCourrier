@@ -123,20 +123,49 @@ describe('SendExternalSignatoryBookActionComponent', () => {
 
         fixture.detectChanges();
         tick(300);
-        flush();
-
-        loadAttachments(component, fixture);
-
-        component.inSignatoryBook.setValue(false);
-
-        fixture.detectChanges();
-        tick(300);
+        flush();        
+        
+        fixture.whenStable().finally(() => {
+            loadAttachments(component, fixture);
+            component.inSignatoryBook.setValue(false);
+            fixture.detectChanges();
+            tick(300);
+        });
 
         expect(fixture.debugElement.query(By.css('mat-radio-group'))).toEqual(null);
     }));
 });
 
 function loadAttachments(component: SendExternalSignatoryBookActionComponent, fixture: ComponentFixture<SendExternalSignatoryBookActionComponent>) {
+    const attachmentsTypesMock: any =  {
+        response_project: {
+            id: 3,
+            typeId: 'response_project',
+            label: 'Projet de réponse',
+            visible: true,
+            emailLink: true,
+            signable: true,
+            signedByDefault: false,
+            icon: 'R',
+            chrono: true,
+            versionEnabled: true,
+            newVersionDefault: true
+        },
+        simple_attachment: {
+            id: 4,
+            typeId: 'simple_attachment',
+            label: 'Pièce jointe',
+            visible: true,
+            emailLink: true,
+            signable: false,
+            signedByDefault: false,
+            icon: 'PJ',
+            chrono: true,
+            versionEnabled: false,
+            newVersionDefault: false
+        }
+    };
+
     const filterAttachTypesMock: any[] = [
         {
             id: 'response_project',
@@ -198,6 +227,8 @@ function loadAttachments(component: SendExternalSignatoryBookActionComponent, fi
             thumbnail: '../rest/attachments/' + 67 + '/thumbnail'
         }
     ];
+
+    component.attachmentsList.attachmentTypes = attachmentsTypesMock;
     component.attachmentsList.attachments = attachmentsMock;
     component.attachmentsList.attachmentsClone = component.attachmentsList.attachments;
     component.attachmentsList.filterAttachTypes = filterAttachTypesMock;
