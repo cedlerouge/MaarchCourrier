@@ -109,14 +109,16 @@ describe('SendExternalSignatoryBookActionComponent', () => {
             flush();
 
             loadAttachments(component, fixture);
-            
         }));
     });
 
-    it('Hide integrationTarget filter when checkbox value if false', fakeAsync(() => {
+    it('Check if filters are loaded and currentIntegrationTarget equal to inSignatureBook', fakeAsync(() => {
         spyOn(component.externalSignatoryBook, 'checkExternalSignatureBook').and.returnValue(Promise.resolve({ availableResources: [], additionalsInfos: { attachments: [], noAttachment: [] }, errors: [] }));
         
         component.attachmentsList = TestBed.inject(AttachmentsListComponent);
+        component.attachmentsList.isModal = true;
+
+        fixture.detectChanges();        
 
         tick(300);
         expect(component.loading).toBe(false);
@@ -127,12 +129,22 @@ describe('SendExternalSignatoryBookActionComponent', () => {
         
         fixture.whenStable().finally(() => {
             loadAttachments(component, fixture);
-            component.inSignatoryBook.setValue(false);
             fixture.detectChanges();
             tick(300);
-        });
 
-        expect(fixture.debugElement.query(By.css('mat-radio-group'))).toEqual(null);
+            // Show filters
+            const matButtonToggleGroup = fixture.nativeElement.querySelector('#integrationTarget');
+            const matButtonToggle = matButtonToggleGroup.querySelectorAll('mat-button-toggle');
+            expect(matButtonToggle.length).toEqual(4);
+
+            fixture.detectChanges();
+            tick(300);
+
+            // Check if filter selected by default is : inSignatureBook 
+            const matButtonToggleChecked = matButtonToggleGroup.querySelector('mat-button-toggle[ng-reflect-checked = true]');
+            expect(matButtonToggleChecked.getAttribute('title')).toEqual(component.translate.instant('lang.attachInSignatureBookDesc'))
+            flush();
+        });
     }));
 });
 
@@ -233,11 +245,6 @@ function loadAttachments(component: SendExternalSignatoryBookActionComponent, fi
     component.attachmentsList.attachmentsClone = component.attachmentsList.attachments;
     component.attachmentsList.filterAttachTypes = filterAttachTypesMock;
     component.attachmentsList.loading = false;
-
-    fixture.detectChanges();
-    tick(300);
-    
-    fixture.debugElement.query(By.css('mat-radio-group')).nativeNode.value = component.integrationTarget;
 
     fixture.detectChanges();
     tick(300);
