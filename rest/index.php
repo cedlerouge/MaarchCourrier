@@ -54,7 +54,7 @@ $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandler
     $currentRoute = $route->getPattern();
 
     if (!in_array($currentMethod . $currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
-        if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWhitoutAuthentication(['route' => $currentMethod.$currentRoute])) {
+        if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWithoutAuthentication(['route' => $currentMethod.$currentRoute])) {
             $authorizationHeaders = $request->getHeader('Authorization');
             $userId = \SrcCore\controllers\AuthenticationController::authentication($authorizationHeaders);
             if (!empty($userId)) {
