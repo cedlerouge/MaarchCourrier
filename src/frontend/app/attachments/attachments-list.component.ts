@@ -50,9 +50,9 @@ export class AttachmentsListComponent implements OnInit {
     @Input() autoOpenCreation: boolean = false;
     @Input() canModify: boolean = null;
     @Input() canDelete: boolean = null;
-    @Input() inSignatoryBook = null;
-    @Output() reloadBadgeAttachments = new EventEmitter<string>();
+    @Input() isModal: boolean = false;
 
+    @Output() reloadBadgeAttachments = new EventEmitter<string>();
     @Output() afterActionAttachment = new EventEmitter<string>();
 
     attachmentTargets: any[] = [
@@ -68,6 +68,29 @@ export class AttachmentsListComponent implements OnInit {
         }
     ];
 
+    integrationTargets: any[] = [
+        {
+            id: 'all',
+            label: this.translate.instant('lang.allIntegratedAttachments'),
+            description: this.translate.instant('lang.allIntegratedAttachmentsDesc')
+        },
+        {
+            id: 'inSignatureBook',
+            label: this.translate.instant('lang.attachInSignatureBook'),
+            description: this.translate.instant('lang.attachInSignatureBookDesc')
+        },
+        {
+            id: 'sign',
+            label: this.translate.instant('lang.attachmentToSign'),
+            description: this.translate.instant('lang.signTargetDesc')
+        },
+        {
+            id: 'annex',
+            label: this.translate.instant('lang.attachmentAnnex'),
+            description: this.translate.instant('lang.annexTargetDesc')
+        },
+    ];
+
     attachments: any[] = [];
     attachmentsClone: any[] = [];
     loading: boolean = true;
@@ -77,7 +100,9 @@ export class AttachmentsListComponent implements OnInit {
 
     filterAttachTypes: any[] = [];
     attachmentTypes: any[] = [];
+
     currentFilter: string = '';
+    currentIntegrationTarget: string = 'all';
 
     dialogRef: MatDialogRef<any>;
 
@@ -101,11 +126,7 @@ export class AttachmentsListComponent implements OnInit {
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-
-        this.inSignatoryBook?.valueChanges.subscribe((data: any) => {
-            this.attachments = data === true ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
-        });
-
+        this. currentIntegrationTarget = this.isModal ? 'inSignatureBook' : 'all';
         this.route.params.subscribe(async (param: any) => {
             if (this.resId !== null) {
                 this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
@@ -128,9 +149,7 @@ export class AttachmentsListComponent implements OnInit {
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
                             element.canDelete = element.canDelete;
                         });
-                        if (this.inSignatoryBook?.value === true) {
-                            this.attachments = this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA');
-                        }
+                        this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
                     }),
                     finalize(() => this.loading = false),
                     catchError((err: any) => {
@@ -315,14 +334,17 @@ export class AttachmentsListComponent implements OnInit {
         });
     }
 
-    setTaget(target: 'all' | 'sign' | 'annex'): void {
+    setTaget(target: string): void {
         const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');      
+        this.currentIntegrationTarget = target;
         if (target === 'all') {
-            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
+            this.attachments = this.attachmentsClone;
         } else if (target === 'sign') {
             this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && attachment.signable);
         } else if (target === 'annex') {
             this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && !attachment.signable);
+        } else if (target === 'inSignatureBook') {
+            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
         }
     }
 }

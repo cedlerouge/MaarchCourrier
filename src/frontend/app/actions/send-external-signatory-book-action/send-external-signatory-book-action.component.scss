@@ -144,20 +144,6 @@
     flex-direction: column;
 }
 
-.attachInSignatoryBook {
-    display:flow-root;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background-color: white;
-    border-bottom: 1px solid #ebebeb;
-    margin-bottom: 5px;
-    .mat-checkbox {
-        margin-left: 13px;
-        margin-top: 7px;
-    }
-}
-
 .attach-button {
     border-bottom: solid 1px #ffffff4d;
     border-radius: 0px;
@@ -181,25 +167,6 @@
     font-size: 12px;
     padding: 3px;
     border-radius: 3px;
-}
-
-.mat-radio-button {
-    margin: 13px 34px 12px 26px;
-}
-
-.integrationTarget {
-    display: list-item;
-    position: sticky;
-    padding: 7px;
-    top: 35px;
-    background-color: white;
-    z-index: 1;
-    border-bottom: 1px solid #ebebeb;
-    margin-bottom: 5px;
-}
-
-.mat-radio-group .mat-radio-button:not(:first-child) {
-    margin-left: 5px;
 }
 
 .externalSignatoryBookTitle {

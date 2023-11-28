@@ -638,19 +638,20 @@ export class ActionsService implements OnDestroy {
         const dialogRef = this.dialog.open(SendExternalSignatoryBookActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
-            width: this.currentResIds.length === 1 ? '' : '580px',
+            width: this.currentResIds.length > 1 ? '580px' : '',
+            height: this.currentResIds.length > 1 ? 'auto' : '55vw',
             data: this.setDatasActionToSend()
         });
         // Subscribe to the sidenavStateChanged event of the SendExternalSignatoryBookActionComponent instance
         dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {            
             // Check if the sidenav is closed/opened
             if (!isSidenavOpened) {
-                // If closed, update the size of the dialog to a fixed width of '580px'
-                dialogRef.updateSize('580px');
+                // If closed, update the size of the dialog to a fixed width
+                dialogRef.updateSize('auto', 'auto');
             } else {
                 // If opened, update the size of the dialog to its default or empty value
                 // This might be used to let the dialog size adjust based on its content or other factors
-                dialogRef.updateSize('');
+                dialogRef.updateSize('auto', '55vw');
             }
         });
         dialogRef.afterClosed().pipe(

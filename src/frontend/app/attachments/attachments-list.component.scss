@@ -149,11 +149,9 @@
 }
 
 .filterTypes {
-    overflow: auto;
-    overflow-y: hidden;
     width: auto;
     max-width: 100%;
-    margin-left: 10px;
+    margin-left: 12px;
     ::ng-deep.mat-button-toggle-checked {
         background: var(--maarch-color-secondary);
         color: white;
@@ -204,4 +202,27 @@
     opacity: 0.5;
     color: #666;
     cursor: help
+}
+
+.attachFilters {
+    overflow: auto;
+    overflow-y: hidden;
+    display: grid;
+    position: sticky;
+    background-color: white;
+    z-index: 1;
+    top: 0;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 5px;
+    padding-bottom: 10px;
+}
+
+.integrationIcon {
+    margin: 6px -4px 5px 9px;
+    cursor: help;
+}
+
+.attachTypesIcon {
+    margin: 6px -4px 6px 10px;
+    cursor: help;
 }

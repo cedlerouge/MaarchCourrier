@@ -67,9 +67,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
     inLocalStorage: boolean = false;
-    inSignatoryBook = new UntypedFormControl(true);
-
-    integrationTarget: 'all' | 'sign' | 'annex' = 'all';
 
     constructor(
         public translate: TranslateService,
@@ -262,20 +259,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     async afterAttachmentToggle() {
         await this.checkExternalSignatureBook();
-        this.inSignatoryBook.setValue(this.inSignatoryBook.value);
-        if (this.inSignatoryBook.value) {
-            this.attachmentsList.setTaget(this.integrationTarget);
-        }
-    }
-
-    toggleValue(value: any) {
-        this.inSignatoryBook.setValue(!this.inSignatoryBook.value);
-        if (value.checked) {
-            // reset filters
-            this.integrationTarget = 'all';
-            this.attachmentsList.setTaget(this.integrationTarget);
-            this.attachmentsList.currentFilter = '';
-        }
+        this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
     }
 
     getIntegratedAttachments(): number {

@@ -2824,5 +2824,10 @@
     "allIntegratedAttachments": "Toutes",
     "attachmentToSign": "Pour visa/signature",
     "attachmentAnnex": "En annexe",
-    "attachmentsInSignatoryBookDesc": "Afficher les pièces jointes intégrées au parapheur"
+    "attachmentsInSignatoryBookDesc": "Pièces jointes intégrées (ou non) au parapheur",
+    "attachInSignatureBook": "Intégrées au parapheur",
+    "allIntegratedAttachmentsDesc": "Toutes les pièces jointes",
+    "attachInSignatureBookDesc": "Seulement les pièces jointes intégrées au parapheur",
+    "allAttachTypes": "Tous les types de pièces jointes",
+    "attachWithType": "Pièces jointes de type : "
 }
