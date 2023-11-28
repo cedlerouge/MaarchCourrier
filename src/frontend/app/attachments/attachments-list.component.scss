@@ -238,7 +238,11 @@
 }
 
 .attachFilter {
-    display: inline-table;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    align-content: flex-start;
+    align-items: flex-start;
     overflow: auto;
     width: 97%;
     padding: 11px 15px 10px 10px;
