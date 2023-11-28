@@ -62,6 +62,7 @@ class ExportController
         set_time_limit(240);
 
         $body = $request->getParsedBody();
+        $hasFullAccess = [];
 
         if (!Validator::stringType()->notEmpty()->validate($body['format']) || !in_array($body['format'], ['pdf', 'csv'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Data format is empty or not a string between [\'pdf\', \'csv\']']);
@@ -72,7 +73,26 @@ class ExportController
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
             return $response->withStatus(403)->withJson(['errors' => 'Data resources is empty or not an array']);
         } elseif (!ResController::hasRightByResId(['resId' => $body['resources'], 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
+            $inBaskets = self::inBasket($body['resources'], $GLOBALS['id']);
+            $hasNotAccess = [];
+            foreach ($inBaskets as $basket) {
+                if ($basket['inBasket'] === true) {
+                    $hasFullAccess[] = $basket;
+                } else {
+                    $hasNotAccess[] = $basket;
+                }
+            }
+            if (!empty($hasNotAccess)) {
+                $hasNotAccess = array_column($hasNotAccess, 'resId');
+                $folders = self::inFolder($hasNotAccess);
+                foreach ($folders as $folder) {
+                    if ($folder['inFolder'] === true) {
+                        $hasFullAccess[] = $folder;
+                    } else {
+                        return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
+                    }
+                }
+            }
         }
 
         foreach ($body['data'] as $value) {
@@ -167,7 +187,7 @@ class ExportController
         }
 
         if ($body['format'] == 'csv') {
-            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources]);
+            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
             $response->write(stream_get_contents($file));
             $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
             $contentType = 'application/vnd.ms-excel';
@@ -186,6 +206,70 @@ class ExportController
         return $response->withHeader('Content-Type', $contentType);
     }
 
+    public static function inBasket(array $args, int $userId): array
+    {
+        $authorizedResources = ResController::getAuthorizedResources(['resources' => $args, 'userId' => $userId, 'mode' => 'baskets']);
+        $InBaskets = [];
+        foreach ($args as $resId) {
+            $isInBaskets = in_array($resId, $authorizedResources);
+            if ($resId !== null) {
+                $InBaskets[] = [
+                    'resId'    => $resId,
+                    'inBasket' => $isInBaskets
+                ];
+            }
+        }
+
+        return $InBaskets;
+    }
+
+    public static function inFolder(array $args): array
+    {
+
+
+        $userEntities = EntityModel::getWithUserEntities(['select' => ['entities.id'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        $userEntities = array_column($userEntities, 'id');
+        if (empty($userEntities)) {
+            $userEntities = 0;
+        }
+
+        $foldersWithResources = FolderModel::getWithEntitiesAndResources([
+            'select'  => ['DISTINCT (resources_folders.res_id)', 'resources_folders.folder_id'],
+            'where'   => ['(entities_folders.entity_id in (?) OR folders.user_id = ? OR keyword = ?)', 'resources_folders.res_id in (?)'],
+            'data'    => [$userEntities, $GLOBALS['id'], 'ALL_ENTITIES', $args],
+            'groupBy' => ['resources_folders.folder_id, resources_folders.res_id']
+        ]);
+
+        $resIds = array_column($foldersWithResources, 'res_id');
+
+        $folders = [];
+        foreach ($resIds as $resId) {
+            $isInFolder = in_array($resId, $args);
+            if ($resId !== null) {
+                $folders[] = [
+                    'resId'    => $resId,
+                    'inFolder' => $isInFolder
+                ];
+            }
+        }
+
+        return $folders;
+    }
+
+    public static function hasRight($folders): array
+    {
+        $res = [];
+
+        foreach ($folders as $folder) {
+            if ($folder['inFolder'] ?? $folder['inBasket'] === true) {
+                $hasRight = ResController::hasRightByResId(['resId' => [$folder['resId']], 'userId' => $GLOBALS['id']]);
+                $res[$folder['resId']] = $hasRight;
+            }
+        }
+        return $res;
+    }
+
+
     public static function getCsv(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['delimiter', 'data', 'resources', 'chunkedResIds']);
@@ -196,6 +280,7 @@ class ExportController
         $delimiter = ($aArgs['delimiter'] == 'TAB' ? "\t" : $aArgs['delimiter']);
 
         $csvHead = [];
+
         foreach ($aArgs['data'] as $value) {
             $decoded = utf8_decode($value['label']);
             $csvHead[] = $decoded;
@@ -203,23 +288,38 @@ class ExportController
 
         fputcsv($file, $csvHead, $delimiter);
 
+        $publicProperties = [
+            'getStatus',
+            'alt_identifier',
+            'subject'
+        ];
+        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
+
+            $hasRight = $restrictedAccess[$resource['res_id']];
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
                     $csvContent[] = '';
                     continue;
                 }
+                if (!$hasRight) {
+                    if (!in_array($value['value'], $publicProperties)) {
+                        $csvContent[] = 'Hors périmètre';
+                        continue;
+                    }
+                }
                 if ($value['isFunction']) {
+
                     if ($value['value'] == 'getStatus') {
                         $csvContent[] = $resource['status.label_status'];
                     } elseif ($value['value'] == 'getPriority') {
                         $csvContent[] = $resource['priorities.label'];
                     } elseif ($value['value'] == 'getCopies') {
-                        $copies       = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
+                        $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $csvContent[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/'.$resource['res_id'];
+                        $csvContent[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/' . $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $csvContent[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -262,7 +362,7 @@ class ExportController
                         $signatureDates = ExportController::getSignatureDates(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($signatureDates[$resource['res_id']]) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
-                        $department   = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
+                        $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
                     } elseif ($value['value'] == 'getAcknowledgementSendDate') {
                         $acknwoledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
@@ -274,14 +374,16 @@ class ExportController
                     } elseif ($value['value'] == 'getOpinionCircuit') {
                         $csvContent[] = ExportController::getCircuit(['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]);
                     }
-                } else {
-                    $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
-                    if (in_array($value['value'], $allDates)) {
-                        $csvContent[] = TextFormatModel::formatDate($resource[$value['value']]);
-                    } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
-                        $csvContent[] = $resource[$value['value']];
-                    }
+
                 }
+                $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
+                if (in_array($value['value'], $allDates)) {
+                    $csvContent[] = TextFormatModel::formatDate($resource[$value['value']]);
+                } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
+                    $csvContent[] = $resource[$value['value']];
+                }
+
+
             }
 
             foreach ($csvContent as $key => $value) {
