@@ -2830,5 +2830,5 @@
     "attachInSignatureBookDesc": "Seulement les pièces jointes intégrées au parapheur",
     "allAttachTypes": "Tous les types de pièces jointes",
     "attachWithType": "Pièces jointes de type : ",
-    "filterAttach": "Filtrer par : type / état de pièce(s) jointe(s)"
+    "filterAttach": "Filtrer par : état / type de pièce(s) jointe(s)"
 }
