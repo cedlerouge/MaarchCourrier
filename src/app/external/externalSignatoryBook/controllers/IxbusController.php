@@ -166,9 +166,9 @@ class IxbusController
         $attachmentsData = [];
         if (!empty($mainDocumentFilePath)) {
             $attachmentsData = [[
-                                    'filePath' => $mainDocumentFilePath,
-                                    'fileName' => TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf'
-                                ]];
+                'filePath' => $mainDocumentFilePath,
+                'fileName' => TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf'
+            ]];
         }
         $attachmentsData = array_merge($annexesAttachments, $attachmentsData);
 
