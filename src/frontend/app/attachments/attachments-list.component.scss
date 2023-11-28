@@ -204,17 +204,19 @@
     cursor: help
 }
 
-.attachFilters {
+.attachmentsSubDiv {
     overflow: auto;
     overflow-y: hidden;
-    display: grid;
+    display: flex;
     position: sticky;
     background-color: white;
-    z-index: 1;
+    z-index: 2;
     top: 0;
-    border-bottom: 1px solid #e5e5e5;
     margin-bottom: 5px;
     padding-bottom: 10px;
+    justify-content: center;
+    flex-direction: column;
+    align-items: baseline;
 }
 
 .integrationIcon {
@@ -225,4 +227,40 @@
 .attachTypesIcon {
     margin: 6px -4px 6px 10px;
     cursor: help;
+}
+
+.filterLabel {
+    margin: 3px -4px 0px 10px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--maarch-color-primary);
+    display: flex;
+}
+
+.attachFilter {
+    display: inline-table;
+    overflow: auto;
+    width: 97%;
+    padding: 11px 15px 10px 10px;
+    margin-top: 10px;
+    margin-left: 10px;
+    border-radius: 4px;
+    border: solid 1px #ccc;
+
+    &-title {
+        white-space: pre;
+        overflow: hidden;
+        max-width: 85%;
+        text-overflow: ellipsis;
+        z-index: 1;
+        font-size: 10px;
+        font-weight: bold;
+        background: white;
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        padding: 0px;
+        margin: 0px;
+        color: var(--maarch-color-primary);
+    }
 }

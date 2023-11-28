@@ -55,19 +55,6 @@ export class AttachmentsListComponent implements OnInit {
     @Output() reloadBadgeAttachments = new EventEmitter<string>();
     @Output() afterActionAttachment = new EventEmitter<string>();
 
-    attachmentTargets: any[] = [
-        {
-            label: this.translate.instant('lang.signTarget'),
-            description: this.translate.instant('lang.signTargetDesc'),
-            signable: true
-        },
-        {
-            label: this.translate.instant('lang.annexTarget'),
-            description: this.translate.instant('lang.annexTargetDesc'),
-            signable: false
-        }
-    ];
-
     integrationTargets: any[] = [
         {
             id: 'all',
@@ -102,7 +89,7 @@ export class AttachmentsListComponent implements OnInit {
     attachmentTypes: any[] = [];
 
     currentFilter: string = '';
-    currentIntegrationTarget: string = 'all';
+    currentIntegrationTarget: string = 'inSignatureBook';
 
     dialogRef: MatDialogRef<any>;
 
@@ -126,7 +113,7 @@ export class AttachmentsListComponent implements OnInit {
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-        this. currentIntegrationTarget = this.isModal ? 'inSignatureBook' : 'all';
+        this.currentIntegrationTarget = this.isModal ? 'inSignatureBook' : 'all';
         this.route.params.subscribe(async (param: any) => {
             if (this.resId !== null) {
                 this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(

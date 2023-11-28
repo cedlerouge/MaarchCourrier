@@ -1,6 +1,6 @@
 <div class="mat-dialog-content-container">
     <h1 mat-dialog-title class="externalSignatoryBookTitle">
-        {{data.action.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
+        {{data.action?.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
             {{getTitle()}}
          </div>
     </h1>
@@ -33,13 +33,6 @@
                             (click)="toggleIntegration(inteKey.key)"
                             [checked]="data.resource.integrations[inteKey.key]">{{'lang.' + inteKey.key + '_doc' | translate}}
                         </mat-checkbox>
-                        <!-- <button mat-raised-button color="light" style="width: 5%; height: 75%; display: flow-root;"
-                            matBadgePosition="before" matBadgeColor="accent"
-                            [title]="'lang.attachmentsInSignatoryBook' | translate"
-                            [matBadge]="getIntegratedAttachments()">
-                            {{'lang.attachmentsInSignatoryBook' | translate}}
-                        </button> -->
-                        
                     </div>
                     <div *ngIf="resourcesMailing.length > 0" class="alert-message alert-message-info" role="alert">
                         <p>{{'lang.mailingActionInformations' | translate}}</p>

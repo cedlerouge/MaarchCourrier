@@ -5,32 +5,26 @@
 </ng-container>
 <ng-template #elseLoading>
     <div id="attachDiv" (mouseover)="resetToggleInfo()">
-        <div *ngIf="attachmentsClone.length > 0" class="attachFilters">
-            <div style="display: inline-flex;">
-                <mat-icon class="integrationIcon"
-                    fontSet="fas"
-                    fontIcon="fa-circle-check fa-2x"
-                    color="primary"
-                    [title]="'lang.attachmentsInSignatoryBookDesc' | translate"></mat-icon>
-                <mat-button-toggle-group class="filterTypes" (change)="setTaget($event.value)">
+        <div *ngIf="attachmentsClone.length > 0" class="attachmentsSubDiv">
+            <div *ngIf="isModal" class="attachFilter">
+                <div class="attachFilter-title" style="margin: 13px;">
+                    {{'lang.filterAttach' | translate}}
+                </div>
+                <mat-button-toggle-group id="integrationTarget" class="filterTypes"
+                    [value]="currentIntegrationTarget"
+                    (change)="setTaget($event.value)">
                     <mat-button-toggle *ngFor="let type of integrationTargets"
                         [checked]="currentIntegrationTarget === type.id"
                         [title]="type.description"
                         [value]="type.id">{{type.label}}
                     </mat-button-toggle>
                 </mat-button-toggle-group>
-            </div>
-            <div style="display: inline-flex; margin-top: -2px;">
-                <mat-icon class="attachTypesIcon"
-                    fontSet="fas"
-                    fontIcon="fa-paperclip fa-2x"
-                    color="primary"
-                    [title]="'lang.attachmentsTypes' | translate"></mat-icon>
-                <mat-button-toggle-group class="filterTypes" style="margin-left: 13px;" (change)="filterType($event)">
+                <mat-button-toggle-group id="attachType" class="filterTypes" style="margin-top: 7px;" (change)="filterType($event)">
                     <mat-button-toggle
                         [checked]="currentFilter === ''"
                         [title]="'lang.allAttachTypes' | translate"
-                        [value]="''">{{'lang.all' | translate}}</mat-button-toggle>
+                        [value]="''">{{'lang.all' | translate}}
+                    </mat-button-toggle>
                     <mat-button-toggle *ngFor="let attachType of filterAttachTypes | sortBy : 'label'"
                         [checked]="currentFilter === attachType.id"
                         [title]="('lang.attachWithType' | translate) +  attachType.label"
@@ -39,6 +33,12 @@
                 </mat-button-toggle-group>
             </div>
         </div>
+        <mat-button-toggle-group *ngIf="!isModal" class="filterTypes" (change)="filterType($event)">
+            <mat-button-toggle [checked]="currentFilter === ''" [value]="''">Tous</mat-button-toggle>
+            <mat-button-toggle *ngFor="let attachType of filterAttachTypes | sortBy : 'label'"
+                [checked]="currentFilter === attachType.id" [value]="attachType.id">{{attachType.label}}
+            </mat-button-toggle>
+        </mat-button-toggle-group>
         <div *ngIf="attachments.length === 0" style="text-align:center;font-size:24px;font-weight:bold;opacity:0.3;">
             {{'lang.noAttachment' | translate}}
         </div>
@@ -86,8 +86,8 @@
                     <i title="{{'lang.inShipping' | translate}}" class="fa fa-shipping-fast" *ngIf="attachment.inSendAttach"></i>
                     <span name="integrationTarget" *ngIf="attachment.inSignatureBook"
                         class="integrationTarget"
-                        [title]="attachment.signable ? attachmentTargets[0].description : attachmentTargets[1].description">
-                        {{attachment.signable ? attachmentTargets[0].label : attachmentTargets[1].label}}
+                        [title]="(attachment.signable ? 'lang.signTargetDesc' : 'lang.annexTargetDesc') | translate">
+                        {{(attachment.signable ? 'lang.signTarget' : 'lang.annexTarget') | translate}}
                     </span>
                 </div>
                 <div class="mainInfos" *ngIf="!attachment.hideMainInfo">
