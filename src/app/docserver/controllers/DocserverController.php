@@ -167,7 +167,7 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::boolType()->validate($data['is_readonly']);
-        $check = $check && Validator::boolType()->validate($data['is_encrypted']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted'] ?? false);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -199,7 +199,9 @@ class DocserverController
                 'device_label'          => $data['device_label'],
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
-                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y'
+                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
+                'is_encrypted'          => empty($data['is_encrypted'] ?? false) ? 'false':'true'
+
             ],
             'where' => ['id = ?'],
             'data'  => [$aArgs['id']]
