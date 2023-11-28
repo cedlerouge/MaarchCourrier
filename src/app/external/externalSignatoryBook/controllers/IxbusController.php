@@ -111,8 +111,8 @@ class IxbusController
         ]);
 
         if (!empty($mainResource['docserver_id'])) {
-            $adrMainInfo          = ConvertPdfController::getConvertedPdfById(['resId' => $aArgs['resIdMaster'], 'collId' => 'letterbox_coll']);
-            $letterboxPath        = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]);
+            $adrMainInfo = ConvertPdfController::getConvertedPdfById(['resId' => $aArgs['resIdMaster'], 'collId' => 'letterbox_coll']);
+            $letterboxPath = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]);
             $mainDocumentFilePath = $letterboxPath['path_template'] . str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
         }
 
@@ -126,8 +126,8 @@ class IxbusController
         ]);
 
         $annexesAttachments = [];
-        $attachmentTypes    = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
-        $attachmentTypes    = array_column($attachmentTypes, 'signable', 'type_id');
+        $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
+        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
         foreach ($attachments as $key => $value) {
             if (!$attachmentTypes[$value['attachment_type']]) {
                 $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $value['res_id'], 'collId' => 'attachments_coll']);
@@ -138,9 +138,9 @@ class IxbusController
                 if (empty($docserverInfo['path_template'])) {
                     return ['error' => 'Docserver does not exist ' . $adrInfo['docserver_id']];
                 }
-                $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+                $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
                 $docserverType = DocserverTypeModel::getById(['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint   = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+                $fingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
                 if ($adrInfo['fingerprint'] != $fingerprint) {
                     return ['error' => 'Fingerprints do not match'];
                 }
@@ -151,7 +151,7 @@ class IxbusController
         }
 
         $attachmentToFreeze = [];
-        $mainResource       = ResModel::getById([
+        $mainResource = ResModel::getById([
             'resId'  => $aArgs['resIdMaster'],
             'select' => ['res_id', 'subject', 'path', 'filename', 'docserver_id', 'format', 'category_id', 'external_id', 'integrations', 'process_limit_date', 'fingerprint']
         ]);
@@ -160,7 +160,7 @@ class IxbusController
             $processLimitDate = date('Y-m-d', strtotime(date("Y-m-d") . ' + 14 days'));
         } else {
             $processLimitDateTmp = explode(" ", $mainResource['process_limit_date']);
-            $processLimitDate    = $processLimitDateTmp[0];
+            $processLimitDate = $processLimitDateTmp[0];
         }
 
         $attachmentsData = [];
@@ -173,7 +173,7 @@ class IxbusController
         $attachmentsData = array_merge($annexesAttachments, $attachmentsData);
 
         $signature = $aArgs['manSignature'] == 'manual' ? 1 : 0;
-        $bodyData  = [
+        $bodyData = [
             'nature'     => $aArgs['natureId'],
             'referent'   => $aArgs['referent'],
             'circuit'    => $aArgs['messageModel'],
@@ -182,15 +182,15 @@ class IxbusController
         ];
 
         foreach ($attachments as $value) {
-            $resId  = $value['res_id'];
+            $resId = $value['res_id'];
             $collId = 'attachments_coll';
 
-            $adrInfo       = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
-            $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
 
             $docserverType = DocserverTypeModel::getById(['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint   = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+            $fingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
             if ($adrInfo['fingerprint'] != $fingerprint) {
                 return ['error' => 'Fingerprints do not match'];
             }
@@ -237,23 +237,23 @@ class IxbusController
 
         // Send main document if in signature book
         $mainDocumentIntegration = json_decode($mainResource['integrations'], true);
-        $externalId              = json_decode($mainResource['external_id'], true);
+        $externalId = json_decode($mainResource['external_id'], true);
         if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
-            $resId  = $mainResource['res_id'];
+            $resId = $mainResource['res_id'];
             $collId = 'letterbox_coll';
 
-            $adrInfo       = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
+            $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
             $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
-            $filePath      = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
 
             $docserverType = DocserverTypeModel::getById(['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint   = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+            $fingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
             if ($adrInfo['fingerprint'] != $fingerprint) {
                 return ['error' => 'Fingerprints do not match'];
             }
 
             $bodyData['nom'] = $mainResource['subject'];
-            $fileName        = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
+            $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -352,16 +352,16 @@ class IxbusController
             $folderData = IxbusController::getDossier(['config' => $aArgs['config'], 'folderId' => $value['external_id']]);
 
             if (in_array($folderData['data']['etat'], ['Refusé', 'Terminé'])) {
-                $aArgs['idsToRetrieve'][$version][$resId]['status']      = $folderData['data']['etat'] == 'Refusé' ? 'refused' : 'validated';
-                $signedDocument                                          = IxbusController::getDocument(['config' => $aArgs['config'], 'documentId' => $folderData['data']['documents']['principal']['identifiant']]);
-                $aArgs['idsToRetrieve'][$version][$resId]['format']      = 'pdf';
+                $aArgs['idsToRetrieve'][$version][$resId]['status'] = $folderData['data']['etat'] == 'Refusé' ? 'refused' : 'validated';
+                $signedDocument = IxbusController::getDocument(['config' => $aArgs['config'], 'documentId' => $folderData['data']['documents']['principal']['identifiant']]);
+                $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                 $aArgs['idsToRetrieve'][$version][$resId]['encodedFile'] = $signedDocument['encodedDocument'];
                 if (!empty($folderData['data']['detailEtat'])) {
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $folderData['data']['detailEtat']];
                 }
 
                 if (is_array($folderData['data']['etapes']) && !empty($folderData['data']['etapes'])) {
-                    $aArgs['idsToRetrieve'][$version][$resId]['typist']                   = null;
+                    $aArgs['idsToRetrieve'][$version][$resId]['typist'] = null;
                     $aArgs['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
                     IxbusController::updateDocumentExternalStateSignatoryUser([
                         'id'            => $resId,
