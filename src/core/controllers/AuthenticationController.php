@@ -824,7 +824,11 @@ class AuthenticationController
         if ($file['config']['newInternalParaph']) {
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login', 'external_id']]);
             $external_id = json_decode($user['external_id'], true);
-            $user['external_id'] = $external_id['maarchParapheur'];
+            if ($external_id['maarchParapheur'] ?? null) {
+                $user['external_id'] = $external_id['maarchParapheur'];
+            } else {
+                $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+            }
         } else {
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
         }

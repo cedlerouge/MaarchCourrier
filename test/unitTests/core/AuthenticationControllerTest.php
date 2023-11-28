@@ -1,20 +1,21 @@
 <?php
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   AuthenticationControllerTest
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   AuthenticationControllerTest
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace MaarchCourrier\Tests\core;
 
+use Exception;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
+use User\models\UserModel;
 
 class AuthenticationControllerTest extends CourrierTestCase
 {
@@ -28,17 +29,20 @@ class AuthenticationControllerTest extends CourrierTestCase
         $this->assertSame(23, $response);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testAuthenticate()
     {
         $authenticationController = new AuthenticationController();
 
         $args = [
-            'login'     => 'bbain',
-            'password'  => 'maarch'
+            'login'    => 'bbain',
+            'password' => 'maarch'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $authenticationController->authenticate($fullRequest, new Response());
+        $response = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
         $headers = $response->getHeaders();
         $this->assertArrayHasKey('Token', $headers);
@@ -46,11 +50,11 @@ class AuthenticationControllerTest extends CourrierTestCase
 
         //  ERRORS
         $args = [
-            'login'     => 'bbain',
-            'password'  => 'maarche'
+            'login'    => 'bbain',
+            'password' => 'maarche'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
-        $response     = $authenticationController->authenticate($fullRequest, new Response());
+        $response = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(401, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -58,11 +62,11 @@ class AuthenticationControllerTest extends CourrierTestCase
 
         $args = [
             'logi'     => 'bbain',
-            'password'  => 'maarche'
+            'password' => 'maarche'
         ];
 
         $fullRequest = $this->createRequestWithBody('POST', $args);
-        $response     = $authenticationController->authenticate($fullRequest, new Response());
+        $response = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody());
 
@@ -70,27 +74,33 @@ class AuthenticationControllerTest extends CourrierTestCase
 
         // MUST CONNECT WITH SUPERADMIN
         $args = [
-            'login'     => 'superadmin',
-            'password'  => 'superadmin'
+            'login'    => 'superadmin',
+            'password' => 'superadmin'
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
-        $response     = $authenticationController->authenticate($fullRequest, new Response());
+        $response = $authenticationController->authenticate($fullRequest, new Response());
         $this->assertSame(204, $response->getStatusCode());
     }
 
+    /**
+     * @throws Exception
+     */
     public function testIsRouteAvailable()
     {
         $response = AuthenticationController::isRouteAvailable(['userId' => 23, 'currentRoute' => '/actions', 'currentMethod' => 'POST']);
         $this->assertSame(true, $response['isRouteAvailable']);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testHandleFailedAuthentication()
     {
         $passwordController = new PasswordController();
 
         $request = $this->createRequest('GET');
 
-        $response     = $passwordController->getRules($request, new Response());
+        $response = $passwordController->getRules($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         // reset rules
@@ -119,7 +129,7 @@ class AuthenticationControllerTest extends CourrierTestCase
             $fullRequest = $this->createRequestWithBody('PUT', ['rules' => $rules]);
             $passwordController->updateRules($fullRequest, new Response());
 
-            \User\models\UserModel::update([
+            UserModel::update([
                 'set'   => ['failed_authentication' => 0, 'locked_until' => null],
                 'where' => ['user_id = ?'],
                 'data'  => ['superadmin']
@@ -135,7 +145,7 @@ class AuthenticationControllerTest extends CourrierTestCase
             $this->assertSame(true, $response['accountLocked']);
             $this->assertNotNull($response['lockedDate']);
 
-            \User\models\UserModel::update([
+            UserModel::update([
                 'set'   => ['failed_authentication' => 0, 'locked_until' => null],
                 'where' => ['user_id = ?'],
                 'data'  => ['superadmin']
