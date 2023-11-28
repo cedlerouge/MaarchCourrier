@@ -360,7 +360,7 @@ class IxbusController
                     $aArgs['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $folderData['data']['detailEtat']];
                 }
 
-                if (isset($folderData['data']['etapes'][0])) {
+                if (is_array($folderData['data']['etapes']) && !empty($folderData['data']['etapes'])) {
                     $aArgs['idsToRetrieve'][$version][$resId]['typist']                   = null;
                     $aArgs['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
                     IxbusController::updateDocumentExternalStateSignatoryUser([
