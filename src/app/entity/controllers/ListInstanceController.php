@@ -18,6 +18,7 @@ use Entity\models\EntityModel;
 use Entity\models\ListInstanceHistoryDetailModel;
 use Entity\models\ListInstanceHistoryModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
@@ -237,7 +238,10 @@ class ListInstanceController
         return $response->withStatus(204);
     }
 
-    public static function updateListInstance(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function updateListInstance(array $args): array
     {
         ValidatorModel::notEmpty($args, ['data', 'userId']);
         ValidatorModel::arrayType($args, ['data']);
@@ -365,7 +369,7 @@ class ListInstanceController
                         $userEntities = EntityModel::get(['select' => ['id', 'entity_id'], 'where' => ['entity_id in (?)'], 'data' => [$entitiesId]]);
                     }
                     $userEntities = array_column($userEntities, 'entity_id', 'id');
-                    if (!empty($userEntities[$listInstanceByRes['destination']])) {
+                    if (!empty($listInstanceByRes['destination']) && !empty($userEntities[$listInstanceByRes['destination']])) {
                         $set['destination'] = $userEntities[$listInstanceByRes['destination']];
                     } else {
                         $changeDestination = true;
@@ -435,6 +439,9 @@ class ListInstanceController
         return ['success' => 'success'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function updateCircuits(Request $request, Response $response, array $args)
     {
         $body = $request->getParsedBody();
@@ -473,10 +480,10 @@ class ListInstanceController
 
             if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
                 $last = count($resource['listInstances']) - 1;
-                if (empty($resource['listInstances'][$last]['process_date']) && $resource['listInstances'][$last]['requested_signature'] == false) {
+                if (empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['requested_signature']) {
                     DatabaseModel::rollbackTransaction();
                     return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
-                } elseif (!empty($resource['listInstances'][$last]['process_date']) && $resource['listInstances'][$last]['signatory'] == false) {
+                } elseif (!empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['signatory']) {
                     DatabaseModel::rollbackTransaction();
                     return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
                 }
@@ -551,6 +558,10 @@ class ListInstanceController
                         }
                     }
                     $listInstance['item_mode'] = $listInstance['requested_signature'] ? 'sign' : 'visa';
+
+                    if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $user['id']])) {
+                        $body['canSuspend'] = true;
+                    }
                 } else {
                     if (!PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $user['id']])) {
                         DatabaseModel::rollbackTransaction();
@@ -579,7 +590,7 @@ class ListInstanceController
                 }
             }
 
-            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign) {
+            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign && $body['canSuspend'] === false) {
                 DatabaseModel::rollbackTransaction();
                 return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances requires at least one sign user", 'lang' => 'signUserRequired']);
             }
