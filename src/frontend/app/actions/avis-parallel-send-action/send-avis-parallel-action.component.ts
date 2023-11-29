@@ -1,7 +1,7 @@
 import { Component, OnInit, Inject, ViewChild, AfterViewInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
@@ -10,6 +10,7 @@ import { FunctionsService } from '@service/functions.service';
 import { AvisWorkflowComponent } from '../../avis/avis-workflow.component';
 import { HeaderService } from '@service/header.service';
 import { SessionStorageService } from '@service/session-storage.service';
+import { AlertComponent } from '@plugins/modal/alert.component';
 
 @Component({
     templateUrl: 'send-avis-parallel-action.component.html',
@@ -19,6 +20,8 @@ export class SendAvisParallelComponent implements AfterViewInit {
 
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
     @ViewChild('appAvisWorkflow', { static: false }) appAvisWorkflow: AvisWorkflowComponent;
+
+    alertDialogRef: MatDialogRef<AlertComponent>;
 
     loading: boolean = false;
 
@@ -47,8 +50,9 @@ export class SendAvisParallelComponent implements AfterViewInit {
         private notify: NotificationService,
         public dialogRef: MatDialogRef<SendAvisParallelComponent>,
         public headerService: HeaderService,
-        @Inject(MAT_DIALOG_DATA) public data: any,
+        public dialog: MatDialog,
         public functions: FunctionsService,
+        @Inject(MAT_DIALOG_DATA) public data: any,
         private sessionStorage: SessionStorageService
     ) { }
 
@@ -74,20 +78,34 @@ export class SendAvisParallelComponent implements AfterViewInit {
     }
 
     async onSubmit() {
-        this.loading = true;
-        if (this.data.resIds.length === 0) {
-            const res = await this.indexDocument();
+        const hasDuplicateUsersWithSameMode = this.hasDuplicateUsersWithSameMode(this.appAvisWorkflow.avisWorkflow.items);
 
-            if (res) {
-                this.executeAction(this.data.resIds);
-            }
+        if (hasDuplicateUsersWithSameMode) {
+            this.alertDialogRef = this.dialog.open(AlertComponent, {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: this.translate.instant('lang.warning'),
+                    msg: this.translate.instant('lang.duplicateUsersWithSameMode')
+                }
+            });
         } else {
-            const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesError.map(resErr => resErr.res_id).indexOf(resId) === -1);
-            this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
-            this.executeAction(realResSelected);
+            this.loading = true;
+            if (this.data.resIds.length === 0) {
+                const res = await this.indexDocument();
+                if (res) {
+                    this.executeAction(this.data.resIds);
+                }
+            } else {
+                const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesError.map(resErr => resErr.res_id).indexOf(resId) === -1);
+                this.sessionStorage.checkSessionStorage(this.inLocalStorage, this.canGoToNextRes, this.data);
+                this.executeAction(realResSelected);
+            }
+            this.loading = false;
         }
-        this.loading = false;
     }
+
 
     indexDocument() {
         return new Promise((resolve, reject) => {
@@ -129,4 +147,26 @@ export class SendAvisParallelComponent implements AfterViewInit {
     isValidAction() {
         return !this.noResourceToProcess && this.appAvisWorkflow !== undefined && !this.appAvisWorkflow.emptyWorkflow() && !this.appAvisWorkflow.workflowEnd() && !this.functions.empty(this.noteEditor.getNoteContent()) && !this.functions.empty(this.functions.formatDateObjectToDateString(this.opinionLimitDate));
     }
+
+    /**
+    * Checks if there are users in avis workflow with multiple same modes
+    * @param items avis workflow containing users data.
+    * @returns True if some users have multiple same modes, false otherwise.
+    */
+    hasDuplicateUsersWithSameMode(items: any[]): boolean {
+        const userModes: { [key: string]: Set<string> } = {};
+        for (const item of items) {
+            const userId = item.item_id.toString();
+            const mode = item.item_mode;
+            if (!userModes[userId]) {
+                userModes[userId] = new Set([mode]);
+            } else if (!userModes[userId].has(mode)) {
+                userModes[userId].add(mode);
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
