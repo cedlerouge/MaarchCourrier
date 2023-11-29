@@ -121,6 +121,12 @@ class DocserverController
         if (empty($existingDocserverType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type does not exist']);
         }
+        if (!isset($data['is_encrypted'])) {
+            $data['is_encrypted'] = false;
+        }
+        if(!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
+            return $response->withStatus(400)->withJson(['errors' => 'Docserver type is forbidden for encryption']);
+        }
         if (!DocserverController::isPathAvailable(['path' => $data['path_template']])) {
             return $response->withStatus(400)->withJson(['errors' => _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
         }
@@ -161,6 +167,7 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::boolType()->validate($data['is_readonly']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted'] ?? false);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -192,7 +199,9 @@ class DocserverController
                 'device_label'          => $data['device_label'],
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
-                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y'
+                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
+                'is_encrypted'          => empty($data['is_encrypted'] ?? false) ? 'false':'true'
+
             ],
             'where' => ['id = ?'],
             'data'  => [$aArgs['id']]

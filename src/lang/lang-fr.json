@@ -2838,5 +2838,7 @@
     "attachInSignatureBookDesc": "Seulement les pièces jointes intégrées au parapheur",
     "allAttachTypes": "Tous les types de pièces jointes",
     "attachWithType": "Pièces jointes de type : ",
-    "filterAttach": "Filtrer par : état / type de pièce(s) jointe(s)"
+    "filterAttach": "Filtrer par : état / type de pièce(s) jointe(s)",
+    "docserverEncryptResource": "Activer le chiffrement de la zone de stockage ",
+    "docserverIsEncrypted": "La zone de stockage est chiffrée"
 }
