@@ -31,6 +31,8 @@ export class ToolsListComponent implements OnInit {
 
     @Input() from: string;
 
+    @Input() notAllowedResources: number[] = [];
+
     toolsListButtons: any[] = [
         {
             label: this.translate.instant('lang.summarySheets'),
@@ -72,11 +74,14 @@ export class ToolsListComponent implements OnInit {
     ngOnInit(): void { }
 
     openExport(): void {
+        const elementsNotAllowed = this.notAllowedResources.some((id: number) => this.selectedRes.includes(id));
         this.dialog.open(ExportComponent, {
             panelClass: 'maarch-modal',
             width: '800px',
             data: {
-                selectedRes: this.selectedRes
+                selectedRes: this.selectedRes,
+                elementsNotAllowed: elementsNotAllowed,
+                from: this.from
             }
         });
     }

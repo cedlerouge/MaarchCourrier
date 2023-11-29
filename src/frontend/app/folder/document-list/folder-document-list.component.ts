@@ -96,6 +96,8 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
     };
     folderInfoOpened: boolean = false;
 
+    notAllowedResources: number[] = [];
+
     private destroy$ = new Subject<boolean>();
 
     constructor(
@@ -172,7 +174,6 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
                 this.dragInit = false;
             }, 1000);
             this.initResultList();
-
         },
         (err: any) => {
             this.notify.handleErrors(err);
@@ -208,6 +209,7 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
                     this.resultsLength = data.countResources;
                     this.allResInBasket = data.allResources;
                     // this.headerService.setHeader('Dossier : ' + this.folderInfo.label);
+                    this.notAllowedResources = data.resources.filter((resource: any) => !resource.allowed).map((item: any) => item.resId);                    
                     return data.resources;
                 }),
                 catchError((err: any) => {

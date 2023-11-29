@@ -53,7 +53,7 @@
                 <div class="table-head">
                     <div class="table-head-result">
                         <mat-checkbox color="primary"
-                            [checked]="selectedRes.length == allResInBasket.length && selectedRes.length > 0"
+                            [checked]="selectedRes.length === allResInBasket.length && selectedRes.length > 0"
                             [indeterminate]="selectedRes.length > 0 && selectedRes.length < allResInBasket.length"
                             style="margin: 10px;padding-right: 10px;" title="{{'lang.selectAllResInBasket' | translate}}"
                             (change)="toggleAllRes($event)"></mat-checkbox>&nbsp;{{resultsLength}}
@@ -67,7 +67,11 @@
                             <app-select-page [paginator]="paginatorResultList"></app-select-page>
                         </span>
                         <span>
-                            <app-tools-list #actionsList [selectedRes]="selectedRes" [from]="'folder'"></app-tools-list>
+                            <app-tools-list #actionsList
+                                [selectedRes]="selectedRes"
+                                [from]="'folder'"
+                                [notAllowedResources]="notAllowedResources">
+                            </app-tools-list>
                         </span>
                         <span>
                             <app-folder-action-list #actionsList [contextMode]="false" [currentFolderInfo]="folderInfo"
@@ -116,17 +120,17 @@
                                     <span *ngIf="!appService.getViewMode()" class="main-info-data"
                                         style="width:200px;text-align:center;cursor:pointer;">
                                         <ng-container
-                                            *ngIf="row.chrono == ('lang.undefined' | translate) && row.barcode != ('lang.undefined' | translate)">
+                                            *ngIf="row.chrono === ('lang.undefined' | translate) && row.barcode !== ('lang.undefined' | translate)">
                                             <span style="color: rgba(0,0,0,0.4);font-size: 90%;">
                                                 <i title="{{'lang.barcode' | translate}}" class="fas fa-barcode"></i>
                                                 {{row.barcode}}</span>
                                         </ng-container>
-                                        <ng-container *ngIf="row.chrono != ('lang.undefined' | translate)">
+                                        <ng-container *ngIf="row.chrono !== ('lang.undefined' | translate)">
                                             {{row.chrono}}
                                         </ng-container>
                                     </span>
                                     <span class="main-info-data" style="font-weight:bold;flex:1;cursor:pointer;"
-                                        [class.undefined]="row.subject == ('lang.undefined' | translate)"
+                                        [class.undefined]="row.subject === ('lang.undefined' | translate)"
                                         title="{{row.subject}}">{{row.subject | shorten: 150: '...'}}</span>
                                     <span class="main-info-action">
                                         <div *ngIf="!row.allowed" color="warn">
@@ -135,23 +139,23 @@
                                         <ng-container *ngIf="row.allowed">
                                             <button mat-icon-button title="{{'lang.mailsSentAlt' | translate}}"
                                                 (click)="$event.stopPropagation();togglePanel('sentResources',row)"
-                                                [class.noData]="row.countSentResources == 0">
-                                                <mat-icon matBadgeHidden="{{row.countSentResources == 0}}" fontSet="fas"
+                                                [class.noData]="row.countSentResources === 0">
+                                                <mat-icon matBadgeHidden="{{row.countSentResources === 0}}" fontSet="fas"
                                                     matBadge="{{row.countSentResources}}" fontIcon="fa-envelope fa-2x" [color]="sidenavRight.opened && row.checked && currentMode === 'sentResources' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{'lang.notes' | translate}}"
                                                 (click)="$event.stopPropagation();togglePanel('note',row)"
-                                                [class.noData]="row.countNotes == 0">
-                                                <mat-icon matBadgeHidden="{{row.countNotes == 0}}" fontSet="fas"
+                                                [class.noData]="row.countNotes === 0">
+                                                <mat-icon matBadgeHidden="{{row.countNotes === 0}}" fontSet="fas"
                                                     matBadge="{{row.countNotes}}" fontIcon="fa-comments fa-2x"
                                                     [color]="snav2.opened && row.checked && currentMode === 'note' ? 'primary' : ''">
                                                 </mat-icon>
                                             </button>
                                             <button mat-icon-button title="{{'lang.attachments' | translate}}"
                                                 (click)="$event.stopPropagation();togglePanel('attachment',row)"
-                                                [class.noData]="row.countAttachments == 0">
-                                                <mat-icon matBadgeHidden="{{row.countAttachments == 0}}" fontSet="fas"
+                                                [class.noData]="row.countAttachments === 0">
+                                                <mat-icon matBadgeHidden="{{row.countAttachments === 0}}" fontSet="fas"
                                                     matBadge="{{row.countAttachments}}" fontIcon="fa-paperclip fa-2x"
                                                     [color]="snav2.opened && row.checked && currentMode === 'attachment' ? 'primary' : ''">
                                                 </mat-icon>
@@ -181,7 +185,7 @@
                         </ng-container>
                         <tr mat-row *matRowDef="let row; columns: displayedColumnsBasket;"
                             (contextmenu)="open($event,row);" (click)="open($event,row);" class="rowData"
-                            style="cursor: pointer;" [class.locked]="row.isLocked == true" cdkDrag [cdkDragDisabled]="!row.allowed"
+                            style="cursor: pointer;" [class.locked]="row.isLocked === true" cdkDrag [cdkDragDisabled]="!row.allowed"
                             (cdkDragStarted)="selectSpecificRes(row);" [cdkDragData]="row">
                             <div class="example-custom-placeholder" *cdkDragPlaceholder></div>
                             <div class="dragPreview" *cdkDragPreview><i class="fas fa-envelope-open-text fa-2x"></i>
