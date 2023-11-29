@@ -1,6 +1,6 @@
 <div class="mat-dialog-content-container">
     <h1 mat-dialog-title class="externalSignatoryBookTitle">
-        {{data.action.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
+        {{data.action?.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
             {{getTitle()}}
          </div>
     </h1>
@@ -8,8 +8,8 @@
         <div *ngIf="loading" class="loading" style="display:flex;height:100%;">
             <mat-spinner style="margin:auto;"></mat-spinner>
         </div>
-        <mat-sidenav-container *ngIf="authService.externalSignatoryBook !== null" autosize style="height:100%;">
-            <mat-sidenav-content style="background: white;">
+        <mat-sidenav-container *ngIf="!functions.empty(authService.externalSignatoryBook)" autosize style="height:100%;">
+            <mat-sidenav-content style="background: white;" [ngStyle]="{'width': data.resIds.length === 1 ? '580px' : ''}">
                 <div class="row" style="margin: 0;">
                     <div class="col-md-12">
                         {{'lang.makeActionOn' | translate}}
@@ -22,10 +22,10 @@
                     </div>
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
                         <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
-                            mat-icon-button title="{{'lang.attachments' | translate}}"
-                            (click)="snav2?.toggle()">
+                            mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
+                            (click)="onSidenavStateChanged()">
                             <mat-icon fontSet="fas"
-                                [matBadge]="attachmentsList?.attachmentsClone?.length"
+                                [matBadge]="getIntegratedAttachments()"
                                 fontIcon="fa-paperclip fa-2x">
                             </mat-icon>
                         </button>
@@ -95,41 +95,18 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2 position='end' mode="side" autoFocus="false"
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="appService.getViewMode() ? 'over' : 'side'"
                 [opened]="true"
                 [ngStyle]="{'width': '600px'}"
                 style="overflow-x:hidden;">
-                <!-- <div style="display: flex; position: relative; top: -11px; margin-bottom: -17px; left: 2px;">
-                    <button mat-icon-button [title]="'Fermer le panneau latéral'" (click)="snav2.close()" style="font-size: 20px;color:#666">
-                        <mat-icon class="fa fa-arrow-right"></mat-icon>
-                    </button>
-                </div> -->
-                <div *ngIf="attachmentsList.attachmentsClone.length > 0" class="attachInSignatoryBook">
-                    <mat-checkbox color="primary"
-                        [title]="'lang.attachmentsInSignatoryBookDesc' | translate"
-                        [checked]="inSignatoryBook.value"
-                        (change)="inSignatoryBook.setValue(!inSignatoryBook.value)">
-                        {{'lang.attachmentsInSignatoryBook' | translate}}
-                    </mat-checkbox>
-                </div>
-                <mat-radio-group *ngIf="attachmentsList.attachmentsClone.length > 0 && inSignatoryBook.value" class="integrationTarget"
-                    [(ngModel)]="integrationTarget"
-                    (change)="attachmentsList.setTaget($event.value)"
-                    color="primary">
-                    <mat-radio-button value="all" color="primary" [title]="'lang.allIntegratedAttachments' | translate">
-                        {{'lang.allIntegratedAttachments' | translate}}
-                    </mat-radio-button>
-                    <mat-radio-button value="sign" color="primary" [title]="'lang.attachmentToSign' | translate">
-                        {{'lang.attachmentToSign' | translate}}
-                    </mat-radio-button>
-                    <mat-radio-button value="annex" color="primary" [title]="'lang.attachmentAnnex' | translate">
-                        {{'lang.attachmentAnnex' | translate}}
-                    </mat-radio-button>
-                </mat-radio-group>
                 <app-attachments-list #attachmentsList
+                    [isModal]="true"
                     [resId]="data.resIds[0]"
-                    [inSignatoryBook]="inSignatoryBook"
-                    (afterActionAttachment)="afterAttachmentToggle($event)">
+                    (afterActionAttachment)="afterAttachmentToggle()">
                 </app-attachments-list>
             </mat-sidenav>
         </mat-sidenav-container>
