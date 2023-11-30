@@ -244,14 +244,8 @@ export class ExportComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         await this.getCustomFields();
-        
-        if (this.data.from === 'folder') {
-            this.dataAvailable = this.dataAvailable.filter((data: any) => ['getStatus', 'alt_identifier', 'subject'].indexOf(data.value) > -1)
-        }
         this.dataAvailableClone = JSON.parse(JSON.stringify(this.dataAvailable));
-
         await this.getTemplateFields();
-
         this.loading = false;
     }
 
