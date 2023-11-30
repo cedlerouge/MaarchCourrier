@@ -93,6 +93,8 @@ class ExportController
                     }
                 }
             }
+        } else {
+            $hasFullAccess[] = $body['resources'];
         }
 
         foreach ($body['data'] as $value) {
@@ -193,7 +195,7 @@ class ExportController
             $contentType = 'application/vnd.ms-excel';
             fclose($file);
         } else {
-            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources]);
+            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
 
             $fileContent    = $pdf->Output('', 'S');
             $finfo          = new \finfo(FILEINFO_MIME_TYPE);
@@ -261,7 +263,7 @@ class ExportController
         $res = [];
 
         foreach ($folders as $folder) {
-            if ($folder['inFolder'] ?? $folder['inBasket'] === true) {
+            if (isset($folder['inFolder']) || isset($folder['inBasket'])) {
                 $hasRight = ResController::hasRightByResId(['resId' => [$folder['resId']], 'userId' => $GLOBALS['id']]);
                 $res[$folder['resId']] = $hasRight;
             }
@@ -296,14 +298,14 @@ class ExportController
         $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
 
-            $hasRight = $restrictedAccess[$resource['res_id']];
+            $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
                     $csvContent[] = '';
                     continue;
                 }
-                if (!$hasRight) {
+                if ($hasRight === false) {
                     if (!in_array($value['value'], $publicProperties)) {
                         $csvContent[] = 'Hors périmètre';
                         continue;
@@ -435,12 +437,26 @@ class ExportController
         $pdf->SetY($pdf->GetY() + $labelHeight);
         $pdf->SetFont('', '', 10);
 
+        $publicProperties = [
+            'getStatus',
+            'alt_identifier',
+            'subject'
+        ];
+        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
+
         foreach ($aArgs['resources'] as $resource) {
+            $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
             $content = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
                     $content[] = '';
                     continue;
+                }
+                if ($hasRight === false) {
+                    if (!in_array($value['value'], $publicProperties)) {
+                        $content[] = 'Hors périmètre';
+                        continue;
+                    }
                 }
                 if ($value['isFunction']) {
                     if ($value['value'] == 'getStatus') {
