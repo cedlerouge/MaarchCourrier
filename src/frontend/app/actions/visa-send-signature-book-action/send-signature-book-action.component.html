@@ -14,7 +14,7 @@
                     <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                         {{'lang.elements' | translate}}</b> ?
                 </div>
-                <div *ngIf="data.resIds.length > 0" style="padding:10px;display: flex;flex-direction: column;">
+                <div *ngIf="data.resIds.length === 1" style="padding:10px;display: flex;flex-direction: column;">
                     <mat-checkbox color="primary" *ngFor="let inteKey of integrationsInfo | keyvalue"
                         (click)="toggleIntegration(inteKey.key)" [checked]="data.resource.integrations[inteKey.key]">
                         {{'lang.' + inteKey.key + '_doc' | translate}}</mat-checkbox>
