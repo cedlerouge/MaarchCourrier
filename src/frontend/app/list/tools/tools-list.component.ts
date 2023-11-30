@@ -80,8 +80,7 @@ export class ToolsListComponent implements OnInit {
             width: '800px',
             data: {
                 selectedRes: this.selectedRes,
-                elementsNotAllowed: elementsNotAllowed,
-                from: this.from
+                elementsNotAllowed: elementsNotAllowed
             }
         });
     }
