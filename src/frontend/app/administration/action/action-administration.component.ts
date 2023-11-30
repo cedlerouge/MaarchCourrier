@@ -8,7 +8,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { tap, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
-import { UntypedFormControl } from '@angular/forms';
+import { NgForm, UntypedFormControl } from '@angular/forms';
 import { ActionPagesService } from '@service/actionPages.service';
 import { of } from 'rxjs';
 
@@ -20,6 +20,7 @@ import { of } from 'rxjs';
 export class ActionAdministrationComponent implements OnInit {
 
     @ViewChild('snav2', { static: true }) public sidenavRight: MatSidenav;
+    @ViewChild('actionsFormUp', { static: false }) actionsFormUp: NgForm;
 
     today: Date = new Date();
     creationMode: boolean;
@@ -478,7 +479,7 @@ export class ActionAdministrationComponent implements OnInit {
      * @description Map action object before API create/update call.
      */
     onSubmit() {
-        if (this.action.actionPageId === 'confirm_status') {
+        if (this.action.actionPageId === 'confirm_status') {            
             const fillRequiredFields = [];
             this.selectedFieldItems.selectedFieldsValue.forEach((item: any) => {
                 if (!this.functions.empty(item.selectedValues)) {
