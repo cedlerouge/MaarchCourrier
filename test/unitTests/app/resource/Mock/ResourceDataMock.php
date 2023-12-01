@@ -9,8 +9,14 @@
 
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
-use Resource\Domain\ResourceDataInterface;
-use Resource\Domain\ResourceDataType;
+use Resource\Domain\Models\Docserver;
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
+use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
+use Resource\Domain\Models\Resource;
+use Resource\Domain\Models\ResourceConverted;
+use Resource\Domain\Interfaces\ResourceDataInterface;
 use SrcCore\models\TextFormatModel;
 
 class ResourceDataMock implements ResourceDataInterface
@@ -25,76 +31,101 @@ class ResourceDataMock implements ResourceDataInterface
 
     /**
      * @param   int     $resId
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  Resource
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
      */
-    public function getMainResourceData(int $resId, array $select = ['*']): array
+    public function getMainResourceData(int $resId): Resource
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
+
         if (!$this->doesResourceExist) {
-            return [];
+            throw new ExceptionResourceDoesNotExist();
         }
 
-        if (!$this->doesResourceFileExistInDatabase) {
-            return ['resId' => 1];
+        $resource = new Resource(
+            1,
+            'Maarch Courrier Test',
+            'FASTHD',
+            '2021/03/0001/',
+            '0001_960655724.pdf',
+            1,
+            'file fingerprint',
+            'pdf',
+            1
+        );
+
+        if ($this->returnResourceWithoutFile || !$this->doesResourceFileExistInDatabase) {
+            $resource->setDocserverId(null);
+            $resource->setPath(null);
+            $resource->setFilename(null);
+            $resource->setFingerprint(null);
+            $resource->setFormat(null);
         }
 
-        $data = [
-            'subject'       => 'Maarch Courrier Test',
-            'docserver_id'  => 'FASTHD',
-            'path'          => '2021/03/0001/',
-            'filename'      => '0001_960655724.pdf',
-            'fingerprint'   => 'file fingerprint',
-            'format'        => 'pdf',
-            'typist'        => 1,
-            'version'       => 1
-        ];
-
-        if ($this->returnResourceWithoutFile) {
-            $data['docserver_id']   = null;
-            $data['path']           = null;
-            $data['filename']       = null;
-            $data['fingerprint']    = null;
-            $data['format']         = null;
-        }
-
-        return $data;
+        return $resource;
     }
 
     /**
      * @param   int     $resId
      * @param   int     $version
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
      */
-    public function getSignResourceData(int $resId, int $version, array $select = ['*']): array
+    public function getSignResourceData(int $resId, int $version): ResourceConverted
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+
         }
         if ($version <= 0) {
-            return ['error' => "The 'version' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('version', 0);
         }
-        return [];
+        if (!$this->doesResourceExist) {
+            throw new ExceptionResourceDoesNotExist();
+        }
+
+        return new ResourceConverted(
+            1,
+            1,
+            '',
+            1,
+            '',
+            '',
+            '',
+            null
+        );
     }
 
     /**
      * @param   string  $docserverId
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  Docserver
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
      */
-    public function getDocserverDataByDocserverId(string $docserverId, array $select = ['*']): array
+    public function getDocserverDataByDocserverId(string $docserverId): Docserver
     {
         if (empty($docserverId)) {
-            return ['error' => "The 'docserverId' parameter can not be empty"];
-        }
-        if (!$this->doesResourceDocserverExist) {
-            return [];
+            throw new \Exception("The 'docserverId' parameter can not be empty");
         }
 
-        return ['path_template' => '/tmp', 'docserver_type_id' => 'DOC', 'is_encrypted' => $this->isResourceDocserverEncrypted];
+        if (!$this->doesResourceDocserverExist) {
+            throw new ExceptionResourceDocserverDoesNotExist();
+        }
+
+        return new Docserver(
+            1,
+            'FASTHD',
+            'DOC',
+            '/tmp',
+            $this->isResourceDocserverEncrypted
+        );
     }
 
     /**
@@ -102,6 +133,7 @@ class ResourceDataMock implements ResourceDataInterface
      * 
      * @param   int     $resId
      * @param   string  $fingerprint
+     * 
      * @return  void
      */
     public function updateFingerprint(int $resId, string $fingerprint): void
@@ -112,6 +144,7 @@ class ResourceDataMock implements ResourceDataInterface
     /**
      * @param   string  $name
      * @param   int     $maxLength  Default value is 250 length
+     * 
      * @return  string
      */
     public function formatFilename(string $name, int $maxLength = 250): string
@@ -124,77 +157,90 @@ class ResourceDataMock implements ResourceDataInterface
      * 
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
      */
-    public function getConvertedPdfById(int $resId, string $collId): array
+    public function getConvertedPdfById(int $resId, string $collId): ResourceConverted
     {
         if ($resId <= 0) {
-            return ['errors' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
         if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
-            return ['errors' => "The 'collId' parameter can not be empty and should be 'letterbox_coll' or 'attachments_coll'"];
+            throw new ExceptionParameterCanNotBeEmptyAndShould('collId', 'letterbox_coll' or 'attachments_coll');
         }
-        
-        return [
-            'docserver_id'  => 'FASTHD',
-            'path'          => '2021/03/0001/',
-            'filename'      => '0001_960655724.pdf',
-            'fingerprint'   => 'file fingerprint'
-        ];
+
+        return new ResourceConverted(
+            1,
+            $resId,
+            '',
+            0,
+            'FASTHD',
+            '2021/03/0001/',
+            '0001_960655724.pdf',
+            'file fingerprint'
+        );
     }
 
     /**
      * @param   int     $resId      Resource id
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
-     * @return  array
+     * 
+     * @return  ?ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould
      */
-    public function getResourceVersion(int $resId, string $type, int $version): array
+    public function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
-        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
-            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES)];
+        $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
+        if (empty($type) || (!in_array($type, $this::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
+            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
         }
         if ($version <= 0) {
-            return ['error' => "The 'version' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('version', 0);
         }
         if (!$this->doesResourceVersionExist) {
-            return [];
+            return null;
         }
 
-        return [
-            'docserver_id'  => 'FASTHD',
-            'path'          => '2021/03/0001/',
-            'filename'      => '0001_960655724.pdf',
-            'fingerprint'   => 'file fingerprint'
-        ];
+        return new ResourceConverted(
+            1,
+            $resId,
+            $type,
+            $version,
+            'FASTHD',
+            '2021/03/0001/',
+            '0001_960655724.pdf',
+            'file fingerprint'
+        );
     }
 
     /**
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExceptionResourceDoesNotExist
      */
-    public function getLatestResourceVersion(int $resId, string $type): array
+    public function getLatestResourceVersion(int $resId, string $type): ResourceConverted
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
         if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
-            return ['error' => "The 'type' parameter should be : " . implode(', ', $this::ADR_RESOURCE_TYPES)];
+            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES));
         }
         if (!$this->doesResourceVersionExist) {
-            return [];
+            throw new ExceptionResourceDoesNotExist();
         }
 
-        return [
-            'docserver_id'  => 'FASTHD',
-            'path'          => '2021/03/0001/',
-            'filename'      => '0001_960655724.pdf',
-            'fingerprint'   => 'file fingerprint'
-        ];
+        return new ResourceConverted(1, $resId, $type, 1, 'FASTHD', '2021/03/0001/', '0001_960655724.pdf', 'file fingerprint');
     }
 
     /**
@@ -202,6 +248,7 @@ class ResourceDataMock implements ResourceDataInterface
      * 
      * @param   int     $resId      Resource id
      * @param   int     $userId     User id
+     * 
      * @return  bool
      */
     public function hasRightByResId(int $resId, int $userId): bool

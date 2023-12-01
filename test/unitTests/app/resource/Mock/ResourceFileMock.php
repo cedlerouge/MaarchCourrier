@@ -10,7 +10,12 @@
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
 use Exception;
-use Resource\Domain\ResourceFileInterface;
+use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
+use Resource\Domain\Interfaces\ResourceFileInterface;
 
 class ResourceFileMock implements ResourceFileInterface
 {
@@ -18,6 +23,7 @@ class ResourceFileMock implements ResourceFileInterface
     public bool $doesResourceFileExistInDatabase = true;
     public bool $doesFolderExist = true;
     public bool $doesFileExist = true;
+    public bool $doesDocserverPathExist = true;
     public bool $doesResourceFileFingerprintMatch = true;
     public bool $doesResourceFileGetContentFail = false;
     public bool $doesWatermarkInResourceFileContentFail = false;
@@ -44,17 +50,22 @@ class ResourceFileMock implements ResourceFileInterface
      * @param   string  $documentFilename
      * 
      * @return  string  Return the build file path
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
      */
     public function buildFilePath(string $docserverId, string $documentPath, string $documentFilename): string
     {
         if (empty($docserverId)) {
-            return 'Error: Parameter docserverId can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('docserverId');
         }
         if (empty($documentPath)) {
-            return 'Error: Parameter documentPath can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('documentPath');
         }
         if (empty($documentFilename)) {
-            return 'Error: Parameter documentFilename can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('documentFilename');
+        }
+        if (empty($this->docserverPath) || !$this->doesDocserverPathExist) {
+            throw new ExceptionResourceDocserverDoesNotExist();
         }
 
         return $this->docserverPath . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
@@ -97,14 +108,16 @@ class ResourceFileMock implements ResourceFileInterface
      * @param   string  $filePath
      * 
      * @return  string
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty
      */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string
     {
         if (empty($docserverTypeId)) {
-            return 'Error: Parameter docserverTypeId can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('docserverTypeId');
         }
         if (empty($filePath)) {
-            return 'Error: Parameter filePath can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('filePath');
         }
 
         return $this->documentFingerprint;
@@ -163,21 +176,19 @@ class ResourceFileMock implements ResourceFileInterface
      * Convert resource to thumbnail.
      * 
      * @param   int     $resId  Resource id.
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * 
+     * @return  void
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
      */
-    public function convertToThumbnail(int $resId): array
+    public function convertToThumbnail(int $resId): void
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
 
         if ($this->doesResourceConvertToThumbnailFailed) {
-            return ['error' => 'Convertion to thumbnail failed'];
-        } else {
-            return ['success' => true];
+            throw new ExceptionConvertThumbnail('Convertion to thumbnail failed');
         }
     }
 
@@ -185,30 +196,27 @@ class ResourceFileMock implements ResourceFileInterface
      * Convert resource page to thumbnail.
      * 
      * @param   int     $resId  Resource id.
-     * @param   string  $type   Resource type.
+     * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      * 
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * @return  void
+     * 
+     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void
     {
         if ($resId <= 0) {
-            return ['error' => "The 'resId' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
         }
         if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
-            return ['error' => "The 'type' is empty or not 'resource', 'attachment'"];
+            throw new ExceptionParameterCanNotBeEmptyAndShould('type', "'resource', 'attachment'");
         }
         if ($page <= 0) {
-            return ['error' => "The 'page' parameter must be greater than 0"];
+            throw new ExceptionParameterMustBeGreaterThan('page', 0);
         }
 
         if ($this->doesResourceConvertOnePageToThumbnailFailed) {
-            return ['error' => 'Convertion one page to thumbnail failed'];
-        } else {
-            return ['success' => true];
+            throw new ExceptionConvertThumbnail('Convertion one page to thumbnail failed');
         }
     }
 
@@ -218,6 +226,7 @@ class ResourceFileMock implements ResourceFileInterface
      * @param   string  $filePath   Resource path.
      * 
      * @return  int     Number of pages.
+     * 
      * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int
