@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain;
+namespace Resource\Domain\Interfaces;
 
 interface ResourceFileInterface
 {
@@ -31,6 +31,8 @@ interface ResourceFileInterface
      * @param   string  $documentFilename
      * 
      * @return  string  Return the build file path
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
      */
     public function buildFilePath(string $docserverId, string $documentPath, string $documentFilename): string;
 
@@ -59,6 +61,8 @@ interface ResourceFileInterface
      * @param   string  $filePath
      * 
      * @return  string
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty
      */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string;
 
@@ -68,7 +72,7 @@ interface ResourceFileInterface
      * @param   string  $filePath       The path to the file.
      * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
      *
-     * @return  string|'false'  Returns the content of the file as a string if successful, or a string with value 'false' on failure.
+     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */
     public function getFileContent(string $filePath, bool $isEncrypted = false): string;
 
@@ -87,26 +91,24 @@ interface ResourceFileInterface
      * 
      * @param   int     $resId  Resource id.
      * 
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * @return  void
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
      */
-    public function convertToThumbnail(int $resId): array;
+    public function convertToThumbnail(int $resId): void;
 
     /**
      * Convert resource page to thumbnail.
      * 
      * @param   int     $resId  Resource id.
-     * @param   string  $type   Resource type.
+     * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      * 
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * @return  void
+     * 
+     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array;
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void;
 
     /**
      * Retrieves the number of pages in a pdf file
@@ -114,6 +116,7 @@ interface ResourceFileInterface
      * @param   string  $filePath   Resource path.
      * 
      * @return  int     Number of pages.
+     * 
      * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int;

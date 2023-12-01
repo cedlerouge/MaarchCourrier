@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain;
+namespace Resource\Domain\Models;
 
 class ResourceDataType
 {

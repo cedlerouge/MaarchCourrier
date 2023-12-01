@@ -18,12 +18,13 @@ use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
+use Resource\Domain\Exceptions\ExceptionResourceIncorrectVersion;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Interfaces\ResourceDataInterface;
 use Resource\Domain\Models\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
 
-class RetrieveResource
+class RetrieveVersionResource
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
@@ -39,23 +40,28 @@ class RetrieveResource
     /**
      * Retrieves the main file info with watermark.
      * 
-     * @param   int $resId  The ID of the resource.
+     * @param   int     $resId      The ID of the resource.
+     * @param   int     $version    Resource version.
+     * @param   string  $type       ['PDF', 'SIGN', 'NOTE']
+     *
      * @return  ResourceFileInfo
+     * 
+     * @throws  \Exception
      */
-    public function getResourceFile(int $resId): ResourceFileInfo
+    public function getResourceFile(int $resId, int $version, string $type): ResourceFileInfo
     {
         $document = $this->resourceData->getMainResourceData($resId);
 
         if (empty($document->getFilename())) {
             throw new ExceptionResourceHasNoFile();
+        } elseif (!empty($document) && $version > $document->getVersion()) {
+            throw new ExceptionResourceIncorrectVersion();
         }
 
-        $format     = $document->getFormat();
-        $subject    = $document->getSubject();
-        $creatorId  = $document->getTypist();
-
-        $document  = $this->resourceData->getConvertedPdfById($resId, 'letterbox_coll');
-
+        $format = $document->getFormat();
+        $subject = $document->getSubject();
+        $document = $this->resourceData->getResourceVersion($resId, $type, $version);
+        
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
         if (!$this->resourceFile->folderExists($docserver->getPathTemplate())) {
             throw new ExceptionResourceDocserverDoesNotExist();
@@ -75,6 +81,8 @@ class RetrieveResource
             throw new ExceptionResourceFingerPrintDoesNotMatch();
         }
 
+        $filename = $this->resourceData->formatFilename($subject);
+
         $fileContentWithNoWatermark = $this->resourceFile->getFileContent($filePath, $docserver->getIsEncrypted());
 
         $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
@@ -86,10 +94,8 @@ class RetrieveResource
             throw new ExceptionResourceFailedToGetDocumentFromDocserver();
         }
 
-        $filename = $this->resourceData->formatFilename($subject);
-
         return new ResourceFileInfo(
-            $creatorId,
+            null,
             null,
             pathInfo($filePath),
             $fileContent,

@@ -17,9 +17,14 @@ namespace Resource\Infrastructure;
 use Convert\controllers\ConvertThumbnailController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
-use Resource\Domain\ResourceFileInterface;
+use Resource\Domain\Interfaces\ResourceFileInterface;
 use Resource\controllers\StoreController;
 use Resource\controllers\WatermarkController;
+use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\models\ResModel;
 use setasign\Fpdi\Fpdi;
 use SrcCore\controllers\PasswordController;
@@ -27,21 +32,32 @@ use SrcCore\models\CoreConfigModel;
 
 class ResourceFile implements ResourceFileInterface
 {
+    /**
+     * Build file path from document and docserver
+     * 
+     * @param   string  $docserverId
+     * @param   string  $documentPath
+     * @param   string  $documentFilename
+     * 
+     * @return  string  Return the build file path
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
+     */
     public function buildFilePath(string $docserverId, string $documentPath, string $documentFilename): string
     {
         if (empty($docserverId)) {
-            return 'Error: Parameter docserverId can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('docserverId');
         }
         if (empty($documentPath)) {
-            return 'Error: Parameter documentPath can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('documentPath');
         }
         if (empty($documentFilename)) {
-            return 'Error: Parameter documentFilename can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('documentFilename');
         }
 
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $docserverId, 'select' => ['path_template', 'docserver_type_id']]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return 'Error: ' . $this::ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST;
+            throw new ExceptionResourceDocserverDoesNotExist();
         }
 
         return $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
@@ -84,32 +100,21 @@ class ResourceFile implements ResourceFileInterface
      * @param   string  $filePath
      * 
      * @return  string
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty
      */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string
     {
         if (empty($docserverTypeId)) {
-            return 'Error: Parameter docserverId can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('docserverId');
         }
         if (empty($filePath)) {
-            return 'Error: Parameter documentPath can not be empty';
+            throw new ExceptionParameterCanNotBeEmpty('documentPath');
         }
 
         $docserverType  = DocserverTypeModel::getById(['id' => $docserverTypeId, 'select' => ['fingerprint_mode']]);
         $fingerprint    = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
         return $fingerprint;
-    }
-
-    /**
-     * Update resource fingerprint
-     * 
-     * @param   int     $resId
-     * @param   string  $fingerprint
-     * 
-     * @return  void
-     */
-    public function updateFingerprint(int $resId, string $fingerprint): void
-    {
-        ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$resId]]);
     }
 
     /**
@@ -161,19 +166,21 @@ class ResourceFile implements ResourceFileInterface
      * Convert resource to thumbnail.
      * 
      * @param   int     $resId  Resource id.
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * 
+     * @return  void
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
      */
-    public function convertToThumbnail(int $resId): array
+    public function convertToThumbnail(int $resId): void
     {
+        if ($resId <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+        }
+
         $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
 
         if (isset($check['errors'])) {
-            return ['error' => $check['errors']];
-        } else {
-            return ['success' => $check];
+            throw new ExceptionConvertThumbnail($check['errors']);
         }
     }
 
@@ -183,22 +190,33 @@ class ResourceFile implements ResourceFileInterface
      * @param   int     $resId  Resource id.
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
-     * @return  array{
-     *      error?:     string, If an error occurs.
-     *      success?:   true    If successful.
-     * }
+     * 
+     * @return  void
+     * 
+     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): array
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void
     {
+        if ($resId <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+        }
         if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
-            return ['error' => "The 'type' is empty or not 'resource', 'attachment'"];
+            throw new ExceptionParameterCanNotBeEmptyAndShould('type', "'resource', 'attachment'");
+        }
+        if ($page <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('page', 0);
         }
 
-        $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
+        $check = null;
+
+        try {
+            $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
+        } catch (\Throwable $th) {
+            throw new ExceptionConvertThumbnail($th->getMessage());
+        }
+
         if (isset($check['errors'])) {
-            return ['error' => $check['errors']];
-        } else {
-            return ['success' => $check];
+            throw new ExceptionConvertThumbnail($check['errors']);
         }
     }
 
@@ -208,6 +226,7 @@ class ResourceFile implements ResourceFileInterface
      * @param   string  $filePath   Resource path.
      * 
      * @return  int     Number of pages.
+     * 
      * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int

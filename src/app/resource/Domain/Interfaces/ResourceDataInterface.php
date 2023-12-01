@@ -12,7 +12,11 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain;
+namespace Resource\Domain\Interfaces;
+
+use Resource\Domain\Models\Docserver;
+use Resource\Domain\Models\Resource;
+use Resource\Domain\Models\ResourceConverted;
 
 interface ResourceDataInterface
 {
@@ -25,31 +29,38 @@ interface ResourceDataInterface
 
     /**
      * @param   int     $resId
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  Resource
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
      */
-    public function getMainResourceData(int $resId, array $select = ['*']): array;
+    public function getMainResourceData(int $resId): Resource;
 
     /**
      * @param   int     $resId
      * @param   int     $version
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
      */
-    public function getSignResourceData(int $resId, int $version, array $select = ['*']): array;
+    public function getSignResourceData(int $resId, int $version): ResourceConverted;
 
     /**
      * @param   string  $docserverId
-     * @param   array   $select, default value is ['*']
-     * @return  array
+     * 
+     * @return  Docserver
+     * 
+     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
      */
-    public function getDocserverDataByDocserverId(string $docserverId, array $select = ['*']): array;
+    public function getDocserverDataByDocserverId(string $docserverId): Docserver;
 
     /**
      * Update resource fingerprint
      * 
      * @param   int     $resId
      * @param   string  $fingerprint
+     * 
      * @return  void
      */
     public function updateFingerprint(int $resId, string $fingerprint): void;
@@ -57,6 +68,7 @@ interface ResourceDataInterface
     /**
      * @param   string  $name
      * @param   int     $maxLength  Default value is 250 length
+     * 
      * @return  string
      */
     public function formatFilename(string $name, int $maxLength = 250): string;
@@ -66,30 +78,40 @@ interface ResourceDataInterface
      * 
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
      */
-    public function getConvertedPdfById(int $resId, string $collId): array;
+    public function getConvertedPdfById(int $resId, string $collId): ResourceConverted;
 
     /**
      * @param   int     $resId      Resource id
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
-     * @return  array
+     * 
+     * @return  ?ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould
      */
-    public function getResourceVersion(int $resId, string $type, int $version): array;
+    public function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted;
 
     /**
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
-     * @return  array
+     * 
+     * @return  ResourceConverted
+     * 
+     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExceptionResourceDoesNotExist
      */
-    public function getLatestResourceVersion(int $resId, string $type): array;
+    public function getLatestResourceVersion(int $resId, string $type): ResourceConverted;
 
     /**
      * Check if user has rights over the resource
      * 
      * @param   int     $resId      Resource id
      * @param   int     $userId     User id
+     * 
      * @return  bool
      */
     public function hasRightByResId(int $resId, int $userId): bool;

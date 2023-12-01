@@ -23,7 +23,7 @@ use Resource\Domain\Interfaces\ResourceDataInterface;
 use Resource\Domain\Models\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
 
-class RetrieveResource
+class RetrieveOriginalResource
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
@@ -37,12 +37,16 @@ class RetrieveResource
     }
 
     /**
-     * Retrieves the main file info with watermark.
-     * 
-     * @param   int $resId  The ID of the resource.
+     * Retrieves the resource file info.
+     *
+     * @param   int  $resId             The ID of the resource.
+     * @param   bool $isSignedVersion   (Optional) Whether to retrieve the signed version. Default is false.
+     *
      * @return  ResourceFileInfo
+     * 
+     * @throws  \Exception
      */
-    public function getResourceFile(int $resId): ResourceFileInfo
+    public function getResourceFile(int $resId, bool $isSignedVersion = false): ResourceFileInfo
     {
         $document = $this->resourceData->getMainResourceData($resId);
 
@@ -50,12 +54,18 @@ class RetrieveResource
             throw new ExceptionResourceHasNoFile();
         }
 
-        $format     = $document->getFormat();
-        $subject    = $document->getSubject();
-        $creatorId  = $document->getTypist();
+        $format = $document->getFormat();
 
-        $document  = $this->resourceData->getConvertedPdfById($resId, 'letterbox_coll');
+        $signdDocument = null;
+        if($isSignedVersion) {
+            $signdDocument = $this->resourceData->getSignResourceData($resId, $document->getVersion());
 
+            if (!empty($signdDocument)) {
+                $signdDocument->setSubject($document->getSubject());
+                $document = $signdDocument;
+            }
+        }
+        
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
         if (!$this->resourceFile->folderExists($docserver->getPathTemplate())) {
             throw new ExceptionResourceDocserverDoesNotExist();
@@ -75,21 +85,15 @@ class RetrieveResource
             throw new ExceptionResourceFingerPrintDoesNotMatch();
         }
 
-        $fileContentWithNoWatermark = $this->resourceFile->getFileContent($filePath, $docserver->getIsEncrypted());
+        $filename = $this->resourceData->formatFilename($document->getSubject());
 
-        $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
-        if (empty($fileContent) || $fileContent === 'null') {
-            $fileContent = $fileContentWithNoWatermark;
-        }
-        
+        $fileContent = $this->resourceFile->getFileContent($filePath, $docserver->getIsEncrypted());
         if ($fileContent === 'false') {
             throw new ExceptionResourceFailedToGetDocumentFromDocserver();
         }
 
-        $filename = $this->resourceData->formatFilename($subject);
-
         return new ResourceFileInfo(
-            $creatorId,
+            null,
             null,
             pathInfo($filePath),
             $fileContent,

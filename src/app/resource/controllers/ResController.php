@@ -532,17 +532,20 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $retrieveResource = RetrieveResourceFactory::create();
-        $mainFile = $retrieveResource->getMainFile($args['resId']);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveResource();
+        $mainFile = null;
 
-        if (!empty($mainFile['error'])) {
-            return $response->withStatus($mainFile['code'])->withJson(['errors' => $mainFile['error']]);
+        try {
+            $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
+        } catch (\Throwable $th) {
+            return $response->withStatus($th->getCode() ?? 400)->withJson(['errors' => $th->getMessage()]);
         }
-        $creatorId      = $mainFile['creatorId'];
-        $originalFormat = $mainFile['originalFormat'];
-        $formatFilename = $mainFile['formatFilename'];
-        $pathInfo       = $mainFile['pathInfo'];
-        $fileContent    = $mainFile['fileContent'];
+
+        $creatorId      = $mainFile->getCreatorId();
+        $originalFormat = $mainFile->getOriginalFormat();
+        $formatFilename = $mainFile->getFormatFilename();
+        $pathInfo       = $mainFile->getPathInfo();
+        $fileContent    = $mainFile->getFileContent();
 
         HistoryController::add([
             'tableName' => 'res_letterbox',
@@ -649,15 +652,18 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $retrieveResource = RetrieveResourceFactory::create();
-        $originalMainFile = $retrieveResource->getVersionMainFile($args['resId'], $args['version'], $type);
-
-        if (!empty($originalMainFile['error'])) {
-            return $response->withStatus($originalMainFile['code'])->withJson(['errors' => $originalMainFile['error']]);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveVersionResource();
+        $resourceVersionFile = null;
+        try {
+            $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
+            
+        } catch (\Throwable $th) {
+            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
-        $formatFilename = $originalMainFile['formatFilename'];
-        $pathInfo       = $originalMainFile['pathInfo'];
-        $fileContent    = $originalMainFile['fileContent'];
+
+        $formatFilename = $resourceVersionFile->getFormatFilename();
+        $pathInfo       = $resourceVersionFile->getPathInfo();
+        $fileContent    = $resourceVersionFile->getFileContent();
 
         return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'filename' => $formatFilename.'_V'.$args['version'].'.'.$pathInfo['extension']]);
     }
@@ -681,15 +687,18 @@ class ResController extends ResourceControlController
             }
         }
 
-        $retrieveResource = RetrieveResourceFactory::create();
-        $originalMainFile = $retrieveResource->getOriginalMainFile($args['resId'], $signedVersion);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveOriginalResource();
+        $originalMainFile = null;
 
-        if (!empty($originalMainFile['error'])) {
-            return $response->withStatus($originalMainFile['code'])->withJson(['errors' => $originalMainFile['error']]);
+        try {
+            $originalMainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $signedVersion);
+        } catch (\Throwable $th) {
+            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
-        $formatFilename = $originalMainFile['formatFilename'];
-        $pathInfo       = $originalMainFile['pathInfo'];
-        $fileContent    = $originalMainFile['fileContent'];
+
+        $formatFilename = $originalMainFile->getFormatFilename();
+        $pathInfo       = $originalMainFile->getPathInfo();
+        $fileContent    = $originalMainFile->getFileContent();
 
         HistoryController::add([
             'tableName' => 'res_letterbox',
@@ -720,16 +729,18 @@ class ResController extends ResourceControlController
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
-    
-        $retrieveResource = RetrieveResourceFactory::create();
-        $thumbnailFile = $retrieveResource->getThumbnailFile($args['resId']);
 
-        if (!empty($thumbnailFile['error'])) {
-            return $response->withStatus($thumbnailFile['code'])->withJson(['errors' => $thumbnailFile['error']]);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResource();
+        $thumbnailFile = null;
+
+        try {
+            $thumbnailFile = $retrieveResourceFactory->getThumbnailFile($args['resId']);
+        } catch (\Throwable $th) {
+            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
-        $formatFilename = $thumbnailFile['formatFilename'];
-        $fileContent    = $thumbnailFile['fileContent'];
 
+        $formatFilename = $thumbnailFile->getFormatFilename();
+        $fileContent    = $thumbnailFile->getFileContent();
 
         $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {
@@ -752,17 +763,18 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'page param is not an integer']);
         }
 
-        $retrieveResource = RetrieveResourceFactory::create();
-        $thumbnailFileByPage = $retrieveResource->getThumbnailFileByPage($args['resId'], $args['page']);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResourceByPage();
+        $thumbnailFileByPage = null;
 
-        if (!empty($thumbnailFileByPage['error'])) {
-            return $response->withStatus($thumbnailFileByPage['code'])->withJson(['errors' => $thumbnailFileByPage['error']]);
+        try {
+            $thumbnailFileByPage = $retrieveResourceFactory->getThumbnailFileByPage($args['resId'], $args['page']);
+        } catch (\Throwable $th) {
+            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
-        $fileContent    = $thumbnailFileByPage['fileContent'];
-        $pageCount      = $thumbnailFileByPage['pageCount'];
-        $base64Content  = base64_encode($fileContent);
 
-        return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
+        $base64Content  = base64_encode($thumbnailFileByPage->getFileContent());
+
+        return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $thumbnailFileByPage->getPageCount()]);
     }
 
     public function getItems(Request $request, Response $response, array $args)
