@@ -10,7 +10,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
 import { NgForm, UntypedFormControl } from '@angular/forms';
 import { ActionPagesService } from '@service/actionPages.service';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 
 @Component({
@@ -479,7 +479,7 @@ export class ActionAdministrationComponent implements OnInit {
      * @description Map action object before API create/update call.
      */
     onSubmit() {
-        if (this.action.actionPageId === 'confirm_status') {            
+        if (this.action.actionPageId === 'confirm_status') {
             const fillRequiredFields = [];
             this.selectedFieldItems.selectedFieldsValue.forEach((item: any) => {
                 if (!this.functions.empty(item.selectedValues)) {
@@ -525,27 +525,9 @@ export class ActionAdministrationComponent implements OnInit {
         }
 
         if (this.creationMode) {
-            this.http.post('../rest/actions', this.action).pipe(
-                tap(() => {
-                    this.router.navigate(['/administration/actions']);
-                    this.notify.success(this.translate.instant('lang.actionAdded'));
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.handleRequestObservable(this.http.post('../rest/actions', this.action), 'lang.actionAdded');
         } else {
-            this.http.put('../rest/actions/' + this.action.id, this.action).pipe(
-                tap(() => {
-                    this.router.navigate(['/administration/actions']);
-                    this.notify.success(this.translate.instant('lang.actionUpdated'));
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.handleRequestObservable(this.http.put('../rest/actions/' + this.action.id, this.action), 'lang.actionUpdated');
         }
     }
 
@@ -666,5 +648,18 @@ export class ActionAdministrationComponent implements OnInit {
 
     toogleKeepOther(action: any){
         this.keepOtherRoleForRedirection = action.parameters.keepOtherRoleForRedirection;
+    }
+    
+    private handleRequestObservable(obs: Observable<any>, successMessage: string): void {
+        obs.pipe(
+            tap(() => {
+                this.router.navigate(['/administration/actions']);
+                this.notify.success(this.translate.instant(successMessage));
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }
