@@ -10,7 +10,7 @@ import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { AdministrationService } from '../administration.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -26,12 +26,14 @@ export class ActionsAdministrationComponent implements OnInit {
     @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
     @ViewChild(MatSort, { static: false }) sort: MatSort;
 
+    dialogRef: MatDialogRef<ConfirmComponent>;
+
     search: string = null;
 
     actions: any[] = [];
     titles: any[] = [];
 
-    loading: boolean = false;
+    loading: boolean = true;
 
     displayedColumns = ['id', 'label_action', 'history', 'actions'];
     filterColumns = ['id', 'label_action'];
@@ -51,24 +53,27 @@ export class ActionsAdministrationComponent implements OnInit {
     ngOnInit(): void {
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
 
-        this.loading = true;
-
-        this.http.get('../rest/actions')
-            .subscribe((data) => {
+        this.http.get('../rest/actions').pipe(
+            tap((data: any) => {
                 this.actions = data['actions'];
                 this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.actions'));
                 this.loading = false;
                 setTimeout(() => {
                     this.adminService.setDataSource('admin_actions', this.actions, this.sort, this.paginator, this.filterColumns);
                 }, 0);
-            }, (err) => {
+            }),
+            catchError((err: any) => {
                 this.notify.handleErrors(err);
-            });
+                return of(false);
+            })
+        ).subscribe();
+
+        this.loading = false;
     }
 
     deleteAction(action: any) {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')} «${action.label_action}»`, msg: this.translate.instant('lang.confirmAction') } });
-        dialogRef.afterClosed().pipe(
+        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')} «${action.label_action}»`, msg: this.translate.instant('lang.confirmAction') } });
+        this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete('../rest/actions/' + action.id)),
             tap((data: any) => {

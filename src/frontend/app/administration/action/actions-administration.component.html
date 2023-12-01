@@ -65,14 +65,14 @@
                                 [class.hide-for-mobile]="appService.getViewMode()">{{'lang.actionHistory' | translate}}
                             </mat-header-cell>
                             <mat-cell *matCellDef="let element" [class.hide-for-mobile]="appService.getViewMode()">
-                                <span *ngIf="element.history == 'N'"> {{'lang.no' | translate}} </span>
-                                <span *ngIf="element.history == 'Y'"> {{'lang.yes' | translate}} </span>
+                                <span *ngIf="element.history === 'N'"> {{'lang.no' | translate}} </span>
+                                <span *ngIf="element.history === 'Y'"> {{'lang.yes' | translate}} </span>
                             </mat-cell>
                         </ng-container>
                         <ng-container matColumnDef="actions">
                             <mat-header-cell *matHeaderCellDef></mat-header-cell>
                             <mat-cell *matCellDef="let element" style="justify-content: flex-end;">
-                                <button mat-icon-button color="warn" [disabled]="element.is_system == 'Y'"
+                                <button mat-icon-button color="warn" [disabled]="element.is_system === 'Y'"
                                     matTooltip="{{'lang.delete' | translate}}"
                                     (click)="$event.stopPropagation();deleteAction(element)">
                                     <mat-icon class="fa fa-trash-alt fa-2x" aria-hidden="true"></mat-icon>
