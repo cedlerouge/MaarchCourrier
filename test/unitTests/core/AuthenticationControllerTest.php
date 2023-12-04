@@ -152,4 +152,9 @@ class AuthenticationControllerTest extends CourrierTestCase
             ]);
         }
     }
+
+    public function testAuthenticateWithExternalIdInToken()
+    {
+        $token = AuthenticationController::getJWT();
+    }
 }
