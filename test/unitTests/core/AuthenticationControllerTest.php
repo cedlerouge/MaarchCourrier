@@ -11,10 +11,12 @@
 namespace MaarchCourrier\Tests\core;
 
 use Exception;
+use Firebase\JWT\JWT;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
 
 class AuthenticationControllerTest extends CourrierTestCase
@@ -153,8 +155,24 @@ class AuthenticationControllerTest extends CourrierTestCase
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function testAuthenticateWithExternalIdInToken()
     {
-        $token = AuthenticationController::getJWT();
+        $authenticationController = new AuthenticationController();
+
+        $args = [
+            'login'    => 'ppetit',
+            'password' => 'maarch'
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $args);
+
+        $response = $authenticationController->authenticate($fullRequest, new Response());
+        $headers = $response->getHeaders();
+        $token = $headers['Token'][0];
+        $payload = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
+        $jwt['user'] = (array)$payload['user'];
+        $this->assertNotNull($jwt['user']['external_id']);
     }
 }
