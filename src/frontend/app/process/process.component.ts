@@ -1011,11 +1011,32 @@ export class ProcessComponent implements OnInit, OnDestroy {
 
     goToResource(event: string = 'next' || 'previous') {
         this.sessionStorage.save('currentTool', this.currentTool);
-        const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
-        if (event === 'next') {
-            this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[index + 1]]);
-        } else if (event === 'previous') {
-            this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[index - 1]]);
-        }
+
+            this.http.put(`../rest/resourcesList/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/locked`, { resources: this.allResources }).pipe(
+                tap((data: any) => {
+                    const allResourcesUnlock: number[] = [...data.resourcesToProcess];
+                    const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
+
+                    const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
+                    let indexLoop: number = index;
+                    do {
+                        indexLoop = indexLoop + nextLoop;
+                        if ((indexLoop < 0) || (indexLoop === this.allResources.length)) {
+                            indexLoop = -1;
+                            break;
+                        }
+                    } while (!allResourcesUnlock.includes(this.allResources[indexLoop]));
+
+                    if (indexLoop === -1) {
+                        this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
+                    } else {
+                        this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[indexLoop]]);
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
     }
 }
