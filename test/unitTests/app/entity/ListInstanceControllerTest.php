@@ -1,11 +1,11 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\entity;
 
@@ -33,20 +33,20 @@ class ListInstanceControllerTest extends CourrierTestCase
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
         $args = [
-            'modelId'           => 1,
-            'status'            => 'NEW',
-            'encodedFile'       => $encodedFile,
-            'format'            => 'txt',
-            'confidentiality'   => false,
-            'documentDate'      => '2019-01-01 17:18:47',
-            'arrivalDate'       => '2019-01-01 17:18:47',
-            'processLimitDate'  => '2029-01-01',
-            'doctype'           => 102,
-            'destination'       => 15,
-            'initiator'         => 15,
-            'subject'           => 'Du matin au soir, ils disent du mal de la vie, et ils ne peuvent se résoudre à la quitter !',
-            'typist'            => 19,
-            'priority'          => 'poiuytre1357nbvc',
+            'modelId'          => 1,
+            'status'           => 'NEW',
+            'encodedFile'      => $encodedFile,
+            'format'           => 'txt',
+            'confidentiality'  => false,
+            'documentDate'     => '2019-01-01 17:18:47',
+            'arrivalDate'      => '2019-01-01 17:18:47',
+            'processLimitDate' => '2029-01-01',
+            'doctype'          => 102,
+            'destination'      => 15,
+            'initiator'        => 15,
+            'subject'          => 'Du matin au soir, ils disent du mal de la vie, et ils ne peuvent se résoudre à la quitter !',
+            'typist'           => 19,
+            'priority'         => 'poiuytre1357nbvc',
             'diffusionList'    => [
                 [
                     'id'   => 11,
@@ -65,7 +65,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $resController->create($fullRequest, new Response());
+        $response = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody(), true);
         self::$resourceId = $responseBody['resId'];
         $this->assertIsInt(self::$resourceId);
@@ -83,7 +83,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId'  => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ["item_id" => 17, "requested_signature" => false],
                         ["item_id" => 18, "requested_signature" => true]
@@ -102,9 +102,9 @@ class ListInstanceControllerTest extends CourrierTestCase
                     'resId'         => self::$resourceId,
                     'listInstances' => [
                         [
-                            'item_id'       => 10,
-                            'item_mode'     => 'avis',
-                            'item_type'     => 'user'
+                            'item_id'   => 10,
+                            'item_mode' => 'avis',
+                            'item_type' => 'user'
                         ]
                     ]
                 ]
@@ -177,7 +177,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => '', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -194,7 +194,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 17, 'requested_signature' => false, 'process_comment' => 'too long !!#######################################################################################################################################################################################################################################################'],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -211,7 +211,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'mscott', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -228,7 +228,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'bbain', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -245,7 +245,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $body = [
             'resources' => [
                 [
-                    'resId' => self::$resourceId,
+                    'resId'         => self::$resourceId,
                     'listInstances' => [
                         ['item_id' => 'bbain', 'requested_signature' => false],
                         ['item_id' => 18, 'requested_signature' => true]
@@ -458,6 +458,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+
     public function testUpdate()
     {
         $listInstanceController = new ListInstanceController();
@@ -493,9 +494,11 @@ class ListInstanceControllerTest extends CourrierTestCase
             [
                 'resId'         => self::$resourceId,
                 'listInstances' => [
-                    'item_id'   => 10,
-                    'item_mode' => 'avis',
-                    'item_type' => 'user'
+                    [
+                        'item_id'   => 10,
+                        'item_mode' => 'avis',
+                        'item_type' => 'user'
+                    ]
                 ]
             ]
         ];
@@ -534,6 +537,82 @@ class ListInstanceControllerTest extends CourrierTestCase
         $GLOBALS['login'] = 'superadmin';
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
+    }
+
+    public function testCannotUpdateListinstanceIfComponentsOfListinstanceAreNotAnArray()
+    {
+        $listInstanceController = new ListInstanceController();
+        $body = [
+            [
+                'resId'         => self::$resourceId,
+                'listInstances' => [
+                    'item_id'   => 10,
+                    'item_mode' => 'avis',
+                    'item_type' => 'user'
+                ]
+            ]
+        ];
+
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
+        $this->assertSame(400, $response->getStatusCode());
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $this->assertSame('listInstances component is empty or not an object', $responseBody['errors']);
+    }
+
+    public function testCannotSetParallelOpinionCircuitWithSameUserAndRole()
+    {
+        $listInstanceController = new ListInstanceController();
+
+        // ARRANGE
+
+        // ACT : Modification d'une liste de diffusion avec 2x la même personne pour avis
+
+        $body = [
+            [
+                'resId'         => self::$resourceId,
+                'listInstances' => [
+                    [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 19,
+                        'item_mode'       => "dest",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 1,
+                        'item_mode'       => "cc",
+                        'item_type'       => "entity",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ]
+                ]
+            ]
+        ];
+
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
+
+        // ASSERT
+        // Attendu : Impossible de modifier une liste de diffusion en mettant 2x la même personne avec le même rôle
+        $this->assertSame(400, $response->getStatusCode());
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $this->assertSame("Some users/entities are present at least twice with the same role", $responseBody['errors']);
     }
 
     public function testDeleteCircuit()

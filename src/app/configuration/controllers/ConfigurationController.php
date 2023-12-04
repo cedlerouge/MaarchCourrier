@@ -19,6 +19,7 @@ use Basket\models\BasketModel;
 use Configuration\models\ConfigurationModel;
 use ContentManagement\controllers\Office365SharepointController;
 use Doctype\models\DoctypeModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelModel;
@@ -36,7 +37,7 @@ class ConfigurationController
 {
     public function getByPrivilege(Request $request, Response $response, array $args)
     {
-        if (in_array($args['privilege'], ['admin_sso'])) {
+        if ($args['privilege'] == 'admin_sso') {
             if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
@@ -66,9 +67,12 @@ class ConfigurationController
         return $response->withJson(['configuration' => $configuration]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function update(Request $request, Response $response, array $args)
     {
-        if (in_array($args['privilege'], ['admin_sso'])) {
+        if ($args['privilege'] == 'admin_sso') {
             if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
@@ -199,6 +203,9 @@ class ConfigurationController
                     $data[$key]['siteId'] = $siteId;
                 }
             }
+
+            $data['default'] = $default ?? '';
+
         } elseif ($args['privilege'] == 'admin_shippings') {
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
@@ -238,9 +245,6 @@ class ConfigurationController
             ];
         }
 
-        if (!empty($default)) {
-            $data['default'] = $default;
-        }
         $data = json_encode($data, JSON_UNESCAPED_SLASHES);
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => $args['privilege'], 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => $args['privilege']]);
