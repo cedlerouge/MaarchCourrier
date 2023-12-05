@@ -538,7 +538,6 @@ class ResController extends ResourceControlController
         try {
             $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
         } catch (\Throwable $th) {
-            var_dump($th);
             return $response->withStatus($th->getCode() ?? 400)->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -657,8 +656,8 @@ class ResController extends ResourceControlController
         $resourceVersionFile = null;
         try {
             $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
-            
         } catch (\Throwable $th) {
+            var_dump($th);
             return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 

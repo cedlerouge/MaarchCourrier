@@ -129,36 +129,24 @@ class ResourceDataMock implements ResourceDataInterface
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
      * 
-     * @return  ?ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould
+     * @return  ?array
      */
-    public function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
+    public function getResourceVersion(int $resId, string $type, int $version): ?array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) || (!in_array($type, $this::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
-        }
-        if ($version <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('version', 0);
-        }
         if (!$this->doesResourceVersionExist) {
             return null;
         }
 
-        return new ResourceConverted(
-            1,
-            $resId,
-            $type,
-            $version,
-            'FASTHD',
-            '2021/03/0001/',
-            '0001_960655724.pdf',
-            'file fingerprint'
-        );
+        return [
+            'id' => 1,
+            'res_id' => $resId,
+            'type' => $type,
+            'version' => $version,
+            'docserver_id' => 'FASTHD',
+            'path' => '2021/03/0001/',
+            'filename' => '0001_960655724.pdf',
+            'fingerprint' => 'file fingerprint'
+        ];
     }
 
     /**

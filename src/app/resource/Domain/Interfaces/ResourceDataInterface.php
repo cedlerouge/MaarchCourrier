@@ -50,11 +50,9 @@ interface ResourceDataInterface
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
      * 
-     * @return  ?ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould
+     * @return  ?array
      */
-    public function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted;
+    public function getResourceVersion(int $resId, string $type, int $version): ?array;
 
     /**
      * @param   int     $resId  Resource id

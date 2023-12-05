@@ -15,7 +15,6 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
-use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
 
 class RetrieveThumbnailResourceByPageTest extends TestCase
 {

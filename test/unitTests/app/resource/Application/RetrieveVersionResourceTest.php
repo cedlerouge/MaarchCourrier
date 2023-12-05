@@ -56,6 +56,48 @@ class RetrieveVersionResourceTest extends TestCase
     /**
      * @return void
      */
+    public function testCannotGetVersionResourceFileBecauseVersionNotValidParam(): void
+    {
+        // Arrange
+
+        // Assert
+        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('version', 0));
+
+        // Act
+        $this->retrieveVersionResource->getResourceFile(1, 0, '');
+    }
+
+    /**
+     * @return void
+     */
+    public function testCannotGetVersionResourceFileBecauseTypeIsEmpty(): void
+    {
+        // Arrange
+
+        // Assert
+        $this->expectExceptionObject(new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
+
+        // Act
+        $this->retrieveVersionResource->getResourceFile(1, 1, '');
+    }
+
+    /**
+     * @return void
+     */
+    public function testCannotGetVersionResourceFileBecauseTypeNotValidParam(): void
+    {
+        // Arrange
+
+        // Assert
+        $this->expectExceptionObject(new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
+
+        // Act
+        $this->retrieveVersionResource->getResourceFile(1, 1, 'TNLL');
+    }
+
+    /**
+     * @return void
+     */
     public function testCannotGetVersionResourceFileBecauseResourceDoesNotExist(): void
     {
         // Arrange
@@ -65,7 +107,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->expectExceptionObject(new ExceptionResourceDoesNotExist());
 
         // Act
-        $this->retrieveVersionResource->getResourceFile(1, 0, '');
+        $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
 
     /**
@@ -80,33 +122,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->expectExceptionObject(new ExceptionResourceHasNoFile());
         
         // Act
-        $this->retrieveVersionResource->getResourceFile(1, 0, 'smt');
-    }
-
-    public function provideUnknownVersionTypes(): array
-    {
-        return [
-            'PDFF' => ['type' => 'PDFF'],
-            'TNL-1' => ['type' => 'TNL-1'],
-            'TNL0.1' => ['type' => 'TNL0.1'],
-            'TNL1 1' => ['type' => 'TNL1 1']
-        ];
-    }
-
-    /**
-     * @dataProvider    provideUnknownVersionTypes
-     * @return  void
-     */
-    public function testCannotGetVersionResourceFileBecauseUnknownVersionType($type): void
-    {
-        // Arrange
-        $this->resourceDataMock->doesResourceDocserverExist = false;
-
-        // Assert
-        $this->expectExceptionObject(new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'"));
-        
-        // Act
-        $this->retrieveVersionResource->getResourceFile(1, 1, $type);
+        $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
 
     /**
@@ -168,5 +184,46 @@ class RetrieveVersionResourceTest extends TestCase
         
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetVersionResourceFileWithoutWatermarkBecauseAppliedWatermarkFailed(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = false;
+        $this->resourceFileMock->doesWatermarkInResourceFileContentFail = true;
+
+        // Act
+        $result = $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
+
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getOriginalFormat());
+        $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainResourceFileContent);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetVersionResourceFileWithWatermarkApplied(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = false;
+
+        // Act
+        $result = $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
+
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getOriginalFormat());
+        $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainWatermarkInResourceFileContent);
     }
 }

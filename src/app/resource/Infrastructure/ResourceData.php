@@ -116,23 +116,10 @@ class ResourceData implements ResourceDataInterface
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
      * 
-     * @return  ?ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould
+     * @return  ?array
      */
-    public function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
+    public function getResourceVersion(int $resId, string $type, int $version): ?array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) || (!in_array($type, $this::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
-        }
-        if ($version <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('version', 0);
-        }
-
         $document = AdrModel::getDocuments([
             'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
             'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
@@ -143,17 +130,7 @@ class ResourceData implements ResourceDataInterface
             return null;
         }
 
-        $document = new ResourceConverted(
-            $document[0]['id'],
-            $resId,
-            $type,
-            $version,
-            $document[0]['docserver_id'],
-            $document[0]['path'],
-            $document[0]['filename'],
-            $document[0]['fingerprint']
-        );
-        return $document;
+        return $document[0];
     }
 
     /**
