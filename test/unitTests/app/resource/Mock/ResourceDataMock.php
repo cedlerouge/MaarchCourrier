@@ -29,34 +29,26 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $doesUserHasRights = true;
     public bool $isResourceDocserverEncrypted = false;
 
-    /**
-     * @param   int     $resId
-     * 
-     * @return  Resource
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getMainResourceData(int $resId): Resource
+
+    public function getMainResourceData(int $resId): ?Resource
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-
         if (!$this->doesResourceExist) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
-        $resource = new Resource(
-            1,
-            'Maarch Courrier Test',
-            'FASTHD',
-            '2021/03/0001/',
-            '0001_960655724.pdf',
-            1,
-            'file fingerprint',
-            'pdf',
-            1
-        );
+        $resourceFromDB = [
+            'res_id'        => 1,
+            'subject'       => 'Maarch Courrier Test',
+            'docserver_id'  => 'FASTHD',
+            'path'          => '2021/03/0001/',
+            'filename'      => '0001_960655724.pdf',
+            'version'       => 1,
+            'fingerprint'   => 'file fingerprint',
+            'format'        => 'pdf',
+            'typist'        => 1
+        ];
+
+        $resource = Resource::createFromArray($resourceFromDB);
 
         if ($this->returnResourceWithoutFile || !$this->doesResourceFileExistInDatabase) {
             $resource->setDocserverId(null);
@@ -69,25 +61,10 @@ class ResourceDataMock implements ResourceDataInterface
         return $resource;
     }
 
-    /**
-     * @param   int     $resId
-     * @param   int     $version
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getSignResourceData(int $resId, int $version): ResourceConverted
+    public function getSignResourceData(int $resId, int $version): ?ResourceConverted
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-
-        }
-        if ($version <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('version', 0);
-        }
         if (!$this->doesResourceExist) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
         return new ResourceConverted(
@@ -102,21 +79,14 @@ class ResourceDataMock implements ResourceDataInterface
         );
     }
 
-    /**
-     * @param   string  $docserverId
-     * 
-     * @return  Docserver
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
-     */
-    public function getDocserverDataByDocserverId(string $docserverId): Docserver
+    public function getDocserverDataByDocserverId(string $docserverId): ?Docserver
     {
         if (empty($docserverId)) {
-            throw new \Exception("The 'docserverId' parameter can not be empty");
+            return null;
         }
 
         if (!$this->doesResourceDocserverExist) {
-            throw new ExceptionResourceDocserverDoesNotExist();
+            return null;
         }
 
         return new Docserver(
@@ -128,25 +98,11 @@ class ResourceDataMock implements ResourceDataInterface
         );
     }
 
-    /**
-     * Update resource fingerprint
-     * 
-     * @param   int     $resId
-     * @param   string  $fingerprint
-     * 
-     * @return  void
-     */
     public function updateFingerprint(int $resId, string $fingerprint): void
     {
         return;
     }
 
-    /**
-     * @param   string  $name
-     * @param   int     $maxLength  Default value is 250 length
-     * 
-     * @return  string
-     */
     public function formatFilename(string $name, int $maxLength = 250): string
     {
         return TextFormatModel::formatFilename(['filename' => $name, 'maxLength' => $maxLength]);

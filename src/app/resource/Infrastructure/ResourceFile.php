@@ -32,43 +32,23 @@ use SrcCore\models\CoreConfigModel;
 class ResourceFile implements ResourceFileInterface
 {
     /**
-     * Build file path from document and docserver
+     * Build file path from docserver and document paths
      * 
-     * @param   string  $docserverId
+     * @param   string  $docserverPath
      * @param   string  $documentPath
      * @param   string  $documentFilename
      * 
-     * @return  string  Return the build file path
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
+     * @return  string  Return the build file path or empty if docserverPath does not exist or empty
      */
-    public function buildFilePath(string $docserverId, string $documentPath, string $documentFilename): string
+    public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
     {
-        if (empty($docserverId)) {
-            throw new ExceptionParameterCanNotBeEmpty('docserverId');
-        }
-        if (empty($documentPath)) {
-            throw new ExceptionParameterCanNotBeEmpty('documentPath');
-        }
-        if (empty($documentFilename)) {
-            throw new ExceptionParameterCanNotBeEmpty('documentFilename');
+        if (empty($docserverPath) || !file_exists($docserverPath)) {
+            return '';
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $docserverId, 'select' => ['path_template', 'docserver_type_id']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            throw new ExceptionResourceDocserverDoesNotExist();
-        }
-
-        return $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
+        return $docserverPath . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
     }
 
-    /**
-     * Check if folder exists 
-     * 
-     * @param   string  $folderPath
-     * 
-     * @return  bool
-     */
     public function folderExists(string $folderPath): bool
     {
         if (empty($folderPath)) {
@@ -77,13 +57,6 @@ class ResourceFile implements ResourceFileInterface
         return is_dir($folderPath);
     }
 
-    /**
-     * Check if file exists 
-     * 
-     * @param   string  $filePath
-     * 
-     * @return  bool
-     */
     public function fileExists(string $filePath): bool
     {
         if (empty($filePath)) {
@@ -92,23 +65,13 @@ class ResourceFile implements ResourceFileInterface
         return file_exists($filePath);
     }
 
-    /**
-     * Get file fingerprint
-     * 
-     * @param   string  $docserverTypeId
-     * @param   string  $filePath
-     * 
-     * @return  string
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty
-     */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string
     {
         if (empty($docserverTypeId)) {
-            throw new ExceptionParameterCanNotBeEmpty('docserverId');
+            return '';
         }
         if (empty($filePath)) {
-            throw new ExceptionParameterCanNotBeEmpty('documentPath');
+            return '';
         }
 
         $docserverType  = DocserverTypeModel::getById(['id' => $docserverTypeId, 'select' => ['fingerprint_mode']]);
@@ -120,7 +83,7 @@ class ResourceFile implements ResourceFileInterface
      * Retrieves file content.
      *
      * @param   string  $filePath       The path to the file.
-     * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
+     * @param   bool    $isEncrypted    Flag if the file is encrypted.
      *
      * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
      */

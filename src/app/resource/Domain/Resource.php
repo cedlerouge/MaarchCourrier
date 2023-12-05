@@ -96,7 +96,7 @@ class Resource
         $resource->setConfidentiality($array['confidentiality'] ?? null);
         $resource->setFulltextResult($array['fulltext_result'] ?? null);
         $resource->setExternalReference($array['external_reference'] ?? null);
-        $resource->setExternalId($array['external_id'] ?? []);
+        $resource->setExternalId(json_decode($array['external_id'] ?? '{}', true));
         $resource->setExternalState(json_decode($array['external_state'] ?? '{}', true));
         $resource->setDepartureDate($array['departure_date'] ?? null);
         $resource->setOpinionLimitDate($array['opinion_limit_date'] ?? null);
@@ -111,7 +111,7 @@ class Resource
         $resource->setModelId($array['model_id'] ?? 0);
         $resource->setVersion($array['version'] ?? 0);
         $resource->setIntegrations(json_decode($array['integrations'] ?? '{}', true));
-        $resource->setCustomFields($array['custom_fields'] ?? null);
+        $resource->setCustomFields(json_decode($array['custom_fields'] ?? '{}', true));
         $resource->setLinkedResources(json_decode($array['linked_resources'] ?? '{}', true));
         $resource->setRetentionFrozen($array['retention_frozen'] ?? false);
         $resource->setBinding($array['binding'] ?? null);

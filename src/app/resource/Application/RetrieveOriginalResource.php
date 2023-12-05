@@ -14,7 +14,9 @@
 
 namespace Resource\Application;
 
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
+use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
@@ -48,9 +50,15 @@ class RetrieveOriginalResource
      */
     public function getResourceFile(int $resId, bool $isSignedVersion = false): ResourceFileInfo
     {
+        if ($resId <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+        }
+
         $document = $this->resourceData->getMainResourceData($resId);
 
-        if (empty($document->getFilename())) {
+        if ($document == null) {
+            throw new ExceptionResourceDoesNotExist();
+        } elseif (empty($document->getFilename())) {
             throw new ExceptionResourceHasNoFile();
         }
 
@@ -60,24 +68,24 @@ class RetrieveOriginalResource
         if($isSignedVersion) {
             $signdDocument = $this->resourceData->getSignResourceData($resId, $document->getVersion());
 
-            if (!empty($signdDocument)) {
+            if ($signdDocument != null) {
                 $signdDocument->setSubject($document->getSubject());
                 $document = $signdDocument;
             }
         }
         
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
-        if (!$this->resourceFile->folderExists($docserver->getPathTemplate())) {
+        if ($docserver == null || !$this->resourceFile->folderExists($docserver->getPathTemplate())) {
             throw new ExceptionResourceDocserverDoesNotExist();
         }
 
-        $filePath = $this->resourceFile->buildFilePath($document->getDocserverId(), $document->getPath(), $document->getFilename());
+        $filePath = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
         if (!$this->resourceFile->fileExists($filePath)) {
             throw new ExceptionResourceNotFoundInDocserver();
         }
 
         $fingerprint = $this->resourceFile->getFingerPrint($docserver->getDocserverTypeId(), $filePath);
-        if (empty($signdDocument) && empty($document->getFingerprint())) {
+        if ($signdDocument == null && !empty($fingerprint) && empty($document->getFingerprint())) {
             $this->resourceData->updateFingerprint($resId, $fingerprint);
         }
 

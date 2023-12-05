@@ -24,46 +24,20 @@ interface ResourceFileInterface
     // public const ERROR_RESOURCE_PAGE_NOT_FOUND = "Page not found in docserver";
 
     /**
-     * Build file path from document and docserver
+     * Build file path from docserver and document paths
      * 
-     * @param   string  $docserverId
+     * @param   string  $docserverPath
      * @param   string  $documentPath
      * @param   string  $documentFilename
      * 
-     * @return  string  Return the build file path
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
+     * @return  string  Return the build file path or empty if docserverPath does not exist or empty
      */
-    public function buildFilePath(string $docserverId, string $documentPath, string $documentFilename): string;
+    public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string;
 
-    /**
-     * Check if folder exists 
-     * 
-     * @param   string  $folderPath
-     * 
-     * @return  bool
-     */
     public function folderExists(string $folderPath): bool;
 
-    /**
-     * Check if file exists 
-     * 
-     * @param   string  $filePath
-     * 
-     * @return  bool
-     */
     public function fileExists(string $filePath): bool;
 
-    /**
-     * Get file fingerprint
-     * 
-     * @param   string  $docserverTypeId
-     * @param   string  $filePath
-     * 
-     * @return  string
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty
-     */
     public function getFingerPrint(string $docserverTypeId, string $filePath): string;
 
     /**

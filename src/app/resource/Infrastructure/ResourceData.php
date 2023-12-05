@@ -33,55 +33,19 @@ use SrcCore\models\TextFormatModel;
 
 class ResourceData implements ResourceDataInterface
 {
-    /**
-     * @param   int     $resId
-     * 
-     * @return  Resource
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getMainResourceData(int $resId): Resource
+    public function getMainResourceData(int $resId): ?Resource
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-
         $resource = ResModel::getById(['resId'  => $resId, 'select' => ['*']]);
 
         if (empty($resource)) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
-        return new Resource(
-            $resource['res_id'],
-            $resource['subject'],
-            $resource['docserver_id'],
-            $resource['path'],
-            $resource['filename'],
-            $resource['version'],
-            $resource['fingerprint'],
-            $resource['format'],
-            $resource['typist']
-        );
+        return Resource::createFromArray($resource);
     }
 
-    /**
-     * @param   int     $resId
-     * @param   int     $version
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getSignResourceData(int $resId, int $version): ResourceConverted
+    public function getSignResourceData(int $resId, int $version): ?ResourceConverted
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if ($version <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('version', 0);
-        }
-
         $resource = AdrModel::getDocuments([
             'select' => ['*'],
             'where'  => ['res_id = ?', 'type = ?', 'version = ?'],
@@ -90,7 +54,7 @@ class ResourceData implements ResourceDataInterface
         ]);
 
         if (empty($resource[0])) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
         return new ResourceConverted(
@@ -105,23 +69,16 @@ class ResourceData implements ResourceDataInterface
         );
     }
 
-    /**
-     * @param   string  $docserverId
-     * 
-     * @return  Docserver
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
-     */
-    public function getDocserverDataByDocserverId(string $docserverId): Docserver
+    public function getDocserverDataByDocserverId(string $docserverId): ?Docserver
     {
         if (empty($docserverId)) {
-            throw new ExceptionParameterCanNotBeEmpty('docserverId');
+            return null;
         }
 
         $docserver = DocserverModel::getByDocserverId(['docserverId' => $docserverId, 'select' => ['*']]);
 
         if (empty($docserver)) {
-            throw new ExceptionResourceDocserverDoesNotExist();
+            return null;
         }
 
         return new Docserver(

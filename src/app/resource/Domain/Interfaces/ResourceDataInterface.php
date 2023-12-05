@@ -27,50 +27,14 @@ interface ResourceDataInterface
     // public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
     // public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
 
-    /**
-     * @param   int     $resId
-     * 
-     * @return  Resource
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getMainResourceData(int $resId): Resource;
+    public function getMainResourceData(int $resId): ?Resource;
 
-    /**
-     * @param   int     $resId
-     * @param   int     $version
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionResourceDoesNotExist
-     */
-    public function getSignResourceData(int $resId, int $version): ResourceConverted;
+    public function getSignResourceData(int $resId, int $version): ?ResourceConverted;
 
-    /**
-     * @param   string  $docserverId
-     * 
-     * @return  Docserver
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty|ExceptionResourceDocserverDoesNotExist
-     */
-    public function getDocserverDataByDocserverId(string $docserverId): Docserver;
+    public function getDocserverDataByDocserverId(string $docserverId): ?Docserver;
 
-    /**
-     * Update resource fingerprint
-     * 
-     * @param   int     $resId
-     * @param   string  $fingerprint
-     * 
-     * @return  void
-     */
     public function updateFingerprint(int $resId, string $fingerprint): void;
 
-    /**
-     * @param   string  $name
-     * @param   int     $maxLength  Default value is 250 length
-     * 
-     * @return  string
-     */
     public function formatFilename(string $name, int $maxLength = 250): string;
 
     /**

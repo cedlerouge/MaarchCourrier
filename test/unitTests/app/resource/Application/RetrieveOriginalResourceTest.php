@@ -126,4 +126,24 @@ class RetrieveOriginalResourceTest extends TestCase
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
+
+    /**
+     * @return void
+     */
+    public function testGetOriginalResourceFile(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = false;
+
+        // Act
+        $result = $this->retrieveOriginalResource->getResourceFile(1);
+        
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getOriginalFormat());
+        $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainResourceFileContent);
+    }
 }
