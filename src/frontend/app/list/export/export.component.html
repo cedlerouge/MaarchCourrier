@@ -81,7 +81,7 @@
     </div>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">
-        <button mat-raised-button mat-button color="primary" [disabled]="exportModel.data.length === 0"
+        <button mat-raised-button mat-button color="primary" name="export" [disabled]="exportModel.data.length === 0"
             (click)="exportData();">{{'lang.toExport' | translate}}</button>
         <button mat-raised-button mat-button [mat-dialog-close]="">{{'lang.cancel' | translate}}</button>
     </div>

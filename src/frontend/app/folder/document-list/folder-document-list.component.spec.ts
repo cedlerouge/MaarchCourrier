@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from "@angular/core/testing"
 import { FolderDocumentListComponent } from "./folder-document-list.component";
-import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
 import { RouterTestingModule } from "@angular/router/testing";
@@ -25,7 +25,6 @@ describe('Folder Document List Component', async () => {
     let translateService: TranslateService;
     let component: FolderDocumentListComponent;
     let fixture: ComponentFixture<FolderDocumentListComponent>;
-    let httpTestingController: HttpTestingController;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -58,7 +57,6 @@ describe('Folder Document List Component', async () => {
 
 
     beforeEach(() => {
-        httpTestingController = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(FolderDocumentListComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
