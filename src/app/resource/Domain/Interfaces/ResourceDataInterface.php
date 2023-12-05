@@ -14,18 +14,18 @@
 
 namespace Resource\Domain\Interfaces;
 
-use Resource\Domain\Models\Docserver;
-use Resource\Domain\Models\Resource;
-use Resource\Domain\Models\ResourceConverted;
+use Resource\Domain\Docserver;
+use Resource\Domain\Resource;
+use Resource\Domain\ResourceConverted;
 
 interface ResourceDataInterface
 {
-    public const ERROR_RESOURCE_OUT_OF_PERIMETER = "Document out of perimeter";
-    public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
-    public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
-    public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
     public const ADR_RESOURCE_TYPES = ['PDF', 'TNL', 'SIGN', 'NOTE'];
-    public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
+    // public const ERROR_RESOURCE_OUT_OF_PERIMETER = "Document out of perimeter";
+    // public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
+    // public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
+    // public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
+    // public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
 
     /**
      * @param   int     $resId

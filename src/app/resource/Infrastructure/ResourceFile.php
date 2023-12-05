@@ -25,7 +25,6 @@ use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
 use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\models\ResModel;
 use setasign\Fpdi\Fpdi;
 use SrcCore\controllers\PasswordController;
 use SrcCore\models\CoreConfigModel;

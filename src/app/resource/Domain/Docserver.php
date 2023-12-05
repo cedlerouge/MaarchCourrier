@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain\Models;
+namespace Resource\Domain;
 
 class Docserver
 {

@@ -20,7 +20,7 @@ use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Interfaces\ResourceDataInterface;
-use Resource\Domain\Models\ResourceFileInfo;
+use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
 
 class RetrieveResource

@@ -16,12 +16,12 @@ namespace Resource\Domain\Interfaces;
 
 interface ResourceFileInterface
 {
-    public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
-    public const ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER = 'Document not found in docserver';
-    public const ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH = 'Fingerprints do not match';
-    public const ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER = 'Failed to get document on docserver';
-    public const ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE = 'Thumbnail not found in docserver or not readable';
-    public const ERROR_RESOURCE_PAGE_NOT_FOUND = "Page not found in docserver";
+    // public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
+    // public const ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER = 'Document not found in docserver';
+    // public const ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH = 'Fingerprints do not match';
+    // public const ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER = 'Failed to get document on docserver';
+    // public const ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE = 'Thumbnail not found in docserver or not readable';
+    // public const ERROR_RESOURCE_PAGE_NOT_FOUND = "Page not found in docserver";
 
     /**
      * Build file path from document and docserver

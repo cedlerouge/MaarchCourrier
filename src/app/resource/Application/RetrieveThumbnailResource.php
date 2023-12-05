@@ -16,7 +16,7 @@ namespace Resource\Application;
 
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Interfaces\ResourceDataInterface;
-use Resource\Domain\Models\ResourceFileInfo;
+use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
 
 class RetrieveThumbnailResource

@@ -22,7 +22,7 @@ use Resource\Domain\Exceptions\ExceptionResourcePageNotFound;
 use Resource\Domain\Exceptions\ExceptionThumbnailNotFoundInDocserverOrNotReadable;
 use Resource\Domain\Exceptions\ExeptionSetaPdfResult;
 use Resource\Domain\Interfaces\ResourceDataInterface;
-use Resource\Domain\Models\ResourceFileInfo;
+use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
 use Resource\Domain\Interfaces\ResourceLogInterface;
 

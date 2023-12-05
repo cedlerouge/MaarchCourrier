@@ -9,13 +9,13 @@
 
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
-use Resource\Domain\Models\Docserver;
+use Resource\Domain\Docserver;
 use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
-use Resource\Domain\Models\Resource;
-use Resource\Domain\Models\ResourceConverted;
+use Resource\Domain\Resource;
+use Resource\Domain\ResourceConverted;
 use Resource\Domain\Interfaces\ResourceDataInterface;
 use SrcCore\models\TextFormatModel;
 
