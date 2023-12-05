@@ -113,30 +113,15 @@ class ResourceDataMock implements ResourceDataInterface
      * 
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
      */
-    public function getConvertedPdfById(int $resId, string $collId): ResourceConverted
+    public function getConvertedPdfById(int $resId, string $collId): array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('collId', 'letterbox_coll' or 'attachments_coll');
-        }
-
-        return new ResourceConverted(
-            1,
-            $resId,
-            '',
-            0,
-            'FASTHD',
-            '2021/03/0001/',
-            '0001_960655724.pdf',
-            'file fingerprint'
-        );
+        return [
+            'docserver_id' => 'FASTHD',
+            'path' => '2021/03/0001/',
+            'filename' => '0001_960655724.pdf',
+            'fingerprint' => 'file fingerprint'
+        ];
     }
 
     /**

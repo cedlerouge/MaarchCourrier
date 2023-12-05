@@ -14,14 +14,19 @@
 
 namespace Resource\Application;
 
+use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
+use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\Exceptions\ExecptionConvertedResult;
 use Resource\Domain\Interfaces\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
+use Resource\Domain\ResourceConverted;
 
 class RetrieveResource
 {
@@ -44,9 +49,15 @@ class RetrieveResource
      */
     public function getResourceFile(int $resId): ResourceFileInfo
     {
+        if ($resId <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+        }
+
         $document = $this->resourceData->getMainResourceData($resId);
 
-        if (empty($document->getFilename())) {
+        if ($document == null) {
+            throw new ExceptionResourceDoesNotExist();
+        } elseif (empty($document->getFilename())) {
             throw new ExceptionResourceHasNoFile();
         }
 
@@ -54,20 +65,20 @@ class RetrieveResource
         $subject    = $document->getSubject();
         $creatorId  = $document->getTypist();
 
-        $document  = $this->resourceData->getConvertedPdfById($resId, 'letterbox_coll');
+        $document = $this->getConvertedResourcePdfById($resId);
 
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
-        if (!$this->resourceFile->folderExists($docserver->getPathTemplate())) {
+        if ($docserver == null || !$this->resourceFile->folderExists($docserver->getPathTemplate())) {
             throw new ExceptionResourceDocserverDoesNotExist();
         }
 
-        $filePath = $this->resourceFile->buildFilePath($document->getDocserverId(), $document->getPath(), $document->getFilename());
+        $filePath = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
         if (!$this->resourceFile->fileExists($filePath)) {
             throw new ExceptionResourceNotFoundInDocserver();
         }
 
         $fingerprint = $this->resourceFile->getFingerPrint($docserver->getDocserverTypeId(), $filePath);
-        if (empty($signdDocument) && empty($document->getFingerprint())) {
+        if (!empty($fingerprint) && empty($document->getFingerprint())) {
             $this->resourceData->updateFingerprint($resId, $fingerprint);
         }
 
@@ -95,6 +106,33 @@ class RetrieveResource
             $fileContent,
             $filename,
             $format
+        );
+    }
+
+    /**
+     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
+     */
+    private function getConvertedResourcePdfById(int $resId, string $collId = 'letterbox_coll'): ResourceConverted
+    {
+        if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
+            throw new ExceptionParameterCanNotBeEmptyAndShould('collId', "'letterbox_coll' or 'attachments_coll'");
+        }
+
+        $document = $this->resourceData->getConvertedPdfById($resId, $collId);
+
+        if (!empty($document['errors'])) {
+            throw new ExecptionConvertedResult('Conversion error', $document['errors']);
+        }
+
+        return new ResourceConverted(
+            $document['id'] ?? 0,
+            $resId,
+            '',
+            0,
+            $document['docserver_id'],
+            $document['path'],
+            $document['filename'],
+            $document['fingerprint']
         );
     }
 }

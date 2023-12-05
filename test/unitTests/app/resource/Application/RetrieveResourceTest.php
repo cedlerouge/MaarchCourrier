@@ -127,4 +127,45 @@ class RetrieveResourceTest extends TestCase
         // Act
         $this->retrieveResource->getResourceFile(1);
     }
+
+    /**
+     * @return void
+     */
+    public function testGetResourceFileWithoutWatermarkBecauseAppliedWatermarkFailed(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = false;
+        $this->resourceFileMock->doesWatermarkInResourceFileContentFail = true;
+
+        // Act
+        $result = $this->retrieveResource->getResourceFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getOriginalFormat());
+        $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainResourceFileContent);
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetResourceFileWithWatermarkApplied(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = false;
+
+        // Act
+        $result = $this->retrieveResource->getResourceFile(1);
+
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getOriginalFormat());
+        $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainWatermarkInResourceFileContent);
+    }
 }

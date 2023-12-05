@@ -90,25 +90,11 @@ class ResourceData implements ResourceDataInterface
         );
     }
 
-    /**
-     * Update resource fingerprint
-     * 
-     * @param   int     $resId
-     * @param   string  $fingerprint
-     * 
-     * @return  void
-     */
     public function updateFingerprint(int $resId, string $fingerprint): void
     {
         ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$resId]]);
     }
 
-    /**
-     * @param   string  $name
-     * @param   int     $maxLength  Default value is 250 length
-     * 
-     * @return  string
-     */
     public function formatFilename(string $name, int $maxLength = 250): string
     {
         return TextFormatModel::formatFilename(['filename' => $name, 'maxLength' => 250]);
@@ -119,35 +105,10 @@ class ResourceData implements ResourceDataInterface
      * 
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
      */
-    public function getConvertedPdfById(int $resId, string $collId): ResourceConverted
+    public function getConvertedPdfById(int $resId, string $collId): array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('collId', "'letterbox_coll' or 'attachments_coll'");
-        }
-
-        $convertedDocument = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
-        if (!empty($convertedDocument['errors'])) {
-            throw new ExecptionConvertedResult('Conversion error', $convertedDocument['errors']);
-        }
-
-        return new ResourceConverted(
-            $convertedDocument['id'],
-            $resId,
-            '',
-            0,
-            $convertedDocument['docserver_id'],
-            $convertedDocument['path'],
-            $convertedDocument['filename'],
-            $convertedDocument['fingerprint']
-        );
+        return ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
     }
 
     /**

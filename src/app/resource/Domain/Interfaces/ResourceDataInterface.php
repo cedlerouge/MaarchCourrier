@@ -42,12 +42,8 @@ interface ResourceDataInterface
      * 
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
-     * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
      */
-    public function getConvertedPdfById(int $resId, string $collId): ResourceConverted;
+    public function getConvertedPdfById(int $resId, string $collId): array;
 
     /**
      * @param   int     $resId      Resource id
