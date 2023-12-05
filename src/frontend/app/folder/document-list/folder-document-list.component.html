@@ -95,7 +95,7 @@
                                 [class.selected-data]="row.checked">
                                 <div class="main-info">
                                     <span style="width:50px;">
-                                        <mat-checkbox color="primary" [checked]="row.checked"
+                                        <mat-checkbox name="toggleRes" color="primary" [checked]="row.checked"
                                             (change)="toggleRes($event,row)" (click)="$event.stopPropagation();">
                                         </mat-checkbox>
                                     </span>
