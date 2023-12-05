@@ -9,6 +9,8 @@
 
 namespace MaarchCourrier\Tests\app\resource;
 
+use Group\models\GroupModel;
+use Group\models\PrivilegeModel;
 use MaarchCourrier\Tests\CourrierTestCase;
 use Resource\controllers\ExportController;
 use Resource\controllers\ResController;
@@ -19,6 +21,9 @@ use User\models\UserModel;
 class ExportControllerTest extends CourrierTestCase
 {
     private static array $resourcesToRemove = [];
+    private  static array $group = [];
+    private static string $privilegeId = 'include_folders_and_followed_resources_perimeter';
+
 
     private function createResource(): int
     {
@@ -62,6 +67,9 @@ class ExportControllerTest extends CourrierTestCase
                 'where' => ['res_id = ?'],
                 'data'  => [$resId]
             ]);
+        }
+        if (!empty(self::$group)) {
+            PrivilegeModel::addPrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
         }
     }
 
@@ -289,18 +297,19 @@ class ExportControllerTest extends CourrierTestCase
     }
 
 
-    public function testTheDocumentIsOutOfPerimeterDuringExport(): void
+    public function testTheDocumentIsOutOfPerimeterDuringExportButTheStatusCanBeRead(): void
     {
         // Arrange
         $this->connectAsUser('cchaplin');
 
         $resId = $this->createResource();
 
-        $this->connectAsUser('jjane');
+        $this->connectAsUser('bboule');
 
-        $ExportController = new ExportController();
+        $exportController = new ExportController();
         //  PUT
         $args = [
+            "id" => 4,
             "resources" => [$resId],
             "delimiter" => ';',
             "format"    => 'csv',
@@ -394,57 +403,295 @@ class ExportControllerTest extends CourrierTestCase
                     "value" => "getAcknowledgementSendDate",
                     "label" => "Date d'accusé de réception",
                     "isFunction" => true
-                ],
+                ]
+            ]
+        ];
+        self::$group = GroupModel::getById(['id' => $args['id']]);
+        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
+
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+
+        $response = $exportController->updateExport($fullRequest, new Response());
+        $csvValues = $this->getCsvFromResponse($response);
+        $status = $csvValues['Status'];
+        $ValueCheck = 'Nouveau courrier pour le service';
+
+        $this->assertStringContainsString($ValueCheck, $status, 'Le courrier est hors périmètre mais il est possible de lire le statut');
+    }
+
+    public function testTheDocumentIsOutOfPerimeterDuringExportAndOutOfScopeIsDisplayedOnUnavailableFields(): void
+    {
+        // Arrange
+        $this->connectAsUser('cchaplin');
+
+        $resId = $this->createResource();
+
+        $this->connectAsUser('jjane');
+
+        $exportController = new ExportController();
+        //  PUT
+        $args = [
+            "id" => 4,
+            "resources" => [$resId],
+            "delimiter" => ';',
+            "format"    => 'csv',
+            "data" => [
                 [
-                    "value" => "getParentFolder",
-                    "label" => "Dossiers parent",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getFolder",
-                    "label" => "Dossiers",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "doc_date",
-                    "label" => "Date du courrier",
+                    "value" => "subject",
+                    "label" => "Sujet",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "custom_4",
-                    "label" => "Champ personnalisé",
+                    "value" => "getStatus",
+                    "label" => "Status",
                     "isFunction" => true
                 ],
+                [
+                    "value" => "getPriority",
+                    "label" => "Priorité",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDetailLink",
+                    "label" => "Lien page détaillée",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getInitiatorEntity",
+                    "label" => "Entité initiatrice",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDestinationEntity",
+                    "label" => "Entité traitante",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDestinationEntityType",
+                    "label" => "Entité traitante",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getCategory",
+                    "label" => "Catégorie",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getCopies",
+                    "label" => "Utilisateurs en copie",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSenders",
+                    "label" => "Expéditeurs",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getRecipients",
+                    "label" => "Destinataires",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getTypist",
+                    "label" => "Créateurs",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getAssignee",
+                    "label" => "Attributaire",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getTags",
+                    "label" => "Mots-clés",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSignatories",
+                    "label" => "Signataires",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSignatureDates",
+                    "label" => "Date de signature",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDepartment",
+                    "label" => "Département de l'expéditeur",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getAcknowledgementSendDate",
+                    "label" => "Date d'accusé de réception",
+                    "isFunction" => true
+                ]
+            ]
+        ];
+        self::$group = GroupModel::getById(['id' => $args['id']]);
+        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
+
+
+        $fullRequest = $this->createRequestWithBody('PUT', $args);
+
+        $response = $exportController->updateExport($fullRequest, new Response());
+        $csvValues = $this->getCsvFromResponse($response);
+        $priority = $csvValues['Priorité'];
+        $ValueCheck = 'Hors périmètre';
+
+        $this->assertStringContainsString($ValueCheck, $priority, 'Le courrier est hors périmètre donc \'Hors périmètre\' apparaît sur les champs non disponible à l\'export.');
+    }
+
+
+    public function testTheDocumentIsOutOfPerimeterDuringExportButTheUserHaveTheRightToSeeTheDocument(): void
+    {
+        // Arrange
+        $this->connectAsUser('cchaplin');
+
+        $resId = $this->createResource();
+
+        $this->connectAsUser('jjane');
+
+        $exportController = new ExportController();
+        //  PUT
+        $args = [
+            "id" => 4,
+            "resources" => [$resId],
+            "delimiter" => ';',
+            "format"    => 'csv',
+            "data" => [
+                [
+                    "value" => "subject",
+                    "label" => "Sujet",
+                    "isFunction" => false
+                ],
+                [
+                    "value" => "getStatus",
+                    "label" => "Status",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getPriority",
+                    "label" => "Priorité",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDetailLink",
+                    "label" => "Lien page détaillée",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getInitiatorEntity",
+                    "label" => "Entité initiatrice",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDestinationEntity",
+                    "label" => "Entité traitante",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDestinationEntityType",
+                    "label" => "Entité traitante",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getCategory",
+                    "label" => "Catégorie",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getCopies",
+                    "label" => "Utilisateurs en copie",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSenders",
+                    "label" => "Expéditeurs",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getRecipients",
+                    "label" => "Destinataires",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getTypist",
+                    "label" => "Créateurs",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getAssignee",
+                    "label" => "Attributaire",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getTags",
+                    "label" => "Mots-clés",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSignatories",
+                    "label" => "Signataires",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getSignatureDates",
+                    "label" => "Date de signature",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getDepartment",
+                    "label" => "Département de l'expéditeur",
+                    "isFunction" => true
+                ],
+                [
+                    "value" => "getAcknowledgementSendDate",
+                    "label" => "Date d'accusé de réception",
+                    "isFunction" => true
+                ]
             ]
         ];
 
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $ExportController->updateExport($fullRequest, new Response());
+        $response = $exportController->updateExport($fullRequest, new Response());
+        $csvValues = $this->getCsvFromResponse($response);
+        $priority = $csvValues['Priorité'];
+        $ValueCheck = 'Normal';
+
+        $this->assertStringContainsString($ValueCheck, $priority, 'Le courrier est hors périmètre mais l\'utilisateur à le droit de voir les documents hors de son périmètre');
+    }
+
+
+    private function getCsvFromResponse(Response $response): array
+    {
         $responseBody = $response->getBody();
         $responseBody->rewind();
         $stream = $responseBody->detach();
-        $contents = stream_get_contents($stream);
-        $csvContents = array_map('str_getcsv', (array)$contents);
 
-        $csvValues = [];
-        foreach ($csvContents as $content) {
-            foreach ($content as $value) {
-                $cell = utf8_encode($value);
-                $csvValues[] = explode(';', $cell);
-            }
+        $csvHeader = fgetcsv($stream, 0, ';');
+
+        $csvHeader = $this->encodeUtf8Csv($csvHeader);
+        $csv = fgetcsv($stream, 0, ';');
+        $csv = $this->encodeUtf8Csv($csv);
+        $line = [];
+        foreach ($csvHeader as $key => $value) {
+            $line[$value] = $csv[$key];
         }
 
-        $OutsideThePerimeter = false;
-        foreach ($csvValues as $row) {
-            if (in_array('"Hors périmètre"', $row)) {
-                $OutsideThePerimeter = true;
-                break;
-            }
-        }
+        return $line;
+    }
 
-        $this->assertTrue($OutsideThePerimeter);
-
+    private function encodeUtf8Csv(array $ToEncode): array
+    {
+        return array_map
+        (
+            function ($ToEncode){
+                return mb_convert_encoding($ToEncode, "UTF-8","ISO-8859-1");
+            },
+            $ToEncode
+        );
     }
 
 }
