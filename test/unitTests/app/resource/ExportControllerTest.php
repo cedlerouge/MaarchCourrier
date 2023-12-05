@@ -9,6 +9,7 @@
 
 namespace MaarchCourrier\Tests\app\resource;
 
+use Folder\models\ResourceFolderModel;
 use Group\models\GroupModel;
 use Group\models\PrivilegeModel;
 use MaarchCourrier\Tests\CourrierTestCase;
@@ -25,51 +26,19 @@ class ExportControllerTest extends CourrierTestCase
     private static string $privilegeId = 'include_folders_and_followed_resources_perimeter';
 
 
-    private function createResource(): int
-    {
-        $resController = new ResController();
-
-        $fileContent = file_get_contents('test/unitTests/samples/test.txt');
-        $encodedFile = base64_encode($fileContent);
-
-        $body = [
-            'modelId'          => 2,
-            'status'           => 'NEW',
-            'encodedFile'      => $encodedFile,
-            'format'           => 'txt',
-            'confidentiality'  => false,
-            'documentDate'     => '2019-01-01 17:18:47',
-            'arrivalDate'      => '2019-01-01 17:18:47',
-            'processLimitDate' => '2029-01-01',
-            'doctype'          => 102,
-            'destination'      => 15,
-            'initiator'        => 15,
-            'subject'          => 'Breaking News : Superman is alive - PHP unit',
-            'typist'           => 19,
-            'priority'         => 'poiuytre1357nbvc',
-            'folders'          => [1, 16],
-        ];
-        $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $resController->create($fullRequest, new Response());
-        $responseBody = json_decode((string)$response->getBody());
-        $resId = $responseBody->resId;
-
-        self::$resourcesToRemove[] = $resId;
-
-        return $resId;
-    }
-
     protected function tearDown(): void
     {
         foreach (self::$resourcesToRemove as $resId) {
-            // delete link folder
             ResModel::delete([
                 'where' => ['res_id = ?'],
                 'data'  => [$resId]
             ]);
+            ResourceFolderModel::delete(['where' => ['id in (?)'], 'data' => [$resId]]);
+
         }
         if (!empty(self::$group)) {
             PrivilegeModel::addPrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
+            self::$group = [];
         }
     }
 
@@ -406,8 +375,7 @@ class ExportControllerTest extends CourrierTestCase
                 ]
             ]
         ];
-        self::$group = GroupModel::getById(['id' => $args['id']]);
-        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
+        $this->removePrivilegesGroups($args['id'], self::$privilegeId);
 
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -528,9 +496,7 @@ class ExportControllerTest extends CourrierTestCase
                 ]
             ]
         ];
-        self::$group = GroupModel::getById(['id' => $args['id']]);
-        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => self::$privilegeId, 'groupId' => self::$group['group_id']]);
-
+        $this->removePrivilegesGroups($args['id'], self::$privilegeId);
 
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -663,6 +629,41 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertStringContainsString($ValueCheck, $priority, 'Le courrier est hors périmètre mais l\'utilisateur à le droit de voir les documents hors de son périmètre');
     }
 
+    // Function
+
+    private function createResource(): int
+    {
+        $resController = new ResController();
+
+        $fileContent = file_get_contents('test/unitTests/samples/test.txt');
+        $encodedFile = base64_encode($fileContent);
+
+        $body = [
+            'modelId'          => 2,
+            'status'           => 'NEW',
+            'encodedFile'      => $encodedFile,
+            'format'           => 'txt',
+            'confidentiality'  => false,
+            'documentDate'     => '2019-01-01 17:18:47',
+            'arrivalDate'      => '2019-01-01 17:18:47',
+            'processLimitDate' => '2029-01-01',
+            'doctype'          => 102,
+            'destination'      => 15,
+            'initiator'        => 15,
+            'subject'          => 'Breaking News : Superman is alive - PHP unit',
+            'typist'           => 19,
+            'priority'         => 'poiuytre1357nbvc',
+            'folders'          => [1, 16],
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response     = $resController->create($fullRequest, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+        $resId = $responseBody->resId;
+
+        self::$resourcesToRemove[] = $resId;
+
+        return $resId;
+    }
 
     private function getCsvFromResponse(Response $response): array
     {
@@ -692,6 +693,12 @@ class ExportControllerTest extends CourrierTestCase
             },
             $ToEncode
         );
+    }
+
+    private function removePrivilegesGroups(int $id, string $privilegeId): void
+    {
+        self::$group = GroupModel::getById(['id' => $id]);
+        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => $privilegeId, 'groupId' => self::$group['group_id']]);
     }
 
 }
