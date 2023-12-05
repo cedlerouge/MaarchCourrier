@@ -1,6 +1,6 @@
 <div class="mat-dialog-content-container">
-    <h1 mat-dialog-title style="padding-left: 0px; padding-right: 0px">
-        {{data.action.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
+    <h1 mat-dialog-title class="externalSignatoryBookTitle">
+        {{data.action?.label}} &nbsp; <div *ngIf="authService.externalSignatoryBook !== null" class="badge" [title]="'lang.enabledSignatoryBook' | translate">
             {{getTitle()}}
          </div>
     </h1>
@@ -8,8 +8,8 @@
         <div *ngIf="loading" class="loading" style="display:flex;height:100%;">
             <mat-spinner style="margin:auto;"></mat-spinner>
         </div>
-        <mat-sidenav-container *ngIf="authService.externalSignatoryBook !== null" autosize style="height:100%;">
-            <mat-sidenav-content style="background: white;">
+        <mat-sidenav-container *ngIf="!functions.empty(authService.externalSignatoryBook)" autosize style="height:100%;">
+            <mat-sidenav-content style="background: white;" [ngStyle]="{'width': data.resIds.length === 1 ? '580px' : ''}">
                 <div class="row" style="margin: 0;">
                     <div class="col-md-12">
                         {{'lang.makeActionOn' | translate}}
@@ -20,7 +20,15 @@
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
                     </div>
-                    <div *ngIf="data.resIds.length > 0" style="padding:10px;display: flex;flex-direction: column;">
+                    <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
+                        <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
+                            mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
+                            (click)="onSidenavStateChanged()">
+                            <mat-icon fontSet="fas"
+                                [matBadge]="getIntegratedAttachments()"
+                                fontIcon="fa-paperclip fa-2x">
+                            </mat-icon>
+                        </button>
                         <mat-checkbox color="primary" *ngFor="let inteKey of integrationsInfo | keyvalue"
                             (click)="toggleIntegration(inteKey.key)"
                             [checked]="data.resource.integrations[inteKey.key]">{{'lang.' + inteKey.key + '_doc' | translate}}
@@ -87,6 +95,20 @@
                     </ng-container>
                 </div>
             </mat-sidenav-content>
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="appService.getViewMode() ? 'over' : 'side'"
+                [opened]="true"
+                [ngStyle]="{'width': '600px'}"
+                style="overflow-x:hidden;">
+                <app-attachments-list #attachmentsList
+                    [isModal]="true"
+                    [resId]="data.resIds[0]"
+                    (afterActionAttachment)="afterAttachmentToggle()">
+                </app-attachments-list>
+            </mat-sidenav>
         </mat-sidenav-container>
     </div>
     <span class="divider-modal"></span>

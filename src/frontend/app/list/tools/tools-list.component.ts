@@ -35,18 +35,21 @@ export class ToolsListComponent implements OnInit {
 
     toolsListButtons: any[] = [
         {
+            id: 'summarySheets',
             label: this.translate.instant('lang.summarySheets'),
             icon: 'fas fa-scroll',
             allowedSources: ['basket', 'search'],
             click: () => this.openSummarySheet(),
         },
         {
+            id: 'exportDatas',
             label: this.translate.instant('lang.exportDatas'),
             icon: 'fa fa-file-download',
             allowedSources: ['basket', 'search', 'folder'],
             click: () => this.openExport()
         },
         {
+            id: 'printedFolder',
             label: this.translate.instant('lang.printedFolder'),
             icon: 'fa fa-print',
             allowedSources: ['basket', 'search'],

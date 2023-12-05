@@ -21,8 +21,6 @@ export class IxbusParaphComponent implements OnInit {
 
     loading: boolean = true;
 
-    currentAccount: any = null;
-    usersWorkflowList: any[] = [];
     natures: any[] = [];
     messagesModel: any[] = [];
     users: any[] = [];
@@ -30,7 +28,7 @@ export class IxbusParaphComponent implements OnInit {
         nature: '',
         messageModel: '',
         userId: '',
-        signatureMode: 'manual'
+        signatureMode: 'electronic'
     };
 
     injectDatasParam = {

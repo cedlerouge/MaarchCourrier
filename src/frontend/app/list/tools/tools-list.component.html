@@ -1,5 +1,6 @@
 <ng-container *ngFor="let button of toolsListButtons">
     <button *ngIf="button.allowedSources.includes(from)" mat-mini-fab
+        [id]="button.id"
         [disabled]="selectedRes.length === 0"
         [title]="button.label"
         (click)="button.click()">

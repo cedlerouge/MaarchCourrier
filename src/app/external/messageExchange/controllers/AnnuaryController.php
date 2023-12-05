@@ -1,24 +1,24 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Annuary Controller
-* @author dev@maarch.org
-*/
+ * @brief Annuary Controller
+ * @author dev@maarch.org
+ */
 
 namespace MessageExchange\controllers;
 
 use Entity\models\EntityModel;
 use Group\controllers\PrivilegeController;
 use Parameter\models\ParameterModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 
 class AnnuaryController
@@ -128,7 +128,7 @@ class AnnuaryController
         return $response->withJson(['entitySiret' => $entitySiret, 'synchronized' => !empty($authenticated)]);
     }
 
-    public static function deleteEntityToOrganization(array $args)
+    public static function deleteEntityToOrganization(array $args): array
     {
         $control = AnnuaryController::getAnnuaries();
         if (!isset($control['annuaries'])) {
@@ -170,7 +170,7 @@ class AnnuaryController
         return ['deleted' => !empty($deleted)];
     }
 
-    public static function getAnnuaries()
+    public static function getAnnuaries(): array
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/m2m_config.xml']);
 
@@ -189,11 +189,11 @@ class AnnuaryController
             $uri = ((string)$annuary->ssl === 'true' ? "LDAPS://{$annuary->uri}" : (string)$annuary->uri);
 
             $annuaries[] = [
-                'uri'       => $uri,
-                'baseDN'    => (string)$annuary->baseDN,
-                'login'     => (string)$annuary->login,
-                'password'  => (string)$annuary->password,
-                'ssl'       => (string)$annuary->ssl,
+                'uri'      => $uri,
+                'baseDN'   => (string)$annuary->baseDN,
+                'login'    => (string)$annuary->login,
+                'password' => (string)$annuary->password,
+                'ssl'      => (string)$annuary->ssl,
             ];
         }
 
@@ -217,22 +217,22 @@ class AnnuaryController
         return ['annuaries' => $annuaries, 'organization' => $organization, 'communicationMeans' => $communicationMeans];
     }
 
-    public static function addContact(array $args)
+    public static function addContact(array $args): array
     {
         $control = AnnuaryController::getAnnuaries();
         if (empty($control['annuaries'])) {
             return ['errors' => _M2M_ANNUARY_IS_NOT_SET];
         }
 
-        $annuaries          = $control['annuaries'];
-        $organization       = $args['ouName'];
+        $annuaries = $control['annuaries'];
+        $organization = $args['ouName'];
         $communicationMeans = $args['communicationValue'];
-        $serviceName        = $args['serviceName'];
+        $serviceName = $args['serviceName'];
 
-        $m2mId              = $args['m2mId'];
-        $businessId         = explode("/", $m2mId);
-        $siret              = $businessId[0];
-        $entityId           = $businessId[1];
+        $m2mId = $args['m2mId'];
+        $businessId = explode("/", $m2mId);
+        $siret = $businessId[0];
+        $entityId = $businessId[1];
 
         foreach ($annuaries as $annuary) {
             $ldap = @ldap_connect($annuary['uri']);
@@ -248,13 +248,13 @@ class AnnuaryController
                 return ['errors' => _M2M_LDAP_AUTHENTICATION_FAILED . ' : ' . ldap_error($ldap)];
             }
 
-            $search  = @ldap_search($ldap, "{$annuary['baseDN']}", "(destinationIndicator={$siret})", ['ou']);
+            $search = @ldap_search($ldap, "{$annuary['baseDN']}", "(destinationIndicator={$siret})", ['ou']);
             $entries = ldap_get_entries($ldap, $search);
 
             if ($entries['count'] > 0) {
                 $organization = $entries[0]['ou'][0];
-                $search       = @ldap_search($ldap, "ou={$entries[0]['ou'][0]},{$annuary['baseDN']}", "(initials={$entityId})", ['ou', 'entryUUID']);
-                $entries      = ldap_get_entries($ldap, $search);
+                $search = @ldap_search($ldap, "ou={$entries[0]['ou'][0]},{$annuary['baseDN']}", "(initials={$entityId})", ['ou', 'entryUUID']);
+                $entries = ldap_get_entries($ldap, $search);
                 if ($entries['count'] > 0) {
                     return ['entryUUID' => $entries[0]['entryuuid'][0]];
                 }
@@ -286,7 +286,7 @@ class AnnuaryController
                 return ['errors' => _M2M_LDAP_ADD_FAILED . ' : ' . ldap_error($ldap)];
             }
 
-            $search  = @ldap_search($ldap, "ou={$organization},{$annuary['baseDN']}", "(initials={$entityId})", ['entryUUID']);
+            $search = @ldap_search($ldap, "ou={$organization},{$annuary['baseDN']}", "(initials={$entityId})", ['entryUUID']);
             $entries = ldap_get_entries($ldap, $search);
             return ['entryUUID' => $entries[0]['entryuuid'][0]];
         }
@@ -294,7 +294,7 @@ class AnnuaryController
         return ['errors' => _NO_M2M_ANNUARY_AVAILABLE];
     }
 
-    public static function isSiretNumber(array $args)
+    public static function isSiretNumber(array $args): bool
     {
         if (strlen($args['siret']) != 14) {
             return false;
@@ -309,8 +309,8 @@ class AnnuaryController
         // on ajoute cette valeur à la somme totale
 
         $sum = 0;
-        for ($index = 0; $index < 14; $index ++) {
-            $number = (int) $args['siret'][$index];
+        for ($index = 0; $index < 14; $index++) {
+            $number = (int)$args['siret'][$index];
             if (($index % 2) == 0) {
                 if (($number *= 2) > 9) {
                     $number -= 9;
@@ -327,7 +327,7 @@ class AnnuaryController
         }
     }
 
-    public static function getByUui(array $args)
+    public static function getByUui(array $args): array
     {
         $control = AnnuaryController::getAnnuaries();
         if (!isset($control['annuaries'])) {
@@ -351,11 +351,11 @@ class AnnuaryController
             $entries = ldap_get_entries($ldap, $search);
             if ($entries['count'] > 0) {
                 $departmentDestinationIndicator = $entries[0]['initials'][0];
-                $entryDn  = $entries[0]['entrydn'][0];
-                $pathDn   = explode(',', $entryDn);
+                $entryDn = $entries[0]['entrydn'][0];
+                $pathDn = explode(',', $entryDn);
                 $parentOu = $pathDn[1];
-                $search   = @ldap_search($ldap, "{$annuary['baseDN']}", "({$parentOu})", ['dn', 'destinationIndicator', 'postOfficeBox', 'labeledURI']);
-                $entries  = ldap_get_entries($ldap, $search);
+                $search = @ldap_search($ldap, "{$annuary['baseDN']}", "({$parentOu})", ['dn', 'destinationIndicator', 'postOfficeBox', 'labeledURI']);
+                $entries = ldap_get_entries($ldap, $search);
 
                 return ['mail' => $entries[0]['postofficebox'][0], 'url' => $entries[0]['labeleduri'][0], 'businessId' => $entries[0]['destinationindicator'][0] . '/' . $departmentDestinationIndicator];
             }
