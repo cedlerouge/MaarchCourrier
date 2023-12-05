@@ -14,25 +14,20 @@
 
 namespace Resource\Infrastructure;
 
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
-use Resource\Domain\Interfaces\ResourceLogInterface;
+use Resource\Domain\Ports\ResourceLogInterface;
 use SrcCore\controllers\LogsController;
 
 class ResourceLog implements ResourceLogInterface
 {
     /**
-     * @param   string  $logLevel
-     * @param   int     $recordId
-     * @param   string  $message
-     * 
+     * @param string $logLevel
+     * @param int $recordId
+     * @param string $message
+     *
      * @return  void
      */
     public function logThumbnailEvent(string $logLevel, int $recordId, string $message): void
     {
-        if (empty($logLevel)) {
-            throw new ExceptionParameterCanNotBeEmpty('logLevel');
-        }
-
         LogsController::add([
             'isTech'    => true,
             'moduleId'  => 'resources',

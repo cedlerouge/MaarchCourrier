@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain\Interfaces;
+namespace Resource\Domain\Ports;
 
 use Resource\Domain\Docserver;
 use Resource\Domain\Resource;
@@ -21,11 +21,6 @@ use Resource\Domain\ResourceConverted;
 interface ResourceDataInterface
 {
     public const ADR_RESOURCE_TYPES = ['PDF', 'TNL', 'SIGN', 'NOTE'];
-    // public const ERROR_RESOURCE_OUT_OF_PERIMETER = "Document out of perimeter";
-    // public const ERROR_RESOURCE_DOES_NOT_EXIST = 'Document does not exist';
-    // public const ERROR_RESOURCE_HAS_NO_FILE = 'Document has no file';
-    // public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
-    // public const ERROR_RESOURCE_INCORRECT_VERSION = 'Incorrect version';
 
     public function getMainResourceData(int $resId): ?Resource;
 
@@ -39,7 +34,7 @@ interface ResourceDataInterface
 
     /**
      * Return the converted pdf from resource
-     * 
+     *
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
      */
@@ -49,7 +44,7 @@ interface ResourceDataInterface
      * @param   int     $resId      Resource id
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
-     * 
+     *
      * @return  ?array
      */
     public function getResourceVersion(int $resId, string $type, int $version): ?array;
@@ -57,17 +52,17 @@ interface ResourceDataInterface
     /**
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
-     * 
+     *
      * @return  ?ResourceConverted
      */
     public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted;
 
     /**
      * Check if user has rights over the resource
-     * 
+     *
      * @param   int     $resId      Resource id
      * @param   int     $userId     User id
-     * 
+     *
      * @return  bool
      */
     public function hasRightByResId(int $resId, int $userId): bool;

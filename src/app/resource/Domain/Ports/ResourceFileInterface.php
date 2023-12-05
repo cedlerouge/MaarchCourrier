@@ -12,24 +12,17 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain\Interfaces;
+namespace Resource\Domain\Ports;
 
 interface ResourceFileInterface
 {
-    // public const ERROR_RESOURCE_DOCSERVER_DOES_NOT_EXIST = 'Docserver does not exist';
-    // public const ERROR_RESOURCE_NOT_FOUND_IN_DOCSERVER = 'Document not found in docserver';
-    // public const ERROR_RESOURCE_FINGERPRINT_DOES_NOT_MATCH = 'Fingerprints do not match';
-    // public const ERROR_RESOURCE_FAILED_TO_GET_DOC_FROM_DOCSERVER = 'Failed to get document on docserver';
-    // public const ERROR_THUMBNAIL_NOT_FOUND_IN_DOCSERVER_OR_NOT_READABLE = 'Thumbnail not found in docserver or not readable';
-    // public const ERROR_RESOURCE_PAGE_NOT_FOUND = "Page not found in docserver";
-
     /**
      * Build file path from docserver and document paths
-     * 
+     *
      * @param   string  $docserverPath
      * @param   string  $documentPath
      * @param   string  $documentFilename
-     * 
+     *
      * @return  string  Return the build file path or empty if docserverPath does not exist or empty
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string;
@@ -64,23 +57,21 @@ interface ResourceFileInterface
 
     /**
      * Convert resource page to thumbnail.
-     * 
+     *
      * @param   int     $resId  Resource id.
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
-     * 
+     *
      * @return  string  If returned contains 'errors:' then the convertion failed
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string;
 
     /**
      * Retrieves the number of pages in a pdf file
-     * 
+     *
      * @param   string  $filePath   Resource path.
-     * 
+     *
      * @return  int     Number of pages.
-     * 
-     * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int;
 }

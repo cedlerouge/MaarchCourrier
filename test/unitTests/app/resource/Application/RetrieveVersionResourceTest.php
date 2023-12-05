@@ -12,6 +12,7 @@ namespace MaarchCourrier\Tests\app\resource\Application;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
+use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
 use Resource\Application\RetrieveVersionResource;
 use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
@@ -35,7 +36,8 @@ class RetrieveVersionResourceTest extends TestCase
 
         $this->retrieveVersionResource = new RetrieveVersionResource(
             $this->resourceDataMock,
-            $this->resourceFileMock
+            $this->resourceFileMock,
+            new RetrieveDocserverFilePathAndFingerPrint($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 
@@ -120,7 +122,7 @@ class RetrieveVersionResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceHasNoFile());
-        
+
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
@@ -135,7 +137,7 @@ class RetrieveVersionResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceDocserverDoesNotExist());
-        
+
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
@@ -150,7 +152,7 @@ class RetrieveVersionResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceNotFoundInDocserver());
-        
+
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
@@ -165,7 +167,7 @@ class RetrieveVersionResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFingerPrintDoesNotMatch());
-        
+
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }
@@ -181,7 +183,7 @@ class RetrieveVersionResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFailedToGetDocumentFromDocserver());
-        
+
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
     }

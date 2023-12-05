@@ -12,6 +12,7 @@ namespace MaarchCourrier\Tests\app\resource\Application;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
+use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
 use Resource\Application\RetrieveResource;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
@@ -33,7 +34,8 @@ class RetrieveResourceTest extends TestCase
 
         $this->retrieveResource = new RetrieveResource(
             $this->resourceDataMock,
-            $this->resourceFileMock
+            $this->resourceFileMock,
+            new RetrieveDocserverFilePathAndFingerPrint($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 
@@ -59,7 +61,7 @@ class RetrieveResourceTest extends TestCase
     {
         // Arrange
         $this->resourceDataMock->doesResourceFileExistInDatabase = false;
-        
+
         // Assert
         $this->expectExceptionObject(new ExceptionResourceHasNoFile());
 
@@ -77,7 +79,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceDocserverDoesNotExist());
-        
+
         // Act
         $this->retrieveResource->getResourceFile(1);
     }
@@ -92,7 +94,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceNotFoundInDocserver());
-        
+
         // Act
         $this->retrieveResource->getResourceFile(1);
     }
@@ -107,7 +109,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFingerPrintDoesNotMatch());
-        
+
         // Act
         $this->retrieveResource->getResourceFile(1);
     }
@@ -123,7 +125,7 @@ class RetrieveResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFailedToGetDocumentFromDocserver());
-        
+
         // Act
         $this->retrieveResource->getResourceFile(1);
     }

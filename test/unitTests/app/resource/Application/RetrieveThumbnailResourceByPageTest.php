@@ -42,7 +42,7 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
     public function testCannotGetThumbnailFileByPageBecauseResId0(): void
     {
         // Arrange
-        
+
         // Assert
         $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('resId', 0));
 
@@ -56,7 +56,7 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
     public function testCannotGetThumbnailFileByPageBecausePage0(): void
     {
         // Arrange
-        
+
         // Assert
         $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('page', 0));
 
@@ -71,10 +71,10 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
     {
         // Arrange
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
-        
+
         // Act
         $result = $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
-        
+
         // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());

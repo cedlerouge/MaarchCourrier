@@ -24,10 +24,10 @@ use Resource\Domain\Exceptions\ExceptionResourceOutOfPerimeter;
 use Resource\Domain\Exceptions\ExceptionResourcePageNotFound;
 use Resource\Domain\Exceptions\ExceptionThumbnailNotFoundInDocserverOrNotReadable;
 use Resource\Domain\Exceptions\ExeptionSetaPdfResult;
-use Resource\Domain\Interfaces\ResourceDataInterface;
+use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
-use Resource\Domain\Interfaces\ResourceFileInterface;
-use Resource\Domain\Interfaces\ResourceLogInterface;
+use Resource\Domain\Ports\ResourceFileInterface;
+use Resource\Domain\Ports\ResourceLogInterface;
 use Resource\Domain\ResourceConverted;
 
 class RetrieveThumbnailResourceByPage
@@ -48,11 +48,21 @@ class RetrieveThumbnailResourceByPage
 
     /**
      * Retrieves thumbnail of resource by page number.
-     * 
-     * @param   int $resId  The ID of the resource.
-     * @param   int $page   The ID of the resource.
-     * 
+     *
+     * @param int $resId The ID of the resource.
+     * @param int $page The ID of the resource.
+     *
      * @return  ResourceFileInfo
+     * @throws ExceptionParameterMustBeGreaterThan
+     * @throws ExceptionResourceDoesNotExist
+     * @throws ExceptionResourceOutOfPerimeter
+     * @throws ExceptionParameterCanNotBeEmptyAndShould
+     * @throws ExceptionResourceDocserverDoesNotExist
+     * @throws ExceptionConvertThumbnail
+     * @throws ExceptionThumbnailNotFoundInDocserverOrNotReadable
+     * @throws ExceptionResourcePageNotFound
+     * @throws ExceptionResourceNotFoundInDocserver
+     * @throws ExeptionSetaPdfResult
      */
     public function getThumbnailFileByPage(int $resId, int $page): ResourceFileInfo
     {
@@ -78,16 +88,9 @@ class RetrieveThumbnailResourceByPage
         }
 
         $adr = $this->getResourceVersionThumbnailByPage($resId, "TNL$page", $document->getVersion());
-        if ($adr == null) {
-            throw new ExceptionResourceDoesNotExist();
-        }
 
-        $adrDocserver = $this->resourceData->getDocserverDataByDocserverId($adr->getDocserverId());
-        if ($adrDocserver == null || !$this->resourceFile->folderExists($adrDocserver->getPathTemplate())) {
-            throw new ExceptionResourceDocserverDoesNotExist();
-        }
+        list($adrDocserver, $pathToThumbnail) = $this->buildFilePath($adr);
 
-        $pathToThumbnail = $this->resourceFile->buildFilePath($adrDocserver->getPathTemplate(), $adr->getPath(), $adr->getFilename());
         if (!$this->resourceFile->fileExists($pathToThumbnail)) {
             throw new ExceptionThumbnailNotFoundInDocserverOrNotReadable();
         }
@@ -101,16 +104,9 @@ class RetrieveThumbnailResourceByPage
 
         // Get latest pdf version before to get the page count
         $document = $this->resourceData->getLatestResourceVersion($resId, 'PDF');
-        if ($document == null) {
-            throw new ExceptionResourceDoesNotExist();
-        }
 
-        $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
-        if ($docserver == null || !$this->resourceFile->folderExists($docserver->getPathTemplate())) {
-            throw new ExceptionResourceDocserverDoesNotExist();
-        }
+        list($adrDocserver, $pathToPdfDocument) = $this->buildFilePath($document);
 
-        $pathToPdfDocument = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
         if (!$this->resourceFile->fileExists($pathToPdfDocument)) {
             throw new ExceptionResourceNotFoundInDocserver();
         }
@@ -133,6 +129,9 @@ class RetrieveThumbnailResourceByPage
         );
     }
 
+    /**
+     * @throws ExceptionParameterCanNotBeEmptyAndShould
+     */
     private function getResourceVersionThumbnailByPage(int $resId, string $type, int $version): ?ResourceConverted
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
@@ -156,5 +155,29 @@ class RetrieveThumbnailResourceByPage
             $document['filename'],
             $document['fingerprint']
         );
+    }
+
+    /**
+     * @param ResourceConverted|null $resourceConverted
+     *
+     * @return array
+     *
+     * @throws ExceptionResourceDocserverDoesNotExist
+     * @throws ExceptionResourceDoesNotExist
+     */
+    private function buildFilePath(?ResourceConverted $resourceConverted): array
+    {
+        if ($resourceConverted == null) {
+            throw new ExceptionResourceDoesNotExist();
+        }
+
+        $adrDocserver = $this->resourceData->getDocserverDataByDocserverId($resourceConverted->getDocserverId());
+        if ($adrDocserver == null || !$this->resourceFile->folderExists($adrDocserver->getPathTemplate())) {
+            throw new ExceptionResourceDocserverDoesNotExist();
+        }
+
+        $pathToThumbnail = $this->resourceFile->buildFilePath($adrDocserver->getPathTemplate(), $resourceConverted->getPath(), $resourceConverted->getFilename());
+
+        return array($adrDocserver, $pathToThumbnail);
     }
 }

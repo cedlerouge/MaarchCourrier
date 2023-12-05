@@ -538,7 +538,7 @@ class ResController extends ResourceControlController
         try {
             $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
         } catch (\Throwable $th) {
-            return $response->withStatus($th->getCode() ?? 400)->withJson(['errors' => $th->getMessage()]);
+            return $response->withStatus($th->getCode() ?? 500)->withJson(['errors' => $th->getMessage()]);
         }
 
         $creatorId      = $mainFile->getCreatorId();
@@ -640,7 +640,7 @@ class ResController extends ResourceControlController
         if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
-        
+
         $queryParams = $request->getQueryParams();
 
         $type = 'PDF';
@@ -657,7 +657,7 @@ class ResController extends ResourceControlController
         try {
             $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
         } catch (\Throwable $th) {
-            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
+            return $response->withStatus($th->getCode() ?? 500)->withJson(['errors' => $th->getMessage()]);
         }
 
         $formatFilename = $resourceVersionFile->getFormatFilename();
@@ -692,7 +692,7 @@ class ResController extends ResourceControlController
         try {
             $originalMainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $signedVersion);
         } catch (\Throwable $th) {
-            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
+            return $response->withStatus($th->getCode() ?? 500)->withJson(['errors' => $th->getMessage()]);
         }
 
         $formatFilename = $originalMainFile->getFormatFilename();
@@ -735,7 +735,7 @@ class ResController extends ResourceControlController
         try {
             $thumbnailFile = $retrieveResourceFactory->getThumbnailFile($args['resId']);
         } catch (\Throwable $th) {
-            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
+            return $response->withStatus($th->getCode() ?? 500)->withJson(['errors' => $th->getMessage()]);
         }
 
         $formatFilename = $thumbnailFile->getFormatFilename();
@@ -768,8 +768,7 @@ class ResController extends ResourceControlController
         try {
             $thumbnailFileByPage = $retrieveResourceFactory->getThumbnailFileByPage($args['resId'], $args['page']);
         } catch (\Throwable $th) {
-            var_dump($th);
-            return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
+            return $response->withStatus($th->getCode() ?? 500)->withJson(['errors' => $th->getMessage()]);
         }
 
         $base64Content  = base64_encode($thumbnailFileByPage->getFileContent());

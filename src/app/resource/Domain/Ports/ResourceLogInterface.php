@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain\Interfaces;
+namespace Resource\Domain\Ports;
 
 interface ResourceLogInterface
 {
@@ -20,10 +20,8 @@ interface ResourceLogInterface
      * @param   string  $logLevel
      * @param   int     $recordId
      * @param   string  $message
-     * 
+     *
      * @return  void
-     * 
-     * @throws  ExceptionParameterCanNotBeEmpty
      */
     public function logThumbnailEvent(string $logLevel, int $recordId, string $message): void;
 }

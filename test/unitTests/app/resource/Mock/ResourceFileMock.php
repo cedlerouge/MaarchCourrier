@@ -15,7 +15,7 @@ use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
 use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Interfaces\ResourceFileInterface;
+use Resource\Domain\Ports\ResourceFileInterface;
 
 class ResourceFileMock implements ResourceFileInterface
 {
@@ -44,11 +44,11 @@ class ResourceFileMock implements ResourceFileInterface
 
     /**
      * Build file path from docserver and document paths
-     * 
+     *
      * @param   string  $docserverPath
      * @param   string  $documentPath
      * @param   string  $documentFilename
-     * 
+     *
      * @return  string  Return the build file path or empty if docserverPath does not exist or empty
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
@@ -147,11 +147,11 @@ class ResourceFileMock implements ResourceFileInterface
 
     /**
      * Convert resource page to thumbnail.
-     * 
+     *
      * @param   int     $resId  Resource id.
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
-     * 
+     *
      * @return  string   If returned contains 'errors:' then the convertion failed
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
@@ -161,11 +161,11 @@ class ResourceFileMock implements ResourceFileInterface
 
     /**
      * Retrieves the number of pages in a pdf file
-     * 
+     *
      * @param   string  $filePath   Resource path.
-     * 
+     *
      * @return  int     Number of pages.
-     * 
+     *
      * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int

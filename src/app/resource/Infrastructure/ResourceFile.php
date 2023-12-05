@@ -15,16 +15,11 @@
 namespace Resource\Infrastructure;
 
 use Convert\controllers\ConvertThumbnailController;
-use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
-use Resource\Domain\Interfaces\ResourceFileInterface;
+use Exception;
+use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\controllers\StoreController;
 use Resource\controllers\WatermarkController;
-use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use setasign\Fpdi\Fpdi;
 use SrcCore\controllers\PasswordController;
 use SrcCore\models\CoreConfigModel;
@@ -33,11 +28,11 @@ class ResourceFile implements ResourceFileInterface
 {
     /**
      * Build file path from docserver and document paths
-     * 
+     *
      * @param   string  $docserverPath
      * @param   string  $documentPath
      * @param   string  $documentFilename
-     * 
+     *
      * @return  string  Return the build file path or empty if docserverPath does not exist or empty
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
@@ -131,11 +126,11 @@ class ResourceFile implements ResourceFileInterface
 
     /**
      * Convert resource page to thumbnail.
-     * 
+     *
      * @param   int     $resId  Resource id.
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
-     * 
+     *
      * @return  string   If returned contains 'errors:' then the convertion failed
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
@@ -145,7 +140,6 @@ class ResourceFile implements ResourceFileInterface
         try {
             $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
         } catch (\Throwable $th) {
-            throw new ExceptionConvertThumbnail($th->getMessage());
             return "errors: " . $th->getMessage();
         }
 
@@ -158,33 +152,35 @@ class ResourceFile implements ResourceFileInterface
 
     /**
      * Retrieves the number of pages in a pdf file
-     * 
+     *
      * @param   string  $filePath   Resource path.
-     * 
+     *
      * @return  int     Number of pages.
-     * 
-     * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int
     {
         $pageCount = 0;
-        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
 
-        if (!empty($libPath)) {
-            require_once($libPath);
+        try {
+            $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
 
-            $document = \SetaPDF_Core_Document::loadByFilename($filePath);
-            $pages = $document->getCatalog()->getPages();
-            $pageCount = count($pages);
-        } else {
-            $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
-            if (file_exists($libPath)) {
+            if (!empty($libPath)) {
                 require_once($libPath);
-            }
-            $pdf = new Fpdi('P', 'pt');
-            $pageCount = $pdf->setSourceFile($filePath);
-        }
 
+                $document = \SetaPDF_Core_Document::loadByFilename($filePath);
+                $pages = $document->getCatalog()->getPages();
+                $pageCount = count($pages);
+            } else {
+                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
+                if (file_exists($libPath)) {
+                    require_once($libPath);
+                }
+                $pdf = new Fpdi('P', 'pt');
+                $pageCount = $pdf->setSourceFile($filePath);
+            }
+        } catch (Exception $e) {
+            $pageCount = 0;
+        }
         return $pageCount;
     }
 }

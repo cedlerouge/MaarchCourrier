@@ -14,6 +14,7 @@
 
 namespace Resource\Application;
 
+use Exception;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
@@ -21,32 +22,40 @@ use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
-use Resource\Domain\Interfaces\ResourceDataInterface;
+use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
-use Resource\Domain\Interfaces\ResourceFileInterface;
+use Resource\Domain\Ports\ResourceFileInterface;
 
 class RetrieveOriginalResource
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
+    private RetrieveDocserverFilePathAndFingerPrint $retrieveResourceDocserverFilePathFingerPrint;
 
     public function __construct (
         ResourceDataInterface $resourceDataInterface,
-        ResourceFileInterface $resourceFileInterface
+        ResourceFileInterface $resourceFileInterface,
+        RetrieveDocserverFilePathAndFingerPrint $retrieveResourceDocserverFilePathFingerPrint
     ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
+        $this->retrieveResourceDocserverFilePathFingerPrint = $retrieveResourceDocserverFilePathFingerPrint;
     }
 
     /**
      * Retrieves the resource file info.
      *
-     * @param   int  $resId             The ID of the resource.
-     * @param   bool $isSignedVersion   (Optional) Whether to retrieve the signed version. Default is false.
+     * @param int $resId The ID of the resource.
+     * @param bool $isSignedVersion (Optional) Whether to retrieve the signed version. Default is false.
      *
      * @return  ResourceFileInfo
-     * 
-     * @throws  \Exception
+     * @throws ExceptionParameterMustBeGreaterThan
+     * @throws ExceptionResourceDoesNotExist
+     * @throws ExceptionResourceHasNoFile
+     * @throws ExceptionResourceFingerPrintDoesNotMatch
+     * @throws ExceptionResourceFailedToGetDocumentFromDocserver
+     * @throws ExceptionResourceDocserverDoesNotExist
+     * @throws ExceptionResourceNotFoundInDocserver
      */
     public function getResourceFile(int $resId, bool $isSignedVersion = false): ResourceFileInfo
     {
@@ -73,29 +82,29 @@ class RetrieveOriginalResource
                 $document = $signdDocument;
             }
         }
-        
-        $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
-        if ($docserver == null || !$this->resourceFile->folderExists($docserver->getPathTemplate())) {
-            throw new ExceptionResourceDocserverDoesNotExist();
+
+        try {
+            $docserverFilePathAndFingerprint = $this->retrieveResourceDocserverFilePathFingerPrint->getDocserverFilePathAndFingerprint(
+                $document
+            );
+        } catch (ExceptionResourceDocserverDoesNotExist|ExceptionResourceNotFoundInDocserver $e) {
+            throw new $e;
         }
 
-        $filePath = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
-        if (!$this->resourceFile->fileExists($filePath)) {
-            throw new ExceptionResourceNotFoundInDocserver();
+        if ($signdDocument == null && !empty($docserverFilePathAndFingerprint->getFingerprint()) && empty($document->getFingerprint())) {
+            $this->resourceData->updateFingerprint($resId, $docserverFilePathAndFingerprint->getFingerprint());
         }
 
-        $fingerprint = $this->resourceFile->getFingerPrint($docserver->getDocserverTypeId(), $filePath);
-        if ($signdDocument == null && !empty($fingerprint) && empty($document->getFingerprint())) {
-            $this->resourceData->updateFingerprint($resId, $fingerprint);
-        }
-
-        if ($document->getFingerprint() != $fingerprint) {
+        if ($document->getFingerprint() != $docserverFilePathAndFingerprint->getFingerprint()) {
             throw new ExceptionResourceFingerPrintDoesNotMatch();
         }
 
         $filename = $this->resourceData->formatFilename($document->getSubject());
 
-        $fileContent = $this->resourceFile->getFileContent($filePath, $docserver->getIsEncrypted());
+        $fileContent = $this->resourceFile->getFileContent(
+            $docserverFilePathAndFingerprint->getFilePath(),
+            $docserverFilePathAndFingerprint->getDocserver()->getIsEncrypted()
+        );
         if ($fileContent === 'false') {
             throw new ExceptionResourceFailedToGetDocumentFromDocserver();
         }
@@ -103,7 +112,7 @@ class RetrieveOriginalResource
         return new ResourceFileInfo(
             null,
             null,
-            pathInfo($filePath),
+            pathInfo($docserverFilePathAndFingerprint->getFilePath()),
             $fileContent,
             $filename,
             $format

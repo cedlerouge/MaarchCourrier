@@ -16,6 +16,7 @@ namespace Resource\Infrastructure;
 
 use Resource\Application\RetrieveOriginalResource;
 use Resource\Application\RetrieveResource;
+use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
 use Resource\Application\RetrieveThumbnailResource;
 use Resource\Application\RetrieveThumbnailResourceByPage;
 use Resource\Application\RetrieveVersionResource;
@@ -29,8 +30,9 @@ class RetrieveResourceFactory
     {
         $resourceData = new ResourceData();
         $resourceFile = new ResourceFile();
+        $resourceDocserverFilePathFingerPrint = new RetrieveDocserverFilePathAndFingerPrint($resourceData, $resourceFile);
 
-        return new RetrieveResource($resourceData, $resourceFile);
+        return new RetrieveResource($resourceData, $resourceFile, $resourceDocserverFilePathFingerPrint);
     }
 
     /**
@@ -40,8 +42,9 @@ class RetrieveResourceFactory
     {
         $resourceData = new ResourceData();
         $resourceFile = new ResourceFile();
+        $resourceDocserverFilePathFingerPrint = new RetrieveDocserverFilePathAndFingerPrint($resourceData, $resourceFile);
 
-        return new RetrieveOriginalResource($resourceData, $resourceFile);
+        return new RetrieveOriginalResource($resourceData, $resourceFile, $resourceDocserverFilePathFingerPrint);
     }
 
     /**
@@ -51,8 +54,9 @@ class RetrieveResourceFactory
     {
         $resourceData = new ResourceData();
         $resourceFile = new ResourceFile();
+        $resourceDocserverFilePathFingerPrint = new RetrieveDocserverFilePathAndFingerPrint($resourceData, $resourceFile);
 
-        return new RetrieveVersionResource($resourceData, $resourceFile);
+        return new RetrieveVersionResource($resourceData, $resourceFile, $resourceDocserverFilePathFingerPrint);
     }
 
     /**

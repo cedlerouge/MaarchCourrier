@@ -16,7 +16,7 @@ use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
 use Resource\Domain\Resource;
 use Resource\Domain\ResourceConverted;
-use Resource\Domain\Interfaces\ResourceDataInterface;
+use Resource\Domain\Ports\ResourceDataInterface;
 use SrcCore\models\TextFormatModel;
 
 class ResourceDataMock implements ResourceDataInterface
@@ -110,7 +110,7 @@ class ResourceDataMock implements ResourceDataInterface
 
     /**
      * Return the converted pdf from resource
-     * 
+     *
      * @param   int     $resId  Resource id
      * @param   string  $collId Resource type id : letterbox_coll or attachments_coll
      */
@@ -128,7 +128,7 @@ class ResourceDataMock implements ResourceDataInterface
      * @param   int     $resId      Resource id
      * @param   string  $type       Resource converted format
      * @param   int     $version    Resource version
-     * 
+     *
      * @return  ?array
      */
     public function getResourceVersion(int $resId, string $type, int $version): ?array
@@ -152,7 +152,7 @@ class ResourceDataMock implements ResourceDataInterface
     /**
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
-     * 
+     *
      * @return  ?ResourceConverted
      */
     public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted
@@ -166,10 +166,10 @@ class ResourceDataMock implements ResourceDataInterface
 
     /**
      * Check if user has rights over the resource
-     * 
+     *
      * @param   int     $resId      Resource id
      * @param   int     $userId     User id
-     * 
+     *
      * @return  bool
      */
     public function hasRightByResId(int $resId, int $userId): bool

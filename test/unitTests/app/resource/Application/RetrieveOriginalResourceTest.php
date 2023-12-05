@@ -9,9 +9,11 @@
 
 namespace MaarchCourrier\Tests\app\resource\Application;
 
+use Exception;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
+use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
 use Resource\Application\RetrieveOriginalResource;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
@@ -19,6 +21,7 @@ use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\ResourceDocserverFilePathFingerPrint;
 
 class RetrieveOriginalResourceTest extends TestCase
 {
@@ -33,12 +36,14 @@ class RetrieveOriginalResourceTest extends TestCase
 
         $this->retrieveOriginalResource = new RetrieveOriginalResource(
             $this->resourceDataMock,
-            $this->resourceFileMock
+            $this->resourceFileMock,
+            new RetrieveDocserverFilePathAndFingerPrint($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceDoesNotExist(): void
     {
@@ -54,6 +59,7 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceHasNoFileReferenceInDatabase(): void
     {
@@ -69,6 +75,7 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceHasUnknownDocserverReferenceInDatabase(): void
     {
@@ -84,6 +91,7 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFileDoesNotExistInDocserver(): void
     {
@@ -92,13 +100,14 @@ class RetrieveOriginalResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceNotFoundInDocserver());
-        
+
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFingerprintDoesNotMatch(): void
     {
@@ -107,13 +116,14 @@ class RetrieveOriginalResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFingerPrintDoesNotMatch());
-        
+
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
@@ -122,13 +132,14 @@ class RetrieveOriginalResourceTest extends TestCase
 
         // Assert
         $this->expectExceptionObject(new ExceptionResourceFailedToGetDocumentFromDocserver());
-        
+
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
 
     /**
      * @return void
+     * @throws Exception
      */
     public function testGetOriginalResourceFile(): void
     {
@@ -137,7 +148,7 @@ class RetrieveOriginalResourceTest extends TestCase
 
         // Act
         $result = $this->retrieveOriginalResource->getResourceFile(1);
-        
+
         // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
