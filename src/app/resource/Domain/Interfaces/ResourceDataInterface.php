@@ -58,11 +58,9 @@ interface ResourceDataInterface
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
      * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExceptionResourceDoesNotExist
+     * @return  ?ResourceConverted
      */
-    public function getLatestResourceVersion(int $resId, string $type): ResourceConverted;
+    public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted;
 
     /**
      * Check if user has rights over the resource

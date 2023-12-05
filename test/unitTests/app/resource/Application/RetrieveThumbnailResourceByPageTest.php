@@ -63,4 +63,23 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         // Act
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,0);
     }
+
+    /**
+     * @return void
+     */
+    public function testGetThumbnailFileByPage1(): void
+    {
+        // Arrange
+        $this->resourceFileMock->returnResourceThumbnailFileContent = true;
+        
+        // Act
+        $result = $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+        
+        // Assert
+        $this->assertNotEmpty($result->getPathInfo());
+        $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertSame($result->getFormatFilename(), "Maarch Courrier Test");
+        $this->assertSame($result->getFileContent(), $this->resourceFileMock->resourceThumbnailFileContent);
+    }
 }

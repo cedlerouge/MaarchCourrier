@@ -657,7 +657,6 @@ class ResController extends ResourceControlController
         try {
             $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
         } catch (\Throwable $th) {
-            var_dump($th);
             return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -769,6 +768,7 @@ class ResController extends ResourceControlController
         try {
             $thumbnailFileByPage = $retrieveResourceFactory->getThumbnailFileByPage($args['resId'], $args['page']);
         } catch (\Throwable $th) {
+            var_dump($th);
             return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 

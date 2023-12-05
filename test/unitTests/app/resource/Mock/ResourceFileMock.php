@@ -137,24 +137,12 @@ class ResourceFileMock implements ResourceFileInterface
         }
     }
 
-    /**
-     * Convert resource to thumbnail.
-     * 
-     * @param   int     $resId  Resource id.
-     * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
-     */
-    public function convertToThumbnail(int $resId): void
+    public function convertToThumbnail(int $resId): array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-
         if ($this->doesResourceConvertToThumbnailFailed) {
-            throw new ExceptionConvertThumbnail('Convertion to thumbnail failed');
+            return ['errors' => 'Convertion to thumbnail failed'];
         }
+        return [];
     }
 
     /**
@@ -164,25 +152,11 @@ class ResourceFileMock implements ResourceFileInterface
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
+     * @return  string   If returned contains 'errors:' then the convertion failed
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', "'resource', 'attachment'");
-        }
-        if ($page <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('page', 0);
-        }
-
-        if ($this->doesResourceConvertOnePageToThumbnailFailed) {
-            throw new ExceptionConvertThumbnail('Convertion one page to thumbnail failed');
-        }
+        return 'true';
     }
 
     /**

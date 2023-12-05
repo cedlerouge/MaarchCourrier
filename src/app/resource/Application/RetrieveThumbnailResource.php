@@ -14,10 +14,14 @@
 
 namespace Resource\Application;
 
+use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
+use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Interfaces\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Interfaces\ResourceFileInterface;
+use Resource\Domain\ResourceConverted;
 
 class RetrieveThumbnailResource
 {
@@ -45,26 +49,38 @@ class RetrieveThumbnailResource
      */
     public function getThumbnailFile(int $resId): ResourceFileInfo
     {
+        if ($resId <= 0) {
+            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+        }
+
         $document = $this->resourceData->getMainResourceData($resId);
+
+        if ($document == null) {
+            throw new ExceptionResourceDoesNotExist();
+        }
 
         $isDocserverEncrypted = false;
         $noThumbnailPath = 'dist/assets/noThumbnail.png';
         $pathToThumbnail = $noThumbnailPath;
 
+        
         if (!empty($document->getFilename()) && $this->resourceData->hasRightByResId($resId, $GLOBALS['id'])) {
-
-            $tnlDocument = $this->resourceData->getResourceVersion($resId, 'TNL', $document->getVersion());
-
-            if (empty($tnlDocument)) {
-                $this->resourceFile->convertToThumbnail($resId, 'resource');
-                $tnlDocument = $this->resourceData->getResourceVersion($resId, 'TNL', $document->getVersion());
+            
+            $tnlDocument = $this->getResourceVersion($resId, 'TNL', $document->getVersion());
+            
+            if ($tnlDocument == null) {
+                $check = $this->resourceFile->convertToThumbnail($resId, 'resource');
+                if (isset($check['errors'])) {
+                    throw new ExceptionConvertThumbnail($check['errors']);
+                }
+                $tnlDocument = $this->getResourceVersion($resId, 'TNL', $document->getVersion());
             }
-
-            if (!empty($tnlDocument)) {
+            
+            if ($tnlDocument != null) {
                 $checkDocserver = $this->resourceData->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
                 $isDocserverEncrypted = $checkDocserver->getIsEncrypted() ?? false;
                 
-                $pathToThumbnail = $this->resourceFile->buildFilePath($tnlDocument->getDocserverId(), $tnlDocument->getPath(), $tnlDocument->getFilename());
+                $pathToThumbnail = $this->resourceFile->buildFilePath($checkDocserver->getPathTemplate(), $tnlDocument->getPath(), $tnlDocument->getFilename());
                 if (!$this->resourceFile->fileExists($pathToThumbnail)) {
                     throw new ExceptionResourceNotFoundInDocserver();
                 }
@@ -78,7 +94,7 @@ class RetrieveThumbnailResource
             $pathInfo = pathinfo($noThumbnailPath);
             $fileContent = $this->resourceFile->getFileContent($noThumbnailPath);
         }
-
+        
         return new ResourceFileInfo(
             null,
             null,
@@ -86,6 +102,26 @@ class RetrieveThumbnailResource
             $fileContent,
             "maarch.{$pathInfo['extension']}",
             ""
+        );
+    }
+    
+    private function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
+    {
+        $document = $this->resourceData->getResourceVersion($resId, 'TNL', $version);
+        
+        if ($document == null) {
+            return null;
+        }
+        
+        return new ResourceConverted(
+            $document['id'],
+            $resId,
+            $type,
+            $version,
+            $document['docserver_id'],
+            $document['path'],
+            $document['filename'],
+            $document['fingerprint']
         );
     }
 }

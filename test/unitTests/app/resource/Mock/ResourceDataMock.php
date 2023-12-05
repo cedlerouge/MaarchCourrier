@@ -153,20 +153,12 @@ class ResourceDataMock implements ResourceDataInterface
      * @param   int     $resId  Resource id
      * @param   string  $type   Resource converted format
      * 
-     * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExceptionResourceDoesNotExist
+     * @return  ?ResourceConverted
      */
-    public function getLatestResourceVersion(int $resId, string $type): ResourceConverted
+    public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES));
-        }
         if (!$this->doesResourceVersionExist) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
         return new ResourceConverted(1, $resId, $type, 1, 'FASTHD', '2021/03/0001/', '0001_960655724.pdf', 'file fingerprint');

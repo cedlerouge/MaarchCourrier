@@ -60,10 +60,9 @@ class RetrieveThumbnailResourceTest extends TestCase
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
         // Assert
-        $this->assertNotEmpty($result);
-        $this->assertInstanceOf('\Resource\Domain\Models\ResourceFileInfo', $result);
-        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
         $this->assertSame($result->getFormatFilename(), 'maarch.png');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->noThumbnailFileContent);
     }
@@ -81,10 +80,9 @@ class RetrieveThumbnailResourceTest extends TestCase
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
         // Assert
-        $this->assertNotEmpty($result);
-        $this->assertInstanceOf('\Resource\Domain\Models\ResourceFileInfo', $result);
-        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
         $this->assertSame($result->getFormatFilename(), 'maarch.png');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->noThumbnailFileContent);
     }
@@ -118,10 +116,9 @@ class RetrieveThumbnailResourceTest extends TestCase
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
         // Assert
-        $this->assertNotEmpty($result);
-        $this->assertInstanceOf('\Resource\Domain\Models\ResourceFileInfo', $result);
-        $this->assertNotEmpty($result->getFormatFilename());
+        $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
+        $this->assertNotEmpty($result->getFormatFilename());
         $this->assertSame($result->getFormatFilename(), 'maarch.png');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->noThumbnailFileContent);
     }

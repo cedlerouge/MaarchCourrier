@@ -124,26 +124,9 @@ class ResourceFile implements ResourceFileInterface
         return WatermarkController::watermarkResource(['resId' => $resId, 'fileContent' => $fileContent]);
     }
 
-    /**
-     * Convert resource to thumbnail.
-     * 
-     * @param   int     $resId  Resource id.
-     * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
-     */
-    public function convertToThumbnail(int $resId): void
+    public function convertToThumbnail(int $resId): array
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-
-        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
-
-        if (isset($check['errors'])) {
-            throw new ExceptionConvertThumbnail($check['errors']);
-        }
+        return ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
     }
 
     /**
@@ -153,33 +136,24 @@ class ResourceFile implements ResourceFileInterface
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
+     * @return  string   If returned contains 'errors:' then the convertion failed
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($type) || !in_array($type, ['resource', 'attachment'])) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', "'resource', 'attachment'");
-        }
-        if ($page <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('page', 0);
-        }
-
-        $check = null;
+        $check = 'true';
 
         try {
             $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
         } catch (\Throwable $th) {
             throw new ExceptionConvertThumbnail($th->getMessage());
+            return "errors: " . $th->getMessage();
         }
 
         if (isset($check['errors'])) {
-            throw new ExceptionConvertThumbnail($check['errors']);
+            return "errors: " . $check['errors'];
         }
+
+        return $check;
     }
 
     /**

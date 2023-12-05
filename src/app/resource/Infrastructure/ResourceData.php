@@ -138,18 +138,9 @@ class ResourceData implements ResourceDataInterface
      * @param   string  $type   Resource converted format
      * 
      * @return  ResourceConverted
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionParameterCanNotBeEmptyAndShould|ExceptionResourceDoesNotExist
      */
-    public function getLatestResourceVersion(int $resId, string $type): ResourceConverted
+    public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted
     {
-        if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
-        }
-        if (empty($type) || !in_array($type, $this::ADR_RESOURCE_TYPES)) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this::ADR_RESOURCE_TYPES));
-        }
-        
         $document = AdrModel::getDocuments([
             'select'    => ['id', 'version', 'docserver_id', 'path', 'filename', 'fingerprint'],
             'where'     => ['res_id = ?', 'type = ?'],
@@ -158,7 +149,7 @@ class ResourceData implements ResourceDataInterface
         ]);
 
         if (empty($document[0])) {
-            throw new ExceptionResourceDoesNotExist();
+            return null;
         }
 
         return new ResourceConverted(

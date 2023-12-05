@@ -60,16 +60,7 @@ interface ResourceFileInterface
      */
     public function getWatermark(int $resId, string $fileContent): string;
 
-    /**
-     * Convert resource to thumbnail.
-     * 
-     * @param   int     $resId  Resource id.
-     * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterMustBeGreaterThan|ExceptionConvertThumbnail
-     */
-    public function convertToThumbnail(int $resId): void;
+    public function convertToThumbnail(int $resId): array;
 
     /**
      * Convert resource page to thumbnail.
@@ -78,11 +69,9 @@ interface ResourceFileInterface
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      * 
-     * @return  void
-     * 
-     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExceptionConvertThumbnail
+     * @return  string  If returned contains 'errors:' then the convertion failed
      */
-    public function convertOnePageToThumbnail(int $resId, string $type, int $page): void;
+    public function convertOnePageToThumbnail(int $resId, string $type, int $page): string;
 
     /**
      * Retrieves the number of pages in a pdf file
