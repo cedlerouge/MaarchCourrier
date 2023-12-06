@@ -78,13 +78,13 @@ class RetrieveResource
         try {
             $document = $this->getConvertedResourcePdfById($resId);
         } catch (ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult $e) {
-            throw new $e;
+            throw $e;
         }
 
         try {
             $docserverFilePathAndFingerprint = $this->retrieveResourceDocserverFilePathFingerPrint->getDocserverFilePathAndFingerprint($document);
         } catch (ExceptionResourceDocserverDoesNotExist|ExceptionResourceNotFoundInDocserver $e) {
-            throw new $e;
+            throw $e;
         }
 
         if (!empty($docserverFilePathAndFingerprint->getFingerprint()) && empty($document->getFingerprint())) {
