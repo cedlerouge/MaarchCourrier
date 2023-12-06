@@ -483,7 +483,9 @@ export class CriteriaToolComponent implements OnInit {
         return new Promise((resolve, reject) => {
             this.http.get('../rest/statuses').pipe(
                 tap((data: any) => {
-                    elem.values = data.statuses.map((val: any) => ({
+                    elem.values = data.statuses
+                    .filter((val: any) => val.can_be_searched === "Y")
+                    .map((val: any) => ({
                         id: val.identifier,
                         label: val.label_status
                     }));
@@ -497,7 +499,7 @@ export class CriteriaToolComponent implements OnInit {
         });
     }
 
-    set_category_field(elem: any) {
+    set_category_field(elem: any) {;
         return new Promise((resolve, reject) => {
             this.http.get('../rest/categories').pipe(
                 tap((data: any) => {
