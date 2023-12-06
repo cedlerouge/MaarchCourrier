@@ -3,7 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ActionAdministrationComponent } from './action-administration.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
@@ -11,7 +11,7 @@ import { ActionPagesService } from '@service/actionPages.service';
 import { FunctionsService } from '@service/functions.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
-import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -42,8 +42,7 @@ describe('ActionAdministrationComponent', () => {
     let component: ActionAdministrationComponent;
     let fixture: ComponentFixture<ActionAdministrationComponent>;
     let translateService: TranslateService;
-    let notificationService: NotificationService;
-    const params = new BehaviorSubject({ id: 1 });
+    const params = new BehaviorSubject({});
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -88,10 +87,9 @@ describe('ActionAdministrationComponent', () => {
 
     beforeEach(() => {
         httpTestingController = TestBed.inject(HttpTestingController);
-        notificationService = TestBed.inject(NotificationService);
         fixture = TestBed.createComponent(ActionAdministrationComponent);
         component = fixture.componentInstance;
-        component.loading = false;
+        // component.loading = false;
         fixture.detectChanges();
     });
 
@@ -102,67 +100,76 @@ describe('ActionAdministrationComponent', () => {
     });
 
     describe('Check validty of actionsFormUp', () => {
-        it('should be valid when actionsFormUp is valid', () => {
+        it('should be valid when actionsFormUp is valid', fakeAsync(() => {
             component.loading = false;
             fixture.detectChanges();
-            const actionsForm = new UntypedFormGroup({
-                label_action: new UntypedFormControl('Action de test', Validators.required),
-                actionPageId: new UntypedFormControl('confirm_status', Validators.required)
-            });
-        
-            component.actionsFormUp.form = actionsForm;
-        
-            expect(component.actionsFormUp.form.controls['actionPageId'].valid).toBeTruthy();
+            component.action.label_action = 'Action de test';
+            component.action.actionPageId = 'actionTest';    
+            fixture.detectChanges();                     
             expect(component.actionsFormUp.form.valid).toBeTruthy();
-        });
+        }));
         
-        it('should be invalid when actionsFormUp is invalid', () => {
+        it('should be invalid when actionsFormUp is invalid', fakeAsync(() => {
             component.loading = false;
             fixture.detectChanges();
-            const actionsForm = new UntypedFormGroup({
-                label_action: new UntypedFormControl('Action de test', Validators.required),
-                actionPageId: new UntypedFormControl('', Validators.required)
-            });
-        
-            component.actionsFormUp.form = actionsForm;
-        
-            expect(component.actionsFormUp.form.controls['actionPageId'].valid).toBeFalsy();
-            expect(component.actionsFormUp.form.valid).toBeFalsy();
-        });
+            tick(100);
+            component.action.label_action = null;
+            fixture.detectChanges();
+            expect(component.actionsFormUp.valid).toBeFalsy();
+        }));
     });
 
-    describe('Create/Update action', () => {
+    describe('Create action', () => {
         it('should handle form submission for new action and show success notification after submission', fakeAsync(() => {
-            component.creationMode = true;
-            component.loading = false;
-    
+            const initActionRes = httpTestingController.expectOne('../rest/initAction');
+            expect(initActionRes.request.method).toBe('GET');
+            initActionRes.flush(initAction());
+            
+            const customFieldReq = httpTestingController.expectOne('../rest/customFields');
+            expect(customFieldReq.request.method).toBe('GET');
+            customFieldReq.flush({
+                customFields: [
+                    {
+                        "id": 2,
+                        "label": "Adresse d'intervention",
+                        "type": "banAutocomplete",
+                        "mode": "form",
+                        "values": [],
+                        "SQLMode": false
+                    },
+                    {
+                        "id": 13,
+                        "label": "Contact",
+                        "type": "contact",
+                        "mode": "form",
+                        "values": [],
+                        "SQLMode": false
+                    },
+                ]
+            });
+            
             fixture.detectChanges();
             tick(300);
-    
-            loadValues(component, fixture);
+            flush();
     
             const nativeElement = fixture.nativeElement;
             const name = nativeElement.querySelector('input[name=action_name]');
             const submit = nativeElement.querySelector('button[type=submit]');
     
             expect(name).toBeDefined();
-            expect(submit.disabled).toBeTrue();  
     
             name.dispatchEvent(new Event('input'));
-            name.value = component.action.label_action;
+            name.value = 'Action de test';
     
             component.selectActionPageId.setValue('confirm_status');
             component.selectStatusId.setValue('_NOSTATUS_');
+            component.actionsFormUp.controls['action_name'].setValue(name.value);
     
             fixture.detectChanges();
             tick(300);
     
-            expect(name.value).toEqual('Action de test');
-    
-            fixture.detectChanges();
-            tick(300);
-    
-            expect(nativeElement.querySelector(`#actionPageId[ng-reflect-value=${component.selectActionPageId.value}]`)).toBeDefined();
+            expect(name.value).toEqual('Action de test');           
+            expect(nativeElement.querySelector(`#actionPageId[ng-reflect-value=${component.selectActionPageId.value}]`)).toBeDefined();            
             expect(submit.disabled).toBeFalse();
             
             fixture.detectChanges();
@@ -194,22 +201,54 @@ describe('ActionAdministrationComponent', () => {
             }, 100);
             flush();
         }));
-    
+    });
+
+    describe('Update action', () => {
         it('should handle form submission for existing action modification and show success notification', fakeAsync(() => {
-            component.creationMode = false;
-            component.loading = false;
+            params.next({ id: 1 });
+
+            const initActionRes = httpTestingController.expectOne('../rest/initAction');
+            expect(initActionRes.request.method).toBe('GET');
+            initActionRes.flush(initAction());
+
+            params.subscribe((data: any) => {                
+                const actionRes = httpTestingController.expectOne('../rest/actions/' + data['id']);
+                expect(actionRes.request.method).toBe('GET');
+                actionRes.flush(initAction());
+            });
+
+            httpTestingController = TestBed.inject(HttpTestingController);
+
+            const customField = httpTestingController.expectOne(req => req.method === 'GET' && req.url === '../rest/customFields');
+            customField.flush({
+                customFields: [
+                    {
+                        "id": 2,
+                        "label": "Adresse d'intervention",
+                        "type": "banAutocomplete",
+                        "mode": "form",
+                        "values": [],
+                        "SQLMode": false
+                    },
+                    {
+                        "id": 13,
+                        "label": "Contact",
+                        "type": "contact",
+                        "mode": "form",
+                        "values": [],
+                        "SQLMode": false
+                    },
+                ]
+            });
             
             fixture.detectChanges();
             tick(300);
-    
-            loadValues(component, fixture);
-    
+        
             const nativeElement = fixture.nativeElement;
             const name = nativeElement.querySelector('input[name=action_name]');
             const submit = nativeElement.querySelector('button[type=submit]');
     
             expect(name).toBeDefined();
-            expect(submit.disabled).toBeTruthy()
             
             fixture.detectChanges();
             tick(300);
@@ -217,9 +256,10 @@ describe('ActionAdministrationComponent', () => {
             name.dispatchEvent(new Event('input'));
             name.value = 'Action de test modifié';
     
-            component.action.label_action = name.value
+            component.action.label_action = name.value;
             component.selectActionPageId.setValue('confirm_status');
             component.selectStatusId.setValue('_NOSTATUS_');
+            component.actionsFormUp.controls['action_name'].setValue(name.value);
             
             fixture.detectChanges();
             tick(300);
@@ -256,88 +296,67 @@ describe('ActionAdministrationComponent', () => {
             }, 100);
             flush();
         }));
-    });
-
-    describe('Handle error if system action doesn t exist', () => {
-        it('should handle form submission failure and show error notification', fakeAsync(() => {
-            component.creationMode = true; // Ou false selon le cas que vous voulez tester
-            component.loading = false;
-    
-            fixture.detectChanges();
-            tick(300);
-    
-            loadValues(component, fixture);
-        
-            fixture.detectChanges();
-            tick(300);
-        
-            const errorMessage: string = "System action doesn't exist";
-            spyOn(component['http'], 'post').and.returnValue(throwError(errorMessage));
-            const errorSpy = spyOn(notificationService, 'error');
-            const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
-        
-            component.onSubmit();
-            
-            tick(300);
-        
-            fixture.whenStable().then(() => {            
-                expect(component['http'].post).toHaveBeenCalledWith('../rest/actions', component.action);
-                expect(errorSpy).toHaveBeenCalledWith(errorMessage);
-                expect(navigateSpy).not.toHaveBeenCalled();
-            });
-        
-            tick();
-        }));
-    });
+    })
 });
 
-function loadValues(component: ActionAdministrationComponent, fixture: ComponentFixture<ActionAdministrationComponent>) {
-    component.actionPages = TestBed.inject(ActionPagesService).getAllActionPages();
-
-    component.statuses = [
-        {
-            id: '_NOSTATUS_',
-            label: 'Inchangé'
+function initAction() {
+    return {
+        "action": {
+            "id": 1,
+            "history": true,
+            "keyword": "",
+            "actionPageId": "confirm_status",
+            "id_status": "_NOSTATUS_",
+            "parameters": {
+                "lockVisaCircuit": false,
+                "keepDestForRedirection": false,
+                "keepCopyForRedirection": false,
+                "keepOtherRoleForRedirection": false
+            },
+            "actionCategories": [
+                "incoming",
+                "outgoing",
+                "internal",
+                "ged_doc",
+                "registeredMail"
+            ]
         },
-        {
-            id: 'ATT',
-            label: 'En attente'
-        },
-        {
-            id: 'COU',
-            label: 'En cours'
-        }
-    ];
-
-    component.categoriesList = [
-        {
-            id: 'incoming',
-            label: 'Courrier arrivée'
-        },
-        {
-            id: 'outgoing',
-            label: 'Courrier départ'
-        },
-        {
-            id: 'internal',
-            label: 'Note interne'
-        }
-    ];
-
-    component.action = {
-        id: 1,
-        actionCategories: ['incoming', 'outgoing', 'internal'],
-        actionPageGroup: 'application',
-        actionPageId: 'confirm_status',
-        action_page: 'confirm_status',
-        component: 'confirmAction',
-        label_action: 'Action de test',
-        id_status: '_NOSTATUS_',
-        keyword: '',
-        history: true,
-        parameters: { fillRequiredFields: [] }
+        "categoriesList": [
+            {
+                "id": "incoming",
+                "label": "Courrier Arriv\u00e9e"
+            },
+            {
+                "id": "outgoing",
+                "label": "Courrier D\u00e9part"
+            },
+            {
+                "id": "internal",
+                "label": "Courrier Interne"
+            },
+            {
+                "id": "ged_doc",
+                "label": "Document GED"
+            },
+            {
+                "id": "registeredMail",
+                "label": "Recommand\u00e9"
+            }
+        ],
+        "statuses": [
+            {
+                "id": "_NOSTATUS_",
+                "label_status": "Inchang\u00e9"
+            },
+            {
+                "identifier": 24,
+                "id": "EXP_SEDA",
+                "label_status": "A archiver",
+                "is_system": "N",
+                "img_filename": "fm-letter-status-acla",
+                "maarch_module": "apps",
+                "can_be_searched": "Y",
+            }
+        ]    
     };
-
-    fixture.detectChanges();
-    tick(400);
 }

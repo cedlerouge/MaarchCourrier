@@ -60,6 +60,7 @@ describe('ActionsAdministrationComponent', () => {
     });
 
     beforeEach(() => {
+        httpTestingController = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(ActionsAdministrationComponent);
         component = fixture.componentInstance;
         component.loading = false;
@@ -71,12 +72,27 @@ describe('ActionsAdministrationComponent', () => {
     });
 
     it('Set header, actions values and check rows', fakeAsync(() => {
-        setActions(component, fixture);
+        const actionsReq = httpTestingController.expectOne('../rest/actions');
+        expect(actionsReq.request.method).toBe('GET');
+        actionsReq.flush(setActions());
+
+        fixture.detectChanges();
+        tick(300);
+        flush();
         expect(fixture.nativeElement.querySelector('.card-app-content')).toBeDefined();
     }));
 
     xit('delete action and show succes notification', fakeAsync(() => {
-        setActions(component, fixture);
+        const actionsReq = httpTestingController.expectOne('../rest/actions');
+        expect(actionsReq.request.method).toBe('GET');
+        actionsReq.flush(setActions());
+
+        fixture.detectChanges();
+        tick(300);
+        flush();
+
+        fixture.detectChanges();
+        tick(300);
         // should load 4 actions
         const row = fixture.nativeElement.querySelectorAll('.mat-row');
         expect(row.length).toEqual(4);        
@@ -122,60 +138,52 @@ describe('ActionsAdministrationComponent', () => {
     }));
 });
 
-function setActions(component: ActionsAdministrationComponent, fixture: ComponentFixture<ActionsAdministrationComponent>) {
-    TestBed.inject(HeaderService).setHeader(component.translate.instant('lang.administration') + ' ' + component.translate.instant('lang.actions'));
-    component.actions = [
-        {
-            "id": 21,
-            "keyword": "",
-            "label_action": "Envoyer le courrier en validation",
-            "id_status": "VAL",
-            "is_system": "N",
-            "action_page": null,
-            "component": "confirmAction",
-            "history": "Y",
-            "parameters": []
-        },
-        {
-            "id": 22,
-            "keyword": "",
-            "label_action": "Attribuer au service",
-            "id_status": "NEW",
-            "is_system": "N",
-            "action_page": "confirm_status",
-            "component": "confirmAction",
-            "history": "Y",
-            "parameters": []
-        },
-        {
-            "id": 24,
-            "keyword": "indexing",
-            "label_action": "Remettre en validation",
-            "id_status": "VAL",
-            "is_system": "N",
-            "action_page": "confirm_status",
-            "component": "confirmAction",
-            "history": "Y",
-            "parameters": []
-        },
-        {
-            "id": 36,
-            "keyword": "",
-            "label_action": "Envoyer pour avis",
-            "id_status": "EAVIS",
-            "is_system": "N",
-            "action_page": "send_docs_to_recommendation",
-            "component": "sendToParallelOpinion",
-            "history": "Y",
-        }    
-    ];
-        
-    fixture.detectChanges();
-    tick(300);
-    component.loading = false;
-
-    TestBed.inject(AdministrationService).setDataSource('admin_actions', component.actions, component.sort, component.paginator, component.filterColumns);
-
-    fixture.detectChanges();
-    tick(300);
+function setActions() {
+    return {
+        actions: [
+            {
+                "id": 21,
+                "keyword": "",
+                "label_action": "Envoyer le courrier en validation",
+                "id_status": "VAL",
+                "is_system": "N",
+                "action_page": null,
+                "component": "confirmAction",
+                "history": "Y",
+                "parameters": []
+            },
+            {
+                "id": 22,
+                "keyword": "",
+                "label_action": "Attribuer au service",
+                "id_status": "NEW",
+                "is_system": "N",
+                "action_page": "confirm_status",
+                "component": "confirmAction",
+                "history": "Y",
+                "parameters": []
+            },
+            {
+                "id": 24,
+                "keyword": "indexing",
+                "label_action": "Remettre en validation",
+                "id_status": "VAL",
+                "is_system": "N",
+                "action_page": "confirm_status",
+                "component": "confirmAction",
+                "history": "Y",
+                "parameters": []
+            },
+            {
+                "id": 36,
+                "keyword": "",
+                "label_action": "Envoyer pour avis",
+                "id_status": "EAVIS",
+                "is_system": "N",
+                "action_page": "send_docs_to_recommendation",
+                "component": "sendToParallelOpinion",
+                "history": "Y",
+            }    
+        ]
+    };
 }

@@ -117,9 +117,7 @@ export class ActionAdministrationComponent implements OnInit {
         this.setErrorStatus();
 
         this.route.params.subscribe(params => {
-
             if (typeof params['id'] === 'undefined') {
-
                 this.creationMode = true;
 
                 this.http.get('../rest/initAction')
@@ -145,11 +143,9 @@ export class ActionAdministrationComponent implements OnInit {
                         this.keywordsList = data.keywordsList;
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'));
                         await this.getCustomFields();
-                        this.loading = false;
                     });
             } else {
                 this.creationMode = false;
-
                 this.intermediateSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'intermediateStatus').map((el: any) => el.id);
                 this.finalSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'finalStatus').map((el: any) => el.id);
                 this.errorSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'errorStatus').map((el: any) => el.id);
@@ -176,7 +172,6 @@ export class ActionAdministrationComponent implements OnInit {
                         this.keywordsList = data.keywordsList;
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'), data.action.label_action);
                         await this.getCustomFields();
-                        this.loading = false;
                         if (this.action.actionPageId === 'confirm_status') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.fillRequiredFields, disabled: false });
                             this.selectedFieldItems.selectedFieldsId = [];
@@ -277,9 +272,11 @@ export class ActionAdministrationComponent implements OnInit {
                             });
                             this.availableCustomFieldsClone = JSON.parse(JSON.stringify(this.availableCustomFields));
                         }
-                        return resolve(true);
+                        this.loading = false;
+                        resolve(true);
                     }),
                     catchError((err: any) => {
+                        this.loading = false;
                         this.notify.handleSoftErrors(err);
                         return of(false);
                     })

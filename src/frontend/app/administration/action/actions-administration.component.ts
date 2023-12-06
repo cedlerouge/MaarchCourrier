@@ -63,12 +63,12 @@ export class ActionsAdministrationComponent implements OnInit {
                 }, 0);
             }),
             catchError((err: any) => {
+                this.loading = false;
                 this.notify.handleErrors(err);
                 return of(false);
             })
         ).subscribe();
 
-        this.loading = false;
     }
 
     deleteAction(action: any) {
