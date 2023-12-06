@@ -6,7 +6,6 @@ use Docserver\controllers\DocserverController;
 use MaarchCourrier\Tests\CourrierTestCase;
 use Resource\controllers\ResController;
 use SrcCore\http\Response;
-use User\models\UserModel;
 
 class EncryptedResourceTest extends CourrierTestCase
 {
@@ -15,10 +14,6 @@ class EncryptedResourceTest extends CourrierTestCase
     private static $encryptedDocserverId = null;
     private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
     private static $pathEncryptedTemplate = '/tmp/unitTestMaarchCourrierEncrypted/';
-
-    public function setUp(): void
-    {
-    }
 
     public function testSetIsReadOnlyToTrueForMainDocOfUnencryptedDocserver()
     {
@@ -76,6 +71,8 @@ class EncryptedResourceTest extends CourrierTestCase
     public function testCreateMainDoc()
     {
         // Arrange
+        $this->connectAsUser('cchaplin');
+
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
 
         $body = [
