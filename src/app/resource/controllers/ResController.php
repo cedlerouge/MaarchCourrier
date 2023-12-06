@@ -735,7 +735,6 @@ class ResController extends ResourceControlController
         try {
             $thumbnailFile = $retrieveResourceFactory->getThumbnailFile($args['resId']);
         } catch (\Throwable $th) {
-            var_dump($th);
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
