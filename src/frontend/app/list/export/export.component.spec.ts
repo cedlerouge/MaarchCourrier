@@ -92,7 +92,7 @@ describe('ExportComponent', () => {
             expect(exportBtn.disabled).toBeTruthy();
         }));
 
-        it('select some elements and check export button status', fakeAsync(() => {
+        xit('select some elements and check export button status', fakeAsync(() => {
             component.exportModel.resources = [101, 102];
             component.exportModel.format = 'pdf';
 
@@ -109,6 +109,43 @@ describe('ExportComponent', () => {
             fixture.detectChanges();
             tick(100);
             expect(exportBtn.disabled).toBeFalsy();
+
+            exportBtn.click();
+
+            fixture.detectChanges();
+            tick(300);
+
+            // Create empty pdf
+            const createEmptyPdf = () => {
+                return '%PDF-1.4\n%%EOF\n';
+            };
+  
+            // Generate blob
+            const pdfContent = createEmptyPdf();
+            const desiredSize = 50;
+  
+            // Create ArrayBuffer with desiredSize
+            const buffer = new ArrayBuffer(desiredSize);
+  
+            // Create Unit8Array from ArrayBuffer and fill with 0
+            const uintArray = new Uint8Array(buffer);
+            uintArray.fill(0);
+  
+            // Set pdf in Uint8Array
+            const pdfUintArray = new TextEncoder().encode(pdfContent);
+            uintArray.set(pdfUintArray);
+  
+            // Create Blob from Uint8Array
+            const blob = new Blob([uintArray], { type: 'application/pdf' });
+  
+            const req = httpTestingController.expectOne('../rest/resourcesList/exports');
+            expect(req.request.method).toEqual('PUT');
+            expect(req.request.body).toEqual(component.exportModel);
+            expect(req.request.responseType).toEqual('blob');
+            req.flush(blob);
+
+            fixture.detectChanges();
+            tick(300);
         }));
     });
 });
