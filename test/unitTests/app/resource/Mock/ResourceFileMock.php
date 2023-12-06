@@ -54,7 +54,7 @@ class ResourceFileMock implements ResourceFileInterface
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
     {
         if (empty($this->docserverPath) || !$this->doesDocserverPathExist) {
-            return null;
+            return '';
         }
 
         return $this->docserverPath . str_replace('#', DIRECTORY_SEPARATOR, $documentPath) . $documentFilename;
@@ -165,11 +165,10 @@ class ResourceFileMock implements ResourceFileInterface
      * @param   string  $filePath   Resource path.
      *
      * @return  int     Number of pages.
-     *
-     * @throws  Exception|PdfParserException
      */
     public function getTheNumberOfPagesInThePdfFile(string $filePath): int
     {
+        /*
         if (empty($filePath)) {
             throw new Exception("Throw an exception when get pdf file");
         }
@@ -177,6 +176,7 @@ class ResourceFileMock implements ResourceFileInterface
         if ($this->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile) {
             throw new Exception("Throw an exception when parsing pdf file");
         }
+        */
 
         return 1;
     }
