@@ -121,7 +121,11 @@ class ResourceFile implements ResourceFileInterface
 
     public function convertToThumbnail(int $resId): array
     {
-        return ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
+        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
+        if ($check['errors']) {
+            return $check;
+        }
+        return ['success' => true];
     }
 
     /**
