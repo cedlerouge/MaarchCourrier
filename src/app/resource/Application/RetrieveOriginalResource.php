@@ -88,7 +88,7 @@ class RetrieveOriginalResource
                 $document
             );
         } catch (ExceptionResourceDocserverDoesNotExist|ExceptionResourceNotFoundInDocserver $e) {
-            throw new $e;
+            throw $e;
         }
 
         if ($signdDocument == null && !empty($docserverFilePathAndFingerprint->getFingerprint()) && empty($document->getFingerprint())) {
