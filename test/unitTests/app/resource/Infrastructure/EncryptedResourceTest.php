@@ -76,10 +76,6 @@ class EncryptedResourceTest extends CourrierTestCase
     public function testCreateMainDoc()
     {
         // Arrange
-        $GLOBALS['login'] = 'cchaplin';
-        $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
-        $GLOBALS['id'] = $userInfo['id'];
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
 
         $body = [
