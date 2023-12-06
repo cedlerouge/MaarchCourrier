@@ -499,7 +499,7 @@ export class CriteriaToolComponent implements OnInit {
         });
     }
 
-    set_category_field(elem: any) {;
+    set_category_field(elem: any) {
         return new Promise((resolve, reject) => {
             this.http.get('../rest/categories').pipe(
                 tap((data: any) => {
