@@ -18,6 +18,7 @@
       <directory>test/unitTests/core/</directory>
       <directory>test/unitTests/app/external/Pastell/</directory>
       <directory>test/unitTests/app/resource/Application/</directory>
+      <directory>test/unitTests/app/resource/Infrastructure/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
       <file>test/unitTests/app/administration/AdministrationControllerTest.php</file>

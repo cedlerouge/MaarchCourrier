@@ -111,6 +111,7 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['coll_id']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
