@@ -18,6 +18,7 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use SrcCore\http\Response;
 use User\models\UserModel;
+use function PHPUnit\Framework\assertContains;
 
 class ExportControllerTest extends CourrierTestCase
 {
@@ -268,7 +269,6 @@ class ExportControllerTest extends CourrierTestCase
 
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheStatusCanBeRead(): void
     {
-        // Arrange
         $this->connectAsUser('cchaplin');
 
         $resId = $this->createResource();
@@ -276,7 +276,6 @@ class ExportControllerTest extends CourrierTestCase
         $this->connectAsUser('bboule');
 
         $exportController = new ExportController();
-        //  PUT
         $args = [
             "id" => 4,
             "resources" => [$resId],
@@ -321,56 +320,6 @@ class ExportControllerTest extends CourrierTestCase
                 [
                     "value" => "getCategory",
                     "label" => "Catégorie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getCopies",
-                    "label" => "Utilisateurs en copie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSenders",
-                    "label" => "Expéditeurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getRecipients",
-                    "label" => "Destinataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTypist",
-                    "label" => "Créateurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAssignee",
-                    "label" => "Attributaire",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTags",
-                    "label" => "Mots-clés",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatories",
-                    "label" => "Signataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatureDates",
-                    "label" => "Date de signature",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getDepartment",
-                    "label" => "Département de l'expéditeur",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAcknowledgementSendDate",
-                    "label" => "Date d'accusé de réception",
                     "isFunction" => true
                 ]
             ]
@@ -382,14 +331,16 @@ class ExportControllerTest extends CourrierTestCase
         $response = $exportController->updateExport($fullRequest, new Response());
         $csvValues = $this->getCsvFromResponse($response);
         $status = $csvValues['Status'];
-        $ValueCheck = 'Nouveau courrier pour le service';
+        $newLetter = 'Nouveau courrier pour le service';
+        $priority = $csvValues['Priorité'];
+        $outsidePerimeter = 'Hors périmètre';
 
-        $this->assertStringContainsString($ValueCheck, $status, 'Le courrier est hors périmètre mais il est possible de lire le statut');
+        $this->assertStringContainsString($newLetter, $status, 'Le courrier est hors périmètre mais il est possible de lire la donnée');
+        $this->assertStringContainsString($outsidePerimeter, $priority, 'Le courrier est hors périmètre, il n\'est pas possible de lire la donnée ');
     }
 
     public function testTheDocumentIsOutOfPerimeterDuringExportAndOutOfScopeIsDisplayedOnUnavailableFields(): void
     {
-        // Arrange
         $this->connectAsUser('cchaplin');
 
         $resId = $this->createResource();
@@ -397,7 +348,6 @@ class ExportControllerTest extends CourrierTestCase
         $this->connectAsUser('jjane');
 
         $exportController = new ExportController();
-        //  PUT
         $args = [
             "id" => 4,
             "resources" => [$resId],
@@ -442,56 +392,6 @@ class ExportControllerTest extends CourrierTestCase
                 [
                     "value" => "getCategory",
                     "label" => "Catégorie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getCopies",
-                    "label" => "Utilisateurs en copie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSenders",
-                    "label" => "Expéditeurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getRecipients",
-                    "label" => "Destinataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTypist",
-                    "label" => "Créateurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAssignee",
-                    "label" => "Attributaire",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTags",
-                    "label" => "Mots-clés",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatories",
-                    "label" => "Signataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatureDates",
-                    "label" => "Date de signature",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getDepartment",
-                    "label" => "Département de l'expéditeur",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAcknowledgementSendDate",
-                    "label" => "Date d'accusé de réception",
                     "isFunction" => true
                 ]
             ]
@@ -502,16 +402,18 @@ class ExportControllerTest extends CourrierTestCase
 
         $response = $exportController->updateExport($fullRequest, new Response());
         $csvValues = $this->getCsvFromResponse($response);
-        $priority = $csvValues['Priorité'];
-        $ValueCheck = 'Hors périmètre';
+        $values[] = $csvValues['Priorité'];
+        $values[] = $csvValues['Entité traitante'];
+        $values[] = $csvValues['getCategory'];
 
-        $this->assertStringContainsString($ValueCheck, $priority, 'Le courrier est hors périmètre donc \'Hors périmètre\' apparaît sur les champs non disponible à l\'export.');
+        $outsidePerimeter = 'Hors périmètre';
+
+        $this->assertContains($outsidePerimeter, $values, 'test si ils sont hors du périmètre');
     }
 
 
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheUserHaveTheRightToSeeTheDocument(): void
     {
-        // Arrange
         $this->connectAsUser('cchaplin');
 
         $resId = $this->createResource();
@@ -519,7 +421,6 @@ class ExportControllerTest extends CourrierTestCase
         $this->connectAsUser('jjane');
 
         $exportController = new ExportController();
-        //  PUT
         $args = [
             "id" => 4,
             "resources" => [$resId],
@@ -564,56 +465,6 @@ class ExportControllerTest extends CourrierTestCase
                 [
                     "value" => "getCategory",
                     "label" => "Catégorie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getCopies",
-                    "label" => "Utilisateurs en copie",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSenders",
-                    "label" => "Expéditeurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getRecipients",
-                    "label" => "Destinataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTypist",
-                    "label" => "Créateurs",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAssignee",
-                    "label" => "Attributaire",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getTags",
-                    "label" => "Mots-clés",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatories",
-                    "label" => "Signataires",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getSignatureDates",
-                    "label" => "Date de signature",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getDepartment",
-                    "label" => "Département de l'expéditeur",
-                    "isFunction" => true
-                ],
-                [
-                    "value" => "getAcknowledgementSendDate",
-                    "label" => "Date d'accusé de réception",
                     "isFunction" => true
                 ]
             ]
