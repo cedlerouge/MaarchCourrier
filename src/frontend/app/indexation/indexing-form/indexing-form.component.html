@@ -143,7 +143,7 @@
                                         </mat-datepicker-toggle>
                                         <mat-datepicker [touchUi]="appService.getViewMode()" #picker></mat-datepicker>
                                         <button mat-button color="warn" matSuffix mat-icon-button
-                                            *ngIf="arrFormControl[field.identifier].value && !arrFormControl[field.identifier].disabled && field.identifier != 'processLimitDate'"
+                                            *ngIf="arrFormControl[field.identifier].value && !arrFormControl[field.identifier].disabled"
                                             (click)="$event.stopPropagation();arrFormControl[field.identifier].reset();"
                                             [title]="'lang.eraseValue' | translate">
                                             <mat-icon color="warn" class="fa fa-calendar-times">
