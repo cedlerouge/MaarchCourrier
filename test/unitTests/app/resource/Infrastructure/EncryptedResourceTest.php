@@ -74,6 +74,7 @@ class EncryptedResourceTest extends CourrierTestCase
             'size_limit_number' =>  50000000000,
             'path_template'     =>  self::$pathEncryptedTemplate,
             'coll_id'           =>  'letterbox_coll',
+            'is_readonly'       =>  false,
             'is_encrypted'      =>  true
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
