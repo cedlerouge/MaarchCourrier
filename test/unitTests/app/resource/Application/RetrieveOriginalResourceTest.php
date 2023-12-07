@@ -21,7 +21,6 @@ use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver
 use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
 use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
-use Resource\Domain\ResourceDocserverFilePathFingerPrint;
 
 class RetrieveOriginalResourceTest extends TestCase
 {
