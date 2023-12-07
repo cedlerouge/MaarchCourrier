@@ -9,19 +9,47 @@ use SrcCore\http\Response;
 
 class EncryptedResourceTest extends CourrierTestCase
 {
-    private static $docId = null;
-    private static $docserverId = 2;
-    private static $encryptedDocserverId = null;
-    private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
-    private static $pathEncryptedTemplate = '/tmp/unitTestMaarchCourrierEncrypted/';
+    private static int $encryptedDocserverId;
+    private static string $pathTemplate = '/tmp/unitTestMaarchCourrier/';
+    private static string $pathEncryptedTemplate = '/tmp/unitTestMaarchCourrierEncrypted/';
 
-    public function testSetIsReadOnlyToTrueForMainDocOfUnencryptedDocserver()
+    protected function setUp(): void
     {
-        // Arrange
         // The path should exist, if not create it
         if (!is_dir(self::$pathTemplate)) {
             mkdir(self::$pathTemplate);
         }
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset(self::$encryptedDocserverId)) {
+            $this->deleteEncryptedDocserverForMainResourceDocument(self::$encryptedDocserverId);
+        }
+        $this->unlockUnencryptedMainDocumentDocserver();
+    }
+
+    public function testCheckIfEncryptedResourceFileIsLocatedInAEncryptedDocserver(): void
+    {
+        // Arrange
+        $this->lockUnencryptedMainDocumentDocserver();
+        self::$encryptedDocserverId = $this->createEncryptedDocserverForMainResourceDocument();
+        $resId = $this->createResource();
+
+        // Act
+        $resourceInfo = $this->getResourceFileInformation($resId);
+
+        // Assert
+        $this->assertIsArray($resourceInfo['information']);
+        $this->assertNotEmpty($resourceInfo['information']);
+        $this->assertSame('txt', $resourceInfo['information']['format']);
+        $this->assertNotEmpty($resourceInfo['information']['docserverPathFile']);
+        $this->assertIsString($resourceInfo['information']['docserverPathFile']);
+        $this->assertStringContainsString(self::$pathEncryptedTemplate, $resourceInfo['information']['docserverPathFile']);
+    }
+
+    private function lockUnencryptedMainDocumentDocserver(): void
+    {
         $args = [
             'docserver_id'      =>  'FASTHD_MAN',
             'device_label'      =>  'Dépôt documentaire de numérisation manuelle',
@@ -33,17 +61,12 @@ class EncryptedResourceTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $docserverController = new DocserverController();
 
-        // Act
-        $response     = $docserverController->update($fullRequest, new Response(),['id' => self::$docserverId]);
-        $responseBody = json_decode((string)$response->getBody());
-
-        // Assert
-        $this->assertIsInt($responseBody->docserver->id);
+        // id 2 is docserver FASTHD_MAN in data_fr.sql
+        $docserverController->update($fullRequest, new Response(),['id' => 2]);
     }
 
-    public function testCreateEncryptedDocserverForMainDoc()
+    private function createEncryptedDocserverForMainResourceDocument(): int
     {
-        // Arrange
         $args = [
             'docserver_id'      =>  'ENCRYPTED_FASTHD_MAN',
             'docserver_type_id' =>  'DOC',
@@ -56,21 +79,15 @@ class EncryptedResourceTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $args);
         $docserverController = new DocserverController();
 
-        // Act
-        if (!is_dir(self::$pathEncryptedTemplate)) {
-            mkdir(self::$pathEncryptedTemplate);
-        }
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        // Assert
-        self::$encryptedDocserverId = $responseBody->docserver;
-        $this->assertIsInt(self::$encryptedDocserverId);
+        return $responseBody->docserver;
     }
 
-    public function testCreateMainDoc()
+    private function createResource(): int
     {
-        // Arrange
+        $previousLogin = $GLOBALS['login'];
         $this->connectAsUser('cchaplin');
 
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
@@ -95,53 +112,32 @@ class EncryptedResourceTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $body);
         $resController = new ResController();
 
-        // Act
         $response      = $resController->create($fullRequest, new Response());
         $responseBody  = json_decode((string)$response->getBody());
 
-        // Assert
-        self::$docId = $responseBody->resId;
-        $this->assertIsInt(self::$docId);
+        $this->connectAsUser($previousLogin);
+
+        return $responseBody->resId;
     }
 
-    public function testCheckIfMainDocIsStoredInEncryptedDocserver()
+    private function getResourceFileInformation(int $resId): array
     {
-        // Arrange
         $resController  = new ResController();
         $request        = $this->createRequest('GET');
 
-        // Act
-        $response       = $resController->getResourceFileInformation($request, new Response(), ['resId' => self::$docId]);
-        $responseBody   = json_decode((string)$response->getBody(), true);
-
-        // Assert
-        $this->assertSame(200, $response->getStatusCode());
-        $this->assertIsArray($responseBody['information']);
-        $this->assertNotEmpty($responseBody['information']);
-        $this->assertSame('txt', $responseBody['information']['format']);
-        $this->assertNotEmpty($responseBody['information']['docserverPathFile']);
-        $this->assertIsString($responseBody['information']['docserverPathFile']);
-        $this->assertStringContainsString(self::$pathEncryptedTemplate, $responseBody['information']['docserverPathFile']);
+        $response = $resController->getResourceFileInformation($request, new Response(), ['resId' => $resId]);
+        return json_decode((string)$response->getBody(), true);
     }
 
-    public function testDeleteEncryptedMainDocDocserver()
+    private function deleteEncryptedDocserverForMainResourceDocument(int $id): void
     {
-        // Arrange
         $docserverController = new DocserverController();
         $fullRequest = $this->createRequestWithBody('DELETE');
-
-        // Act
-        $response     = $docserverController->delete($fullRequest, new Response(), ['id' => self::$encryptedDocserverId]);
-        $responseBody = json_decode((string)$response->getBody());
-
-        // Assert
-        $this->assertIsString($responseBody->success);
-        $this->assertSame('success', $responseBody->success);
+        $docserverController->delete($fullRequest, new Response(), ['id' => $id]);
     }
 
-    public function testSetBackReadOnlyToFalseForUnencryptedMainDocDocserver()
+    private function unlockUnencryptedMainDocumentDocserver(): void
     {
-        // Arrange
         $docserverController = new DocserverController();
         $args = [
             'docserver_id'      =>  'FASTHD_MAN',
@@ -153,12 +149,7 @@ class EncryptedResourceTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        // Act
-        $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$docserverId]);
-        $responseBody = json_decode((string)$response->getBody());
-
-        // Assert
-        $this->assertIsInt($responseBody->docserver->id);
-        $this->assertSame(false, $responseBody->docserver->is_readonly);
+        // id 2 is docserver FASTHD_MAN in data_fr.sql
+        $docserverController->update($fullRequest, new Response(), ['id' => 2]);
     }
 }
