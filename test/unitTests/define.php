@@ -22,6 +22,9 @@ date_default_timezone_set(CoreConfigModel::getTimezone());
 $language = CoreConfigModel::getLanguage();
 require_once("src/core/lang/lang-{$language}.php");
 
-$config = file_get_contents('config/config.json.default');
+$config = file_get_contents('config/config.json');
 $config = json_decode($config, true);
 $config['config']['newInternalParaph'] = true;
+$fp = fopen('config/config.json', 'w');
+fwrite($fp, json_encode($config, JSON_PRETTY_PRINT));
+fclose($fp);
