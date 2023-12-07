@@ -64,7 +64,6 @@ class RetrieveThumbnailResource
         $noThumbnailPath = 'dist/assets/noThumbnail.png';
         $pathToThumbnail = $noThumbnailPath;
 
-
         if (!empty($document->getFilename()) && $this->resourceData->hasRightByResId($resId, $GLOBALS['id'])) {
 
             $tnlDocument = $this->getResourceVersion($resId, 'TNL', $document->getVersion());

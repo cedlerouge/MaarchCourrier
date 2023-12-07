@@ -12,7 +12,7 @@ namespace MaarchCourrier\Tests\app\resource\Application;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
-use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
+use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveResource;
 use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
@@ -35,7 +35,7 @@ class RetrieveResourceTest extends TestCase
         $this->retrieveResource = new RetrieveResource(
             $this->resourceDataMock,
             $this->resourceFileMock,
-            new RetrieveDocserverFilePathAndFingerPrint($this->resourceDataMock, $this->resourceFileMock)
+            new RetrieveDocserverAndFilePath($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 

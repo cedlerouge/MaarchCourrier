@@ -6,9 +6,9 @@ use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\Ports\ResourceFileInterface;
-use Resource\Domain\ResourceDocserverFilePathFingerPrint;
+use Resource\Domain\ResourceDocserverAndFilePath;
 
-class RetrieveDocserverFilePathAndFingerPrint
+class RetrieveDocserverAndFilePath
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
@@ -25,7 +25,7 @@ class RetrieveDocserverFilePathAndFingerPrint
      * @throws ExceptionResourceDocserverDoesNotExist
      * @throws ExceptionResourceNotFoundInDocserver
      */
-    public function getDocserverFilePathAndFingerprint(object $document): ResourceDocserverFilePathFingerPrint
+    public function getDocserverAndFilePath(object $document): ResourceDocserverAndFilePath
     {
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
 
@@ -39,8 +39,6 @@ class RetrieveDocserverFilePathAndFingerPrint
             throw new ExceptionResourceNotFoundInDocserver();
         }
 
-        $fingerPrint = $this->resourceFile->getFingerPrint($docserver->getDocserverTypeId(), $filePath);
-
-        return new ResourceDocserverFilePathFingerPrint($docserver, $filePath, $fingerPrint);
+        return new ResourceDocserverAndFilePath($docserver, $filePath);
     }
 }

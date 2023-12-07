@@ -32,16 +32,16 @@ class RetrieveResource
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
-    private RetrieveDocserverFilePathAndFingerPrint $retrieveResourceDocserverFilePathFingerPrint;
+    private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     public function __construct (
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
-        RetrieveDocserverFilePathAndFingerPrint $retrieveResourceDocserverFilePathFingerPrint
+        RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
-        $this->retrieveResourceDocserverFilePathFingerPrint = $retrieveResourceDocserverFilePathFingerPrint;
+        $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
     }
 
     /**
@@ -56,6 +56,8 @@ class RetrieveResource
      * @throws ExceptionResourceFailedToGetDocumentFromDocserver
      * @throws ExceptionParameterCanNotBeEmptyAndShould
      * @throws ExecptionConvertedResult
+     * @throws ExceptionResourceDocserverDoesNotExist
+     * @throws ExceptionResourceNotFoundInDocserver
      */
     public function getResourceFile(int $resId): ResourceFileInfo
     {
@@ -81,21 +83,21 @@ class RetrieveResource
             throw $e;
         }
 
-        try {
-            $docserverFilePathAndFingerprint = $this->retrieveResourceDocserverFilePathFingerPrint->getDocserverFilePathAndFingerprint($document);
-        } catch (ExceptionResourceDocserverDoesNotExist|ExceptionResourceNotFoundInDocserver $e) {
-            throw $e;
+        $docserverAndFilePath= $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
+
+        $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
+        if (!empty($fingerPrint) && empty($document->getFingerprint())) {
+            $this->resourceData->updateFingerprint($resId, $fingerPrint);
         }
 
-        if (!empty($docserverFilePathAndFingerprint->getFingerprint()) && empty($document->getFingerprint())) {
-            $this->resourceData->updateFingerprint($resId, $docserverFilePathAndFingerprint->getFingerprint());
-        }
-
-        if ($document->getFingerprint() != $docserverFilePathAndFingerprint->getFingerprint()) {
+        if ($document->getFingerprint() != $fingerPrint) {
             throw new ExceptionResourceFingerPrintDoesNotMatch();
         }
 
-        $fileContentWithNoWatermark = $this->resourceFile->getFileContent($docserverFilePathAndFingerprint->getFilePath(), $docserverFilePathAndFingerprint->getDocserver()->getIsEncrypted());
+        $fileContentWithNoWatermark = $this->resourceFile->getFileContent(
+            $docserverAndFilePath->getFilePath(),
+            $docserverAndFilePath->getDocserver()->getIsEncrypted()
+        );
 
         $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
         if (empty($fileContent) || $fileContent === 'null') {
@@ -111,7 +113,7 @@ class RetrieveResource
         return new ResourceFileInfo(
             $creatorId,
             null,
-            pathInfo($docserverFilePathAndFingerprint->getFilePath()),
+            pathInfo($docserverAndFilePath->getFilePath()),
             $fileContent,
             $filename,
             $format

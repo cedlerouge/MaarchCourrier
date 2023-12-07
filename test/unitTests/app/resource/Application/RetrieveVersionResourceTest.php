@@ -12,7 +12,7 @@ namespace MaarchCourrier\Tests\app\resource\Application;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
-use Resource\Application\RetrieveDocserverFilePathAndFingerPrint;
+use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveVersionResource;
 use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
@@ -37,7 +37,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->retrieveVersionResource = new RetrieveVersionResource(
             $this->resourceDataMock,
             $this->resourceFileMock,
-            new RetrieveDocserverFilePathAndFingerPrint($this->resourceDataMock, $this->resourceFileMock)
+            new RetrieveDocserverAndFilePath($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 
