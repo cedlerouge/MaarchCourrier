@@ -83,6 +83,7 @@ class EncryptedResourceTest extends CourrierTestCase
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
+        var_dump($responseBody);
         return $responseBody->docserver;
     }
 
