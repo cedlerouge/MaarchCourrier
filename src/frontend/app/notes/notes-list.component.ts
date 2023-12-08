@@ -62,9 +62,8 @@ export class NotesListComponent implements OnInit {
             tap((data: any) => {
                 this.defaultRestriction = (data.parameter.param_value_int == 1);
             }),
-            finalize(() => this.loading = false),
             catchError((err: any) => {
-                this.notify.handleErrors(err);
+                this.defaultRestriction = true;
                 return of(false);
             })
         ).subscribe();
