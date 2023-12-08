@@ -25,6 +25,7 @@ class EncryptedResourceTest extends CourrierTestCase
     {
         if (isset(self::$encryptedDocserverId)) {
             $this->deleteEncryptedDocserverForMainResourceDocument(self::$encryptedDocserverId);
+            rmdir(self::$pathEncryptedTemplate);
         }
         $this->unlockUnencryptedMainDocumentDocserver();
     }
@@ -67,6 +68,9 @@ class EncryptedResourceTest extends CourrierTestCase
 
     private function createEncryptedDocserverForMainResourceDocument(): int
     {
+        if (!is_dir(self::$pathEncryptedTemplate)) {
+            mkdir(self::$pathEncryptedTemplate);
+        }
         $args = [
             'docserver_id'      =>  'ENCRYPTED_FASTHD_MAN',
             'docserver_type_id' =>  'DOC',
@@ -83,7 +87,6 @@ class EncryptedResourceTest extends CourrierTestCase
         $response     = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        var_dump($responseBody);
         return $responseBody->docserver;
     }
 
