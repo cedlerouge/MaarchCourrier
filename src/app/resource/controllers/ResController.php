@@ -98,9 +98,11 @@ class ResController extends ResourceControlController
 
         if (!empty($body['encodedFile'])) {
             ConvertPdfController::convert([
-                'resId'     => $resId,
-                'collId'    => 'letterbox_coll',
-                'version'   => 1
+                'encodedFile' => $body['encodedFile'],
+                'format'      => $body['format'],
+                'resId'       => $resId,
+                'collId'      => 'letterbox_coll',
+                'version'     => 1
             ]);
 
             $customId = CoreConfigModel::getCustomId();
@@ -415,9 +417,11 @@ class ResController extends ResourceControlController
 
         if (!empty($body['encodedFile'])) {
             ConvertPdfController::convert([
-                'resId'     => $args['resId'],
-                'collId'    => 'letterbox_coll',
-                'version'   => $resource['version'] + 1
+                'encodedFile'   => $body['encodedFile'],
+                'format'        => $body['format'],
+                'resId'         => $args['resId'],
+                'collId'        => 'letterbox_coll',
+                'version'       => $resource['version'] + 1
             ]);
 
             $customId = CoreConfigModel::getCustomId();
