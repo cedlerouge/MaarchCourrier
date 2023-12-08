@@ -2,7 +2,7 @@ import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import {catchError, tap, debounceTime, filter, finalize} from 'rxjs/operators';
+import { catchError, tap, debounceTime } from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -45,7 +45,8 @@ export class NoteEditorComponent implements OnInit {
         private notify: NotificationService,
         public headerService: HeaderService,
         public functions: FunctionsService,
-        private latinisePipe: LatinisePipe) { }
+        private latinisePipe: LatinisePipe) {
+    }
 
     async ngOnInit() {
         await this.getEntities();
@@ -81,9 +82,9 @@ export class NoteEditorComponent implements OnInit {
             tap((data: any) => {
                 if (data.length > 0) {
                     const filterValue = this.latinisePipe.transform(data.toLowerCase());
-                    this.entitiesList = this.entities.filter( (item: any) => (
+                    this.entitiesList = this.entities.filter((item: any) => (
                         this.latinisePipe.transform(item.entity_label.toLowerCase()).includes(filterValue)
-                                || this.latinisePipe.transform(item.entity_id.toLowerCase()).includes(filterValue)
+                        || this.latinisePipe.transform(item.entity_id.toLowerCase()).includes(filterValue)
                     ));
                 } else {
                     this.entitiesList = this.entities;
@@ -117,7 +118,11 @@ export class NoteEditorComponent implements OnInit {
 
     addNote() {
         this.loading = true;
-        this.http.post('../rest/notes', { value: this.content, resId: this.resIds[0], entities: this.entitiesRestriction })
+        this.http.post('../rest/notes', {
+            value: this.content,
+            resId: this.resIds[0],
+            entities: this.entitiesRestriction
+        })
             .subscribe((data: any) => {
                 this.refreshNotes.emit(this.resIds[0]);
                 this.loading = false;
@@ -126,7 +131,11 @@ export class NoteEditorComponent implements OnInit {
 
     updateNote() {
         this.loading = true;
-        this.http.put('../rest/notes/' + this.noteId, { value: this.content, resId: this.resIds[0], entities: this.entitiesRestriction })
+        this.http.put('../rest/notes/' + this.noteId, {
+            value: this.content,
+            resId: this.resIds[0],
+            entities: this.entitiesRestriction
+        })
             .subscribe((data: any) => {
                 this.refreshNotes.emit(this.resIds[0]);
                 this.loading = false;
@@ -143,7 +152,7 @@ export class NoteEditorComponent implements OnInit {
 
 
     getNote() {
-        return {content: this.content, entities: this.entitiesRestriction};
+        return { content: this.content, entities: this.entitiesRestriction };
     }
 
     selectTemplate(template: any) {

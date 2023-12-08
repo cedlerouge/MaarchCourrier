@@ -1,14 +1,14 @@
-import {Component, Input, OnInit, EventEmitter, Output, ViewChild} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {TranslateService} from '@ngx-translate/core';
-import {NotificationService} from '@service/notification/notification.service';
-import {tap, finalize, catchError, exhaustMap, filter} from 'rxjs/operators';
-import {of} from 'rxjs';
-import {HeaderService} from '@service/header.service';
-import {ConfirmComponent} from '../../plugins/modal/confirm.component';
-import {MatDialogRef, MatDialog} from '@angular/material/dialog';
-import {FunctionsService} from '@service/functions.service';
-import {NoteEditorComponent} from './note-editor.component';
+import { Component, Input, OnInit, EventEmitter, Output, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { TranslateService } from '@ngx-translate/core';
+import { NotificationService } from '@service/notification/notification.service';
+import { tap, finalize, catchError, exhaustMap, filter } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { HeaderService } from '@service/header.service';
+import { ConfirmComponent } from '../../plugins/modal/confirm.component';
+import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { FunctionsService } from '@service/functions.service';
+import { NoteEditorComponent } from './note-editor.component';
 
 @Component({
     selector: 'app-notes-list',
@@ -24,7 +24,7 @@ export class NotesListComponent implements OnInit {
 
     @Output() reloadBadgeNotes = new EventEmitter<string>();
 
-    @ViewChild('noteEditor', {static: false}) noteEditor: NoteEditorComponent;
+    @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     notes: any[] = [];
     loading: boolean = true;
     resIds: number[] = [];
