@@ -2,7 +2,7 @@ import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, tap, debounceTime, filter } from 'rxjs/operators';
+import {catchError, tap, debounceTime, filter, finalize} from 'rxjs/operators';
 import { HeaderService } from '@service/header.service';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
@@ -49,6 +49,20 @@ export class NoteEditorComponent implements OnInit {
 
     async ngOnInit() {
         await this.getEntities();
+
+        if (this.defaultRestriction === undefined && !this.disableRestriction) {
+            this.http.get(`../rest/parameters/noteVisibilityOnAction`).pipe(
+                tap((data: any) => {
+                    if (data.parameter.param_value_int == 1){
+                        this.setDefaultRestriction();
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        }
 
         if (this.defaultRestriction) {
             this.setDefaultRestriction();
