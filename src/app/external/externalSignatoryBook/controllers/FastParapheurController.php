@@ -510,6 +510,7 @@ class FastParapheurController
                         $args['idsToRetrieve'][$version][$resId]['typist'] = $signatoryInfo['id'];
                     } else {
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
+                        $args['idsToRetrieve'][$version][$resId]['typist'] = null;
                         FastParapheurController::updateDocumentExternalStateSignatoryUser([
                             'id'            => $resId,
                             'type'          => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
