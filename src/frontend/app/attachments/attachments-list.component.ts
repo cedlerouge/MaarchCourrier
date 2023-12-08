@@ -120,23 +120,27 @@ export class AttachmentsListComponent implements OnInit {
                     tap((data: any) => {
                         this.mailevaEnabled = data.mailevaEnabled;
                         this.attachments = data.attachments;
-                        this.attachments.forEach((element: any) => {
+                        this.attachments = this.attachments.map((attachment: any) => ({
+                            ... attachment,
+                            signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                        }));
+                        this.attachments.forEach((element: any) => {                            
                             if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                                 this.filterAttachTypes.push({
                                     id: element.type,
-                                    label: element.typeLabel
+                                    label: element.typeLabel,
+                                    signable: element.signable
                                 });
                             }
-                            this.attachments = this.attachments.map((attachment: any) => ({
-                                ... attachment,
-                                signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
-                            }));
                             this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                             this.groupId = param['groupSerialId'];                            
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
                             element.canDelete = element.canDelete;
                         });
                         this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
+                        if (this.isModal) {
+                            this.setTaget('inSignatureBook');
+                        }
                     }),
                     finalize(() => this.loading = false),
                     catchError((err: any) => {
@@ -158,20 +162,21 @@ export class AttachmentsListComponent implements OnInit {
                 tap((data: any) => {
                     this.mailevaEnabled = data.mailevaEnabled;
                     this.attachments = data.attachments;
-                    this.attachments.forEach((element: any) => {
+                    this.attachments = this.attachments.map((attachment: any) => ({
+                        ... attachment,
+                        signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                    }));
+                    this.attachments.forEach((element: any) => {                        
                         if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                             this.filterAttachTypes.push({
                                 id: element.type,
-                                label: element.typeLabel
+                                label: element.typeLabel,
+                                signable: element.signable
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
                         element.canDelete = element.canDelete;
                     });
-                    this.attachments = this.attachments.map((attachment: any) => ({
-                        ... attachment,
-                        signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
-                    }));
                     this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';
@@ -320,8 +325,20 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     setTaget(target: string): void {
-        const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');      
+        this.filterAttachTypes = [];
+        this.attachmentsClone.forEach((element: any) => {                        
+            if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
+                this.filterAttachTypes.push({
+                    id: element.type,
+                    label: element.typeLabel,
+                    signable: element.signable
+                });
+            }
+        });
+        const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');
+        const filterAttachTypesClone: any[] = JSON.parse(JSON.stringify(this.filterAttachTypes));
         this.currentIntegrationTarget = target;
+        this.currentFilter = '';        
         if (target === 'all') {
             this.attachments = this.attachmentsClone;
         } else if (target === 'sign') {
@@ -331,5 +348,7 @@ export class AttachmentsListComponent implements OnInit {
         } else if (target === 'inSignatureBook') {
             this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
         }
+        const attachTypes: string[] = this.attachments.map((attachment: any) => attachment.type);
+        this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
     }
 }
