@@ -14,6 +14,8 @@ import { ActionsAdministrationComponent } from './actions-administration.compone
 import { ActivatedRoute } from '@angular/router';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BrowserModule } from '@angular/platform-browser';
 import * as langFrJson from '../../../../lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
@@ -33,9 +35,12 @@ describe('ActionsAdministrationComponent', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [
-                BrowserAnimationsModule,
                 SharedModule,
+                RouterTestingModule,
+                BrowserAnimationsModule,
+                TranslateModule,
                 HttpClientTestingModule,
+                BrowserModule,
                 TranslateModule.forRoot({
                     loader: { provide: TranslateLoader, useClass: FakeLoader },
                 }),
@@ -63,7 +68,6 @@ describe('ActionsAdministrationComponent', () => {
         httpTestingController = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(ActionsAdministrationComponent);
         component = fixture.componentInstance;
-        component.loading = false;
         fixture.detectChanges();
     });
 
@@ -82,7 +86,7 @@ describe('ActionsAdministrationComponent', () => {
         expect(fixture.nativeElement.querySelector('.card-app-content')).toBeDefined();
     }));
 
-    xit('delete action and show succes notification', fakeAsync(() => {
+    it('delete action and show succes notification', fakeAsync(() => {
         const actionsReq = httpTestingController.expectOne('../rest/actions');
         expect(actionsReq.request.method).toBe('GET');
         actionsReq.flush(setActions());
@@ -102,6 +106,8 @@ describe('ActionsAdministrationComponent', () => {
         const secondActionLabel = row[0].querySelector('.cdk-column-label_action');
         const secondActionDelBtn = row[0].querySelector('.cdk-column-actions').querySelector('button');
 
+        fixture.detectChanges();
+
         // expect values and button status
         expect(secondActionId.innerHTML.trim()).toEqual('21');
         expect(secondActionLabel.innerHTML.trim()).toEqual('Envoyer le courrier en validation');
@@ -114,7 +120,8 @@ describe('ActionsAdministrationComponent', () => {
         fixture.detectChanges();
         tick(300);
 
-        component.dialogRef.close('ok');
+        const submitBtn: any = document.querySelector('.mat-dialog-content-container').querySelector('button[name=ok]');
+        submitBtn.click()
 
         fixture.detectChanges();
         tick(300);
@@ -129,11 +136,6 @@ describe('ActionsAdministrationComponent', () => {
         expect(hasSuccessGritter).toEqual(1);
         const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
         expect(notifContent).toEqual(component.translate.instant('lang.actionDeleted'));
-
-        component.actions.shift();
-        fixture.detectChanges();
-        tick(300);
-
         flush();
     }));
 });

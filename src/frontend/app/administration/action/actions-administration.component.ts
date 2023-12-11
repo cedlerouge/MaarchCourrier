@@ -10,7 +10,7 @@ import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { AdministrationService } from '../administration.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -25,8 +25,6 @@ export class ActionsAdministrationComponent implements OnInit {
     @ViewChild('adminMenuTemplate', { static: true }) adminMenuTemplate: TemplateRef<any>;
     @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
     @ViewChild(MatSort, { static: false }) sort: MatSort;
-
-    dialogRef: MatDialogRef<ConfirmComponent>;
 
     search: string = null;
 
@@ -72,8 +70,18 @@ export class ActionsAdministrationComponent implements OnInit {
     }
 
     deleteAction(action: any) {
-        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')} «${action.label_action}»`, msg: this.translate.instant('lang.confirmAction') } });
-        this.dialogRef.afterClosed().pipe(
+        const dialogRef = this.dialog.open(ConfirmComponent,
+            {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: `${this.translate.instant('lang.delete')} «${action.label_action}»`,
+                    msg: this.translate.instant('lang.confirmAction'),
+                }
+            });
+
+        dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete('../rest/actions/' + action.id)),
             tap((data: any) => {
