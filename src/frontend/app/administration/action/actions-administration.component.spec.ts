@@ -95,12 +95,12 @@ describe('ActionsAdministrationComponent', () => {
         tick(300);
         // should load 4 actions
         const row = fixture.nativeElement.querySelectorAll('.mat-row');
-        expect(row.length).toEqual(4);        
+        expect(row.length).toEqual(4);
 
         // get the 1st action
         const secondActionId = row[0].querySelector('.cdk-column-id');
         const secondActionLabel = row[0].querySelector('.cdk-column-label_action');
-        const secondActionDelBtn = row[0].querySelector('.cdk-column-actions').querySelector('button');        
+        const secondActionDelBtn = row[0].querySelector('.cdk-column-actions').querySelector('button');
 
         // expect values and button status
         expect(secondActionId.innerHTML.trim()).toEqual('21');
@@ -113,9 +113,9 @@ describe('ActionsAdministrationComponent', () => {
 
         fixture.detectChanges();
         tick(300);
-    
+
         component.dialogRef.close('ok');
-    
+
         fixture.detectChanges();
         tick(300);
 
@@ -129,7 +129,7 @@ describe('ActionsAdministrationComponent', () => {
         expect(hasSuccessGritter).toEqual(1);
         const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
         expect(notifContent).toEqual(component.translate.instant('lang.actionDeleted'));
-            
+
         component.actions.shift();
         fixture.detectChanges();
         tick(300);
@@ -183,7 +183,7 @@ function setActions() {
                 "action_page": "send_docs_to_recommendation",
                 "component": "sendToParallelOpinion",
                 "history": "Y",
-            }    
+            }
         ]
     };
 }

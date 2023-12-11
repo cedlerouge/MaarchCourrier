@@ -104,11 +104,11 @@ describe('ActionAdministrationComponent', () => {
             component.loading = false;
             fixture.detectChanges();
             component.action.label_action = 'Action de test';
-            component.action.actionPageId = 'actionTest';    
-            fixture.detectChanges();                     
+            component.action.actionPageId = 'actionTest';
+            fixture.detectChanges();
             expect(component.actionsFormUp.form.valid).toBeTruthy();
         }));
-        
+
         it('should be invalid when actionsFormUp is invalid', fakeAsync(() => {
             component.loading = false;
             fixture.detectChanges();
@@ -124,7 +124,7 @@ describe('ActionAdministrationComponent', () => {
             const initActionRes = httpTestingController.expectOne('../rest/initAction');
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
-            
+
             const customFieldReq = httpTestingController.expectOne('../rest/customFields');
             expect(customFieldReq.request.method).toBe('GET');
             customFieldReq.flush({
@@ -147,55 +147,55 @@ describe('ActionAdministrationComponent', () => {
                     },
                 ]
             });
-            
+
             fixture.detectChanges();
             tick(300);
             flush();
-    
+
             const nativeElement = fixture.nativeElement;
             const name = nativeElement.querySelector('input[name=action_name]');
             const submit = nativeElement.querySelector('button[type=submit]');
-    
+
             expect(name).toBeDefined();
-    
+
             name.dispatchEvent(new Event('input'));
             name.value = 'Action de test';
-    
+
             component.selectActionPageId.setValue('confirm_status');
             component.selectStatusId.setValue('_NOSTATUS_');
             component.actionsFormUp.controls['action_name'].setValue(name.value);
-    
+
             fixture.detectChanges();
             tick(300);
-    
-            expect(name.value).toEqual('Action de test');           
-            expect(nativeElement.querySelector(`#actionPageId[ng-reflect-value=${component.selectActionPageId.value}]`)).toBeDefined();            
+
+            expect(name.value).toEqual('Action de test');
+            expect(nativeElement.querySelector('#actionPageId .mat-select-value-text').innerText).toEqual('Confirmation simple') 
             expect(submit.disabled).toBeFalse();
-            
+
             fixture.detectChanges();
             tick(300);
-            
+
             const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
-    
+
             submit.click();
-            
+
             fixture.detectChanges();
             tick(300);
-    
+
             const req = httpTestingController.expectOne('../rest/actions');
             expect(req.request.method).toBe('POST');
             expect(req.request.body).toEqual(component.action);
             req.flush({});
-    
+
             fixture.detectChanges();
             tick(300);
-    
+
             const successSpy = document.querySelectorAll('.mat-snack-bar-container.success-snackbar').length;
             const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
-        
+
             expect(successSpy).toEqual(1);
             expect(notifContent).toEqual(component.translate.instant('lang.actionAdded'));
-    
+
             setTimeout(() => {
                 expect(navigateSpy).toHaveBeenCalledWith(['/administration/actions']);
             }, 100);
@@ -211,7 +211,7 @@ describe('ActionAdministrationComponent', () => {
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
 
-            params.subscribe((data: any) => {                
+            params.subscribe((data: any) => {
                 const actionRes = httpTestingController.expectOne('../rest/actions/' + data['id']);
                 expect(actionRes.request.method).toBe('GET');
                 actionRes.flush(initAction());
@@ -240,57 +240,57 @@ describe('ActionAdministrationComponent', () => {
                     },
                 ]
             });
-            
+
             fixture.detectChanges();
             tick(300);
-        
+
             const nativeElement = fixture.nativeElement;
             const name = nativeElement.querySelector('input[name=action_name]');
             const submit = nativeElement.querySelector('button[type=submit]');
-    
+
             expect(name).toBeDefined();
-            
+
             fixture.detectChanges();
             tick(300);
-    
+
             name.dispatchEvent(new Event('input'));
             name.value = 'Action de test modifié';
-    
+
             component.action.label_action = name.value;
             component.selectActionPageId.setValue('confirm_status');
             component.selectStatusId.setValue('_NOSTATUS_');
             component.actionsFormUp.controls['action_name'].setValue(name.value);
-            
+
             fixture.detectChanges();
             tick(300);
-            
-    
+
+
             expect(nativeElement.querySelector('#categorieslist')).toBeDefined();
             expect(submit.disabled).toBeFalse();
-            
+
             fixture.detectChanges();
             tick(300);
-            
+
             const navigateSpy = spyOn(TestBed.inject(Router), 'navigate');
-    
+
             submit.click();
-            
+
             fixture.detectChanges();
             tick(300);
-    
+
             const req = httpTestingController.expectOne(req => req.method === 'PUT' && req.url === '../rest/actions/1');
             expect(req.request.body).toEqual(component.action);
             req.flush({});
-    
+
             fixture.detectChanges();
             tick(300);
-    
+
             const successSpy = document.querySelectorAll('.mat-snack-bar-container.success-snackbar').length;
             const notifContent = document.querySelector('.notif-container-content-msg #message-content').innerHTML;
-        
+
             expect(successSpy).toEqual(1);
             expect(notifContent).toEqual(component.translate.instant('lang.actionUpdated'));
-    
+
             setTimeout(() => {
                 expect(navigateSpy).toHaveBeenCalledWith(['/administration/actions']);
             }, 100);
@@ -357,6 +357,6 @@ function initAction() {
                 "maarch_module": "apps",
                 "can_be_searched": "Y",
             }
-        ]    
+        ]
     };
 }
