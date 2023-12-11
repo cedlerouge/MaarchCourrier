@@ -50,7 +50,6 @@ export class NotesListComponent implements OnInit {
                     this.resIds[0] = this.resId;
                     this.notes = data['notes'];
                 }),
-                finalize(() => this.loading = false),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     return of(false);
@@ -60,10 +59,14 @@ export class NotesListComponent implements OnInit {
 
         this.http.get(`../rest/parameters/noteVisibilityOffAction`).pipe(
             tap((data: any) => {
-                this.defaultRestriction = (data.parameter.param_value_int == 1);
+                this.defaultRestriction = (data.parameter.param_value_int === 1);
             }),
+            finalize(() => this.loading = false),
             catchError((err: any) => {
                 this.defaultRestriction = true;
+                if (err.error.lang !== 'parameterNotFound') {
+                    this.notify.handleSoftErrors(err);
+                }
                 return of(false);
             })
         ).subscribe();

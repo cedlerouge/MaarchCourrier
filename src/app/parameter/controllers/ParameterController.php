@@ -83,7 +83,7 @@ class ParameterController
         $parameter = ParameterModel::getById(['id' => $aArgs['id']]);
 
         if (empty($parameter)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Parameter not found']);
+            return $response->withStatus(400)->withJson(['errors' => 'Parameter not found', 'lang' => 'parameterNotFound']);
         }
 
         return $response->withJson(['parameter' => $parameter]);

@@ -54,15 +54,18 @@ export class NoteEditorComponent implements OnInit {
         if (this.defaultRestriction === undefined && !this.disableRestriction) {
             this.http.get(`../rest/parameters/noteVisibilityOnAction`).pipe(
                 tap((data: any) => {
-                    this.defaultRestriction = (data.parameter.param_value_int == 1);
+                    if (data.parameter.param_value_int === 1){
+                        this.setDefaultRestriction();
+                    }
                 }),
                 catchError((err: any) => {
+                    if (err.error.lang !== 'parameterNotFound') {
+                        this.notify.handleSoftErrors(err);
+                    }
                     return of(false);
                 })
             ).subscribe();
-        }
-
-        if (this.defaultRestriction) {
+        } else if (this.defaultRestriction) {
             this.setDefaultRestriction();
         }
 
