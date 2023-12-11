@@ -159,6 +159,38 @@ class ResourceData implements ResourceDataInterface
     }
 
     /**
+     * @param   int $resId      Resource id
+     * @param   int $version    Resource version
+     *
+     * @return  ResourceConverted
+     */
+    public function getLatestPdfVersion(int $resId, int $version): ?ResourceConverted
+    {
+        $document = AdrModel::getDocuments([
+            'select'    => ['id', 'version', 'type', 'docserver_id', 'path', 'filename', 'fingerprint'],
+            'where'     => ['res_id = ?', 'type in (?)', 'version = ?'],
+            'data'      => [$resId, ['PDF', 'SIGN'], $version],
+            'orderBy'   => ["type='SIGN' DESC"],
+            'limit'     => 1
+        ]);
+
+        if (empty($document[0])) {
+            return null;
+        }
+
+        return new ResourceConverted(
+            $document[0]['id'],
+            $resId,
+            $document[0]['type'],
+            $document[0]['version'],
+            $document[0]['docserver_id'],
+            $document[0]['path'],
+            $document[0]['filename'],
+            $document[0]['fingerprint']
+        );
+    }
+
+    /**
      * Check if user has rights over the resource
      *
      * @param   int     $resId      Resource id

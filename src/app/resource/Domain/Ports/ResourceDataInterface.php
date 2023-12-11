@@ -58,6 +58,14 @@ interface ResourceDataInterface
     public function getLatestResourceVersion(int $resId, string $type): ?ResourceConverted;
 
     /**
+     * @param   int $resId      Resource id
+     * @param   int $version    Resource version
+     *
+     * @return  ResourceConverted
+     */
+    public function getLatestPdfVersion(int $resId, int $version): ?ResourceConverted;
+
+    /**
      * Check if user has rights over the resource
      *
      * @param   int     $resId      Resource id

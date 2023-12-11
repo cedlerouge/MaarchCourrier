@@ -119,9 +119,9 @@ class ResourceFile implements ResourceFileInterface
         return WatermarkController::watermarkResource(['resId' => $resId, 'fileContent' => $fileContent]);
     }
 
-    public function convertToThumbnail(int $resId): array
+    public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array
     {
-        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId]);
+        $check = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $resId, 'fileContent' => $fileContent, 'extension' => $extension, 'version' => $version]);
         if ($check['errors']) {
             return $check;
         }

@@ -12,6 +12,7 @@ namespace MaarchCourrier\Tests\app\resource\Application;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
+use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveThumbnailResource;
 use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
@@ -29,7 +30,8 @@ class RetrieveThumbnailResourceTest extends TestCase
 
         $this->retrieveThumbnailResource = new RetrieveThumbnailResource(
             $this->resourceDataMock,
-            $this->resourceFileMock
+            $this->resourceFileMock,
+            new RetrieveDocserverAndFilePath($this->resourceDataMock, $this->resourceFileMock)
         );
     }
 
@@ -39,7 +41,7 @@ class RetrieveThumbnailResourceTest extends TestCase
     public function testCannotGetThumbnailFileBecauseResId0(): void
     {
         // Arrange
-        
+
         // Assert
         $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('resId', 0));
 
@@ -55,7 +57,7 @@ class RetrieveThumbnailResourceTest extends TestCase
         // Arrange
         $this->resourceDataMock->returnResourceWithoutFile = true;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
-        
+
         // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
@@ -75,7 +77,7 @@ class RetrieveThumbnailResourceTest extends TestCase
         // Arrange
         $this->resourceDataMock->doesUserHasRights = false;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
-        
+
         // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
@@ -111,7 +113,7 @@ class RetrieveThumbnailResourceTest extends TestCase
         // Arrange
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
-        
+
         // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 

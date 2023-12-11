@@ -66,8 +66,9 @@ class RetrieveResourceFactory
     {
         $resourceData = new ResourceData();
         $resourceFile = new ResourceFile();
+        $resourceDocserverFilePathFingerPrint = new RetrieveDocserverAndFilePath($resourceData, $resourceFile);
 
-        return new RetrieveThumbnailResource($resourceData, $resourceFile);
+        return new RetrieveThumbnailResource($resourceData, $resourceFile, $resourceDocserverFilePathFingerPrint);
     }
 
     /**

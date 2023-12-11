@@ -137,7 +137,7 @@ class ResourceFileMock implements ResourceFileInterface
         }
     }
 
-    public function convertToThumbnail(int $resId): array
+    public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array
     {
         if ($this->doesResourceConvertToThumbnailFailed) {
             return ['errors' => 'Convertion to thumbnail failed'];

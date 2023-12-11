@@ -53,7 +53,7 @@ interface ResourceFileInterface
      */
     public function getWatermark(int $resId, string $fileContent): string;
 
-    public function convertToThumbnail(int $resId): array;
+    public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array;
 
     /**
      * Convert resource page to thumbnail.

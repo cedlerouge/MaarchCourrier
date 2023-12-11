@@ -165,6 +165,17 @@ class ResourceDataMock implements ResourceDataInterface
     }
 
     /**
+     * @param   int $resId      Resource id
+     * @param   int $version    Resource version
+     *
+     * @return  ResourceConverted
+     */
+    public function getLatestPdfVersion(int $resId, int $version): ?ResourceConverted
+    {
+        return new ResourceConverted(1, $resId, 'PDF', 1, 'FASTHD', '2021/03/0001/', '0001_960655724.pdf', 'file fingerprint');
+    }
+
+    /**
      * Check if user has rights over the resource
      *
      * @param   int     $resId      Resource id

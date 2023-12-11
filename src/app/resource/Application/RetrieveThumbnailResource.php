@@ -16,7 +16,9 @@ namespace Resource\Application;
 
 use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
 use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
 use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
+use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
 use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
@@ -27,13 +29,16 @@ class RetrieveThumbnailResource
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
+    private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     public function __construct (
         ResourceDataInterface $resourceDataInterface,
-        ResourceFileInterface $resourceFileInterface
+        ResourceFileInterface $resourceFileInterface,
+        RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
+        $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
     }
 
     /**
@@ -47,6 +52,8 @@ class RetrieveThumbnailResource
      * @throws ExceptionParameterMustBeGreaterThan
      * @throws ExceptionResourceDoesNotExist
      * @throws ExceptionConvertThumbnail
+     * @throws ExceptionResourceFailedToGetDocumentFromDocserver
+     * @throws ExceptionResourceDocserverDoesNotExist
      */
     public function getThumbnailFile(int $resId): ResourceFileInfo
     {
@@ -69,7 +76,25 @@ class RetrieveThumbnailResource
             $tnlDocument = $this->getResourceVersion($resId, 'TNL', $document->getVersion());
 
             if ($tnlDocument == null) {
-                $check = $this->resourceFile->convertToThumbnail($resId, 'resource');
+
+                $latestPdfVersion = $this->resourceData->getLatestPdfVersion($resId, $document->getVersion());
+                if ($latestPdfVersion == null) {
+                    throw new ExceptionResourceDoesNotExist();
+                }
+
+                $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($latestPdfVersion);
+                $fileContent = $this->resourceFile->getFileContent(
+                    $docserverAndFilePath->getFilePath(),
+                    $docserverAndFilePath->getDocserver()->getIsEncrypted()
+                );
+                if ($fileContent === 'false') {
+                    throw new ExceptionResourceFailedToGetDocumentFromDocserver();
+                }
+
+                $check = $this->resourceFile->convertToThumbnail(
+                    $resId, $latestPdfVersion->getVersion(),
+                    $fileContent, pathinfo($docserverAndFilePath->getFilePath(), PATHINFO_EXTENSION)
+                );
                 if (isset($check['errors'])) {
                     throw new ExceptionConvertThumbnail($check['errors']);
                 }
