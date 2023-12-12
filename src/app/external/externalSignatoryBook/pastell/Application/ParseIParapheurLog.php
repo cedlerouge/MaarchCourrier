@@ -67,15 +67,15 @@ class ParseIParapheurLog
             $status = $historyLog->status;
             if ($status == $this->pastellStates->getSignState()) {
                 $return = $this->handleValidate($resId, $idFolder, true);
-                $return['signatory'] = $historyLog->nom;
+                $return['signatory'] = $historyLog->nom ?? '';
                 break;
             } elseif ($status == $this->pastellStates->getVisaState()) {
-                $return['signatory'] = $historyLog->nom;
                 $return = $this->handleValidate($resId, $idFolder, false);
+                $return['signatory'] = $historyLog->nom ?? '';
                 break;
             } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
-                $return['signatory'] = $historyLog->nom;
                 $return = $this->handleRefused($historyLog->nom ?? '', $historyLog->annotation ?? '');
+                $return['signatory'] = $historyLog->nom ?? '';
                 break;
             }
         }
