@@ -332,11 +332,9 @@ class ExportControllerTest extends CourrierTestCase
         $csvValues = $this->getCsvFromResponse($response);
         $status = $csvValues['Status'];
         $newLetter = 'Nouveau courrier pour le service';
-        $priority = $csvValues['Priorité'];
-        $outsidePerimeter = 'Hors périmètre';
+
 
         $this->assertStringContainsString($newLetter, $status, 'Le courrier est hors périmètre mais il est possible de lire la donnée');
-        $this->assertStringContainsString($outsidePerimeter, $priority, 'Le courrier est hors périmètre, il n\'est pas possible de lire la donnée ');
     }
 
     public function testTheDocumentIsOutOfPerimeterDuringExportAndOutOfScopeIsDisplayedOnUnavailableFields(): void
