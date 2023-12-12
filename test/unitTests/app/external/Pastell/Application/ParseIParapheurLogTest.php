@@ -128,6 +128,7 @@ class ParseIParapheurLogTest extends TestCase
             [
                 'status'  => 'refused',
                 'content' => 'Nom : annotation',
+                'signatory' => 'Nom'
             ],
             $result
         );
