@@ -16,6 +16,7 @@ use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\UpdateSignatoryUserMock;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
@@ -24,6 +25,7 @@ class RetrieveFromPastellTest extends TestCase
     private PastellConfigMock $pastellConfigMock;
     private ParseIParapheurLogMock $parseIParapheurLogMock;
     private RetrieveFromPastell $retrieveFromPastell;
+    private UpdateSignatoryUserMock $updateSignatoryUserMock;
 
     protected function setUp(): void
     {
@@ -31,6 +33,7 @@ class RetrieveFromPastellTest extends TestCase
         $processVisaWorkflowSpy = new ProcessVisaWorkflowSpy();
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
+        $this->updateSignatoryUserMock = new UpdateSignatoryUserMock();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -43,7 +46,8 @@ class RetrieveFromPastellTest extends TestCase
             $this->pastellApiMock,
             $this->pastellConfigMock,
             $pastellConfigurationCheck,
-            $this->parseIParapheurLogMock
+            $this->parseIParapheurLogMock,
+            $this->updateSignatoryUserMock
         );
     }
 
@@ -66,8 +70,9 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id' => 'djqfdh'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve,$documentType);
 
         $this->assertSame(
             [
@@ -112,8 +117,9 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id' => 'chuchu'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -157,8 +163,9 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id' => 'djqfdh'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -196,8 +203,9 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id' => 'djqfdh'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -245,8 +253,9 @@ class RetrieveFromPastellTest extends TestCase
                 'external_id' => 'djqfdh'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -276,8 +285,9 @@ class RetrieveFromPastellTest extends TestCase
                 'res_id_master' => 42
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -313,8 +323,9 @@ class RetrieveFromPastellTest extends TestCase
                 'status'      => 'validated'
             ]
         ];
+        $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -322,4 +333,43 @@ class RetrieveFromPastellTest extends TestCase
                 'error'   => [42 => 'An error occurred !']
             ], $result);
     }
+
+    public function testTheSignatoryNameIsTheOneInParapheur(): void
+    {
+        $this->pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+
+        $idsToRetrieve = [
+            41  => [
+                'res_id'      => 41,
+                'external_id' => 'djqfdh'
+            ]
+        ];
+        $documentType = 'resLetterbox';
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
+
+        $this->assertSame(
+            [
+                'success' => [
+                    41 => [
+                        'res_id'      => 41,
+                        'external_id' => 'djqfdh',
+                        'status'      => 'validated',
+                        'format'      => 'pdf',
+                        'encodedFile' => 'toto',
+                        [
+                            'signatory' => 'Bruce Wayne - XELIANS'
+                        ],
+                    ]
+                ],
+                'error'   => [
+
+                ],
+            ],
+            $result
+        );
+    }
+
 }
