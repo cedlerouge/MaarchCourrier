@@ -28,6 +28,7 @@ export class NotesListComponent implements OnInit {
     notes: any[] = [];
     loading: boolean = true;
     resIds: number[] = [];
+    defaultRestriction: boolean = true;
 
 
     dialogRef: MatDialogRef<any>;
@@ -39,7 +40,8 @@ export class NotesListComponent implements OnInit {
         public headerService: HeaderService,
         public dialog: MatDialog,
         public functions: FunctionsService
-    ) { }
+    ) {
+    }
 
     ngOnInit(): void {
         if (this.resId !== null) {
@@ -48,13 +50,26 @@ export class NotesListComponent implements OnInit {
                     this.resIds[0] = this.resId;
                     this.notes = data['notes'];
                 }),
-                finalize(() => this.loading = false),
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     return of(false);
                 })
             ).subscribe();
         }
+
+        this.http.get(`../rest/parameters/noteVisibilityOffAction`).pipe(
+            tap((data: any) => {
+                this.defaultRestriction = (data.parameter.param_value_int === 1);
+            }),
+            finalize(() => this.loading = false),
+            catchError((err: any) => {
+                this.defaultRestriction = true;
+                if (err.error.lang !== 'parameterNotFound') {
+                    this.notify.handleSoftErrors(err);
+                }
+                return of(false);
+            })
+        ).subscribe();
     }
 
     loadNotes(resId: number) {
@@ -76,7 +91,15 @@ export class NotesListComponent implements OnInit {
     }
 
     removeNote(note: any) {
-        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: false, data: { title: this.translate.instant('lang.confirmRemoveNote'), msg: this.translate.instant('lang.confirmAction') } });
+        this.dialogRef = this.dialog.open(ConfirmComponent, {
+            panelClass: 'maarch-modal',
+            autoFocus: false,
+            disableClose: false,
+            data: {
+                title: this.translate.instant('lang.confirmRemoveNote'),
+                msg: this.translate.instant('lang.confirmAction')
+            }
+        });
 
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
@@ -101,7 +124,7 @@ export class NotesListComponent implements OnInit {
     }
 
     isModified() {
-        return this.noteEditor === undefined ? false :  this.noteEditor.isWritingNote();
+        return this.noteEditor === undefined ? false : this.noteEditor.isWritingNote();
     }
 
     addNote() {

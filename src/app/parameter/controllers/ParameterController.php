@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ParametersController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ParametersController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 /**
  * @brief Parameter Controller
@@ -31,10 +30,10 @@ class ParameterController
     public function get(Request $request, Response $response)
     {
         $where = [];
-        $data  = [];
+        $data = [];
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             $where = ['id = ?'];
-            $data  = ['traffic_record_summary_sheet'];
+            $data = ['traffic_record_summary_sheet'];
         }
 
         $parameters = ParameterModel::get(['where' => $where, 'data' => $data]);
@@ -76,14 +75,15 @@ class ParameterController
 
     public function getById(Request $request, Response $response, array $aArgs)
     {
-        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
+        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago', 'noteVisibilityOffAction', 'noteVisibilityOnAction'])
+            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $parameter = ParameterModel::getById(['id' => $aArgs['id']]);
 
         if (empty($parameter)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Parameter not found']);
+            return $response->withStatus(400)->withJson(['errors' => 'Parameter not found', 'lang' => 'parameterNotFound']);
         }
 
         return $response->withJson(['parameter' => $parameter]);
@@ -150,9 +150,9 @@ class ParameterController
                 if (strpos($body['image'], 'data:image/svg+xml;base64,') === false) {
                     return $response->withStatus(400)->withJson(['errors' => 'Body image is not a base64 image']);
                 }
-                $tmpFileName  = $tmpPath . 'parameter_logo_' . rand() . '_file.svg';
+                $tmpFileName = $tmpPath . 'parameter_logo_' . rand() . '_file.svg';
                 $body['logo'] = str_replace('data:image/svg+xml;base64,', '', $body['image']);
-                $file         = base64_decode($body['logo']);
+                $file = base64_decode($body['logo']);
                 file_put_contents($tmpFileName, $file);
 
                 $size = strlen($file);
@@ -167,12 +167,12 @@ class ParameterController
                     }
                     copy("dist/{$body['image']}", "custom/{$customId}/img/bodylogin.jpg");
                 } else {
-                    $tmpFileName   = $tmpPath . 'parameter_body_' . rand() . '_file.jpg';
+                    $tmpFileName = $tmpPath . 'parameter_body_' . rand() . '_file.jpg';
                     $body['image'] = str_replace('data:image/jpeg;base64,', '', $body['image']);
-                    $file          = base64_decode($body['image']);
+                    $file = base64_decode($body['image']);
                     file_put_contents($tmpFileName, $file);
 
-                    $size       = strlen($file);
+                    $size = strlen($file);
                     $imageSizes = getimagesize($tmpFileName);
                     if ($imageSizes[0] < 1920 || $imageSizes[1] < 1080) {
                         return $response->withStatus(400)->withJson(['errors' => 'Body image is not wide enough']);
