@@ -860,6 +860,7 @@ class ActionMethodController
             return ['errors' => "opinionCircuit is empty"];
         }
 
+        $listinstanceCtrl = [];
         foreach ($args['data']['opinionCircuit'] as $instance) {
             if (!in_array($instance['item_mode'], ['avis', 'avis_copy', 'avis_info'])) {
                 return ['errors' => ['item_mode is different from avis, avis_copy or avis_info']];
@@ -870,6 +871,12 @@ class ActionMethodController
                 if (empty($instance[$itemControl])) {
                     return ['errors' => ["ListInstance {$itemControl} is not set or empty"]];
                 }
+            }
+
+            if (in_array($instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'], $listinstanceCtrl)) {
+                return ['errors' => ["Some users/entities are present at least twice with the same role"]];
+            } else {
+                $listinstanceCtrl[] = $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'];
             }
         }
 

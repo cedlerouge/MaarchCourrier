@@ -21,6 +21,8 @@ use SrcCore\http\Response;
 
 class DocserverTypeController
 {
+    public const FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION = ['FULLTEXT', 'MIGRATION'];
+
     public function get(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {

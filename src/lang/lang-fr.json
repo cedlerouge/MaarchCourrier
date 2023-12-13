@@ -1197,6 +1197,7 @@
     "parameterAdded": "Paramètre ajouté",
     "parameterCreation": "Création d'un paramètre",
     "parameterDeleted": "Paramètre supprimé",
+    "parameterNotFound": "Parameter not found",
     "parameterModification": "Modification d'un paramètre",
     "parameterUpdated": "Paramètre modifié",
     "parameters": "Paramètres",
@@ -1691,6 +1692,7 @@
     "warnIndex": "Le groupe ne peut pas enregistrer de courrier.",
     "warnLockRes": "courrier(s) verrouillé(s) par",
     "warnLockRes2": "\n\nL'action prendra en compte UNIQUEMENT les courriers NON verrouillés.",
+    "warnResourceLockedByUser" : "Ressource non disponible. Verrouillée par un utilisateur",
     "warnLockResInProgress": "Ce courrier est en cours de traitement par",
     "warnMaxDataList": "Le nombre maximal d'éléments affichés a été atteint",
     "warnShapingOption": "<b>Attention !</b> L'adresse sera 'incrustée' sur la première page des courriers envoyés",
@@ -2832,5 +2834,14 @@
     "allIntegratedAttachments": "Toutes",
     "attachmentToSign": "Pour visa/signature",
     "attachmentAnnex": "En annexe",
-    "attachmentsInSignatoryBookDesc": "Afficher les pièces jointes intégrées au parapheur"
+    "attachmentsInSignatoryBookDesc": "Pièces jointes intégrées (ou non) au parapheur",
+    "attachInSignatureBook": "Intégrées au parapheur",
+    "allIntegratedAttachmentsDesc": "Toutes les pièces jointes",
+    "attachInSignatureBookDesc": "Seulement les pièces jointes intégrées au parapheur",
+    "allAttachTypes": "Tous les types de pièces jointes",
+    "attachWithType": "Pièces jointes de type : ",
+    "filterAttach": "Filtrer par : état / type de pièce(s) jointe(s)",
+    "docserverEncryptResource": "Activer le chiffrement de la zone de stockage ",
+    "docserverIsEncrypted": "La zone de stockage est chiffrée",
+    "duplicateUsersWithSameMode": "Certains utilisateurs sont présents au moins deux fois avec le même rôle."
 }

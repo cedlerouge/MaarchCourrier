@@ -24,6 +24,7 @@
                                 <mat-form-field>
                                     <mat-select required name="docserver_type" id="docserver_type"
                                         title="{{'lang.docserverType' | translate}}" placeholder="{{'lang.docserverType' | translate}}"
+                                        (selectionChange)="checkForbiddenDocserversTypesForEncrypted($event.value)"
                                         [(ngModel)]="docserver.docserver_type_id">
                                         <mat-option *ngFor="let docserverType of this.docserversTypes"
                                             [value]="docserverType.docserver_type_id">
@@ -67,6 +68,11 @@
                                         placeholder="{{'lang.path' | translate}}" [(ngModel)]="docserver.path_template"
                                         [disabled]="docserver.is_readonly">
                                 </mat-form-field>
+                                <mat-slide-toggle name="is_encrypted" style="height:40px;" color="primary" 
+                                    [disabled]="forbiddenDocserversTypesForEncrypted.indexOf(docserver.docserver_type_id) > -1"
+                                    [(ngModel)]="docserver.is_encrypted">
+                                    {{'lang.docserverEncryptResource' | translate}}
+                                </mat-slide-toggle>
                             </div>
                             <div class="col-md-12 text-center" style="padding:10px;">
                                 <button mat-raised-button color="primary" type="submit"

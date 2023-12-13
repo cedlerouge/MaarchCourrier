@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from "@angular/core/testing"
 import { SendExternalSignatoryBookActionComponent } from "./send-external-signatory-book-action.component";
-import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
 import { BrowserModule, By } from "@angular/platform-browser";
@@ -109,14 +109,16 @@ describe('SendExternalSignatoryBookActionComponent', () => {
             flush();
 
             loadAttachments(component, fixture);
-            
         }));
     });
 
-    it('Hide integrationTarget filter when checkbox value if false', fakeAsync(() => {
+    it('Check if filters are loaded and currentIntegrationTarget equal to inSignatureBook', fakeAsync(() => {
         spyOn(component.externalSignatoryBook, 'checkExternalSignatureBook').and.returnValue(Promise.resolve({ availableResources: [], additionalsInfos: { attachments: [], noAttachment: [] }, errors: [] }));
         
         component.attachmentsList = TestBed.inject(AttachmentsListComponent);
+        component.attachmentsList.isModal = true;
+
+        fixture.detectChanges();        
 
         tick(300);
         expect(component.loading).toBe(false);
@@ -124,19 +126,58 @@ describe('SendExternalSignatoryBookActionComponent', () => {
         fixture.detectChanges();
         tick(300);
         flush();
+        
+        fixture.whenStable().finally(() => {
+            loadAttachments(component, fixture);
+            fixture.detectChanges();
+            tick(300);
 
-        loadAttachments(component, fixture);
+            // Show filters
+            const matButtonToggleGroup = fixture.nativeElement.querySelector('#integrationTarget');
+            const matButtonToggle = matButtonToggleGroup.querySelectorAll('mat-button-toggle');
+            expect(matButtonToggle.length).toEqual(4);
 
-        component.inSignatoryBook.setValue(false);
+            fixture.detectChanges();
+            tick(300);
 
-        fixture.detectChanges();
-        tick(300);
-
-        expect(fixture.debugElement.query(By.css('mat-radio-group'))).toEqual(null);
+            // Check if filter selected by default is : inSignatureBook 
+            const matButtonToggleChecked = matButtonToggleGroup.querySelector('mat-button-toggle[ng-reflect-checked = true]');
+            expect(matButtonToggleChecked.getAttribute('title')).toEqual(component.translate.instant('lang.attachInSignatureBookDesc'))
+            flush();
+        });
     }));
 });
 
 function loadAttachments(component: SendExternalSignatoryBookActionComponent, fixture: ComponentFixture<SendExternalSignatoryBookActionComponent>) {
+    const attachmentsTypesMock: any =  {
+        response_project: {
+            id: 3,
+            typeId: 'response_project',
+            label: 'Projet de réponse',
+            visible: true,
+            emailLink: true,
+            signable: true,
+            signedByDefault: false,
+            icon: 'R',
+            chrono: true,
+            versionEnabled: true,
+            newVersionDefault: true
+        },
+        simple_attachment: {
+            id: 4,
+            typeId: 'simple_attachment',
+            label: 'Pièce jointe',
+            visible: true,
+            emailLink: true,
+            signable: false,
+            signedByDefault: false,
+            icon: 'PJ',
+            chrono: true,
+            versionEnabled: false,
+            newVersionDefault: false
+        }
+    };
+
     const filterAttachTypesMock: any[] = [
         {
             id: 'response_project',
@@ -198,15 +239,12 @@ function loadAttachments(component: SendExternalSignatoryBookActionComponent, fi
             thumbnail: '../rest/attachments/' + 67 + '/thumbnail'
         }
     ];
+
+    component.attachmentsList.attachmentTypes = attachmentsTypesMock;
     component.attachmentsList.attachments = attachmentsMock;
     component.attachmentsList.attachmentsClone = component.attachmentsList.attachments;
     component.attachmentsList.filterAttachTypes = filterAttachTypesMock;
     component.attachmentsList.loading = false;
-
-    fixture.detectChanges();
-    tick(300);
-    
-    fixture.debugElement.query(By.css('mat-radio-group')).nativeNode.value = component.integrationTarget;
 
     fixture.detectChanges();
     tick(300);

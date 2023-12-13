@@ -58,8 +58,8 @@ class NoteController
         foreach ($notes as $key => $note) {
             $user = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $note['user_id']]);
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $note['user_id'], 'select' => ['entities.entity_label']]);
-            $notes[$key]['firstname']    = $user['firstname'];
-            $notes[$key]['lastname']     = $user['lastname'];
+            $notes[$key]['firstname'] = $user['firstname'];
+            $notes[$key]['lastname'] = $user['lastname'];
             $notes[$key]['entity_label'] = $primaryEntity['entity_label'] ?? null;
 
             $notes[$key]['value'] = $note['note_text'];
@@ -172,7 +172,7 @@ class NoteController
         }
 
         NoteModel::update([
-            'set' => [
+            'set'   => [
                 'note_text' => $body['value']
             ],
             'where' => ['id = ?'],
@@ -240,7 +240,9 @@ class NoteController
             $emails[$key]['document'] = json_decode($email['document'], true);
         }
 
-        $emails = array_filter($emails, function($email) { return !empty($email['document']['notes']); });
+        $emails = array_filter($emails, function ($email) {
+            return !empty($email['document']['notes']);
+        });
         $emails = array_filter($emails, function ($email) use ($args) {
             $noteFound = false;
             foreach ($email['document']['notes'] as $id) {
@@ -252,7 +254,7 @@ class NoteController
         });
 
         foreach ($emails as $key => $email) {
-            $emails[$key]['document']['notes'] = array_filter($emails[$key]['document']['notes'], function ($note) use ($args){
+            $emails[$key]['document']['notes'] = array_filter($emails[$key]['document']['notes'], function ($note) use ($args) {
                 return $note != $args['id'];
             });
             $emails[$key]['document']['notes'] = array_values($emails[$key]['document']['notes']);
@@ -297,10 +299,10 @@ class NoteController
 
             if (!empty($resource['destination'])) {
                 $templates = TemplateModel::getWithAssociation([
-                    'select'    => ['DISTINCT(templates.template_id), template_label', 'template_content'],
-                    'where'     => ['template_target = ?', 'value_field = ?'],
-                    'data'      => ['notes', $resource['destination']],
-                    'orderBy'   => ['template_label']
+                    'select'  => ['DISTINCT(templates.template_id), template_label', 'template_content'],
+                    'where'   => ['template_target = ?', 'value_field = ?'],
+                    'data'    => ['notes', $resource['destination']],
+                    'orderBy' => ['template_label']
                 ]);
             } else {
                 $templates = TemplateModel::getByTarget(['template_target' => 'notes', 'select' => ['template_label', 'template_content']]);

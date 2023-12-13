@@ -50,22 +50,32 @@ export class AttachmentsListComponent implements OnInit {
     @Input() autoOpenCreation: boolean = false;
     @Input() canModify: boolean = null;
     @Input() canDelete: boolean = null;
-    @Input() inSignatoryBook = null;
-    @Output() reloadBadgeAttachments = new EventEmitter<string>();
+    @Input() isModal: boolean = false;
 
+    @Output() reloadBadgeAttachments = new EventEmitter<string>();
     @Output() afterActionAttachment = new EventEmitter<string>();
 
-    attachmentTargets: any[] = [
+    integrationTargets: any[] = [
         {
-            label: this.translate.instant('lang.signTarget'),
-            description: this.translate.instant('lang.signTargetDesc'),
-            signable: true
+            id: 'all',
+            label: this.translate.instant('lang.allIntegratedAttachments'),
+            description: this.translate.instant('lang.allIntegratedAttachmentsDesc')
         },
         {
-            label: this.translate.instant('lang.annexTarget'),
-            description: this.translate.instant('lang.annexTargetDesc'),
-            signable: false
-        }
+            id: 'inSignatureBook',
+            label: this.translate.instant('lang.attachInSignatureBook'),
+            description: this.translate.instant('lang.attachInSignatureBookDesc')
+        },
+        {
+            id: 'sign',
+            label: this.translate.instant('lang.attachmentToSign'),
+            description: this.translate.instant('lang.signTargetDesc')
+        },
+        {
+            id: 'annex',
+            label: this.translate.instant('lang.attachmentAnnex'),
+            description: this.translate.instant('lang.annexTargetDesc')
+        },
     ];
 
     attachments: any[] = [];
@@ -77,7 +87,9 @@ export class AttachmentsListComponent implements OnInit {
 
     filterAttachTypes: any[] = [];
     attachmentTypes: any[] = [];
+
     currentFilter: string = '';
+    currentIntegrationTarget: string = 'inSignatureBook';
 
     dialogRef: MatDialogRef<any>;
 
@@ -101,35 +113,33 @@ export class AttachmentsListComponent implements OnInit {
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-
-        this.inSignatoryBook?.valueChanges.subscribe((data: any) => {
-            this.attachments = data === true ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
-        });
-
+        this.currentIntegrationTarget = this.isModal ? 'inSignatureBook' : 'all';
         this.route.params.subscribe(async (param: any) => {
             if (this.resId !== null) {
                 this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
                     tap((data: any) => {
                         this.mailevaEnabled = data.mailevaEnabled;
                         this.attachments = data.attachments;
-                        this.attachments.forEach((element: any) => {
+                        this.attachments = this.attachments.map((attachment: any) => ({
+                            ... attachment,
+                            signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                        }));
+                        this.attachments.forEach((element: any) => {                            
                             if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                                 this.filterAttachTypes.push({
                                     id: element.type,
-                                    label: element.typeLabel
+                                    label: element.typeLabel,
+                                    signable: element.signable
                                 });
                             }
-                            this.attachments = this.attachments.map((attachment: any) => ({
-                                ... attachment,
-                                signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
-                            }));
                             this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                             this.groupId = param['groupSerialId'];                            
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
                             element.canDelete = element.canDelete;
                         });
-                        if (this.inSignatoryBook?.value === true) {
-                            this.attachments = this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA');
+                        this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
+                        if (this.isModal) {
+                            this.setTaget('inSignatureBook');
                         }
                     }),
                     finalize(() => this.loading = false),
@@ -152,20 +162,21 @@ export class AttachmentsListComponent implements OnInit {
                 tap((data: any) => {
                     this.mailevaEnabled = data.mailevaEnabled;
                     this.attachments = data.attachments;
-                    this.attachments.forEach((element: any) => {
+                    this.attachments = this.attachments.map((attachment: any) => ({
+                        ... attachment,
+                        signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                    }));
+                    this.attachments.forEach((element: any) => {                        
                         if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                             this.filterAttachTypes.push({
                                 id: element.type,
-                                label: element.typeLabel
+                                label: element.typeLabel,
+                                signable: element.signable
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
                         element.canDelete = element.canDelete;
                     });
-                    this.attachments = this.attachments.map((attachment: any) => ({
-                        ... attachment,
-                        signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
-                    }));
                     this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';
@@ -224,20 +235,18 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     showAttachment(attachment: any) {
-        this.route.params.subscribe((param: any) => {
-            this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : attachment.canUpdate, groupId: +param['groupSerialId'] } });
+        this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: this.appService.getViewMode() ? '99vw' : '90vw', maxWidth: this.appService.getViewMode() ? '99vw' : '90vw', panelClass: 'attachment-modal-container', disableClose: true, data: { resId: attachment.resId, editMode : attachment.canUpdate } });
 
-            this.dialogRef.afterClosed().pipe(
-                filter((data: string) => data === 'success'),
-                tap(() => {
-                    this.loadAttachments(this.resId);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
+        this.dialogRef.afterClosed().pipe(
+            filter((data: string) => data === 'success'),
+            tap(() => {
+                this.loadAttachments(this.resId);
+            }),
+            catchError((err: any) => {
+                this.notify.handleErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     createAttachment() {
@@ -315,14 +324,31 @@ export class AttachmentsListComponent implements OnInit {
         });
     }
 
-    setTaget(target: 'all' | 'sign' | 'annex'): void {
-        const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');      
+    setTaget(target: string): void {
+        this.filterAttachTypes = [];
+        this.attachmentsClone.forEach((element: any) => {                        
+            if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
+                this.filterAttachTypes.push({
+                    id: element.type,
+                    label: element.typeLabel,
+                    signable: element.signable
+                });
+            }
+        });
+        const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');
+        const filterAttachTypesClone: any[] = JSON.parse(JSON.stringify(this.filterAttachTypes));
+        this.currentIntegrationTarget = target;
+        this.currentFilter = '';        
         if (target === 'all') {
-            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
+            this.attachments = this.attachmentsClone;
         } else if (target === 'sign') {
             this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && attachment.signable);
         } else if (target === 'annex') {
             this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && !attachment.signable);
+        } else if (target === 'inSignatureBook') {
+            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
         }
+        const attachTypes: string[] = this.attachments.map((attachment: any) => attachment.type);
+        this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
     }
 }

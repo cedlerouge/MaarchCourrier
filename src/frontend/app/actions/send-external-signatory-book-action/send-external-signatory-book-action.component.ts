@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -11,9 +11,7 @@ import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
-import {
-    ExternalSignatoryBookManagerService
-} from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { AuthService } from '@service/auth.service';
@@ -37,6 +35,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
     @ViewChild('attachmentsList', { static: false }) attachmentsList: AttachmentsListComponent;
     @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
+
+    @Output() sidenavStateChanged = new EventEmitter<boolean>();
 
     loading: boolean = false;
 
@@ -67,9 +67,6 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
     inLocalStorage: boolean = false;
-    inSignatoryBook = new UntypedFormControl(true);
-
-    integrationTarget: 'all' | 'sign' | 'annex' = 'all';
 
     constructor(
         public translate: TranslateService,
@@ -260,9 +257,17 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         return this.translate.instant('lang.sendToExternalSignatoryBook');
     }
 
-    async afterAttachmentToggle(event: any) {
+    async afterAttachmentToggle() {
         await this.checkExternalSignatureBook();
-        this.inSignatoryBook.setValue(true);
-        this.attachmentsList.setTaget(this.integrationTarget);
+        this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
+    }
+
+    getIntegratedAttachments(): number {
+        return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA').length;
+    }
+
+    onSidenavStateChanged(): void {        
+        this.snav2?.toggle();
+        this.sidenavStateChanged.emit(this.snav2?.opened);
     }
 }
