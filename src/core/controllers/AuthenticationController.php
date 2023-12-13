@@ -16,9 +16,11 @@ namespace SrcCore\controllers;
 
 use Configuration\models\ConfigurationModel;
 use Email\controllers\EmailController;
+use Exception;
 use Firebase\JWT\JWT;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
+use phpCAS;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
@@ -38,7 +40,7 @@ class AuthenticationController
     const ROUTES_WITHOUT_AUTHENTICATION = [
         'GET/authenticationInformations', 'PUT/versionsUpdateSQL', 'GET/validUrl', 'GET/authenticate/token', 'GET/images', 'POST/password', 'PUT/password', 'GET/passwordRules',
         'GET/jnlp/{jnlpUniqueId}', 'GET/onlyOffice/mergedFile', 'POST/onlyOfficeCallback', 'POST/authenticate',
-        'GET/wopi/files/{id}', 'GET/wopi/files/{id}/contents', 'POST/wopi/files/{id}/contents','GET/onlyOffice/content', 'GET/languages/{lang}', 'GET/languages',
+        'GET/wopi/files/{id}', 'GET/wopi/files/{id}/contents', 'POST/wopi/files/{id}/contents', 'GET/onlyOffice/content', 'GET/languages/{lang}', 'GET/languages',
         'POST/administration/shippings/{id}/notifications'
     ];
 
@@ -50,7 +52,7 @@ class AuthenticationController
         }
         $hashedPath = hash('sha256', $path);
 
-        $appName   = CoreConfigModel::getApplicationName();
+        $appName = CoreConfigModel::getApplicationName();
         $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $maarchUrl = $configFile['config']['maarchUrl'] ?? '';
         $plugins = $configFile['config']['plugins'] ?? [];
@@ -63,22 +65,22 @@ class AuthenticationController
         $authUri = null;
         if ($loggingMethod['id'] == 'cas') {
             $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
-            $hostname         = (string)$casConfiguration->WEB_CAS_URL;
-            $port             = (string)$casConfiguration->WEB_CAS_PORT;
-            $uri              = (string)$casConfiguration->WEB_CAS_CONTEXT;
-            $authUri          = "https://{$hostname}:{$port}{$uri}/login?service=" . UrlController::getCoreUrl() . 'dist/index.html#/login';
+            $hostname = (string)$casConfiguration->WEB_CAS_URL;
+            $port = (string)$casConfiguration->WEB_CAS_PORT;
+            $uri = (string)$casConfiguration->WEB_CAS_CONTEXT;
+            $authUri = "https://{$hostname}:{$port}{$uri}/login?service=" . UrlController::getCoreUrl() . 'dist/index.html#/login';
         } elseif ($loggingMethod['id'] == 'keycloak') {
             $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
-            $provider       = new Keycloak($keycloakConfig);
-            $authUri        = $provider->getAuthorizationUrl(['scope' => $keycloakConfig['scope']]);
-            $keycloakState  = $provider->getState();
+            $provider = new Keycloak($keycloakConfig);
+            $authUri = $provider->getAuthorizationUrl(['scope' => $keycloakConfig['scope']]);
+            $keycloakState = $provider->getState();
         } elseif ($loggingMethod['id'] == 'sso') {
             $ssoConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_sso', 'select' => ['value']]);
             $ssoConfiguration = !empty($ssoConfiguration['value']) ? json_decode($ssoConfiguration['value'], true) : null;
-            $authUri          = $ssoConfiguration['url'] ?? null;
+            $authUri = $ssoConfiguration['url'] ?? null;
         } elseif ($loggingMethod['id'] == 'openam') {
-            $configuration  = CoreConfigModel::getJsonLoaded(['path' => 'config/openAM.json']);
-            $authUri        = $configuration['connectionUrl'] ?? null;
+            $configuration = CoreConfigModel::getJsonLoaded(['path' => 'config/openAM.json']);
+            $authUri = $configuration['connectionUrl'] ?? null;
         }
 
         $emailConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
@@ -106,23 +108,23 @@ class AuthenticationController
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $idleTime = 10080; // minutes
         if (!empty($file['config']['idleTime'])) {
-            $idleTime = (int) $file['config']['idleTime'];
+            $idleTime = (int)$file['config']['idleTime'];
         }
 
         $return = [
-            'instanceId'                => $hashedPath,
-            'applicationName'           => $appName,
-            'loginMessage'              => $parameter['param_value_string'] ?? null,
-            'changeKey'                 => !$encryptKeyChanged,
-            'authMode'                  => $loggingMethod['id'],
-            'authUri'                   => $authUri,
-            'lang'                      => CoreConfigModel::getLanguage(),
-            'mailServerOnline'          => $emailConfiguration['online'] ?? false,
-            'maarchUrl'                 => $maarchUrl,
-            'externalSignatoryBook'     => $externalSignatoryBook,
-            'idleTime'                  => $idleTime,
-            'migrating'                 => VersionUpdateController::isMigrating(),
-            'plugins'                   => $plugins
+            'instanceId'            => $hashedPath,
+            'applicationName'       => $appName,
+            'loginMessage'          => $parameter['param_value_string'] ?? null,
+            'changeKey'             => !$encryptKeyChanged,
+            'authMode'              => $loggingMethod['id'],
+            'authUri'               => $authUri,
+            'lang'                  => CoreConfigModel::getLanguage(),
+            'mailServerOnline'      => $emailConfiguration['online'] ?? false,
+            'maarchUrl'             => $maarchUrl,
+            'externalSignatoryBook' => $externalSignatoryBook,
+            'idleTime'              => $idleTime,
+            'migrating'             => VersionUpdateController::isMigrating(),
+            'plugins'               => $plugins
         ];
 
         if (!empty($keycloakState)) {
@@ -132,7 +134,7 @@ class AuthenticationController
         return $response->withJson($return);
     }
 
-    public function getValidUrl(Request $request, Response $response)
+    public function getValidUrl(Request $request, Response $response): Response
     {
         if (!is_file('custom/custom.json')) {
             return $response->withJson(['message' => 'No custom file', 'lang' => 'noConfiguration']);
@@ -186,7 +188,7 @@ class AuthenticationController
                 if (!empty($token)) {
                     try {
                         $jwt = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         return null;
                     }
                     $jwt['user'] = (array)$jwt['user'];
@@ -208,7 +210,10 @@ class AuthenticationController
         return $userId;
     }
 
-    public static function isRouteAvailable(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function isRouteAvailable(array $args): array
     {
         ValidatorModel::notEmpty($args, ['userId', 'currentRoute', 'currentMethod']);
         ValidatorModel::intVal($args, ['userId']);
@@ -218,7 +223,7 @@ class AuthenticationController
 
         if ($user['mode'] == 'rest') {
             $authorizedApi = json_decode($user['authorized_api'], true);
-            if (!empty($authorizedApi) && !in_array($args['currentMethod'].$args['currentRoute'], $authorizedApi)) {
+            if (!empty($authorizedApi) && !in_array($args['currentMethod'] . $args['currentRoute'], $authorizedApi)) {
                 return ['isRouteAvailable' => false, 'errors' => 'This route is not authorized for this user'];
             }
             return ['isRouteAvailable' => true];
@@ -229,7 +234,7 @@ class AuthenticationController
         if (!in_array($args['currentRoute'], ['/passwordRules', '/users/{id}/password'])) {
             $loggingMethod = CoreConfigModel::getLoggingMethod();
 
-            if (in_array($loggingMethod['id'], ['standard'])) {
+            if ($loggingMethod['id'] == 'standard') {
                 $passwordRules = PasswordModel::getEnabledRules();
                 if (!empty($passwordRules['renewal'])) {
                     $currentDate = new \DateTime();
@@ -246,6 +251,9 @@ class AuthenticationController
         return ['isRouteAvailable' => true];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function handleFailedAuthentication(array $args)
     {
         ValidatorModel::notEmpty($args, ['userId']);
@@ -269,17 +277,17 @@ class AuthenticationController
 
             $set['failed_authentication'] = $user['failed_authentication'] + 1;
             UserModel::update([
-                'set'       => $set,
-                'where'     => ['id = ?'],
-                'data'      => [$args['userId']]
+                'set'   => $set,
+                'where' => ['id = ?'],
+                'data'  => [$args['userId']]
             ]);
 
             if (!empty($user['failed_authentication']) && ($user['failed_authentication'] + 1) >= $passwordRules['lockAttempts'] && !empty($passwordRules['lockTime'])) {
                 $lockedUntil = time() + 60 * $passwordRules['lockTime'];
                 UserModel::update([
-                    'set'       => ['locked_until'  => date('Y-m-d H:i:s', $lockedUntil)],
-                    'where'     => ['id = ?'],
-                    'data'      => [$args['userId']]
+                    'set'   => ['locked_until' => date('Y-m-d H:i:s', $lockedUntil)],
+                    'where' => ['id = ?'],
+                    'data'  => [$args['userId']]
                 ]);
                 return ['accountLocked' => true, 'lockedDate' => date('Y-m-d H:i:s', $lockedUntil)];
             }
@@ -288,6 +296,9 @@ class AuthenticationController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public function authenticate(Request $request, Response $response)
     {
         $body = $request->getParsedBody();
@@ -379,7 +390,7 @@ class AuthenticationController
         foreach ($user['refresh_token'] as $key => $refreshToken) {
             try {
                 JWT::decode($refreshToken, CoreConfigModel::getEncryptKey(), ['HS256']);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 unset($user['refresh_token'][$key]);
             }
         }
@@ -411,7 +422,7 @@ class AuthenticationController
         return $response->withStatus(204);
     }
 
-    public function logout(Request $request, Response $response)
+    public function logout(Request $request, Response $response): Response
     {
         $loggingMethod = CoreConfigModel::getLoggingMethod();
 
@@ -439,6 +450,9 @@ class AuthenticationController
         return $response->withJson(['logoutUrl' => $logoutUrl]);
     }
 
+    /**
+     * @throws Exception
+     */
     private static function standardConnection(array $args)
     {
         $login = $args['login'];
@@ -520,7 +534,7 @@ class AuthenticationController
         return true;
     }
 
-    private static function casConnection()
+    private static function casConnection(): array
     {
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
 
@@ -538,30 +552,30 @@ class AuthenticationController
         $logTypeInfo = LogsController::getLogType('logTechnique');
         $logger = LogsController::initMonologLogger($logConfig, $logTypeInfo);
 
-        \phpCAS::setLogger($logger);
+        phpCAS::setLogger($logger);
 
         if (!empty($logTypeInfo['errors'])) {
             return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
         }
 
         if ($logTypeInfo['level'] == 'DEBUG') {
-            \phpCAS::setVerbose(true);
+            phpCAS::setVerbose(true);
         }
-        
-        \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
+
+        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
-            \phpCAS::setCasServerCACert($certificate);
+            phpCAS::setCasServerCACert($certificate);
         } else {
-            \phpCAS::setNoCasServerValidation();
+            phpCAS::setNoCasServerValidation();
         }
-        \phpCAS::setFixedServiceURL(UrlController::getCoreUrl() . 'dist/index.html');
-        \phpCAS::setNoClearTicketsFromUrl();
-        if (!\phpCAS::isAuthenticated()) {
+        phpCAS::setFixedServiceURL(UrlController::getCoreUrl() . 'dist/index.html');
+        phpCAS::setNoClearTicketsFromUrl();
+        if (!phpCAS::isAuthenticated()) {
             return ['errors' => 'Cas authentication failed'];
         }
 
-        $casId = \phpCAS::getUser();
+        $casId = phpCAS::getUser();
         if (!empty($separator)) {
             $login = explode($separator, $casId)[0];
         } else {
@@ -571,7 +585,7 @@ class AuthenticationController
         return ['login' => $login];
     }
 
-    private static function casDisconnection()
+    private static function casDisconnection(): array
     {
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
 
@@ -585,30 +599,30 @@ class AuthenticationController
         $logConfig = LogsController::getLogConfig();
         $logTypeInfo = LogsController::getLogType('logTechnique');
         $logger = LogsController::initMonologLogger($logConfig, $logTypeInfo);
-        \phpCAS::setLogger($logger);
+        phpCAS::setLogger($logger);
 
         if (!empty($logTypeInfo['errors'])) {
             return ['errors' => 'Cas configuration missing : ' . $logTypeInfo['errors']];
         }
-        
+
         if ($logTypeInfo['level'] == 'DEBUG') {
-            \phpCAS::setVerbose(true);
+            phpCAS::setVerbose(true);
         }
-        \phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
+        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
-            \phpCAS::setCasServerCACert($certificate);
+            phpCAS::setCasServerCACert($certificate);
         } else {
-            \phpCAS::setNoCasServerValidation();
+            phpCAS::setNoCasServerValidation();
         }
-        \phpCAS::setFixedServiceURL(UrlController::getCoreUrl() . 'dist/index.html');
-        \phpCAS::setNoClearTicketsFromUrl();
-        $logoutUrl = \phpCAS::getServerLogoutURL();
+        phpCAS::setFixedServiceURL(UrlController::getCoreUrl() . 'dist/index.html');
+        phpCAS::setNoClearTicketsFromUrl();
+        $logoutUrl = phpCAS::getServerLogoutURL();
 
         return ['logoutUrl' => $logoutUrl];
     }
 
-    private static function ssoConnection()
+    private static function ssoConnection(): array
     {
         $ssoConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_sso', 'select' => ['value']]);
         if (empty($ssoConfiguration['value'])) {
@@ -643,7 +657,7 @@ class AuthenticationController
         return ['login' => $login];
     }
 
-    private static function keycloakConnection(array $args)
+    private static function keycloakConnection(array $args): array
     {
         $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
 
@@ -655,7 +669,7 @@ class AuthenticationController
 
         try {
             $token = $provider->getAccessToken('authorization_code', ['code' => $args['code']]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => 'Authentication Failed'];
         }
 
@@ -678,12 +692,12 @@ class AuthenticationController
             UserModel::updateExternalId(['id' => $userMaarch['id'], 'externalId' => $userMaarch['external_id']]);
 
             return ['login' => $login];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => 'Authentication Failed'];
         }
     }
 
-    private static function keycloakDisconnection()
+    private static function keycloakDisconnection(): array
     {
         $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
 
@@ -704,7 +718,7 @@ class AuthenticationController
         return ['logoutUrl' => $url];
     }
 
-    private static function openAMConnection()
+    private static function openAMConnection(): array
     {
         $configuration = CoreConfigModel::getJsonLoaded(['path' => 'config/openAM.json']);
 
@@ -716,8 +730,8 @@ class AuthenticationController
             return ['errors' => 'Authentication Failed : User cookie is not set'];
         }
         $curlResponse = CurlModel::exec([
-            'url'           => "{$configuration['attributeUrl']}?subjectid={$_COOKIE[$configuration['cookieName']]}&attributenames={$configuration['attributeName']}",
-            'method'        => 'GET',
+            'url'    => "{$configuration['attributeUrl']}?subjectid={$_COOKIE[$configuration['cookieName']]}&attributenames={$configuration['attributeName']}",
+            'method' => 'GET',
         ]);
 
         $login = $curlResponse['response']['attributes'][0]['values'][0] ?? null;
@@ -729,7 +743,7 @@ class AuthenticationController
         return ['login' => $login];
     }
 
-    private static function azureSamlConnection()
+    private static function azureSamlConnection(): array
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         if (!is_file($libDir . 'simplesamlphp/lib/_autoload.php')) {
@@ -739,8 +753,8 @@ class AuthenticationController
         require_once($libDir . 'simplesamlphp/lib/_autoload.php');
         $as = new \SimpleSAML\Auth\Simple('default-sp');
         $as->requireAuth([
-            'ReturnTo'          => UrlController::getCoreUrl(),
-            'skipRedirection'   => true
+            'ReturnTo'        => UrlController::getCoreUrl(),
+            'skipRedirection' => true
         ]);
 
         $attributes = $as->getAttributes();
@@ -752,7 +766,7 @@ class AuthenticationController
         return ['login' => $login];
     }
 
-    private static function azureSamlDisconnection()
+    private static function azureSamlDisconnection(): array
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         if (!is_file($libDir . 'simplesamlphp/lib/_autoload.php')) {
@@ -776,7 +790,7 @@ class AuthenticationController
 
         try {
             $jwt = JWT::decode($queryParams['refreshToken'], CoreConfigModel::getEncryptKey(), ['HS256']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $response->withStatus(401)->withJson(['errors' => 'Authentication Failed']);
         }
 
@@ -795,7 +809,7 @@ class AuthenticationController
         return $response->withJson(['token' => AuthenticationController::getJWT()]);
     }
 
-    public static function getJWT()
+    public static function getJWT(): string
     {
         $sessionTime = AuthenticationController::MAX_DURATION_TOKEN;
 
@@ -807,20 +821,27 @@ class AuthenticationController
                 }
             }
         }
-
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+        if ($file['config']['newInternalParaph'] ?? null) {
+            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login', 'external_id']]);
+            $externalId = json_decode($user['external_id'], true);
+            if ($externalId['maarchParapheur'] ?? null) {
+                $user['external_id'] = $externalId['maarchParapheur'];
+            } else {
+                $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+            }
+        } else {
+            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+        }
 
         $token = [
-            'exp'   => time() + 60 * $sessionTime,
-            'user'  => $user
+            'exp'  => time() + 60 * $sessionTime,
+            'user' => $user
         ];
 
-        $jwt = JWT::encode($token, CoreConfigModel::getEncryptKey());
-
-        return $jwt;
+        return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
-    public static function getRefreshJWT()
+    public static function getRefreshJWT(): string
     {
         $sessionTime = AuthenticationController::MAX_DURATION_TOKEN;
 
@@ -830,32 +851,28 @@ class AuthenticationController
         }
 
         $token = [
-            'exp'   => time() + 60 * $sessionTime,
-            'user'  => [
+            'exp'  => time() + 60 * $sessionTime,
+            'user' => [
                 'id' => $GLOBALS['id']
             ]
         ];
 
-        $jwt = JWT::encode($token, CoreConfigModel::getEncryptKey());
-
-        return $jwt;
+        return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
-    public static function getResetJWT($args = [])
+    public static function getResetJWT($args = []): string
     {
         $token = [
-            'exp'   => time() + $args['expirationTime'],
-            'user'  => [
+            'exp'  => time() + $args['expirationTime'],
+            'user' => [
                 'id' => $args['id']
             ]
         ];
 
-        $jwt = JWT::encode($token, CoreConfigModel::getEncryptKey());
-
-        return $jwt;
+        return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
-    public static function sendAccountActivationNotification(array $args)
+    public static function sendAccountActivationNotification(array $args): bool
     {
         $resetToken = AuthenticationController::getResetJWT(['id' => $args['userId'], 'expirationTime' => 1209600]); // 14 days
         UserModel::update(['set' => ['reset_token' => $resetToken], 'where' => ['id = ?'], 'data' => [$args['userId']]]);
@@ -871,12 +888,12 @@ class AuthenticationController
         }
         $user = UserModel::getById(['select' => ['user_id'], 'id' => $args['userId']]);
         EmailController::createEmail([
-            'userId'    => $args['userId'],
-            'data'      => [
+            'userId' => $args['userId'],
+            'data'   => [
                 'sender'     => ['email' => $sender],
                 'recipients' => [$args['userEmail']],
                 'object'     => _NOTIFICATIONS_USER_CREATION_SUBJECT,
-                'body'       => _NOTIFICATIONS_USER_CREATION_BODY . '<a href="' . $url . '">'.$url.'</a><br/><br/>' . _YOUR_ID . ' ' . $user['user_id'] . _NOTIFICATIONS_USER_CREATION_FOOTER,
+                'body'       => _NOTIFICATIONS_USER_CREATION_BODY . '<a href="' . $url . '">' . $url . '</a><br/><br/>' . _YOUR_ID . ' ' . $user['user_id'] . _NOTIFICATIONS_USER_CREATION_FOOTER,
                 'isHtml'     => true,
                 'status'     => 'WAITING'
             ]
@@ -885,7 +902,7 @@ class AuthenticationController
         return true;
     }
 
-    private static function isUserAuthorized(array $args)
+    private static function isUserAuthorized(array $args): bool
     {
         $user = UserModel::getByLowerLogin(['login' => $args['login'], 'select' => ['mode', 'status']]);
         if (empty($user) || $user['mode'] == 'rest' || $user['status'] == 'SPD') {
@@ -895,7 +912,7 @@ class AuthenticationController
         return true;
     }
 
-    public static function canAccessInstallerWhitoutAuthentication(array $args)
+    public static function canAccessInstallerWithoutAuthentication(array $args): bool
     {
         $installerRoutes = [
             'GET/installer/prerequisites', 'GET/installer/databaseConnection', 'GET/installer/sqlDataFiles', 'GET/installer/docservers', 'GET/installer/custom',
