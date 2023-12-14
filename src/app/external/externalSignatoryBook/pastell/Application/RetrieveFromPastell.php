@@ -17,8 +17,8 @@ namespace ExternalSignatoryBook\pastell\Application;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
-use ExternalSignatoryBook\pastell\Domain\UpdateSignatoryUserInterface;
-use ExternalSignatoryBook\pastell\Infrastructure\UpdateSignatoryUser;
+use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
+
 
 class RetrieveFromPastell
 {
@@ -27,21 +27,21 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
-    private UpdateSignatoryUserInterface $updateSignatoryUser;
+    private ResourceDataInterface $updateSignatoryUser;
 
     /**
      * @param PastellApiInterface $pastellApi
      * @param PastellConfigInterface $pastellConfig
      * @param PastellConfigurationCheck $pastellConfigCheck
      * @param ParseIParapheurLog $parseIParapheurLog
-     * @param UpdateSignatoryUser $updateSignatoryUser
+     * @param ResourceDataInterface $updateSignatoryUser
      */
     public function __construct(
         PastellApiInterface          $pastellApi,
         PastellConfigInterface       $pastellConfig,
         PastellConfigurationCheck    $pastellConfigCheck,
         ParseIParapheurLog           $parseIParapheurLog,
-        UpdateSignatoryUserInterface $updateSignatoryUser
+        ResourceDataInterface $updateSignatoryUser
     )
     {
         $this->pastellApi = $pastellApi;

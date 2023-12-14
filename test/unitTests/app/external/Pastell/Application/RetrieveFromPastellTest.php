@@ -16,7 +16,7 @@ use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\UpdateSignatoryUserMock;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
@@ -25,7 +25,6 @@ class RetrieveFromPastellTest extends TestCase
     private PastellConfigMock $pastellConfigMock;
     private ParseIParapheurLogMock $parseIParapheurLogMock;
     private RetrieveFromPastell $retrieveFromPastell;
-    private UpdateSignatoryUserMock $updateSignatoryUserMock;
 
     protected function setUp(): void
     {
@@ -33,7 +32,7 @@ class RetrieveFromPastellTest extends TestCase
         $processVisaWorkflowSpy = new ProcessVisaWorkflowSpy();
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
-        $this->updateSignatoryUserMock = new UpdateSignatoryUserMock();
+        $resourceDataMock = new ResourceDataMock();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -47,7 +46,7 @@ class RetrieveFromPastellTest extends TestCase
             $this->pastellConfigMock,
             $pastellConfigurationCheck,
             $this->parseIParapheurLogMock,
-            $this->updateSignatoryUserMock
+            $resourceDataMock
         );
     }
 

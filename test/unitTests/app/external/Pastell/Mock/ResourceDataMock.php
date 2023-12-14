@@ -59,4 +59,14 @@ class ResourceDataMock implements ResourceDataInterface
     {
         return $this->attachmentTypes;
     }
+
+    /**
+     * @param int $resId
+     * @param string $type
+     * @param string $signatoryUser
+     * @return void
+     */
+    public function updateDocumentExternalStateSignatoryUser(int $resId, string $type, string $signatoryUser): void
+    {
+    }
 }
