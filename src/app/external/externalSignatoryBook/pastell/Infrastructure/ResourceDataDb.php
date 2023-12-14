@@ -60,7 +60,6 @@ class ResourceDataDb implements ResourceDataInterface
         return $attachmentTypes;
     }
 
-
     /**
      * @param int $resId
      * @param string $type
