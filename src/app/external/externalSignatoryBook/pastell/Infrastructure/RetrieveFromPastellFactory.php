@@ -30,7 +30,8 @@ class RetrieveFromPastellFactory
         $pastellConfigCheck = new PastellConfigurationCheck($pastellApi, $pastellConfig);
         $processVisaWorkflow = new ProcessVisaWorkflow();
         $parseIParapheurLog = new ParseIParapheurLog($pastellApi, $pastellConfig, $pastellConfigCheck, $processVisaWorkflow);
+        $updateSignatoryUser = new UpdateSignatoryUser();
 
-        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog);
+        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog, $updateSignatoryUser);
     }
 }
