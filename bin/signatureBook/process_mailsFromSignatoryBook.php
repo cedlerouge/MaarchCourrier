@@ -264,7 +264,6 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
     } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
         $retrieveFromPastell = RetrieveFromPastellFactory::create();
         $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox'], 'resLetterbox');
-
         $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMailsFromPastell['success'];
 
         if (!empty($retrievedLetterboxMailsFromPastell['error'])) {

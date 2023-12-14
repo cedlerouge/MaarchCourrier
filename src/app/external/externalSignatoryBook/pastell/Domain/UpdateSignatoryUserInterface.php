@@ -17,5 +17,11 @@ namespace ExternalSignatoryBook\pastell\Domain;
 
 interface UpdateSignatoryUserInterface
 {
+    /**
+     * @param int $resId
+     * @param string $type
+     * @param string $signatoryUser
+     * @return void
+     */
     public function updateDocumentExternalStateSignatoryUser(int $resId, string $type, string $signatoryUser): void;
 }

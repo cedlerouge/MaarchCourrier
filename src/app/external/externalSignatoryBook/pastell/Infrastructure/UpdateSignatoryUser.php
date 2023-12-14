@@ -19,7 +19,6 @@ use Resource\models\ResModel;
 
 class UpdateSignatoryUser implements UpdateSignatoryUserInterface
 {
-
     /**
      * @param int $resId
      * @param string $type
@@ -28,7 +27,6 @@ class UpdateSignatoryUser implements UpdateSignatoryUserInterface
      */
     public function updateDocumentExternalStateSignatoryUser(int $resId, string $type, string $signatoryUser): void
     {
-
         if ($type == 'resource') {
             ResModel::update([
                 'where'   => ['res_id = ?'],
