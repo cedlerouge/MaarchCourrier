@@ -228,7 +228,6 @@ class ExportController
     public static function inFolder(array $args): array
     {
 
-
         $userEntities = EntityModel::getWithUserEntities(['select' => ['entities.id'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
         $userEntities = array_column($userEntities, 'id');
         if (empty($userEntities)) {
@@ -297,7 +296,6 @@ class ExportController
         ];
         $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
-
             $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
@@ -305,14 +303,15 @@ class ExportController
                     $csvContent[] = '';
                     continue;
                 }
+
                 if ($hasRight === false) {
                     if (!in_array($value['value'], $publicProperties)) {
                         $csvContent[] = 'Hors périmètre';
                         continue;
                     }
                 }
-                if ($value['isFunction']) {
 
+                if ($value['isFunction']) {
                     if ($value['value'] == 'getStatus') {
                         $csvContent[] = $resource['status.label_status'];
                     } elseif ($value['value'] == 'getPriority') {
@@ -376,7 +375,6 @@ class ExportController
                     } elseif ($value['value'] == 'getOpinionCircuit') {
                         $csvContent[] = ExportController::getCircuit(['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]);
                     }
-
                 }
                 $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
                 if (in_array($value['value'], $allDates)) {
@@ -384,8 +382,6 @@ class ExportController
                 } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
                     $csvContent[] = $resource[$value['value']];
                 }
-
-
             }
 
             foreach ($csvContent as $key => $value) {
@@ -452,12 +448,14 @@ class ExportController
                     $content[] = '';
                     continue;
                 }
+
                 if ($hasRight === false) {
                     if (!in_array($value['value'], $publicProperties)) {
                         $content[] = 'Hors périmètre';
                         continue;
                     }
                 }
+
                 if ($value['isFunction']) {
                     if ($value['value'] == 'getStatus') {
                         $content[] = $resource['status.label_status'];

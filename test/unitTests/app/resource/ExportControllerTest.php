@@ -18,14 +18,12 @@ use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use SrcCore\http\Response;
 use User\models\UserModel;
-use function PHPUnit\Framework\assertContains;
 
 class ExportControllerTest extends CourrierTestCase
 {
     private static array $resourcesToRemove = [];
     private  static array $group = [];
     private static string $privilegeId = 'include_folders_and_followed_resources_perimeter';
-
 
     protected function tearDown(): void
     {
@@ -57,7 +55,6 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertNotEmpty($responseBody->templates->pdf);
         $this->assertNotEmpty($responseBody->templates->csv);
     }
-
 
     public function testUpdateExport(): void
     {
@@ -266,13 +263,10 @@ class ExportControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
-
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheStatusCanBeRead(): void
     {
         $this->connectAsUser('cchaplin');
-
         $resId = $this->createResource();
-
         $this->connectAsUser('bboule');
 
         $exportController = new ExportController();
@@ -340,9 +334,7 @@ class ExportControllerTest extends CourrierTestCase
     public function testTheDocumentIsOutOfPerimeterDuringExportAndOutOfScopeIsDisplayedOnUnavailableFields(): void
     {
         $this->connectAsUser('cchaplin');
-
         $resId = $this->createResource();
-
         $this->connectAsUser('jjane');
 
         $exportController = new ExportController();
@@ -409,13 +401,10 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertContains($outsidePerimeter, $values, 'test si ils sont hors du périmètre');
     }
 
-
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheUserHaveTheRightToSeeTheDocument(): void
     {
         $this->connectAsUser('cchaplin');
-
         $resId = $this->createResource();
-
         $this->connectAsUser('jjane');
 
         $exportController = new ExportController();
@@ -479,14 +468,11 @@ class ExportControllerTest extends CourrierTestCase
     }
 
     // Function
-
     private function createResource(): int
     {
         $resController = new ResController();
-
         $fileContent = file_get_contents('test/unitTests/samples/test.txt');
         $encodedFile = base64_encode($fileContent);
-
         $body = [
             'modelId'          => 2,
             'status'           => 'NEW',
@@ -508,7 +494,6 @@ class ExportControllerTest extends CourrierTestCase
         $response     = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $resId = $responseBody->resId;
-
         self::$resourcesToRemove[] = $resId;
 
         return $resId;
@@ -519,9 +504,7 @@ class ExportControllerTest extends CourrierTestCase
         $responseBody = $response->getBody();
         $responseBody->rewind();
         $stream = $responseBody->detach();
-
         $csvHeader = fgetcsv($stream, 0, ';');
-
         $csvHeader = $this->encodeUtf8Csv($csvHeader);
         $csv = fgetcsv($stream, 0, ';');
         $csv = $this->encodeUtf8Csv($csv);
