@@ -188,6 +188,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                     }, 0);
                     this.loadBadges();
                     this.loadActions();
+                    this.zoomLeft = 1;
 
                     const path: string = `resourcesList/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}?limit=10&offset=0`;
                     this.http.get(`../rest/${path}`).pipe(
@@ -201,6 +202,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                     ).subscribe();
 
                     if (this.appDocumentViewer !== undefined) {
+                        this.appDocumentViewer.zoom = 1;
                         this.appDocumentViewer.loadRessource(this.signatureBook.attachments[this.rightSelectedThumbnail].signed ? this.signatureBook.attachments[this.rightSelectedThumbnail].viewerId : this.signatureBook.attachments[this.rightSelectedThumbnail].res_id, this.signatureBook.attachments[this.rightSelectedThumbnail].isResource ? 'mainDocument' : 'attachment');
                     }
                 }, (err) => {
