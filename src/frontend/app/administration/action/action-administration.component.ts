@@ -282,6 +282,7 @@ export class ActionAdministrationComponent implements OnInit {
                     })
                 ).subscribe();
             } else {
+                this.loading = false;
                 resolve(true);
             }
         });

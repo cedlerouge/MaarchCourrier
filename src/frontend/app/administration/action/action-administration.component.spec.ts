@@ -89,7 +89,6 @@ describe('ActionAdministrationComponent', () => {
         httpTestingController = TestBed.inject(HttpTestingController);
         fixture = TestBed.createComponent(ActionAdministrationComponent);
         component = fixture.componentInstance;
-        // component.loading = false;
         fixture.detectChanges();
     });
 
@@ -124,6 +123,8 @@ describe('ActionAdministrationComponent', () => {
             const initActionRes = httpTestingController.expectOne('../rest/initAction');
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
+
+            fixture.detectChanges();
 
             const customFieldReq = httpTestingController.expectOne('../rest/customFields');
             expect(customFieldReq.request.method).toBe('GET');
