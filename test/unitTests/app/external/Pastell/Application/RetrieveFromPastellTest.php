@@ -338,4 +338,40 @@ class RetrieveFromPastellTest extends TestCase
                 'error'   => [42 => 'An error occurred !']
             ], $result);
     }
+
+    public function testTheSignatoryNameIsTheOneInParapheur(): void
+    {
+        $this->pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+
+        $idsToRetrieve = [
+            41  => [
+                'res_id'      => 41,
+                'external_id' => 'djqfdh'
+            ]
+        ];
+        $documentType = 'resLetterbox';
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
+
+        $this->assertSame(
+            [
+                'success' => [
+                    41 => [
+                        'res_id'      => 41,
+                        'external_id' => 'djqfdh',
+                        'status'      => 'validated',
+                        'format'      => 'pdf',
+                        'encodedFile' => 'toto',
+                        'signatory' => 'Bruce Wayne - XELIANS'
+                    ]
+                ],
+                'error'   => [
+
+                ],
+            ],
+            $result
+        );
+    }
 }
