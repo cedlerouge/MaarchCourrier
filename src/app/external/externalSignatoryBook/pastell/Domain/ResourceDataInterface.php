@@ -34,4 +34,12 @@ interface ResourceDataInterface
      * @return array
      */
     public function getAttachmentTypes(): array;
+
+    /**
+     * @param int $resId
+     * @param string $type
+     * @param string $signatoryUser
+     * @return void
+     */
+    public function updateDocumentExternalStateSignatoryUser(int $resId, string $type, string $signatoryUser): void;
 }
