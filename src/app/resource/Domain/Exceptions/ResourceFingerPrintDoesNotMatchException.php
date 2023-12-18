@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceIncorrectVersion class
+ * @brief ResourceFingerPrintDoesNotMatchException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceIncorrectVersion extends \Exception
+use Exception;
+
+class ResourceFingerPrintDoesNotMatchException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Incorrect version", 400);
+        parent::__construct("Fingerprints do not match", 400);
     }
 }

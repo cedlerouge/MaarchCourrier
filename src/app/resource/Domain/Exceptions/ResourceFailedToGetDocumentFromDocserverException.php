@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionThumbnailNotFoundInDocserverOrNotReadable class
+ * @brief ResourceFailedToGetDocumentFromDocserverException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionThumbnailNotFoundInDocserverOrNotReadable extends \Exception
+use Exception;
+
+class ResourceFailedToGetDocumentFromDocserverException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Thumbnail not found in docserver or not readable", 400);
+        parent::__construct("Failed to get document on docserver", 500);
     }
 }

@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceHasNoFile class
+ * @brief ExceptionThumbnailNotFoundInDocserverOrNotReadable class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceHasNoFile extends \Exception
+use Exception;
+
+class ThumbnailNotFoundInDocserverOrNotReadableException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Document has no file", 400);
+        parent::__construct("Thumbnail not found in docserver or not readable", 400);
     }
 }

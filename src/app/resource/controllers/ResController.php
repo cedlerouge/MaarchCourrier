@@ -59,6 +59,7 @@ use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
+use Throwable;
 use User\controllers\UserController;
 use User\models\UserModel;
 use SignatureBook\controllers\SignatureBookController;
@@ -537,11 +538,10 @@ class ResController extends ResourceControlController
         }
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveResource();
-        $mainFile = null;
 
         try {
             $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -657,10 +657,9 @@ class ResController extends ResourceControlController
         }
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveVersionResource();
-        $resourceVersionFile = null;
         try {
             $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -691,11 +690,10 @@ class ResController extends ResourceControlController
         }
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveOriginalResource();
-        $originalMainFile = null;
 
         try {
             $originalMainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $signedVersion);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -734,11 +732,10 @@ class ResController extends ResourceControlController
         }
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResource();
-        $thumbnailFile = null;
 
         try {
             $thumbnailFile = $retrieveResourceFactory->getThumbnailFile($args['resId']);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -767,11 +764,10 @@ class ResController extends ResourceControlController
         }
 
         $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResourceByPage();
-        $thumbnailFileByPage = null;
 
         try {
             $thumbnailFileByPage = $retrieveResourceFactory->getThumbnailFileByPage($args['resId'], $args['page']);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 

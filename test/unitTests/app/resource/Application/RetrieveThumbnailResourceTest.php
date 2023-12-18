@@ -14,9 +14,10 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveThumbnailResource;
-use Resource\Domain\Exceptions\ExceptionConvertThumbnail;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ConvertThumbnailException;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 
+// TODO add more test cases !!!
 class RetrieveThumbnailResourceTest extends TestCase
 {
     private ResourceDataMock $resourceDataMock;
@@ -43,7 +44,7 @@ class RetrieveThumbnailResourceTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('resId', 0));
+        $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('resId'));
 
         // Act
         $this->retrieveThumbnailResource->getThumbnailFile(0);
@@ -92,14 +93,14 @@ class RetrieveThumbnailResourceTest extends TestCase
     /**
      * @return void
      */
-    public function testCannotGetThumbnailFileBecauseOfNoDocumentVersionAndThumbnailConvertionFailed(): void
+    public function testCannotGetThumbnailFileBecauseOfNoDocumentVersionAndThumbnailConversionFailed(): void
     {
         // Arrange
         $this->resourceDataMock->doesResourceVersionExist = false;
         $this->resourceFileMock->doesResourceConvertToThumbnailFailed = true;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionConvertThumbnail('Convertion to thumbnail failed'));
+        $this->expectExceptionObject(new ConvertThumbnailException('Conversion to thumbnail failed'));
 
         // Act
         $this->retrieveThumbnailResource->getThumbnailFile(1);

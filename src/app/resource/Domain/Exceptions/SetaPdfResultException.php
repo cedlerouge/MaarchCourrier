@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourcePageNotFound class
+ * @brief SetaPdfResultException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourcePageNotFound extends \Exception
+use Exception;
+
+class SetaPdfResultException extends Exception
 {
-    public function __construct()
+    public function __construct(string $message)
     {
-        parent::__construct("Page not found in docserver", 404);
+        parent::__construct("$message", 500);
     }
 }

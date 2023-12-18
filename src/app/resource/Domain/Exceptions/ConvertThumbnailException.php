@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExecptionConvertedResult class
+ * @brief ConvertThumbnailException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExeptionSetaPdfResult extends \Exception
+use Exception;
+
+class ConvertThumbnailException extends Exception
 {
     public function __construct(string $message)
     {
-        parent::__construct("$message", 400);
+        parent::__construct("Thumbnail conversion failed : $message", 500);
     }
 }

@@ -14,15 +14,15 @@
 
 namespace Resource\Application;
 
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
-use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
-use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
-use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
-use Resource\Domain\Exceptions\ExecptionConvertedResult;
+use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
+use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
+use Resource\Domain\Exceptions\ResourceHasNoFileException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
+use Resource\Domain\Exceptions\ConvertedResultException;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
@@ -49,39 +49,35 @@ class RetrieveResource
      *
      * @param int $resId The ID of the resource.
      * @return  ResourceFileInfo
-     * @throws ExceptionParameterMustBeGreaterThan
-     * @throws ExceptionResourceDoesNotExist
-     * @throws ExceptionResourceHasNoFile
-     * @throws ExceptionResourceFingerPrintDoesNotMatch
-     * @throws ExceptionResourceFailedToGetDocumentFromDocserver
-     * @throws ExceptionParameterCanNotBeEmptyAndShould
-     * @throws ExecptionConvertedResult
-     * @throws ExceptionResourceDocserverDoesNotExist
-     * @throws ExceptionResourceNotFoundInDocserver
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ConvertedResultException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function getResourceFile(int $resId): ResourceFileInfo
     {
         if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+            throw new ParameterMustBeGreaterThanZeroException('resId');
         }
 
         $document = $this->resourceData->getMainResourceData($resId);
 
         if ($document == null) {
-            throw new ExceptionResourceDoesNotExist();
+            throw new ResourceDoesNotExistException();
         } elseif (empty($document->getFilename())) {
-            throw new ExceptionResourceHasNoFile();
+            throw new ResourceHasNoFileException();
         }
 
         $format     = $document->getFormat();
         $subject    = $document->getSubject();
         $creatorId  = $document->getTypist();
 
-        try {
-            $document = $this->getConvertedResourcePdfById($resId);
-        } catch (ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult $e) {
-            throw $e;
-        }
+        $document = $this->getConvertedResourcePdfById($resId);
 
         $docserverAndFilePath= $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
 
@@ -91,7 +87,7 @@ class RetrieveResource
         }
 
         if ($document->getFingerprint() != $fingerPrint) {
-            throw new ExceptionResourceFingerPrintDoesNotMatch();
+            throw new ResourceFingerPrintDoesNotMatchException();
         }
 
         $fileContentWithNoWatermark = $this->resourceFile->getFileContent(
@@ -100,12 +96,12 @@ class RetrieveResource
         );
 
         $fileContent = $this->resourceFile->getWatermark($resId, $fileContentWithNoWatermark);
-        if (empty($fileContent) || $fileContent === 'null') {
+        if (empty($fileContent)) {
             $fileContent = $fileContentWithNoWatermark;
         }
 
-        if ($fileContent === 'false') {
-            throw new ExceptionResourceFailedToGetDocumentFromDocserver();
+        if ($fileContent === null) {
+            throw new ResourceFailedToGetDocumentFromDocserverException();
         }
 
         $filename = $this->resourceData->formatFilename($subject);
@@ -121,18 +117,18 @@ class RetrieveResource
     }
 
     /**
-     * @throws  ExceptionParameterCanNotBeEmptyAndShould|ExecptionConvertedResult
+     * @throws  ParameterCanNotBeEmptyException|ConvertedResultException
      */
     private function getConvertedResourcePdfById(int $resId, string $collId = 'letterbox_coll'): ResourceConverted
     {
         if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('collId', "'letterbox_coll' or 'attachments_coll'");
+            throw new ParameterCanNotBeEmptyException('collId', "'letterbox_coll' or 'attachments_coll'");
         }
 
         $document = $this->resourceData->getConvertedPdfById($resId, $collId);
 
         if (!empty($document['errors'])) {
-            throw new ExecptionConvertedResult('Conversion error', $document['errors']);
+            throw new ConvertedResultException($document['errors']);
         }
 
         return new ResourceConverted(

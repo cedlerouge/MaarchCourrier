@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceFailedToGetDocumentFromDocserver class
+ * @brief ConvertedResultException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceFailedToGetDocumentFromDocserver extends \Exception
+use Exception;
+
+class ConvertedResultException extends Exception
 {
-    public function __construct()
+    public function __construct(string $message) // TODO set message
     {
-        parent::__construct("Failed to get document on docserver", 404);
+        parent::__construct("Conversion error : $message", 500);
     }
 }

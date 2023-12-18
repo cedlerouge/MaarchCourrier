@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceDoesNotExist class
+ * @brief ResourceIncorrectVersionException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceDoesNotExist extends \Exception
+use Exception;
+
+class ResourceIncorrectVersionException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Document does not exist", 400);
+        parent::__construct("Incorrect version", 400);
     }
 }

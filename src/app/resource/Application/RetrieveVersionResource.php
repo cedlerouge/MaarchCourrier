@@ -14,16 +14,15 @@
 
 namespace Resource\Application;
 
-use Exception;
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
-use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
-use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
-use Resource\Domain\Exceptions\ExceptionResourceIncorrectVersion;
-use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
+use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
+use Resource\Domain\Exceptions\ResourceHasNoFileException;
+use Resource\Domain\Exceptions\ResourceIncorrectVersionException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
@@ -54,36 +53,36 @@ class RetrieveVersionResource
      *
      * @return  ResourceFileInfo
      *
-     * @throws ExceptionParameterMustBeGreaterThan
-     * @throws ExceptionParameterCanNotBeEmptyAndShould
-     * @throws ExceptionResourceDoesNotExist
-     * @throws ExceptionResourceHasNoFile
-     * @throws ExceptionResourceIncorrectVersion
-     * @throws ExceptionResourceFingerPrintDoesNotMatch
-     * @throws ExceptionResourceFailedToGetDocumentFromDocserver
-     * @throws ExceptionResourceDocserverDoesNotExist
-     * @throws ExceptionResourceNotFoundInDocserver
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
      * */
     public function getResourceFile(int $resId, int $version, string $type): ResourceFileInfo
     {
         if ($resId <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('resId', 0);
+            throw new ParameterMustBeGreaterThanZeroException('resId');
         }
         if ($version <= 0) {
-            throw new ExceptionParameterMustBeGreaterThan('version', 0);
+            throw new ParameterMustBeGreaterThanZeroException('version');
         }
         if (empty($type) || (!in_array($type, $this->resourceData::ADR_RESOURCE_TYPES))) {
-            throw new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceData::ADR_RESOURCE_TYPES));
+            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceData::ADR_RESOURCE_TYPES));
         }
 
         $document = $this->resourceData->getMainResourceData($resId);
 
         if ($document == null) {
-            throw new ExceptionResourceDoesNotExist();
+            throw new ResourceDoesNotExistException();
         } elseif (empty($document->getFilename())) {
-            throw new ExceptionResourceHasNoFile();
+            throw new ResourceHasNoFileException();
         } elseif ($version > $document->getVersion()) {
-            throw new ExceptionResourceIncorrectVersion();
+            throw new ResourceIncorrectVersionException();
         }
 
         $format = $document->getFormat();
@@ -98,7 +97,7 @@ class RetrieveVersionResource
         }
 
         if ($document->getFingerprint() != $fingerPrint) {
-            throw new ExceptionResourceFingerPrintDoesNotMatch();
+            throw new ResourceFingerPrintDoesNotMatchException();
         }
 
         $filename = $this->resourceData->formatFilename($subject);
@@ -110,8 +109,8 @@ class RetrieveVersionResource
             $fileContent = $fileContentWithNoWatermark;
         }
 
-        if ($fileContent === 'false') {
-            throw new ExceptionResourceFailedToGetDocumentFromDocserver();
+        if ($fileContent === null) {
+            throw new ResourceFailedToGetDocumentFromDocserverException();
         }
 
         return new ResourceFileInfo(
@@ -125,14 +124,14 @@ class RetrieveVersionResource
     }
 
     /**
-     * @throws ExceptionResourceDoesNotExist
+     * @throws ResourceDoesNotExistException
      */
     private function getResourceVersion(int $resId, string $type, int $version): ResourceConverted
     {
         $document = $this->resourceData->getResourceVersion($resId, $type, $version);
 
         if ($document == null) {
-            throw new ExceptionResourceDoesNotExist();
+            throw new ResourceDoesNotExistException();
         }
 
         return new ResourceConverted(

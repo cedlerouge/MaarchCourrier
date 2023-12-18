@@ -39,19 +39,19 @@ interface ResourceFileInterface
      * @param   string  $filePath       The path to the file.
      * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
      *
-     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
+     * @return string|null Returns the content of the file as a string if successful, or a string with value null on failure.
      */
-    public function getFileContent(string $filePath, bool $isEncrypted = false): string;
+    public function getFileContent(string $filePath, bool $isEncrypted = false): ?string;
 
     /**
      * Retrieves file content with watermark.
      *
-     * @param   int     $resId          Resource id.
-     * @param   string  $fileContent    Resource file content.
+     * @param   int         $resId          Resource id.
+     * @param   string|null $fileContent    Resource file content.
      *
-     * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
+     * @return  string|null   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
      */
-    public function getWatermark(int $resId, string $fileContent): string;
+    public function getWatermark(int $resId, ?string $fileContent): ?string;
 
     public function convertToThumbnail(int $resId, int $version, string $fileContent, string $extension): array;
 
@@ -62,7 +62,7 @@ interface ResourceFileInterface
      * @param   string  $type   Resource type, 'resource' or 'attachment'.
      * @param   int     $page   Resource page number.
      *
-     * @return  string  If returned contains 'errors:' then the convertion failed
+     * @return  string  If returned contains 'errors:' then the conversion failed
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string;
 

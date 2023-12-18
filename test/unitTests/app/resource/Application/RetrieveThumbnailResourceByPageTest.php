@@ -14,7 +14,9 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+
+// TODO add more test cases !!!
 
 class RetrieveThumbnailResourceByPageTest extends TestCase
 {
@@ -44,7 +46,7 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('resId', 0));
+        $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('resId'));
 
         // Act
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(0 ,0);
@@ -58,7 +60,7 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('page', 0));
+        $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('page'));
 
         // Act
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,0);

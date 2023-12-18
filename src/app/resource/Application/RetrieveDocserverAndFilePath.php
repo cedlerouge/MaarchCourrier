@@ -2,8 +2,8 @@
 
 namespace Resource\Application;
 
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceDocserverAndFilePath;
@@ -22,21 +22,21 @@ class RetrieveDocserverAndFilePath
     }
 
     /**
-     * @throws ExceptionResourceDocserverDoesNotExist
-     * @throws ExceptionResourceNotFoundInDocserver
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function getDocserverAndFilePath(object $document): ResourceDocserverAndFilePath
     {
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
 
         if ($docserver == null || !$this->resourceFile->folderExists($docserver->getPathTemplate())) {
-            throw new ExceptionResourceDocserverDoesNotExist();
+            throw new ResourceDocserverDoesNotExistException();
         }
 
         $filePath = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
 
         if (!$this->resourceFile->fileExists($filePath)) {
-            throw new ExceptionResourceNotFoundInDocserver();
+            throw new ResourceNotFoundInDocserverException();
         }
 
         return new ResourceDocserverAndFilePath($docserver, $filePath);

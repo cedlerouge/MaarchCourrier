@@ -14,14 +14,14 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveVersionResource;
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmptyAndShould;
-use Resource\Domain\Exceptions\ExceptionParameterMustBeGreaterThan;
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
-use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
-use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
-use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
+use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
+use Resource\Domain\Exceptions\ResourceHasNoFileException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 
 class RetrieveVersionResourceTest extends TestCase
 {
@@ -49,7 +49,7 @@ class RetrieveVersionResourceTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('resId', 0));
+        $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('resId'));
 
         // Act
         $this->retrieveVersionResource->getResourceFile(0, 0, '');
@@ -63,7 +63,7 @@ class RetrieveVersionResourceTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterMustBeGreaterThan('version', 0));
+        $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('version'));
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 0, '');
@@ -77,7 +77,7 @@ class RetrieveVersionResourceTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
+        $this->expectExceptionObject(new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, '');
@@ -91,7 +91,7 @@ class RetrieveVersionResourceTest extends TestCase
         // Arrange
 
         // Assert
-        $this->expectExceptionObject(new ExceptionParameterCanNotBeEmptyAndShould('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
+        $this->expectExceptionObject(new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceDataMock::ADR_RESOURCE_TYPES)));
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'TNLL');
@@ -106,7 +106,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceDataMock->doesResourceExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceDoesNotExist());
+        $this->expectExceptionObject(new ResourceDoesNotExistException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
@@ -121,7 +121,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceDataMock->doesResourceFileExistInDatabase = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceHasNoFile());
+        $this->expectExceptionObject(new ResourceHasNoFileException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
@@ -136,7 +136,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceDataMock->doesResourceDocserverExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceDocserverDoesNotExist());
+        $this->expectExceptionObject(new ResourceDocserverDoesNotExistException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
@@ -151,7 +151,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceFileMock->doesFileExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceNotFoundInDocserver());
+        $this->expectExceptionObject(new ResourceNotFoundInDocserverException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
@@ -166,7 +166,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceFileMock->documentFingerprint = 'other fingerprint';
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceFingerPrintDoesNotMatch());
+        $this->expectExceptionObject(new ResourceFingerPrintDoesNotMatchException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');
@@ -182,7 +182,7 @@ class RetrieveVersionResourceTest extends TestCase
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceFailedToGetDocumentFromDocserver());
+        $this->expectExceptionObject(new ResourceFailedToGetDocumentFromDocserverException());
 
         // Act
         $this->retrieveVersionResource->getResourceFile(1, 1, 'PDF');

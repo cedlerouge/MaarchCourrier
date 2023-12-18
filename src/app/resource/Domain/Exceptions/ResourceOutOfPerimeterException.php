@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExecptionConvertedResult class
+ * @brief ResourceOutOfPerimeterException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExecptionConvertedResult extends \Exception
+use Exception;
+
+class ResourceOutOfPerimeterException extends Exception
 {
-    public function __construct(string $errorTag, string $message)
+    public function __construct()
     {
-        parent::__construct("$errorTag : $message", 400);
+        parent::__construct("Document out of perimeter", 403);
     }
 }

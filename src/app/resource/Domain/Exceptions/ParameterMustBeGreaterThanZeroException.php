@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionParameterCanNotBeEmpty class
+ * @brief ParameterMustBeGreaterThanZeroException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionParameterCanNotBeEmpty extends \Exception
+use Exception;
+
+class ParameterMustBeGreaterThanZeroException extends Exception
 {
     public function __construct(string $parameterName)
     {
-        parent::__construct("Parameter $parameterName can not be empty", 404);
+        parent::__construct("Parameter '$parameterName' must be greater than 0", 400);
     }
 }

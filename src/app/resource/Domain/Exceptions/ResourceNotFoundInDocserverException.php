@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceOutOfPerimeter class
+ * @brief ResourceNotFoundInDocserverException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceOutOfPerimeter extends \Exception
+use Exception;
+
+class ResourceNotFoundInDocserverException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Document out of perimeter", 403);
+        parent::__construct("Document not found in docserver", 404);
     }
 }

@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceFingerPrintDoesNotMatch class
+ * @brief ResourcePageNotFoundException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceFingerPrintDoesNotMatch extends \Exception
+use Exception;
+
+class ResourcePageNotFoundException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Fingerprints do not match", 403);
+        parent::__construct("Page not found in docserver", 404);
     }
 }

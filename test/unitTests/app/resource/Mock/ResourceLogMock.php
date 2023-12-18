@@ -9,25 +9,14 @@
 
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
-use Resource\Domain\Exceptions\ExceptionParameterCanNotBeEmpty;
 use Resource\Domain\Ports\ResourceLogInterface;
 
 class ResourceLogMock implements ResourceLogInterface
 {
     /**
-     * @param   string  $logLevel
-     * @param   int     $recordId
-     * @param   string  $message
-     *
-     * @return  void
-     *
-     * @throws  ExceptionParameterCanNotBeEmpty
+     * @inheritDoc
      */
     public function logThumbnailEvent(string $logLevel, int $recordId, string $message): void
     {
-        if (empty($logLevel)) {
-            throw new ExceptionParameterCanNotBeEmpty('logLevel');
-        }
     }
-
 }

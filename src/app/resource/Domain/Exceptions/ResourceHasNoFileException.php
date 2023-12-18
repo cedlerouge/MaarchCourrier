@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionConvertThumbnail class
+ * @brief ResourceHasNoFileException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionConvertThumbnail extends \Exception
+use Exception;
+
+class ResourceHasNoFileException extends Exception
 {
-    public function __construct(string $message)
+    public function __construct()
     {
-        parent::__construct("$message", 400);
+        parent::__construct("Document has no file", 400);
     }
 }

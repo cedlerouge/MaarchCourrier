@@ -8,13 +8,15 @@
  */
 
 /**
- * @brief ExceptionParameterCanNotBeEmptyAndShould class
+ * @brief ParameterCanNotBeEmptyException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionParameterCanNotBeEmptyAndShould extends \Exception
+use Exception;
+
+class ParameterCanNotBeEmptyException extends Exception
 {
     public function __construct(string $parameterName, string $shouldBe)
     {

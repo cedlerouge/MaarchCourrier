@@ -15,12 +15,12 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveOriginalResource;
-use Resource\Domain\Exceptions\ExceptionResourceDocserverDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceDoesNotExist;
-use Resource\Domain\Exceptions\ExceptionResourceFailedToGetDocumentFromDocserver;
-use Resource\Domain\Exceptions\ExceptionResourceFingerPrintDoesNotMatch;
-use Resource\Domain\Exceptions\ExceptionResourceHasNoFile;
-use Resource\Domain\Exceptions\ExceptionResourceNotFoundInDocserver;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
+use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
+use Resource\Domain\Exceptions\ResourceHasNoFileException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 
 class RetrieveOriginalResourceTest extends TestCase
 {
@@ -50,7 +50,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceDataMock->doesResourceExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceDoesNotExist());
+        $this->expectExceptionObject(new ResourceDoesNotExistException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
@@ -66,7 +66,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceDataMock->doesResourceFileExistInDatabase = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceHasNoFile());
+        $this->expectExceptionObject(new ResourceHasNoFileException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
@@ -82,7 +82,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceDataMock->doesResourceDocserverExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceDocserverDoesNotExist());
+        $this->expectExceptionObject(new ResourceDocserverDoesNotExistException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
@@ -98,7 +98,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceFileMock->doesFileExist = false;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceNotFoundInDocserver());
+        $this->expectExceptionObject(new ResourceNotFoundInDocserverException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
@@ -114,7 +114,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceFileMock->documentFingerprint = 'other fingerprint';
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceFingerPrintDoesNotMatch());
+        $this->expectExceptionObject(new ResourceFingerPrintDoesNotMatchException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);
@@ -130,7 +130,7 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
 
         // Assert
-        $this->expectExceptionObject(new ExceptionResourceFailedToGetDocumentFromDocserver());
+        $this->expectExceptionObject(new ResourceFailedToGetDocumentFromDocserverException());
 
         // Act
         $this->retrieveOriginalResource->getResourceFile(1);

@@ -23,17 +23,12 @@ use Resource\controllers\WatermarkController;
 use setasign\Fpdi\Fpdi;
 use SrcCore\controllers\PasswordController;
 use SrcCore\models\CoreConfigModel;
+use Throwable;
 
 class ResourceFile implements ResourceFileInterface
 {
     /**
-     * Build file path from docserver and document paths
-     *
-     * @param   string  $docserverPath
-     * @param   string  $documentPath
-     * @param   string  $documentFilename
-     *
-     * @return  string  Return the build file path or empty if docserverPath does not exist or empty
+     * @inheritDoc
      */
     public function buildFilePath(string $docserverPath, string $documentPath, string $documentFilename): string
     {
@@ -75,22 +70,17 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * Retrieves file content.
-     *
-     * @param   string  $filePath       The path to the file.
-     * @param   bool    $isEncrypted    Flag if the file is encrypted.
-     *
-     * @return string|'false' Returns the content of the file as a string if successful, or a string with value 'false' on failure.
+     * @inheritDoc
      */
-    public function getFileContent(string $filePath, bool $isEncrypted = false): string
+    public function getFileContent(string $filePath, bool $isEncrypted = false): ?string
     {
         if (empty($filePath)) {
-            return 'false';
+            return null;
         }
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
-            return 'false';
+            return null;
         }
 
         if ($isEncrypted) {
@@ -101,20 +91,15 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * Retrieves file content with watermark.
-     *
-     * @param   int     $resId          Resource id.
-     * @param   string  $fileContent    Resource file content.
-     *
-     * @return  string|'null'   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
+     * @inheritDoc
      */
-    public function getWatermark(int $resId, string $fileContent): string
+    public function getWatermark(int $resId, ?string $fileContent): ?string
     {
         if ($resId <= 0) {
-            return 'null';
+            return null;
         }
-        if ($fileContent === 'false') {
-            return 'null';
+        if ($fileContent === null) {
+            return null;
         }
         return WatermarkController::watermarkResource(['resId' => $resId, 'fileContent' => $fileContent]);
     }
@@ -129,21 +114,13 @@ class ResourceFile implements ResourceFileInterface
     }
 
     /**
-     * Convert resource page to thumbnail.
-     *
-     * @param   int     $resId  Resource id.
-     * @param   string  $type   Resource type, 'resource' or 'attachment'.
-     * @param   int     $page   Resource page number.
-     *
-     * @return  string   If returned contains 'errors:' then the convertion failed
+     * @inheritDoc
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
-        $check = 'true';
-
         try {
             $check = ConvertThumbnailController::convertOnePage(['type' => $type, 'resId' => $resId, 'page' => $page]);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return "errors: " . $th->getMessage();
         }
 

@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief ExceptionResourceNotFoundInDocserver class
+ * @brief ResourceDoesNotExistException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceNotFoundInDocserver extends \Exception
+use Exception;
+
+class ResourceDoesNotExistException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Document not found in docserver", 404);
+        parent::__construct("Document does not exist", 404);
     }
 }

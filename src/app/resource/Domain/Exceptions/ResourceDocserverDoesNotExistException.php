@@ -8,16 +8,18 @@
  */
 
 /**
- * @brief Resource class
+ * @brief ResourceDocserverDoesNotExistException class
  * @author dev@maarch.org
  */
 
 namespace Resource\Domain\Exceptions;
 
-class ExceptionResourceDocserverDoesNotExist extends \Exception
+use Exception;
+
+class ResourceDocserverDoesNotExistException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Docserver does not exist", 400);
+        parent::__construct("Docserver does not exist", 404);
     }
 }
