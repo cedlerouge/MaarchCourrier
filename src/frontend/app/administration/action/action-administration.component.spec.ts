@@ -149,8 +149,8 @@ describe('ActionAdministrationComponent', () => {
                 ]
             });
 
+            tick(100);
             fixture.detectChanges();
-            tick(300);
             flush();
 
             const nativeElement = fixture.nativeElement;

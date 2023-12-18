@@ -143,6 +143,7 @@ export class ActionAdministrationComponent implements OnInit {
                         this.keywordsList = data.keywordsList;
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'));
                         await this.getCustomFields();
+                        this.loading = false;
                     });
             } else {
                 this.creationMode = false;
@@ -172,6 +173,7 @@ export class ActionAdministrationComponent implements OnInit {
                         this.keywordsList = data.keywordsList;
                         this.headerService.setHeader(this.translate.instant('lang.actionCreation'), data.action.label_action);
                         await this.getCustomFields();
+                        this.loading = false;
                         if (this.action.actionPageId === 'confirm_status') {
                             this.customFieldsFormControl = new UntypedFormControl({ value: this.action.parameters.fillRequiredFields, disabled: false });
                             this.selectedFieldItems.selectedFieldsId = [];
@@ -272,17 +274,14 @@ export class ActionAdministrationComponent implements OnInit {
                             });
                             this.availableCustomFieldsClone = JSON.parse(JSON.stringify(this.availableCustomFields));
                         }
-                        this.loading = false;
                         resolve(true);
                     }),
                     catchError((err: any) => {
-                        this.loading = false;
                         this.notify.handleSoftErrors(err);
                         return of(false);
                     })
                 ).subscribe();
             } else {
-                this.loading = false;
                 resolve(true);
             }
         });
