@@ -20,6 +20,6 @@ class ResourceDoesNotExistException extends Exception
 {
     public function __construct()
     {
-        parent::__construct("Document does not exist", 404);
+        parent::__construct("Document does not exist", 400);
     }
 }
