@@ -15,6 +15,7 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 
 // TODO add more test cases !!!
 
@@ -84,4 +85,13 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->assertSame($result->getFormatFilename(), "Maarch Courrier Test");
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->resourceThumbnailFileContent);
     }
+
+    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheDocumentIsNull(): void
+    {
+        $this->resourceDataMock->doesResourceExist = false;
+
+        $this->expectException(ResourceDoesNotExistException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+    }
+
 }
