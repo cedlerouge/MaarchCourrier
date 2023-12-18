@@ -20,6 +20,7 @@ class ResourceFileMock implements ResourceFileInterface
     public bool $doesWatermarkInResourceFileContentFail = false;
     public bool $doesResourceConvertToThumbnailFailed = false;
     public bool $returnResourceThumbnailFileContent = false;
+    public bool $doesResourceConvertOnePageToThumbnailFailed = false;
     public bool $triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile = false;
 
     public string $mainResourceFileContent = 'original file content';
@@ -121,7 +122,10 @@ class ResourceFileMock implements ResourceFileInterface
      */
     public function convertOnePageToThumbnail(int $resId, string $type, int $page): string
     {
-        return 'true';
+        if ($this->doesResourceConvertOnePageToThumbnailFailed) {
+            return 'errors:';
+        }
+       return 'true';
     }
 
     /**
@@ -138,6 +142,10 @@ class ResourceFileMock implements ResourceFileInterface
             throw new Exception("Throw an exception when parsing pdf file");
         }
         */
+
+//            if ($this->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile) {
+//                return new throwException("error");
+//            }
 
         return 1;
     }

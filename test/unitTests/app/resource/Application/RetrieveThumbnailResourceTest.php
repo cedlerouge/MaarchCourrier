@@ -16,6 +16,7 @@ use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveThumbnailResource;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 
 // TODO add more test cases !!!
 class RetrieveThumbnailResourceTest extends TestCase
@@ -124,5 +125,13 @@ class RetrieveThumbnailResourceTest extends TestCase
         $this->assertNotEmpty($result->getFormatFilename());
         $this->assertSame($result->getFormatFilename(), 'maarch.png');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->noThumbnailFileContent);
+    }
+
+    public function testGetThumbnailFileReturnAnExceptionWhenDocumentIsnull(): void
+    {
+        $this->resourceDataMock->doesResourceExist = false;
+
+        $this->expectException(ResourceDoesNotExistException::class);
+        $this->retrieveThumbnailResource->getThumbnailFile(1);
     }
 }

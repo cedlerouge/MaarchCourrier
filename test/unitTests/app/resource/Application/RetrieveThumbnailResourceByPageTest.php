@@ -14,10 +14,12 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
+use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
-
-// TODO add more test cases !!!
+use Resource\Domain\Exceptions\ResourceOutOfPerimeterException;
+use Resource\Domain\Exceptions\ResourcePageNotFoundException;
+use Resource\Domain\Exceptions\ThumbnailNotFoundInDocserverOrNotReadableException;
 
 class RetrieveThumbnailResourceByPageTest extends TestCase
 {
@@ -93,5 +95,63 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->expectException(ResourceDoesNotExistException::class);
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
     }
+
+    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheResourceIsOutOfThePerimeter(): void
+    {
+        $this->resourceDataMock->doesUserHasRights = false;
+
+        $this->expectException(ResourceOutOfPerimeterException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+    }
+
+    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheConvertOnePageToThumbnailReturnAnError(): void
+    {
+        $this->resourceFileMock->doesResourceConvertOnePageToThumbnailFailed = true;
+
+        $this->expectException(ConvertThumbnailException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+    }
+
+    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheFileIsNotFoundOrNotReadableInTheDocserver(): void
+    {
+        $this->resourceFileMock->doesFileExist = false;
+
+        $this->expectException(ThumbnailNotFoundInDocserverOrNotReadableException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+    }
+
+    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheResourcePageIsNotFound(): void
+    {
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
+
+        $this->expectException(ResourcePageNotFoundException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+    }
+
+//    public function testGetThumbnailFileByPageReturnAnExceptionWhenTheNumberOfPagesIsZero(): void
+//    {
+//        $this->resourceFileMock->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile = true;
+//
+//        $this->expectException(ResourcePageNotFoundException::class);
+//        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
+//    }
+
+    /*public function testGetResourceVersionThumbnailByPageReturnAnExceptionWhen(): void
+    {
+
+
+
+        $this->expectException(ParameterCanNotBeEmptyException::class);
+        $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1, 1,);
+    }*/
+
+   /* public function testGetResourceVersionThumbnailByPageReturnAnExceptionWhenTheDocumentIsNull(): void
+    {
+        $this->resourceFileMock->doesFileExist = false;
+
+        $result = $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1, 1,);
+
+        $this->assertNull(null, $result);
+    }*/
 
 }
