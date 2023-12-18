@@ -124,7 +124,9 @@ describe('ActionAdministrationComponent', () => {
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
 
-            fixture.detectChanges();
+            tick(300);
+
+            // fixture.detectChanges();
 
             const customFieldReq = httpTestingController.expectOne('../rest/customFields');
             expect(customFieldReq.request.method).toBe('GET');
@@ -211,6 +213,7 @@ describe('ActionAdministrationComponent', () => {
             const initActionRes = httpTestingController.expectOne('../rest/initAction');
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
+            tick(100);
 
             params.subscribe((data: any) => {
                 const actionRes = httpTestingController.expectOne('../rest/actions/' + data['id']);
@@ -242,8 +245,8 @@ describe('ActionAdministrationComponent', () => {
                 ]
             });
 
-            fixture.detectChanges();
             tick(300);
+            fixture.detectChanges();
 
             const nativeElement = fixture.nativeElement;
             const name = nativeElement.querySelector('input[name=action_name]');
