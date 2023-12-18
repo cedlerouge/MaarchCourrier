@@ -32,6 +32,17 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
             ];
         }
 
+        if ($resId === 41) {
+            return [
+                'status'      => 'validated',
+                'format'      => 'pdf',
+                'encodedFile' => 'toto',
+                [
+                    'signatory' => 'Bruce Wayne - XELIANS'
+                ],
+            ];
+        }
+
         if ($resId === 152) {
             return [
                 'res_id'      => 152,

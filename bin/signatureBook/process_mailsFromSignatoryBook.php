@@ -230,7 +230,7 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
     $retrievedMails = XParaphController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'noVersion']);
 } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
     $retrieveFromPastell = RetrieveFromPastellFactory::create();
-    $retrievedMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['noVersion']);
+    $retrievedMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['noVersion'], 'noVersion');
 
     $retrievedMails['noVersion'] = $retrievedMailsFromPastell['success'];
 
@@ -264,7 +264,7 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
         $retrievedLetterboxMails = IxbusController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'resLetterbox']);
     } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
         $retrieveFromPastell = RetrieveFromPastellFactory::create();
-        $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox']);
+        $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox'], 'resLetterbox');
 
         $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMailsFromPastell['success'];
 
