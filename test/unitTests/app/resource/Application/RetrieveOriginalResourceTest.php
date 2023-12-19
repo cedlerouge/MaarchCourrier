@@ -15,12 +15,14 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveOriginalResource;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
 use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
 use Resource\Domain\Exceptions\ResourceHasNoFileException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
+use Resource\Domain\ResourceFileInfo;
 
 class RetrieveOriginalResourceTest extends TestCase
 {
@@ -156,4 +158,43 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainResourceFileContent);
     }
+
+    public function testGetResourceFileReturnAnExceptionWhenTheParameterIsInferiorToOne(): void
+    {
+
+
+        $this->expectException(ParameterMustBeGreaterThanZeroException::class);
+
+        $this->retrieveOriginalResource->getResourceFile(0, true);
+    }
+    public function testGetResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
+    {
+        //Marche pas encore
+        //$this->resourceFileMock->documentFingerprint = 'fingerprint1245679';
+        //$this->resourceFileMock->docserverPath = '';
+        $this->resourceDataMock->fingerprint = '';
+
+        $this->retrieveOriginalResource->getResourceFile(1, false);
+        $this->assertTrue($this->resourceDataMock->doesFingerprint);
+    }
+    public function testGetResourceFileIsValidWhenTheInfoOfTheResourceFileInfoIsCorrectlyReturned(): void
+    {
+        $this->resourceFileMock->documentFingerprint = 'file fingerprint';
+        $result = $this->retrieveOriginalResource->getResourceFile(1, true);
+        $resFileInfo = new ResourceFileInfo(
+            null,
+            null,
+            [
+            'dirname' => 'install/samples/resources/a/path',
+            'basename' => 'ResourceConvertedTest',
+            'filename' => 'ResourceConvertedTest'
+        ],
+            'original file content',
+            'Maarch Courrier Test',
+            'pdf'
+        );
+
+        $this->assertEquals($resFileInfo , $result);
+    }
+
 }

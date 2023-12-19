@@ -14,7 +14,7 @@
 
 namespace Resource\Domain;
 
-class ResourceConverted
+class ResourceConverted implements HasDocserverFileInterface
 {
     private int     $id;
     private int     $resId;

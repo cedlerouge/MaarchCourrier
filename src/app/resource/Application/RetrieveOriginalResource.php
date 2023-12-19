@@ -88,7 +88,6 @@ class RetrieveOriginalResource
         if ($signedDocument == null && !empty($fingerPrint) && empty($document->getFingerprint())) {
             $this->resourceData->updateFingerprint($resId, $fingerPrint);
         }
-
         if ($document->getFingerprint() != $fingerPrint) {
             throw new ResourceFingerPrintDoesNotMatchException();
         }

@@ -18,7 +18,6 @@ use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 
-// TODO add more test cases !!!
 class RetrieveThumbnailResourceTest extends TestCase
 {
     private ResourceDataMock $resourceDataMock;
@@ -42,12 +41,8 @@ class RetrieveThumbnailResourceTest extends TestCase
      */
     public function testCannotGetThumbnailFileBecauseResId0(): void
     {
-        // Arrange
-
-        // Assert
         $this->expectExceptionObject(new ParameterMustBeGreaterThanZeroException('resId'));
 
-        // Act
         $this->retrieveThumbnailResource->getThumbnailFile(0);
     }
 
@@ -56,14 +51,11 @@ class RetrieveThumbnailResourceTest extends TestCase
      */
     public function testCannotGetThumbnailFileBecauseResourceHasNoFileExpectNoThumbnailFile(): void
     {
-        // Arrange
         $this->resourceDataMock->returnResourceWithoutFile = true;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
 
-        // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());
@@ -76,14 +68,11 @@ class RetrieveThumbnailResourceTest extends TestCase
      */
     public function testCannotGetThumbnailFileBecauseGlobalUserHasNoRightsExpectNoThumbnailFile(): void
     {
-        // Arrange
         $this->resourceDataMock->doesUserHasRights = false;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
 
-        // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());
@@ -96,14 +85,11 @@ class RetrieveThumbnailResourceTest extends TestCase
      */
     public function testCannotGetThumbnailFileBecauseOfNoDocumentVersionAndThumbnailConversionFailed(): void
     {
-        // Arrange
         $this->resourceDataMock->doesResourceVersionExist = false;
         $this->resourceFileMock->doesResourceConvertToThumbnailFailed = true;
 
-        // Assert
         $this->expectExceptionObject(new ConvertThumbnailException('Conversion to thumbnail failed'));
 
-        // Act
         $this->retrieveThumbnailResource->getThumbnailFile(1);
     }
 
@@ -112,14 +98,11 @@ class RetrieveThumbnailResourceTest extends TestCase
      */
     public function testCannotGetThumbnailFileBecauseResourceFailedToGetContentFromDocserverExpectNoThumbnailFile(): void
     {
-        // Arrange
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
         $this->resourceFileMock->returnResourceThumbnailFileContent = true;
 
-        // Act
         $result = $this->retrieveThumbnailResource->getThumbnailFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());

@@ -4,6 +4,7 @@ namespace Resource\Application;
 
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
+use Resource\Domain\HasDocserverFileInterface;
 use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceDocserverAndFilePath;
@@ -25,7 +26,7 @@ class RetrieveDocserverAndFilePath
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceNotFoundInDocserverException
      */
-    public function getDocserverAndFilePath(object $document): ResourceDocserverAndFilePath
+    public function getDocserverAndFilePath(HasDocserverFileInterface $document): ResourceDocserverAndFilePath
     {
         $docserver = $this->resourceData->getDocserverDataByDocserverId($document->getDocserverId());
 

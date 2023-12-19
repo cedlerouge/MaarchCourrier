@@ -14,7 +14,7 @@
 
 namespace Resource\Domain;
 
-class Resource
+class Resource implements HasDocserverFileInterface
 {
     private int $resId;
     private ?string $subject;

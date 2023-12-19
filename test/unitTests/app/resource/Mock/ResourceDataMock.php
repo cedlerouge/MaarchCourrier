@@ -24,7 +24,8 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $returnResourceWithoutFile = false;
     public bool $doesUserHasRights = true;
     public bool $isResourceDocserverEncrypted = false;
-
+    public bool $doesFingerprint = false;
+    public string $fingerprint = 'file fingerprint';
 
     public function getMainResourceData(int $resId): ?Resource
     {
@@ -39,7 +40,7 @@ class ResourceDataMock implements ResourceDataInterface
             'path'          => '2021/03/0001/',
             'filename'      => '0001_960655724.pdf',
             'version'       => 1,
-            'fingerprint'   => 'file fingerprint',
+            'fingerprint'   => $this->fingerprint,
             'format'        => 'pdf',
             'typist'        => 1
         ];
@@ -66,12 +67,12 @@ class ResourceDataMock implements ResourceDataInterface
         return new ResourceConverted(
             1,
             1,
-            '',
+            'docId',
             1,
-            '',
-            '',
-            '',
-            null
+            'DocTest',
+            'a/path/',
+            'ResourceConvertedTest',
+            $this->fingerprint
         );
     }
 
@@ -96,7 +97,8 @@ class ResourceDataMock implements ResourceDataInterface
 
     public function updateFingerprint(int $resId, string $fingerprint): void
     {
-        return;
+        $this->doesFingerprint = true;
+        $this->fingerprint = 'file fingerprint';// marche pas (ne remplace pas le fingerprint)
     }
 
     public function formatFilename(string $name, int $maxLength = 250): string
