@@ -36,16 +36,10 @@
                     <app-maarch-message *ngIf="!ladEnabled">
                         <h3>{{'lang.whatIsMercure' | translate}}</h3>
                         <p [innerHTML]="'lang.mercureDesc1' | translate"></p>
-                        <h3>{{'lang.howMercureWorks' | translate}}</h3>
                         <p [innerHTML]="'lang.mercureDesc2' | translate"></p>
+                        <h3>{{'lang.howMercureWorks' | translate}}</h3>
                         <p [innerHTML]="'lang.mercureDesc3' | translate"></p>
-                        <h3>{{'lang.contactsDBIndexation' | translate}}</h3>
                         <p [innerHTML]="'lang.mercureDesc4' | translate"></p>
-                        <h3>{{'lang.howToInstallIt' | translate}}</h3>
-                        <p [innerHTML]="'lang.mercureDesc5' | translate"></p>
-                    </app-maarch-message>
-                    <app-maarch-message>
-                        <p [innerHTML]="'lang.mercureLicenseDesc' | translate"></p>
                     </app-maarch-message>
                     <div style="text-align: center;font-style: italic;" [innerHTML]="'lang.mercureContactInfo' | translate"></div>
                 </mat-card>

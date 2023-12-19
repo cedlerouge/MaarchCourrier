@@ -19,7 +19,6 @@ use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 
-
 class RetrieveFromPastell
 {
     private PastellApiInterface $pastellApi;
@@ -27,21 +26,21 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
-    private ResourceDataInterface $updateSignatoryUser;
+    private ResourceDataInterface $resourceData;
 
     /**
      * @param PastellApiInterface $pastellApi
      * @param PastellConfigInterface $pastellConfig
      * @param PastellConfigurationCheck $pastellConfigCheck
      * @param ParseIParapheurLog $parseIParapheurLog
-     * @param ResourceDataInterface $updateSignatoryUser
+     * @param ResourceDataInterface $resourceData
      */
     public function __construct(
-        PastellApiInterface          $pastellApi,
-        PastellConfigInterface       $pastellConfig,
-        PastellConfigurationCheck    $pastellConfigCheck,
-        ParseIParapheurLog           $parseIParapheurLog,
-        ResourceDataInterface $updateSignatoryUser
+        PastellApiInterface       $pastellApi,
+        PastellConfigInterface    $pastellConfig,
+        PastellConfigurationCheck $pastellConfigCheck,
+        ParseIParapheurLog        $parseIParapheurLog,
+        ResourceDataInterface     $resourceData
     )
     {
         $this->pastellApi = $pastellApi;
@@ -49,7 +48,7 @@ class RetrieveFromPastell
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
-        $this->updateSignatoryUser = $updateSignatoryUser;
+        $this->resourceData = $resourceData;
     }
 
     /**
@@ -80,7 +79,8 @@ class RetrieveFromPastell
                 // Need res_id_master for parseLogIparapheur and res_id for updateDocument (for attachments and main document)
                 $resId = $value['res_id_master'] ?? $value['res_id'];
                 $result = $this->parseIParapheurLog->parseLogIparapheur($resId , $value['external_id']);
-                $this->updateSignatoryUser->updateDocumentExternalStateSignatoryUser($value['res_id'], $documentType == 'resLetterbox' ? 'resource' : 'attachment', $result['signatory'] ?? '');
+                $this->resourceData->updateDocumentExternalStateSignatoryUser($value['res_id'], $documentType == 'resLetterbox' ? 'resource' : 'attachment', $result['signatory'] ?? '');
+
 
                 if (!empty($result['error'])) {
                     $errors[$key] = $result['error'];

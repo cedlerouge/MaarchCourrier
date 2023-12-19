@@ -71,7 +71,7 @@ class RetrieveFromPastellTest extends TestCase
         ];
         $documentType = 'resLetterbox';
 
-        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve,$documentType);
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
             [
@@ -284,7 +284,8 @@ class RetrieveFromPastellTest extends TestCase
                 'res_id_master' => 42
             ]
         ];
-        $documentType = 'resLetterbox';
+        $documentType = 'noVersion';
+
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
@@ -358,9 +359,7 @@ class RetrieveFromPastellTest extends TestCase
                         'status'      => 'validated',
                         'format'      => 'pdf',
                         'encodedFile' => 'toto',
-                        [
-                            'signatory' => 'Bruce Wayne - XELIANS'
-                        ],
+                        'signatory' => 'Bruce Wayne - XELIANS'
                     ]
                 ],
                 'error'   => [
@@ -370,5 +369,4 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
     }
-
 }
