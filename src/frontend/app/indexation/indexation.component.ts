@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, AfterViewInit} from '@angular/core';
+import { Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -312,13 +312,13 @@ export class IndexationComponent implements OnInit, OnDestroy {
                 if (res) {
                     await this.indexingForm.fillWithLad(res);
                 }
-                this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
                 this.ladService.endLad();
             } else {
                 await this.sleep(500);
                 await this.refreshDatas(event);
             }
         }
+        this.appDocumentViewer.setDatas(this.indexingForm.formatDatas(this.indexingForm.getDatas()));
     }
 
     sleep(ms: number){
