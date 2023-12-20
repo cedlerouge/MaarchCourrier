@@ -63,7 +63,7 @@ describe('ActionAdministrationComponent', () => {
                 TranslateModule.forRoot({
                     loader: { provide: TranslateLoader, useClass: FakeLoader },
                 }),
-                RouterTestingModule.withRoutes([{ path: 'administration/actions', component: DummyComponent }]),
+                RouterTestingModule.withRoutes([{ path: 'administration/actions', component: DummyComponent }])
             ],
             declarations: [ActionAdministrationComponent],
             providers: [
@@ -213,7 +213,6 @@ describe('ActionAdministrationComponent', () => {
             const initActionRes = httpTestingController.expectOne('../rest/initAction');
             expect(initActionRes.request.method).toBe('GET');
             initActionRes.flush(initAction());
-            tick(100);
 
             params.subscribe((data: any) => {
                 const actionRes = httpTestingController.expectOne('../rest/actions/' + data['id']);
@@ -268,7 +267,6 @@ describe('ActionAdministrationComponent', () => {
             fixture.detectChanges();
             tick(300);
 
-
             expect(nativeElement.querySelector('#categorieslist')).toBeDefined();
             expect(submit.disabled).toBeFalse();
 
@@ -300,7 +298,7 @@ describe('ActionAdministrationComponent', () => {
             }, 100);
             flush();
         }));
-    })
+    });
 });
 
 function initAction() {
@@ -328,11 +326,11 @@ function initAction() {
         "categoriesList": [
             {
                 "id": "incoming",
-                "label": "Courrier Arriv\u00e9e"
+                "label": "Courrier Arrivée"
             },
             {
                 "id": "outgoing",
-                "label": "Courrier D\u00e9part"
+                "label": "Courrier Départ"
             },
             {
                 "id": "internal",
@@ -344,13 +342,13 @@ function initAction() {
             },
             {
                 "id": "registeredMail",
-                "label": "Recommand\u00e9"
+                "label": "Recommandé"
             }
         ],
         "statuses": [
             {
                 "id": "_NOSTATUS_",
-                "label_status": "Inchang\u00e9"
+                "label_status": "Inchangé"
             },
             {
                 "identifier": 24,
