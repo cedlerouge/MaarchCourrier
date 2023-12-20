@@ -31,7 +31,7 @@ export class ActionsAdministrationComponent implements OnInit {
     actions: any[] = [];
     titles: any[] = [];
 
-    loading: boolean = false;
+    loading: boolean = true;
 
     displayedColumns = ['id', 'label_action', 'history', 'actions'];
     filterColumns = ['id', 'label_action'];
@@ -51,23 +51,36 @@ export class ActionsAdministrationComponent implements OnInit {
     ngOnInit(): void {
         this.headerService.injectInSideBarLeft(this.adminMenuTemplate, this.viewContainerRef, 'adminMenu');
 
-        this.loading = true;
-
-        this.http.get('../rest/actions')
-            .subscribe((data) => {
+        this.http.get('../rest/actions').pipe(
+            tap((data: any) => {
                 this.actions = data['actions'];
                 this.headerService.setHeader(this.translate.instant('lang.administration') + ' ' + this.translate.instant('lang.actions'));
                 this.loading = false;
                 setTimeout(() => {
                     this.adminService.setDataSource('admin_actions', this.actions, this.sort, this.paginator, this.filterColumns);
                 }, 0);
-            }, (err) => {
+            }),
+            catchError((err: any) => {
+                this.loading = false;
                 this.notify.handleErrors(err);
-            });
+                return of(false);
+            })
+        ).subscribe();
+
     }
 
     deleteAction(action: any) {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: `${this.translate.instant('lang.delete')} «${action.label_action}»`, msg: this.translate.instant('lang.confirmAction') } });
+        const dialogRef = this.dialog.open(ConfirmComponent,
+            {
+                panelClass: 'maarch-modal',
+                autoFocus: false,
+                disableClose: true,
+                data: {
+                    title: `${this.translate.instant('lang.delete')} «${action.label_action}»`,
+                    msg: this.translate.instant('lang.confirmAction'),
+                }
+            });
+
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete('../rest/actions/' + action.id)),
