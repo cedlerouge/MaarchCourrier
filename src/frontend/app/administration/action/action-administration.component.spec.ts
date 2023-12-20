@@ -42,9 +42,10 @@ describe('ActionAdministrationComponent', () => {
     let component: ActionAdministrationComponent;
     let fixture: ComponentFixture<ActionAdministrationComponent>;
     let translateService: TranslateService;
-    const params = new BehaviorSubject({});
+    let params: BehaviorSubject<any>;
 
     beforeEach(() => {
+        params = new BehaviorSubject({});
         TestBed.configureTestingModule({
             imports: [
                 ReactiveFormsModule,
