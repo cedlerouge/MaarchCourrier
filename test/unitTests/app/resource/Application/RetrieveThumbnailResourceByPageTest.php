@@ -15,10 +15,14 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
+use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 use Resource\Domain\Exceptions\ResourceOutOfPerimeterException;
 use Resource\Domain\Exceptions\ResourcePageNotFoundException;
+use Resource\Domain\Exceptions\SetaPdfResultException;
 use Resource\Domain\Exceptions\ThumbnailNotFoundInDocserverOrNotReadableException;
 
 class RetrieveThumbnailResourceByPageTest extends TestCase
@@ -43,6 +47,16 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws SetaPdfResultException
      */
     public function testCannotGetThumbnailFileByPageBecauseResId0(): void
     {
@@ -57,6 +71,16 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
      */
     public function testCannotGetThumbnailFileByPageBecausePage0(): void
     {
@@ -71,6 +95,16 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
      */
     public function testGetThumbnailFileByPage1(): void
     {
@@ -88,6 +122,19 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->resourceThumbnailFileContent);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     */
     public function testGetThumbnailFileByPageReturnAnExceptionWhenTheDocumentIsNull(): void
     {
         $this->resourceDataMock->doesResourceExist = false;
@@ -96,6 +143,19 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     */
     public function testGetThumbnailFileByPageReturnAnExceptionWhenTheResourceIsOutOfThePerimeter(): void
     {
         $this->resourceDataMock->doesUserHasRights = false;
@@ -104,6 +164,19 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     */
     public function testGetThumbnailFileByPageReturnAnExceptionWhenTheConvertOnePageToThumbnailReturnAnError(): void
     {
         $this->resourceFileMock->doesResourceConvertOnePageToThumbnailFailed = true;
@@ -112,6 +185,19 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     */
     public function testGetThumbnailFileByPageReturnAnExceptionWhenTheFileIsNotFoundOrNotReadableInTheDocserver(): void
     {
         $this->resourceFileMock->doesFileExist = false;
@@ -120,6 +206,19 @@ class RetrieveThumbnailResourceByPageTest extends TestCase
         $this->retrieveThumbnailResourceByPage->getThumbnailFileByPage(1 ,1);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceOutOfPerimeterException
+     * @throws ResourcePageNotFoundException
+     * @throws SetaPdfResultException
+     * @throws ThumbnailNotFoundInDocserverOrNotReadableException
+     */
     public function testGetThumbnailFileByPageReturnAnExceptionWhenTheResourcePageIsNotFound(): void
     {
         $this->resourceFileMock->doesResourceFileGetContentFail = true;

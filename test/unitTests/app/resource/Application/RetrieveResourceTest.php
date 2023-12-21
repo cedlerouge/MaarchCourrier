@@ -14,6 +14,9 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveResource;
+use Resource\Domain\Exceptions\ConvertedResultException;
+use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
@@ -41,6 +44,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
      */
     public function testCannotGetMainFileBecauseResourceDoesNotExist(): void
     {
@@ -56,6 +68,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetMainFileBecauseResourceHasNoFileReferenceInDatabase(): void
     {
@@ -71,6 +92,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetMainFileBecauseResourceUnknownDocserverReferenceInDatabase(): void
     {
@@ -86,6 +116,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetMainFileBecauseResourceFileDoesNotExistInDocserver(): void
     {
@@ -101,6 +140,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetMainFileBecauseResourceFingerprintDoesNotMatch(): void
     {
@@ -116,6 +164,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetMainFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
@@ -132,6 +189,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testGetResourceFileWithoutWatermarkBecauseAppliedWatermarkFailed(): void
     {
@@ -153,6 +219,15 @@ class RetrieveResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testGetResourceFileWithWatermarkApplied(): void
     {

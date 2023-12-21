@@ -16,7 +16,10 @@ use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveThumbnailResource;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
+use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
+use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 
 class RetrieveThumbnailResourceTest extends TestCase
 {
@@ -38,6 +41,12 @@ class RetrieveThumbnailResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetThumbnailFileBecauseResId0(): void
     {
@@ -48,6 +57,12 @@ class RetrieveThumbnailResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetThumbnailFileBecauseResourceHasNoFileExpectNoThumbnailFile(): void
     {
@@ -65,6 +80,12 @@ class RetrieveThumbnailResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetThumbnailFileBecauseGlobalUserHasNoRightsExpectNoThumbnailFile(): void
     {
@@ -82,6 +103,12 @@ class RetrieveThumbnailResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetThumbnailFileBecauseOfNoDocumentVersionAndThumbnailConversionFailed(): void
     {
@@ -95,6 +122,12 @@ class RetrieveThumbnailResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetThumbnailFileBecauseResourceFailedToGetContentFromDocserverExpectNoThumbnailFile(): void
     {
@@ -110,6 +143,15 @@ class RetrieveThumbnailResourceTest extends TestCase
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->noThumbnailFileContent);
     }
 
+    /**
+     * @return void
+     * @throws ConvertThumbnailException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testGetThumbnailFileReturnAnExceptionWhenDocumentIsnull(): void
     {
         $this->resourceDataMock->doesResourceExist = false;

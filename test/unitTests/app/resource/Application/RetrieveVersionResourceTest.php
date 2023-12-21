@@ -21,6 +21,7 @@ use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
 use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
 use Resource\Domain\Exceptions\ResourceHasNoFileException;
+use Resource\Domain\Exceptions\ResourceIncorrectVersionException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 
 class RetrieveVersionResourceTest extends TestCase
@@ -43,6 +44,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     * @throws ResourceIncorrectVersionException
      */
     public function testCannotGetVersionResourceFileBecauseResIdNotValidParam(): void
     {
@@ -57,6 +67,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseVersionNotValidParam(): void
     {
@@ -71,6 +90,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseTypeIsEmpty(): void
     {
@@ -85,6 +113,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseTypeNotValidParam(): void
     {
@@ -99,6 +136,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceDoesNotExist(): void
     {
@@ -114,6 +160,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceHasNoFileReferenceInDatabase(): void
     {
@@ -129,6 +184,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceUnknownDocserverReferenceInDatabase(): void
     {
@@ -144,6 +208,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceFileDoesNotExistInDocserver(): void
     {
@@ -159,6 +232,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceFingerprintDoesNotMatch(): void
     {
@@ -174,6 +256,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetVersionResourceFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
@@ -190,6 +281,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testGetVersionResourceFileWithoutWatermarkBecauseAppliedWatermarkFailed(): void
     {
@@ -211,6 +311,15 @@ class RetrieveVersionResourceTest extends TestCase
 
     /**
      * @return void
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceIncorrectVersionException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testGetVersionResourceFileWithWatermarkApplied(): void
     {
