@@ -99,6 +99,7 @@ class ResourceDataMock implements ResourceDataInterface
     {
         $this->doesFingerprint = true;
         $this->fingerprint = 'file fingerprint';// marche pas (ne remplace pas le fingerprint)
+        $this->getMainResourceData(1);
     }
 
     public function formatFilename(string $name, int $maxLength = 250): string

@@ -233,8 +233,6 @@ class RetrieveOriginalResourceTest extends TestCase
     public function testGetResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
     {
         //Marche pas encore
-        //$this->resourceFileMock->documentFingerprint = 'fingerprint1245679';
-        //$this->resourceFileMock->docserverPath = '';
         $this->resourceDataMock->fingerprint = '';
 
         $this->retrieveOriginalResource->getResourceFile(1, false);

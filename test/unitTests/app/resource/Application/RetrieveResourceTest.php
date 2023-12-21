@@ -14,9 +14,9 @@ use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveResource;
+use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ConvertedResultException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
@@ -245,4 +245,12 @@ class RetrieveResourceTest extends TestCase
         $this->assertSame($result->getFormatFilename(), 'Maarch Courrier Test');
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainWatermarkInResourceFileContent);
     }
+
+    public function testWhenTheResourceIsRetrievedAndTheResIdIsLessThanOneAnExceptionIsReturned(): void
+    {
+        $this->expectException(ParameterMustBeGreaterThanZeroException::class);
+
+        $this->retrieveResource->getResourceFile(0);
+    }
+
 }
