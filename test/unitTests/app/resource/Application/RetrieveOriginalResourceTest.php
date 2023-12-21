@@ -44,7 +44,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceDoesNotExist(): void
     {
@@ -60,7 +66,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceHasNoFileReferenceInDatabase(): void
     {
@@ -76,7 +88,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceHasUnknownDocserverReferenceInDatabase(): void
     {
@@ -92,7 +110,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFileDoesNotExistInDocserver(): void
     {
@@ -108,7 +132,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFingerprintDoesNotMatch(): void
     {
@@ -124,7 +154,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
@@ -140,7 +176,13 @@ class RetrieveOriginalResourceTest extends TestCase
 
     /**
      * @return void
-     * @throws Exception
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
      */
     public function testGetOriginalResourceFile(): void
     {
@@ -159,6 +201,16 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainResourceFileContent);
     }
 
+    /**
+     * @return void
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testGetResourceFileReturnAnExceptionWhenTheParameterIsInferiorToOne(): void
     {
 
@@ -167,6 +219,17 @@ class RetrieveOriginalResourceTest extends TestCase
 
         $this->retrieveOriginalResource->getResourceFile(0, true);
     }
+
+    /**
+     * @return void
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testGetResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
     {
         //Marche pas encore
@@ -177,6 +240,17 @@ class RetrieveOriginalResourceTest extends TestCase
         $this->retrieveOriginalResource->getResourceFile(1, false);
         $this->assertTrue($this->resourceDataMock->doesFingerprint);
     }
+
+    /**
+     * @return void
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testGetResourceFileIsValidWhenTheInfoOfTheResourceFileInfoIsCorrectlyReturned(): void
     {
         $this->resourceFileMock->documentFingerprint = 'file fingerprint';

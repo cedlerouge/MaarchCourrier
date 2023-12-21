@@ -23,6 +23,11 @@ class RetrieveDocserverAndFilePathTest extends TestCase
         $this->retrieveDocserverAndFilePath =  new RetrieveDocserverAndFilePath($this->resourceDataMock, $this->resourceFileMock);
     }
 
+    /**
+     * @return void
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testDocserverAndFilePathReturnAnExceptionWhenTheResourceDocserverDoesNotExists(): void
     {
         $this->resourceDataMock->doesResourceDocserverExist = false;
@@ -32,6 +37,11 @@ class RetrieveDocserverAndFilePathTest extends TestCase
         $this->retrieveDocserverAndFilePath->getDocserverAndFilePath($document);
     }
 
+    /**
+     * @return void
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testDocserverAndFilePathReturnAnExceptionWhenTheResourceIsNotFoundInDocserver(): void
     {
         $this->resourceFileMock->docserverPath = '';
