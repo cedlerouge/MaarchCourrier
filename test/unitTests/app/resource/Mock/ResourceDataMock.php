@@ -26,6 +26,7 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $isResourceDocserverEncrypted = false;
     public bool $doesFingerprint = false;
     public string $fingerprint = 'file fingerprint';
+    public bool $convertedPdfByIdHasFailed = false;
 
     public function getMainResourceData(int $resId): ?Resource
     {
@@ -113,11 +114,16 @@ class ResourceDataMock implements ResourceDataInterface
      */
     public function getConvertedPdfById(int $resId, string $collId): array
     {
+
+        if ($this->convertedPdfByIdHasFailed) {
+            return ['errors' => 'Conversion error'];
+        }
+
         return [
             'docserver_id' => 'FASTHD',
             'path' => '2021/03/0001/',
             'filename' => '0001_960655724.pdf',
-            'fingerprint' => 'file fingerprint'
+            'fingerprint' => $this->fingerprint
         ];
     }
 

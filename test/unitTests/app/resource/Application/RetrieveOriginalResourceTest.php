@@ -142,13 +142,10 @@ class RetrieveOriginalResourceTest extends TestCase
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFingerprintDoesNotMatch(): void
     {
-        // Arrange
         $this->resourceFileMock->documentFingerprint = 'other fingerprint';
 
-        // Assert
         $this->expectExceptionObject(new ResourceFingerPrintDoesNotMatchException());
 
-        // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
 
@@ -164,13 +161,10 @@ class RetrieveOriginalResourceTest extends TestCase
      */
     public function testCannotGetOriginalResourceFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
-        // Arrange
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
 
-        // Assert
         $this->expectExceptionObject(new ResourceFailedToGetDocumentFromDocserverException());
 
-        // Act
         $this->retrieveOriginalResource->getResourceFile(1);
     }
 
@@ -186,13 +180,10 @@ class RetrieveOriginalResourceTest extends TestCase
      */
     public function testGetOriginalResourceFile(): void
     {
-        // Arrange
         $this->resourceFileMock->returnResourceThumbnailFileContent = false;
 
-        // Act
         $result = $this->retrieveOriginalResource->getResourceFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());
@@ -214,7 +205,6 @@ class RetrieveOriginalResourceTest extends TestCase
     public function testGetResourceFileReturnAnExceptionWhenTheParameterIsInferiorToOne(): void
     {
 
-
         $this->expectException(ParameterMustBeGreaterThanZeroException::class);
 
         $this->retrieveOriginalResource->getResourceFile(0, true);
@@ -230,9 +220,8 @@ class RetrieveOriginalResourceTest extends TestCase
      * @throws ResourceHasNoFileException
      * @throws ResourceNotFoundInDocserverException
      */
-    public function testGetResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
+    public function testGetOriginalResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
     {
-        //Marche pas encore
         $this->resourceDataMock->fingerprint = '';
 
         $this->retrieveOriginalResource->getResourceFile(1, false);

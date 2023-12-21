@@ -84,6 +84,7 @@ class RetrieveResource
         $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {
             $this->resourceData->updateFingerprint($resId, $fingerPrint);
+            $document->setFingerprint($fingerPrint);
         }
 
         if ($document->getFingerprint() != $fingerPrint) {
@@ -117,15 +118,11 @@ class RetrieveResource
     }
 
     /**
-     * @throws  ParameterCanNotBeEmptyException|ConvertedResultException
+     * @throws  ConvertedResultException
      */
-    private function getConvertedResourcePdfById(int $resId, string $collId = 'letterbox_coll'): ResourceConverted
+    private function getConvertedResourcePdfById(int $resId): ResourceConverted
     {
-        if (empty($collId) || ($collId !== 'letterbox_coll' && $collId !== 'attachments_coll')) {
-            throw new ParameterCanNotBeEmptyException('collId', "'letterbox_coll' or 'attachments_coll'");
-        }
-
-        $document = $this->resourceData->getConvertedPdfById($resId, $collId);
+        $document = $this->resourceData->getConvertedPdfById($resId, 'letterbox_coll');
 
         if (!empty($document['errors'])) {
             throw new ConvertedResultException($document['errors']);

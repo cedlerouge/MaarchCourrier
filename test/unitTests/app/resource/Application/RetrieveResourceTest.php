@@ -56,13 +56,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceDoesNotExist(): void
     {
-        // Arrange
         $this->resourceDataMock->doesResourceExist = false;
 
-        // Assert
         $this->expectExceptionObject(new ResourceDoesNotExistException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -80,13 +77,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceHasNoFileReferenceInDatabase(): void
     {
-        // Arrange
         $this->resourceDataMock->doesResourceFileExistInDatabase = false;
 
-        // Assert
         $this->expectExceptionObject(new ResourceHasNoFileException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -104,13 +98,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceUnknownDocserverReferenceInDatabase(): void
     {
-        // Arrange
         $this->resourceDataMock->doesResourceDocserverExist = false;
 
-        // Assert
         $this->expectExceptionObject(new ResourceDocserverDoesNotExistException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -128,13 +119,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceFileDoesNotExistInDocserver(): void
     {
-        // Arrange
         $this->resourceFileMock->doesFileExist = false;
 
-        // Assert
         $this->expectExceptionObject(new ResourceNotFoundInDocserverException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -152,13 +140,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceFingerprintDoesNotMatch(): void
     {
-        // Arrange
         $this->resourceFileMock->documentFingerprint = 'other fingerprint';
 
-        // Assert
         $this->expectExceptionObject(new ResourceFingerPrintDoesNotMatchException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -176,14 +161,11 @@ class RetrieveResourceTest extends TestCase
      */
     public function testCannotGetMainFileBecauseResourceFailedToGetContentFromDocserver(): void
     {
-        // Arrange
         $this->resourceFileMock->doesWatermarkInResourceFileContentFail = true;
         $this->resourceFileMock->doesResourceFileGetContentFail = true;
 
-        // Assert
         $this->expectExceptionObject(new ResourceFailedToGetDocumentFromDocserverException());
 
-        // Act
         $this->retrieveResource->getResourceFile(1);
     }
 
@@ -201,14 +183,11 @@ class RetrieveResourceTest extends TestCase
      */
     public function testGetResourceFileWithoutWatermarkBecauseAppliedWatermarkFailed(): void
     {
-        // Arrange
         $this->resourceFileMock->returnResourceThumbnailFileContent = false;
         $this->resourceFileMock->doesWatermarkInResourceFileContentFail = true;
 
-        // Act
         $result = $this->retrieveResource->getResourceFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());
@@ -231,13 +210,10 @@ class RetrieveResourceTest extends TestCase
      */
     public function testGetResourceFileWithWatermarkApplied(): void
     {
-        // Arrange
         $this->resourceFileMock->returnResourceThumbnailFileContent = false;
 
-        // Act
         $result = $this->retrieveResource->getResourceFile(1);
 
-        // Assert
         $this->assertNotEmpty($result->getPathInfo());
         $this->assertNotEmpty($result->getFileContent());
         $this->assertNotEmpty($result->getFormatFilename());
@@ -246,6 +222,18 @@ class RetrieveResourceTest extends TestCase
         $this->assertSame($result->getFileContent(), $this->resourceFileMock->mainWatermarkInResourceFileContent);
     }
 
+    /**
+     * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
     public function testWhenTheResourceIsRetrievedAndTheResIdIsLessThanOneAnExceptionIsReturned(): void
     {
         $this->expectException(ParameterMustBeGreaterThanZeroException::class);
@@ -253,4 +241,44 @@ class RetrieveResourceTest extends TestCase
         $this->retrieveResource->getResourceFile(0);
     }
 
+    /**
+     * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
+    public function testGetResourceFileIsValidWhenTheFingerprintIsCorrectlyUpdated(): void
+    {
+        $this->resourceDataMock->fingerprint = '';
+
+        $this->retrieveResource->getResourceFile(1, false);
+        $this->assertTrue($this->resourceDataMock->doesFingerprint);
+    }
+
+    /**
+     * @return void
+     * @throws ConvertedResultException
+     * @throws ParameterCanNotBeEmptyException
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ResourceDoesNotExistException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceFingerPrintDoesNotMatchException
+     * @throws ResourceHasNoFileException
+     * @throws ResourceNotFoundInDocserverException
+     */
+    public function testWhenAnExceptionIsReturnedWhenTheConversionOfTheResourceToPdfHasFailed(): void
+    {
+        $this->expectException(ConvertedResultException::class);
+
+        $this->resourceDataMock->convertedPdfByIdHasFailed = true;
+
+        $this->retrieveResource->getResourceFile(1, false);
+    }
 }

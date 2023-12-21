@@ -142,11 +142,6 @@ class ResourceFileMock implements ResourceFileInterface
             throw new Exception("Throw an exception when parsing pdf file");
         }
         */
-
-//            if ($this->triggerAnExceptionWhenGetTheNumberOfPagesInThePdfFile) {
-//                return new throwException("error");
-//            }
-
         return 1;
     }
 }
