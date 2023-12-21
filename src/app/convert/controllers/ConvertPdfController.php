@@ -116,20 +116,15 @@ class ConvertPdfController
         ValidatorModel::stringType($aArgs, ['collId', 'encodedFile', 'format']);
         ValidatorModel::intVal($aArgs, ['resId', 'version']);
 
-        if (!empty($aArgs['encodedFile'] ?? null) && !empty($aArgs['format'] ?? null)) {
-            $convert = ConvertPdfController::convertFromEncodedResource(['encodedResource' => $aArgs['encodedFile'], 'extension' => $aArgs['format']]);
-            if (!empty($convert['errors'])) {
-                return $convert;
-            }
+        $tmpPath = CoreConfigModel::getTmpPath();
 
-            $resource = base64_decode($convert['encodedResource']);
+        if ($aArgs['collId'] == 'letterbox_coll') {
+            $resource = ResModel::getById(['resId' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
         } else {
-            if ($aArgs['collId'] == 'letterbox_coll') {
-                $resource = ResModel::getById(['resId' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
-            } else {
-                $resource = AttachmentModel::getById(['id' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
-            }
+            $resource = AttachmentModel::getById(['id' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+        }
 
+        if (empty($aArgs['encodedFile'])) {
             if (empty($resource['docserver_id']) || empty($resource['path']) || empty($resource['filename'])) {
                 return ['errors' => '[ConvertPdf] Resource does not exist'];
             }
@@ -140,36 +135,38 @@ class ConvertPdfController
             }
 
             $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
-
-            if (!file_exists($pathToDocument)) {
-                return ['errors' => '[ConvertPdf] Document does not exist on docserver'];
-            }
-
-            $docInfo = pathinfo($pathToDocument);
-            if (empty($docInfo['extension'])) {
-                $docInfo['extension'] = $resource['format'];
-            }
-
-            $canConvert = ConvertPdfController::canConvert(['extension' => $docInfo['extension']]);
-            if (!$canConvert) {
-                return ['docserver_id' => $resource['docserver_id'], 'path' => $resource['path'], 'filename' => $resource['filename']];
-            }
-
-            $tmpPath = CoreConfigModel::getTmpPath();
-            $fileNameOnTmp = rand() . $docInfo["filename"];
-
-            copy($pathToDocument, $tmpPath.$fileNameOnTmp .'.'. strtolower($docInfo["extension"]));
-
-            if (strtolower($docInfo["extension"]) != 'pdf') {
-                $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$fileNameOnTmp.'.'.$docInfo["extension"]]);
-
-                if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
-                    return ['errors' => '[ConvertPdf]  Conversion failed ! '. implode(" ", $convertedFile['output'])];
-                }
-            }
-
-            $resource = file_get_contents("{$tmpPath}{$fileNameOnTmp}.pdf");
+        } else {
+            $pathToDocument = $tmpPath . rand() . '_encoded.' . $aArgs['format'];
+            file_put_contents($pathToDocument, base64_decode($aArgs['encodedFile']));
         }
+
+        if (!file_exists($pathToDocument)) {
+            return ['errors' => '[ConvertPdf] Document does not exist on docserver'];
+        }
+
+        $docInfo = pathinfo($pathToDocument);
+        if (empty($docInfo['extension'])) {
+            $docInfo['extension'] = $resource['format'];
+        }
+
+        $canConvert = ConvertPdfController::canConvert(['extension' => $docInfo['extension']]);
+        if (!$canConvert) {
+            return ['docserver_id' => $resource['docserver_id'], 'path' => $resource['path'], 'filename' => $resource['filename']];
+        }
+
+        $fileNameOnTmp = rand() . $docInfo["filename"];
+
+        copy($pathToDocument, $tmpPath.$fileNameOnTmp .'.'. strtolower($docInfo["extension"]));
+
+        if (strtolower($docInfo["extension"]) != 'pdf') {
+            $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$fileNameOnTmp.'.'.$docInfo["extension"]]);
+
+            if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
+                return ['errors' => '[ConvertPdf]  Conversion failed ! '. implode(" ", $convertedFile['output'])];
+            }
+        }
+
+        $resource = file_get_contents("{$tmpPath}{$fileNameOnTmp}.pdf");
 
         $storeResult = DocserverController::storeResourceOnDocServer([
             'collId'            => $aArgs['collId'],
