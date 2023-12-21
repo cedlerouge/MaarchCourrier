@@ -20,6 +20,7 @@ use Contact\controllers\ContactController;
 use CustomField\models\CustomFieldModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use finfo;
 use Folder\controllers\FolderController;
 use Folder\models\FolderModel;
 use Resource\models\ExportTemplateModel;
@@ -94,7 +95,7 @@ class ExportController
                 }
             }
         } else {
-            $hasFullAccess[] = $body['resources'];
+            $hasFullAccess = array_merge($hasFullAccess, $body['resources']);
         }
 
         foreach ($body['data'] as $value) {
@@ -198,7 +199,7 @@ class ExportController
             $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
 
             $fileContent    = $pdf->Output('', 'S');
-            $finfo          = new \finfo(FILEINFO_MIME_TYPE);
+            $finfo          = new finfo(FILEINFO_MIME_TYPE);
             $contentType    = $finfo->buffer($fileContent);
 
             $response->write($fileContent);
@@ -208,6 +209,11 @@ class ExportController
         return $response->withHeader('Content-Type', $contentType);
     }
 
+    /**
+     * @param array $args
+     * @param int $userId
+     * @return array
+     */
     public static function inBasket(array $args, int $userId): array
     {
         $authorizedResources = ResController::getAuthorizedResources(['resources' => $args, 'userId' => $userId, 'mode' => 'baskets']);
@@ -225,9 +231,12 @@ class ExportController
         return $InBaskets;
     }
 
+    /**
+     * @param array $args
+     * @return array
+     */
     public static function inFolder(array $args): array
     {
-
         $userEntities = EntityModel::getWithUserEntities(['select' => ['entities.id'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
         $userEntities = array_column($userEntities, 'id');
         if (empty($userEntities)) {
@@ -257,12 +266,16 @@ class ExportController
         return $folders;
     }
 
+    /**
+     * @param $folders
+     * @return array
+     */
     public static function hasRight($folders): array
     {
         $res = [];
 
         foreach ($folders as $folder) {
-            if (isset($folder['inFolder']) || isset($folder['inBasket'])) {
+            if (!empty($folder['inFolder']) || !empty($folder['inBasket'])) {
                 $hasRight = ResController::hasRightByResId(['resId' => [$folder['resId']], 'userId' => $GLOBALS['id']]);
                 $res[$folder['resId']] = $hasRight;
             }
@@ -292,8 +305,10 @@ class ExportController
         $publicProperties = [
             'getStatus',
             'alt_identifier',
-            'subject'
+            'subject',
+            'getFolder'
         ];
+
         $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
             $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
@@ -436,10 +451,11 @@ class ExportController
         $publicProperties = [
             'getStatus',
             'alt_identifier',
-            'subject'
+            'subject',
+            'getFolder'
         ];
-        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
 
+        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
             $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
             $content = [];
@@ -765,7 +781,7 @@ class ExportController
             ]);
 
             foreach ($attachments as $attachment) {
-                if (!empty($aSignatureDates[$attachment['res_id']])) {
+                if (!empty($aSignatureDates[$attachment['res_id_master']])) {
                     $aSignatureDates[$attachment['res_id_master']] .= "\n";
                 } else {
                     $aSignatureDates[$attachment['res_id_master']] = '';
