@@ -157,6 +157,34 @@ class RetrieveThumbnailResourceTest extends TestCase
         $this->resourceDataMock->doesResourceExist = false;
 
         $this->expectException(ResourceDoesNotExistException::class);
+
+        $this->retrieveThumbnailResource->getThumbnailFile(1);
+    }
+
+    /**
+     * @throws ParameterMustBeGreaterThanZeroException
+     * @throws ResourceDocserverDoesNotExistException
+     * @throws ConvertThumbnailException
+     * @throws ResourceFailedToGetDocumentFromDocserverException
+     * @throws ResourceNotFoundInDocserverException
+     */
+    public function testRetrieveThumbnailResourceReturnAnExceptionWhenThereIsNoPdfVersion(): void
+    {
+        $this->resourceDataMock->doesResourceVersionExist = false;
+        $this->resourceDataMock->latestPdfVersionExist = false;
+
+        $this->expectException(ResourceDoesNotExistException::class);
+
+        $this->retrieveThumbnailResource->getThumbnailFile(1);
+    }
+
+    public function testRetrieveThumbnailResourceReturnAnExceptionWhenTheResourceFailedToGetDocumentFromDocserver(): void
+    {
+        $this->resourceDataMock->doesResourceVersionExist = false;
+        $this->resourceFileMock->doesResourceFileGetContentFail = true;
+
+        $this->expectException(ResourceFailedToGetDocumentFromDocserverException::class);
+
         $this->retrieveThumbnailResource->getThumbnailFile(1);
     }
 }

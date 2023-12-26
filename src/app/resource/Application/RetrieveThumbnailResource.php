@@ -130,7 +130,7 @@ class RetrieveThumbnailResource
 
     private function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
     {
-        $document = $this->resourceData->getResourceVersion($resId, 'TNL', $version);
+        $document = $this->resourceData->getResourceVersion($resId, $type, $version);
 
         if ($document == null) {
             return null;
