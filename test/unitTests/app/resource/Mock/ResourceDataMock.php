@@ -26,7 +26,9 @@ class ResourceDataMock implements ResourceDataInterface
     public bool $isResourceDocserverEncrypted = false;
     public bool $doesFingerprint = false;
     public string $fingerprint = 'file fingerprint';
+    public int $resId = 1;
     public bool $convertedPdfByIdHasFailed = false;
+    public bool $latestPdfVersionExist = true;
 
     public function getMainResourceData(int $resId): ?Resource
     {
@@ -35,7 +37,7 @@ class ResourceDataMock implements ResourceDataInterface
         }
 
         $resourceFromDB = [
-            'res_id'        => 1,
+            'res_id'        => $this->resId,
             'subject'       => 'Maarch Courrier Test',
             'docserver_id'  => 'FASTHD',
             'path'          => '2021/03/0001/',
@@ -66,7 +68,7 @@ class ResourceDataMock implements ResourceDataInterface
         }
 
         return new ResourceConverted(
-            1,
+            $this->resId,
             1,
             'docId',
             1,
@@ -136,6 +138,19 @@ class ResourceDataMock implements ResourceDataInterface
      */
     public function getResourceVersion(int $resId, string $type, int $version): ?array
     {
+        /*if ($resId === 2 && $this->resourceVersion) {
+            return [
+                'id' => $this->resId,
+                'res_id' => $resId,
+                'type' => $type,
+                'version' => $version,
+                'docserver_id' => 'FASTHD',
+                'path' => '2021/03/0001/',
+                'filename' => '0001_960655724.pdf',
+                'fingerprint' => 'file fingerprint'
+            ];
+        }*/
+
         if (!$this->doesResourceVersionExist) {
             return null;
         }
@@ -175,6 +190,10 @@ class ResourceDataMock implements ResourceDataInterface
      */
     public function getLatestPdfVersion(int $resId, int $version): ?ResourceConverted
     {
+        if (!$this->latestPdfVersionExist) {
+            return null;
+        }
+
         return new ResourceConverted(1, $resId, 'PDF', 1, 'FASTHD', '2021/03/0001/', '0001_960655724.pdf', 'file fingerprint');
     }
 
