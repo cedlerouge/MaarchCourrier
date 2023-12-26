@@ -187,19 +187,4 @@ class DocserverModelAbstract
 
         return $aDocserver[0];
     }
-
-    /**
-     * @param array $args
-     * @return false|mixed
-     * @throws Exception
-     */
-    public static function isDocserverEncrypted(array $args)
-    {
-        ValidatorModel::notEmpty($args, ['id']);
-        ValidatorModel::intVal($args, ['id']);
-
-        $docServer = DocserverModel::getById(['select' => ['is_encrypted'], 'id' => "{$args['id']}"]);
-
-        return $docServer['is_encrypted'] ?? false;
-    }
 }
