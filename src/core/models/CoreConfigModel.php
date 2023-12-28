@@ -450,4 +450,13 @@ class CoreConfigModel
 
         return $columns;
     }
+
+    /**
+     * @return bool
+     */
+    public static function isDocserverEncryptionLocked(): bool
+    {
+        $betaEncryptCheck = CoreConfigModel::getJsonLoaded(['path' => CoreConfigModel::getConfigPath()]);
+        return $betaEncryptCheck['config']['lockDocserverEncryption'] ?? true;
+    }
 }

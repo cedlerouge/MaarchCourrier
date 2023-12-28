@@ -25,6 +25,7 @@ export class DocserverAdministrationComponent implements OnInit {
     docserver: any = { coll_id: 'letterbox_coll', docserver_type_id: 'DOC', limitSizeFormatted: '50', is_encrypted: false };
     docserversTypes: any = [];
 
+    isDocserverEncryptionLocked: boolean = true;
     forbiddenDocserversTypesForEncrypted: string[] = ['MIGRATION', 'FULLTEXT'];
 
     constructor(
@@ -42,6 +43,7 @@ export class DocserverAdministrationComponent implements OnInit {
 
         this.loading = true;
         this.docserversTypes = await this.getDocserverTypes();
+        this.isDocserverEncryptionLocked = await this.getDocserverEncryptionLockStatus();
         this.loading = false;
     }
 
@@ -58,6 +60,15 @@ export class DocserverAdministrationComponent implements OnInit {
         }
 
         return types;
+    }
+
+    async getDocserverEncryptionLockStatus(): Promise<boolean> {
+        return await new Promise<boolean>((resolve) => {
+            this.http.get('../rest/docserverEncryptionLockStatus')
+                .subscribe((data: any) => {
+                    resolve(data.status);
+                });
+        });
     }
 
     checkForbiddenDocserversTypesForEncrypted(docserverTypeId: string) {

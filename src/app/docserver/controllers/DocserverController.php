@@ -28,6 +28,11 @@ use Docserver\models\DocserverModel;
 
 class DocserverController
 {
+    public function getDocserverEncryptionLockStatus(Request $request, Response $response)
+    {
+        return $response->withJson(['status' => CoreConfigModel::isDocserverEncryptionLocked()]);
+    }
+
     public function get(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
@@ -37,6 +42,9 @@ class DocserverController
         $sortedDocservers = [];
         $docservers = DocserverModel::get();
         foreach ($docservers as $docserver) {
+            if (CoreConfigModel::isDocserverEncryptionLocked() && !empty($docserver['is_encrypted'] ?? false)) {
+                continue;
+            }
             $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(['docserver' => $docserver]);
         }
 
@@ -124,7 +132,7 @@ class DocserverController
         if (empty($existingDocserverType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type does not exist']);
         }
-        if (!isset($data['is_encrypted'])) {
+        if (CoreConfigModel::isDocserverEncryptionLocked() || !isset($data['is_encrypted'])) {
             $data['is_encrypted'] = false;
         }
         if(!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
@@ -203,7 +211,7 @@ class DocserverController
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
                 'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
-                'is_encrypted'          => empty($data['is_encrypted'] ?? false) ? 'false':'true'
+                'is_encrypted'          => empty($data['is_encrypted'] ?? false) || CoreConfigModel::isDocserverEncryptionLocked() ? 'false':'true'
 
             ],
             'where' => ['id = ?'],
