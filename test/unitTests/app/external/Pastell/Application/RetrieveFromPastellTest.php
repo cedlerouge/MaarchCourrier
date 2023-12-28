@@ -341,7 +341,7 @@ class RetrieveFromPastellTest extends TestCase
         ];
 
         $idsToRetrieve = [
-            41  => [
+            41 => [
                 'res_id'      => 41,
                 'external_id' => 'djqfdh'
             ]
@@ -359,7 +359,7 @@ class RetrieveFromPastellTest extends TestCase
                         'status'      => 'validated',
                         'format'      => 'pdf',
                         'encodedFile' => 'toto',
-                        'signatory' => 'Bruce Wayne - XELIANS'
+                        'signatory'   => 'Bruce Wayne - XELIANS'
                     ]
                 ],
                 'error'   => [

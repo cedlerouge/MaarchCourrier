@@ -37,9 +37,7 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
                 'status'      => 'validated',
                 'format'      => 'pdf',
                 'encodedFile' => 'toto',
-                [
-                    'signatory' => 'Bruce Wayne - XELIANS'
-                ],
+                'signatory'   => 'Bruce Wayne - XELIANS'
             ];
         }
 
@@ -48,7 +46,7 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
                 'status'      => 'validated',
                 'format'      => 'pdf',
                 'encodedFile' => 'toto',
-                'signatory' => 'Bruce Wayne - XELIANS'
+                'signatory'   => 'Bruce Wayne - XELIANS'
             ];
         }
 
