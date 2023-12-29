@@ -83,7 +83,7 @@ class ResourceFile implements ResourceFileInterface
             return null;
         }
 
-        if ($isEncrypted) {
+        if (!CoreConfigModel::isDocserverEncryptionLocked() && $isEncrypted) {
             $fileContent = PasswordController::decrypt(['encryptedData' => base64_encode($fileContent)]);
         }
 
