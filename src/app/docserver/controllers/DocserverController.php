@@ -20,7 +20,9 @@ use History\controllers\HistoryController;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
+use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 use Docserver\models\DocserverModel;
 
@@ -109,6 +111,7 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['coll_id']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -268,6 +271,7 @@ class DocserverController
 
         $docserverTypeObject = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id']]);
         $copyResult = DocserverController::copyOnDocServer([
+            'isEncrypted'           => $docserver['is_encrypted'],
             'encodedResource'       => $aArgs['encodedResource'],
             'destinationDir'        => $docinfo['destinationDir'],
             'fileDestinationName'   => $docinfo['fileDestinationName'],
@@ -435,6 +439,7 @@ class DocserverController
     {
         ValidatorModel::notEmpty($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
         ValidatorModel::stringType($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
+        ValidatorModel::boolType($aArgs, ['isEncrypted']);
 
         if (file_exists($aArgs['destinationDir'] . $aArgs['fileDestinationName'])) {
             return ['errors' => '[copyOnDocserver] File already exists: ' . $aArgs['destinationDir'] . $aArgs['fileDestinationName']];
@@ -451,7 +456,14 @@ class DocserverController
             chmod($aArgs['destinationDir'], 0770);
         }
 
-        if (file_put_contents($aArgs['destinationDir'] . $aArgs['fileDestinationName'], base64_decode($aArgs['encodedResource'])) === false) {
+        $fileContent = base64_decode($aArgs['encodedResource']);
+
+        if (!empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
+            $fileContent = PasswordController::encrypt(['dataToEncrypt' => $fileContent]);
+            $fileContent = base64_decode($fileContent);
+        }
+
+        if (file_put_contents($aArgs['destinationDir'] . $aArgs['fileDestinationName'], $fileContent) === false) {
             return ['errors' => '[copyOnDocserver] Copy on the docserver failed'];
         }
         if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {

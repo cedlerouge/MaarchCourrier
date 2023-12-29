@@ -162,7 +162,7 @@ class StoreController
 
     public static function setDisabledAndEmptyMandatoryFields(array $args)
     {
-        if (Validator::notEmpty()->intVal()->validate($args['modelId'])) {
+        if (Validator::notEmpty()->intVal()->validate($args['modelId'] ?? null)) {
             $fields = IndexingModelFieldModel::get([
                 'select' => ['identifier', 'default_value', 'enabled', 'mandatory'],
                 'where'  => ['model_id = ?', '(enabled = ? OR mandatory = ?)'],

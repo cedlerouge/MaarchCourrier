@@ -15,17 +15,23 @@
 
 namespace Docserver\models;
 
+use Exception;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 
 class DocserverModelAbstract
 {
-    public static function get(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($aArgs, ['limit']);
 
-        $aDocservers = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'     => ['docservers'],
             'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
@@ -33,10 +39,13 @@ class DocserverModelAbstract
             'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
             'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
-
-        return $aDocservers;
     }
 
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getById(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
@@ -57,6 +66,11 @@ class DocserverModelAbstract
         return $aDocserver[0];
     }
 
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getByDocserverId(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['docserverId']);
@@ -77,7 +91,12 @@ class DocserverModelAbstract
         return $aDocserver[0];
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $aArgs): int
     {
         ValidatorModel::notEmpty($aArgs, ['docserver_id', 'docserver_type_id', 'device_label', 'path_template', 'coll_id', 'size_limit_number', 'is_readonly']);
         ValidatorModel::stringType($aArgs, ['docserver_id', 'docserver_type_id', 'device_label', 'path_template', 'coll_id', 'is_readonly']);
@@ -105,7 +124,12 @@ class DocserverModelAbstract
         return $nextSequenceId;
     }
 
-    public static function update(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function update(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['set', 'where', 'data']);
         ValidatorModel::arrayType($aArgs, ['set', 'where', 'data']);
@@ -120,7 +144,12 @@ class DocserverModelAbstract
         return true;
     }
 
-    public static function delete(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function delete(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -134,6 +163,11 @@ class DocserverModelAbstract
         return true;
     }
 
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getCurrentDocserver(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['collId', 'typeId']);

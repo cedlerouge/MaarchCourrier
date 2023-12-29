@@ -51,7 +51,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'new docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  self::$pathTemplate,
-            'coll_id'                =>  'letterbox_coll'
+            'coll_id'                =>  'letterbox_coll',
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
@@ -75,7 +76,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'new docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  '/wrong/path/',
-            'coll_id'                =>  'letterbox_coll'
+            'coll_id'                =>  'letterbox_coll',
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
@@ -91,7 +93,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'new docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  null,
-            'coll_id'                =>  'letterbox_coll'
+            'coll_id'                =>  'letterbox_coll',
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
         $response     = $docserverController->create($fullRequest, new Response());
@@ -106,7 +109,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'new docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  '/var/docserversDEV/dev1804/archive_transfer/',
-            'coll_id'                =>  'letterbox_coll'
+            'coll_id'                =>  'letterbox_coll',
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
         $response     = $docserverController->create($fullRequest, new Response());
@@ -125,7 +129,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'      =>  'updated docserver',
             'size_limit_number' =>  50000000000,
             'path_template'     =>  self::$pathTemplate,
-            'is_readonly'       =>  true
+            'is_readonly'       =>  true,
+            'is_encrypted'      =>  false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
@@ -147,7 +152,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'updated docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  '/wrong/path/',
-            'is_readonly'       =>  true
+            'is_readonly'            =>  true,
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
@@ -161,7 +167,8 @@ class DocserverControllerTest extends CourrierTestCase
             'device_label'           =>  'updated docserver',
             'size_limit_number'      =>  50000000000,
             'path_template'          =>  self::$pathTemplate,
-            'is_readonly'       =>  true
+            'is_readonly'            =>  true,
+            'is_encrypted'           =>  false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
         $response     = $docserverController->update($fullRequest, new Response(), ['id' => 12345]);
