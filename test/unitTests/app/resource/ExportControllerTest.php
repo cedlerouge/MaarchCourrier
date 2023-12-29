@@ -1,14 +1,15 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\resource;
 
+use Exception;
 use Folder\models\ResourceFolderModel;
 use Group\models\GroupModel;
 use Group\models\PrivilegeModel;
@@ -22,7 +23,7 @@ use User\models\UserModel;
 class ExportControllerTest extends CourrierTestCase
 {
     private static array $resourcesToRemove = [];
-    private  static array $group = [];
+    private static array $group = [];
     private static string $privilegeId = 'include_folders_and_followed_resources_perimeter';
 
     protected function tearDown(): void
@@ -48,7 +49,7 @@ class ExportControllerTest extends CourrierTestCase
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $exportController->getExportTemplates($request, new Response());
+        $response = $exportController->getExportTemplates($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->templates);
@@ -56,6 +57,9 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertNotEmpty($responseBody->templates->csv);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testUpdateExport(): void
     {
         $GLOBALS['login'] = 'bbain';
@@ -69,115 +73,115 @@ class ExportControllerTest extends CourrierTestCase
             "resources" => $GLOBALS['resources'],
             "delimiter" => ';',
             "format"    => 'pdf',
-            "data" => [
+            "data"      => [
                 [
-                    "value" => "subject",
-                    "label" => "Sujet",
+                    "value"      => "subject",
+                    "label"      => "Sujet",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "getStatus",
-                    "label" => "Status",
+                    "value"      => "getStatus",
+                    "label"      => "Status",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getPriority",
-                    "label" => "Priorité",
+                    "value"      => "getPriority",
+                    "label"      => "Priorité",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDetailLink",
-                    "label" => "Lien page détaillée",
+                    "value"      => "getDetailLink",
+                    "label"      => "Lien page détaillée",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getInitiatorEntity",
-                    "label" => "Entité initiatrice",
+                    "value"      => "getInitiatorEntity",
+                    "label"      => "Entité initiatrice",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntity",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntity",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntityType",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntityType",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getCategory",
-                    "label" => "Catégorie",
+                    "value"      => "getCategory",
+                    "label"      => "Catégorie",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getCopies",
-                    "label" => "Utilisateurs en copie",
+                    "value"      => "getCopies",
+                    "label"      => "Utilisateurs en copie",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getSenders",
-                    "label" => "Expéditeurs",
+                    "value"      => "getSenders",
+                    "label"      => "Expéditeurs",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getRecipients",
-                    "label" => "Destinataires",
+                    "value"      => "getRecipients",
+                    "label"      => "Destinataires",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getTypist",
-                    "label" => "Créateurs",
+                    "value"      => "getTypist",
+                    "label"      => "Créateurs",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getAssignee",
-                    "label" => "Attributaire",
+                    "value"      => "getAssignee",
+                    "label"      => "Attributaire",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getTags",
-                    "label" => "Mots-clés",
+                    "value"      => "getTags",
+                    "label"      => "Mots-clés",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getSignatories",
-                    "label" => "Signataires",
+                    "value"      => "getSignatories",
+                    "label"      => "Signataires",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getSignatureDates",
-                    "label" => "Date de signature",
+                    "value"      => "getSignatureDates",
+                    "label"      => "Date de signature",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDepartment",
-                    "label" => "Département de l'expéditeur",
+                    "value"      => "getDepartment",
+                    "label"      => "Département de l'expéditeur",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getAcknowledgementSendDate",
-                    "label" => "Date d'accusé de réception",
+                    "value"      => "getAcknowledgementSendDate",
+                    "label"      => "Date d'accusé de réception",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getParentFolder",
-                    "label" => "Dossiers parent",
+                    "value"      => "getParentFolder",
+                    "label"      => "Dossiers parent",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getFolder",
-                    "label" => "Dossiers",
+                    "value"      => "getFolder",
+                    "label"      => "Dossiers",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "doc_date",
-                    "label" => "Date du courrier",
+                    "value"      => "doc_date",
+                    "label"      => "Date du courrier",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "custom_4",
-                    "label" => "Champ personnalisé",
+                    "value"      => "custom_4",
+                    "label"      => "Champ personnalisé",
                     "isFunction" => true
                 ],
             ]
@@ -186,13 +190,13 @@ class ExportControllerTest extends CourrierTestCase
         //PDF
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $ExportController->updateExport($fullRequest, new Response());
+        $response = $ExportController->updateExport($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame(null, $responseBody);
         $headers = $response->getHeaders();
         $this->assertSame('application/pdf', $headers['Content-Type'][0]);
 
-        $response     = $ExportController->updateExport($fullRequest, new Response());
+        $response = $ExportController->updateExport($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertSame(null, $responseBody);
         $headers = $response->getHeaders();
@@ -201,7 +205,7 @@ class ExportControllerTest extends CourrierTestCase
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $ExportController->getExportTemplates($request, new Response());
+        $response = $ExportController->getExportTemplates($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $templateData = (array)$responseBody->templates->pdf->data;
@@ -214,7 +218,7 @@ class ExportControllerTest extends CourrierTestCase
         $args['format'] = 'csv';
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
-        $response     = $ExportController->updateExport($fullRequest, new Response());
+        $response = $ExportController->updateExport($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(null, $responseBody);
@@ -222,7 +226,7 @@ class ExportControllerTest extends CourrierTestCase
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $ExportController->getExportTemplates($request, new Response());
+        $response = $ExportController->getExportTemplates($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $templateData = (array)$responseBody->templates->csv->data;
@@ -263,6 +267,9 @@ class ExportControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
+    /**
+     * @throws Exception
+     */
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheStatusCanBeRead(): void
     {
         $this->connectAsUser('cchaplin');
@@ -271,49 +278,49 @@ class ExportControllerTest extends CourrierTestCase
 
         $exportController = new ExportController();
         $args = [
-            "id" => 4,
+            "id"        => 4,
             "resources" => [$resId],
             "delimiter" => ';',
             "format"    => 'csv',
-            "data" => [
+            "data"      => [
                 [
-                    "value" => "subject",
-                    "label" => "Sujet",
+                    "value"      => "subject",
+                    "label"      => "Sujet",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "getStatus",
-                    "label" => "Status",
+                    "value"      => "getStatus",
+                    "label"      => "Status",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getPriority",
-                    "label" => "Priorité",
+                    "value"      => "getPriority",
+                    "label"      => "Priorité",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDetailLink",
-                    "label" => "Lien page détaillée",
+                    "value"      => "getDetailLink",
+                    "label"      => "Lien page détaillée",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getInitiatorEntity",
-                    "label" => "Entité initiatrice",
+                    "value"      => "getInitiatorEntity",
+                    "label"      => "Entité initiatrice",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntity",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntity",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntityType",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntityType",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getCategory",
-                    "label" => "Catégorie",
+                    "value"      => "getCategory",
+                    "label"      => "Catégorie",
                     "isFunction" => true
                 ]
             ]
@@ -330,6 +337,9 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertSame($newLetter, $status);
     }
 
+    /**
+     * @throws Exception
+     */
     public function testTheDocumentIsOutOfPerimeterDuringExportAndOutOfScopeIsDisplayedOnUnavailableFields(): void
     {
         $this->connectAsUser('cchaplin');
@@ -338,49 +348,49 @@ class ExportControllerTest extends CourrierTestCase
 
         $exportController = new ExportController();
         $args = [
-            "id" => 4,
+            "id"        => 4,
             "resources" => [$resId],
             "delimiter" => ';',
             "format"    => 'csv',
-            "data" => [
+            "data"      => [
                 [
-                    "value" => "subject",
-                    "label" => "Sujet",
+                    "value"      => "subject",
+                    "label"      => "Sujet",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "getStatus",
-                    "label" => "Status",
+                    "value"      => "getStatus",
+                    "label"      => "Status",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getPriority",
-                    "label" => "Priorité",
+                    "value"      => "getPriority",
+                    "label"      => "Priorité",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDetailLink",
-                    "label" => "Lien page détaillée",
+                    "value"      => "getDetailLink",
+                    "label"      => "Lien page détaillée",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getInitiatorEntity",
-                    "label" => "Entité initiatrice",
+                    "value"      => "getInitiatorEntity",
+                    "label"      => "Entité initiatrice",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntity",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntity",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntityType",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntityType",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getCategory",
-                    "label" => "Catégorie",
+                    "value"      => "getCategory",
+                    "label"      => "Catégorie",
                     "isFunction" => true
                 ]
             ]
@@ -401,6 +411,9 @@ class ExportControllerTest extends CourrierTestCase
         $this->assertContains($outsidePerimeter, $values, 'test si ils sont hors du périmètre');
     }
 
+    /**
+     * @throws Exception
+     */
     public function testTheDocumentIsOutOfPerimeterDuringExportButTheUserHaveTheRightToSeeTheDocument(): void
     {
         $this->connectAsUser('cchaplin');
@@ -409,49 +422,49 @@ class ExportControllerTest extends CourrierTestCase
 
         $exportController = new ExportController();
         $args = [
-            "id" => 4,
+            "id"        => 4,
             "resources" => [$resId],
             "delimiter" => ';',
             "format"    => 'csv',
-            "data" => [
+            "data"      => [
                 [
-                    "value" => "subject",
-                    "label" => "Sujet",
+                    "value"      => "subject",
+                    "label"      => "Sujet",
                     "isFunction" => false
                 ],
                 [
-                    "value" => "getStatus",
-                    "label" => "Status",
+                    "value"      => "getStatus",
+                    "label"      => "Status",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getPriority",
-                    "label" => "Priorité",
+                    "value"      => "getPriority",
+                    "label"      => "Priorité",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDetailLink",
-                    "label" => "Lien page détaillée",
+                    "value"      => "getDetailLink",
+                    "label"      => "Lien page détaillée",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getInitiatorEntity",
-                    "label" => "Entité initiatrice",
+                    "value"      => "getInitiatorEntity",
+                    "label"      => "Entité initiatrice",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntity",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntity",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getDestinationEntityType",
-                    "label" => "Entité traitante",
+                    "value"      => "getDestinationEntityType",
+                    "label"      => "Entité traitante",
                     "isFunction" => true
                 ],
                 [
-                    "value" => "getCategory",
-                    "label" => "Catégorie",
+                    "value"      => "getCategory",
+                    "label"      => "Catégorie",
                     "isFunction" => true
                 ]
             ]
@@ -491,7 +504,7 @@ class ExportControllerTest extends CourrierTestCase
             'folders'          => [1, 16],
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response     = $resController->create($fullRequest, new Response());
+        $response = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $resId = $responseBody->resId;
         self::$resourcesToRemove[] = $resId;
@@ -520,8 +533,8 @@ class ExportControllerTest extends CourrierTestCase
     {
         return array_map
         (
-            function ($ToEncode){
-                return mb_convert_encoding($ToEncode, "UTF-8","ISO-8859-1");
+            function ($ToEncode) {
+                return mb_convert_encoding($ToEncode, "UTF-8", "ISO-8859-1");
             },
             $ToEncode
         );

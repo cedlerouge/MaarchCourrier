@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Export Controller
-* @author dev@maarch.org
-*/
+ * @brief Export Controller
+ * @author dev@maarch.org
+ */
 
 namespace Resource\controllers;
 
@@ -20,6 +20,7 @@ use Contact\controllers\ContactController;
 use CustomField\models\CustomFieldModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use finfo;
 use Folder\controllers\FolderController;
 use Folder\models\FolderModel;
@@ -28,6 +29,7 @@ use Resource\models\ResModel;
 use Resource\models\ResourceListModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
+use Slim\Psr7\Message;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\controllers\UrlController;
@@ -42,7 +44,12 @@ use BroadcastList\models\BroadcastListRoleModel;
 
 class ExportController
 {
-    public function getExportTemplates(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getExportTemplates(Request $request, Response $response): Response
     {
         $rawTemplates = ExportTemplateModel::getByUserId(['userId' => $GLOBALS['id']]);
 
@@ -58,6 +65,12 @@ class ExportController
         return $response->withJson(['templates' => $templates]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Message|\Slim\Psr7\Response|Response
+     * @throws Exception
+     */
     public function updateExport(Request $request, Response $response)
     {
         set_time_limit(240);
@@ -129,12 +142,11 @@ class ExportController
             ]);
         }
 
-        $select           = ['res_view_letterbox.res_id'];
-        $tableFunction    = [];
+        $select = ['res_view_letterbox.res_id'];
+        $tableFunction = [];
         $leftJoinFunction = [];
-        $csvHead          = [];
+
         foreach ($body['data'] as $value) {
-            $csvHead[] = $value['label'];
             if (empty($value['value'])) {
                 continue;
             }
@@ -179,12 +191,12 @@ class ExportController
         $resources = [];
         foreach ($aChunkedResources as $chunkedResource) {
             $resourcesTmp = ResourceListModel::getOnView([
-                'select'    => $select,
-                'table'     => $tableFunction,
-                'leftJoin'  => $leftJoinFunction,
-                'where'     => ['res_view_letterbox.res_id in (?)'],
-                'data'      => [$chunkedResource],
-                'orderBy'   => [$order]
+                'select'   => $select,
+                'table'    => $tableFunction,
+                'leftJoin' => $leftJoinFunction,
+                'where'    => ['res_view_letterbox.res_id in (?)'],
+                'data'     => [$chunkedResource],
+                'orderBy'  => [$order]
             ]);
             $resources = array_merge($resources, $resourcesTmp);
         }
@@ -198,9 +210,9 @@ class ExportController
         } else {
             $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
 
-            $fileContent    = $pdf->Output('', 'S');
-            $finfo          = new finfo(FILEINFO_MIME_TYPE);
-            $contentType    = $finfo->buffer($fileContent);
+            $fileContent = $pdf->Output('', 'S');
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $contentType = $finfo->buffer($fileContent);
 
             $response->write($fileContent);
             $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.pdf");
@@ -283,7 +295,11 @@ class ExportController
         return $res;
     }
 
-
+    /**
+     * @param array $aArgs
+     * @return false|resource
+     * @throws Exception
+     */
     public static function getCsv(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['delimiter', 'data', 'resources', 'chunkedResIds']);
@@ -381,9 +397,9 @@ class ExportController
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
                     } elseif ($value['value'] == 'getAcknowledgementSendDate') {
-                        $acknwoledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $csvContent[] = empty($acknwoledgementSendDate[$resource['res_id']]) ? '' : $acknwoledgementSendDate[$resource['res_id']];
-                    } elseif (strpos($value['value'], 'custom_', 0) !== false) {
+                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
+                        $csvContent[] = empty($acknowledgementSendDate[$resource['res_id']]) ? '' : $acknowledgementSendDate[$resource['res_id']];
+                    } elseif (strpos($value['value'], 'custom_') !== false) {
                         $csvContent[] = ExportController::getCustomFieldValue(['custom' => $value['value'], 'resId' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getVisaCircuit') {
                         $csvContent[] = ExportController::getCircuit(['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]);
@@ -410,7 +426,12 @@ class ExportController
         return $file;
     }
 
-    private static function getPdf(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return Fpdi
+     * @throws Exception
+     */
+    private static function getPdf(array $aArgs): Fpdi
     {
         ValidatorModel::notEmpty($aArgs, ['data', 'resources', 'chunkedResIds']);
         ValidatorModel::arrayType($aArgs, ['data', 'resources', 'chunkedResIds']);
@@ -429,9 +450,9 @@ class ExportController
         $pdf->setPrintHeader(false);
 
         $pdf->AddPage();
-        $dimensions     = $pdf->getPageDimensions();
+        $dimensions = $pdf->getPageDimensions();
         $widthNoMargins = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
-        $bottomHeight   = $dimensions['h'] - $dimensions['bm'];
+        $bottomHeight = $dimensions['h'] - $dimensions['bm'];
 
         $labels = [];
         foreach ($aArgs['data'] as $value) {
@@ -478,10 +499,10 @@ class ExportController
                     } elseif ($value['value'] == 'getPriority') {
                         $content[] = $resource['priorities.label'];
                     } elseif ($value['value'] == 'getCopies') {
-                        $copies    = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
+                        $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $content[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $content[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/'.$resource['res_id'];
+                        $content[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/' . $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $content[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -525,11 +546,11 @@ class ExportController
                         $content[] = empty($signatureDates[$resource['res_id']]) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $content[]  = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
+                        $content[] = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
                     } elseif ($value['value'] == 'getAcknowledgementSendDate') {
-                        $acknwoledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $content[] = empty($acknwoledgementSendDate[$resource['res_id']]) ? '' : $acknwoledgementSendDate[$resource['res_id']];
-                    } elseif (strpos($value['value'], 'custom_', 0) !== false) {
+                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
+                        $content[] = empty($acknowledgementSendDate[$resource['res_id']]) ? '' : $acknowledgementSendDate[$resource['res_id']];
+                    } elseif (strpos($value['value'], 'custom_') !== false) {
                         $content[] = ExportController::getCustomFieldValue(['custom' => $value['value'], 'resId' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getVisaCircuit') {
                         $content[] = ExportController::getCircuit(['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]);
@@ -560,7 +581,12 @@ class ExportController
         return $pdf;
     }
 
-    private static function getCopies(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws Exception
+     */
+    private static function getCopies(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -572,10 +598,10 @@ class ExportController
 
         foreach ($args['chunkedResIds'] as $resIds) {
             $listInstances = ListInstanceModel::get([
-                'select'    => ['item_id', 'item_type', 'res_id'],
-                'where'     => ['res_id in (?)', 'difflist_type = ?', 'item_mode = ?'],
-                'data'      => [$resIds, 'entity_id', 'cc'],
-                'order_by'  => ['res_id']
+                'select'   => ['item_id', 'item_type', 'res_id'],
+                'where'    => ['res_id in (?)', 'difflist_type = ?', 'item_mode = ?'],
+                'data'     => [$resIds, 'entity_id', 'cc'],
+                'order_by' => ['res_id']
             ]);
 
             $resId = '';
@@ -608,7 +634,12 @@ class ExportController
         return $aCopies;
     }
 
-    private static function getAcknowledgementSendDate(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getAcknowledgementSendDate(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -635,7 +666,12 @@ class ExportController
         return $acknowledgementSendDate;
     }
 
-    private static function getDepartment(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws Exception
+     */
+    private static function getDepartment(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -650,7 +686,7 @@ class ExportController
                 'select'    => ['res_id', 'address_postcode'],
                 'table'     => ['resource_contacts', 'contacts'],
                 'left_join' => ['resource_contacts.item_id = contacts.id'],
-                'where'     => ["res_id in (?)", "type = 'contact'","mode = 'sender'", "(address_country ILIKE 'FRANCE' OR address_country = '' OR address_country IS NULL)"],
+                'where'     => ["res_id in (?)", "type = 'contact'", "mode = 'sender'", "(address_country ILIKE 'FRANCE' OR address_country = '' OR address_country IS NULL)"],
                 'data'      => [$resIds]
             ]);
 
@@ -671,7 +707,7 @@ class ExportController
                     }
                     $departmentId = substr($contact['address_postcode'], 0, 2);
 
-                    if ((int) $departmentId >= 97 || $departmentId == '20') {
+                    if ((int)$departmentId >= 97 || $departmentId == '20') {
                         $departmentId = substr($contact['address_postcode'], 0, 3);
                         if ((int)$departmentId < 202) {
                             $departmentId = "2A";
@@ -694,7 +730,12 @@ class ExportController
         return $aDepartment;
     }
 
-    private static function getTags(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getTags(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -706,10 +747,10 @@ class ExportController
 
         foreach ($args['chunkedResIds'] as $resIds) {
             $tagsRes = ResourceTagModel::get([
-                'select'    => ['tag_id', 'res_id'],
-                'where'     => ['res_id in (?)'],
-                'data'      => [$resIds],
-                'order_by'  => ['res_id']
+                'select'   => ['tag_id', 'res_id'],
+                'where'    => ['res_id in (?)'],
+                'data'     => [$resIds],
+                'order_by' => ['res_id']
             ]);
 
             foreach ($tagsRes as $value) {
@@ -726,7 +767,12 @@ class ExportController
         return $tags;
     }
 
-    private static function getSignatories(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getSignatories(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -738,10 +784,10 @@ class ExportController
 
         foreach ($args['chunkedResIds'] as $resIds) {
             $listInstances = ListInstanceModel::get([
-                'select'    => ['item_id', 'res_id'],
-                'where'     => ['res_id in (?)', 'item_type = ?', 'signatory = ?'],
-                'data'      => [$resIds, 'user_id', true],
-                'order_by'  => ['res_id']
+                'select'   => ['item_id', 'res_id'],
+                'where'    => ['res_id in (?)', 'item_type = ?', 'signatory = ?'],
+                'data'     => [$resIds, 'user_id', true],
+                'order_by' => ['res_id']
             ]);
 
             foreach ($listInstances as $listInstance) {
@@ -762,7 +808,12 @@ class ExportController
         return $aSignatories;
     }
 
-    private static function getSignatureDates(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    private static function getSignatureDates(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -774,10 +825,10 @@ class ExportController
 
         foreach ($args['chunkedResIds'] as $resIds) {
             $attachments = AttachmentModel::get([
-                'select'    => ['creation_date', 'res_id_master'],
-                'where'     => ['res_id_master in (?)', 'attachment_type = ?', 'status = ?'],
-                'data'      => [$resIds, 'signed_response', 'TRA'],
-                'order_by'  => ['res_id']
+                'select'   => ['creation_date', 'res_id_master'],
+                'where'    => ['res_id_master in (?)', 'attachment_type = ?', 'status = ?'],
+                'data'     => [$resIds, 'signed_response', 'TRA'],
+                'order_by' => ['res_id']
             ]);
 
             foreach ($attachments as $attachment) {
@@ -793,6 +844,12 @@ class ExportController
         return $aSignatureDates;
     }
 
+    /**
+     * @param Fpdi $pdf
+     * @param array $args
+     * @return float|int
+     * @throws Exception
+     */
     private static function getMaximumHeight(Fpdi $pdf, array $args)
     {
         ValidatorModel::notEmpty($args, ['data', 'width']);
@@ -812,12 +869,16 @@ class ExportController
         return $maxHeight + 2;
     }
 
-    private static function getFolderLabel(array $args)
+    /**
+     * @param array $args
+     * @return string
+     */
+    private static function getFolderLabel(array $args): string
     {
         $folders = FolderModel::getWithResources([
-            'select'    => ['folders.id, folders.label'],
-            'where'     => ['resources_folders.res_id = ?'],
-            'data'      => [$args['res_id']]
+            'select' => ['folders.id, folders.label'],
+            'where'  => ['resources_folders.res_id = ?'],
+            'data'   => [$args['res_id']]
         ]);
         if (empty($folders)) {
             return '';
@@ -826,7 +887,7 @@ class ExportController
         $labels = [];
         foreach ($folders as $folder) {
             $hasFolder = FolderController::hasFolders([
-                'userId' => $GLOBALS['id'],
+                'userId'  => $GLOBALS['id'],
                 'folders' => [$folder['id']]
             ]);
             if ($hasFolder) {
@@ -837,12 +898,16 @@ class ExportController
         return implode("\n", $labels);
     }
 
-    private static function getParentFolderLabel(array $args)
+    /**
+     * @param array $args
+     * @return string
+     */
+    private static function getParentFolderLabel(array $args): string
     {
         $folders = FolderModel::getWithResources([
-            'select'    => ['folders.parent_id'],
-            'where'     => ['resources_folders.res_id = ?'],
-            'data'      => [$args['res_id']]
+            'select' => ['folders.parent_id'],
+            'where'  => ['resources_folders.res_id = ?'],
+            'data'   => [$args['res_id']]
         ]);
         if (empty($folders)) {
             return '';
@@ -851,7 +916,7 @@ class ExportController
         $parentLabels = [];
         foreach ($folders as $folder) {
             $hasFolder = FolderController::hasFolders([
-                'userId' => $GLOBALS['id'],
+                'userId'  => $GLOBALS['id'],
                 'folders' => [$folder['parent_id']]
             ]);
 
@@ -867,6 +932,11 @@ class ExportController
         return implode("\n", $parentLabels);
     }
 
+    /**
+     * @param array $args
+     * @return mixed|string|null
+     * @throws Exception
+     */
     private static function getCustomFieldValue(array $args)
     {
         ValidatorModel::notEmpty($args, ['custom', 'resId']);
@@ -926,7 +996,12 @@ class ExportController
         return $customValues;
     }
 
-    private static function getCircuit(array $args)
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    private static function getCircuit(array $args): string
     {
         ValidatorModel::notEmpty($args, ['resId', 'listType']);
         ValidatorModel::intVal($args, ['resId']);
@@ -938,10 +1013,10 @@ class ExportController
         $roles = array_column($roles, 'label', 'id');
 
         $listInstances = ListInstanceModel::get([
-            'select'    => ['item_id', 'item_mode', 'delegate'],
-            'where'     => ['res_id in (?)', 'item_type = ?', 'difflist_type = ?'],
-            'data'      => [$args['resId'], 'user_id', $args['listType']],
-            'order_by'  => ['sequence']
+            'select'   => ['item_id', 'item_mode', 'delegate'],
+            'where'    => ['res_id in (?)', 'item_type = ?', 'difflist_type = ?'],
+            'data'     => [$args['resId'], 'user_id', $args['listType']],
+            'order_by' => ['sequence']
         ]);
 
         foreach ($listInstances as $listInstance) {
