@@ -466,7 +466,7 @@ class DocserverController
 
         $fileContent = base64_decode($aArgs['encodedResource']);
 
-        if (!empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
+        if (!CoreConfigModel::isDocserverEncryptionLocked() && !empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
             $fileContent = PasswordController::encrypt(['dataToEncrypt' => $fileContent]);
             $fileContent = base64_decode($fileContent);
         }
