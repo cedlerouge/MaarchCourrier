@@ -3,17 +3,17 @@ import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } fr
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { FoldersService } from '@appRoot/folder/folders.service';
-import { PrivilegeService } from '@service/privileges.service';
+import { FoldersService } from '../../../src/frontend/app/folder/folders.service';
+import { PrivilegeService } from '../../../src/frontend/service/privileges.service';
 import { DatePipe } from '@angular/common';
-import { AdministrationService } from '@appRoot/administration/administration.service';
+import { AdministrationService } from '../../../src/frontend/app/administration/administration.service';
 import { Observable, of } from 'rxjs';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
-import * as langFrJson from '../../../../lang/lang-fr.json';
-import { SharedModule } from '@appRoot/app-common.module';
-import { ForgotPasswordComponent } from './forgotPassword.component';
+import { SharedModule } from '../../../src/frontend/app/app-common.module';
+import { ForgotPasswordComponent } from '../../../src/frontend/app/login/forgotPassword/forgotPassword.component';
 import { Router } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
+import * as langFrJson from '../../../src/lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -61,7 +61,7 @@ describe('Forgot password component', () => {
         // maarchLogoWhiteFull SVG 
         const iconRegistry = TestBed.inject(MatIconRegistry);
         const sanitizer = TestBed.inject(DomSanitizer);
-        const url: string = '../../../assets/logo_white.svg';
+        const url: string = '../../../../assets/logo_white.svg';
         tick(300);
         iconRegistry.addSvgIcon('maarchLogoWhiteFull', sanitizer.bypassSecurityTrustResourceUrl(url));
 
@@ -132,7 +132,7 @@ describe('Forgot password component', () => {
             const submit = nativeElement.querySelector('button[type=submit]');
 
             expect(login).toBeTruthy();
-            
+
             login.value = '    '; // login with only spaces
 
             fixture.detectChanges();
