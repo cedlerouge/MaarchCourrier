@@ -69,7 +69,7 @@
                                         [disabled]="docserver.is_readonly">
                                 </mat-form-field>
                                 <mat-slide-toggle name="is_encrypted" style="height:40px;" color="primary"
-                                    *ngIf="!isDocserverEncryptionLocked"
+                                    *ngIf="isDocserverEncryptionStatus"
                                     [disabled]="forbiddenDocserversTypesForEncrypted.indexOf(docserver.docserver_type_id) > -1"
                                     [(ngModel)]="docserver.is_encrypted">
                                     {{'lang.docserverEncryptResource' | translate}}
