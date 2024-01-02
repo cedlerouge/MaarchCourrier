@@ -83,4 +83,11 @@ class CourrierTestCase extends TestCase
 
         return $request->withHeader('Content-Type', 'application/json');
     }
+
+    public static function addQueryParams(Request $request, array $params)
+    {
+        $request = $request->withQueryParams($params);
+
+        return $request->withHeader('Content-Type', 'application/json');
+    }
 }
