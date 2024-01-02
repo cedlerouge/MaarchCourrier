@@ -28,21 +28,18 @@ use Docserver\models\DocserverModel;
 
 class DocserverController
 {
-    public function getDocserverEncryptionLockStatus(Request $request, Response $response)
-    {
-        return $response->withJson(['status' => CoreConfigModel::isDocserverEncryptionLocked()]);
-    }
-
     public function get(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
+        $queryParams = $request->getQueryParams();
+
         $sortedDocservers = [];
         $docservers = DocserverModel::get();
         foreach ($docservers as $docserver) {
-            if (CoreConfigModel::isDocserverEncryptionLocked() && !empty($docserver['is_encrypted'] ?? false)) {
+            if (!CoreConfigModel::isDocserverEncryptionLocked() && !empty($docserver['is_encrypted'] ?? false)) {
                 continue;
             }
             $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(['docserver' => $docserver]);
@@ -50,7 +47,13 @@ class DocserverController
 
         $docserversTypes = DocserverTypeModel::get(['select' => ['docserver_type_id', 'docserver_type_label'], 'orderBy' => ['docserver_type_label']]);
 
-        return $response->withJson(['docservers' => $sortedDocservers, 'types' => $docserversTypes]);
+        $return = ['docservers' => $sortedDocservers, 'types' => $docserversTypes];
+
+        if (isset($queryParams['getEncryptionStatus']) && $queryParams['getEncryptionStatus'] == 'true') {
+            $return['docserverEncryptionStatus'] = CoreConfigModel::isDocserverEncryptionLocked();
+        }
+
+        return $response->withJson($return);
     }
 
     public function getById(Request $request, Response $response, array $aArgs)
