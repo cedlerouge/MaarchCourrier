@@ -270,6 +270,18 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertSame('/opt/maarch/docservers/migration/', $migrationFolder['path']);
     }
 
+    public function testGetDocserverEncryptionLockStatus(): void
+    {
+        $docserverController = new DocserverController();
+
+        $request        = $this->createRequest('GET');
+        $response       = $docserverController->getDocserverEncryptionLockStatus($request, new Response());
+        $responseBody   = json_decode((string)$response->getBody());
+
+        $this->assertIsBool($responseBody->status);
+        $this->assertsame(true, $responseBody->status);
+    }
+
     protected function setUp(): void
     {
         self::$docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['*']]);
