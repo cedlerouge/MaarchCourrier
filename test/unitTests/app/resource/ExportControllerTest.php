@@ -403,7 +403,7 @@ class ExportControllerTest extends CourrierTestCase
         $csvValues = $this->getCsvFromResponse($response);
         $values[] = $csvValues['Priorité'];
         $values[] = $csvValues['Entité traitante'];
-        $values[] = $csvValues['getCategory'];
+        $values[] = $csvValues['Catégorie'];
 
         $outsidePerimeter = 'Hors périmètre';
 

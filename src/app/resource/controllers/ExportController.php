@@ -100,6 +100,7 @@ class ExportController
                 $hasNotAccess = array_column($hasNotAccess, 'resId');
                 $folders = self::inFolder($hasNotAccess);
                 foreach ($folders as $folder) {
+                    $hasRight = false;
                     if ($folder['inFolder'] === true) {
                         $hasFullAccess[] = $folder;
                     } else {
@@ -202,13 +203,13 @@ class ExportController
         }
 
         if ($body['format'] == 'csv') {
-            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
+            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess, 'hasRight' => $hasRight ?? '']);
             $response->write(stream_get_contents($file));
             $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
             $contentType = 'application/vnd.ms-excel';
             fclose($file);
         } else {
-            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
+            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess, 'hasRight' => $hasRight ?? '']);
 
             $fileContent = $pdf->Output('', 'S');
             $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -263,6 +264,7 @@ class ExportController
         ]);
 
         $resIds = array_column($foldersWithResources, 'res_id');
+        $resIds = array_unique($resIds);
 
         $folders = [];
         foreach ($resIds as $resId) {
@@ -276,23 +278,6 @@ class ExportController
         }
 
         return $folders;
-    }
-
-    /**
-     * @param $folders
-     * @return array
-     */
-    public static function hasRight($folders): array
-    {
-        $res = [];
-
-        foreach ($folders as $folder) {
-            if (!empty($folder['inFolder']) || !empty($folder['inBasket'])) {
-                $hasRight = ResController::hasRightByResId(['resId' => [$folder['resId']], 'userId' => $GLOBALS['id']]);
-                $res[$folder['resId']] = $hasRight;
-            }
-        }
-        return $res;
     }
 
     /**
@@ -325,9 +310,8 @@ class ExportController
             'getFolder'
         ];
 
-        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
+            $hasRight = $aArgs['hasRight'] ?? '';
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
@@ -476,9 +460,8 @@ class ExportController
             'getFolder'
         ];
 
-        $restrictedAccess = self::hasRight($aArgs['hasFullRight']);
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $restrictedAccess[$resource['res_id']] ?? '';
+            $hasRight = $aArgs['hasRight'] ?? '';
             $content = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
