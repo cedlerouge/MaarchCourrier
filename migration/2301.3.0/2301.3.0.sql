@@ -16,4 +16,4 @@ BEGIN
     END IF;
 END $$;
 
-INSERT INTO parameters (id, description, param_value_date) VALUES ('last_docservers_size_calculation', 'Date de dernier calcul de la taille des docservers', 2024-01-01 00:00:00);
+INSERT INTO parameters (id, description, param_value_date) VALUES ('last_docservers_size_calculation', 'Date de dernier calcul de la taille des docservers', '2024-01-01 00:00:00');
