@@ -257,7 +257,6 @@ $app->post('/docservers', \Docserver\controllers\DocserverController::class . ':
 $app->get('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':getById');
 $app->put('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':update');
 $app->delete('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':delete');
-$app->get('/docserverEncryptionLockStatus', \Docserver\controllers\DocserverController::class . ':getDocserverEncryptionLockStatus');
 
 //DocserverTypes
 $app->get('/docserverTypes', \Docserver\controllers\DocserverTypeController::class . ':get');
