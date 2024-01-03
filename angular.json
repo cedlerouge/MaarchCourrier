@@ -32,8 +32,6 @@
               "./src/frontend/css/maarch-material.scss",
               "./src/frontend/css/engine.scss",
               "./src/frontend/css/engine_2.scss",
-              "./node_modules/ng2-dnd/bundles/style.css",
-              "./src/frontend/css/ng2-dnd/style-fix.css",
               "./node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [
@@ -127,8 +125,6 @@
               "./src/frontend/css/maarch-material.scss",
               "./src/frontend/css/engine.scss",
               "./src/frontend/css/engine_2.scss",
-              "./node_modules/ng2-dnd/bundles/style.css",
-              "./src/frontend/css/ng2-dnd/style-fix.css",
               "./node_modules/angular2-draggable/css/resizable.min.css"
             ],
             "scripts": [

@@ -153,7 +153,7 @@ class PriorityController
         $data = $request->getParsedBody();
 
         foreach ($data as $key => $priorityToUpdate) {
-            if ($key != $priorityToUpdate['order']) {
+            if ($key == $priorityToUpdate['order']) {
                 PriorityModel::updateOrder(['id' => $priorityToUpdate['id'], 'order' => $key]);
             }
         }

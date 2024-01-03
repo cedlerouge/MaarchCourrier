@@ -101,7 +101,6 @@
     "karma-jasmine-html-reporter": "^2.0.0",
     "karma-junit-reporter": "^2.0.1",
     "karma-spec-reporter": "^0.0.36",
-    "ng2-dnd": "^5.0.2",
     "ng2-pdf-viewer": "^9.1.5",
     "ngx-build-plus": "^14.0.0",
     "ngx-color": "^8.0.3",
