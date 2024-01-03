@@ -165,11 +165,15 @@ class DocserverController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
+        if (empty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']))) {
+            return $response->withStatus(400)->withJson(['errors' => 'Parameter last_docservers_size_calculation does not exist']);
+        }
+
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
 
         foreach ($docservers as $ds) {
             if (!is_readable($ds['path_template'])) {
-                return $response->withStatus(403)->withJson(['errors' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
+                return $response->withStatus(400)->withJson(['errors' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
             }
 
             if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
@@ -181,7 +185,7 @@ class DocserverController
                 if ($output) {
                     $size = trim($output);
                 } else {
-                    return $response->withStatus(403)->withJson(['errors' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    return $response->withStatus(400)->withJson(['errors' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
                 }
             }
 

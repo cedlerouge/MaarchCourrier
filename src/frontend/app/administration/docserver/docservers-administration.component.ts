@@ -68,7 +68,7 @@ export class DocserversAdministrationComponent implements OnInit {
                 this.loadDocservers();
             }),
             catchError((err: any) => {
-                this.loading = false;
+                this.sizeCalculationInProgress = false;
                 this.notify.handleErrors(err);
                 return of(false);
             })
