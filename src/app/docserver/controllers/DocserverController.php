@@ -39,7 +39,7 @@ class DocserverController
         $sortedDocservers = [];
         $docservers = DocserverModel::get();
         foreach ($docservers as $docserver) {
-            if (!CoreConfigModel::isDocserverEncryptionLocked() && !empty($docserver['is_encrypted'] ?? false)) {
+            if (!CoreConfigModel::isEnableDocserverEncryption() && !empty($docserver['is_encrypted'] ?? false)) {
                 continue;
             }
             $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(['docserver' => $docserver]);
@@ -50,7 +50,7 @@ class DocserverController
         $return = ['docservers' => $sortedDocservers, 'types' => $docserversTypes];
 
         if (isset($queryParams['getEncryptionStatus']) && $queryParams['getEncryptionStatus'] == 'true') {
-            $return['docserverEncryptionStatus'] = CoreConfigModel::isDocserverEncryptionLocked();
+            $return['docserverEncryptionStatus'] = CoreConfigModel::isEnableDocserverEncryption();
         }
 
         return $response->withJson($return);
@@ -135,7 +135,7 @@ class DocserverController
         if (empty($existingDocserverType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type does not exist']);
         }
-        if (CoreConfigModel::isDocserverEncryptionLocked() || !isset($data['is_encrypted'])) {
+        if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
             $data['is_encrypted'] = false;
         }
         if(!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
@@ -214,7 +214,7 @@ class DocserverController
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
                 'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
-                'is_encrypted'          => empty($data['is_encrypted'] ?? false) || CoreConfigModel::isDocserverEncryptionLocked() ? 'false':'true'
+                'is_encrypted'          => empty($data['is_encrypted'] ?? false) || CoreConfigModel::isEnableDocserverEncryption() ? 'true':'false'
 
             ],
             'where' => ['id = ?'],
@@ -469,7 +469,7 @@ class DocserverController
 
         $fileContent = base64_decode($aArgs['encodedResource']);
 
-        if (!CoreConfigModel::isDocserverEncryptionLocked() && !empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
+        if (CoreConfigModel::isEnableDocserverEncryption() && !empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
             $fileContent = PasswordController::encrypt(['dataToEncrypt' => $fileContent]);
             $fileContent = base64_decode($fileContent);
         }

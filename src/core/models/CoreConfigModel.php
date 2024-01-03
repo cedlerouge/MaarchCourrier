@@ -454,7 +454,7 @@ class CoreConfigModel
     /**
      * @return bool
      */
-    public static function isDocserverEncryptionLocked(): bool
+    public static function isEnableDocserverEncryption(): bool
     {
         $betaEncryptCheck = CoreConfigModel::getJsonLoaded(['path' => CoreConfigModel::getConfigPath()]);
         return $betaEncryptCheck['config']['enableDocserverEncryption'] ?? false;

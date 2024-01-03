@@ -277,7 +277,7 @@ class DocserverControllerTest extends CourrierTestCase
         $docserverController = new DocserverController();
 
         $request        = $this->createRequest('GET');
-        $request        = $this->addQueryParams($request, ['getEncryptionStatus' => true]);
+        $request        = $request->withQueryParams(['getEncryptionStatus' => true]);
         $response       = $docserverController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
@@ -297,7 +297,7 @@ class DocserverControllerTest extends CourrierTestCase
         $docserverController = new DocserverController();
 
         $request        = $this->createRequest('GET');
-        $request        = $this->addQueryParams($request, ['getEncryptionStatus' => true]);
+        $request        = $request->withQueryParams(['getEncryptionStatus' => true]);
         $response       = $docserverController->get($request, new Response());
         $responseBody   = json_decode((string)$response->getBody());
 
