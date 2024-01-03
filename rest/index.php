@@ -254,6 +254,7 @@ $app->get('/departments', \Resource\controllers\DepartmentController::class . ':
 //Docservers
 $app->get('/docservers', \Docserver\controllers\DocserverController::class . ':get');
 $app->post('/docservers', \Docserver\controllers\DocserverController::class . ':create');
+$app->post('/docservers/calculateSize', \Docserver\controllers\DocserverController::class . ':calculateSize');
 $app->get('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':getById');
 $app->put('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':update');
 $app->delete('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':delete');

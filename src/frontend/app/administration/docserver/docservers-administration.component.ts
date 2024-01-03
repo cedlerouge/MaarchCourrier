@@ -10,6 +10,7 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+
 @Component({
     templateUrl: 'docservers-administration.component.html'
 })
@@ -21,6 +22,7 @@ export class DocserversAdministrationComponent implements OnInit {
     @ViewChild(MatSort, { static: false }) sort: MatSort;
 
     loading: boolean = false;
+    sizeCalculationInProgress: boolean = false;
     dataSource: any;
 
     docservers: any = [];
@@ -44,6 +46,11 @@ export class DocserversAdministrationComponent implements OnInit {
 
         this.loading = true;
 
+        this.calculateDocserversSize();
+        this.loadDocservers();
+    }
+
+    loadDocservers(): void {
         this.http.get('../rest/docservers')
             .subscribe((data: any) => {
                 this.docservers = data.docservers;
@@ -51,6 +58,21 @@ export class DocserversAdministrationComponent implements OnInit {
                 this.docserversTypes = data.types;
                 this.loading = false;
             });
+    }
+
+    calculateDocserversSize(): void {
+        this.sizeCalculationInProgress = true;
+        this.http.post('../rest/docservers/calculateSize', []).pipe(
+            tap(() => {
+                this.sizeCalculationInProgress = false;
+                this.loadDocservers();
+            }),
+            catchError((err: any) => {
+                this.loading = false;
+                this.notify.handleErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     toggleDocserver(docserver: any) {
@@ -89,7 +111,12 @@ export class DocserversAdministrationComponent implements OnInit {
 
     delete(docserver: any, i: number) {
         const title: string = docserver.actual_size_number === 0 ? this.translate.instant('lang.delete') + ' ?' : this.translate.instant('lang.docserverdeleteWarning');
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.confirmAction'), msg: title } });
+        const dialogRef = this.dialog.open(ConfirmComponent, {
+            panelClass: 'maarch-modal',
+            autoFocus: false,
+            disableClose: true,
+            data: { title: this.translate.instant('lang.confirmAction'), msg: title }
+        });
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete('../rest/docservers/' + docserver.id)),
