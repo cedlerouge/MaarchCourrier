@@ -13,9 +13,11 @@ import { catchError, tap, finalize, filter, exhaustMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
-    templateUrl: 'baskets-administration.component.html'
+    templateUrl: 'baskets-administration.component.html',
+    styleUrls: ['baskets-administration.component.scss']
 })
 export class BasketsAdministrationComponent implements OnInit {
 
@@ -102,5 +104,14 @@ export class BasketsAdministrationComponent implements OnInit {
             }, (err: any) => {
                 this.notify.error(err.error.errors);
             });
+    }
+
+    onBasketDrop(event: CdkDragDrop<string[]>): void {
+        moveItemInArray(this.basketsOrder, event.previousIndex, event.currentIndex);
+        event.container.data.forEach((basket: any, index: number) => {
+            basket.basket_order = index;
+        });
+
+        this.updateBasketOrder(event.item.data)
     }
 }

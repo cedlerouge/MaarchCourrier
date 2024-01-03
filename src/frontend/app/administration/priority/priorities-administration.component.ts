@@ -101,7 +101,7 @@ export class PrioritiesAdministrationComponent implements OnInit {
             priority.order = index;
         });
         this.updatePrioritiesOrder();
-      }
+    }
 
     updatePrioritiesOrder() {
         this.http.put('../rest/sortedPriorities', this.prioritiesOrder).pipe(
