@@ -200,8 +200,10 @@ class DocserverController
             if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
                 $size = 0;
             } else {
-                $escapedDirectory = escapeshellarg($ds['path_template']);
-                $output = shell_exec("du -sb $escapedDirectory/* $escapedDirectory/.[^.]* | awk '{total += \$1} END {print total}'");
+                $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
+                $contentFolder = str_replace('//', '/', $contentFolder);
+
+                $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {print total}'");
 
                 if ($output) {
                     $size = trim($output);
