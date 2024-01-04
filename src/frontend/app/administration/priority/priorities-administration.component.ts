@@ -95,7 +95,6 @@ export class PrioritiesAdministrationComponent implements OnInit {
     }
 
     onPriorityDrop(event: CdkDragDrop<string[]>): void {
-        // Déplace l'élément à partir de l'index initial vers l'index final dans le tableau
         moveItemInArray(this.prioritiesOrder, event.previousIndex, event.currentIndex);
         event.container.data.forEach((priority: any, index: number) => {
             priority.order = index;

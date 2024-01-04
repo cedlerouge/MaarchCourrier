@@ -9,6 +9,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { HeaderService } from '@service/header.service';
 import { ActionsService } from '../actions/actions.service';
 import { of, Subscription } from 'rxjs';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-basket-home',
@@ -105,6 +106,11 @@ export class BasketHomeComponent implements OnInit, OnDestroy {
 
     editGroupOrder() {
         this.editOrderGroups = !this.editOrderGroups;
+    }
+
+    onGroupDop(event: CdkDragDrop<string[]>): void {
+        moveItemInArray(this.homeData.regroupedBaskets, event.previousIndex, event.currentIndex);
+        this.updateGroupsOrder();
     }
 
     updateGroupsOrder() {

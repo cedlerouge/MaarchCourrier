@@ -68,3 +68,22 @@
 .defaultColor {
     color: var(--maarch-color-primary);
 }
+
+.cdk-list {
+    display: flex !important;
+    width: 100%;
+    max-width: 100%;
+    border: solid 1px #e7e7e7;
+    background: white;
+    border-radius: 3px;
+    max-height: 310px;
+}
+
+.cdk-drag-preview {
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    border: 2px dashed #ccc;
+    border-radius: 3px;
+}
