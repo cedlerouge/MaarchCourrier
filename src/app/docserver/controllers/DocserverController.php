@@ -192,34 +192,36 @@ class DocserverController
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
 
         foreach ($docservers as $ds) {
-            if (!is_readable($ds['path_template'])) {
-                unlink($lockFile);
-                return $response->withStatus(400)->withJson(['error' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
-            }
-
-            if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
-                $size = 0;
-            } else {
-                $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
-                $contentFolder = str_replace('//', '/', $contentFolder);
-
-                $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {print total}'");
-
-                if ($output) {
-                    $size = trim($output);
-                } else {
+            if (is_dir($ds['path_template'])) {
+                if (is_readable($ds['path_template'])) {
                     unlink($lockFile);
-                    return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    return $response->withStatus(400)->withJson(['error' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
                 }
-            }
 
-            DocserverModel::update([
-                'set'   => [
-                    'actual_size_number' => $size
-                ],
-                'where' => ['docserver_id = ?'],
-                'data'  => [$ds['docserver_id']]
-            ]);
+                if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
+                    $size = 0;
+                } else {
+                    $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
+                    $contentFolder = str_replace('//', '/', $contentFolder);
+
+                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {print total}'");
+
+                    if ($output) {
+                        $size = trim($output);
+                    } else {
+                        unlink($lockFile);
+                        return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    }
+                }
+
+                DocserverModel::update([
+                    'set'   => [
+                        'actual_size_number' => $size
+                    ],
+                    'where' => ['docserver_id = ?'],
+                    'data'  => [$ds['docserver_id']]
+                ]);
+            }
         }
 
         if (empty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']))) {
