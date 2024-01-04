@@ -311,7 +311,9 @@ class DocserverControllerTest extends CourrierTestCase
         $response = $docserverController->calculateSize($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
         //assert
-        echo $responseBody->error . "\n";
+        if ($response->getStatusCode() == 400) {
+            $this->assertSame("", $responseBody->error);
+        }
         $this->assertSame(204, $response->getStatusCode());
         $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
     }
