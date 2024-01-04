@@ -44,6 +44,13 @@ use BroadcastList\models\BroadcastListRoleModel;
 
 class ExportController
 {
+    const PUBLIC_PROPERTIES = [
+        'getStatus',
+        'alt_identifier',
+        'subject',
+        'getFolder'
+    ];
+
     /**
      * @param Request $request
      * @param Response $response
@@ -202,13 +209,13 @@ class ExportController
         }
 
         if ($body['format'] == 'csv') {
-            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess/*, 'hasRight' => $hasRight ?? ''*/]);
+            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
             $response->write(stream_get_contents($file));
             $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
             $contentType = 'application/vnd.ms-excel';
             fclose($file);
         } else {
-            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess/*, 'hasRight' => $hasRight ?? ''*/]);
+            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
 
             $fileContent = $pdf->Output('', 'S');
             $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -302,13 +309,6 @@ class ExportController
 
         fputcsv($file, $csvHead, $delimiter);
 
-        $publicProperties = [
-            'getStatus',
-            'alt_identifier',
-            'subject',
-            'getFolder'
-        ];
-
         foreach ($aArgs['resources'] as $resource) {
             $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
             $csvContent = [];
@@ -319,7 +319,7 @@ class ExportController
                 }
 
                 if ($hasRight === false) {
-                    if (!in_array($value['value'], $publicProperties)) {
+                    if (!in_array($value['value'], self::PUBLIC_PROPERTIES)) {
                         $csvContent[] = 'Hors périmètre';
                         continue;
                     }
@@ -452,13 +452,6 @@ class ExportController
         $pdf->SetY($pdf->GetY() + $labelHeight);
         $pdf->SetFont('', '', 10);
 
-        $publicProperties = [
-            'getStatus',
-            'alt_identifier',
-            'subject',
-            'getFolder'
-        ];
-
         foreach ($aArgs['resources'] as $resource) {
             $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
             $content = [];
@@ -469,7 +462,7 @@ class ExportController
                 }
 
                 if ($hasRight === false) {
-                    if (!in_array($value['value'], $publicProperties)) {
+                    if (!in_array($value['value'], self::PUBLIC_PROPERTIES)) {
                         $content[] = 'Hors périmètre';
                         continue;
                     }
