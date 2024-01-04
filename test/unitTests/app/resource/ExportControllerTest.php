@@ -407,8 +407,9 @@ class ExportControllerTest extends CourrierTestCase
 
         $outsidePerimeter = 'Hors périmètre';
 
-        //Changer l'assertContains
-        $this->assertContains($outsidePerimeter, $values, 'test si ils sont hors du périmètre');
+        foreach($values as $value){
+            $this->assertSame($outsidePerimeter, $value);
+        }
     }
 
     /**

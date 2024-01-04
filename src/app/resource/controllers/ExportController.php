@@ -91,7 +91,7 @@ class ExportController
             $hasNotAccess = [];
             foreach ($inBaskets as $basket) {
                 if ($basket['inBasket'] === true) {
-                    $hasFullAccess[] = $basket;
+                    $hasFullAccess[$basket['resId']] = true;
                 } else {
                     $hasNotAccess[] = $basket;
                 }
@@ -100,9 +100,8 @@ class ExportController
                 $hasNotAccess = array_column($hasNotAccess, 'resId');
                 $folders = self::inFolder($hasNotAccess);
                 foreach ($folders as $folder) {
-                    $hasRight = false;
                     if ($folder['inFolder'] === true) {
-                        $hasFullAccess[] = $folder;
+                        $hasFullAccess[$folder['resId']] = false;
                     } else {
                         return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
                     }
@@ -203,13 +202,13 @@ class ExportController
         }
 
         if ($body['format'] == 'csv') {
-            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess, 'hasRight' => $hasRight ?? '']);
+            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess/*, 'hasRight' => $hasRight ?? ''*/]);
             $response->write(stream_get_contents($file));
             $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
             $contentType = 'application/vnd.ms-excel';
             fclose($file);
         } else {
-            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess, 'hasRight' => $hasRight ?? '']);
+            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess/*, 'hasRight' => $hasRight ?? ''*/]);
 
             $fileContent = $pdf->Output('', 'S');
             $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -311,7 +310,7 @@ class ExportController
         ];
 
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $aArgs['hasRight'] ?? '';
+            $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
@@ -461,7 +460,7 @@ class ExportController
         ];
 
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $aArgs['hasRight'] ?? '';
+            $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
             $content = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
