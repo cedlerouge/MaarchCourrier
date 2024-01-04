@@ -69,7 +69,9 @@ export class DocserversAdministrationComponent implements OnInit {
             }),
             catchError((err: any) => {
                 this.sizeCalculationInProgress = false;
-                this.notify.handleErrors(err);
+                if (err.error !== 'Process already running' && err.error !== 'Last calculation is too early') {
+                    this.notify.handleErrors(err);
+                }
                 return of(false);
             })
         ).subscribe();

@@ -14,6 +14,7 @@
 
 namespace Docserver\controllers;
 
+use DateTime;
 use Docserver\models\DocserverTypeModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
@@ -162,18 +163,38 @@ class DocserverController
     public function calculateSize(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
+            return $response->withStatus(403)->withJson(['error' => 'Service forbidden']);
         }
 
-        if (empty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']))) {
-            return $response->withStatus(400)->withJson(['errors' => 'Parameter last_docservers_size_calculation does not exist']);
+        $tmpPath = CoreConfigModel::getTmpPath();
+
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+
+        if (file_exists($lockFile)) {
+            return $response->withStatus(403)->withJson(['error' => 'Process already running']);
+        }
+
+        file_put_contents($lockFile, "locked");
+
+        $last_calculation_date = ParameterModel::getById(['id' => 'last_docservers_size_calculation']);
+
+        if (!empty($last_calculation_date)) {
+            $lastCalculationDateTime = new DateTime($last_calculation_date['param_value_date']);
+            $now = new DateTime();
+            $hoursDiff = ($now->diff($lastCalculationDateTime)->days * 24) + $now->diff($lastCalculationDateTime)->h;
+
+            if ($hoursDiff < 2) {
+                unlink($lockFile);
+                return $response->withStatus(403)->withJson(['error' => 'Last calculation is too early']);
+            }
         }
 
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
 
         foreach ($docservers as $ds) {
             if (!is_readable($ds['path_template'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
+                unlink($lockFile);
+                return $response->withStatus(400)->withJson(['error' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
             }
 
             if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
@@ -185,7 +206,8 @@ class DocserverController
                 if ($output) {
                     $size = trim($output);
                 } else {
-                    return $response->withStatus(400)->withJson(['errors' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    unlink($lockFile);
+                    return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
                 }
             }
 
@@ -198,9 +220,15 @@ class DocserverController
             ]);
         }
 
-        ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        if (empty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']))) {
+            ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        } else {
+            ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        }
 
-        return $response->withJson(['success' => 'success']);
+        unlink($lockFile);
+
+        return $response->withStatus(204);
     }
 
     public function update(Request $request, Response $response, array $aArgs)
