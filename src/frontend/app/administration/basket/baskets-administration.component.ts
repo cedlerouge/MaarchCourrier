@@ -97,13 +97,16 @@ export class BasketsAdministrationComponent implements OnInit {
     }
 
     updateBasketOrder(currentBasket: any) {
-        this.http.put('../rest/sortedBaskets/' + currentBasket.basket_id, this.basketsOrder)
-            .subscribe((data: any) => {
+        this.http.put('../rest/sortedBaskets/' + currentBasket.basket_id, this.basketsOrder).pipe(
+            tap((data: any) => {
                 this.baskets = data['baskets'];
                 this.notify.success(this.translate.instant('lang.modificationSaved'));
-            }, (err: any) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     onBasketDrop(event: CdkDragDrop<string[]>): void {
@@ -111,7 +114,6 @@ export class BasketsAdministrationComponent implements OnInit {
         event.container.data.forEach((basket: any, index: number) => {
             basket.basket_order = index;
         });
-
         this.updateBasketOrder(event.item.data)
     }
 }

@@ -98,7 +98,6 @@
     <mat-sidenav #snav2 [mode]="appService.getViewMode() ? 'over' : 'side'" [fixedInViewport]="appService.getViewMode()"
         fixedTopGap="56" position='end' [opened]="appService.getViewMode() ? false : false">
         <p style="font-size:15px;padding:10px"> {{'lang.basketHelpDesc' | translate}} </p>
-        <!--  -->
         <mat-list>
             <div cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="basketsOrder" (cdkDropListDropped)="onBasketDrop($event)">
                 <mat-list-item class="cdk-list"  disableRipple="true" *ngFor="let basket of basketsOrder;let i = index"
@@ -108,6 +107,5 @@
                 </mat-list-item>
             </div>
         </mat-list>
-        <!--  -->
     </mat-sidenav>
 </mat-sidenav-container>

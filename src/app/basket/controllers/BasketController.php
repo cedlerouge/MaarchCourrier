@@ -215,7 +215,7 @@ class BasketController
         $data = $request->getParsedBody();
 
         foreach ($data as $key => $basketToUpdate) {
-            if ($key != $basketToUpdate['basket_order']) {
+            if ($key == $basketToUpdate['basket_order']) {
                 BasketModel::updateOrder(['id' => $basketToUpdate['basket_id'], 'order' => $key]);
             }
         }
