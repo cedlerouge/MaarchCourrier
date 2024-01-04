@@ -192,11 +192,11 @@ class DocserverController
         $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
 
         foreach ($docservers as $ds) {
-            if (is_dir($ds['path_template'])) {
-                if (is_readable($ds['path_template'])) {
+            if (is_dir($ds['path_template']) && is_readable($ds['path_template'])) {
+                /* if (is_readable($ds['path_template'])) {
                     unlink($lockFile);
                     return $response->withStatus(400)->withJson(['error' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
-                }
+                } */
 
                 if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
                     $size = 0;
