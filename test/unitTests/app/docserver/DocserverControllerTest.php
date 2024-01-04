@@ -1,19 +1,21 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 namespace MaarchCourrier\Tests\app\docserver;
 
 use Docserver\controllers\DocserverController;
 use Docserver\controllers\DocserverTypeController;
 use Docserver\models\DocserverModel;
+use Parameter\models\ParameterModel;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
+use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 
 class DocserverControllerTest extends CourrierTestCase
@@ -29,7 +31,7 @@ class DocserverControllerTest extends CourrierTestCase
 
         $request = $this->createRequest('GET');
 
-        $response     = $docserverController->get($request, new Response());
+        $response = $docserverController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docservers);
@@ -46,17 +48,17 @@ class DocserverControllerTest extends CourrierTestCase
         }
 
         $args = [
-            'docserver_id'           =>  'NEW_DOCSERVER',
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'new docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  self::$pathTemplate,
-            'coll_id'                =>  'letterbox_coll',
-            'is_encrypted'           =>  false
+            'docserver_id'      => 'NEW_DOCSERVER',
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'new docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => self::$pathTemplate,
+            'coll_id'           => 'letterbox_coll',
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $docserverController->create($fullRequest, new Response());
+        $response = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         self::$id = $responseBody->docserver;
@@ -64,59 +66,59 @@ class DocserverControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $docserverController->getById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('NEW_DOCSERVER', $responseBody->docserver_id);
 
         //  CREATE
         $args = [
-            'docserver_id'           =>  'WRONG_PATH',
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'new docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  '/wrong/path/',
-            'coll_id'                =>  'letterbox_coll',
-            'is_encrypted'           =>  false
+            'docserver_id'      => 'WRONG_PATH',
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'new docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => '/wrong/path/',
+            'coll_id'           => 'letterbox_coll',
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
 
-        $response     = $docserverController->create($fullRequest, new Response());
+        $response = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(_PATH_OF_DOCSERVER_UNAPPROACHABLE, $responseBody->errors);
 
         //  CREATE
         $args = [
-            'docserver_id'           =>  'BAD_REQUEST',
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'new docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  null,
-            'coll_id'                =>  'letterbox_coll',
-            'is_encrypted'           =>  false
+            'docserver_id'      => 'BAD_REQUEST',
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'new docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => null,
+            'coll_id'           => 'letterbox_coll',
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
-        $response     = $docserverController->create($fullRequest, new Response());
+        $response = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Bad Request', $responseBody->errors);
 
         //  CREATE
         $args = [
-            'docserver_id'           =>  'NEW_DOCSERVER',
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'new docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  '/var/docserversDEV/dev1804/archive_transfer/',
-            'coll_id'                =>  'letterbox_coll',
-            'is_encrypted'           =>  false
+            'docserver_id'      => 'NEW_DOCSERVER',
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'new docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => '/var/docserversDEV/dev1804/archive_transfer/',
+            'coll_id'           => 'letterbox_coll',
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('POST', $args);
-        $response     = $docserverController->create($fullRequest, new Response());
+        $response = $docserverController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        $this->assertSame(_ID. ' ' . _ALREADY_EXISTS, $responseBody->errors);
+        $this->assertSame(_ID . ' ' . _ALREADY_EXISTS, $responseBody->errors);
     }
 
     public function testUpdate()
@@ -125,15 +127,15 @@ class DocserverControllerTest extends CourrierTestCase
 
         //  UPDATE
         $args = [
-            'docserver_type_id' =>  'DOC',
-            'device_label'      =>  'updated docserver',
-            'size_limit_number' =>  50000000000,
-            'path_template'     =>  self::$pathTemplate,
-            'is_readonly'       =>  true,
-            'is_encrypted'      =>  false
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'updated docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => self::$pathTemplate,
+            'is_readonly'       => true,
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
-        $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docserver);
@@ -141,37 +143,37 @@ class DocserverControllerTest extends CourrierTestCase
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $docserverController->getById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('updated docserver', $responseBody->device_label);
 
         //  UPDATE
         $args = [
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'updated docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  '/wrong/path/',
-            'is_readonly'            =>  true,
-            'is_encrypted'           =>  false
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'updated docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => '/wrong/path/',
+            'is_readonly'       => true,
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
-        $response     = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
+        $response = $docserverController->update($fullRequest, new Response(), ['id' => self::$id]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame(_PATH_OF_DOCSERVER_UNAPPROACHABLE, $responseBody->errors);
 
         //  UPDATE
         $args = [
-            'docserver_type_id'      =>  'DOC',
-            'device_label'           =>  'updated docserver',
-            'size_limit_number'      =>  50000000000,
-            'path_template'          =>  self::$pathTemplate,
-            'is_readonly'            =>  true,
-            'is_encrypted'           =>  false
+            'docserver_type_id' => 'DOC',
+            'device_label'      => 'updated docserver',
+            'size_limit_number' => 50000000000,
+            'path_template'     => self::$pathTemplate,
+            'is_readonly'       => true,
+            'is_encrypted'      => false
         ];
         $fullRequest = $this->createRequestWithBody('PUT', $args);
-        $response     = $docserverController->update($fullRequest, new Response(), ['id' => 12345]);
+        $response = $docserverController->update($fullRequest, new Response(), ['id' => 12345]);
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver not found', $responseBody->errors);
@@ -183,22 +185,22 @@ class DocserverControllerTest extends CourrierTestCase
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $docserverController->delete($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $docserverController->delete($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertsame('success', $responseBody->success);
 
         //  READ
         $request = $this->createRequest('GET');
-        $response       = $docserverController->getById($request, new Response(), ['id' =>  self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $docserverController->getById($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver not found', $responseBody->errors);
 
         //  DELETE
         $request = $this->createRequest('DELETE');
-        $response       = $docserverController->delete($request, new Response(), ['id' => self::$id]);
-        $responseBody   = json_decode((string)$response->getBody());
+        $response = $docserverController->delete($request, new Response(), ['id' => self::$id]);
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Docserver does not exist', $responseBody->errors);
 
@@ -211,7 +213,7 @@ class DocserverControllerTest extends CourrierTestCase
 
         $request = $this->createRequest('GET');
 
-        $response     = $docserverTypeController->get($request, new Response());
+        $response = $docserverTypeController->get($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotEmpty($responseBody->docserverTypes);
@@ -248,7 +250,7 @@ class DocserverControllerTest extends CourrierTestCase
         DocserverModel::update([
             'table' => 'docservers',
             'set'   => [
-                'path_template'=> ''
+                'path_template' => ''
             ],
             'where' => ['docserver_id = ?', 'coll_id = ?'],
             'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
@@ -284,7 +286,7 @@ class DocserverControllerTest extends CourrierTestCase
             DocserverModel::update([
                 'table' => 'docservers',
                 'set'   => [
-                    'path_template'=> self::$docserver['path_template']
+                    'path_template' => self::$docserver['path_template']
                 ],
                 'where' => ['docserver_id = ?', 'coll_id = ?'],
                 'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
@@ -292,4 +294,58 @@ class DocserverControllerTest extends CourrierTestCase
         }
     }
 
+    public function testCanCalculateDocserversSize(): void
+    {
+        $docserverController = new DocserverController();
+
+        //Arrange : supprimer la dernière date de process
+        ParameterModel::delete(['id' => 'last_docservers_size_calculation']);
+
+        //Act
+        $request = $this->createRequest('POST');
+        $response = $docserverController->calculateSize($request, new Response());
+
+        //assert
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
+    }
+
+    public function testCannotCalculateDocserversSizeBecauseTooEarly(): void
+    {
+        $docserverController = new DocserverController();
+
+        //Arrange : supprimer la dernière date de process et la recréer à la date du jour
+        ParameterModel::delete(['id' => 'last_docservers_size_calculation']);
+        ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+
+        //Act
+        $request = $this->createRequest('POST');
+        $response = $docserverController->calculateSize($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+
+        //assert
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('Last calculation is too early', $responseBody->error);
+    }
+
+    public function testCannotCalculateDocserversSizeBecauseLocked(): void
+    {
+        $docserverController = new DocserverController();
+
+        //Arrange : Créer fichier lock
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+        file_put_contents($lockFile, "locked");
+
+        //Act
+        $request = $this->createRequest('POST');
+        $response = $docserverController->calculateSize($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+
+        //assert
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('Process already running', $responseBody->error);
+
+        unlink($lockFile);
+    }
 }
