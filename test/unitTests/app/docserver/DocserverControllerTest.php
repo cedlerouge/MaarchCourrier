@@ -298,8 +298,13 @@ class DocserverControllerTest extends CourrierTestCase
     {
         $docserverController = new DocserverController();
 
-        //Arrange : supprimer la dernière date de process
+        //Arrange : supprimer la dernière date de process et supprimer le fichier lock
         ParameterModel::delete(['id' => 'last_docservers_size_calculation']);
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+        if (is_file($lockFile)) {
+            unlink($lockFile);
+        }
 
         //Act
         $request = $this->createRequest('POST');
