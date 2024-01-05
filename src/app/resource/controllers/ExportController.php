@@ -98,7 +98,7 @@ class ExportController
             $hasNotAccess = [];
             foreach ($inBaskets as $basket) {
                 if ($basket['inBasket'] === true) {
-                    $hasFullAccess[$basket['resId']] = true;
+                    $hasFullAccess[] = $basket['resId'];
                 } else {
                     $hasNotAccess[] = $basket;
                 }
@@ -108,14 +108,14 @@ class ExportController
                 $folders = self::inFolder($hasNotAccess);
                 foreach ($folders as $folder) {
                     if ($folder['inFolder'] === true) {
-                        $hasFullAccess[$folder['resId']] = false;
+                        $hasFullAccess[] = $folder['resId'];
                     } else {
                         return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
                     }
                 }
             }
         } else {
-            $hasFullAccess = array_merge($hasFullAccess, $body['resources']);
+            $hasFullAccess[] = array_merge($hasFullAccess, $body['resources']);
         }
 
         foreach ($body['data'] as $value) {
@@ -310,7 +310,7 @@ class ExportController
         fputcsv($file, $csvHead, $delimiter);
 
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
+            $hasRight = $aArgs['hasFullRight'][$resource['res_id']] ?? false;
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
@@ -389,12 +389,13 @@ class ExportController
                     } elseif ($value['value'] == 'getOpinionCircuit') {
                         $csvContent[] = ExportController::getCircuit(['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]);
                     }
-                }
-                $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
-                if (in_array($value['value'], $allDates)) {
-                    $csvContent[] = TextFormatModel::formatDate($resource[$value['value']]);
-                } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
-                    $csvContent[] = $resource[$value['value']];
+                } else {
+                    $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
+                    if (in_array($value['value'], $allDates)) {
+                        $csvContent[] = TextFormatModel::formatDate($resource[$value['value']]);
+                    } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
+                        $csvContent[] = $resource[$value['value']];
+                    }
                 }
             }
 
