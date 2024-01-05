@@ -300,6 +300,7 @@ class DocserverControllerTest extends CourrierTestCase
         if (is_file($lockFile)) {
             unlink($lockFile);
         }
+        $this->connectAsUser('superadmin');
     }
 
     private function setDateSizeCalculation($date = null): void
