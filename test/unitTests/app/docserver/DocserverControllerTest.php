@@ -16,8 +16,6 @@ use Parameter\models\ParameterModel;
 use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\models\DatabaseModel;
-use User\models\UserModel;
 
 class DocserverControllerTest extends CourrierTestCase
 {
@@ -322,7 +320,6 @@ class DocserverControllerTest extends CourrierTestCase
         //Act
         $request = $this->createRequest('POST');
         $response = $docserverController->calculateSize($request, new Response());
-        $responseBody = json_decode((string)$response->getBody());
         //assert
 
         $this->assertSame(204, $response->getStatusCode());
@@ -339,7 +336,6 @@ class DocserverControllerTest extends CourrierTestCase
         //Act
         $request = $this->createRequest('POST');
         $response = $docserverController->calculateSize($request, new Response());
-        $responseBody = json_decode((string)$response->getBody());
 
         //assert
         $this->assertSame(204, $response->getStatusCode());
@@ -395,6 +391,5 @@ class DocserverControllerTest extends CourrierTestCase
         //assert
         $this->assertSame(403, $response->getStatusCode());
         $this->assertSame('Process already running', $responseBody->error);
-
     }
 }
