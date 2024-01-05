@@ -1,11 +1,11 @@
-<div *ngIf="!emptyDashboard()" class="dashboard-container" cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="tiles" (cdkDropListDropped)="onDrop($event)">
+<div *ngIf="!emptyDashboard()" class="dashboard-container" dndDropzone dndEffectAllowed="move" (dndDrop)="onDrop($event)">
     <div class="tile" [style.border-color]="tile.color" [class.empty_tile_edit]="tile.id === null && tile.editMode"
         [class.empty_tile]="tile.id === null" *ngFor="let tile of tiles;let i=index" (mouseenter)="enterTile(tile, i)"
-        (mouseleave)="leaveTile(tile)" cdkDrag cdkDragHandle [cdkDragData]="tile">
-        <div
+        (mouseleave)="leaveTile(tile)" dndEffectAllowed="move" [dndDisableIf]="tile.id === null" [dndDraggable]="tile" [id]="tile.position">
+        <div [id]="tile.position"
             style="position: relative;height: 100%;width:100%;display: flex;flex-direction: column;align-items: center;justify-content: center;">
             <div class="tool-left" *ngIf="tile.id !== null && tile.editMode">
-                <span cdkDragHandle style="cursor: move;">
+                <span dndHandle style="cursor: move;">
                     <mat-icon style="color: white;" class="fa fa-arrows-alt"></mat-icon>
                 </span>
             </div>

@@ -14,6 +14,8 @@ import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DndDropEvent } from 'ngx-drag-drop';
+import { DndEvent } from 'ngx-drag-drop/lib/dnd-utils';
 
 @Component({
     selector: 'app-dashboard',
@@ -25,7 +27,7 @@ export class DashboardComponent implements OnInit {
 
     @ViewChildren('tileComponent') tileComponent: QueryList<any>;
 
-    tiles: any = [];
+    tiles: any[] = [];
     hoveredTool: boolean = false;
     tileErrors: any[] = [];
 
@@ -168,12 +170,22 @@ export class DashboardComponent implements OnInit {
         ).subscribe();
     }
 
-    onDrop(event: CdkDragDrop<any[]>): void {
-        moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-        event.container.data.forEach((tile: any, index: number) => {
-            tile.position = index
-        });
-        this.transferDataSuccess();
+    onDrop(dndDrop: DndDropEvent) {
+        // Extract the tile being dragged from the drop event
+        const tileToDrag: any = dndDrop.data;
+        // Extract the id of the destination div where the tile is being dropped
+        const idOfDivToDnd: any = +(dndDrop.event as DragEvent)['toElement'].id;
+        // Check if the extracted idOfDivToDnd is a number
+        if (typeof idOfDivToDnd === 'number') {
+            // Update the position of the dragged tile to the id of the destination div
+            this.tiles.find((tile: any) => tile.position === tileToDrag.position).position = +(dndDrop.event as DragEvent)['toElement'].id;
+            // Update the position of other tiles at the destination to the position of the dragged tile
+            this.tiles.find((tile: any) => tile.id !== tileToDrag.id && tile.position === +(dndDrop.event as DragEvent)['toElement'].id).position = tileToDrag.position;
+            // Remove duplicates from the tiles array and sort it based on the position
+            this.tiles = [...new Set(this.tiles)];
+            this.tiles.sort((a, b) => a.position - b.position);
+            this.transferDataSuccess();
+        }
     }
 
     transferDataSuccess() {
