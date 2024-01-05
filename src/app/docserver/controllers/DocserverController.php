@@ -193,11 +193,6 @@ class DocserverController
 
         foreach ($docservers as $ds) {
             if (is_dir($ds['path_template']) && is_readable($ds['path_template'])) {
-                /* if (is_readable($ds['path_template'])) {
-                    unlink($lockFile);
-                    return $response->withStatus(400)->withJson(['error' => 'Path of docserver ' . $ds['docserver_id'] . ' is unreadable']);
-                } */
-
                 if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
                     $size = 0;
                 } else {
@@ -224,7 +219,7 @@ class DocserverController
             }
         }
 
-        if (empty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']))) {
+        if (empty($last_calculation_date)) {
             ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
         } else {
             ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);

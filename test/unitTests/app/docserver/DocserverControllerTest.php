@@ -17,6 +17,7 @@ use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
+use User\models\UserModel;
 
 class DocserverControllerTest extends CourrierTestCase
 {
@@ -292,19 +293,30 @@ class DocserverControllerTest extends CourrierTestCase
                 'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
             ]);
         }
-    }
 
-    public function testCanCalculateDocserversSize(): void
-    {
-        $docserverController = new DocserverController();
-
-        //Arrange : supprimer la dernière date de process et supprimer le fichier lock
         ParameterModel::delete(['id' => 'last_docservers_size_calculation']);
         $tmpPath = CoreConfigModel::getTmpPath();
         $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
         if (is_file($lockFile)) {
             unlink($lockFile);
         }
+    }
+
+    private function setDateSizeCalculation($date = null): void
+    {
+        ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => $date ?? date('Y-m-d H:i:s')]);
+    }
+
+    private function createLockFile(): void
+    {
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+        file_put_contents($lockFile, "locked");
+    }
+
+    public function testCanCalculateDocserversSizeNonExistantDateLastCalculation(): void
+    {
+        $docserverController = new DocserverController();
 
         //Act
         $request = $this->createRequest('POST');
@@ -316,13 +328,46 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
     }
 
+    public function testCanCalculateDocserversSizeExistantDateLastCalculation(): void
+    {
+        $docserverController = new DocserverController();
+
+        //Arrange : Initialisation de la date de dernier calcul à une date ancienne
+        $this->setDateSizeCalculation('2024-01-01 00:00:00');
+
+        //Act
+        $request = $this->createRequest('POST');
+        $response = $docserverController->calculateSize($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+
+        //assert
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
+    }
+
+    public function testCannotCalculateDocserversSizeBecauseServiceForbidden(): void
+    {
+        $docserverController = new DocserverController();
+
+        //Arrange : Connexion avec un utilisateur n'ayant pas les droits
+        $this->connectAsUser('bblier');
+
+        //Act
+        $request = $this->createRequest('POST');
+        $response = $docserverController->calculateSize($request, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+
+        //assert
+        $this->assertSame(403, $response->getStatusCode());
+        $this->assertSame('Service forbidden', $responseBody->error);
+    }
+
     public function testCannotCalculateDocserversSizeBecauseTooEarly(): void
     {
         $docserverController = new DocserverController();
 
-        //Arrange : supprimer la dernière date de process et la recréer à la date du jour
-        ParameterModel::delete(['id' => 'last_docservers_size_calculation']);
-        ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        //Arrange : Initialisation de la date de dernier calcul à la date du jour
+        $this->setDateSizeCalculation();
 
         //Act
         $request = $this->createRequest('POST');
@@ -339,9 +384,7 @@ class DocserverControllerTest extends CourrierTestCase
         $docserverController = new DocserverController();
 
         //Arrange : Créer fichier lock
-        $tmpPath = CoreConfigModel::getTmpPath();
-        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
-        file_put_contents($lockFile, "locked");
+        $this->createLockFile();
 
         //Act
         $request = $this->createRequest('POST');
@@ -352,6 +395,5 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertSame(403, $response->getStatusCode());
         $this->assertSame('Process already running', $responseBody->error);
 
-        unlink($lockFile);
     }
 }
