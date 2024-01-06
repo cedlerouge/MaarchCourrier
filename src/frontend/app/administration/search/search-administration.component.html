@@ -82,13 +82,12 @@
                         </span>
                     </mat-toolbar>
                     <mat-card>
-                        <div *ngIf="displayedSecondaryData.length > 0" cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="displayedSecondaryData"
-                            (cdkDropListDropped)="drop($event)" style="border: solid 1px #F9983066;border-radius: 4px;">
+                        <div *ngIf="displayedSecondaryData.length > 0" style="border: solid 1px #F9983066;border-radius: 4px;" dndDropzone dndEffectAllowed="move" (dndDrop)="onDrop($event)">
                             <mat-toolbar
                                 class="secondaryInformations example-list column-{{selectedTemplateDisplayedSecondaryData}}-list">
-                                <div *ngFor="let item of displayedSecondaryData;let i=index" cdkDrag [cdkDragData]="item">
-                                    <span class="example-box" *ngIf="item.value !== 'getFolders'">
-                                        <button *ngIf="displayMode === 'label'" color="primary" mat-icon-button
+                                <div *ngFor="let item of displayedSecondaryData;let i=index" dndEffectAllowed="move" [dndDraggable]="item" [id]="item.position">
+                                    <span class="example-box" *ngIf="item.value !== 'getFolders'" [id]="item.position">
+                                        <button *ngIf="displayMode === 'label'" color="primary" mat-icon-button [id]="item.position"
                                             [matMenuTriggerFor]="menu">
                                             <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v fa-2x"></mat-icon>
                                         </button>
@@ -139,9 +138,9 @@
                                                 <span>{{'lang.fontBig' | translate}}</span>
                                             </button>
                                         </mat-menu>
-                                        <span style="width:100%;" [class]="item.cssClasses.join(' ')">
+                                        <span [id]="item.position" style="width:100%;" [class]="item.cssClasses.join(' ')">
                                             <i class="fa {{item.icon}}"></i>&nbsp;
-                                            <span class="secondaryInformations_label"
+                                            <span class="secondaryInformations_label" [id]="item.position"
                                                 [innerHTML]="item[displayMode]"></span>
                                         </span>
                                     </span>

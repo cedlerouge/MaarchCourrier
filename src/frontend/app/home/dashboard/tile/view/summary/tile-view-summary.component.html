@@ -1,4 +1,4 @@
-<div style="width: 100%;height: 100%;" [class.link]="route !== null" (click)="route !== null ? goTo(): false">
+<div style="width: 100%;height: 100%;" [id]="tile.position" [class.link]="route !== null" (click)="route !== null ? goTo(): false">
     <div *ngIf="countResources !== null" color="primary" class="summary-content">
         <span class="summary-number">
             {{countResources}}

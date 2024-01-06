@@ -13,9 +13,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DndDropEvent } from 'ngx-drag-drop';
-import { DndEvent } from 'ngx-drag-drop/lib/dnd-utils';
 
 @Component({
     selector: 'app-dashboard',

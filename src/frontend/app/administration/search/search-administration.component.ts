@@ -1,14 +1,14 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { UntypedFormControl } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { AppService } from '@service/app.service';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
+import { DndDropEvent } from 'ngx-drag-drop';
 
 declare let $: any;
 
@@ -327,6 +327,7 @@ export class SearchAdministrationComponent implements OnInit {
         const i = this.availableData.map((e: any) => e.value).indexOf(id);
 
         this.displayedSecondaryData.push(this.availableData.filter((item: any) => item.value === id)[0]);
+        this.setPositions();
 
         this.availableData.splice(i, 1);
 
@@ -337,6 +338,7 @@ export class SearchAdministrationComponent implements OnInit {
     removeData(rmData: any, i: number) {
         this.availableData.push(rmData);
         this.displayedSecondaryData.splice(i, 1);
+        this.setPositions();
         this.dataControl.setValue('');
     }
 
@@ -347,21 +349,23 @@ export class SearchAdministrationComponent implements OnInit {
         this.displayedSecondaryData = [];
     }
 
-    drop(event: CdkDragDrop<string[]>) {
-        if (event.previousContainer === event.container) {
-            moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-        } else {
-            transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex - 1);
-
-            this.displayedSecondaryData.forEach((subArray: any, index: any) => {
-                if (subArray.length > this.selectedTemplateDisplayedSecondaryData) {
-                    transferArrayItem(subArray, this.displayedSecondaryData[index + 1], subArray.length, 0);
-                } else if (subArray.length < this.selectedTemplateDisplayedSecondaryData && !this.functions.empty(this.displayedSecondaryData[index + 1])) {
-                    transferArrayItem(this.displayedSecondaryData[index + 1], subArray, 0, subArray.length);
-                }
-            });
+    onDrop(dndDrop: DndDropEvent) {
+        // Extract the data being dragged from the drop event
+        const dataToDrag: any = dndDrop.data;
+        // Extract the id of the destination div where the data is being dropped
+        const idOfDivToDnd: any = +(dndDrop.event as DragEvent)['toElement'].id;
+        // Check if the extracted idOfDivToDnd is a number
+        if (typeof idOfDivToDnd === 'number') {
+            const dataToDnd: any =  this.displayedSecondaryData.find((data: any) => data.position === dataToDrag.position);
+            const divToBeReplaced: any = this.displayedSecondaryData.find((data: any) => data.position === idOfDivToDnd);
+            // // Update the position of the dragged data to the id of the destination div
+            dataToDnd['position'] = idOfDivToDnd;
+            // // Update the position of other datas at the destination to the position of the dragged data
+            divToBeReplaced['position'] = dataToDrag.position;
+            // Remove duplicates from the datas array and sort it based on the position
+            this.displayedSecondaryData.sort((a, b) => a.position - b.position);
+            this.displayedSecondaryData = [...new Set(this.displayedSecondaryData)];
         }
-
     }
 
     getTemplate() {
@@ -377,6 +381,7 @@ export class SearchAdministrationComponent implements OnInit {
                         this.addData(element.value);
                         this.displayedSecondaryData[this.displayedSecondaryData.length - 1].cssClasses = element.cssClasses;
                     });
+                    this.setPositions();
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -395,9 +400,10 @@ export class SearchAdministrationComponent implements OnInit {
         this.selectedListEvent = JSON.parse(JSON.stringify({
             'defaultTab': this.selectedProcessTool.defaultTab
         }));
-        this.http.put('../rest/configurations/admin_search ', { 'listDisplay': objToSend, 'listEvent': this.selectedListEvent, 'list_event_data': this.selectedProcessTool })
-            .subscribe(() => {
+        this.http.put('../rest/configurations/admin_search ', { 'listDisplay': objToSend, 'listEvent': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
+            tap(() => {
                 this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
+                this.setPositions();
                 this.searchAdv.listDisplay = this.displayedSecondaryData;
                 this.searchAdv.listEvent = this.selectedListEvent;
                 this.selectedListEventClone = this.selectedListEvent;
@@ -405,9 +411,12 @@ export class SearchAdministrationComponent implements OnInit {
                 this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
                 this.notify.success(this.translate.instant('lang.modificationsProcessed'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     checkModif() {
@@ -449,6 +458,15 @@ export class SearchAdministrationComponent implements OnInit {
         if (!state) {
             this.selectedProcessTool.canUpdateModel = state;
         }
+    }
+
+    setPositions(): void {
+        this.displayedSecondaryData.forEach((element: any, index: number) => {
+            this.displayedSecondaryData[index] = {
+                ...this.displayedSecondaryData[index],
+                position: index
+            }
+        });
     }
 
     private _filterData(value: any): string[] {

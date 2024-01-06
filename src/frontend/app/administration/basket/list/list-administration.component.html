@@ -95,12 +95,12 @@
     </span>
 </mat-toolbar>
 <mat-card>
-    <div *ngIf="displayedSecondaryData.length > 0" cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="displayedSecondaryData"
-        (cdkDropListDropped)="drop($event)" style="border: solid 1px #F9983066;border-radius: 4px;">
+    <div *ngIf="displayedSecondaryData.length > 0" dndDropzone dndEffectAllowed="move" (dndDrop)="onDrop($event)"
+        style="border: solid 1px #F9983066;border-radius: 4px;">
         <mat-toolbar class="secondaryInformations example-list column-{{selectedTemplateDisplayedSecondaryData}}-list">
-            <div *ngFor="let item of displayedSecondaryData;let i=index" cdkDrag [cdkDragData]="item">
-                <span class="example-box" *ngIf="item.value !== 'getFolders'">
-                    <button *ngIf="displayMode === 'label'" color="primary" mat-icon-button [matMenuTriggerFor]="menu">
+            <div *ngFor="let item of displayedSecondaryData;let i=index" dndEffectAllowed="move" [dndDraggable]="item" [id]="item.position">
+                <span class="example-box" *ngIf="item.value !== 'getFolders'" [id]="item.position">
+                    <button *ngIf="displayMode === 'label'" color="primary" mat-icon-button [matMenuTriggerFor]="menu" [id]="item.position">
                         <mat-icon fontSet="fas" fontIcon="fa-ellipsis-v fa-2x"></mat-icon>
                     </button>
                     <mat-menu #menu="matMenu">
@@ -141,9 +141,9 @@
                             <span>{{'lang.fontBig' | translate}}</span>
                         </button>
                     </mat-menu>
-                    <span style="width:100%;" [class]="item.cssClasses.join(' ')">
+                    <span style="width:100%;" [class]="item.cssClasses.join(' ')" [id]="item.position">
                         <i class="fa {{item.icon}}"></i>&nbsp;
-                        <span class="secondaryInformations_label" [innerHTML]="item[displayMode]"></span>
+                        <span class="secondaryInformations_label" [innerHTML]="item[displayMode]" [id]="item.position"></span>
                     </span>
                 </span>
             </div>

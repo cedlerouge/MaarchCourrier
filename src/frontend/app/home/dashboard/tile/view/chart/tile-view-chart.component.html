@@ -1,6 +1,7 @@
 <ng-container *ngIf="resources.length > 0; else elseEmpty">
     <ngx-charts-pie-chart 
         *ngIf="tile.parameters.chartType==='pie' && formatedData !== null" 
+        [id]="tile.position"
         [class.link]="route !== null" 
         (click)="route !== null ? goTo(): false" 
         [results]="resources"
@@ -9,6 +10,7 @@
     </ngx-charts-pie-chart>
     <ngx-charts-bar-vertical
         *ngIf="tile.parameters.chartType==='vertical-bar' && formatedData !== null"
+        [id]="tile.position"
         [class.link]="route !== null" 
         (click)="route !== null ? goTo(): false" 
         [results]="formatedData"
@@ -20,6 +22,7 @@
     </ngx-charts-bar-vertical>
     <ngx-charts-line-chart
         *ngIf="tile.parameters.chartType==='line' && formatedData !== null"
+        [id]="tile.position"
         [class.link]="route !== null"
         (click)="route !== null ? goTo(): false"
         [results]="formatedData"

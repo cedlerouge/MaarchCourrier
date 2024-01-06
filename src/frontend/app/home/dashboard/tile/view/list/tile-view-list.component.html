@@ -1,6 +1,6 @@
 <ng-container *ngIf="resources.length > 0; else elseEmpty">
-    <div style="width: 100%;overflow: auto;">    
-        <div class="resource" [class.resource-link]="route !== null" role="listitem" *ngFor="let resource of resources;let it=index" (mouseenter)="resource.hovered=true" (mouseleave)="resource.hovered=false" (click)="route !== null ? goTo(resource): false">
+    <div style="width: 100%;overflow: auto;">
+        <div class="resource" [class.resource-link]="route !== null" [id]="tile.position" role="listitem" *ngFor="let resource of resources;let it=index" (mouseenter)="resource.hovered=true" (mouseleave)="resource.hovered=false" (click)="route !== null ? goTo(resource): false">
             <ng-container *ngFor="let col of displayColumns;let i=index">
                 <div class="item" *ngIf="['contactTitle'].indexOf(col) === -1">
                     <span *ngIf="!isDate(resource[col])" [title]="col !== 'contactLabel' ? resource[col] : resource['contactTitle']">
