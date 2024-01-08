@@ -195,7 +195,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $value['title'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $value['title']);
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -252,7 +252,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $mainResource['subject'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $mainResource['subject']);
             $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
