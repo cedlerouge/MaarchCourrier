@@ -2840,5 +2840,5 @@
     "docserverEncryptResource": "Activer le chiffrement de la zone de stockage ",
     "docserverIsEncrypted": "La zone de stockage est chiffrée",
     "duplicateUsersWithSameMode": "Certains utilisateurs sont présents au moins deux fois avec le même rôle.",
-    "sizeCalculationInProgress": "Calcul de la taille des docservers en cours"
+    "sizeCalculationInProgress": "Calcul de la taille des zones de stockage en cours"
 }

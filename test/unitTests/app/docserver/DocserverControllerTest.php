@@ -306,6 +306,11 @@ class DocserverControllerTest extends CourrierTestCase
         ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => $date ?? date('Y-m-d H:i:s')]);
     }
 
+    private function getDateSizeCalculation(): array
+    {
+        return ParameterModel::getById(['id' => 'last_docservers_size_calculation']);
+    }
+
     private function createLockFile(): void
     {
         $tmpPath = CoreConfigModel::getTmpPath();
@@ -323,7 +328,7 @@ class DocserverControllerTest extends CourrierTestCase
         //assert
 
         $this->assertSame(204, $response->getStatusCode());
-        $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
+        $this->assertNotEmpty($this->getDateSizeCalculation());
     }
 
     public function testCanCalculateDocserversSizeExistantDateLastCalculation(): void
@@ -339,7 +344,7 @@ class DocserverControllerTest extends CourrierTestCase
 
         //assert
         $this->assertSame(204, $response->getStatusCode());
-        $this->assertNotEmpty(ParameterModel::getById(['id' => 'last_docservers_size_calculation']));
+        $this->assertNotEmpty($this->getDateSizeCalculation());
     }
 
     public function testCannotCalculateDocserversSizeBecauseServiceForbidden(): void
