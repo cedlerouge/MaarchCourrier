@@ -407,7 +407,7 @@ class ExportControllerTest extends CourrierTestCase
 
         $outsidePerimeter = 'Hors périmètre';
 
-        foreach($values as $value){
+        foreach ($values as $value) {
             $this->assertSame($outsidePerimeter, $value);
         }
     }
@@ -470,6 +470,8 @@ class ExportControllerTest extends CourrierTestCase
                 ]
             ]
         ];
+
+        //$this->addPrivilegesGroups($args['id'], self::$privilegeId);
 
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
@@ -545,6 +547,12 @@ class ExportControllerTest extends CourrierTestCase
     {
         self::$group = GroupModel::getById(['id' => $id]);
         PrivilegeModel::removePrivilegeToGroup(['privilegeId' => $privilegeId, 'groupId' => self::$group['group_id']]);
+    }
+
+    private function addPrivilegesGroups(int $id, string $privilegeId): void
+    {
+        self::$group = GroupModel::getById(['id' => $id]);
+        PrivilegeModel::addPrivilegeToGroup(['privilegeId' => $privilegeId, 'groupId' => self::$group['group_id']]);
     }
 
 }

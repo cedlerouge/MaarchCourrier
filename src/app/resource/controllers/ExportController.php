@@ -98,7 +98,8 @@ class ExportController
             $hasNotAccess = [];
             foreach ($inBaskets as $basket) {
                 if ($basket['inBasket'] === true) {
-                    $hasFullAccess[] = $basket['resId'];
+                    //$hasFullAccess[] = $basket['resId'];
+                    $hasFullAccess[$basket['resId']] = true;
                 } else {
                     $hasNotAccess[] = $basket;
                 }
@@ -108,7 +109,8 @@ class ExportController
                 $folders = self::inFolder($hasNotAccess);
                 foreach ($folders as $folder) {
                     if ($folder['inFolder'] === true) {
-                        $hasFullAccess[] = $folder['resId'];
+                        //$hasFullAccess[] = $folder['resId'];
+                        $hasFullAccess[$folder['resId']] = false;
                     } else {
                         return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
                     }
@@ -310,7 +312,8 @@ class ExportController
         fputcsv($file, $csvHead, $delimiter);
 
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $aArgs['hasFullRight'][$resource['res_id']] ?? false;
+            $hasRight = $aArgs['hasFullRight'][$resource['res_id']] /*?? false*/
+            ;
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
@@ -415,7 +418,8 @@ class ExportController
      * @return Fpdi
      * @throws Exception
      */
-    private static function getPdf(array $aArgs): Fpdi
+    private
+    static function getPdf(array $aArgs): Fpdi
     {
         ValidatorModel::notEmpty($aArgs, ['data', 'resources', 'chunkedResIds']);
         ValidatorModel::arrayType($aArgs, ['data', 'resources', 'chunkedResIds']);
@@ -562,7 +566,8 @@ class ExportController
      * @return array|string[]
      * @throws Exception
      */
-    private static function getCopies(array $args): array
+    private
+    static function getCopies(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -615,7 +620,8 @@ class ExportController
      * @return array
      * @throws Exception
      */
-    private static function getAcknowledgementSendDate(array $args): array
+    private
+    static function getAcknowledgementSendDate(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -647,7 +653,8 @@ class ExportController
      * @return array|string[]
      * @throws Exception
      */
-    private static function getDepartment(array $args): array
+    private
+    static function getDepartment(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -711,7 +718,8 @@ class ExportController
      * @return array
      * @throws Exception
      */
-    private static function getTags(array $args): array
+    private
+    static function getTags(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -748,7 +756,8 @@ class ExportController
      * @return array
      * @throws Exception
      */
-    private static function getSignatories(array $args): array
+    private
+    static function getSignatories(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -789,7 +798,8 @@ class ExportController
      * @return array
      * @throws Exception
      */
-    private static function getSignatureDates(array $args): array
+    private
+    static function getSignatureDates(array $args): array
     {
         ValidatorModel::notEmpty($args, ['chunkedResIds']);
         ValidatorModel::arrayType($args, ['chunkedResIds']);
@@ -826,7 +836,8 @@ class ExportController
      * @return float|int
      * @throws Exception
      */
-    private static function getMaximumHeight(Fpdi $pdf, array $args)
+    private
+    static function getMaximumHeight(Fpdi $pdf, array $args)
     {
         ValidatorModel::notEmpty($args, ['data', 'width']);
         ValidatorModel::arrayType($args, ['data']);
@@ -849,7 +860,8 @@ class ExportController
      * @param array $args
      * @return string
      */
-    private static function getFolderLabel(array $args): string
+    private
+    static function getFolderLabel(array $args): string
     {
         $folders = FolderModel::getWithResources([
             'select' => ['folders.id, folders.label'],
@@ -878,7 +890,8 @@ class ExportController
      * @param array $args
      * @return string
      */
-    private static function getParentFolderLabel(array $args): string
+    private
+    static function getParentFolderLabel(array $args): string
     {
         $folders = FolderModel::getWithResources([
             'select' => ['folders.parent_id'],
@@ -913,7 +926,8 @@ class ExportController
      * @return mixed|string|null
      * @throws Exception
      */
-    private static function getCustomFieldValue(array $args)
+    private
+    static function getCustomFieldValue(array $args)
     {
         ValidatorModel::notEmpty($args, ['custom', 'resId']);
         ValidatorModel::stringType($args, ['custom']);
@@ -977,7 +991,8 @@ class ExportController
      * @return string
      * @throws Exception
      */
-    private static function getCircuit(array $args): string
+    private
+    static function getCircuit(array $args): string
     {
         ValidatorModel::notEmpty($args, ['resId', 'listType']);
         ValidatorModel::intVal($args, ['resId']);
