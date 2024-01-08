@@ -208,13 +208,17 @@ class DocserverController
             $data['path_template'] .= "/";
         }
 
+        if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
+            $data['is_encrypted'] = false;
+        }
+
         DocserverModel::update([
             'set'   => [
                 'device_label'          => $data['device_label'],
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
                 'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
-                'is_encrypted'          => empty($data['is_encrypted'] ?? false) || CoreConfigModel::isEnableDocserverEncryption() ? 'true':'false'
+                'is_encrypted'          => $data['is_encrypted'] ?? false ? 'false':'true'
 
             ],
             'where' => ['id = ?'],
