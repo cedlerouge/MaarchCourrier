@@ -3,17 +3,14 @@ import { loadRemoteModule } from '@angular-architects/module-federation';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from './notification/notification.service';
 
-@Injectable(
-    {
-        providedIn: 'root'
-    }
-)
+@Injectable({
+    providedIn: 'root',
+})
 export class PluginManagerService {
     plugins: any = {};
     constructor(
-        private httpClient: HttpClient,
-        private notificationService: NotificationService
-    ) {}
+        private httpClient: HttpClient, 
+        private notificationService: NotificationService) {}
 
     get http(): HttpClient {
         return this.httpClient;
@@ -30,26 +27,28 @@ export class PluginManagerService {
                 const plugin = await this.loadRemotePlugin(pluginName);
                 this.plugins[pluginName] = plugin;
                 console.info(`PLUGIN ${pluginName} LOADED`);
-
             } catch (err) {
                 console.error(`PLUGIN ${pluginName} FAILED: ${err}`);
             }
         }
     }
 
-    async initPlugin(pluginName: string, containerRef: ViewContainerRef) {
+    async initPlugin(pluginName: string, containerRef: ViewContainerRef, extraData: any = {}) {
         if (!this.plugins[pluginName]) {
             return false;
         }
         try {
-            const remoteComponent: any = containerRef.createComponent(this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]);
-            remoteComponent.instance.init(this);
-            return remoteComponent.instance;            
+            const remoteComponent: any = containerRef.createComponent(
+                this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]
+            );
+
+            remoteComponent.instance.init({ ...this, ...extraData });
+            return remoteComponent.instance;
         } catch (error) {
             this.notificationService.error(`Init plugin ${pluginName} failed !`);
+            console.error(error);
             return false;
         }
-
     }
 
     loadRemotePlugin(pluginName: string): Promise<any> {
@@ -60,3 +59,4 @@ export class PluginManagerService {
         });
     }
 }
+
