@@ -29,7 +29,7 @@ export class ParametersAdministrationComponent implements OnInit {
     displayedColumns = ['id', 'description', 'value', 'actions'];
     filterColumns = ['id', 'description', 'value'];
 
-    hiddenParameters = ['homepage_message', 'last_docservers_size_calculation_test', 'loginpage_message', 'traffic_record_summary_sheet', 'bindingDocumentFinalAction',
+    hiddenParameters = ['homepage_message', 'last_docservers_size_calculation', 'loginpage_message', 'traffic_record_summary_sheet', 'bindingDocumentFinalAction',
         'nonBindingDocumentFinalAction', 'minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole'];
 
     constructor(
