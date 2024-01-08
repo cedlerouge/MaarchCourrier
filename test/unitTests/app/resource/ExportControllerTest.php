@@ -471,8 +471,6 @@ class ExportControllerTest extends CourrierTestCase
             ]
         ];
 
-        //$this->addPrivilegesGroups($args['id'], self::$privilegeId);
-
         $fullRequest = $this->createRequestWithBody('PUT', $args);
 
         $response = $exportController->updateExport($fullRequest, new Response());
@@ -547,12 +545,6 @@ class ExportControllerTest extends CourrierTestCase
     {
         self::$group = GroupModel::getById(['id' => $id]);
         PrivilegeModel::removePrivilegeToGroup(['privilegeId' => $privilegeId, 'groupId' => self::$group['group_id']]);
-    }
-
-    private function addPrivilegesGroups(int $id, string $privilegeId): void
-    {
-        self::$group = GroupModel::getById(['id' => $id]);
-        PrivilegeModel::addPrivilegeToGroup(['privilegeId' => $privilegeId, 'groupId' => self::$group['group_id']]);
     }
 
 }

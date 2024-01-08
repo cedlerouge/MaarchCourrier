@@ -98,7 +98,6 @@ class ExportController
             $hasNotAccess = [];
             foreach ($inBaskets as $basket) {
                 if ($basket['inBasket'] === true) {
-                    //$hasFullAccess[] = $basket['resId'];
                     $hasFullAccess[$basket['resId']] = true;
                 } else {
                     $hasNotAccess[] = $basket;
@@ -109,7 +108,6 @@ class ExportController
                 $folders = self::inFolder($hasNotAccess);
                 foreach ($folders as $folder) {
                     if ($folder['inFolder'] === true) {
-                        //$hasFullAccess[] = $folder['resId'];
                         $hasFullAccess[$folder['resId']] = false;
                     } else {
                         return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
@@ -312,8 +310,7 @@ class ExportController
         fputcsv($file, $csvHead, $delimiter);
 
         foreach ($aArgs['resources'] as $resource) {
-            $hasRight = $aArgs['hasFullRight'][$resource['res_id']] /*?? false*/
-            ;
+            $hasRight = $aArgs['hasFullRight'][$resource['res_id']];
             $csvContent = [];
             foreach ($aArgs['data'] as $value) {
                 if (empty($value['value'])) {
