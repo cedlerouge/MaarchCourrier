@@ -23,11 +23,11 @@ export class DocserverAdministrationComponent implements OnInit {
     docserver: any = { coll_id: 'letterbox_coll', docserver_type_id: 'DOC', limitSizeFormatted: '50' };
     docserversTypes: any = [];
 
-    collectionsTypes: { id: string, libelle: string }[] = [
-        { id: 'letterbox_coll', libelle: 'letterbox_coll' },
-        { id: 'attachments_coll', libelle: 'attachments_coll' },
-        { id: 'archive_transfer_coll', libelle: 'archive_transfer_coll' },
-        { id: 'templates', libelle: 'templates' },
+    collectionsTypes: { id: string, label: string }[] = [
+        { id: 'letterbox_coll', label: 'letterbox_coll' },
+        { id: 'attachments_coll', label: 'attachments_coll' },
+        { id: 'archive_transfer_coll', label: 'archive_transfer_coll' },
+        { id: 'templates', label: 'templates' },
       ];
 
     constructor(

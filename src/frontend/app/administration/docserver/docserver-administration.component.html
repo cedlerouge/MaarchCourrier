@@ -45,7 +45,7 @@
                                     <mat-select required name="collection" id="collection" title="{{'lang.collection' | translate}}"
                                         placeholder="{{'lang.collection' | translate}}" [(ngModel)]="docserver.coll_id">
                                         <mat-option *ngFor="let collection of collectionsTypes" [value]="collection.id">
-                                            {{ collection.libelle }}
+                                            {{ collection.label }}
                                         </mat-option>
                                     </mat-select>
                                 </mat-form-field>
