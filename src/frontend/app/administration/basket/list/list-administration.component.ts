@@ -402,7 +402,9 @@ export class ListAdministrationComponent implements OnInit {
         // Extract the data being dragged from the drop event
         const dataToDrag: any = dndDrop.data;
         // Extract the id of the destination div where the data is being dropped
-        const idOfDivToDnd: any = +(dndDrop.event as DragEvent)['toElement'].id;
+        const dragEvent: DragEvent = dndDrop.event as DragEvent;
+        const targetElement: any = dragEvent['toElement'] ?? dragEvent['originalTarget'];
+        const idOfDivToDnd: any = +(targetElement.id);
         // Check if the extracted idOfDivToDnd is a number
         if (typeof idOfDivToDnd === 'number') {
             const dataToDnd: any =  this.displayedSecondaryData.find((data: any) => data.position === dataToDrag.position);
