@@ -51,13 +51,18 @@ export class DocserversAdministrationComponent implements OnInit {
     }
 
     loadDocservers(): void {
-        this.http.get('../rest/docservers')
-            .subscribe((data: any) => {
+        this.http.get('../rest/docservers').pipe(
+            tap((data: any) => {
                 this.docservers = data.docservers;
                 this.docserversClone = JSON.parse(JSON.stringify(this.docservers));
                 this.docserversTypes = data.types;
                 this.loading = false;
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     calculateDocserversSize(): void {
