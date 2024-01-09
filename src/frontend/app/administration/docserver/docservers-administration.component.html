@@ -28,12 +28,14 @@
                 <div *ngIf="loading" style="display:flex;height:100%;">
                     <mat-spinner style="margin:auto;"></mat-spinner>
                 </div>
-                <app-maarch-message *ngIf="sizeCalculationInProgress" mode="info">
-                    <p>
-                        <i class="fa fa-cogs"></i>&nbsp;<span [innerHTML]="'lang.sizeCalculationInProgress' | translate"> ... </span>
-                    </p>
-                </app-maarch-message>
+
                 <mat-card *ngIf="!loading" class="card-app-content">
+                    <app-maarch-message *ngIf="sizeCalculationInProgress" mode="info">
+                        <p>
+                            <i class="fa fa-cogs"></i>&nbsp;<span [innerHTML]="('lang.sizeCalculationInProgress' | translate) + ' ...' "></span>
+                        </p>
+                    </app-maarch-message>
+
                     <mat-accordion>
                         <mat-expansion-panel *ngFor="let docserverType of this.docserversTypes">
                             <mat-expansion-panel-header>
