@@ -172,13 +172,15 @@ export class DashboardComponent implements OnInit {
         // Extract the tile being dragged from the drop event
         const tileToDrag: any = dndDrop.data;
         // Extract the id of the destination div where the tile is being dropped
-        const idOfDivToDnd: any = +(dndDrop.event as DragEvent)['toElement'].id;
+        const dragEvent: DragEvent = dndDrop.event as DragEvent;
+        const targetElement: any = dragEvent['toElement'] ?? dragEvent['originalTarget'];
+        const idOfDivToDnd: any = +(targetElement.id);
         // Check if the extracted idOfDivToDnd is a number
         if (typeof idOfDivToDnd === 'number') {
             // Update the position of the dragged tile to the id of the destination div
-            this.tiles.find((tile: any) => tile.position === tileToDrag.position).position = +(dndDrop.event as DragEvent)['toElement'].id;
+            this.tiles.find((tile: any) => tile.position === tileToDrag.position).position = idOfDivToDnd;
             // Update the position of other tiles at the destination to the position of the dragged tile
-            this.tiles.find((tile: any) => tile.id !== tileToDrag.id && tile.position === +(dndDrop.event as DragEvent)['toElement'].id).position = tileToDrag.position;
+            this.tiles.find((tile: any) => tile.id !== tileToDrag.id && tile.position === idOfDivToDnd).position = tileToDrag.position;
             // Remove duplicates from the tiles array and sort it based on the position
             this.tiles = [...new Set(this.tiles)];
             this.tiles.sort((a, b) => a.position - b.position);
