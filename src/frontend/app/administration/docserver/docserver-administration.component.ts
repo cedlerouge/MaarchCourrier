@@ -27,7 +27,7 @@ export class DocserverAdministrationComponent implements OnInit {
         { id: 'letterbox_coll', label: 'letterbox_coll' },
         { id: 'attachments_coll', label: 'attachments_coll' },
         { id: 'archive_transfer_coll', label: 'archive_transfer_coll' },
-        { id: 'templates', label: 'templates' },
+        { id: 'templates', label: 'templates' }
       ];
 
     constructor(
