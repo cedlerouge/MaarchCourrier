@@ -1,16 +1,15 @@
 import { TestBed, ComponentFixture, tick, fakeAsync, flush } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ActionAdministrationComponent } from './action-administration.component';
+import { ActionAdministrationComponent } from '../../../../src/frontend/app/administration/action/action-administration.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { NotificationService } from '@service/notification/notification.service';
-import { HeaderService } from '@service/header.service';
-import { AppService } from '@service/app.service';
-import { ActionPagesService } from '@service/actionPages.service';
-import { FunctionsService } from '@service/functions.service';
+import { NotificationService } from '../../../../src/frontend/service/notification/notification.service';
+import { HeaderService } from '../../../../src/frontend/service/header.service';
+import { AppService } from '../../../../src/frontend/service/app.service';
+import { ActionPagesService } from '../../../../src/frontend/service/actionPages.service';
+import { FunctionsService } from '../../../../src/frontend/service/functions.service';
 import { RouterTestingModule } from '@angular/router/testing';
-import { Component } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -21,12 +20,13 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SharedModule } from '@appRoot/app-common.module';
-import { FoldersService } from '@appRoot/folder/folders.service';
-import { PrivilegeService } from '@service/privileges.service';
+import { SharedModule } from '../../../../src/frontend/app/app-common.module';
+import { FoldersService } from '../../../../src/frontend/app/folder/folders.service';
+import { PrivilegeService } from '../../../../src/frontend/service/privileges.service';
 import { DatePipe } from '@angular/common';
-import { AdministrationService } from '../administration.service';
-import * as langFrJson from '../../../../lang/lang-fr.json';
+import { AdministrationService } from '../../../../src/frontend/app/administration/administration.service';
+import { Component } from '@angular/core';
+import * as langFrJson from '../../../../src/lang/lang-fr.json';
 
 @Component({ template: '' })
 class DummyComponent {}
