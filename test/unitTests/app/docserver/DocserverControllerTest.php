@@ -20,8 +20,9 @@ class DocserverControllerTest extends CourrierTestCase
 {
     private static $id = null;
     private static $pathTemplate = '/tmp/unitTestMaarchCourrier/';
-
     private static $docserver = [];
+    private static ?string $generalConfigPath = null;
+    private static $generalConfigOriginal = null;
 
     public function testGet()
     {
@@ -34,6 +35,7 @@ class DocserverControllerTest extends CourrierTestCase
 
         $this->assertNotEmpty($responseBody->docservers);
         $this->assertNotEmpty($responseBody->types);
+        $this->assertFalse(property_exists($responseBody, 'docserverEncryptionStatus'));
     }
 
     public function testCreate()
@@ -270,9 +272,46 @@ class DocserverControllerTest extends CourrierTestCase
         $this->assertSame('/opt/maarch/docservers/migration/', $migrationFolder['path']);
     }
 
+    public function testGetDocserverEncryptionStatusWhenSpecifyingParameterWithoutEnablingInConfiguration(): void
+    {
+        $docserverController = new DocserverController();
+
+        $request        = $this->createRequest('GET');
+        $request        = $request->withQueryParams(['getEncryptionStatus' => true]);
+        $response       = $docserverController->get($request, new Response());
+        $responseBody   = json_decode((string)$response->getBody());
+
+        $this->assertNotEmpty($responseBody->docservers);
+        $this->assertNotEmpty($responseBody->types);
+        $this->assertTrue(property_exists($responseBody, 'docserverEncryptionStatus'));
+        $this->assertFalse($responseBody->docserverEncryptionStatus);
+    }
+
+    public function testGetDocserverEncryptionStatusWhenSpecifyingParameterAndEnablingInConfiguration()
+    {
+        // enableDocserverEncryption in config...
+        $config = self::$generalConfigOriginal;
+        $config['config']['enableDocserverEncryption'] = true;
+        file_put_contents(self::$generalConfigPath, json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+        $docserverController = new DocserverController();
+
+        $request        = $this->createRequest('GET');
+        $request        = $request->withQueryParams(['getEncryptionStatus' => true]);
+        $response       = $docserverController->get($request, new Response());
+        $responseBody   = json_decode((string)$response->getBody());
+
+        $this->assertNotEmpty($responseBody->docservers);
+        $this->assertNotEmpty($responseBody->types);
+        $this->assertTrue(property_exists($responseBody, 'docserverEncryptionStatus'));
+        $this->assertTrue($responseBody->docserverEncryptionStatus);
+    }
+
     protected function setUp(): void
     {
         self::$docserver = DocserverModel::getCurrentDocserver(['typeId' => 'MIGRATION', 'collId' => 'migration', 'select' => ['*']]);
+        self::$generalConfigPath = (file_exists("config/config.json") ? "config/config.json" : "config/config.json.default");
+        self::$generalConfigOriginal = json_decode(file_get_contents(self::$generalConfigPath), true);
     }
 
     protected function tearDown(): void
@@ -290,6 +329,8 @@ class DocserverControllerTest extends CourrierTestCase
                 'data'  => [self::$docserver['docserver_id'], self::$docserver['coll_id']]
             ]);
         }
+
+        file_put_contents(self::$generalConfigPath, json_encode(self::$generalConfigOriginal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
 }
