@@ -29,6 +29,10 @@
     border: solid 3px;
     border-radius: 15px;
     overflow: hidden;
+    &-drag {
+        opacity: 0.3;
+        border: dashed 2px var(--maarch-color-default);
+    }
 }
 
 .empty_tile {
@@ -89,4 +93,8 @@
 
 ::ng-deep.chartTypeMenu {
     min-width: auto !important;
+}
+
+.dndDraggingSource {
+    opacity: 0.3;
 }

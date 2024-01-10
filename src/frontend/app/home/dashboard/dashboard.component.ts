@@ -186,6 +186,28 @@ export class DashboardComponent implements OnInit {
             this.tiles.sort((a, b) => a.position - b.position);
             this.transferDataSuccess();
         }
+        document.querySelectorAll('.tile-drag').forEach((element: HTMLElement) => {
+            element.classList.remove('tile-drag');
+        });
+        document.getElementById(tileToDrag.position).classList.remove('dndDraggingSource');
+    }
+
+    onDragOver(dndOver: any) {
+        // Get the current target element by its ID
+        const currentTarget = document.getElementById(dndOver.target.id);
+        // Add the 'tile-drag' class to the current target
+        this.enterTile(null, +dndOver.target.id)
+        document.getElementById(dndOver.target.id)?.classList.add('tile-drag');
+        // Remove the 'tile-drag' class from elements that were previously hovered
+        document.querySelectorAll('.tile-drag').forEach((element: HTMLElement) => {
+            // Get the element by its ID
+            const myDiv = document.getElementById(element.id);
+            // Check if the current element is not the same as the current target
+            if (myDiv !== currentTarget) {
+                // Remove the 'tile-drag' class from the element
+                myDiv.classList.remove('tile-drag');
+            }
+        });
     }
 
     transferDataSuccess() {
