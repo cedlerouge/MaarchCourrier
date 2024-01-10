@@ -95,7 +95,8 @@
     </span>
 </mat-toolbar>
 <mat-card>
-    <div *ngIf="displayedSecondaryData.length > 0" dndDropzone dndEffectAllowed="move" (dndDrop)="onDrop($event)"
+    <div *ngIf="displayedSecondaryData.length > 0" dndDropzone dndEffectAllowed="move"
+        (dndDrop)="onDrop($event)" (dndDragover)="onDragOver($event)"
         style="border: solid 1px #F9983066;border-radius: 4px;">
         <mat-toolbar class="secondaryInformations example-list column-{{selectedTemplateDisplayedSecondaryData}}-list">
             <div *ngFor="let item of displayedSecondaryData;let i=index" dndEffectAllowed="move" [dndDraggable]="item" [id]="item.position">

@@ -417,6 +417,27 @@ export class ListAdministrationComponent implements OnInit {
             this.displayedSecondaryData.sort((a: any, b: any) => a.position - b.position);
             this.displayedSecondaryData = [...new Set(this.displayedSecondaryData)];
         }
+
+        document.querySelectorAll('.example-box-drag').forEach((element: HTMLElement) => {
+            element.classList.remove('example-box-drag');
+        });
+    }
+
+    onDragOver(dndOver: any) {
+        // Get the current target element by its ID
+        const currentTarget = document.getElementById(dndOver.target.id);
+        // Add the 'example-box-drag' class to the current target
+        document.getElementById(dndOver.target.id)?.classList.add('example-box-drag');
+        // Remove the 'example-box-drag' class from elements that were previously hovered
+        document.querySelectorAll('.example-box-drag').forEach((element: HTMLElement) => {
+            // Get the element by its ID
+            const myDiv = document.getElementById(element.id);
+            // Check if the current element is not the same as the current target
+            if (myDiv !== currentTarget) {
+                // Remove the 'example-box-drag' class from the element
+                myDiv.classList.remove('example-box-drag');
+            }
+        });
     }
 
     saveTemplate() {
