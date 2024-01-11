@@ -86,7 +86,7 @@
                             <mat-toolbar dndDropzone dndEffectAllowed="copyMove"
                                 (dndDrop)="onDrop($event)"
                                 class="secondaryInformations example-list column-{{selectedTemplateDisplayedSecondaryData}}-list">
-                                <div dndPlaceholderRef class="dndPlaceholder"></div>
+                                <div dndPlaceholderRef></div>
                                 <div *ngFor="let item of displayedSecondaryData;let i=index" dndEffectAllowed="move" [dndDraggable]="item" (dndMoved)="onDragged(item, displayedSecondaryData)">
                                     <span class="example-box"  *ngIf="item.value !== 'getFolders'">
                                         <button *ngIf="displayMode === 'label'" color="primary" mat-icon-button
