@@ -175,6 +175,7 @@ export class DashboardComponent implements OnInit {
         }
 
         this.tiles.splice(index, 0, dndDrop.data);
+        this.transferDataSuccess();
     }
 
     onDragged(item: any, data: any[]) {
@@ -183,6 +184,9 @@ export class DashboardComponent implements OnInit {
     }
 
     transferDataSuccess() {
+        this.tiles.forEach((tile: any, index: number) => {
+            tile.position = index;
+        });
         this.http.put('../rest/tilesPositions', { tiles: this.tiles.filter((tile: any) => tile.id !== null) }).pipe(
             catchError((err: any) => {
                 this.notify.handleErrors(err);
