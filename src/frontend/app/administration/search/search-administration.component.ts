@@ -326,8 +326,6 @@ export class SearchAdministrationComponent implements OnInit {
         const i = this.availableData.map((e: any) => e.value).indexOf(id);
 
         this.displayedSecondaryData.push(this.availableData.filter((item: any) => item.value === id)[0]);
-        this.setPositions();
-
         this.availableData.splice(i, 1);
 
         $('#availableData').blur();
@@ -337,7 +335,6 @@ export class SearchAdministrationComponent implements OnInit {
     removeData(rmData: any, i: number) {
         this.availableData.push(rmData);
         this.displayedSecondaryData.splice(i, 1);
-        this.setPositions();
         this.dataControl.setValue('');
     }
 
@@ -349,45 +346,18 @@ export class SearchAdministrationComponent implements OnInit {
     }
 
     onDrop(dndDrop: DndDropEvent) {
-        // Extract the data being dragged from the drop event
-        const dataToDrag: any = dndDrop.data;
-        // Extract the id of the destination div where the data is being dropped
-        const dragEvent: DragEvent = dndDrop.event as DragEvent;
-        const targetElement: any = dragEvent['toElement'] ?? dragEvent['originalTarget'];
-        const idOfDivToDnd: any = +(targetElement.id);
-        // Check if the extracted idOfDivToDnd is a number
-        if (typeof idOfDivToDnd === 'number') {
-            const dataToDnd: any =  this.displayedSecondaryData.find((data: any) => data.position === dataToDrag.position);
-            const divToBeReplaced: any = this.displayedSecondaryData.find((data: any) => data.position === idOfDivToDnd);
-            // // Update the position of the dragged data to the id of the destination div
-            dataToDnd['position'] = idOfDivToDnd;
-            // // Update the position of other datas at the destination to the position of the dragged data
-            divToBeReplaced['position'] = dataToDrag.position;
-            // Remove duplicates from the datas array and sort it based on the position
-            this.displayedSecondaryData.sort((a, b) => a.position - b.position);
-            this.displayedSecondaryData = [...new Set(this.displayedSecondaryData)];
+        let index = dndDrop.index;
+
+        if (typeof index === 'undefined') {
+            index = this.displayedSecondaryData.length;
         }
 
-        document.querySelectorAll('.example-box-drag').forEach((element: HTMLElement) => {
-            element.classList.remove('example-box-drag');
-        });
+        this.displayedSecondaryData.splice(index, 0, dndDrop.data);
     }
 
-    onDragOver(dndOver: any) {
-        // Get the current target element by its ID
-        const currentTarget = document.getElementById(dndOver.target.id);
-        // Add the 'example-box-drag' class to the current target
-        document.getElementById(dndOver.target.id)?.classList.add('example-box-drag');
-        // Remove the 'example-box-drag' class from elements that were previously hovered
-        document.querySelectorAll('.example-box-drag').forEach((element: HTMLElement) => {
-            // Get the element by its ID
-            const myDiv = document.getElementById(element.id);
-            // Check if the current element is not the same as the current target
-            if (myDiv !== currentTarget) {
-                // Remove the 'example-box-drag' class from the element
-                myDiv.classList.remove('example-box-drag');
-            }
-        });
+    onDragged(item: any, data: any[]) {
+        const index = data.indexOf(item);
+        data.splice(index, 1);
     }
 
     getTemplate() {
@@ -403,7 +373,6 @@ export class SearchAdministrationComponent implements OnInit {
                         this.addData(element.value);
                         this.displayedSecondaryData[this.displayedSecondaryData.length - 1].cssClasses = element.cssClasses;
                     });
-                    this.setPositions();
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -425,7 +394,6 @@ export class SearchAdministrationComponent implements OnInit {
         this.http.put('../rest/configurations/admin_search ', { 'listDisplay': objToSend, 'listEvent': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
             tap(() => {
                 this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
-                this.setPositions();
                 this.searchAdv.listDisplay = this.displayedSecondaryData;
                 this.searchAdv.listEvent = this.selectedListEvent;
                 this.selectedListEventClone = this.selectedListEvent;
@@ -480,15 +448,6 @@ export class SearchAdministrationComponent implements OnInit {
         if (!state) {
             this.selectedProcessTool.canUpdateModel = state;
         }
-    }
-
-    setPositions(): void {
-        this.displayedSecondaryData.forEach((element: any, index: number) => {
-            this.displayedSecondaryData[index] = {
-                ...this.displayedSecondaryData[index],
-                position: index
-            }
-        });
     }
 
     private _filterData(value: any): string[] {
