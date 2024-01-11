@@ -1,8 +1,13 @@
-<div *ngIf="!emptyDashboard()" class="dashboard-container" dndDropzone [dndEffectAllowed]="'linkMove'" (dndDrop)="onDrop($event)" (dndDragover)="onDragOver($event)">
+<div *ngIf="!emptyDashboard()" dndDropzone dndEffectAllowed="copyMove" (dndDrop)="onDrop($event)" class="dashboard-container">
+    <div dndPlaceholderRef></div>
     <div class="tile" [style.border-color]="tile.color" [class.empty_tile_edit]="tile.id === null && tile.editMode"
-        [class.empty_tile]="tile.id === null" *ngFor="let tile of tiles;let i=index" (mouseenter)="enterTile(tile, i)"
-        (mouseleave)="leaveTile(tile)" [dndEffectAllowed]="'linkMove'" [dndDisableIf]="tile.id === null" [dndDraggable]="tile" [id]="tile.position">
-        <div [id]="tile.position"
+        [class.empty_tile]="tile.id === null" *ngFor="let tile of tiles;let i=index" dndEffectAllowed="move"
+        [dndDraggable]="tile"
+        [dndDisableIf]="false"
+        (dndMoved)="onDragged(tile, tiles)"
+        (mouseleave)="leaveTile(tile)"
+        (mouseenter)="enterTile(tile, i)">
+        <div
             style="position: relative;height: 100%;width:100%;display: flex;flex-direction: column;align-items: center;justify-content: center;">
             <div class="tool-left" *ngIf="tile.id !== null && tile.editMode">
                 <span dndHandle style="cursor: move;">

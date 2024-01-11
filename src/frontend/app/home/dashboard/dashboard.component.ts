@@ -169,51 +169,20 @@ export class DashboardComponent implements OnInit {
     }
 
     onDrop(dndDrop: DndDropEvent) {
-        // Extract the tile being dragged from the drop event
-        const tileToDrag: any = dndDrop.data;
-        // Extract the id of the destination div where the tile is being dropped
-        const dragEvent: DragEvent = dndDrop.event as DragEvent;
-        const targetElement: any = dragEvent['toElement'] ?? dragEvent['originalTarget'];
-        const idOfDivToDnd: any = +(targetElement.id);
-        // Check if the extracted idOfDivToDnd is a number
-        if (typeof idOfDivToDnd === 'number') {
-            // Update the position of the dragged tile to the id of the destination div
-            this.tiles.find((tile: any) => tile.position === tileToDrag.position).position = idOfDivToDnd;
-            // Update the position of other tiles at the destination to the position of the dragged tile
-            this.tiles.find((tile: any) => tile.id !== tileToDrag.id && tile.position === idOfDivToDnd).position = tileToDrag.position;
-            // Remove duplicates from the tiles array and sort it based on the position
-            this.tiles = [...new Set(this.tiles)];
-            this.tiles.sort((a, b) => a.position - b.position);
-            this.transferDataSuccess();
+        let index = dndDrop.index;
+        if (typeof index === 'undefined') {
+            index = this.tiles.length;
         }
-        document.querySelectorAll('.tile-drag').forEach((element: HTMLElement) => {
-            element.classList.remove('tile-drag');
-        });
-        document.getElementById(tileToDrag.position).classList.remove('dndDraggingSource');
+
+        this.tiles.splice(index, 0, dndDrop.data);
     }
 
-    onDragOver(dndOver: any) {
-        // Get the current target element by its ID
-        const currentTarget = document.getElementById(dndOver.target.id);
-        // Add the 'tile-drag' class to the current target
-        this.enterTile(null, +dndOver.target.id)
-        document.getElementById(dndOver.target.id)?.classList.add('tile-drag');
-        // Remove the 'tile-drag' class from elements that were previously hovered
-        document.querySelectorAll('.tile-drag').forEach((element: HTMLElement) => {
-            // Get the element by its ID
-            const myDiv = document.getElementById(element.id);
-            // Check if the current element is not the same as the current target
-            if (myDiv !== currentTarget) {
-                // Remove the 'tile-drag' class from the element
-                myDiv.classList.remove('tile-drag');
-            }
-        });
+    onDragged(item: any, data: any[]) {
+        const index = data.indexOf(item);
+        data.splice(index, 1);
     }
 
     transferDataSuccess() {
-        this.tiles.forEach((tile: any, index: number) => {
-            tile.position = index;
-        });
         this.http.put('../rest/tilesPositions', { tiles: this.tiles.filter((tile: any) => tile.id !== null) }).pipe(
             catchError((err: any) => {
                 this.notify.handleErrors(err);
