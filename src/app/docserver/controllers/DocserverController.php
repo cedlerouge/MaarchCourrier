@@ -199,7 +199,7 @@ class DocserverController
                     $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
                     $contentFolder = str_replace('//', '/', $contentFolder);
 
-                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {print total}'");
+                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {printf \"%.0f\", total}'");
 
                     if ($output) {
                         $size = trim($output);
