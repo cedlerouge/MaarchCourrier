@@ -29,6 +29,34 @@ export class ToolsListComponent implements OnInit {
     @Input() selectedRes: any;
     @Input() totalRes: number;
 
+    @Input() from: string;
+
+    @Input() notAllowedResources: number[] = [];
+
+    toolsListButtons: any[] = [
+        {
+            id: 'summarySheets',
+            label: this.translate.instant('lang.summarySheets'),
+            icon: 'fas fa-scroll',
+            allowedSources: ['basket', 'search'],
+            click: () => this.openSummarySheet(),
+        },
+        {
+            id: 'exportDatas',
+            label: this.translate.instant('lang.exportDatas'),
+            icon: 'fa fa-file-download',
+            allowedSources: ['basket', 'search', 'folder'],
+            click: () => this.openExport()
+        },
+        {
+            id: 'printedFolder',
+            label: this.translate.instant('lang.printedFolder'),
+            icon: 'fa fa-print',
+            allowedSources: ['basket', 'search'],
+            click: () => this.openPrintedFolderPrompt()
+        }
+    ];
+
     priorities: any[] = [];
     categories: any[] = [];
     entitiesList: any[] = [];
@@ -49,11 +77,13 @@ export class ToolsListComponent implements OnInit {
     ngOnInit(): void { }
 
     openExport(): void {
+        const elementsNotAllowed = this.notAllowedResources.some((id: number) => this.selectedRes.includes(id));
         this.dialog.open(ExportComponent, {
             panelClass: 'maarch-modal',
             width: '800px',
             data: {
-                selectedRes: this.selectedRes
+                selectedRes: this.selectedRes,
+                elementsNotAllowed: elementsNotAllowed
             }
         });
     }

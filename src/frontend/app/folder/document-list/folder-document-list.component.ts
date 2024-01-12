@@ -96,6 +96,10 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
     };
     folderInfoOpened: boolean = false;
 
+    notAllowedResources: number[] = [];
+
+    folderId: number = null;
+
     private destroy$ = new Subject<boolean>();
 
     constructor(
@@ -129,54 +133,55 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-
         this.loading = false;
-
         this.isLoadingResults = false;
 
-        this.route.params.subscribe(params => {
-            this.folderInfoOpened = false;
-            this.dragInit = true;
-            this.destroy$.next(true);
+        this.route.params.pipe(
+            tap((params: any) => {
+                this.folderId = params['folderId'];
+                this.folderInfoOpened = false;
+                this.dragInit = true;
+                this.destroy$.next(true);
 
-            this.http.get('../rest/folders/' + params['folderId'])
-                .subscribe((data: any) => {
-                    const keywordEntities = [{
-                        keyword: 'ALL_ENTITIES',
-                        text: this.translate.instant('lang.allEntities'),
-                    }];
-                    this.folderInfo = {
-                        'id': params['folderId'],
-                        'label': data.folder.label,
-                        'ownerDisplayName': data.folder.ownerDisplayName,
-                        'entitiesSharing': data.folder.sharing.entities.map((entity: any) => {
-                            if (!this.functions.empty(entity.label)) {
-                                return entity.label;
-                            } else {
-                                return keywordEntities.filter((element: any) => element.keyword === entity.keyword)[0].text;
-                            }
-                        }),
-                    };
-                    this.foldersService.setFolder(this.folderInfo);
-                    this.headerService.setHeader(this.folderInfo.label, '', 'fa fa-folder-open');
+                this.http.get('../rest/folders/' + this.folderId)
+                    .subscribe((data: any) => {
+                        const keywordEntities = [{
+                            keyword: 'ALL_ENTITIES',
+                            text: this.translate.instant('lang.allEntities'),
+                        }];
+                        this.folderInfo = {
+                            'id': this.folderId,
+                            'label': data.folder.label,
+                            'ownerDisplayName': data.folder.ownerDisplayName,
+                            'entitiesSharing': data.folder.sharing.entities.map((entity: any) => {
+                                if (!this.functions.empty(entity.label)) {
+                                    return entity.label;
+                                } else {
+                                    return keywordEntities.filter((element: any) => element.keyword === entity.keyword)[0].text;
+                                }
+                            }),
+                        };
+                        this.foldersService.setFolder(this.folderInfo);
+                        this.headerService.setHeader(this.folderInfo.label, '', 'fa fa-folder-open');
 
-                });
-            this.basketUrl = '../rest/folders/' + params['folderId'] + '/resources';
-            this.filtersListService.filterMode = false;
-            this.selectedRes = [];
-            this.sidenavRight.close();
+                    });
+                this.basketUrl = '../rest/folders/' + this.folderId + '/resources';
+                this.filtersListService.filterMode = false;
+                this.selectedRes = [];
+                this.sidenavRight.close();
 
-            this.listProperties = this.filtersListService.initListsProperties(this.headerService.user.id, 0, params['folderId'], 'folder');
+                this.listProperties = this.filtersListService.initListsProperties(this.headerService.user.id, 0, this.folderId, 'folder');
 
-            setTimeout(() => {
-                this.dragInit = false;
-            }, 1000);
-            this.initResultList();
-
-        },
-        (err: any) => {
-            this.notify.handleErrors(err);
-        });
+                setTimeout(() => {
+                    this.dragInit = false;
+                }, 1000);
+                this.initResultList();
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     ngOnDestroy() {
@@ -208,6 +213,7 @@ export class FolderDocumentListComponent implements OnInit, OnDestroy {
                     this.resultsLength = data.countResources;
                     this.allResInBasket = data.allResources;
                     // this.headerService.setHeader('Dossier : ' + this.folderInfo.label);
+                    this.notAllowedResources = data.resources.filter((resource: any) => !resource.allowed).map((item: any) => item.resId);                    
                     return data.resources;
                 }),
                 catchError((err: any) => {
