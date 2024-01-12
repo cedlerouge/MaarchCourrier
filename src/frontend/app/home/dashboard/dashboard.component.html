@@ -4,6 +4,7 @@
         [class.empty_tile]="tile.id === null"
         (mouseleave)="leaveTile(tile)"
         (mouseenter)="enterTile(tile, i)"
+        [cdkDragDisabled]="tile.id === null"
         [cdkDragData]="tile" style="height: 100%;"
         cdkDrag
         cdkDragBoundary=".dashboard-container">

@@ -88,18 +88,13 @@
     min-width: auto !important;
 }
 
-.dndDraggingSource {
-    display: none;
-}
-
-.dndDragging {
-    border: 2px dashed var(--maarch-color-default);
-}
-
-
 .cdk-drag-placeholder {
     z-index: 2;
     position: absolute;
     height: 100%;
     width: 100%;
+}
+
+.cdk-drag-animating {
+    transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
 }

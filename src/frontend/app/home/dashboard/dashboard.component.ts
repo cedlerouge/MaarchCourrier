@@ -169,10 +169,8 @@ export class DashboardComponent implements OnInit {
     }
 
     onDrop(event: CdkDragDrop<any>) {
-
         this.tiles[event.previousContainer.data.position] = event.container.data;
         this.tiles[event.container.data.position] = event.previousContainer.data;
-                    
         transferArrayItem(
             event.previousContainer.data,
             event.container.data,
