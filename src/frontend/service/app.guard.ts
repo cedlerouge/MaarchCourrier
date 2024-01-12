@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, CanDeactivate } from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { AppService } from './app.service';
 @Injectable({
     providedIn: 'root',
 })
-export class AppGuard implements CanActivate {
+export class AppGuard  {
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -90,7 +90,7 @@ export class AppGuard implements CanActivate {
 @Injectable({
     providedIn: 'root',
 })
-export class AfterProcessGuard implements CanDeactivate<ProcessComponent> {
+export class AfterProcessGuard  {
     constructor(
         public translate: TranslateService,
         private notify: NotificationService,

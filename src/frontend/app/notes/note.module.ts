@@ -16,8 +16,6 @@ import { NoteEditorComponent } from '../notes/note-editor.component';
         NotesListComponent,
         NoteEditorComponent
     ],
-    entryComponents: [
-    ],
     providers: [
 
     ],

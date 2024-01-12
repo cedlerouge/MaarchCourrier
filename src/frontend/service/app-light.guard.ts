@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot } from '@angular/router';
+import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -11,7 +11,7 @@ import { AppService } from './app.service';
 @Injectable({
     providedIn: 'root'
 })
-export class AppLightGuard implements CanActivate {
+export class AppLightGuard  {
 
     constructor(
         public translate: TranslateService,
