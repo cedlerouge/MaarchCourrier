@@ -5,7 +5,7 @@ import { map, tap, catchError, filter, exhaustMap, debounceTime, switchMap, fina
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { UntypedFormControl } from '@angular/forms';
 import { FoldersService } from '../folders.service';
 import { FolderCreateModalComponent } from '../folder-create-modal/folder-create-modal.component';

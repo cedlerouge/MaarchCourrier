@@ -9,7 +9,7 @@ import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
 import { PrivilegeService } from './privileges.service';
 import { AlertComponent } from '@plugins/modal/alert.component';
 import { FunctionsService } from './functions.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 import { PluginManagerService } from './plugin-manager.service';

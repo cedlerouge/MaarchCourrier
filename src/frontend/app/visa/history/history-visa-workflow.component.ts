@@ -5,7 +5,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { FunctionsService } from '@service/functions.service';
 import { tap, catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 
 @Component({

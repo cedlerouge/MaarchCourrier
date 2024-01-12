@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild, ViewContainerRef, TemplateRef, OnDestroy 
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 
 import { ActivatedRoute, Router, ParamMap } from '@angular/router';

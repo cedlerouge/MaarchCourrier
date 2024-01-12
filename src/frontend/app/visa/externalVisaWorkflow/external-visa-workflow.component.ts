@@ -8,7 +8,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 import { ScanPipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CreateExternalUserComponent } from './createExternalUser/create-external-user.component';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';

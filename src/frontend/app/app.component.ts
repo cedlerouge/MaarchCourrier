@@ -1,12 +1,12 @@
 import { Component, ViewChild, OnInit, HostListener, AfterViewInit } from '@angular/core';
-import { MAT_TOOLTIP_DEFAULT_OPTIONS, MatTooltipDefaultOptions } from '@angular/material/tooltip';
+import { MAT_LEGACY_TOOLTIP_DEFAULT_OPTIONS as MAT_TOOLTIP_DEFAULT_OPTIONS, MatLegacyTooltipDefaultOptions as MatTooltipDefaultOptions } from '@angular/material/legacy-tooltip';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { MatSidenav } from '@angular/material/sidenav';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '@service/auth.service';
 import { TranslateService } from '@ngx-translate/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { tap } from 'rxjs';
 
 /** Custom options the configure the tooltip's default show/hide delays. */

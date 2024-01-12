@@ -2,13 +2,13 @@ import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angu
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { AppService } from '@service/app.service';
 import { tap, catchError, finalize, filter, exhaustMap } from 'rxjs/operators';
 import { ConfirmComponent } from '../../plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { LinkResourceModalComponent } from './linkResourceModal/link-resource-modal.component';
 import { FunctionsService } from '@service/functions.service';
 import { ContactResourceModalComponent } from '../contact/contact-resource/modal/contact-resource-modal.component';

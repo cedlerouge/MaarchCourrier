@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from './notification/notification.service';
 import { AuthService } from './auth.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { CoreDialogComponent } from '@appRoot/core-dialog/core-dialog.component';
 import { Observable, Subject } from 'rxjs';

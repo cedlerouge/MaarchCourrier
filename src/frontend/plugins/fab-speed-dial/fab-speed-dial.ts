@@ -1,6 +1,6 @@
 
 import { Component, Input, Output, EventEmitter, ViewEncapsulation, AfterContentInit, ElementRef, Inject, forwardRef, ContentChildren, QueryList, ContentChild, HostBinding, HostListener, Renderer2 } from '@angular/core';
-import { MatButton } from '@angular/material/button';
+import { MatLegacyButton as MatButton } from '@angular/material/legacy-button';
 
 const Z_INDEX_ITEM: number = 23;
 

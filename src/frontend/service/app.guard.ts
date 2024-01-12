@@ -8,7 +8,7 @@ import { ProcessComponent } from '../app/process/process.component';
 import { AuthService } from './auth.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from './notification/notification.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { AppService } from './app.service';

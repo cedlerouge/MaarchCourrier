@@ -10,9 +10,9 @@ import { finalize, tap, catchError, filter, exhaustMap, map, startWith } from 'r
 import { of, Observable } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
-import { MatChipInputEvent } from '@angular/material/chips';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
+import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent } from '@angular/material/legacy-autocomplete';
 
 @Component({
     templateUrl: 'tag-administration.component.html'

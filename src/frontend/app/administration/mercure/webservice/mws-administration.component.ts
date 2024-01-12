@@ -6,7 +6,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { AdministrationService } from '../../administration.service';
 import { catchError, tap } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';

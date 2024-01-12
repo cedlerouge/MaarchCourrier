@@ -8,7 +8,7 @@ import { tap, exhaustMap, map, startWith, catchError, finalize, filter } from 'r
 import { UntypedFormControl } from '@angular/forms';
 import { LatinisePipe, ScanPipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddVisaModelModalComponent } from './addVisaModel/add-visa-model-modal.component';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { ActivatedRoute } from '@angular/router';

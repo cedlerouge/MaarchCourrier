@@ -7,7 +7,7 @@ import { LatinisePipe } from 'ngx-pipes';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { ConfirmComponent } from '../modal/confirm.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { NotificationService } from '@service/notification/notification.service';
 import { CreateExternalUserComponent } from '@appRoot/visa/externalVisaWorkflow/createExternalUser/create-external-user.component';
 import { ActionsService } from '@appRoot/actions/actions.service';

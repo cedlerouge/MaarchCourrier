@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
 

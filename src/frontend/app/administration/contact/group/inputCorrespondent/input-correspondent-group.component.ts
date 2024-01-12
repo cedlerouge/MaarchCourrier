@@ -5,12 +5,12 @@ import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { UntypedFormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent, MatAutocomplete } from '@angular/material/autocomplete';
+import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatLegacyAutocomplete as MatAutocomplete } from '@angular/material/legacy-autocomplete';
 import { Observable, of } from 'rxjs';
 import { catchError, filter, finalize, map, tap } from 'rxjs/operators';
 import { NotificationService } from '@service/notification/notification.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { SortPipe } from '@plugins/sorting.pipe';
 
 @Component({

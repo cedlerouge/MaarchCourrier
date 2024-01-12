@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Validators, UntypedFormGroup, FormControl } from '@angular/forms';

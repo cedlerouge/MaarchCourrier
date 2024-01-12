@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
@@ -11,7 +11,7 @@ import { AdministrationService } from '../../administration.service';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '../../../../plugins/modal/confirm.component';
 import { filter, exhaustMap, catchError, tap } from 'rxjs/operators';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-issuing-site-list',

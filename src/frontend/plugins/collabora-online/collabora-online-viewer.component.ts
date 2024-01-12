@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, filter, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmComponent } from '../modal/confirm.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HeaderService } from '@service/header.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { NotificationService } from '@service/notification/notification.service';

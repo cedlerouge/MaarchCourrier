@@ -7,7 +7,7 @@ import { AppService } from '@service/app.service';
 import { catchError, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 declare let tinymce: any;
 

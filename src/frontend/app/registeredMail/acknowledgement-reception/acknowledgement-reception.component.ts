@@ -8,9 +8,9 @@ import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
 import { AppService } from '@service/app.service';
 import { TranslateService } from '@ngx-translate/core';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-acknowledgement-reception',

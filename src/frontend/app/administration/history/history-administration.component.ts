@@ -7,7 +7,7 @@ import { HistoryComponent } from '../../history/history.component';
 import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { HistoryExportComponent } from './export/history-export.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-admin-history',

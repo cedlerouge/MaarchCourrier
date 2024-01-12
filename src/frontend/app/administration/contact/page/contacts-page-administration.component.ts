@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContactService } from '@service/contact.service';
 import { FunctionsService } from '@service/functions.service';

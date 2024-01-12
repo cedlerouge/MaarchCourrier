@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
@@ -12,7 +12,7 @@ import { UntypedFormControl, Validators } from '@angular/forms';
 import { catchError, debounceTime, exhaustMap, filter, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     templateUrl: 'shippings-administration.component.html',

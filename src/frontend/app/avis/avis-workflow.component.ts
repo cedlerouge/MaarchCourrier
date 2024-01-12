@@ -8,7 +8,7 @@ import { tap, exhaustMap, map, startWith, catchError, finalize, filter } from 'r
 import { UntypedFormControl } from '@angular/forms';
 import { LatinisePipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddAvisModelModalComponent } from './addAvisModel/add-avis-model-modal.component';
 import { ConfirmComponent } from '../../plugins/modal/confirm.component';
 

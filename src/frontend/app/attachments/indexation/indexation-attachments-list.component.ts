@@ -8,7 +8,7 @@ import { of } from 'rxjs';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { AlertComponent } from '@plugins/modal/alert.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 

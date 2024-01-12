@@ -5,7 +5,7 @@ import { DashboardService } from './dashboard.service';
 import { FunctionsService } from '@service/functions.service';
 import { TileCreateComponent } from './tile/tile-create.component';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
