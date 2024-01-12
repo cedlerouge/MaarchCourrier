@@ -816,7 +816,7 @@ class FastParapheurController
         // Retrieve the annexes of the attachemnt to sign (other attachment and the original document)
         $annexes = [];
         $annexes['letterbox'] = ResModel::get([
-            'select' => ['res_id', 'path', 'filename', 'docserver_id', 'format', 'category_id', 'external_id', 'integrations'],
+            'select' => ['res_id', 'subject', 'path', 'filename', 'docserver_id', 'format', 'category_id', 'external_id', 'integrations'],
             'where'  => ['res_id = ?'],
             'data'   => [$args['resIdMaster']]
         ]);
@@ -829,7 +829,7 @@ class FastParapheurController
 
         $attachments = AttachmentModel::get([
             'select' => [
-                'res_id', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
+                'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
             ],
             'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')", "in_signature_book = 'true'"],
             'data'   => [$args['resIdMaster'], ['signed_response']]
@@ -861,6 +861,7 @@ class FastParapheurController
 
             $response = FastParapheurController::uploadFile([
                 'resId'        => $resId,
+                'title'        => $attachment['title'],
                 'collId'       => $collId,
                 'resIdMaster'  => $args['resIdMaster'],
                 'annexes'      => $annexes,
@@ -882,12 +883,14 @@ class FastParapheurController
             $mainDocumentIntegration = json_decode($annexes['letterbox'][0]['integrations'], true);
             $externalId = json_decode($annexes['letterbox'][0]['external_id'], true);
             if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
-                $resId = $annexes['letterbox'][0]['res_id'];
-                $collId = 'letterbox_coll';
+                $resId   = $annexes['letterbox'][0]['res_id'];
+                $subject = $annexes['letterbox'][0]['subject'];
+                $collId  = 'letterbox_coll';
                 unset($annexes['letterbox']);
 
                 $response = FastParapheurController::uploadFile([
                     'resId'        => $resId,
+                    'title'        => $subject,
                     'collId'       => $collId,
                     'resIdMaster'  => $args['resIdMaster'],
                     'annexes'      => $annexes,
@@ -916,7 +919,8 @@ class FastParapheurController
         }
         $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]);
         $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
-        $attachmentFileName = 'projet_courrier_' . $args['resIdMaster'] . '_' . rand(0001, 9999) . '.pdf';
+        $title = TextFormatModel::formatFilename(['filename' => str_replace(' ', '_', $args['title'])]);
+        $attachmentFileName = $title . '_' . $args['resIdMaster'] . '_' . rand(0001, 9999) . '.pdf';
 
         $zip = new \ZipArchive();
         $tmpPath = CoreConfigModel::getTmpPath();
@@ -929,7 +933,7 @@ class FastParapheurController
         $zip->addFile($attachmentFilePath, $attachmentFileName);
 
         if (!empty($args['annexes']['letterbox'][0]['filepath'])) {
-                $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
+            $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
         }
 
         if (isset($args['annexes']['attachments'])) {

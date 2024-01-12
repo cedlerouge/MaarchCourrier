@@ -1,22 +1,22 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from "@angular/core/testing"
-import { SendExternalSignatoryBookActionComponent } from "./send-external-signatory-book-action.component";
+import { SendExternalSignatoryBookActionComponent } from "../../../../src/frontend/app/actions/send-external-signatory-book-action/send-external-signatory-book-action.component";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
-import { BrowserModule, By } from "@angular/platform-browser";
+import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterTestingModule } from "@angular/router/testing";
-import { SharedModule } from "@appRoot/app-common.module";
+import { SharedModule } from "../../../../src/frontend/app/app-common.module";
 import { DatePipe } from "@angular/common";
-import { AdministrationService } from "@appRoot/administration/administration.service";
-import { FoldersService } from "@appRoot/folder/folders.service";
-import { PrivilegeService } from "@service/privileges.service";
+import { AdministrationService } from '../../../../src/frontend/app/administration/administration.service';
+import { FoldersService } from '../../../../src/frontend/app/folder/folders.service';
+import { PrivilegeService } from '../../../../src/frontend/service/privileges.service';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
-import { ExternalSignatoryBookManagerService } from "@service/externalSignatoryBook/external-signatory-book-manager.service";
-import { AuthService } from "@service/auth.service";
-import { IParaphComponent } from "./i-paraph/i-paraph.component";
-import { AttachmentsListComponent } from "@appRoot/attachments/attachments-list.component";
-import * as langFrJson from '../../../../lang/lang-fr.json';
+import { ExternalSignatoryBookManagerService } from "../../../../src/frontend/service/externalSignatoryBook/external-signatory-book-manager.service";
+import { AuthService } from "../../../../src/frontend/service/auth.service";
+import { IParaphComponent } from "../../../../src/frontend/app/actions/send-external-signatory-book-action/i-paraph/i-paraph.component";
+import { AttachmentsListComponent } from "../../../../src/frontend/app/attachments/attachments-list.component";
+import * as langFrJson from '../../../../src/lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -96,9 +96,9 @@ describe('SendExternalSignatoryBookActionComponent', () => {
     }));
 
     describe('Load external signatory book id and set attachments', () => {
-        it('Set attachments and show integrationTarget filter', fakeAsync(() => {        
+        it('Set attachments and show integrationTarget filter', fakeAsync(() => {
             spyOn(component.externalSignatoryBook, 'checkExternalSignatureBook').and.returnValue(Promise.resolve({ availableResources: [], additionalsInfos: { attachments: [], noAttachment: [] }, errors: [] }));
-        
+
             component.attachmentsList = TestBed.inject(AttachmentsListComponent);
 
             tick(300);
@@ -114,11 +114,11 @@ describe('SendExternalSignatoryBookActionComponent', () => {
 
     it('Check if filters are loaded and currentIntegrationTarget equal to inSignatureBook', fakeAsync(() => {
         spyOn(component.externalSignatoryBook, 'checkExternalSignatureBook').and.returnValue(Promise.resolve({ availableResources: [], additionalsInfos: { attachments: [], noAttachment: [] }, errors: [] }));
-        
+
         component.attachmentsList = TestBed.inject(AttachmentsListComponent);
         component.attachmentsList.isModal = true;
 
-        fixture.detectChanges();        
+        fixture.detectChanges();
 
         tick(300);
         expect(component.loading).toBe(false);
@@ -126,7 +126,7 @@ describe('SendExternalSignatoryBookActionComponent', () => {
         fixture.detectChanges();
         tick(300);
         flush();
-        
+
         fixture.whenStable().finally(() => {
             loadAttachments(component, fixture);
             fixture.detectChanges();

@@ -29,6 +29,7 @@ export class DocserverAdministrationComponent implements OnInit {
     };
     docserversTypes: any = [];
 
+    isDocserverEncryptionStatus: boolean = false;
     forbiddenDocserversTypesForEncrypted: string[] = ['MIGRATION', 'FULLTEXT'];
 
     constructor(
@@ -47,6 +48,7 @@ export class DocserverAdministrationComponent implements OnInit {
 
         this.loading = true;
         this.docserversTypes = await this.getDocserverTypes();
+        this.isDocserverEncryptionStatus = await this.getDocserverEncryptionStatus();
         this.loading = false;
     }
 
@@ -63,6 +65,15 @@ export class DocserverAdministrationComponent implements OnInit {
         }
 
         return types;
+    }
+
+    async getDocserverEncryptionStatus(): Promise<boolean> {
+        return await new Promise<boolean>((resolve) => {
+            this.http.get('../rest/docservers?getEncryptionStatus=true')
+                .subscribe((data: any) => {
+                    resolve(data.docserverEncryptionStatus ?? false);
+                });
+        });
     }
 
     checkForbiddenDocserversTypesForEncrypted(docserverTypeId: string) {
