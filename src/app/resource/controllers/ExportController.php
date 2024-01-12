@@ -115,7 +115,9 @@ class ExportController
                 }
             }
         } else {
-            $hasFullAccess[] = array_merge($hasFullAccess, $body['resources']);
+            foreach ($body['resources'] as $res) {
+                $hasFullAccess[$res] = true;
+            }
         }
 
         foreach ($body['data'] as $value) {
