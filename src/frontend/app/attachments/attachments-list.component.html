@@ -20,7 +20,7 @@
                     </mat-button-toggle>
                 </mat-button-toggle-group>
                 <mat-button-toggle-group id="attachType" class="filterTypes" style="margin-top: 7px;" (change)="filterType($event)">
-                    <mat-button-toggle
+                    <mat-button-toggle *ngIf="filterAttachTypes.length > 0"
                         [checked]="currentFilter === ''"
                         [title]="'lang.allAttachTypes' | translate"
                         [value]="''">{{'lang.all' | translate}}

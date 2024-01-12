@@ -77,6 +77,7 @@ class ParseIParapheurLogTest extends TestCase
         ];
         $this->pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'toto';
         $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = 'tata';
         $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
         $resId = 42;
         $idFolder = 'djqfdh';
@@ -87,7 +88,8 @@ class ParseIParapheurLogTest extends TestCase
             [
                 'status'      => 'validated',
                 'format'      => 'pdf',
-                'encodedFile' => 'toto'
+                'encodedFile' => 'toto',
+                'signatory' => 'tata'
             ],
             $result
         );
@@ -126,6 +128,7 @@ class ParseIParapheurLogTest extends TestCase
             [
                 'status'  => 'refused',
                 'content' => 'Nom : annotation',
+                'signatory' => 'Nom'
             ],
             $result
         );

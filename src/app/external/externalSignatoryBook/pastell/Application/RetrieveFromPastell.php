@@ -17,7 +17,7 @@ namespace ExternalSignatoryBook\pastell\Application;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
-use ExternalSignatoryBook\pastell\Domain\PastellStates;
+use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 
 class RetrieveFromPastell
 {
@@ -26,18 +26,21 @@ class RetrieveFromPastell
     private PastellConfigurationCheck $pastellConfigCheck;
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
+    private ResourceDataInterface $resourceData;
 
     /**
      * @param PastellApiInterface $pastellApi
      * @param PastellConfigInterface $pastellConfig
      * @param PastellConfigurationCheck $pastellConfigCheck
      * @param ParseIParapheurLog $parseIParapheurLog
+     * @param ResourceDataInterface $resourceData
      */
     public function __construct(
         PastellApiInterface       $pastellApi,
         PastellConfigInterface    $pastellConfig,
         PastellConfigurationCheck $pastellConfigCheck,
-        ParseIParapheurLog        $parseIParapheurLog
+        ParseIParapheurLog        $parseIParapheurLog,
+        ResourceDataInterface     $resourceData
     )
     {
         $this->pastellApi = $pastellApi;
@@ -45,18 +48,19 @@ class RetrieveFromPastell
         $this->pastellConfigCheck = $pastellConfigCheck;
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
+        $this->resourceData = $resourceData;
     }
 
     /**
      * @param array $idsToRetrieve
+     * @param string $documentType
      * @return array|string[]
      */
-    public function retrieve(array $idsToRetrieve): array
+    public function retrieve(array $idsToRetrieve, string $documentType): array
     {
         if (!$this->pastellConfigCheck->checkPastellConfig()) {
             return ['success' => [], 'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
         }
-
         $errors = [];
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
@@ -72,9 +76,11 @@ class RetrieveFromPastell
                         continue;
                     }
                 }
-
+                // Need res_id_master for parseLogIparapheur and res_id for updateDocument (for attachments and main document)
                 $resId = $value['res_id_master'] ?? $value['res_id'];
-                $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $value['external_id']);
+                $result = $this->parseIParapheurLog->parseLogIparapheur($resId , $value['external_id']);
+                $this->resourceData->updateDocumentExternalStateSignatoryUser($value['res_id'], $documentType == 'resLetterbox' ? 'resource' : 'attachment', $result['signatory'] ?? '');
+
 
                 if (!empty($result['error'])) {
                     $errors[$key] = $result['error'];

@@ -8,9 +8,9 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { tap, catchError } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
-import { UntypedFormControl } from '@angular/forms';
+import { NgForm, UntypedFormControl } from '@angular/forms';
 import { ActionPagesService } from '@service/actionPages.service';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 
 @Component({
@@ -20,6 +20,7 @@ import { of } from 'rxjs';
 export class ActionAdministrationComponent implements OnInit {
 
     @ViewChild('snav2', { static: true }) public sidenavRight: MatSidenav;
+    @ViewChild('actionsFormUp', { static: false }) actionsFormUp: NgForm;
 
     today: Date = new Date();
     creationMode: boolean;
@@ -116,9 +117,7 @@ export class ActionAdministrationComponent implements OnInit {
         this.setErrorStatus();
 
         this.route.params.subscribe(params => {
-
             if (typeof params['id'] === 'undefined') {
-
                 this.creationMode = true;
 
                 this.http.get('../rest/initAction')
@@ -148,7 +147,6 @@ export class ActionAdministrationComponent implements OnInit {
                     });
             } else {
                 this.creationMode = false;
-
                 this.intermediateSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'intermediateStatus').map((el: any) => el.id);
                 this.finalSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'finalStatus').map((el: any) => el.id);
                 this.errorSelectedStatus = this.mailevaStatus.filter((item: any) => item.actionStatus === 'errorStatus').map((el: any) => el.id);
@@ -276,7 +274,7 @@ export class ActionAdministrationComponent implements OnInit {
                             });
                             this.availableCustomFieldsClone = JSON.parse(JSON.stringify(this.availableCustomFields));
                         }
-                        return resolve(true);
+                        resolve(true);
                     }),
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err);
@@ -524,27 +522,9 @@ export class ActionAdministrationComponent implements OnInit {
         }
 
         if (this.creationMode) {
-            this.http.post('../rest/actions', this.action).pipe(
-                tap(() => {
-                    this.router.navigate(['/administration/actions']);
-                    this.notify.success(this.translate.instant('lang.actionAdded'));
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.handleRequestObservable(this.http.post('../rest/actions', this.action), 'lang.actionAdded');
         } else {
-            this.http.put('../rest/actions/' + this.action.id, this.action).pipe(
-                tap(() => {
-                    this.router.navigate(['/administration/actions']);
-                    this.notify.success(this.translate.instant('lang.actionUpdated'));
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.handleRequestObservable(this.http.put('../rest/actions/' + this.action.id, this.action), 'lang.actionUpdated');
         }
     }
 
@@ -665,5 +645,18 @@ export class ActionAdministrationComponent implements OnInit {
 
     toogleKeepOther(action: any){
         this.keepOtherRoleForRedirection = action.parameters.keepOtherRoleForRedirection;
+    }
+    
+    private handleRequestObservable(obs: Observable<any>, successMessage: string): void {
+        obs.pipe(
+            tap(() => {
+                this.router.navigate(['/administration/actions']);
+                this.notify.success(this.translate.instant(successMessage));
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }

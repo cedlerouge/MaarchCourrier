@@ -9,7 +9,6 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 
-
 @Component({
     templateUrl: 'docserver-administration.component.html'
 })
@@ -22,9 +21,15 @@ export class DocserverAdministrationComponent implements OnInit {
     loading: boolean = false;
     dataSource: any;
 
-    docserver: any = { coll_id: 'letterbox_coll', docserver_type_id: 'DOC', limitSizeFormatted: '50', is_encrypted: false };
+    docserver: any = {
+        coll_id: 'letterbox_coll',
+        docserver_type_id: 'DOC',
+        limitSizeFormatted: '50',
+        is_encrypted: false
+    };
     docserversTypes: any = [];
 
+    isDocserverEncryptionStatus: boolean = false;
     forbiddenDocserversTypesForEncrypted: string[] = ['MIGRATION', 'FULLTEXT'];
 
     constructor(
@@ -35,13 +40,15 @@ export class DocserverAdministrationComponent implements OnInit {
         private headerService: HeaderService,
         public appService: AppService,
         private functions: FunctionsService
-    ) { }
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
         this.headerService.setHeader(this.translate.instant('lang.docserverCreation'));
 
         this.loading = true;
         this.docserversTypes = await this.getDocserverTypes();
+        this.isDocserverEncryptionStatus = await this.getDocserverEncryptionStatus();
         this.loading = false;
     }
 
@@ -60,8 +67,17 @@ export class DocserverAdministrationComponent implements OnInit {
         return types;
     }
 
+    async getDocserverEncryptionStatus(): Promise<boolean> {
+        return await new Promise<boolean>((resolve) => {
+            this.http.get('../rest/docservers?getEncryptionStatus=true')
+                .subscribe((data: any) => {
+                    resolve(data.docserverEncryptionStatus ?? false);
+                });
+        });
+    }
+
     checkForbiddenDocserversTypesForEncrypted(docserverTypeId: string) {
-        if (this.forbiddenDocserversTypesForEncrypted.indexOf(docserverTypeId) >  -1) {
+        if (this.forbiddenDocserversTypesForEncrypted.indexOf(docserverTypeId) > -1) {
             this.docserver.is_encrypted = false;
         }
     }

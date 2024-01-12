@@ -59,11 +59,13 @@ use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use Tag\models\ResourceTagModel;
+use Throwable;
 use User\controllers\UserController;
 use User\models\UserModel;
 use SignatureBook\controllers\SignatureBookController;
 use Entity\models\ListTemplateModel;
 use Entity\models\ListTemplateItemModel;
+use Resource\Infrastructure\RetrieveResourceFactory;
 
 class ResController extends ResourceControlController
 {
@@ -97,9 +99,11 @@ class ResController extends ResourceControlController
 
         if (!empty($body['encodedFile'])) {
             ConvertPdfController::convert([
-                'resId'     => $resId,
-                'collId'    => 'letterbox_coll',
-                'version'   => 1
+                'encodedFile' => $body['encodedFile'],
+                'format'      => $body['format'],
+                'resId'       => $resId,
+                'collId'      => 'letterbox_coll',
+                'version'     => 1
             ]);
 
             $customId = CoreConfigModel::getCustomId();
@@ -414,9 +418,11 @@ class ResController extends ResourceControlController
 
         if (!empty($body['encodedFile'])) {
             ConvertPdfController::convert([
-                'resId'     => $args['resId'],
-                'collId'    => 'letterbox_coll',
-                'version'   => $resource['version'] + 1
+                'encodedFile'   => $body['encodedFile'],
+                'format'        => $body['format'],
+                'resId'         => $args['resId'],
+                'collId'        => 'letterbox_coll',
+                'version'       => $resource['version'] + 1
             ]);
 
             $customId = CoreConfigModel::getCustomId();
@@ -525,78 +531,49 @@ class ResController extends ResourceControlController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getFileContent(Request $request, Response $response, array $aArgs)
+    public function getFileContent(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->validate($aArgs['resId']) || !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])) {
+        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $document = ResModel::getById(['select' => ['filename', 'format', 'typist', 'subject'], 'resId' => $aArgs['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
-        } elseif (empty($document['filename'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document has no file']);
-        }
-        $originalFormat = $document['format'];
-        $creatorId      = $document['typist'];
-        $subject        = $document['subject'];
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveResource();
 
-        $convertedDocument = ConvertPdfController::getConvertedPdfById(['resId' => $aArgs['resId'], 'collId' => 'letterbox_coll']);
-        if (!empty($convertedDocument['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Conversion error : ' . $convertedDocument['errors']]);
+        try {
+            $mainFile = $retrieveResourceFactory->getResourceFile($args['resId']);
+        } catch (Throwable $th) {
+            return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
-        $document = $convertedDocument;
-
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-        }
-
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
-        if (!file_exists($pathToDocument)) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
-
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
-        if ($document['fingerprint'] != $fingerprint) {
-            return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
-        }
-
-        $fileContent = WatermarkController::watermarkResource(['resId' => $aArgs['resId'], 'path' => $pathToDocument]);
-
-        if (empty($fileContent)) {
-            $fileContent = file_get_contents($pathToDocument);
-        }
-        if ($fileContent === false) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
+        $creatorId      = $mainFile->getCreatorId();
+        $originalFormat = $mainFile->getOriginalFormat();
+        $formatFilename = $mainFile->getFormatFilename();
+        $pathInfo       = $mainFile->getPathInfo();
+        $fileContent    = $mainFile->getFileContent();
 
         HistoryController::add([
             'tableName' => 'res_letterbox',
-            'recordId'  => $aArgs['resId'],
+            'recordId'  => $args['resId'],
             'eventType' => 'VIEW',
-            'info'      => _DOC_DISPLAYING . " : {$aArgs['resId']}",
+            'info'      => _DOC_DISPLAYING . " : {$args['resId']}",
             'moduleId'  => 'resource',
             'eventId'   => 'resview',
         ]);
 
         $data = $request->getQueryParams();
 
-        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToDocument]);
+        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $mimeAndSize['errors']]);
         }
         $mimeType = $mimeAndSize['mime'];
-        $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
         $data['mode'] = $data['mode'] ?? null;
         if ($data['mode'] == 'base64') {
             $listInstance = ListInstanceModel::get([
                 'select'    => ['listinstance_id', 'item_id'],
                 'where'     => ['res_id = ?', 'signatory = ?'],
-                'data'      => [$aArgs['resId'], 'true'],
+                'data'      => [$args['resId'], 'true'],
                 'orderBy'   => ['listinstance_id desc'],
                 'limit'     => 1
             ]);
@@ -606,17 +583,15 @@ class ResController extends ResourceControlController
             return $response->withJson([
                 'encodedDocument'   => base64_encode($fileContent),
                 'originalFormat'    => $originalFormat,
-                'filename'          => $filename . '.' . $originalFormat,
+                'filename'          => $formatFilename . '.' . $originalFormat,
                 'mimeType'          => $mimeType,
                 'originalCreatorId' => $creatorId,
                 'signatoryId'       => $signatoryId
             ]);
         } else {
-            $pathInfo = pathinfo($pathToDocument);
-
             $response->write($fileContent);
             $contentDisposition = $data['mode'] == 'view' ? 'inline' : 'attachment';
-            $response = $response->withAddedHeader('Content-Disposition', "{$contentDisposition}; filename={$filename}.{$pathInfo['extension']}");
+            $response = $response->withAddedHeader('Content-Disposition', "{$contentDisposition}; filename={$formatFilename}.{$pathInfo['extension']}");
             return $response->withHeader('Content-Type', $mimeType);
         }
     }
@@ -670,15 +645,7 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $resource = ResModel::getById(['resId' => $args['resId'], 'select' => ['version', 'filename', 'subject']]);
-        if (empty($resource['filename'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document has no file']);
-        } elseif (!Validator::intVal()->validate($args['version']) || $args['version'] > $resource['version'] || $args['version'] < 1) {
-            return $response->withStatus(400)->withJson(['errors' => 'Incorrect version']);
-        }
-
         $queryParams = $request->getQueryParams();
-        $subject     = $resource['subject'];
 
         $type = 'PDF';
         if (!empty($queryParams['type']) && in_array($queryParams['type'], ['PDF', 'SIGN', 'NOTE'])) {
@@ -689,48 +656,18 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $convertedDocument = AdrModel::getDocuments([
-            'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
-            'where'     => ['res_id = ?', 'type = ?', 'version = ?'],
-            'data'      => [$args['resId'], $type, $args['version']]
-        ]);
-
-        if (empty($convertedDocument[0])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Type has no file']);
-        }
-        $convertedDocument = $convertedDocument[0];
-
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedDocument['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveVersionResource();
+        try {
+            $resourceVersionFile = $retrieveResourceFactory->getResourceFile($args['resId'], $args['version'], $type);
+        } catch (Throwable $th) {
+            return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedDocument['path']) . $convertedDocument['filename'];
-        if (!file_exists($pathToDocument)) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
+        $formatFilename = $resourceVersionFile->getFormatFilename();
+        $pathInfo       = $resourceVersionFile->getPathInfo();
+        $fileContent    = $resourceVersionFile->getFileContent();
 
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
-        if (empty($convertedDocument['fingerprint'])) {
-            AdrModel::updateDocumentAdr(['set' => ['fingerprint' => $fingerprint], 'where' => ['id = ?'], 'data' => [$convertedDocument['id']]]);
-            $convertedDocument['fingerprint'] = $fingerprint;
-        }
-        if ($convertedDocument['fingerprint'] != $fingerprint) {
-            return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
-        }
-
-        $fileContent = WatermarkController::watermarkResource(['resId' => $args['resId'], 'path' => $pathToDocument]);
-        if (empty($fileContent)) {
-            $fileContent = file_get_contents($pathToDocument);
-        }
-        if ($fileContent === false) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
-
-        $pathInfo = pathinfo($pathToDocument);
-        $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
-        return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'filename' => $filename.'_V'.$args['version'].'.'.$pathInfo['extension']]);
+        return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'filename' => $formatFilename.'_V'.$args['version'].'.'.$pathInfo['extension']]);
     }
 
     public function getOriginalFileContent(Request $request, Response $response, array $args)
@@ -739,53 +676,30 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $document = ResModel::getById(['select' => ['docserver_id', 'path', 'filename', 'category_id', 'version', 'fingerprint', 'subject'], 'resId' => $args['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
-        } elseif (empty($document['filename'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document has no file']);
-        }
-        $subject = $document['subject'];
-
         $data = $request->getQueryParams();
-        if (!empty($data['signedVersion'])) {
-            $convertedDocument = AdrModel::getDocuments([
-                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'where'  => ['res_id = ?', 'type = ?', 'version = ?'],
-                'data'   => [$args['resId'], 'SIGN', $document['version']],
-                'limit'  => 1
-            ]);
-            $document = $convertedDocument[0] ?? $document;
+
+        $dataMode = $data['mode'] ?? '';
+        $signedVersion = false;
+
+        if (isset($data['signedVersion'])) {
+            $signedVersion = filter_var($data['signedVersion'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if (!Validator::boolType()->validate($signedVersion)) {
+                return $response->withStatus(403)->withJson(['errors' => 'signedVersion param is not a boolean']);
+            }
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveOriginalResource();
+
+        try {
+            $originalMainFile = $retrieveResourceFactory->getResourceFile($args['resId'], $signedVersion);
+        } catch (Throwable $th) {
+            return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
-        if (!file_exists($pathToDocument)) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
-
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
-        if (empty($convertedDocument) && empty($document['fingerprint'])) {
-            ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
-            $document['fingerprint'] = $fingerprint;
-        }
-
-        if ($document['fingerprint'] != $fingerprint) {
-            return $response->withStatus(400)->withJson(['errors' => 'Fingerprints do not match']);
-        }
-
-        $pathInfo = pathinfo($pathToDocument);
-
-        $fileContent = file_get_contents($pathToDocument);
-
-        if ($fileContent === false) {
-            return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
-        }
+        $formatFilename = $originalMainFile->getFormatFilename();
+        $pathInfo       = $originalMainFile->getPathInfo();
+        $fileContent    = $originalMainFile->getFileContent();
 
         HistoryController::add([
             'tableName' => 'res_letterbox',
@@ -796,18 +710,17 @@ class ResController extends ResourceControlController
             'eventId'   => 'resview',
         ]);
 
-        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToDocument]);
+        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $mimeAndSize['errors']]);
         }
         $mimeType = $mimeAndSize['mime'];
-        $filename = TextFormatModel::formatFilename(['filename' => $subject, 'maxLength' => 250]);
 
-        if ($data['mode'] == 'base64') {
-            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $filename.'.'.$pathInfo['extension']]);
+        if ($dataMode == 'base64') {
+            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $formatFilename.'.'.$pathInfo['extension']]);
         } else {
             $response->write($fileContent);
-            $response = $response->withAddedHeader('Content-Disposition', "attachment; filename={$filename}.{$pathInfo['extension']}");
+            $response = $response->withAddedHeader('Content-Disposition', "attachment; filename={$formatFilename}.{$pathInfo['extension']}");
             return $response->withHeader('Content-Type', $mimeType);
         }
     }
@@ -818,48 +731,25 @@ class ResController extends ResourceControlController
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
 
-        $pathToThumbnail = 'dist/assets/noThumbnail.png';
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResource();
 
-        $document = ResModel::getById(['select' => ['filename', 'version'], 'resId' => $args['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
+        try {
+            $thumbnailFile = $retrieveResourceFactory->getThumbnailFile($args['resId']);
+        } catch (Throwable $th) {
+            return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
-        if (!empty($document['filename']) && ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
-            $tnlAdr = AdrModel::getDocuments(['select' => ['docserver_id', 'path', 'filename'], 'where' => ['res_id = ?', 'type = ?', 'version = ?'], 'data' => [$args['resId'], 'TNL', $document['version']]]);
-            if (empty($tnlAdr[0])) {
-                $control = ConvertThumbnailController::convert(['type' => 'resource', 'resId' => $args['resId']]);
-                if (!empty($control['errors'])) {
-                    return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
-                }
-                $tnlAdr = AdrModel::getDocuments(['select' => ['docserver_id', 'path', 'filename'], 'where' => ['res_id = ?', 'type = ?', 'version = ?'], 'data' => [$args['resId'], 'TNL', $document['version']]]);
-            }
+        $formatFilename = $thumbnailFile->getFormatFilename();
+        $fileContent    = $thumbnailFile->getFileContent();
 
-            if (!empty($tnlAdr[0])) {
-                $docserver = DocserverModel::getByDocserverId(['docserverId' => $tnlAdr[0]['docserver_id'], 'select' => ['path_template']]);
-                if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-                }
-
-                $pathToThumbnail = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $tnlAdr[0]['path']) . $tnlAdr[0]['filename'];
-            }
-        }
-
-        $fileContent = @file_get_contents($pathToThumbnail);
-        if ($fileContent === false) {
-            $pathToThumbnail = 'dist/assets/noThumbnail.png';
-            $fileContent = @file_get_contents($pathToThumbnail);
-        }
-
-        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToThumbnail]);
+        $mimeAndSize = CoreController::getMimeTypeAndFileSize(['encodedFile' => base64_encode($fileContent)]);
         if (!empty($mimeAndSize['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $mimeAndSize['errors']]);
         }
         $mimeType = $mimeAndSize['mime'];
-        $pathInfo = pathinfo($pathToThumbnail);
 
         $response->write($fileContent);
-        $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.{$pathInfo['extension']}");
+        $response = $response->withAddedHeader('Content-Disposition', "inline; filename=$formatFilename");
 
         return $response->withHeader('Content-Type', $mimeType);
     }
@@ -869,85 +759,21 @@ class ResController extends ResourceControlController
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'resId param is not an integer']);
         }
-
-        $document = ResModel::getById(['select' => ['filename', 'version'], 'resId' => $args['resId']]);
-        if (empty($document)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Document does not exist']);
+        if (!Validator::intVal()->validate($args['page'])) {
+            return $response->withStatus(403)->withJson(['errors' => 'page param is not an integer']);
         }
 
-        if (!ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
-            return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
+        $retrieveResourceFactory = RetrieveResourceFactory::createRetrieveThumbnailResourceByPage();
+
+        try {
+            $thumbnailFileByPage = $retrieveResourceFactory->getThumbnailFileByPage($args['resId'], $args['page']);
+        } catch (Throwable $th) {
+            return $response->withStatus($th->getCode() > 500 || $th->getCode() < 100 ? 500 : $th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => 'TNL_MLB', 'select' => ['path_template']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-        }
+        $base64Content  = base64_encode($thumbnailFileByPage->getFileContent());
 
-        $control = ConvertThumbnailController::convertOnePage(['type' => 'resource', 'resId' => $args['resId'], 'page' => $args['page']]);
-        if (!empty($control['errors'])) {
-            return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
-        }
-        $adr = AdrModel::getDocuments([
-            'select'  => ['path', 'filename'],
-            'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'TNL' . $args['page']]
-        ]);
-        $pathToThumbnail = $docserver['path_template'] . $adr[0]['path'] . $adr[0]['filename'];
-        if (!is_file($pathToThumbnail) || !is_readable($pathToThumbnail)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Thumbnail not found on docserver or not readable', 'lang' => 'thumbnailNotFound']);
-        }
-
-        $fileContent = file_get_contents($pathToThumbnail);
-        if ($fileContent === false) {
-            return $response->withStatus(404)->withJson(['errors' => 'Page not found on docserver']);
-        }
-
-        $base64Content = base64_encode($fileContent);
-
-        $adrPdf = AdrModel::getDocuments([
-            'select'  => ['path', 'filename', 'docserver_id'],
-            'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$args['resId'], 'PDF'],
-            'orderBy' => ['version desc']
-        ]);
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $adrPdf[0]['docserver_id'], 'select' => ['path_template']]);
-        if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
-        }
-        $pathToPdf = $docserver['path_template'] . $adrPdf[0]['path'] . $adrPdf[0]['filename'];
-        $pathToPdf = str_replace('#', '/', $pathToPdf);
-
-        $libPath = CoreConfigModel::getSetaSignFormFillerLibrary();
-        if (!empty($libPath)) {
-            require_once($libPath);
-
-            $document = \SetaPDF_Core_Document::loadByFilename($pathToPdf);
-            $pages = $document->getCatalog()->getPages();
-            $pageCount = count($pages);
-        } else {
-            try {
-                $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
-                if (file_exists($libPath)) {
-                    require_once($libPath);
-                }
-                $pdf = new Fpdi('P', 'pt');
-                $pageCount = $pdf->setSourceFile($pathToPdf);
-            } catch (\Exception $e) {
-                LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => 'resources',
-                    'level'     => 'ERROR',
-                    'tableName' => 'res_letterbox',
-                    'recordId'  => $args['resId'],
-                    'eventType' => 'thumbnail',
-                    'eventId'   => $e->getMessage()
-                ]);
-                return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
-            }
-        }
-
-        return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
+        return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $thumbnailFileByPage->getPageCount()]);
     }
 
     public function getItems(Request $request, Response $response, array $args)

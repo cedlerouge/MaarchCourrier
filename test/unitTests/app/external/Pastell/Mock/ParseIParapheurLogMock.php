@@ -28,7 +28,25 @@ class ParseIParapheurLogMock extends ParseIParapheurLog
             return [
                 'status'      => 'validated',
                 'format'      => 'pdf',
-                'encodedFile' => 'toto'
+                'encodedFile' => 'toto',
+            ];
+        }
+
+        if ($resId === 41) {
+            return [
+                'status'      => 'validated',
+                'format'      => 'pdf',
+                'encodedFile' => 'toto',
+                'signatory'   => 'Bruce Wayne - XELIANS'
+            ];
+        }
+
+        if ($resId === 41) {
+            return [
+                'status'      => 'validated',
+                'format'      => 'pdf',
+                'encodedFile' => 'toto',
+                'signatory'   => 'Bruce Wayne - XELIANS'
             ];
         }
 
