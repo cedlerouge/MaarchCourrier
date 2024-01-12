@@ -13,7 +13,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import { DndDropEvent } from 'ngx-drag-drop';
+import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-dashboard',
@@ -168,19 +168,18 @@ export class DashboardComponent implements OnInit {
         ).subscribe();
     }
 
-    onDrop(dndDrop: DndDropEvent) {
-        let index = dndDrop.index;
-        if (typeof index === 'undefined') {
-            index = this.tiles.length;
-        }
+    onDrop(event: CdkDragDrop<any>) {
 
-        this.tiles.splice(index, 0, dndDrop.data);
+        this.tiles[event.previousContainer.data.position] = event.container.data;
+        this.tiles[event.container.data.position] = event.previousContainer.data;
+                    
+        transferArrayItem(
+            event.previousContainer.data,
+            event.container.data,
+            event.previousIndex,
+            event.currentIndex,
+        );
         this.transferDataSuccess();
-    }
-
-    onDragged(item: any, data: any[]) {
-        const index = data.indexOf(item);
-        data.splice(index, 1);
     }
 
     transferDataSuccess() {
