@@ -9,7 +9,6 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 
-
 @Component({
     templateUrl: 'docserver-administration.component.html'
 })
@@ -22,7 +21,12 @@ export class DocserverAdministrationComponent implements OnInit {
     loading: boolean = false;
     dataSource: any;
 
-    docserver: any = { coll_id: 'letterbox_coll', docserver_type_id: 'DOC', limitSizeFormatted: '50', is_encrypted: false };
+    docserver: any = {
+        coll_id: 'letterbox_coll',
+        docserver_type_id: 'DOC',
+        limitSizeFormatted: '50',
+        is_encrypted: false
+    };
     docserversTypes: any = [];
 
     isDocserverEncryptionStatus: boolean = false;
@@ -36,7 +40,8 @@ export class DocserverAdministrationComponent implements OnInit {
         private headerService: HeaderService,
         public appService: AppService,
         private functions: FunctionsService
-    ) { }
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
         this.headerService.setHeader(this.translate.instant('lang.docserverCreation'));
@@ -72,7 +77,7 @@ export class DocserverAdministrationComponent implements OnInit {
     }
 
     checkForbiddenDocserversTypesForEncrypted(docserverTypeId: string) {
-        if (this.forbiddenDocserversTypesForEncrypted.indexOf(docserverTypeId) >  -1) {
+        if (this.forbiddenDocserversTypesForEncrypted.indexOf(docserverTypeId) > -1) {
             this.docserver.is_encrypted = false;
         }
     }

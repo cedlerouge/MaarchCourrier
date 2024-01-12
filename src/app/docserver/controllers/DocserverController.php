@@ -1,22 +1,24 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Docserver Controller
-* @author dev@maarch.org
-*/
+ * @brief Docserver Controller
+ * @author dev@maarch.org
+ */
 
 namespace Docserver\controllers;
 
+use DateTime;
 use Docserver\models\DocserverTypeModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
+use Parameter\models\ParameterModel;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
@@ -129,7 +131,7 @@ class DocserverController
 
         $existingDocserver = DocserverModel::getByDocserverId(['docserverId' => $data['docserver_id'], 'select' => ['1']]);
         if (!empty($existingDocserver)) {
-            return $response->withStatus(400)->withJson(['errors' => _ID. ' ' . _ALREADY_EXISTS]);
+            return $response->withStatus(400)->withJson(['errors' => _ID . ' ' . _ALREADY_EXISTS]);
         }
         $existingDocserverType = DocserverTypeModel::get(['select' => ['1'], 'where' => ['docserver_type_id = ?'], 'data' => [$data['docserver_type_id']]]);
         if (empty($existingDocserverType)) {
@@ -138,7 +140,7 @@ class DocserverController
         if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
             $data['is_encrypted'] = false;
         }
-        if(!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
+        if (!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type is forbidden for encryption']);
         }
         if (!DocserverController::isPathAvailable(['path' => $data['path_template']])) {
@@ -167,6 +169,76 @@ class DocserverController
         ]);
 
         return $response->withJson(['docserver' => $id]);
+    }
+
+    public function calculateSize(Request $request, Response $response)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['error' => 'Service forbidden']);
+        }
+
+        $tmpPath = CoreConfigModel::getTmpPath();
+
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+
+        if (file_exists($lockFile)) {
+            return $response->withStatus(403)->withJson(['error' => 'Process already running']);
+        }
+
+        file_put_contents($lockFile, "locked");
+
+        $last_calculation_date = ParameterModel::getById(['id' => 'last_docservers_size_calculation']);
+
+        if (!empty($last_calculation_date)) {
+            $lastCalculationDateTime = new DateTime($last_calculation_date['param_value_date']);
+            $now = new DateTime();
+            $hoursDiff = ($now->diff($lastCalculationDateTime)->days * 24) + $now->diff($lastCalculationDateTime)->h;
+
+            if ($hoursDiff < 2) {
+                unlink($lockFile);
+                return $response->withStatus(403)->withJson(['error' => 'Last calculation is too early']);
+            }
+        }
+
+        $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
+
+        foreach ($docservers as $ds) {
+            if (is_dir($ds['path_template']) && is_readable($ds['path_template'])) {
+                if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
+                    $size = 0;
+                } else {
+                    $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
+                    $contentFolder = str_replace('//', '/', $contentFolder);
+
+                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {printf \"%.0f\", total}'");
+
+                    if ($output) {
+                        $size = trim($output);
+                    } else {
+                        unlink($lockFile);
+                        return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    }
+                }
+
+                DocserverModel::update([
+                    'set'   => [
+                        'actual_size_number' => $size
+                    ],
+                    'where' => ['docserver_id = ?'],
+                    'data'  => [$ds['docserver_id']]
+                ]);
+            }
+        }
+
+        if (empty($last_calculation_date)) {
+            ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        } else {
+            ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        }
+
+        unlink($lockFile);
+
+        return $response->withStatus(204);
     }
 
     public function update(Request $request, Response $response, array $aArgs)
@@ -286,10 +358,10 @@ class DocserverController
 
         $docserverTypeObject = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id']]);
         $copyResult = DocserverController::copyOnDocServer([
-            'isEncrypted'           => $docserver['is_encrypted'],
-            'encodedResource'       => $aArgs['encodedResource'],
-            'destinationDir'        => $docinfo['destinationDir'],
-            'fileDestinationName'   => $docinfo['fileDestinationName'],
+            'isEncrypted'         => $docserver['is_encrypted'],
+            'encodedResource'     => $aArgs['encodedResource'],
+            'destinationDir'      => $docinfo['destinationDir'],
+            'fileDestinationName' => $docinfo['fileDestinationName'],
         ]);
         if (!empty($copyResult['errors'])) {
             return ['errors' => '[storeRessourceOnDocserver] ' . $copyResult['errors']];
@@ -313,8 +385,8 @@ class DocserverController
             'file_destination_name' => $docinfo['fileDestinationName'],
             'fileSize'              => $copyResult['fileSize'],
             'fingerPrint'           => StoreController::getFingerPrint([
-                'filePath'  => $docinfo['destinationDir'] . $docinfo['fileDestinationName'],
-                'mode'      => $docserverTypeObject['fingerprint_mode']
+                'filePath' => $docinfo['destinationDir'] . $docinfo['fileDestinationName'],
+                'mode'     => $docserverTypeObject['fingerprint_mode']
             ])
         ];
     }
@@ -405,8 +477,8 @@ class DocserverController
                 chmod($zeroOnePath, 0770);
 
                 return [
-                    'destinationDir'        => $zeroOnePath,
-                    'fileDestinationName'   => '0001_' . mt_rand(),
+                    'destinationDir'      => $zeroOnePath,
+                    'fileDestinationName' => '0001_' . mt_rand(),
                 ];
             }
         } else {
@@ -429,8 +501,8 @@ class DocserverController
                     chmod($zeroNumberPath, 0770);
 
                     return [
-                        'destinationDir'        => $zeroNumberPath,
-                        'fileDestinationName'   => '0001_' . mt_rand(),
+                        'destinationDir'      => $zeroNumberPath,
+                        'fileDestinationName' => '0001_' . mt_rand(),
                     ];
                 }
             } else {
@@ -443,8 +515,8 @@ class DocserverController
                 }
 
                 return [
-                    'destinationDir'        => $destinationDir,
-                    'fileDestinationName'   => str_pad($higher, 4, '0', STR_PAD_LEFT) . '_' . mt_rand(),
+                    'destinationDir'      => $destinationDir,
+                    'fileDestinationName' => str_pad($higher, 4, '0', STR_PAD_LEFT) . '_' . mt_rand(),
                 ];
             }
         }
