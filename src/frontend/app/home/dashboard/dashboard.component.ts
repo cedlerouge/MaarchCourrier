@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { DashboardService } from './dashboard.service';
@@ -13,6 +13,7 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { ColorEvent } from 'ngx-color';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { CdkDragDrop, transferArrayItem } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-dashboard',
@@ -20,11 +21,11 @@ import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryB
     styleUrls: ['dashboard.component.scss'],
     providers: [DashboardService, ExternalSignatoryBookManagerService]
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class DashboardComponent implements OnInit {
 
     @ViewChildren('tileComponent') tileComponent: QueryList<any>;
 
-    tiles: any = [];
+    tiles: any[] = [];
     hoveredTool: boolean = false;
     tileErrors: any[] = [];
 
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         public dashboardService: DashboardService,
         public dialog: MatDialog,
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
+        public functions: FunctionsService,
         private notify: NotificationService,
         private functionsService: FunctionsService,
         private privilegeService: PrivilegeService,
@@ -44,8 +46,6 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ngOnInit(): void {
         this.getDashboardConfig();
     }
-
-    ngAfterViewInit(): void { }
 
     enterTile(tile: any, index: number) {
         this.hoveredTool = false;
@@ -166,6 +166,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 return of(false);
             })
         ).subscribe();
+    }
+
+    onDrop(event: CdkDragDrop<any>) {
+        this.tiles[event.previousContainer.data.position] = event.container.data;
+        this.tiles[event.container.data.position] = event.previousContainer.data;
+        transferArrayItem(
+            event.previousContainer.data,
+            event.container.data,
+            event.previousIndex,
+            event.currentIndex,
+        );
+        this.transferDataSuccess();
     }
 
     transferDataSuccess() {

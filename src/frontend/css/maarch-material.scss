@@ -93,3 +93,11 @@ $theme: mat.define-light-theme($primary, $accent, $warn);
 .cdk-textarea-autosize {
   min-height: 18px !important;
 }
+
+.dndDraggingSource {
+  display: none;
+}
+
+.dndDragging {
+  border: 1px dashed var(--maarch-color-default);
+}

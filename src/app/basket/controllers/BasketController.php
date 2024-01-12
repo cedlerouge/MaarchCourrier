@@ -215,9 +215,7 @@ class BasketController
         $data = $request->getParsedBody();
 
         foreach ($data as $key => $basketToUpdate) {
-            if ($key != $basketToUpdate['basket_order']) {
-                BasketModel::updateOrder(['id' => $basketToUpdate['basket_id'], 'order' => $key]);
-            }
+            BasketModel::updateOrder(['id' => $basketToUpdate['basket_id'], 'order' => $key]);
         }
 
         HistoryController::add([

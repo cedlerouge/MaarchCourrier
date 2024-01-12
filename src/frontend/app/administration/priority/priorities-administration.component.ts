@@ -13,9 +13,11 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatDialog } from '@angular/material/dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
-    templateUrl: 'priorities-administration.component.html'
+    templateUrl: 'priorities-administration.component.html',
+    styleUrls: ['priorities-administration.component.scss']
 })
 export class PrioritiesAdministrationComponent implements OnInit {
 
@@ -50,22 +52,28 @@ export class PrioritiesAdministrationComponent implements OnInit {
 
         this.loading = true;
 
-        this.http.get('../rest/priorities')
-            .subscribe((data: any) => {
+        this.http.get('../rest/priorities').pipe(
+            tap((data: any) => {
                 this.priorities = data['priorities'];
                 this.loading = false;
-                this.http.get('../rest/sortedPriorities')
-                    .subscribe((dataPriorities: any) => {
+                this.http.get('../rest/sortedPriorities').pipe(
+                    tap((dataPriorities: any) => {
                         this.prioritiesOrder = dataPriorities['priorities'];
-                    }, (err) => {
-                        this.notify.handleErrors(err);
-                    });
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        return of(false);
+                    })
+                ).subscribe();
                 setTimeout(() => {
                     this.adminService.setDataSource('admin_priorities', this.priorities, this.sort, this.paginator, this.filterColumns);
                 }, 0);
-            }, (err) => {
-                this.notify.handleErrors(err);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     deletePriority(id: string) {
@@ -76,6 +84,7 @@ export class PrioritiesAdministrationComponent implements OnInit {
             tap((data: any) => {
                 this.priorities = data['priorities'];
                 this.adminService.setDataSource('admin_priorities', this.priorities, this.sort, this.paginator, this.filterColumns);
+                this.prioritiesOrder = this.priorities;
                 this.notify.success(this.translate.instant('lang.priorityDeleted'));
             }),
             catchError((err: any) => {
@@ -85,13 +94,24 @@ export class PrioritiesAdministrationComponent implements OnInit {
         ).subscribe();
     }
 
+    onPriorityDrop(event: CdkDragDrop<string[]>): void {
+        moveItemInArray(this.prioritiesOrder, event.previousIndex, event.currentIndex);
+        event.container.data.forEach((priority: any, index: number) => {
+            priority.order = index;
+        });
+        this.updatePrioritiesOrder();
+    }
+
     updatePrioritiesOrder() {
-        this.http.put('../rest/sortedPriorities', this.prioritiesOrder)
-            .subscribe((data: any) => {
+        this.http.put('../rest/sortedPriorities', this.prioritiesOrder).pipe(
+            tap((data: any) => {
                 this.prioritiesOrder = data['priorities'];
                 this.notify.success(this.translate.instant('lang.modificationSaved'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }

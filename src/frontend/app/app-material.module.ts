@@ -1,6 +1,5 @@
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { NgModule } from '@angular/core';
-import { DndModule } from 'ng2-dnd';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
@@ -76,8 +75,7 @@ import { AppDateAdapter, APP_DATE_FORMATS } from '@plugins/mat-date-int';
         MatBottomSheetModule,
         MatTreeModule,
         MatRippleModule,
-        ScrollingModule,
-        DndModule.forRoot()
+        ScrollingModule
     ],
     exports: [
         MatCheckboxModule,
@@ -114,8 +112,7 @@ import { AppDateAdapter, APP_DATE_FORMATS } from '@plugins/mat-date-int';
         MatBottomSheetModule,
         MatRippleModule,
         MatTreeModule,
-        ScrollingModule,
-        DndModule
+        ScrollingModule
     ],
     providers: [
         {

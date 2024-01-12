@@ -96,6 +96,8 @@ import { MwsListDocsComponent } from './mercure/webservice/mws-list-docs.compone
 import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 
+import { DndModule } from 'ngx-drag-drop';
+
 @NgModule({
     imports: [
         SharedModule,
@@ -103,7 +105,8 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
         JoyrideModule.forChild(),
         AdministrationRoutingModule,
         DocumentViewerModule,
-        NgxChartsModule
+        NgxChartsModule,
+        DndModule
     ],
     declarations: [
         AccountLinkComponent,

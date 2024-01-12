@@ -153,9 +153,7 @@ class PriorityController
         $data = $request->getParsedBody();
 
         foreach ($data as $key => $priorityToUpdate) {
-            if ($key != $priorityToUpdate['order']) {
-                PriorityModel::updateOrder(['id' => $priorityToUpdate['id'], 'order' => $key]);
-            }
+            PriorityModel::updateOrder(['id' => $priorityToUpdate['id'], 'order' => $key]);
         }
 
         HistoryController::add([

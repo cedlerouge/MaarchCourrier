@@ -159,6 +159,7 @@ import { CheckSaeInterconnectionComponent } from './administration/parameter/oth
 import { ContactSearchModalComponentComponent } from './administration/contact/page/form/contactSearchModal/contact-search-modal.component';
 import { ShippingModalComponent } from './sentResource/shippingModal/shipping-modal.component';
 import { CoreDialogComponent } from './core-dialog/core-dialog.component';
+import { DndModule } from 'ngx-drag-drop';
 
 registerLocaleData(localeFr, 'fr-FR');
 @Injectable()
@@ -182,7 +183,8 @@ export class MyHammerConfig extends HammerGestureConfig {
         AdministrationModule,
         DocumentViewerModule,
         AppListModule,
-        NgxChartsModule
+        NgxChartsModule,
+        DndModule
     ],
     declarations: [
         AppComponent,

@@ -1,14 +1,14 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { UntypedFormControl } from '@angular/forms';
-import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { startWith, map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { AppService } from '@service/app.service';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
+import { DndDropEvent } from 'ngx-drag-drop';
 
 declare let $: any;
 
@@ -22,7 +22,6 @@ export class SearchAdministrationComponent implements OnInit {
 
     loading: boolean = true;
     customFieldsFormControl = new UntypedFormControl({ value: '', disabled: false });
-
 
     displayedMainData: any = [
         {
@@ -327,7 +326,6 @@ export class SearchAdministrationComponent implements OnInit {
         const i = this.availableData.map((e: any) => e.value).indexOf(id);
 
         this.displayedSecondaryData.push(this.availableData.filter((item: any) => item.value === id)[0]);
-
         this.availableData.splice(i, 1);
 
         $('#availableData').blur();
@@ -347,21 +345,19 @@ export class SearchAdministrationComponent implements OnInit {
         this.displayedSecondaryData = [];
     }
 
-    drop(event: CdkDragDrop<string[]>) {
-        if (event.previousContainer === event.container) {
-            moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-        } else {
-            transferArrayItem(event.previousContainer.data, event.container.data, event.previousIndex, event.currentIndex - 1);
+    onDrop(dndDrop: DndDropEvent) {
+        let index = dndDrop.index;
 
-            this.displayedSecondaryData.forEach((subArray: any, index: any) => {
-                if (subArray.length > this.selectedTemplateDisplayedSecondaryData) {
-                    transferArrayItem(subArray, this.displayedSecondaryData[index + 1], subArray.length, 0);
-                } else if (subArray.length < this.selectedTemplateDisplayedSecondaryData && !this.functions.empty(this.displayedSecondaryData[index + 1])) {
-                    transferArrayItem(this.displayedSecondaryData[index + 1], subArray, 0, subArray.length);
-                }
-            });
+        if (typeof index === 'undefined') {
+            index = this.displayedSecondaryData.length;
         }
 
+        this.displayedSecondaryData.splice(index, 0, dndDrop.data);
+    }
+
+    onDragged(item: any, data: any[]) {
+        const index = data.indexOf(item);
+        data.splice(index, 1);
     }
 
     getTemplate() {
@@ -395,8 +391,8 @@ export class SearchAdministrationComponent implements OnInit {
         this.selectedListEvent = JSON.parse(JSON.stringify({
             'defaultTab': this.selectedProcessTool.defaultTab
         }));
-        this.http.put('../rest/configurations/admin_search ', { 'listDisplay': objToSend, 'listEvent': this.selectedListEvent, 'list_event_data': this.selectedProcessTool })
-            .subscribe(() => {
+        this.http.put('../rest/configurations/admin_search ', { 'listDisplay': objToSend, 'listEvent': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
+            tap(() => {
                 this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
                 this.searchAdv.listDisplay = this.displayedSecondaryData;
                 this.searchAdv.listEvent = this.selectedListEvent;
@@ -405,9 +401,12 @@ export class SearchAdministrationComponent implements OnInit {
                 this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
                 this.notify.success(this.translate.instant('lang.modificationsProcessed'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     checkModif() {

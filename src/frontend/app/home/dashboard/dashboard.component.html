@@ -1,12 +1,17 @@
-<div *ngIf="!emptyDashboard()" class="dashboard-container" dnd-sortable-container [dropZones]="['boxers-zone']"
-    [sortableData]="tiles">
-    <div class="tile" [style.border-color]="tile.color" [class.empty_tile_edit]="tile.id === null && tile.editMode"
-        [class.empty_tile]="tile.id === null" *ngFor="let tile of tiles;let i=index" (mouseenter)="enterTile(tile, i)"
-        (mouseleave)="leaveTile(tile)" dnd-sortable [sortableIndex]="i" (onDropSuccess)="transferDataSuccess()">
+<div *ngIf="!emptyDashboard()" class="dashboard-container">
+    <div cdkDropList [id]="'list-' + i" [cdkDropListData]="tile" *ngFor="let tile of tiles;let i=index" (cdkDropListDropped)="onDrop($event)" [cdkDropListConnectedTo]="['list-0','list-1','list-2','list-3','list-4','list-5']" style="position: relative;">
+        <div class="tile" [style.border-color]="tile.color" [class.empty_tile_edit]="tile.id === null && tile.editMode"
+        [class.empty_tile]="tile.id === null"
+        (mouseleave)="leaveTile(tile)"
+        (mouseenter)="enterTile(tile, i)"
+        [cdkDragDisabled]="tile.id === null"
+        [cdkDragData]="tile" style="height: 100%;"
+        cdkDrag
+        cdkDragBoundary=".dashboard-container">
         <div
             style="position: relative;height: 100%;width:100%;display: flex;flex-direction: column;align-items: center;justify-content: center;">
             <div class="tool-left" *ngIf="tile.id !== null && tile.editMode">
-                <span dnd-sortable-handle style="cursor: move;">
+                <span style="cursor: move;" cdkDragHandle>
                     <mat-icon style="color: white;" class="fa fa-arrows-alt"></mat-icon>
                 </span>
             </div>
@@ -74,6 +79,7 @@
                 <mat-icon color="secondary" class="fa fa-plus"></mat-icon>
             </button>
         </div>
+    </div>
     </div>
 </div>
 <div class="empty-dashboard" *ngIf="emptyDashboard()">

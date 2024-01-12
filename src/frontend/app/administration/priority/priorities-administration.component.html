@@ -105,17 +105,20 @@
             </div>
         </div>
     </mat-sidenav-content>
-    <mat-sidenav #snav2 [mode]="appService.getViewMode() ? 'over' : 'side'" [fixedInViewport]="appService.getViewMode()"
-        fixedTopGap="56" position='end' [opened]="appService.getViewMode() ? false : false">
+    <mat-sidenav #snav2
+        [mode]="appService.getViewMode() ? 'over' : 'side'"
+        [fixedInViewport]="appService.getViewMode()"
+        [opened]="appService.getViewMode() ? false : false"
+        fixedTopGap="56" position='end'>
         <p style="font-size:15px;padding:5px"> {{'lang.prioritiesHelpDesc' | translate}} </p>
         <mat-list>
-            <span dnd-sortable-container [dropZones]="['boxers-zone']" [sortableData]="prioritiesOrder">
-                <mat-list-item disableRipple="true" *ngFor="let priority of prioritiesOrder;let i = index"
-                    title="{{'lang.move' | translate}}" dnd-sortable [sortableIndex]="i" (onDropSuccess)="updatePrioritiesOrder()">
+            <div cdkDropList #dataAvailableList="cdkDropList" [cdkDropListData]="prioritiesOrder" (cdkDropListDropped)="onPriorityDrop($event)">
+                <mat-list-item class="cdk-list"  disableRipple="true" *ngFor="let priority of prioritiesOrder; let i = index"
+                    [title]="'lang.move' | translate" [cdkDragData]="priority" cdkDrag style="cursor: move;">
                     <mat-icon color="primary" mat-list-icon class="fa fa-inbox"></mat-icon>
-                    <p mat-line>{{i+1}} - {{priority.label}}</p>
+                    <p mat-line>{{i + 1}} - {{priority.label}}</p>
                 </mat-list-item>
-            </span>
+            </div>
         </mat-list>
     </mat-sidenav>
 </mat-sidenav-container>
