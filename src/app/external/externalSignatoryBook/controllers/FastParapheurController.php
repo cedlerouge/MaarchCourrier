@@ -19,14 +19,17 @@ use Attachment\controllers\AttachmentTypeController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
+use DateTimeImmutable;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use History\controllers\HistoryController;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
+use SimpleXMLElement;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\controllers\LogsController;
@@ -44,6 +47,7 @@ use setasign\Fpdi\Tcpdf\Fpdi;
 use Convert\models\AdrModel;
 use User\models\UserModel;
 use Contact\controllers\ContactController;
+use ZipArchive;
 
 
 /**
@@ -173,6 +177,9 @@ class FastParapheurController
         return $response->withJson(['link' => $user['fastParapheurId']]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function getWorkflow(Request $request, Response $response, array $args)
     {
         $queryParams = $request->getQueryParams();
@@ -203,8 +210,8 @@ class FastParapheurController
         }
 
         $externalState = json_decode($resource['external_state'], true);
-        $fetchDate = new \DateTimeImmutable($externalState['signatureBookWorkflow']['fetchDate']);
-        $timeAgo = new \DateTimeImmutable('-30 minutes');
+        $fetchDate = new DateTimeImmutable($externalState['signatureBookWorkflow']['fetchDate']);
+        $timeAgo = new DateTimeImmutable('-30 minutes');
 
         if (!empty($externalState['signatureBookWorkflow']['fetchDate']) && $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
             return $response->withJson($externalState['signatureBookWorkflow']['data']);
@@ -276,7 +283,7 @@ class FastParapheurController
             } else {
                 $user = $user[0];
             }
-            $processDate = new \DateTimeImmutable($step['date']);
+            $processDate = new DateTimeImmutable($step['date']);
             $externalWorkflow[] = [
                 'userId'       => $user['id'],
                 'userDisplay'  => $step['userFullname'] . ' (' . $user['name'] . ')',
@@ -286,7 +293,7 @@ class FastParapheurController
             ];
         }
 
-        $currentDate = new \DateTimeImmutable();
+        $currentDate = new DateTimeImmutable();
         $externalState['signatureBookWorkflow']['fetchDate'] = $currentDate->format('c');
         $externalState['signatureBookWorkflow']['data'] = $externalWorkflow;
         if ($resource['resourceType'] == 'letterbox_coll') {
@@ -310,6 +317,9 @@ class FastParapheurController
         return $response->withJson($externalWorkflow);
     }
 
+    /**
+     * @throws Exception
+     */
     public static function retrieveSignedMails(array $args)
     {
         $version = $args['version'];
@@ -353,8 +363,8 @@ class FastParapheurController
             }
 
             if (!empty($value['external_state_fetch_date'])) {
-                $fetchDate = new \DateTimeImmutable($value['external_state_fetch_date']);
-                $timeAgo = new \DateTimeImmutable('-30 minutes');
+                $fetchDate = new DateTimeImmutable($value['external_state_fetch_date']);
+                $timeAgo = new DateTimeImmutable('-30 minutes');
 
                 if ($fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
                     $newDate = $fetchDate->modify('+30 minutes');
@@ -561,6 +571,9 @@ class FastParapheurController
         return $args['idsToRetrieve'];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function updateDocumentExternalStateSignatoryUser(array $args)
     {
         ValidatorModel::notEmpty($args, ['id', 'type', 'signatoryUser']);
@@ -593,7 +606,7 @@ class FastParapheurController
      *
      * @param array $args documentId, config, historyData, filename, signEncodedFile
      */
-    public static function makeHistoryProof(array $args)
+    public static function makeHistoryProof(array $args): array
     {
         if (!Validator::stringType()->notEmpty()->validate($args['documentId'])) {
             return ['errors' => 'documentId is not an array'];
@@ -655,10 +668,10 @@ class FastParapheurController
 
 
         $zipFileContent = null;
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $zipFilename = $tmpPath . 'archivedProof' . '_' . rand() . '.zip';
 
-        if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
+        if ($zip->open($zipFilename, ZipArchive::CREATE) === true) {
             foreach ($documentPathToZip as $document) {
                 if (file_exists($document['path']) && filesize($document['path']) > 0) {
                     $zip->addFile($document['path'], $document['filename']);
@@ -680,7 +693,10 @@ class FastParapheurController
         return ['format' => 'zip', 'encodedProofDocument' => base64_encode($zipFileContent)];
     }
 
-    public static function getProof(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getProof(array $args): array
     {
         ValidatorModel::notEmpty($args, ['documentId', 'config']);
         ValidatorModel::stringType($args, ['documentId']);
@@ -705,6 +721,9 @@ class FastParapheurController
         return ['response' => $curlReturn['response']];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getSignatoryUserInfo(array $args = [])
     {
         ValidatorModel::notEmpty($args, ['resId', 'config']);
@@ -776,6 +795,9 @@ class FastParapheurController
         return $signatoryInfo;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function processVisaWorkflow(array $args = [])
     {
         $resIdMaster = $args['res_id_master'] ?? $args['res_id'];
@@ -804,7 +826,10 @@ class FastParapheurController
         }
     }
 
-    public static function upload(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function upload(array $args): array
     {
         ValidatorModel::notEmpty($args, ['circuitId', 'label', 'businessId']);
         ValidatorModel::stringType($args, ['circuitId', 'label', 'businessId']);
@@ -883,9 +908,9 @@ class FastParapheurController
             $mainDocumentIntegration = json_decode($annexes['letterbox'][0]['integrations'], true);
             $externalId = json_decode($annexes['letterbox'][0]['external_id'], true);
             if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
-                $resId   = $annexes['letterbox'][0]['res_id'];
+                $resId = $annexes['letterbox'][0]['res_id'];
                 $subject = $annexes['letterbox'][0]['subject'];
-                $collId  = 'letterbox_coll';
+                $collId = 'letterbox_coll';
                 unset($annexes['letterbox']);
 
                 $response = FastParapheurController::uploadFile([
@@ -911,7 +936,10 @@ class FastParapheurController
         return ['sended' => $attachmentToFreeze];
     }
 
-    public static function uploadFile(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function uploadFile(array $args): array
     {
         $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $args['resId'], 'collId' => $args['collId']]);
         if (empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
@@ -922,18 +950,18 @@ class FastParapheurController
         $title = TextFormatModel::formatFilename(['filename' => str_replace(' ', '_', $args['title'])]);
         $attachmentFileName = $title . '_' . $args['resIdMaster'] . '_' . rand(0001, 9999) . '.pdf';
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $tmpPath = CoreConfigModel::getTmpPath();
         $zipFilePath = $tmpPath . DIRECTORY_SEPARATOR
             . $attachmentFileName . '.zip';  // The zip file need to have the same name as the attachment we want to sign
 
-        if ($zip->open($zipFilePath, \ZipArchive::CREATE) !== true) {
+        if ($zip->open($zipFilePath, ZipArchive::CREATE) !== true) {
             return ['error' => "Can not open file : <$zipFilePath>\n"];
         }
         $zip->addFile($attachmentFilePath, $attachmentFileName);
 
         if (!empty($args['annexes']['letterbox'][0]['filepath'])) {
-            $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
+                $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
         }
 
         if (isset($args['annexes']['attachments'])) {
@@ -971,8 +999,9 @@ class FastParapheurController
      *                      - fileName
      *                      - circuib64AttachmenttId
      *                      - label
+     * @throws Exception
      */
-    public static function uploadFileToFast(array $args)
+    public static function uploadFileToFast(array $args): array
     {
         ValidatorModel::notEmpty($args, ['config', 'circuitId']);
         ValidatorModel::arrayType($args, ['config']);
@@ -1028,6 +1057,7 @@ class FastParapheurController
      *       ]
      *     ]
      *   ]
+     * @throws Exception
      */
     public static function uploadWithSteps(array $args)
     {
@@ -1326,7 +1356,10 @@ class FastParapheurController
         return $returnIds;
     }
 
-    public static function onDemandUploadFilesToFast(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function onDemandUploadFilesToFast(array $args): array
     {
         ValidatorModel::notEmpty($args, ['config', 'upload', 'circuit']);
         ValidatorModel::arrayType($args, ['config', 'upload', 'circuit', 'appendices']);
@@ -1381,6 +1414,9 @@ class FastParapheurController
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public static function sendDatas(array $args)
     {
         $config = $args['config'];
@@ -1495,7 +1531,7 @@ class FastParapheurController
      *  - documentId : 'externalid' of res_letterbox
      *  - config : FastParapheur configuration
      */
-    public static function getDocumentHistory(array $args)
+    public static function getDocumentHistory(array $args): array
     {
         if (!Validator::notEmpty()->validate($args['documentId'])) {
             return ['errors' => 'documentId not found'];
@@ -1523,6 +1559,9 @@ class FastParapheurController
         return ['response' => $curlReturn['response']];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function updateFetchHistoryDateByExternalId(array $args)
     {
         $tag = "[updateFetchHistoryDateByExternalId] ";
@@ -1562,7 +1601,7 @@ class FastParapheurController
 
         $externalState = json_decode($resource['external_state'], true);
 
-        $currentDate = new \DateTimeImmutable();
+        $currentDate = new DateTimeImmutable();
         $externalState['signatureBookWorkflow']['fetchDate'] = $currentDate->format('c');
         if (!empty($args['type']) && $args['type'] == 'resource') {
             ResModel::update([
@@ -1585,7 +1624,10 @@ class FastParapheurController
         return true;
     }
 
-    public static function getRefusalMessage(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getRefusalMessage(array $args): string
     {
         $curlReturn = CurlModel::exec([
             'url'     => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/comments/refusal',
@@ -1655,6 +1697,9 @@ class FastParapheurController
         return $users;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function checkUserExistanceInFastParapheur(array $args)
     {
         ValidatorModel::notEmpty($args, ['fastParapheurUserEmail']);
@@ -1730,6 +1775,9 @@ class FastParapheurController
         return $fastParapheurBlock;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getSummarySheetFile(array $args)
     {
         ValidatorModel::notEmpty($args, ['docResId', 'login']);
@@ -1822,7 +1870,10 @@ class FastParapheurController
         return $summarySheetFilePath;
     }
 
-    public static function getSignatureModes(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getSignatureModes(array $args): array
     {
         ValidatorModel::boolType($args, ['mapping']);
 
@@ -1848,6 +1899,9 @@ class FastParapheurController
         return ['signatureModes' => $modes];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getSignatureModeById(array $args)
     {
         ValidatorModel::notEmpty($args, ['signatureModeId']);
@@ -2010,7 +2064,10 @@ class FastParapheurController
         }
     */
 
-    public static function removeDocumentLink(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function removeDocumentLink(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['docItem', 'type']);
         ValidatorModel::arrayType($args, ['docItem']);
@@ -2045,6 +2102,9 @@ class FastParapheurController
         return true;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getLastFastWorkflowAction(array $documentHistory, array $knownWorkflow, array $config): array
     {
         ValidatorModel::notEmpty($config, ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']);
@@ -2083,7 +2143,10 @@ class FastParapheurController
         return $lastStep;
     }
 
-    public static function generateOtpXml(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function generateOtpXml(array $args): array
     {
         ValidatorModel::notEmpty($args, ['otpInfo']);
         ValidatorModel::arrayType($args, ['otpInfo']);
@@ -2091,7 +2154,7 @@ class FastParapheurController
 
         $xmlData = null;
         try {
-            $otpInfoXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            $otpInfoXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
             foreach ($args['otpInfo'] as $name => $value) {
                 $metaDataElement = $otpInfoXML->addChild('meta-data');
                 $metaDataElement->addAttribute('name', $name);
@@ -2104,14 +2167,14 @@ class FastParapheurController
                 $dom->formatOutput = true;
                 $xmlData = $dom->saveXML();
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => '[FastParapheur][generateOtpXml] : ' . $e->getMessage()];
         }
 
         return ['content' => $xmlData];
     }
 
-    public static function isOtpActive()
+    public static function isOtpActive(): array
     {
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
