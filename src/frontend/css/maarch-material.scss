@@ -55,7 +55,15 @@ $accent: mat.define-palette($mat-maarch-accent, 500);
 $warn: mat.define-palette($mat-maarch-warn, 500);
 
 // create theme from palettes
-$theme: mat.define-light-theme($primary, $accent, $warn);
+$theme: mat.define-light-theme(
+    (
+        color: (
+            primary: $primary,
+            accent: $accent,
+            warn: $warn
+        )
+    )
+);
 
 // apply theme
 @include mat.all-legacy-component-themes($theme);
