@@ -283,7 +283,7 @@ abstract class AttachmentModelAbstract
         DatabaseModel::update([
             'table'   => 'res_attachments',
             'set'     => ['status' => 'A_TRA'],
-            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "{}"],
+            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "'{}'::jsonb"],
             'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
             'data'    => [$args['resId'], $args['externalId']]
         ]);
