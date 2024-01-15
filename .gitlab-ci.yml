@@ -213,11 +213,11 @@ create_major_tag:
 
 test-karma:
   stage: test
-  image: timbru31/node-chrome:18-slim
+  image: timbru31/node-chrome:20-slim
   before_script:
     - echo "Test karma"
   script:
-    - npm i -g npm@8.15.0
+    - npm i -g npm@10.1.0
     - npm config set legacy-peer-deps true && npm ci
     - npm run karma:test-ci
   artifacts:
