@@ -74,7 +74,7 @@
         </div>
         <div class="bg-head-content" [class.fullContainer]="appService.getViewMode()">
             <button mat-button class="attach-button" (click)="snav2.toggle()">
-                <i class="fa fa-paperclip"></i> {{'lang.attachments' | translate}} <span class="count-badge" [class.count-badge-empty]="appIndexationAttachmentsList.getCountAttachments() === 0">{{appIndexationAttachmentsList.getCountAttachments()}}</span>
+                <i class="fa fa-paperclip"></i> {{'lang.attachments' | translate}} <span class="count-badge" [class.count-badge-empty]="appIndexationAttachmentsList.getCountAttachments() === 0">{{appIndexationAttachmentsList.getCountAttachments()}}</span>
             </button>
         </div>
         <div class="document-container" [class.fullContainer]="appService.getViewMode()">

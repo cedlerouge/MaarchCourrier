@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -11,12 +11,14 @@ import { IxbusParaphComponent } from './ixbus-paraph/ixbus-paraph.component';
 import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
-import {
-    ExternalSignatoryBookManagerService
-} from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
 import { FunctionsService } from '@service/functions.service';
 import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { AuthService } from '@service/auth.service';
+import { AppService } from '@service/app.service';
+import { AttachmentsListComponent } from '@appRoot/attachments/attachments-list.component';
+import { UntypedFormControl } from '@angular/forms';
+import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -26,12 +28,15 @@ import { AuthService } from '@service/auth.service';
 export class SendExternalSignatoryBookActionComponent implements OnInit {
 
     @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
-
     @ViewChild('xParaph', { static: false }) xParaph: XParaphComponent;
     @ViewChild('externalSignatoryBookComponent', { static: false }) externalSignatoryBookComponent: MaarchParaphComponent;
     @ViewChild('fastParapheur', { static: false }) fastParapheur: FastParaphComponent;
     @ViewChild('iParapheur', { static: false }) iParapheur: IParaphComponent;
     @ViewChild('ixbus', { static: false }) ixbus: IxbusParaphComponent;
+    @ViewChild('attachmentsList', { static: false }) attachmentsList: AttachmentsListComponent;
+    @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
+
+    @Output() sidenavStateChanged = new EventEmitter<boolean>();
 
     loading: boolean = false;
 
@@ -70,6 +75,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         public externalSignatoryBook: ExternalSignatoryBookManagerService,
         public functions: FunctionsService,
         public authService: AuthService,
+        public appService: AppService,
         @Inject(MAT_DIALOG_DATA) public data: any,
         private notify: NotificationService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -249,5 +255,19 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
             }
         }
         return this.translate.instant('lang.sendToExternalSignatoryBook');
+    }
+
+    async afterAttachmentToggle() {
+        await this.checkExternalSignatureBook();
+        this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
+    }
+
+    getIntegratedAttachments(): number {
+        return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA').length;
+    }
+
+    onSidenavStateChanged(): void {        
+        this.snav2?.toggle();
+        this.sidenavStateChanged.emit(this.snav2?.opened);
     }
 }

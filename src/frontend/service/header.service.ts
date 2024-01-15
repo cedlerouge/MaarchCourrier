@@ -135,22 +135,27 @@ export class HeaderService {
             this.showMenuShortcut = true;
             this.showMenuNav = true;
         }
-        // Create a portalHost from a DOM element
-        this.portalHost = new DomPortalOutlet(
-            document.querySelector(`#${id}`),
-            this.componentFactoryResolver,
-            this.appRef,
-            this.injector
-        );
 
-        // Create a template portal
-        const templatePortal = new TemplatePortal(
-            template,
-            viewContainerRef
-        );
-
-        // Attach portal to host
-        this.portalHost.attach(templatePortal);
+        const division = document.querySelector(`#${id}`)
+        if (division !== null) {
+            // Create a portalHost from a DOM element
+            this.portalHost = new DomPortalOutlet(
+                division,
+                this.componentFactoryResolver,
+                this.appRef,
+                this.injector
+            );
+    
+            // Create a template portal
+            const templatePortal = new TemplatePortal(
+                template,
+                viewContainerRef
+            );
+    
+            // Attach portal to host
+            this.portalHost.attach(templatePortal);
+        }
+        
     }
 
     initTemplate(template: TemplateRef<any>, viewContainerRef: ViewContainerRef, id: string = 'adminMenu', mode: string = '') {

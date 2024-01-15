@@ -50,18 +50,46 @@ export class AttachmentsListComponent implements OnInit {
     @Input() autoOpenCreation: boolean = false;
     @Input() canModify: boolean = null;
     @Input() canDelete: boolean = null;
-    @Output() reloadBadgeAttachments = new EventEmitter<string>();
+    @Input() isModal: boolean = false;
 
+    @Output() reloadBadgeAttachments = new EventEmitter<string>();
     @Output() afterActionAttachment = new EventEmitter<string>();
 
-    attachments: any;
+    integrationTargets: any[] = [
+        {
+            id: 'all',
+            label: this.translate.instant('lang.allIntegratedAttachments'),
+            description: this.translate.instant('lang.allIntegratedAttachmentsDesc')
+        },
+        {
+            id: 'inSignatureBook',
+            label: this.translate.instant('lang.attachInSignatureBook'),
+            description: this.translate.instant('lang.attachInSignatureBookDesc')
+        },
+        {
+            id: 'sign',
+            label: this.translate.instant('lang.attachmentToSign'),
+            description: this.translate.instant('lang.signTargetDesc')
+        },
+        {
+            id: 'annex',
+            label: this.translate.instant('lang.attachmentAnnex'),
+            description: this.translate.instant('lang.annexTargetDesc')
+        },
+    ];
+
+    attachments: any[] = [];
+    attachmentsClone: any[] = [];
     loading: boolean = true;
     pos = 0;
     mailevaEnabled: boolean = false;
     hideMainInfo: boolean = false;
 
     filterAttachTypes: any[] = [];
+    attachmentTypes: any[] = [];
+
     currentFilter: string = '';
+    currentIntegrationTarget: string = 'inSignatureBook';
 
     dialogRef: MatDialogRef<any>;
 
@@ -80,28 +108,39 @@ export class AttachmentsListComponent implements OnInit {
         private route: ActivatedRoute
     ) { }
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
+        await this.loadAttachmentTypes();
         if (this.autoOpenCreation) {
             this.createAttachment();
         }
-
-        this.route.params.subscribe((param: any) => {
+        this.currentIntegrationTarget = this.isModal ? 'inSignatureBook' : 'all';
+        this.route.params.subscribe(async (param: any) => {
             if (this.resId !== null) {
                 this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
                     tap((data: any) => {
                         this.mailevaEnabled = data.mailevaEnabled;
                         this.attachments = data.attachments;
-                        this.attachments.forEach((element: any) => {
+                        this.attachments = this.attachments.map((attachment: any) => ({
+                            ... attachment,
+                            signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                        }));
+                        this.attachments.forEach((element: any) => {                            
                             if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                                 this.filterAttachTypes.push({
                                     id: element.type,
-                                    label: element.typeLabel
+                                    label: element.typeLabel,
+                                    signable: element.signable
                                 });
                             }
-                            this.groupId = param['groupSerialId'];
+                            this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
+                            this.groupId = param['groupSerialId'];                            
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
                             element.canDelete = element.canDelete;
                         });
+                        this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
+                        if (this.isModal) {
+                            this.setTaget('inSignatureBook');
+                        }
                     }),
                     finalize(() => this.loading = false),
                     catchError((err: any) => {
@@ -123,20 +162,27 @@ export class AttachmentsListComponent implements OnInit {
                 tap((data: any) => {
                     this.mailevaEnabled = data.mailevaEnabled;
                     this.attachments = data.attachments;
-                    this.attachments.forEach((element: any) => {
+                    this.attachments = this.attachments.map((attachment: any) => ({
+                        ... attachment,
+                        signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
+                    }));
+                    this.attachments.forEach((element: any) => {                        
                         if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                             this.filterAttachTypes.push({
                                 id: element.type,
-                                label: element.typeLabel
+                                label: element.typeLabel,
+                                signable: element.signable
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
                         element.canDelete = element.canDelete;
                     });
+                    this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {
                         this.currentFilter = '';
                     }
                     this.reloadBadgeAttachments.emit(`${this.attachments.length}`);
+                    this.afterActionAttachment.emit('setInSignatureBook');
                     this.loading = false;
                 }),
                 catchError((err: any) => {
@@ -220,9 +266,8 @@ export class AttachmentsListComponent implements OnInit {
     }
 
     deleteAttachment(attachment: any) {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') } });
-
-        dialogRef.afterClosed().pipe(
+        this.dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') } });
+        this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.delete(`../rest/attachments/${attachment.resId}`)),
             tap(() => {
@@ -255,5 +300,55 @@ export class AttachmentsListComponent implements OnInit {
 
     getTitle(): string {
         return !this.externalSignatoryBook.canViewWorkflow() ? this.translate.instant('lang.unavailableForSignatoryBook') : this.translate.instant('lang.' + this.externalSignatoryBook.signatoryBookEnabled + 'Workflow');
+    }
+
+    loadAttachmentTypes() {
+        return new Promise((resolve) => {
+            this.http.get('../rest/attachmentsTypes').pipe(
+                tap((data: any) => {
+                    Object.keys(data.attachmentsTypes).forEach((type: any) => {
+                        this.attachmentTypes.push({
+                            typeId: data.attachmentsTypes[type].typeId,
+                            signable: data.attachmentsTypes[type].signable
+                        });
+                    });
+
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    this.dialogRef.close('');
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    setTaget(target: string): void {
+        this.filterAttachTypes = [];
+        this.attachmentsClone.forEach((element: any) => {                        
+            if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
+                this.filterAttachTypes.push({
+                    id: element.type,
+                    label: element.typeLabel,
+                    signable: element.signable
+                });
+            }
+        });
+        const attachmentsWithValidStatus: any[] = this.attachmentsClone.filter((attachment: any) => attachment.status === 'A_TRA');
+        const filterAttachTypesClone: any[] = JSON.parse(JSON.stringify(this.filterAttachTypes));
+        this.currentIntegrationTarget = target;
+        this.currentFilter = '';        
+        if (target === 'all') {
+            this.attachments = this.attachmentsClone;
+        } else if (target === 'sign') {
+            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && attachment.signable);
+        } else if (target === 'annex') {
+            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook && !attachment.signable);
+        } else if (target === 'inSignatureBook') {
+            this.attachments = attachmentsWithValidStatus.filter((attachment: any) => attachment.inSignatureBook);
+        }
+        const attachTypes: string[] = this.attachments.map((attachment: any) => attachment.type);
+        this.filterAttachTypes = filterAttachTypesClone.filter((element: any) => attachTypes.indexOf(element.id) > -1);
     }
 }

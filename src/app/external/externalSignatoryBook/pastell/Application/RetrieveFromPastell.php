@@ -61,7 +61,6 @@ class RetrieveFromPastell
         if (!$this->pastellConfigCheck->checkPastellConfig()) {
             return ['success' => [], 'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
         }
-
         $errors = [];
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
@@ -77,7 +76,7 @@ class RetrieveFromPastell
                         continue;
                     }
                 }
-
+                // Need res_id_master for parseLogIparapheur and res_id for updateDocument (for attachments and main document)
                 $resId = $value['res_id_master'] ?? $value['res_id'];
                 $result = $this->parseIParapheurLog->parseLogIparapheur($resId , $value['external_id']);
                 $this->resourceData->updateDocumentExternalStateSignatoryUser($value['res_id'], $documentType == 'resLetterbox' ? 'resource' : 'attachment', $result['signatory'] ?? '');

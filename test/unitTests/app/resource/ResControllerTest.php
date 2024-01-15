@@ -1346,7 +1346,7 @@ class ResControllerTest extends CourrierTestCase
         $this->assertIsString($responseBody['mimeType']);
 
         // ERROR
-        $response     = $resController->getFileContent($request, new Response(), ['resId' => -2]);
+        $response     = $resController->getFileContent($request, new Response(), ['resId' => 99]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
@@ -1369,7 +1369,7 @@ class ResControllerTest extends CourrierTestCase
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
 
-        $response     = $resController->getOriginalFileContent($request, new Response(), ['resId' => -2]);
+        $response     = $resController->getOriginalFileContent($request, new Response(), ['resId' => 99]);
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);
 
@@ -1405,7 +1405,7 @@ class ResControllerTest extends CourrierTestCase
 
         $this->assertEmpty($responseBody);
 
-        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => -2]);
+        $response     = $resController->getThumbnailContent($request, new Response(), ['resId' => self::$id * 1000]);
         $this->assertSame(400, $response->getStatusCode());
         $responseBody = json_decode((string)$response->getBody(), true);
         $this->assertSame('Document does not exist', $responseBody['errors']);

@@ -63,7 +63,6 @@ class ParseIParapheurLog
         if ($iParapheurHistory->MessageRetour->codeRetour == $this->pastellStates->getErrorCode()) {
             return ['error' => 'Log KO in iParapheur : [' . $iParapheurHistory->MessageRetour->severite . '] ' . $iParapheurHistory->MessageRetour->message];
         }
-
         foreach ($iParapheurHistory->LogDossier->LogDossier as $historyLog) {
             $status = $historyLog->status;
             if ($status == $this->pastellStates->getSignState()) {

@@ -86,5 +86,4 @@ class ResourceDataDb implements ResourceDataInterface
             ]);
         }
     }
-
 }

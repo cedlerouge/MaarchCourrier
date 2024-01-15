@@ -244,11 +244,8 @@ export class ExportComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         await this.getCustomFields();
-
         this.dataAvailableClone = JSON.parse(JSON.stringify(this.dataAvailable));
-
         await this.getTemplateFields();
-
         this.loading = false;
     }
 

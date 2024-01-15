@@ -231,7 +231,6 @@ if ($configRemoteSignatoryBook['id'] == 'ixbus') {
 } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
     $retrieveFromPastell = RetrieveFromPastellFactory::create();
     $retrievedMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['noVersion'], 'noVersion');
-
     $retrievedMails['noVersion'] = $retrievedMailsFromPastell['success'];
 
     if (!empty($retrievedMailsFromPastell['error'])) {
@@ -265,7 +264,6 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
     } elseif ($configRemoteSignatoryBook['id'] == 'pastell') {
         $retrieveFromPastell = RetrieveFromPastellFactory::create();
         $retrievedLetterboxMailsFromPastell = $retrieveFromPastell->retrieve($idsToRetrieve['resLetterbox'], 'resLetterbox');
-
         $retrievedLetterboxMails['resLetterbox'] = $retrievedLetterboxMailsFromPastell['success'];
 
         if (!empty($retrievedLetterboxMailsFromPastell['error'])) {

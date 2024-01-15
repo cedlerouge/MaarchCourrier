@@ -1,26 +1,30 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Docserver Controller
-* @author dev@maarch.org
-*/
+ * @brief Docserver Controller
+ * @author dev@maarch.org
+ */
 
 namespace Docserver\controllers;
 
+use DateTime;
 use Docserver\models\DocserverTypeModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
+use Parameter\models\ParameterModel;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
+use SrcCore\controllers\PasswordController;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 use Docserver\models\DocserverModel;
 
@@ -32,15 +36,26 @@ class DocserverController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
+        $queryParams = $request->getQueryParams();
+
         $sortedDocservers = [];
         $docservers = DocserverModel::get();
         foreach ($docservers as $docserver) {
+            if (!CoreConfigModel::isEnableDocserverEncryption() && !empty($docserver['is_encrypted'] ?? false)) {
+                continue;
+            }
             $sortedDocservers[$docserver['docserver_type_id']][] = DocserverController::getFormattedDocserver(['docserver' => $docserver]);
         }
 
         $docserversTypes = DocserverTypeModel::get(['select' => ['docserver_type_id', 'docserver_type_label'], 'orderBy' => ['docserver_type_label']]);
 
-        return $response->withJson(['docservers' => $sortedDocservers, 'types' => $docserversTypes]);
+        $return = ['docservers' => $sortedDocservers, 'types' => $docserversTypes];
+
+        if (isset($queryParams['getEncryptionStatus']) && $queryParams['getEncryptionStatus'] == 'true') {
+            $return['docserverEncryptionStatus'] = CoreConfigModel::isEnableDocserverEncryption();
+        }
+
+        return $response->withJson($return);
     }
 
     public function getById(Request $request, Response $response, array $aArgs)
@@ -109,17 +124,24 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['coll_id']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
         $existingDocserver = DocserverModel::getByDocserverId(['docserverId' => $data['docserver_id'], 'select' => ['1']]);
         if (!empty($existingDocserver)) {
-            return $response->withStatus(400)->withJson(['errors' => _ID. ' ' . _ALREADY_EXISTS]);
+            return $response->withStatus(400)->withJson(['errors' => _ID . ' ' . _ALREADY_EXISTS]);
         }
         $existingDocserverType = DocserverTypeModel::get(['select' => ['1'], 'where' => ['docserver_type_id = ?'], 'data' => [$data['docserver_type_id']]]);
         if (empty($existingDocserverType)) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver type does not exist']);
+        }
+        if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
+            $data['is_encrypted'] = false;
+        }
+        if (!empty($data['is_encrypted']) && in_array($data['docserver_type_id'], DocserverTypeController::FORBIDDEN_TYPE_IDS_FOR_ENCRYPTION)) {
+            return $response->withStatus(400)->withJson(['errors' => 'Docserver type is forbidden for encryption']);
         }
         if (!DocserverController::isPathAvailable(['path' => $data['path_template']])) {
             return $response->withStatus(400)->withJson(['errors' => _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
@@ -149,6 +171,76 @@ class DocserverController
         return $response->withJson(['docserver' => $id]);
     }
 
+    public function calculateSize(Request $request, Response $response)
+    {
+        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
+            return $response->withStatus(403)->withJson(['error' => 'Service forbidden']);
+        }
+
+        $tmpPath = CoreConfigModel::getTmpPath();
+
+        $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
+
+        if (file_exists($lockFile)) {
+            return $response->withStatus(403)->withJson(['error' => 'Process already running']);
+        }
+
+        file_put_contents($lockFile, "locked");
+
+        $last_calculation_date = ParameterModel::getById(['id' => 'last_docservers_size_calculation']);
+
+        if (!empty($last_calculation_date)) {
+            $lastCalculationDateTime = new DateTime($last_calculation_date['param_value_date']);
+            $now = new DateTime();
+            $hoursDiff = ($now->diff($lastCalculationDateTime)->days * 24) + $now->diff($lastCalculationDateTime)->h;
+
+            if ($hoursDiff < 2) {
+                unlink($lockFile);
+                return $response->withStatus(403)->withJson(['error' => 'Last calculation is too early']);
+            }
+        }
+
+        $docservers = DocserverModel::get(['select' => ['docserver_id', 'path_template']]);
+
+        foreach ($docservers as $ds) {
+            if (is_dir($ds['path_template']) && is_readable($ds['path_template'])) {
+                if (count(glob($ds['path_template'] . "/{,.}*", GLOB_BRACE)) === 2) {
+                    $size = 0;
+                } else {
+                    $contentFolder = $ds['path_template'] . DIRECTORY_SEPARATOR . "*";
+                    $contentFolder = str_replace('//', '/', $contentFolder);
+
+                    $output = shell_exec("du -sb $contentFolder | awk '{total += \$1} END {printf \"%.0f\", total}'");
+
+                    if ($output) {
+                        $size = trim($output);
+                    } else {
+                        unlink($lockFile);
+                        return $response->withStatus(400)->withJson(['error' => 'Size calculation error for docserver ' . $ds['docserver_id']]);
+                    }
+                }
+
+                DocserverModel::update([
+                    'set'   => [
+                        'actual_size_number' => $size
+                    ],
+                    'where' => ['docserver_id = ?'],
+                    'data'  => [$ds['docserver_id']]
+                ]);
+            }
+        }
+
+        if (empty($last_calculation_date)) {
+            ParameterModel::create(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        } else {
+            ParameterModel::update(['id' => 'last_docservers_size_calculation', 'param_value_date' => date('Y-m-d H:i:s')]);
+        }
+
+        unlink($lockFile);
+
+        return $response->withStatus(204);
+    }
+
     public function update(Request $request, Response $response, array $aArgs)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_docservers', 'userId' => $GLOBALS['id']])) {
@@ -161,6 +253,7 @@ class DocserverController
         $check = $check && Validator::notEmpty()->intVal()->validate($data['size_limit_number']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['path_template']);
         $check = $check && Validator::boolType()->validate($data['is_readonly']);
+        $check = $check && Validator::boolType()->validate($data['is_encrypted'] ?? false);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -187,12 +280,18 @@ class DocserverController
             $data['path_template'] .= "/";
         }
 
+        if (!CoreConfigModel::isEnableDocserverEncryption() || !isset($data['is_encrypted'])) {
+            $data['is_encrypted'] = false;
+        }
+
         DocserverModel::update([
             'set'   => [
                 'device_label'          => $data['device_label'],
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
-                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y'
+                'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
+                'is_encrypted'          => $data['is_encrypted'] ?? false ? 'false':'true'
+
             ],
             'where' => ['id = ?'],
             'data'  => [$aArgs['id']]
@@ -259,9 +358,10 @@ class DocserverController
 
         $docserverTypeObject = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id']]);
         $copyResult = DocserverController::copyOnDocServer([
-            'encodedResource'       => $aArgs['encodedResource'],
-            'destinationDir'        => $docinfo['destinationDir'],
-            'fileDestinationName'   => $docinfo['fileDestinationName'],
+            'isEncrypted'         => $docserver['is_encrypted'],
+            'encodedResource'     => $aArgs['encodedResource'],
+            'destinationDir'      => $docinfo['destinationDir'],
+            'fileDestinationName' => $docinfo['fileDestinationName'],
         ]);
         if (!empty($copyResult['errors'])) {
             return ['errors' => '[storeRessourceOnDocserver] ' . $copyResult['errors']];
@@ -285,8 +385,8 @@ class DocserverController
             'file_destination_name' => $docinfo['fileDestinationName'],
             'fileSize'              => $copyResult['fileSize'],
             'fingerPrint'           => StoreController::getFingerPrint([
-                'filePath'  => $docinfo['destinationDir'] . $docinfo['fileDestinationName'],
-                'mode'      => $docserverTypeObject['fingerprint_mode']
+                'filePath' => $docinfo['destinationDir'] . $docinfo['fileDestinationName'],
+                'mode'     => $docserverTypeObject['fingerprint_mode']
             ])
         ];
     }
@@ -377,8 +477,8 @@ class DocserverController
                 chmod($zeroOnePath, 0770);
 
                 return [
-                    'destinationDir'        => $zeroOnePath,
-                    'fileDestinationName'   => '0001_' . mt_rand(),
+                    'destinationDir'      => $zeroOnePath,
+                    'fileDestinationName' => '0001_' . mt_rand(),
                 ];
             }
         } else {
@@ -401,8 +501,8 @@ class DocserverController
                     chmod($zeroNumberPath, 0770);
 
                     return [
-                        'destinationDir'        => $zeroNumberPath,
-                        'fileDestinationName'   => '0001_' . mt_rand(),
+                        'destinationDir'      => $zeroNumberPath,
+                        'fileDestinationName' => '0001_' . mt_rand(),
                     ];
                 }
             } else {
@@ -415,8 +515,8 @@ class DocserverController
                 }
 
                 return [
-                    'destinationDir'        => $destinationDir,
-                    'fileDestinationName'   => str_pad($higher, 4, '0', STR_PAD_LEFT) . '_' . mt_rand(),
+                    'destinationDir'      => $destinationDir,
+                    'fileDestinationName' => str_pad($higher, 4, '0', STR_PAD_LEFT) . '_' . mt_rand(),
                 ];
             }
         }
@@ -426,6 +526,7 @@ class DocserverController
     {
         ValidatorModel::notEmpty($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
         ValidatorModel::stringType($aArgs, ['destinationDir', 'fileDestinationName', 'encodedResource']);
+        ValidatorModel::boolType($aArgs, ['isEncrypted']);
 
         if (file_exists($aArgs['destinationDir'] . $aArgs['fileDestinationName'])) {
             return ['errors' => '[copyOnDocserver] File already exists: ' . $aArgs['destinationDir'] . $aArgs['fileDestinationName']];
@@ -442,7 +543,14 @@ class DocserverController
             chmod($aArgs['destinationDir'], 0770);
         }
 
-        if (file_put_contents($aArgs['destinationDir'] . $aArgs['fileDestinationName'], base64_decode($aArgs['encodedResource'])) === false) {
+        $fileContent = base64_decode($aArgs['encodedResource']);
+
+        if (CoreConfigModel::isEnableDocserverEncryption() && !empty($aArgs['isEncrypted']) && !CoreConfigModel::useVhostEncryptKey()) {
+            $fileContent = PasswordController::encrypt(['dataToEncrypt' => $fileContent]);
+            $fileContent = base64_decode($fileContent);
+        }
+
+        if (file_put_contents($aArgs['destinationDir'] . $aArgs['fileDestinationName'], $fileContent) === false) {
             return ['errors' => '[copyOnDocserver] Copy on the docserver failed'];
         }
         if (DIRECTORY_SEPARATOR == '/' && !empty($GLOBALS['apacheUserAndGroup'])) {

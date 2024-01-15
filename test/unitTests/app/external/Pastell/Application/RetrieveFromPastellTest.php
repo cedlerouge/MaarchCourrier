@@ -118,7 +118,6 @@ class RetrieveFromPastellTest extends TestCase
         ];
         $documentType = 'resLetterbox';
 
-
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
@@ -165,7 +164,6 @@ class RetrieveFromPastellTest extends TestCase
         ];
         $documentType = 'resLetterbox';
 
-
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
@@ -205,7 +203,6 @@ class RetrieveFromPastellTest extends TestCase
             ]
         ];
         $documentType = 'resLetterbox';
-
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
@@ -256,7 +253,6 @@ class RetrieveFromPastellTest extends TestCase
             ]
         ];
         $documentType = 'resLetterbox';
-
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
@@ -329,7 +325,6 @@ class RetrieveFromPastellTest extends TestCase
         ];
         $documentType = 'resLetterbox';
 
-
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
         $this->assertSame(
@@ -346,7 +341,7 @@ class RetrieveFromPastellTest extends TestCase
         ];
 
         $idsToRetrieve = [
-            41  => [
+            41 => [
                 'res_id'      => 41,
                 'external_id' => 'djqfdh'
             ]
@@ -364,7 +359,7 @@ class RetrieveFromPastellTest extends TestCase
                         'status'      => 'validated',
                         'format'      => 'pdf',
                         'encodedFile' => 'toto',
-                        'signatory' => 'Bruce Wayne - XELIANS'
+                        'signatory'   => 'Bruce Wayne - XELIANS'
                     ]
                 ],
                 'error'   => [

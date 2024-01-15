@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Rest Routes File
-* @author dev@maarch.org
-*/
+ * @brief Rest Routes File
+ * @author dev@maarch.org
+ */
 
 require '../vendor/autoload.php';
 
@@ -54,7 +54,7 @@ $app->add(function (\Slim\Psr7\Request $request, \Psr\Http\Server\RequestHandler
     $currentRoute = $route->getPattern();
 
     if (!in_array($currentMethod . $currentRoute, \SrcCore\controllers\AuthenticationController::ROUTES_WITHOUT_AUTHENTICATION)) {
-        if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWhitoutAuthentication(['route' => $currentMethod.$currentRoute])) {
+        if (!\SrcCore\controllers\AuthenticationController::canAccessInstallerWithoutAuthentication(['route' => $currentMethod.$currentRoute])) {
             $authorizationHeaders = $request->getHeader('Authorization');
             $userId = \SrcCore\controllers\AuthenticationController::authentication($authorizationHeaders);
             if (!empty($userId)) {
@@ -123,14 +123,12 @@ $app->put('/attachments/{id}/unsign', \SignatureBook\controllers\SignatureBookCo
 $app->post('/attachments/{id}/mailing', \Attachment\controllers\AttachmentController::class . ':getMailingById');
 $app->get('/attachmentsInformations', \Attachment\controllers\AttachmentController::class . ':getByChrono');
 
-
 //AttachmentsTypes
 $app->get('/attachmentsTypes', \Attachment\controllers\AttachmentTypeController::class . ':get');
 $app->post('/attachmentsTypes', \Attachment\controllers\AttachmentTypeController::class . ':create');
 $app->get('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeController::class . ':getById');
 $app->put('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeController::class . ':update');
 $app->delete('/attachmentsTypes/{id}', \Attachment\controllers\AttachmentTypeController::class . ':delete');
-
 
 //AutoComplete
 $app->get('/autocomplete/users', \SrcCore\controllers\AutoCompleteController::class . ':getUsers');
@@ -256,6 +254,7 @@ $app->get('/departments', \Resource\controllers\DepartmentController::class . ':
 //Docservers
 $app->get('/docservers', \Docserver\controllers\DocserverController::class . ':get');
 $app->post('/docservers', \Docserver\controllers\DocserverController::class . ':create');
+$app->post('/docservers/calculateSize', \Docserver\controllers\DocserverController::class . ':calculateSize');
 $app->get('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':getById');
 $app->put('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':update');
 $app->delete('/docservers/{id}', \Docserver\controllers\DocserverController::class . ':delete');
@@ -774,7 +773,6 @@ $app->put('/multigest/accounts/{id}', \Multigest\controllers\MultigestController
 $app->delete('/multigest/accounts/{id}', \Multigest\controllers\MultigestController::class . ':deleteAccount');
 $app->post('/multigest/checkAccounts', \Multigest\controllers\MultigestController::class . ':checkAccount');
 
-
 $contentLengthMiddleware = new \Slim\Middleware\ContentLengthMiddleware();
 $app->add($contentLengthMiddleware);
 
@@ -785,7 +783,6 @@ $app->add($contentLengthMiddleware);
  * @param bool $logErrors -> Parameter is passed to the default ErrorHandler
  * @param bool $logErrorDetails -> Display error details in error log
  * which can be replaced by a callable of your choice.
-
  * Note: This middleware should be added last. It will not handle any exceptions/errors
  * for middleware added after it.
  */
