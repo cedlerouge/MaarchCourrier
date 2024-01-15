@@ -32,7 +32,13 @@ abstract class NotificationScheduleModelAbstract
         $file = [];
         foreach ($aArgs['crontab'] as $id => $cronValue) {
             if ($cronValue['state'] == 'hidden') {
-                $file[$id] = "{$aCrontab[$id]['m']}\t{$aCrontab[$id]['h']}\t{$aCrontab[$id]['dom']}\t{$aCrontab[$id]['mon']}\t{$aCrontab[$id]['dow']}\t{$aCrontab[$id]['cmd']}";
+                $m = $aCrontab[$id]['m'] ?? null;
+                $h = $aCrontab[$id]['h'] ?? null;
+                $dom = $aCrontab[$id]['dom'] ?? null;
+                $mon = $aCrontab[$id]['mon'] ?? null;
+                $dow = $aCrontab[$id]['dow'] ?? null;
+                $cmd = $aCrontab[$id]['cmd'] ?? null;
+                $file[$id] = "{$m}\t{$h}\t{$dom}\t{$mon}\t{$dow}\t{$cmd}";
             } elseif ($cronValue['state'] != 'deleted') {
                 $file[$id] = "{$cronValue['m']}\t{$cronValue['h']}\t{$cronValue['dom']}\t{$cronValue['mon']}\t{$cronValue['dow']}\t{$cronValue['cmd']}";
             }
