@@ -15,6 +15,7 @@
 
 namespace Notification\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
@@ -61,13 +62,13 @@ class NotificationController
 
         $data = [];
 
-        $data['event']         = NotificationModel::getEvents();
-        $data['template']      = NotificationModel::getTemplate();
+        $data['event'] = NotificationModel::getEvents();
+        $data['template'] = NotificationModel::getTemplate();
         $data['diffusionType'] = NotificationModel::getDiffusionType();
-        $data['groups']        = NotificationModel::getDiffusionTypeGroups();
-        $data['users']         = NotificationModel::getDiffusionTypesUsers();
-        $data['entities']      = NotificationModel::getDiffusionTypeEntities();
-        $data['status']        = NotificationModel::getDiffusionTypeStatus();
+        $data['groups'] = NotificationModel::getDiffusionTypeGroups();
+        $data['users'] = NotificationModel::getDiffusionTypesUsers();
+        $data['entities'] = NotificationModel::getDiffusionTypeEntities();
+        $data['status'] = NotificationModel::getDiffusionTypeStatus();
 
         $notification['event_id'] = (string)$notification['event_id'];
         $notification['data'] = $data;
@@ -75,27 +76,30 @@ class NotificationController
         $filename = 'notification';
         $customId = CoreConfigModel::getCustomId();
         if ($customId != '') {
-            $filename .= '_'.str_replace(' ', '', $customId);
+            $filename .= '_' . str_replace(' ', '', $customId);
         }
-        $filename .= '_'.$notification['notification_id'].'.sh';
+        $filename .= '_' . $notification['notification_id'] . '.sh';
 
-        $corePath = str_replace('custom/'.$customId.'/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
         $corePath = str_replace('src/app/notification/controllers', '', $corePath);
         if ($customId != '') {
-            $pathToFolow = $corePath.'custom/'.$customId.'/';
+            $pathToFollow = $corePath . 'custom/' . $customId . '/';
         } else {
-            $pathToFolow = $corePath;
+            $pathToFollow = $corePath;
         }
 
         $notification['scriptcreated'] = false;
 
-        if (file_exists($pathToFolow.'bin/notification/scripts/'.$filename)) {
+        if (file_exists($pathToFollow . 'bin/notification/scripts/' . $filename)) {
             $notification['scriptcreated'] = true;
         }
 
         return $response->withJson(['notification' => $notification]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function create(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
@@ -108,7 +112,7 @@ class NotificationController
         if (!empty($data['event_id']) && $data['event_id'] !== 'baskets') {
             $data['send_as_recap'] = false;
         }
-        
+
         $errors = $this->control($data, 'create');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
@@ -143,7 +147,7 @@ class NotificationController
                 'recordId'  => $data['notification_id'],
                 'eventType' => 'ADD',
                 'eventId'   => 'notificationsadd',
-                'info'      => _ADD_NOTIFICATIONS.' : '.$data['notification_id'],
+                'info'      => _ADD_NOTIFICATIONS . ' : ' . $data['notification_id'],
             ]);
 
             return $response->withJson(NotificationModel::getByNotificationId(['notificationId' => $data['notification_id']]));
@@ -152,6 +156,9 @@ class NotificationController
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function update(Request $request, Response $response, array $aArgs)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
@@ -189,7 +196,7 @@ class NotificationController
             'recordId'  => $data['notification_sid'],
             'eventType' => 'UP',
             'eventId'   => 'notificationsup',
-            'info'      => _MODIFY_NOTIFICATIONS.' : '.$data['notification_sid'],
+            'info'      => _MODIFY_NOTIFICATIONS . ' : ' . $data['notification_sid'],
         ]);
 
         return $response->withJson(['notification' => $notification]);
@@ -210,12 +217,12 @@ class NotificationController
         NotificationModel::delete(['notification_sid' => $aArgs['id']]);
 
         HistoryController::add([
-                'tableName' => 'notifications',
-                'recordId'  => $aArgs['id'],
-                'eventType' => 'DEL',
-                'eventId'   => 'notificationsdel',
-                'info'      => _DELETE_NOTIFICATIONS.' : '.$aArgs['id'],
-            ]);
+            'tableName' => 'notifications',
+            'recordId'  => $aArgs['id'],
+            'eventType' => 'DEL',
+            'eventId'   => 'notificationsdel',
+            'info'      => _DELETE_NOTIFICATIONS . ' : ' . $aArgs['id'],
+        ]);
 
         if (PHP_OS == 'Linux') {
             // delete scheduled notification
@@ -223,24 +230,24 @@ class NotificationController
 
             $customId = CoreConfigModel::getCustomId();
             if ($customId != '') {
-                $filename .= '_'.str_replace(' ', '', $customId);
+                $filename .= '_' . str_replace(' ', '', $customId);
             }
-            $filename .= '_'.$notification['notification_id'].'.sh';
+            $filename .= '_' . $notification['notification_id'] . '.sh';
 
             $cronTab = NotificationScheduleModel::getCrontab();
 
             $flagCron = false;
 
-            $corePath = str_replace('custom/'.$customId.'/src/app/notification/controllers', '', __DIR__);
+            $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
             $corePath = str_replace('src/app/notification/controllers', '', $corePath);
             if ($customId != '') {
-                $pathToFolow = $corePath.'custom/'.$customId.'/';
+                $pathToFollow = $corePath . 'custom/' . $customId . '/';
             } else {
-                $pathToFolow = $corePath;
+                $pathToFollow = $corePath;
             }
 
             foreach ($cronTab as $key => $value) {
-                if (in_array($value['cmd'], [$pathToFolow.'bin/notification/scripts/'.$filename])) {
+                if ($value['cmd'] == $pathToFollow . 'bin/notification/scripts/' . $filename) {
                     $cronTab[$key]['state'] = 'deleted';
                     $flagCron = true;
                     break;
@@ -251,7 +258,7 @@ class NotificationController
                 NotificationScheduleModel::saveCrontab($cronTab);
             }
 
-            $filePath = $pathToFolow.'bin/notification/scripts/'.$filename;
+            $filePath = $pathToFollow . 'bin/notification/scripts/' . $filename;
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
@@ -262,7 +269,7 @@ class NotificationController
         ]);
     }
 
-    protected function control($aArgs, $mode)
+    protected function control($aArgs, $mode): array
     {
         $errors = [];
 
@@ -314,13 +321,13 @@ class NotificationController
         $notification['attachfor_properties'] = [];
         $data = [];
 
-        $data['event']         = NotificationModel::getEvents();
-        $data['template']      = NotificationModel::getTemplate();
+        $data['event'] = NotificationModel::getEvents();
+        $data['template'] = NotificationModel::getTemplate();
         $data['diffusionType'] = NotificationModel::getDiffusionType();
-        $data['groups']        = NotificationModel::getDiffusionTypeGroups();
-        $data['users']         = NotificationModel::getDiffusionTypesUsers();
-        $data['entities']      = NotificationModel::getDiffusionTypeEntities();
-        $data['status']        = NotificationModel::getDiffusionTypeStatus();
+        $data['groups'] = NotificationModel::getDiffusionTypeGroups();
+        $data['users'] = NotificationModel::getDiffusionTypesUsers();
+        $data['entities'] = NotificationModel::getDiffusionTypeEntities();
+        $data['status'] = NotificationModel::getDiffusionTypeStatus();
 
         $notification['data'] = $data;
 
