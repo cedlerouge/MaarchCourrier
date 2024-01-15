@@ -4,6 +4,7 @@ import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { NotificationService } from './notification/notification.service';
 import { AuthService } from './auth.service';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -26,6 +27,7 @@ export class AuthInterceptor implements HttpInterceptor {
         public http: HttpClient,
         public notificationService: NotificationService,
         public authService: AuthService,
+        private router: Router,
     ) { }
 
     addAuthHeader(request: HttpRequest<any>) {
@@ -77,6 +79,9 @@ export class AuthInterceptor implements HttpInterceptor {
                     // Disconnect user if bad token process
                     if (error.status === 401) {
                         return this.handle401Error(request, next);
+                    } else if (error.status === 403) {
+                        this.notificationService.handleSoftErrors(error);
+                        return this.router.navigate(['home']);
                     } else {
                         const response = new HttpErrorResponse({
                             error: error.error,
