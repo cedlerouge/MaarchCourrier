@@ -15,6 +15,9 @@
       ],
       "@models/*":  [
         "../../src/frontend/models/*"
+      ],
+      "@langs/*": [
+        "../lang/*"
       ]
     }
   },
