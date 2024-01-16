@@ -747,13 +747,16 @@ class FastParapheurController
         $signatoryInfo = null;
 
         if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
-            $signatoryInfo = DatabaseModel::select([
+            $user = DatabaseModel::select([
                 'select'    => ['firstname', 'lastname', 'users.id'],
                 'table'     => ['listinstance', 'users'],
                 'left_join' => ['listinstance.item_id = users.id'],
                 'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
                 'data'      => [$args['resId'], 'VISA_CIRCUIT']
-            ])[0];
+            ]);
+            if(!empty($user[0])) {
+                $signatoryInfo = $user[0];
+            }
         } else {
             if (!empty($args['valueResponse']['userFastId'] ?? null)) {
                 $signatoryInfo = UserModel::get([
