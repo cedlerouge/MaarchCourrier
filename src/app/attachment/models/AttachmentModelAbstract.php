@@ -14,18 +14,24 @@
 
 namespace Attachment\models;
 
+use Exception;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 
 abstract class AttachmentModelAbstract
 {
-    public static function get(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['select']);
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($aArgs, ['limit']);
 
-        $attachments = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'   => $aArgs['select'],
             'table'    => ['res_attachments'],
             'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
@@ -34,10 +40,13 @@ abstract class AttachmentModelAbstract
             'groupBy'  => empty($aArgs['groupBy']) ? [] : $aArgs['groupBy'],
             'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
-
-        return $attachments;
     }
 
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getById(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
@@ -58,6 +67,11 @@ abstract class AttachmentModelAbstract
         return $attachment[0];
     }
 
+    /**
+     * @param array $args
+     * @return int|mixed
+     * @throws Exception
+     */
     public static function create(array $args)
     {
         ValidatorModel::notEmpty($args, ['format', 'typist', 'creation_date', 'docserver_id', 'path', 'filename', 'fingerprint', 'filesize', 'status', 'relation']);
@@ -77,7 +91,12 @@ abstract class AttachmentModelAbstract
         return $args['res_id'];
     }
 
-    public static function update(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['set', 'postSet', 'where', 'data']);
@@ -93,7 +112,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
-    public static function freezeAttachment(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function freezeAttachment(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId', 'externalId']);
         ValidatorModel::intType($aArgs, ['resId']);
@@ -118,7 +142,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
-    public static function setInSignatureBook(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function setInSignatureBook(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -142,7 +171,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
-    public static function setInSendAttachment(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function setInSendAttachment(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -166,7 +200,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
-    public static function hasAttachmentsSignedByResId(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasAttachmentsSignedByResId(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
@@ -185,6 +224,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
+    /**
+     * @param int $resIdMaster
+     * @param int $originId
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getLastVersionByOriginId(int $resIdMaster, int $originId)
     {
         $attachment = DatabaseModel::select([
@@ -203,7 +248,12 @@ abstract class AttachmentModelAbstract
         return $attachment[0];
     }
 
-    public static function delete(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -220,7 +270,12 @@ abstract class AttachmentModelAbstract
         return true;
     }
 
-    public static function removeExternalLink(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function removeExternalLink(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'externalId']);
         ValidatorModel::intType($args, ['resId', 'externalId']);
