@@ -43,8 +43,6 @@ use Resource\controllers\SummarySheetController;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Convert\models\AdrModel;
 use User\models\UserModel;
-use Contact\controllers\ContactController;
-
 
 /**
  * @codeCoverageIgnore
@@ -409,7 +407,24 @@ class FastParapheurController
                         'docItem' => $value,
                         'type'    => ($version == 'resLetterbox' ? 'resource' : 'attachment')
                     ]);
+                } else {
+                    $userId = UserModel::get([
+                        'select' => ['id'],
+                        'where'  => ['mode = ? OR mode = ?'],
+                        'data'   => ['root_visible', 'root_invisible'],
+                        'limit'  => 1
+                    ])[0]['id'];
+
+                    HistoryController::add([
+                        'tableName' => 'res_letterbox',
+                        'recordId'  => $value['res_id_master'] ?? $value['res_id'],
+                        'eventType' => 'ACTION#1',
+                        'eventId'   => '1',
+                        'userId'    => $userId,
+                        'info'      => "[fastParapheur api] {$historyResponse['errors']}"
+                    ]);
                 }
+
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
             }
@@ -469,6 +484,10 @@ class FastParapheurController
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
+
+                    // Mettre vide pour simuler une erreur de récupération du fichier encodé
+                    //$args['idsToRetrieve'][$version][$resId]['encodedFile'] = '';
+
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
 
@@ -558,6 +577,9 @@ class FastParapheurController
             }
         }
 
+        // Simuler une erreur dans la fonction de récupération des documents signés
+        // return ['error' => 'Une erreur inconnue est survenue'];
+
         return $args['idsToRetrieve'];
     }
 
@@ -629,7 +651,6 @@ class FastParapheurController
             $documentPathToZip[] = ['path' => $signDocumentPath, 'filename' => $filename];
         }
 
-
         $fdc = FastParapheurController::getProof(['documentId' => $args['documentId'], 'config' => $args['config']]);
         if (!empty($fdc['errors'])) {
             return ['errors' => $fdc['errors']];
@@ -644,7 +665,6 @@ class FastParapheurController
         ];
         $proof['history'] = $args['historyData'];
 
-
         $proofJson = json_encode($proof, JSON_PRETTY_PRINT);
         $proofJsonPath = $tmpPath . 'maarchProof' . "_" . rand() . '.json';
         $proofCreation = file_put_contents($proofJsonPath, $proofJson);
@@ -652,7 +672,6 @@ class FastParapheurController
             return ['errors' => 'Cannot create proof json'];
         }
         $documentPathToZip[] = ['path' => $proofJsonPath, 'filename' => 'maarchProof.json'];
-
 
         $zipFileContent = null;
         $zip = new \ZipArchive();
@@ -883,9 +902,9 @@ class FastParapheurController
             $mainDocumentIntegration = json_decode($annexes['letterbox'][0]['integrations'], true);
             $externalId = json_decode($annexes['letterbox'][0]['external_id'], true);
             if ($mainDocumentIntegration['inSignatureBook'] && empty($externalId['signatureBookId'])) {
-                $resId   = $annexes['letterbox'][0]['res_id'];
+                $resId = $annexes['letterbox'][0]['res_id'];
                 $subject = $annexes['letterbox'][0]['subject'];
-                $collId  = 'letterbox_coll';
+                $collId = 'letterbox_coll';
                 unset($annexes['letterbox']);
 
                 $response = FastParapheurController::uploadFile([
@@ -933,7 +952,7 @@ class FastParapheurController
         $zip->addFile($attachmentFilePath, $attachmentFileName);
 
         if (!empty($args['annexes']['letterbox'][0]['filepath'])) {
-            $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
+                $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
         }
 
         if (isset($args['annexes']['attachments'])) {
@@ -1519,6 +1538,9 @@ class FastParapheurController
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
             return ['code' => $curlReturn['code'], 'errors' => $curlReturn['response']['developerMessage']];
         }
+
+        // Simuler une erreur dans la récupération de l'historique de document FAST
+        // return ['code' => $curlReturn['code'], 'errors' => 'Fake error in Fast history'];
 
         return ['response' => $curlReturn['response']];
     }

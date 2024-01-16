@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Res Model
-* @author dev@maarch.org
-*/
+ * @brief Res Model
+ * @author dev@maarch.org
+ */
 
 namespace Resource\models;
 
@@ -47,13 +47,13 @@ abstract class ResModelAbstract
         ValidatorModel::intType($args, ['limit']);
 
         $resources = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => empty($args['where']) ? [] : $args['where'],
-            'data'      => empty($args['data']) ? [] : $args['data'],
-            'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy'],
-            'limit'     => empty($args['limit']) ? 0 : $args['limit'],
-            'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy'],
+            'select'   => $args['select'],
+            'table'    => ['res_letterbox'],
+            'where'    => empty($args['where']) ? [] : $args['where'],
+            'data'     => empty($args['data']) ? [] : $args['data'],
+            'order_by' => empty($args['orderBy']) ? [] : $args['orderBy'],
+            'limit'    => empty($args['limit']) ? 0 : $args['limit'],
+            'groupBy'  => empty($args['groupBy']) ? [] : $args['groupBy'],
         ]);
 
         return $resources;
@@ -65,10 +65,10 @@ abstract class ResModelAbstract
         ValidatorModel::intVal($args, ['resId']);
 
         $resource = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['resId']]
+            'select' => $args['select'],
+            'table'  => ['res_letterbox'],
+            'where'  => ['res_id = ?'],
+            'data'   => [$args['resId']]
         ]);
 
         if (empty($resource[0])) {
@@ -98,11 +98,11 @@ abstract class ResModelAbstract
         ValidatorModel::arrayType($args, ['set', 'postSet', 'where', 'data']);
 
         DatabaseModel::update([
-            'table'     => 'res_letterbox',
-            'set'       => $args['set'] ?? null,
-            'postSet'   => $args['postSet'] ?? null,
-            'where'     => $args['where'],
-            'data'      => $args['data']
+            'table'   => 'res_letterbox',
+            'set'     => $args['set'] ?? null,
+            'postSet' => $args['postSet'] ?? null,
+            'where'   => $args['where'],
+            'data'    => $args['data']
         ]);
 
         return true;
@@ -129,9 +129,9 @@ abstract class ResModelAbstract
         ValidatorModel::arrayType($aArgs, ['select']);
 
         $resources = DatabaseModel::select([
-            'select'    => $aArgs['select'],
-            'table'     => ['history, res_letterbox, status'],
-            'where'     => [
+            'select'   => $aArgs['select'],
+            'table'    => ['history, res_letterbox, status'],
+            'where'    => [
                 'history.user_id = ?', 'history.table_name IN (?)',
                 'history.record_id IS NOT NULL', 'history.record_id != ?',
                 'history.event_id != ?', 'history.event_id NOT LIKE ?',
@@ -139,10 +139,10 @@ abstract class ResModelAbstract
                 'res_letterbox.status != ?',
                 'res_letterbox.status = status.id'
             ],
-            'data'      => [$aArgs['userId'], ['res_letterbox', 'res_view_letterbox'], 'none', 'linkup', 'attach%', 'DEL'],
-            'groupBy'   => ['res_letterbox.type_id', 'res_letterbox.creation_date', 'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.status', 'res_letterbox.category_id'],
-            'order_by'  => ['MAX(history.event_date) DESC'],
-            'limit'     => $aArgs['limit']
+            'data'     => [$aArgs['userId'], ['res_letterbox', 'res_view_letterbox'], 'none', 'linkup', 'attach%', 'DEL'],
+            'groupBy'  => ['res_letterbox.type_id', 'res_letterbox.creation_date', 'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.status', 'res_letterbox.category_id'],
+            'order_by' => ['MAX(history.event_date) DESC'],
+            'limit'    => $aArgs['limit']
         ]);
 
         return $resources;
@@ -154,10 +154,10 @@ abstract class ResModelAbstract
         ValidatorModel::stringType($args, ['altIdentifier']);
 
         $resource = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => ['alt_identifier = ?'],
-            'data'      => [$args['altIdentifier']]
+            'select' => empty($args['select']) ? ['*'] : $args['select'],
+            'table'  => ['res_letterbox'],
+            'where'  => ['alt_identifier = ?'],
+            'data'   => [$args['altIdentifier']]
         ]);
 
         if (empty($resource[0])) {
@@ -171,24 +171,24 @@ abstract class ResModelAbstract
     {
         $categories = [
             [
-                'id'              => 'incoming',
-                'label'           => _INCOMING
+                'id'    => 'incoming',
+                'label' => _INCOMING
             ],
             [
-                'id'              => 'outgoing',
-                'label'           =>  _OUTGOING
+                'id'    => 'outgoing',
+                'label' => _OUTGOING
             ],
             [
-                'id'              => 'internal',
-                'label'           => _INTERNAL
+                'id'    => 'internal',
+                'label' => _INTERNAL
             ],
             [
-                'id'              => 'ged_doc',
-                'label'           => _GED_DOC
+                'id'    => 'ged_doc',
+                'label' => _GED_DOC
             ],
             [
-                'id'              => 'registeredMail',
-                'label'           => _REGISTERED_MAIL
+                'id'    => 'registeredMail',
+                'label' => _REGISTERED_MAIL
             ]
         ];
 
@@ -216,7 +216,7 @@ abstract class ResModelAbstract
 
         DatabaseModel::update([
             'table'   => 'res_letterbox',
-            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "{}"],
+            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "'{}'::jsonb"],
             'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
             'data'    => [$args['resId'], $args['externalId']]
         ]);

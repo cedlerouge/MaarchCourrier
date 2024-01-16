@@ -19,14 +19,17 @@ use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use History\controllers\HistoryController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
+use SrcCore\controllers\LogsController;
 use SrcCore\models\CurlModel;
 use SrcCore\models\TextFormatModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
+use User\models\UserModel;
 
 /**
  * @codeCoverageIgnore
@@ -370,6 +373,33 @@ class IxbusController
                     ]);
                 }
             } else {
+                if (!empty($folderData['error'])) {
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'ERROR',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "[Ixbus api] {$folderData['error']}"
+                    ]);
+
+                    $userId = UserModel::get([
+                        'select' => ['id'],
+                        'where'  => ['mode = ? OR mode = ?'],
+                        'data'   => ['root_visible', 'root_invisible'],
+                        'limit'  => 1
+                    ])[0]['id'];
+
+                    HistoryController::add([
+                        'tableName' => 'res_letterbox',
+                        'recordId'  => $value['res_id_master'] ?? $value['res_id'],
+                        'eventType' => 'ACTION#1',
+                        'eventId'   => '1',
+                        'userId'    => $userId,
+                        'info'      => "[Ixbus api] {$folderData['error']}"
+                    ]);
+                }
+
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
             }
         }
