@@ -16,7 +16,7 @@
     </testsuite>
     <testsuite name="MaarchTestSuite">
       <directory>test/unitTests/core/</directory>
-      <directory>test/unitTests/app/external/Pastell/</directory>
+      <directory>test/unitTests/app/external/</directory>
       <directory>test/unitTests/app/resource/Application/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
@@ -68,7 +68,6 @@
       <file>test/unitTests/app/registeredMail/IssuingSiteControllerTest.php</file>
       <file>test/unitTests/app/registeredMail/RegisteredNumberRangeControllerTest.php</file>
       <file>test/unitTests/app/home/TileControllerTest.php</file>
-      <file>test/unitTests/app/external/signatoryBook/FastParapheurControllerTest.php</file>
       <file>test/unitTests/app/resource/Infrastructure/EncryptedResourceTest.php</file>
 <!--      &lt;!&ndash; The last one should be history &ndash;&gt;-->
       <file>test/unitTests/app/history/HistoryControllerTest.php</file>
