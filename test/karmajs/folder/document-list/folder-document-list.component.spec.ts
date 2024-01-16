@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from "@angular/core/testing"
-import { FolderDocumentListComponent } from "./folder-document-list.component";
+import { FolderDocumentListComponent } from "../../../../src/frontend/app/folder/document-list/folder-document-list.component";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
@@ -7,13 +7,13 @@ import { RouterTestingModule } from "@angular/router/testing";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DatePipe } from "@angular/common";
-import { AdministrationService } from "@appRoot/administration/administration.service";
-import { PrivilegeService } from "@service/privileges.service";
-import { FoldersService } from "../folders.service";
-import { FiltersListService } from "@service/filtersList.service";
-import { AppListModule } from "@appRoot/app-list.module";
-import { PanelListComponent } from "@appRoot/list/panel/panel-list.component";
-import * as langFrJson from '../../../../lang/lang-fr.json';
+import { AdministrationService } from '../../../../src/frontend/app/administration/administration.service';
+import { PrivilegeService } from '../../../../src/frontend/service/privileges.service';
+import { FoldersService } from '../../../../src/frontend/app/folder/folders.service';
+import { FiltersListService } from "../../../../src/frontend/service/filtersList.service";
+import { AppListModule } from "../../../../src/frontend/app/app-list.module";
+import { PanelListComponent } from "../../../../src/frontend/app/list/panel/panel-list.component";
+import * as langFrJson from '../../../../src/lang/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -50,7 +50,7 @@ describe('Folder Document List Component', async () => {
             ],
             declarations: [FolderDocumentListComponent, PanelListComponent]
         }).compileComponents();
-    
+
         translateService = TestBed.inject(TranslateService);
         translateService.use('fr');
     });
@@ -75,7 +75,7 @@ describe('Folder Document List Component', async () => {
             const tabelCells: any[] = nativeElement.querySelectorAll('.mat-cell');
             const exportBtn = nativeElement.querySelector('button[id=exportDatas]');
             const mainInfo: any[] = Array.from(nativeElement.querySelectorAll('.main-info-action'));
-            
+
             expect(tabelCells.length).toEqual(5); // should display 5 resources
             expect(exportBtn.disabled).toBeTruthy(); // export data button should be disabled
 
