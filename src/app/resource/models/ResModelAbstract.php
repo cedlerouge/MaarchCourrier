@@ -14,18 +14,24 @@
 
 namespace Resource\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 abstract class ResModelAbstract
 {
-    public static function getOnView(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getOnView(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['select']);
         ValidatorModel::arrayType($aArgs, ['select', 'table', 'leftJoin', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($aArgs, ['limit', 'offset']);
 
-        $aResources = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => $aArgs['select'],
             'table'     => array_merge(['res_view_letterbox'], $aArgs['table'] ?? []),
             'left_join' => empty($aArgs['leftJoin']) ? [] : $aArgs['leftJoin'],
@@ -36,17 +42,20 @@ abstract class ResModelAbstract
             'offset'    => empty($aArgs['offset']) ? 0 : $aArgs['offset'],
             'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
-
-        return $aResources;
     }
 
-    public static function get(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $args): array
     {
         ValidatorModel::notEmpty($args, ['select']);
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($args, ['limit']);
 
-        $resources = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => $args['select'],
             'table'     => ['res_letterbox'],
             'where'     => empty($args['where']) ? [] : $args['where'],
@@ -55,10 +64,13 @@ abstract class ResModelAbstract
             'limit'     => empty($args['limit']) ? 0 : $args['limit'],
             'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy'],
         ]);
-
-        return $resources;
     }
 
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getById(array $args)
     {
         ValidatorModel::notEmpty($args, ['resId']);
@@ -78,7 +90,12 @@ abstract class ResModelAbstract
         return $resource[0];
     }
 
-    public static function create(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function create(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['res_id', 'model_id', 'category_id', 'typist', 'creation_date']);
         ValidatorModel::stringType($args, ['category_id', 'creation_date', 'format', 'docserver_id', 'path', 'filename', 'fingerprint']);
@@ -92,7 +109,12 @@ abstract class ResModelAbstract
         return true;
     }
 
-    public static function update(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['set', 'postSet', 'where', 'data']);
@@ -108,7 +130,12 @@ abstract class ResModelAbstract
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -122,13 +149,18 @@ abstract class ResModelAbstract
         return true;
     }
 
-    public static function getLastResources(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getLastResources(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['limit', 'select']);
         ValidatorModel::intType($aArgs, ['limit', 'userId',]);
         ValidatorModel::arrayType($aArgs, ['select']);
 
-        $resources = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => $aArgs['select'],
             'table'     => ['history, res_letterbox, status'],
             'where'     => [
@@ -144,10 +176,13 @@ abstract class ResModelAbstract
             'order_by'  => ['MAX(history.event_date) DESC'],
             'limit'     => $aArgs['limit']
         ]);
-
-        return $resources;
     }
 
+    /**
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
     public static function getByAltIdentifier(array $args)
     {
         ValidatorModel::notEmpty($args, ['altIdentifier']);
@@ -167,9 +202,12 @@ abstract class ResModelAbstract
         return $resource[0];
     }
 
-    public static function getCategories()
+    /**
+     * @return array[]
+     */
+    public static function getCategories(): array
     {
-        $categories = [
+        return [
             [
                 'id'              => 'incoming',
                 'label'           => _INCOMING
@@ -191,10 +229,13 @@ abstract class ResModelAbstract
                 'label'           => _REGISTERED_MAIL
             ]
         ];
-
-        return $categories;
     }
 
+    /**
+     * @param array $args
+     * @return mixed|string
+     * @throws Exception
+     */
     public static function getCategoryLabel(array $args)
     {
         ValidatorModel::stringType($args, ['categoryId']);
@@ -209,14 +250,19 @@ abstract class ResModelAbstract
         return '';
     }
 
-    public static function removeExternalLink(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function removeExternalLink(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'externalId']);
         ValidatorModel::intType($args, ['resId', 'externalId']);
 
         DatabaseModel::update([
             'table'   => 'res_letterbox',
-            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "{}"],
+            'postSet' => ['external_id' => "external_id - 'signatureBookId'", 'external_state' => "'{}'::jsonb"],
             'where'   => ['res_id = ?', "external_id->>'signatureBookId' = ?"],
             'data'    => [$args['resId'], $args['externalId']]
         ]);
