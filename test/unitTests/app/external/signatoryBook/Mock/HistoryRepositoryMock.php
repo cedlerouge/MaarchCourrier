@@ -7,7 +7,7 @@
  *
  */
 
-namespace unitTests\app\external\signatoryBook\Mock;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Mock;
 
 use ExternalSignatoryBook\Domain\Ports\HistoryRepositoryInterface;
 

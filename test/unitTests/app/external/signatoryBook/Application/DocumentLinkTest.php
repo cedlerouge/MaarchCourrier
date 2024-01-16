@@ -13,10 +13,10 @@ use ExternalSignatoryBook\Application\DocumentLink;
 use ExternalSignatoryBook\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use ExternalSignatoryBook\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use MaarchCourrier\Tests\CourrierTestCase;
-use unitTests\app\external\signatoryBook\Mock\AttachmentRepositoryMock;
-use unitTests\app\external\signatoryBook\Mock\HistoryRepositoryMock;
-use unitTests\app\external\signatoryBook\Mock\ResourceRepositoryMock;
-use unitTests\app\external\signatoryBook\Mock\UserRepositoryMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\AttachmentRepositoryMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\HistoryRepositoryMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\ResourceRepositoryMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\UserRepositoryMock;
 
 class DocumentLinkTest extends CourrierTestCase
 {
