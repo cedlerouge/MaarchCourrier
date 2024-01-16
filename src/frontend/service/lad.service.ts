@@ -4,7 +4,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { catchError, filter, of, tap } from 'rxjs';
 import { BinaryFile } from '@models/binary-file.model';
 import { NotificationService } from './notification/notification.service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { LoaderComponent } from '@plugins/modal/loader.component';
 
 @Injectable({

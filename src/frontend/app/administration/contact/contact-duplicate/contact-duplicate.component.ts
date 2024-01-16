@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
 import { catchError, tap, map, exhaustMap, filter, finalize } from 'rxjs/operators';

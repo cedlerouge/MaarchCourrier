@@ -86,14 +86,14 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "maarchCourrier:build"
+            "buildTarget": "maarchCourrier:build"
           },
           "configurations": {}
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "maarchCourrier:build"
+            "buildTarget": "maarchCourrier:build"
           }
         },
         "test": {
@@ -214,18 +214,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "addin-outlook:build"
+            "buildTarget": "addin-outlook:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "addin-outlook:build:production"
+              "buildTarget": "addin-outlook:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "addin-outlook:build"
+            "buildTarget": "addin-outlook:build"
           }
         },
         "test": {

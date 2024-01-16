@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { UntypedFormControl } from '@angular/forms';
 import { catchError, debounceTime, exhaustMap, filter, finalize, map, tap } from 'rxjs/operators';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NotificationService } from '@service/notification/notification.service';
 import { of } from 'rxjs';
 import { KeyValue } from '@angular/common';

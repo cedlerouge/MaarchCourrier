@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HeaderService } from '@service/header.service';
 import { AddinOutlookConfigurationModalComponent } from './configuration/addin-outlook-configuration-modal.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AuthService } from '@service/auth.service';
 
 @Component({

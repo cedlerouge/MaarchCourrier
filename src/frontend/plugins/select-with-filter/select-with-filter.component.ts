@@ -9,7 +9,7 @@ import {
     ViewChild
 } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, UntypedFormControl, NgControl } from '@angular/forms';
-import { MatSelect } from '@angular/material/select';
+import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
 import { TranslateService } from '@ngx-translate/core';
 import { FilterComponent } from './filter/filter.component';
 

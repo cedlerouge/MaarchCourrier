@@ -5,7 +5,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { tap, catchError, filter, exhaustMap, finalize } from 'rxjs/operators';
 import { PrivilegeService } from '@service/privileges.service';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AttachmentCreateComponent } from './attachments/attachment-create/attachment-create.component';
 import { FunctionsService } from '@service/functions.service';
 import { AttachmentPageComponent } from './attachments/attachments-page/attachment-page.component';

@@ -6,7 +6,7 @@ import { tap, finalize, catchError, exhaustMap, filter } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
 import { ConfirmComponent } from '../../plugins/modal/confirm.component';
-import { MatDialogRef, MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { NoteEditorComponent } from './note-editor.component';
 

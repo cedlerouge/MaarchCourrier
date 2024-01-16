@@ -2,8 +2,8 @@ import { Injectable, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core'
 import { LocalStorageService } from '@service/local-storage.service';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort, Sort, MatSortable } from '@angular/material/sort';
 import { of ,  merge } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';

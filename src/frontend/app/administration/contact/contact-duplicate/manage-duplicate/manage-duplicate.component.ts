@@ -1,5 +1,5 @@
 import { Component, OnInit, Inject, ViewChildren, QueryList } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HeaderService } from '@service/header.service';
 import { HttpClient } from '@angular/common/http';
 import { FunctionsService } from '@service/functions.service';

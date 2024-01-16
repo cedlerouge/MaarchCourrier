@@ -6,7 +6,7 @@ import { SortPipe } from '@plugins/sorting.pipe';
 import { finalize, catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddPrivateIndexingModelModalComponent } from '../private-indexing-model/add-private-indexing-model-modal.component';
 import { HeaderService } from '@service/header.service';
 import { IndexingFormComponent } from '../indexing-form/indexing-form.component';

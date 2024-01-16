@@ -29,7 +29,7 @@ import {
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { of } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CheckSaeInterconnectionComponent } from './checkSaeInterconnection/check-sae-interconnection.component';
 
 @Component({

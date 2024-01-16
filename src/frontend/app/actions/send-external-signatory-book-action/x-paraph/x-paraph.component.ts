@@ -7,7 +7,7 @@ import { startWith, map, exhaustMap, filter, tap, catchError } from 'rxjs/operat
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Observable, of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 declare let $: any;
 

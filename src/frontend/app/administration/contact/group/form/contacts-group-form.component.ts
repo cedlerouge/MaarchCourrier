@@ -6,18 +6,18 @@ import { NotificationService } from '@service/notification/notification.service'
 import { HeaderService } from '@service/header.service';
 import { UntypedFormControl, NgForm } from '@angular/forms';
 import { debounceTime, switchMap, distinctUntilChanged, filter, tap, map, catchError, takeUntil, startWith, exhaustMap } from 'rxjs/operators';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator, LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { AppService } from '@service/app.service';
 import { MaarchFlatTreeComponent } from '@plugins/tree/maarch-flat-tree.component';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatLegacyAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/legacy-autocomplete';
 import { merge, Observable, of, Subject } from 'rxjs';
 import { ContactService } from '@service/contact.service';
 import { FunctionsService } from '@service/functions.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ContactsFormModalComponent } from '../../page/form/modal/contacts-form-modal.component';
 import { PrivilegeService } from '@service/privileges.service';
 

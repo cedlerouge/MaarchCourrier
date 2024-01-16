@@ -1,7 +1,7 @@
 import { Component, ViewChild, OnInit, TemplateRef, ViewContainerRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatSort } from '@angular/material/sort';
 import { NotificationService } from '@service/notification/notification.service';
@@ -12,7 +12,7 @@ import { of } from 'rxjs';
 import { catchError, exhaustMap, filter, finalize, tap } from 'rxjs/operators';
 import { AdministrationService } from '../administration.service';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     templateUrl: 'notifications-administration.component.html',

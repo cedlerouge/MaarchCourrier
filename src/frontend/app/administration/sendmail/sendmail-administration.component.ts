@@ -9,7 +9,7 @@ import { CheckMailServerModalComponent } from './checkMailServer/check-mail-serv
 import { catchError, filter, tap } from 'rxjs/operators';
 import { FunctionsService } from '@service/functions.service';
 import { of } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     templateUrl: 'sendmail-administration.component.html',

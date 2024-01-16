@@ -7,7 +7,7 @@ import { UntypedFormControl } from '@angular/forms';
 import { catchError, map, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AlertComponent } from '../../plugins/modal/alert.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { HeaderService } from '@service/header.service';
 

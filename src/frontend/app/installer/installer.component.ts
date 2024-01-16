@@ -8,7 +8,7 @@ import { AppService } from '@service/app.service';
 import { TranslateService } from '@ngx-translate/core';
 import { SortPipe } from '../../plugins/sorting.pipe';
 import { StepAction } from './types';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { InstallActionComponent } from './install-action/install-action.component';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
