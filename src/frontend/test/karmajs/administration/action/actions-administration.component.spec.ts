@@ -2,21 +2,21 @@ import { TestBed, ComponentFixture, fakeAsync, tick, flushMicrotasks, flush } fr
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { ActionsAdministrationComponent } from '../../../../src/frontend/app/administration/action/actions-administration.component';
+import { ActionsAdministrationComponent } from '@appRoot/administration/action/actions-administration.component';
 import { ActivatedRoute } from '@angular/router';
-import { ConfirmComponent } from '../../../../src/frontend/plugins/modal/confirm.component';
+import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { BrowserModule } from '@angular/platform-browser';
-import { HeaderService } from '../../../../src/frontend/service/header.service';
-import { AppService } from '../../../../src/frontend/service/app.service';
-import { ActionPagesService } from '../../../../src/frontend/service/actionPages.service';
+import { HeaderService } from '@service/header.service';
+import { AppService } from '@service/app.service';
+import { ActionPagesService } from '@service/actionPages.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { SharedModule } from '../../../../src/frontend/app/app-common.module';
-import { FoldersService } from '../../../../src/frontend/app/folder/folders.service';
-import { PrivilegeService } from '../../../../src/frontend/service/privileges.service';
+import { SharedModule } from '@appRoot/app-common.module';
+import { FoldersService } from '@appRoot/folder/folders.service';
+import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
-import { AdministrationService } from '../../../../src/frontend/app/administration/administration.service';
-import * as langFrJson from '../../../../src/lang/lang-fr.json'
+import { AdministrationService } from '@appRoot/administration/administration.service';
+import * as langFrJson from '@langs/lang-fr.json'
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {

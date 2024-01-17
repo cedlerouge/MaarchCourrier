@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, tick } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from '@ngx-translate/core';
 import { RouterTestingModule } from '@angular/router/testing';
-import { SharedModule } from '../../../src/frontend/app/app-common.module';
+import { SharedModule } from '@appRoot/app-common.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { LoginComponent } from '../../../src/frontend/app/login/login.component';
+import { LoginComponent } from '@appRoot/login/login.component';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { FoldersService } from '../../../src/frontend/app/folder/folders.service';
-import { PrivilegeService } from '../../../src/frontend/service/privileges.service';
+import { FoldersService } from '@appRoot/folder/folders.service';
+import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
-import { AdministrationService } from '../../../src/frontend/app/administration/administration.service';
+import { AdministrationService } from '@appRoot/administration/administration.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { MatIconRegistry } from '@angular/material/icon';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
-import * as langFrJson from '../../../src/lang/lang-fr.json';
+import * as langFrJson from '@langs/lang-fr.json';
 import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 

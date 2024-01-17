@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, fakeAsync, flush, flushMicrotasks, tick } from "@angular/core/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
-import { AttachmentsListComponent } from "../../../src/frontend/app/attachments/attachments-list.component";
+import { AttachmentsListComponent } from "@appRoot/attachments/attachments-list.component";
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { BrowserModule, By } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterTestingModule } from "@angular/router/testing";
-import { SharedModule } from "../../../src/frontend/app/app-common.module";
+import { SharedModule } from "@appRoot/app-common.module";
 import { DatePipe } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
-import { AdministrationService } from '../../../src/frontend/app/administration/administration.service';
-import { FoldersService } from '../../../src/frontend/app/folder/folders.service';
-import { PrivilegeService } from '../../../src/frontend/service/privileges.service';
-import { ConfirmComponent } from "../../../src/frontend/plugins/modal/confirm.component";
-import * as langFrJson from '../../../src/lang/lang-fr.json';
+import { AdministrationService } from '@appRoot/administration/administration.service';
+import { FoldersService } from '@appRoot/folder/folders.service';
+import { PrivilegeService } from '@service/privileges.service';
+import { ConfirmComponent } from "@plugins/modal/confirm.component";
+import * as langFrJson from '@langs/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {

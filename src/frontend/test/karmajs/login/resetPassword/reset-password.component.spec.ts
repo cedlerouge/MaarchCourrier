@@ -3,17 +3,17 @@ import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } fr
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { FoldersService } from '../../../src/frontend/app/folder/folders.service';
-import { PrivilegeService } from '../../../src/frontend/service/privileges.service';
+import { FoldersService } from '@appRoot/folder/folders.service';
+import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from '@angular/common';
-import { AdministrationService } from '../../../src/frontend/app/administration/administration.service';
+import { AdministrationService } from '@appRoot/administration/administration.service';
 import { Observable, of } from 'rxjs';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
-import { SharedModule } from "../../../src/frontend/app/app-common.module";
+import { SharedModule } from "@appRoot/app-common.module";
 import { Router } from '@angular/router';
-import { ResetPasswordComponent } from '../../../src/frontend/app/login/resetPassword/reset-password.component';
+import { ResetPasswordComponent } from '@appRoot/login/resetPassword/reset-password.component';
 import { MatIconRegistry } from '@angular/material/icon';
-import * as langFrJson from '../../../src/lang/lang-fr.json';
+import * as langFrJson from '@langs/lang-fr.json';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {

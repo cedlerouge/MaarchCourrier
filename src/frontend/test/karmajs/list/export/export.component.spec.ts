@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from "@angular/core/testing"
-import { ExportComponent } from "../../../../src/frontend/app/list/export/export.component";
+import { ExportComponent } from "@appRoot/list/export/export.component";
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { TranslateLoader, TranslateModule, TranslateService, TranslateStore } from "@ngx-translate/core";
 import { Observable, of } from "rxjs";
-import { SharedModule } from '../../../../src/frontend/app/app-common.module';
+import { SharedModule } from '@appRoot/app-common.module';
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterTestingModule } from "@angular/router/testing";
-import { PrivilegeService } from '../../../../src/frontend/service/privileges.service';
+import { PrivilegeService } from '@service/privileges.service';
 import { DatePipe } from "@angular/common";
-import { FoldersService } from '../../../../src/frontend/app/folder/folders.service';
-import * as langFrJson from '../../../../src/lang/lang-fr.json';
-import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
+import { FoldersService } from '@appRoot/folder/folders.service';
+import * as langFrJson from '@langs/lang-fr.json';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from "@angular/material/legacy-dialog";
 
 
 class FakeLoader implements TranslateLoader {
