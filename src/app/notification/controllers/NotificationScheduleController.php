@@ -14,6 +14,7 @@
 
 namespace Notification\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use Respect\Validation\Validator;
 use Notification\models\NotificationModel;
@@ -51,11 +52,11 @@ class NotificationScheduleController
         foreach ($data as $cronValue) {
             foreach ($cronValue as $key => $value) {
                 if (($key == 'cmd' || $key == 'state') && !Validator::notEmpty()->validate($value)) {
-                    $errors[] = $key.' is empty';
+                    $errors[] = $key . ' is empty';
                 }
 
                 if ($key != 'cmd' && $key != 'state' && $key != 'description' && !preg_match('#^[0-9\/*][0-9]?[,\/-]?([0-9]?){2}#', $value)) {
-                    $errors[] = 'wrong format for '.$key;
+                    $errors[] = 'wrong format for ' . $key;
                 }
             }
         }
@@ -68,28 +69,28 @@ class NotificationScheduleController
         return $response->withJson(true);
     }
 
-    protected static function getAuthorizedNotifications()
+    protected static function getAuthorizedNotifications(): array
     {
         $aNotification = NotificationModel::getEnableNotifications(['select' => ['notification_id', 'notification_sid', 'description']]);
         $notificationsArray = [];
         $customId = CoreConfigModel::getCustomId();
-        $corePath = str_replace('custom/'.$customId.'/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
         $corePath = str_replace('src/app/notification/controllers', '', $corePath);
 
         foreach ($aNotification as $result) {
             $filename = 'notification';
             if (isset($customId) && $customId != '') {
-                $filename .= '_'.str_replace(' ', '', $customId);
+                $filename .= '_' . str_replace(' ', '', $customId);
             }
-            $filename .= '_'.$result['notification_id'].'.sh';
+            $filename .= '_' . $result['notification_id'] . '.sh';
 
             if ($customId != '') {
-                $pathToFolow = $corePath.'custom/'.$customId.'/';
+                $pathToFollow = $corePath . 'custom/' . $customId . '/';
             } else {
-                $pathToFolow = $corePath;
+                $pathToFollow = $corePath;
             }
 
-            $path = $pathToFolow.'bin/notification/scripts/'.$filename;
+            $path = $pathToFollow . 'bin/notification/scripts/' . $filename;
             if (file_exists($path)) {
                 $notificationsArray[] = ['description' => $result['description'], 'path' => $path];
             }
@@ -98,12 +99,12 @@ class NotificationScheduleController
         return $notificationsArray;
     }
 
-    protected static function checkCrontab($crontabToSave)
+    protected static function checkCrontab($crontabToSave): bool
     {
-        $customId          = CoreConfigModel::getCustomId();
+        $customId = CoreConfigModel::getCustomId();
         $crontabBeforeSave = NotificationScheduleModel::getCrontab();
-        $corePath          = str_replace('custom/'.$customId.'/src/app/notification/controllers', '', __DIR__);
-        $corePath          = str_replace('src/app/notification/controllers', '', $corePath);
+        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace('src/app/notification/controllers', '', $corePath);
 
         $returnValue = false;
         foreach ($crontabToSave as $id => $cronValue) {
@@ -116,12 +117,12 @@ class NotificationScheduleController
                 break;
             } elseif ($cronValue['state'] == 'new' || $cronValue['state'] == 'normal') {
                 if ($customId != '') {
-                    $pathToFolow = $corePath.'custom/'.$customId.'/';
+                    $pathToFollow = $corePath . 'custom/' . $customId . '/';
                 } else {
-                    $pathToFolow = $corePath;
+                    $pathToFollow = $corePath;
                 }
                 $returnValue = true;
-                if (strpos($crontabToSave[$id]['cmd'], $pathToFolow.'bin/notification/scripts/') !== 0) {
+                if (strpos($cronValue['cmd'], $pathToFollow . 'bin/notification/scripts/') !== 0) {
                     $returnValue = false;
                     break;
                 }
@@ -133,6 +134,9 @@ class NotificationScheduleController
         return $returnValue;
     }
 
+    /**
+     * @throws Exception
+     */
     public function createScriptNotification(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
@@ -145,7 +149,7 @@ class NotificationScheduleController
             $errors[] = 'notification_sid is not a numeric';
         }
         if (!Validator::notEmpty()->validate($data['notification_sid']) ||
-            !Validator::notEmpty()->validate($data['notification_id'])  ||
+            !Validator::notEmpty()->validate($data['notification_id']) ||
             !Validator::notEmpty()->validate($data['event_id'])) {
             $errors[] = 'one of arguments is empty';
         }
@@ -154,9 +158,9 @@ class NotificationScheduleController
             return $response->withStatus(500)->withJson(['errors' => $errors]);
         }
 
-        $notification_sid   = $data['notification_sid'];
-        $notification_id    = $data['notification_id'];
-        $event_id           = $data['event_id'];
+        $notification_sid = $data['notification_sid'];
+        $notification_id = $data['notification_id'];
+        $event_id = $data['event_id'];
 
         NotificationScheduleModel::createScriptNotification(['notification_sid' => $notification_sid, 'event_id' => $event_id, 'notification_id' => $notification_id]);
 
