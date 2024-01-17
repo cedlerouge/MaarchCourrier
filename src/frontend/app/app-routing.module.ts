@@ -12,7 +12,7 @@ import { ForgotPasswordComponent } from './login/forgotPassword/forgotPassword.c
 import { ResetPasswordComponent } from './login/resetPassword/reset-password.component';
 import { DocumentViewerPageComponent } from './viewer/page/document-viewer-page.component';
 import { LoginComponent } from './login/login.component';
-import { SignatureBookComponent } from './signature-book.component';
+import { SignatureBookComponent } from './signatureBook/signature-book.component';
 import { FollowedDocumentListComponent } from './home/followed-list/followed-document-list.component';
 import { FolderDocumentListComponent } from './folder/document-list/folder-document-list.component';
 import { BasketListComponent } from './list/basket-list.component';

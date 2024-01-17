@@ -1,0 +1,163 @@
+<div class="signatorybook-container">
+    <div class="signatorybook-header">
+        <div class="signatorybook-header-left" style="justify-content: start">
+            <div class="prev-next-container">
+                <button mat-button class="prev-button" [title]="'lang.previousRes' | translate">
+                    <i class="fa fa-angle-left" style="height: auto"></i>
+                    <span>{{ 'lang.previous' | translate }}</span>
+                </button>
+                <button mat-icon-button (click)="drawerResList.toggle()">
+                    <mat-icon class="fa fa-inbox"></mat-icon>
+                </button>
+                <button mat-button class="next-button" [title]="'lang.nextRes' | translate">
+                    <span>{{ 'lang.next' | translate }}</span>
+                    <i class="fa fa-angle-right" style="height: auto"></i>
+                </button>
+            </div>
+        </div>
+        <div class="signatorybook-header-center" style="justify-content: center">
+            <mat-icon class="maarchLogo" svgIcon="maarchLogoFull"></mat-icon>
+            <div>Parapheur électronique</div>
+        </div>
+        <div class="signatorybook-header-right" style="justify-content: end">
+            <div style="font-size: initial">
+                <mat-checkbox class="checkbox-mass-sign" [checked]="true"
+                    >Éligible à une action de masse <span class="mass-action-count">4</span></mat-checkbox
+                >
+            </div>
+        </div>
+    </div>
+    <mat-drawer-container class="example-container" [hasBackdrop]="false">
+        <mat-drawer #drawerResList mode="over"> Parapheur électronique </mat-drawer>
+        <mat-drawer-content style="display: flex; flex: 1">
+            <div class="signatorybook-contents">
+                <div class="signatorybook-content">
+                    <ng-scrollbar class="book-mark" autoHeightDisabled="false">
+                        <div class="book-mark-container">
+                            <button
+                                *ngFor="let attachment of attachments;let i=index"
+                                mat-button
+                                class="book-mark-item book-mark-item-to-right"
+                                [class.book-mark-item-selected]="selectedAttachment===i"
+                                [class.book-mark-item-selected-to-right]="selectedAttachment===i"
+                                (click)="selectedAttachment=i"
+                            >
+                                {{attachment}} {{i}}
+                            </button>
+                        </div>
+                    </ng-scrollbar>
+                    <div class="book-content">
+                        <div
+                            title="MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION (Projet de réponse)"
+                            style="
+                                font-size: 20px;
+                                font-weight: bold;
+                                color: var(--maarch-color-primary);
+                                display: flex;
+                                gap: 10px;
+                                align-items: center;
+                                padding: 10px;
+                            "
+                        >
+                            <i
+                                class="far fa-plus-square"
+                                [title]="'lang.showInformationsBlock' | translate"
+                                style="cursor: pointer"
+                            ></i>
+                            <span>annexe 2</span>
+                            <small class="subSubject">Pièce jointe</small>
+                        </div>
+                        <iframe
+                            style="height: 100%; width: 100%"
+                            src="https://www.africau.edu/images/default/sample.pdf"
+                        ></iframe>
+                    </div>
+                </div>
+                <div class="signatorybook-content">
+                    <div class="book-content">
+                        <div
+                            title="MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION (Projet de réponse)"
+                            style="
+                                font-size: 20px;
+                                font-weight: bold;
+                                color: var(--maarch-color-primary);
+                                display: flex;
+                                gap: 10px;
+                                align-items: center;
+                                padding: 10px;
+                            "
+                        >
+                            <i
+                                class="far fa-plus-square"
+                                [title]="'lang.showInformationsBlock' | translate"
+                                style="cursor: pointer"
+                            ></i>
+                            <span>MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION</span>
+                            <small class="subSubject">Projet de réponse</small>
+                        </div>
+                        <mat-drawer-container style="flex: 1">
+                            <mat-drawer mode="over" #drawerStamps>Mes signatures</mat-drawer>
+                            <mat-drawer-content style="display: flex; flex-direction: column">
+                                <iframe
+                                    style="height: 100%; width: 100%"
+                                    src="https://www.africau.edu/images/default/sample.pdf"
+                                ></iframe>
+                                <div class="book-footer">
+                                    <div class="book-footer-left">
+                                        <div style="height: 80px; width: 150px; display: flex; align-items: center">
+                                            <button
+                                                mat-button
+                                                style="background-color: white; color: white;height: 80px; width: 150px; min-width: auto;background-image: url(https://www.shutterstock.com/image-vector/fake-autograph-samples-handdrawn-signatures-260nw-2325821623.jpg);    background-size: contain;
+                                                background-repeat: no-repeat;
+                                                background-position: center;"
+                                            >
+                                            </button>
+                                            <button
+                                                mat-button
+                                                style="color: white; height: 100%; min-width: auto"
+                                                (click)="drawerStamps.toggle()"
+                                            >
+                                                >
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="book-footer-center">
+                                        <button
+                                            mat-stroked-button
+                                            class="action-button action-button-left"
+                                            [disabled]="true"
+                                        >
+                                            REFUSER
+                                        </button>
+                                        <button
+                                            mat-stroked-button
+                                            class="action-button action-button-right"
+                                            [disabled]="true"
+                                        >
+                                            SIGNER
+                                        </button>
+                                    </div>
+                                    <div class="book-footer-right"></div>
+                                </div>
+                            </mat-drawer-content>
+                        </mat-drawer-container>
+                    </div>
+                    <ng-scrollbar class="book-mark" autoHeightDisabled="false">
+                        <div class="book-mark-container">
+                            <button
+                                *ngFor="let docToSign of docsToSign;let i=index"
+                                mat-button
+                                class="book-mark-item book-mark-item-to-left"
+                                [class.book-mark-item-selected]="selectedDocToSign===i"
+                                [class.book-mark-item-selected-to-left]="selectedDocToSign===i"
+                                (click)="selectedDocToSign=i"
+                            >
+                                {{docToSign}} {{i}}
+                            </button>
+                        </div>
+                    </ng-scrollbar>
+                </div>
+            </div>
+        </mat-drawer-content>
+    </mat-drawer-container>
+</div>

@@ -95,6 +95,7 @@ import { SelectWithFilterComponent } from '@plugins/select-with-filter/select-wi
 import { FilterComponent } from '@plugins/select-with-filter/filter/filter.component';
 import { SetPageComponent } from '@plugins/list/set-page/set-page/set-page.component';
 import { TranslateModule } from '@ngx-translate/core';
+import { NgScrollbarModule } from 'ngx-scrollbar';
 
 
 @NgModule({
@@ -109,6 +110,7 @@ import { TranslateModule } from '@ngx-translate/core';
         NotificationModule,
         TranslateModule,
         ColorGithubModule,
+        NgScrollbarModule
     ],
     declarations: [
         MenuNavComponent,
@@ -231,6 +233,7 @@ import { TranslateModule } from '@ngx-translate/core';
         SelectWithFilterComponent,
         FilterComponent,
         TranslateModule,
+        NgScrollbarModule
     ],
     providers: []
 })
