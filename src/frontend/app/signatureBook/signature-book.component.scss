@@ -153,25 +153,6 @@
     color: white;
 }
 
-.book-footer {
-    justify-content: center;
-    display: flex;
-    gap: 50px;
-    padding: 10px;
-    background-color: var(--maarch-color-primary);
-    align-items: center;
-}
-
-.book-footer-center {
-    gap: 20px;
-    flex: 1;
-    display: flex;
-}
-
-.book-footer-left, .book-footer-right {
-    flex: 1;
-}
-
 .fix-bg {
     height: 95%;
     width: 20px;
@@ -222,25 +203,6 @@ iframe {
     color: var(--maarch-color-secondary);
     align-self: flex-end;
 }
-
-.action-button {
-    width: 150px;
-    font-size: 20px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    background-color: white;
-
-    &-left {
-        color: var(--maarch-color-danger);
-        border: solid 2px var(--maarch-color-danger);
-    }
-
-    &-right {
-        color: var(--maarch-color-success);
-        border: solid 2px var(--maarch-color-success);
-    }
-}
-
 
 .checkbox-mass-sign ::ng-deep .mat-checkbox-frame {
     transform: scale(2.2);
