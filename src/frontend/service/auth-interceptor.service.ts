@@ -86,7 +86,7 @@ export class AuthInterceptor implements HttpInterceptor {
                     } else if (error.status === 401) {
                         return this.handle401Error(request, next);
                     } else if (error.status === 403) {
-                        return this.router.navigate(['home']);
+                        return this.router.navigate(['/home']);
                     } else if (error.error.errors === 'User must change his password') {
                         return this.router.navigate(['/password-modification']);
                     } else if (error.error.errors === 'User is ABS and must be activated') {
