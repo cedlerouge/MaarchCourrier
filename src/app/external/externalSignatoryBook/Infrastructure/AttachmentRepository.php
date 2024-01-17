@@ -15,7 +15,7 @@
 namespace ExternalSignatoryBook\Infrastructure;
 
 use Attachment\models\AttachmentModel;
-use ExternalSignatoryBook\core\Domain\Ports\AttachmentRepositoryInterface;
+use ExternalSignatoryBook\Domain\Ports\AttachmentRepositoryInterface;
 
 class AttachmentRepository implements AttachmentRepositoryInterface
 {
@@ -23,5 +23,4 @@ class AttachmentRepository implements AttachmentRepositoryInterface
     {
         AttachmentModel::removeExternalLink(['resId' => $id, 'externalId' => $externalId]);
     }
-
 }

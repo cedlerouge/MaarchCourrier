@@ -14,7 +14,7 @@
 
 namespace ExternalSignatoryBook\Infrastructure;
 
-use ExternalSignatoryBook\core\Domain\Ports\ResourceRepositoryInterface;
+use ExternalSignatoryBook\Domain\Ports\ResourceRepositoryInterface;
 use Resource\models\ResModel;
 
 class ResourceRepository implements ResourceRepositoryInterface

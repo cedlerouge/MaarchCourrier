@@ -14,7 +14,7 @@
 
 namespace ExternalSignatoryBook\Infrastructure;
 
-use ExternalSignatoryBook\core\Domain\Ports\HistoryRepositoryInterface;
+use ExternalSignatoryBook\Domain\Ports\HistoryRepositoryInterface;
 use History\controllers\HistoryController;
 
 class HistoryRepository implements HistoryRepositoryInterface
