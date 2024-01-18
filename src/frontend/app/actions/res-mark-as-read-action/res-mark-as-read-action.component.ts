@@ -8,6 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
+    selector: 'app-res-mark-as-read-action.component',
     templateUrl: './res-mark-as-read-action.component.html',
     styleUrls: ['./res-mark-as-read-action.component.scss'],
 })

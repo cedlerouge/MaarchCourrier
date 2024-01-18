@@ -8,6 +8,7 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
+    selector: 'app-enabled-basket-persistence-action.component',
     templateUrl: './enabled-basket-persistence-action.component.html',
     styleUrls: ['./enabled-basket-persistence-action.component.scss'],
 })

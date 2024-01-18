@@ -8,6 +8,7 @@ import { tap, exhaustMap, catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
 @Component({
+    selector: 'app-save-and-print-registered-mail-action.component',
     templateUrl: 'save-and-print-registered-mail-action.component.html',
     styleUrls: ['save-and-print-registered-mail-action.component.scss'],
 })

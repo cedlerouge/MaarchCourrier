@@ -7,6 +7,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { of } from 'rxjs';
 
 @Component({
+    selector: 'app-add-avis-model-modal.component',
     templateUrl: 'add-avis-model-modal.component.html',
     styleUrls: ['add-avis-model-modal.component.scss'],
 })
