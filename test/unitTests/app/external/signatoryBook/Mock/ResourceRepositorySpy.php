@@ -11,10 +11,13 @@ namespace MaarchCourrier\Tests\app\external\signatoryBook\Mock;
 
 use ExternalSignatoryBook\Domain\Ports\ResourceRepositoryInterface;
 
-class ResourceRepositoryMock implements ResourceRepositoryInterface
+class ResourceRepositorySpy implements ResourceRepositoryInterface
 {
+    public bool $externalIdRemoved = false;
+
     public function removeExternalLink(int $id, string $externalId): void
     {
         // Remove external_id from res_letterbox.
+        $this->externalIdRemoved = true;
     }
 }

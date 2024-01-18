@@ -13,31 +13,31 @@ use ExternalSignatoryBook\Application\DocumentLink;
 use ExternalSignatoryBook\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use ExternalSignatoryBook\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use MaarchCourrier\Tests\CourrierTestCase;
-use MaarchCourrier\Tests\app\external\signatoryBook\Mock\AttachmentRepositoryMock;
-use MaarchCourrier\Tests\app\external\signatoryBook\Mock\HistoryRepositoryMock;
-use MaarchCourrier\Tests\app\external\signatoryBook\Mock\ResourceRepositoryMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\AttachmentRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\HistoryRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\ResourceRepositorySpy;
 use MaarchCourrier\Tests\app\external\signatoryBook\Mock\UserRepositoryMock;
 
 class DocumentLinkTest extends CourrierTestCase
 {
-    private ResourceRepositoryMock $resourceRepositoryMock;
-    private AttachmentRepositoryMock $attachmentRepositoryMock;
+    private ResourceRepositorySpy $resourceRepositorySpy;
+    private AttachmentRepositorySpy $attachmentRepositorySpy;
     private UserRepositoryMock $userRepositoryMock;
-    private HistoryRepositoryMock $historyRepositoryMock;
+    private HistoryRepositorySpy $historyRepositorySpy;
     private DocumentLink $documentLink;
 
     protected function setUp(): void
     {
-        $this->resourceRepositoryMock = new ResourceRepositoryMock();
-        $this->attachmentRepositoryMock = new AttachmentRepositoryMock();
+        $this->resourceRepositorySpy = new ResourceRepositorySpy();
+        $this->attachmentRepositorySpy = new AttachmentRepositorySpy();
         $this->userRepositoryMock = new UserRepositoryMock();
-        $this->historyRepositoryMock = new HistoryRepositoryMock();
+        $this->historyRepositorySpy = new HistoryRepositorySpy();
 
         $this->documentLink = new DocumentLink(
             $this->userRepositoryMock,
-            $this->resourceRepositoryMock,
-            $this->attachmentRepositoryMock,
-            $this->historyRepositoryMock
+            $this->resourceRepositorySpy,
+            $this->attachmentRepositorySpy,
+            $this->historyRepositorySpy
         );
     }
 
@@ -78,13 +78,19 @@ class DocumentLinkTest extends CourrierTestCase
 
     public function testRemoveResourceDocumentLinkSuccessfully()
     {
-        $this->expectNotToPerformAssertions();
         $this->documentLink->removeExternalLink(1, 'Document from external parapheur', 'resource', '1234');
+        $this->assertTrue($this->resourceRepositorySpy->externalIdRemoved);
     }
 
     public function testRemoveAttachmentDocumentLinkSuccessfully()
     {
-        $this->expectNotToPerformAssertions();
         $this->documentLink->removeExternalLink(1, 'Document from external parapheur', 'attachment', '1234');
+        $this->assertTrue($this->attachmentRepositorySpy->externalIdRemoved);
+    }
+
+    public function testAddHistoryToResourceSuccessfully()
+    {
+        $this->documentLink->removeExternalLink(1, 'Document from external parapheur', 'attachment', '1234');
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 }

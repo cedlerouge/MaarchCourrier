@@ -11,10 +11,13 @@ namespace MaarchCourrier\Tests\app\external\signatoryBook\Mock;
 
 use ExternalSignatoryBook\Domain\Ports\AttachmentRepositoryInterface;
 
-class AttachmentRepositoryMock implements AttachmentRepositoryInterface
+class AttachmentRepositorySpy implements AttachmentRepositoryInterface
 {
+    public bool $externalIdRemoved = false;
+
     public function removeExternalLink(int $id, string $externalId): void
     {
         // Remove external_id from res_attachments.
+        $this->externalIdRemoved = true;
     }
 }
