@@ -57,16 +57,11 @@ export class AdministrationComponent implements OnInit, AfterViewInit {
         this.classementServices = this.privilegeService.getCurrentUserAdministrationsByUnit('classement');
         this.supervisionServices = this.privilegeService.getCurrentUserAdministrationsByUnit('supervision');
 
-        this.http.get('../rest/currentUser/profile')
-            .subscribe((data: any) => {
-                if (data.privileges) {
-                    const adminPrivilege = (data.privileges[0] === "ALL_PRIVILEGES") || (data.privileges.includes("admin"));
-                    if (!adminPrivilege)  {
-                        console.log('home', adminPrivilege);
-                        this.router.navigate(['/home']);
-                    }
-                }
-            });
+        const privileges: any[] = this.headerService.user.privileges;
+        const adminPrivilege: boolean = privileges.includes("admin");
+        if (!adminPrivilege)  {
+            this.router.navigate(['/home']);
+        }
 
         this.administrations = this.organisationServices.concat(this.productionServices).concat(this.classementServices).concat(this.supervisionServices);
         this.administrations = this.administrations.map((admin: any) => ({
