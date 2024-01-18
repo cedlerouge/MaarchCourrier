@@ -12,6 +12,7 @@ namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\HistoryRepositorySpy;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
@@ -33,6 +34,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
         $resourceDataMock = new ResourceDataMock();
+        $historyRepositorySpy = new HistoryRepositorySpy();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -46,7 +48,8 @@ class RetrieveFromPastellTest extends TestCase
             $this->pastellConfigMock,
             $pastellConfigurationCheck,
             $this->parseIParapheurLogMock,
-            $resourceDataMock
+            $resourceDataMock,
+            $historyRepositorySpy
         );
     }
 
