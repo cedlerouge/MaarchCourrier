@@ -276,7 +276,7 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 
     /**
