@@ -26,6 +26,7 @@ class RetrieveFromPastellTest extends TestCase
     private PastellConfigMock $pastellConfigMock;
     private ParseIParapheurLogMock $parseIParapheurLogMock;
     private RetrieveFromPastell $retrieveFromPastell;
+    private HistoryRepositorySpy $historyRepositorySpy;
 
     protected function setUp(): void
     {
@@ -34,7 +35,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
         $resourceDataMock = new ResourceDataMock();
-        $historyRepositorySpy = new HistoryRepositorySpy();
+        $this->historyRepositorySpy = new HistoryRepositorySpy();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -49,7 +50,7 @@ class RetrieveFromPastellTest extends TestCase
             $pastellConfigurationCheck,
             $this->parseIParapheurLogMock,
             $resourceDataMock,
-            $historyRepositorySpy
+            $this->historyRepositorySpy
         );
     }
 
@@ -94,6 +95,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result['error']
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -146,6 +149,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result['success']
         );
+
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -186,6 +191,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -226,6 +233,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -266,6 +275,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -310,6 +321,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -335,6 +348,8 @@ class RetrieveFromPastellTest extends TestCase
                 'success' => [],
                 'error'   => [42 => 'An error occurred !']
             ], $result);
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     public function testTheSignatoryNameIsTheOneInParapheur(): void
@@ -371,5 +386,7 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 }
