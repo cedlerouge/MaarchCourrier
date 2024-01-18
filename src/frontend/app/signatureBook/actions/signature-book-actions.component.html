@@ -1,0 +1,35 @@
+<div class="book-footer">
+    <div class="book-footer-left">
+        <div class="sign-button-container">
+            <button
+                mat-button
+                class="sign-button"
+            >
+            </button>
+            <button
+                mat-button
+                class="open-sign-list-button"
+                (click)="openSignaturesList()"
+            >
+                >
+            </button>
+        </div>
+    </div>
+    <div class="book-footer-center">
+        <button
+            mat-stroked-button
+            class="action-button action-button-left"
+            [disabled]="true"
+        >
+            REFUSER
+        </button>
+        <button
+            mat-stroked-button
+            class="action-button action-button-right"
+            [disabled]="true"
+        >
+            SIGNER
+        </button>
+    </div>
+    <div class="book-footer-right"></div>
+</div>

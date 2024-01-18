@@ -137,6 +137,7 @@ import { RedirectIndexingModelComponent } from './administration/indexingModel/r
 import { ResetPasswordComponent } from './login/resetPassword/reset-password.component';
 import { SaveNumericPackageComponent } from './save-numeric-package.component';
 import { SignatureBookComponent } from './signatureBook/signature-book.component';
+import { SignatureBookActionsComponent } from './signatureBook/actions/signature-book-actions.component';
 import { VisaWorkflowModalComponent } from './visa/modal/visa-workflow-modal.component';
 import { ExternalVisaWorkflowComponent } from './visa/externalVisaWorkflow/external-visa-workflow.component';
 import { ProfileContactsGroupsComponent } from './profile/contacts-groups/profile-contacts-groups.component';
@@ -244,6 +245,7 @@ export class MyHammerConfig extends HammerGestureConfig {
         ResetPasswordComponent,
         SaveNumericPackageComponent,
         SignatureBookComponent,
+        SignatureBookActionsComponent,
         VisaWorkflowModalComponent,
         DevLangComponent,
         DevToolComponent,
