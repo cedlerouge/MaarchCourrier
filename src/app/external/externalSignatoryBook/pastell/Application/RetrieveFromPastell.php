@@ -18,8 +18,7 @@ use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
-use History\controllers\HistoryController;
-use User\models\UserModel;
+use ExternalSignatoryBook\pastell\Domain\HistoryRepositoryInterface;
 
 class RetrieveFromPastell
 {
@@ -29,6 +28,7 @@ class RetrieveFromPastell
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
     private ResourceDataInterface $resourceData;
+    private HistoryRepositoryInterface $historyRepository;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -36,13 +36,15 @@ class RetrieveFromPastell
      * @param PastellConfigurationCheck $pastellConfigCheck
      * @param ParseIParapheurLog $parseIParapheurLog
      * @param ResourceDataInterface $resourceData
+     * @param HistoryRepositoryInterface $historyRepository
      */
     public function __construct(
-        PastellApiInterface       $pastellApi,
-        PastellConfigInterface    $pastellConfig,
-        PastellConfigurationCheck $pastellConfigCheck,
-        ParseIParapheurLog        $parseIParapheurLog,
-        ResourceDataInterface     $resourceData
+        PastellApiInterface        $pastellApi,
+        PastellConfigInterface     $pastellConfig,
+        PastellConfigurationCheck  $pastellConfigCheck,
+        ParseIParapheurLog         $parseIParapheurLog,
+        ResourceDataInterface      $resourceData,
+        HistoryRepositoryInterface $historyRepository
     )
     {
         $this->pastellApi = $pastellApi;
@@ -51,27 +53,7 @@ class RetrieveFromPastell
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->resourceData = $resourceData;
-    }
-
-    private static function addLogInHistory(array $infosLog)
-    {
-        $userIdRoot = UserModel::get([
-            'select' => ['id'],
-            'where'  => ['mode = ? OR mode = ?'],
-            'data'   => ['root_visible', 'root_invisible'],
-            'limit'  => 1
-        ])[0]['id'];
-
-        $message = (is_array($infosLog['message'])) ? implode("-", $infosLog['message']) : $infosLog['message'];
-
-        HistoryController::add([
-            'tableName' => 'res_letterbox',
-            'recordId'  => $infosLog['id'],
-            'eventType' => 'ACTION#1',
-            'eventId'   => '1',
-            'userId'    => $userIdRoot,
-            'info'      => "[Pastell api] {$message}"
-        ]);
+        $this->historyRepository = $historyRepository;
     }
 
     /**
@@ -90,7 +72,9 @@ class RetrieveFromPastell
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
             if (!empty($info['error'])) {
                 $errors[$key] = 'Error when getting folder detail : ' . $info['error'];
-                $this->addLogInHistory(['id' => $value['res_id_master'] ?? $value['res_id'], 'message' => 'Error when getting folder detail : ' . $info['error']]);
+
+                $infosError = (is_array($info['error'])) ? implode('-', $info['error']) : $info['error'];
+                $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Error when getting folder detail : ' . $infosError);
                 unset($idsToRetrieve[$key]);
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {
@@ -98,7 +82,7 @@ class RetrieveFromPastell
                     if ($verif !== true) {
                         $errors[$key] = 'Action "verif-iparapheur" failed';
 
-                        $this->addLogInHistory(['id' => $value['res_id_master'] ?? $value['res_id'], 'message' => 'Action "verif-iparapheur" failed']);
+                        $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Action "verif-iparapheur" failed');
                         unset($idsToRetrieve[$key]);
                         continue;
                     }
@@ -110,7 +94,9 @@ class RetrieveFromPastell
 
                 if (!empty($result['error'])) {
                     $errors[$key] = $result['error'];
-                    $this->addLogInHistory(['id' => $resId, 'message' => $result['error']]);
+
+                    $resultError = (is_array($result['error'])) ? implode('-', $result['error']) : $result['error'];
+                    $this->historyRepository->addLogInHistory($resId, $resultError);
                     unset($idsToRetrieve[$key]);
                     continue;
                 }
@@ -126,7 +112,8 @@ class RetrieveFromPastell
                     $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $value['external_id']);
                     if (!empty($deleteFolderResult['error'])) {
                         $errors[$key] = $deleteFolderResult['error'];
-                        $this->addLogInHistory(['id' => $resId, 'message' => $deleteFolderResult['error']]);
+                        $deleteError = (is_array($deleteFolderResult['error'])) ? implode('-', $deleteFolderResult['error']) : $deleteFolderResult['error'];
+                        $this->historyRepository->addLogInHistory($resId, $deleteError);
                         unset($idsToRetrieve[$key]);
                     }
                 }

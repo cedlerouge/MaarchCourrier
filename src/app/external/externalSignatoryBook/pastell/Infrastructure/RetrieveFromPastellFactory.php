@@ -31,7 +31,8 @@ class RetrieveFromPastellFactory
         $processVisaWorkflow = new ProcessVisaWorkflow();
         $parseIParapheurLog = new ParseIParapheurLog($pastellApi, $pastellConfig, $pastellConfigCheck, $processVisaWorkflow);
         $resourceData = new ResourceDataDb();
+        $historyRepository = new HistoryRepository();
 
-        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog, $resourceData);
+        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog, $resourceData, $historyRepository);
     }
 }
