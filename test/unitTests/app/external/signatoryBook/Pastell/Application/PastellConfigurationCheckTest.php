@@ -6,12 +6,12 @@
  * This file is part of Maarch software.
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellApiMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellConfigMock;
 use PHPUnit\Framework\TestCase;
 
 class PastellConfigurationCheckTest extends TestCase

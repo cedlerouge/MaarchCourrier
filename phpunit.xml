@@ -16,7 +16,7 @@
     </testsuite>
     <testsuite name="MaarchTestSuite">
       <directory>test/unitTests/core/</directory>
-      <directory>test/unitTests/app/external/Pastell/</directory>
+      <directory>test/unitTests/app/external/signatoryBook/Pastell/</directory>
       <directory>test/unitTests/app/resource/Application/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
