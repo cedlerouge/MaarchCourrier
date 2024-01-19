@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ViewContainerRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -8,6 +8,8 @@ import { tap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
+import { PluginManagerService } from '@service/plugin-manager.service';
+import { AuthService } from '@service/auth.service';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -15,6 +17,7 @@ import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 })
 export class ContinueVisaCircuitActionComponent implements OnInit {
 
+    @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
 
@@ -25,6 +28,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     resourcesErrors: any[] = [];
 
     noResourceToProcess: boolean = null;
+    componentInstance: any = null;
 
     constructor(
         public translate: TranslateService,
@@ -32,12 +36,22 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         private notify: NotificationService,
         public dialogRef: MatDialogRef<ContinueVisaCircuitActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
-        public functions: FunctionsService) { }
+        public functions: FunctionsService,
+        private pluginManagerService: PluginManagerService,
+        private authService: AuthService,
+    ) { }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
         await this.checkSignatureBook();
         this.loading = false;
+        const data: any = {
+            functions: this.functions,
+            notification: this.notify,
+            translate: this.translate,
+            pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins'
+        };
+        this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
     }
 
     checkSignatureBook() {
@@ -71,13 +85,19 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     }
 
     async onSubmit() {
-        const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
-        this.executeAction(realResSelected);
+        this.loading = true;
+        if (this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
+            this.componentInstance.open();
+        } else {
+            const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
+            this.executeAction(realResSelected);
+        }
+        this.loading = false;
     }
 
     executeAction(realResSelected: number[]) {
 
-        this.http.put(this.data.processActionRoute, {resources : realResSelected, note : this.noteEditor.getNote()}).pipe(
+        this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(realResSelected);
