@@ -1,0 +1,25 @@
+.sbContent-container {
+    display: flex;
+    align-items: center;
+}
+
+.title-container {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--maarch-color-primary);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+}
+
+iframe {
+    height: 100vh; 
+    width: 100%;
+    border: none;
+}
+
+.subSubject {
+    color: var(--maarch-color-secondary);
+    align-self: flex-end;
+}
