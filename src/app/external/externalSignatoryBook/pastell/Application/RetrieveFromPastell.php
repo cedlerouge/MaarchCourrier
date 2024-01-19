@@ -14,11 +14,13 @@
 
 namespace ExternalSignatoryBook\pastell\Application;
 
+use ExternalSignatoryBook\Application\DocumentLink;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 use ExternalSignatoryBook\pastell\Domain\HistoryRepositoryInterface;
+use Throwable;
 
 class RetrieveFromPastell
 {
@@ -29,6 +31,7 @@ class RetrieveFromPastell
     private PastellConfig $config;
     private ResourceDataInterface $resourceData;
     private HistoryRepositoryInterface $historyRepository;
+    private DocumentLink $documentLink;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -44,7 +47,8 @@ class RetrieveFromPastell
         PastellConfigurationCheck  $pastellConfigCheck,
         ParseIParapheurLog         $parseIParapheurLog,
         ResourceDataInterface      $resourceData,
-        HistoryRepositoryInterface $historyRepository
+        HistoryRepositoryInterface $historyRepository,
+        DocumentLink               $documentLink
     )
     {
         $this->pastellApi = $pastellApi;
@@ -54,6 +58,7 @@ class RetrieveFromPastell
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->resourceData = $resourceData;
         $this->historyRepository = $historyRepository;
+        $this->documentLink = $documentLink;
     }
 
     /**
@@ -75,6 +80,16 @@ class RetrieveFromPastell
 
                 $infosError = (is_array($info['error'])) ? implode('-', $info['error']) : $info['error'];
                 $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Error when getting folder detail : ' . $infosError);
+
+                try {
+                    $docItemResId = $documentType == 'resLetterbox' ? $value['res_id'] : $value['res_id_master'];
+                    $type  = $documentType == 'resLetterbox' ? 'resource' : 'attachment';
+                    $title = $documentType == 'resLetterbox' ? $value['subject'] : $value['title'];
+                    $this->documentLink->removeExternalLink($docItemResId, $title, $type, $value['external_id']);
+                } catch (Throwable) {
+                    $errors[$key] = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$docItemResId}, document type $type; parapheur docId {$value['external_id']}";
+                }
+
                 unset($idsToRetrieve[$key]);
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {

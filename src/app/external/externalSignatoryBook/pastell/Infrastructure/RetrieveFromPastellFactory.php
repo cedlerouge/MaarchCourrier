@@ -14,6 +14,7 @@
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
+use ExternalSignatoryBook\Infrastructure\DocumentLinkFactory;
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
@@ -32,7 +33,8 @@ class RetrieveFromPastellFactory
         $parseIParapheurLog = new ParseIParapheurLog($pastellApi, $pastellConfig, $pastellConfigCheck, $processVisaWorkflow);
         $resourceData = new ResourceDataDb();
         $historyRepository = new HistoryRepository();
+        $documentLink = DocumentLinkFactory::createDocumentLink();
 
-        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog, $resourceData, $historyRepository);
+        return new RetrieveFromPastell($pastellApi, $pastellConfig, $pastellConfigCheck, $parseIParapheurLog, $resourceData, $historyRepository, $documentLink);
     }
 }
