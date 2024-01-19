@@ -86,7 +86,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     async onSubmit() {
         this.loading = true;
-        if (this.componentInstance.maarchFortifyService.signatureMode === 'rgs_2stars') {
+        if (this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
             this.componentInstance.open();
         } else {
             const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
