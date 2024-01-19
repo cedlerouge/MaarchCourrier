@@ -103,6 +103,10 @@
                                     src="https://www.africau.edu/images/default/sample.pdf"
                                 ></iframe>
                                 <app-maarch-sb-actions
+                                    [resId]="resId"
+                                    [userId]="userId"
+                                    [basketId]="basketId"
+                                    [groupId]="groupId"
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
                             </mat-drawer-content>

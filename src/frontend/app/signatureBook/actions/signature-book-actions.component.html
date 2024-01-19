@@ -16,20 +16,45 @@
         </div>
     </div>
     <div class="book-footer-center">
-        <button
-            mat-stroked-button
-            class="action-button action-button-left"
-            [disabled]="true"
-        >
-            REFUSER
-        </button>
-        <button
-            mat-stroked-button
-            class="action-button action-button-right"
-            [disabled]="true"
-        >
-            SIGNER
-        </button>
+        <div *ngIf="loading">
+            <mat-spinner diameter="50" class="spinner-white"></mat-spinner>
+        </div>
+        <ng-container *ngIf="!loading">
+            <button
+                mat-stroked-button
+                class="action-button action-button-left"
+                (click)="processAction(leftActions[0])"
+            >
+            <div [title]="leftActions[0]?.label" class="action-button-button-label">
+                {{leftActions[0]?.label}}
+            </div>
+            <div *ngIf="leftActions.length > 1">
+                <button (click)="$event.stopPropagation();" class="action-button-button-plus" mat-button [matMenuTriggerFor]="menuLeft">+</button>
+            </div>
+            </button>
+            <mat-menu #menuLeft="matMenu">
+                <ng-container *ngFor="let action of leftActions;let i=index">
+                    <button mat-menu-item *ngIf="i !== 0" >{{action.label}}</button>
+                </ng-container>
+            </mat-menu>
+            <button
+                mat-stroked-button
+                class="action-button action-button-right"
+                (click)="processAction(rightActions[0])"
+            >
+            <div [title]="rightActions[0]?.label" class="action-button-button-label">
+                {{rightActions[0]?.label}}
+            </div>
+            <div *ngIf="rightActions.length > 1">
+                <button (click)="$event.stopPropagation();" class="action-button-button-plus" mat-button [matMenuTriggerFor]="menuRight">+</button>
+            </div>
+            </button>
+            <mat-menu #menuRight="matMenu">
+                <ng-container *ngFor="let action of rightActions;let i=index">
+                    <button mat-menu-item *ngIf="i !== 0" >{{action.label}}</button>
+                </ng-container>
+            </mat-menu>
+        </ng-container>
     </div>
     <div class="book-footer-right"></div>
 </div>
