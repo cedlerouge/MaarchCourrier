@@ -355,10 +355,11 @@ class PastellApi implements PastellApiInterface
         ]);
 
         if ($response['code'] > 201) {
+            $return = ['code' => $response['code']];
             if (!empty($response['response']['error-message'])) {
-                $return = ["error" => $response['response']['error-message']];
+                $return["error"] = $response['response']['error-message'];
             } else {
-                $return = ["error" => 'An error occurred !'];
+                $return["error"] = 'An error occurred !';
             }
         } else {
             $return =

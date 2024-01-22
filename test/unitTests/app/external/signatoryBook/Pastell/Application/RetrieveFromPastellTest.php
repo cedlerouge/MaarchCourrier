@@ -7,17 +7,22 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Application;
 
+use ExternalSignatoryBook\Application\DocumentLink;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\HistoryRepositorySpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ParseIParapheurLogMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellApiMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellConfigMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ProcessVisaWorkflowSpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ResourceDataMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\AttachmentRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\HistoryRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\HistoryRepositorySpy as PastellHistoryRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\ResourceRepositorySpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Mock\UserRepositoryMock;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveFromPastellTest extends TestCase
@@ -26,7 +31,7 @@ class RetrieveFromPastellTest extends TestCase
     private PastellConfigMock $pastellConfigMock;
     private ParseIParapheurLogMock $parseIParapheurLogMock;
     private RetrieveFromPastell $retrieveFromPastell;
-    private HistoryRepositorySpy $historyRepositorySpy;
+    private PastellHistoryRepositorySpy $pastellHistoryRepositorySpy;
 
     protected function setUp(): void
     {
@@ -35,7 +40,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
         $resourceDataMock = new ResourceDataMock();
-        $this->historyRepositorySpy = new HistoryRepositorySpy();
+        $this->pastellHistoryRepositorySpy = new PastellHistoryRepositorySpy();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -44,20 +49,82 @@ class RetrieveFromPastellTest extends TestCase
             $processVisaWorkflowSpy
         );
 
+        $documentLink = new DocumentLink(
+            new UserRepositoryMock(),
+            new ResourceRepositorySpy(),
+            new AttachmentRepositorySpy(),
+            new HistoryRepositorySpy()
+        );
+
         $this->retrieveFromPastell = new RetrieveFromPastell(
             $this->pastellApiMock,
             $this->pastellConfigMock,
             $pastellConfigurationCheck,
             $this->parseIParapheurLogMock,
             $resourceDataMock,
-            $this->historyRepositorySpy
+            $this->pastellHistoryRepositorySpy,
+            $documentLink
+        );
+    }
+
+    public function testRetrieveResourceThatDoesNotExist(): void
+    {
+        $this->pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+
+        $idsToRetrieve = [
+            12 => [
+                'res_id'      => 12,
+                'subject'     => 'Breaking News : Superman is alive - Phpunit',
+                'external_id' => 'blabla'
+            ]
+        ];
+        $documentType = 'resLetterbox';
+
+        $this->pastellApiMock->doesFolderExist = false;
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
+
+        $this->assertSame(
+            [
+                12 => "Error when getting folder detail : Le document blabla n'appartient pas à l'entité {$this->pastellConfigMock->pastellConfig->getEntity()}"
+            ],
+            $result['error']
+        );
+    }
+
+    public function testRetrieveAttachmentThatDoesNotExist(): void
+    {
+        $this->pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+
+        $idsToRetrieve = [
+            12 => [
+                'res_id'      => 12,
+                'title'       => 'Breaking News : Superman is alive - Phpunit PJ',
+                'external_id' => 'blabla'
+            ]
+        ];
+        $documentType = 'noVersion';
+
+        $this->pastellApiMock->doesFolderExist = false;
+
+        $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
+
+        $this->assertSame(
+            [
+                12 => "Error when getting folder detail : Le document blabla n'appartient pas à l'entité {$this->pastellConfigMock->pastellConfig->getEntity()}"
+            ],
+            $result['error']
         );
     }
 
     /**
      * @return void
      */
-    public function testRetrieveOneResourceNotFoundAndOneSigned(): void
+    public function testRetrieveOneResourceWithErrorAndOneSigned(): void
     {
         $this->pastellApiMock->documentsDownload = [
             'encodedFile' => 'toto'
@@ -96,7 +163,7 @@ class RetrieveFromPastellTest extends TestCase
             $result['error']
         );
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertTrue($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -150,7 +217,7 @@ class RetrieveFromPastellTest extends TestCase
             $result['success']
         );
 
-        $this->assertFalse($this->historyRepositorySpy->historyAdded);
+        $this->assertFalse($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -192,7 +259,7 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertTrue($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -234,7 +301,7 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertTrue($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -276,7 +343,7 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertFalse($this->historyRepositorySpy->historyAdded);
+        $this->assertFalse($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -322,7 +389,7 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertTrue($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     /**
@@ -349,7 +416,7 @@ class RetrieveFromPastellTest extends TestCase
                 'error'   => [42 => 'An error occurred !']
             ], $result);
 
-        $this->assertTrue($this->historyRepositorySpy->historyAdded);
+        $this->assertTrue($this->pastellHistoryRepositorySpy->historyAdded);
     }
 
     public function testTheSignatoryNameIsTheOneInParapheur(): void
@@ -387,6 +454,6 @@ class RetrieveFromPastellTest extends TestCase
             $result
         );
 
-        $this->assertFalse($this->historyRepositorySpy->historyAdded);
+        $this->assertFalse($this->pastellHistoryRepositorySpy->historyAdded);
     }
 }

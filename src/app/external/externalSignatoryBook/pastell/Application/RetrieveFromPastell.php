@@ -14,11 +14,13 @@
 
 namespace ExternalSignatoryBook\pastell\Application;
 
+use ExternalSignatoryBook\Application\DocumentLink;
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 use ExternalSignatoryBook\pastell\Domain\HistoryRepositoryInterface;
+use Throwable;
 
 class RetrieveFromPastell
 {
@@ -29,6 +31,7 @@ class RetrieveFromPastell
     private PastellConfig $config;
     private ResourceDataInterface $resourceData;
     private HistoryRepositoryInterface $historyRepository;
+    private DocumentLink $documentLink;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -37,6 +40,7 @@ class RetrieveFromPastell
      * @param ParseIParapheurLog $parseIParapheurLog
      * @param ResourceDataInterface $resourceData
      * @param HistoryRepositoryInterface $historyRepository
+     * @param DocumentLink $documentLink
      */
     public function __construct(
         PastellApiInterface        $pastellApi,
@@ -44,7 +48,8 @@ class RetrieveFromPastell
         PastellConfigurationCheck  $pastellConfigCheck,
         ParseIParapheurLog         $parseIParapheurLog,
         ResourceDataInterface      $resourceData,
-        HistoryRepositoryInterface $historyRepository
+        HistoryRepositoryInterface $historyRepository,
+        DocumentLink               $documentLink
     )
     {
         $this->pastellApi = $pastellApi;
@@ -54,6 +59,7 @@ class RetrieveFromPastell
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->resourceData = $resourceData;
         $this->historyRepository = $historyRepository;
+        $this->documentLink = $documentLink;
     }
 
     /**
@@ -75,6 +81,21 @@ class RetrieveFromPastell
 
                 $infosError = (is_array($info['error'])) ? implode('-', $info['error']) : $info['error'];
                 $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Error when getting folder detail : ' . $infosError);
+
+                if (
+                    $info['code'] == 404 &&
+                    $info['error'] == "Le document {$value['external_id']} n'appartient pas à l'entité {$this->config->getEntity()}"
+                ) {
+                    try {
+                        $type  = $documentType == 'resLetterbox' ? 'resource' : 'attachment';
+                        $title = $documentType == 'resLetterbox' ? $value['subject'] : $value['title'];
+                        $this->documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
+                    } catch (Throwable $th) {
+                        $errors[$key] = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type, parapheur docId {$value['external_id']}";
+                        $errors[$key] .= ". Error: {$th->getMessage()}.";
+                    }
+                }
+
                 unset($idsToRetrieve[$key]);
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {

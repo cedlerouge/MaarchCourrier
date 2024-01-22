@@ -389,7 +389,7 @@ class IxbusController
                         $title = $version == 'resLetterbox' ? $value['subject'] : $value['title'];
                         $documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
                     } catch (Throwable $th) {
-                        $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type; parapheur docId {$value['external_id']}";
+                        $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type, parapheur docId {$value['external_id']}";
                         LogsController::add([
                             'isTech'    => true,
                             'moduleId'  => $GLOBALS['moduleId'],
