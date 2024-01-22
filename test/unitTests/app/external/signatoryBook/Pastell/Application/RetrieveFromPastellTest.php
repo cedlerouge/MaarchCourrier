@@ -86,8 +86,6 @@ class RetrieveFromPastellTest extends TestCase
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
 
-        var_dump($result);
-
         $this->assertSame(
             [
                 12 => "Error when getting folder detail : Le document blabla n'appartient pas à l'entité {$this->pastellConfigMock->pastellConfig->getEntity()}"
@@ -114,8 +112,6 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellApiMock->doesFolderExist = false;
 
         $result = $this->retrieveFromPastell->retrieve($idsToRetrieve, $documentType);
-
-        var_dump($result);
 
         $this->assertSame(
             [
