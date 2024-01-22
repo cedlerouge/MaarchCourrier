@@ -1,12 +1,25 @@
 <?php
 
+use Configuration\models\ConfigurationModel;
+use History\controllers\HistoryController;
+use History\models\BatchHistoryModel;
+use Notification\models\NotificationsEmailsModel;
+use Parameter\models\ParameterModel;
+use PHPMailer\PHPMailer\PHPMailer;
+use SrcCore\controllers\LogsController;
+use SrcCore\controllers\PasswordController;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabasePDO;
+use User\controllers\UserController;
+use User\models\UserModel;
+
 $options = getopt("c:n:", ["config:", "notif:"]);
 
 controlOptions($options);
 
 $txt = '';
 foreach (array_keys($options) as $key) {
-    if (isset($options[$key]) && $options[$key] == false) {
+    if (isset($options[$key]) && !$options[$key]) {
         $txt .= $key . '=false,';
     } else {
         $txt .= $key . '=' . $options[$key] . ',';
@@ -22,16 +35,16 @@ if (!is_file($options['config'])) {
 $file = file_get_contents($options['config']);
 $file = json_decode($file, true);
 
-$customID   = $file['config']['customID'] ?? null;
-$maarchUrl  = $file['config']['maarchUrl'];
+$customID = $file['config']['customID'] ?? null;
+$maarchUrl = $file['config']['maarchUrl'];
 
 chdir($file['config']['maarchDirectory']);
 
 require 'vendor/autoload.php';
 
 
-\SrcCore\models\DatabasePDO::reset();
-new \SrcCore\models\DatabasePDO(['customId' => $customID]);
+DatabasePDO::reset();
+new DatabasePDO(['customId' => $customID]);
 
 $GLOBALS['lckFile'] = "{$file['config']['maarchDirectory']}/bin/notification/{$customID}process_email_stack.lck";
 
@@ -46,18 +59,18 @@ fclose($lockFile);
 
 setBatchNumber();
 
-$language = \SrcCore\models\CoreConfigModel::getLanguage();
+$language = CoreConfigModel::getLanguage();
 
 if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
     require_once("custom/{$customID}/src/core/lang/lang-{$language}.php");
 }
 require_once("src/core/lang/lang-{$language}.php");
 
-\User\controllers\UserController::setAbsences();
+UserController::setAbsences();
 
 //=========================================================================================================================================
 //FIRST STEP
-$emails = \Notification\models\NotificationsEmailsModel::get(['select' => ['*'], 'where' => ['exec_date is NULL']]);
+$emails = NotificationsEmailsModel::get(['select' => ['*'], 'where' => ['exec_date is NULL']]);
 $totalEmailsToProcess = count($emails);
 if ($totalEmailsToProcess === 0) {
     writeLog(['message' => "No notifications to send", 'level' => 'INFO']);
@@ -70,7 +83,7 @@ writeLog(['message' => "{$totalEmailsToProcess} notification(s) to send", 'level
 
 //=========================================================================================================================================
 //SECOND STEP
-$configuration = \Configuration\models\ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+$configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
 $configuration = json_decode($configuration['value'], true);
 foreach ($emails as $key => $email) {
     if (empty($configuration)) {
@@ -79,7 +92,7 @@ foreach ($emails as $key => $email) {
         exit();
     }
 
-    $phpmailer = new \PHPMailer\PHPMailer\PHPMailer();
+    $phpmailer = new PHPMailer();
     $phpmailer->setFrom($configuration['from'], $configuration['from']);
     if (in_array($configuration['type'], ['smtp', 'mail'])) {
         if ($configuration['type'] == 'smtp') {
@@ -98,7 +111,7 @@ foreach ($emails as $key => $email) {
         if ($configuration['auth']) {
             $phpmailer->Username = $configuration['user'];
             if (!empty($configuration['password'])) {
-                $phpmailer->Password = \SrcCore\controllers\PasswordController::decrypt(['encryptedData' => $configuration['password']]);
+                $phpmailer->Password = PasswordController::decrypt(['encryptedData' => $configuration['password']]);
             }
         }
     } elseif ($configuration['type'] == 'sendmail') {
@@ -118,7 +131,7 @@ foreach ($emails as $key => $email) {
     $email['html_body'] = str_replace("\'", "'", $email['html_body']);
     $email['html_body'] = str_replace("''", "'", $email['html_body']);
 
-    $dom = new \DOMDocument();
+    $dom = new DOMDocument();
     $internalErrors = libxml_use_internal_errors(true);
     $dom->loadHTML($email['html_body'], LIBXML_NOWARNING);
     libxml_use_internal_errors($internalErrors);
@@ -144,7 +157,7 @@ foreach ($emails as $key => $email) {
         $attachments = explode(',', $email['attachments']);
         foreach ($attachments as $num => $attachment) {
             if (is_file($attachment)) {
-                $ext  = strrchr($attachment, '.');
+                $ext = strrchr($attachment, '.');
                 $name = str_pad(($num + 1), 4, '0', STR_PAD_LEFT) . $ext;
                 $phpmailer->addStringAttachment(file_get_contents($attachment), $name);
             }
@@ -155,14 +168,14 @@ foreach ($emails as $key => $email) {
     $phpmailer->SMTPDebug = 1;
     $phpmailer->Debugoutput = function ($str) {
         if (strpos($str, 'SMTP ERROR') !== false) {
-            $user = \User\models\UserModel::get(['select' => ['id'], 'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
-            \History\controllers\HistoryController::add([
-                'tableName'    => 'emails',
-                'recordId'     => 'email',
-                'eventType'    => 'ERROR',
-                'eventId'      => 'sendEmail',
-                'userId'       => $user[0]['id'],
-                'info'         => $str
+            $user = UserModel::get(['select' => ['id'], 'orderBy' => ["user_id='superadmin' desc"], 'limit' => 1]);
+            HistoryController::add([
+                'tableName' => 'emails',
+                'recordId'  => 'email',
+                'eventType' => 'ERROR',
+                'eventId'   => 'sendEmail',
+                'userId'    => $user[0]['id'],
+                'info'      => $str
             ]);
         }
     };
@@ -175,11 +188,11 @@ foreach ($emails as $key => $email) {
         writeLog(['message' => "SENDING EMAIL ERROR ! ({$phpmailer->ErrorInfo})", 'level' => 'ERROR', 'history' => true]);
 
         $emailsInError++;
-        $errTxt = ' (Last Error : '.$phpmailer->ErrorInfo.')';
+        $errTxt = ' (Last Error : ' . $phpmailer->ErrorInfo . ')';
         $result = 'FAILED';
     }
 
-    \Notification\models\NotificationsEmailsModel::update([
+    NotificationsEmailsModel::update([
         'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => $result],
         'where' => ['email_stack_sid = ?'],
         'data'  => [$email['email_stack_sid']]
@@ -196,6 +209,10 @@ unlink($GLOBALS['lckFile']);
 updateBatchNumber();
 
 
+/**
+ * @param array $options
+ * @return void
+ */
 function controlOptions(array &$options)
 {
     if (empty($options['c']) && empty($options['config'])) {
@@ -209,23 +226,28 @@ function controlOptions(array &$options)
 
 function setBatchNumber()
 {
-    $parameter = \Parameter\models\ParameterModel::getById(['select' => ['param_value_int'], 'id' => "process_email_stack_id"]);
+    $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => "process_email_stack_id"]);
     if (!empty($parameter)) {
         $GLOBALS['wb'] = $parameter['param_value_int'] + 1;
     } else {
-        \Parameter\models\ParameterModel::create(['id' => 'process_email_stack_id', 'param_value_int' => 1]);
+        ParameterModel::create(['id' => 'process_email_stack_id', 'param_value_int' => 1]);
         $GLOBALS['wb'] = 1;
     }
 }
 
 function updateBatchNumber()
 {
-    \Parameter\models\ParameterModel::update(['id' => 'process_email_stack_id', 'param_value_int' => $GLOBALS['wb']]);
+    ParameterModel::update(['id' => 'process_email_stack_id', 'param_value_int' => $GLOBALS['wb']]);
 }
 
+/**
+ * @param array $args
+ * @return void
+ * @throws Exception
+ */
 function writeLog(array $args)
 {
-    \SrcCore\controllers\LogsController::add([
+    LogsController::add([
         'isTech'    => true,
         'moduleId'  => 'Notification',
         'level'     => $args['level'] ?? 'INFO',
@@ -236,6 +258,6 @@ function writeLog(array $args)
     ]);
 
     if (!empty($args['history'])) {
-        \History\models\BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
+        BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
     }
 }

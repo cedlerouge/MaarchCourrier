@@ -1,12 +1,26 @@
 <?php
 
+use ContentManagement\controllers\MergeController;
+use Docserver\models\DocserverModel;
+use History\models\BatchHistoryModel;
+use Notification\controllers\DiffusionTypesController;
+use Notification\models\NotificationModel;
+use Notification\models\NotificationsEmailsModel;
+use Notification\models\NotificationsEventsModel;
+use Parameter\models\ParameterModel;
+use Resource\models\ResModel;
+use SrcCore\controllers\LogsController;
+use SrcCore\models\CoreConfigModel;
+use SrcCore\models\DatabasePDO;
+use User\controllers\UserController;
+
 $options = getopt("c:n:", ["config:", "notif:"]);
 
 controlOptions($options);
 
 $txt = '';
 foreach (array_keys($options) as $key) {
-    if (isset($options[$key]) && $options[$key] == false) {
+    if (isset($options[$key]) && !$options[$key]) {
         $txt .= $key . '=false,';
     } else {
         $txt .= $key . '=' . $options[$key] . ',';
@@ -24,32 +38,32 @@ if (!is_file($options['config'])) {
 $file = file_get_contents($options['config']);
 $file = json_decode($file, true);
 
-$customID   = $file['config']['customID'] ?? null;
-$maarchUrl  = $file['config']['maarchUrl'];
+$customID = $file['config']['customID'] ?? null;
+$maarchUrl = $file['config']['maarchUrl'];
 
 chdir($file['config']['maarchDirectory']);
 
 require 'vendor/autoload.php';
 
 
-\SrcCore\models\DatabasePDO::reset();
-new \SrcCore\models\DatabasePDO(['customId' => $customID]);
+DatabasePDO::reset();
+new DatabasePDO(['customId' => $customID]);
 
 setBatchNumber();
 
-$language = \SrcCore\models\CoreConfigModel::getLanguage();
+$language = CoreConfigModel::getLanguage();
 
 if (file_exists("custom/{$customID}/src/core/lang/lang-{$language}.php")) {
     require_once("custom/{$customID}/src/core/lang/lang-{$language}.php");
 }
 require_once("src/core/lang/lang-{$language}.php");
 
-\User\controllers\UserController::setAbsences();
+UserController::setAbsences();
 
 //=========================================================================================================================================
 //FIRST STEP
 writeLog(['message' => "Loading configuration for notification {$notificationId}", 'level' => 'INFO']);
-$notification = \Notification\models\NotificationModel::getByNotificationId(['notificationId' => $notificationId, 'select' => ['*']]);
+$notification = NotificationModel::getByNotificationId(['notificationId' => $notificationId, 'select' => ['*']]);
 if (empty($notification)) {
     writeLog(['message' => "Notification {$notificationId} does not exist", 'level' => 'ERROR', 'history' => true]);
     exit();
@@ -64,7 +78,7 @@ if ($notification['is_enabled'] === 'N') {
 //SECOND STEP
 writeLog(['message' => "Loading events for notification {$notificationId}", 'level' => 'INFO']);
 
-$events = \Notification\models\NotificationsEventsModel::get(['select' => ['*'], 'where' => ['notification_sid = ?', 'exec_date is NULL'], 'data' => [$notification['notification_sid']], 'orderBy' => ['event_date desc']]);
+$events = NotificationsEventsModel::get(['select' => ['*'], 'where' => ['notification_sid = ?', 'exec_date is NULL'], 'data' => [$notification['notification_sid']], 'orderBy' => ['event_date desc']]);
 $totalEventsToProcess = count($events);
 $currentEvent = 0;
 if ($totalEventsToProcess === 0) {
@@ -79,13 +93,13 @@ writeLog(['message' => "{$totalEventsToProcess} event(s) for notification {$noti
 //THIRD STEP
 foreach ($events as $event) {
     writeLog(['message' => "Getting recipients using diffusion type {$notification['diffusion_type']}", 'level' => 'INFO']);
-    $recipients = \Notification\controllers\DiffusionTypesController::getItemsToNotify(['request' => 'recipients', 'notification' => $notification, 'event' => $event]);
+    $recipients = DiffusionTypesController::getItemsToNotify(['request' => 'recipients', 'notification' => $notification, 'event' => $event]);
 
     $res_id = false;
     if ($event['table_name'] == 'res_letterbox' || $event['table_name'] == 'res_view_letterbox') {
         $res_id = $event['record_id'];
     } else {
-        $res_id = \Notification\controllers\DiffusionTypesController::getItemsToNotify(['request' => 'res_id', 'notification' => $notification, 'event' => $event]);
+        $res_id = DiffusionTypesController::getItemsToNotify(['request' => 'res_id', 'notification' => $notification, 'event' => $event]);
     }
     $event['res_id'] = $res_id;
 
@@ -99,7 +113,7 @@ foreach ($events as $event) {
     $nbRecipients = count($recipients);
     writeLog(['message' => "{$nbRecipients} recipients found", 'level' => 'INFO']);
 
-    $parameter = \Parameter\models\ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'user_quota']);
+    $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'user_quota']);
     if ($notification['diffusion_type'] === 'dest_entity') {
         foreach ($recipients as $key => $recipient) {
             $entity_id = $recipient['entity_id'];
@@ -136,7 +150,7 @@ foreach ($events as $event) {
 
     if (count($recipients) === 0) {
         writeLog(['message' => "No recipient found", 'level' => 'INFO']);
-        \Notification\models\NotificationsEventsModel::update([
+        NotificationsEventsModel::update([
             'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'INFO: no recipient found'],
             'where' => ['event_stack_sid = ?'],
             'data'  => [$event['event_stack_sid']]
@@ -161,11 +175,11 @@ foreach ($tmpNotifs as $user_id => $tmpNotif) {
         'res_table'    => 'res_letterbox',
         'res_view'     => 'res_view_letterbox'
     ];
-    $html = \ContentManagement\controllers\MergeController::mergeNotification(['templateId' => $notification['template_id'], 'params' => $params]);
+    $html = MergeController::mergeNotification(['templateId' => $notification['template_id'], 'params' => $params]);
     if (strlen($html) === 0) {
         $notificationError = array_column($tmpNotif['events'], 'event_stack_sid');
         if (!empty($notificationError)) {
-            \Notification\models\NotificationsEventsModel::update([
+            NotificationsEventsModel::update([
                 'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'FAILED: Error when merging template'],
                 'where' => ['event_stack_sid IN (?)'],
                 'data'  => [$notificationError]
@@ -177,7 +191,7 @@ foreach ($tmpNotifs as $user_id => $tmpNotif) {
 
     // Prepare e-mail for stack
     $recipient_mail = $tmpNotif['recipient']['mail'];
-    $subject        = $notification['description'];
+    $subject = $notification['description'];
 
     if (!empty($recipient_mail)) {
         $html = str_replace("&#039;", "'", $html);
@@ -191,12 +205,12 @@ foreach ($tmpNotifs as $user_id => $tmpNotif) {
         if ($attachMode) {
             foreach ($tmpNotif['events'] as $event) {
                 if ($event['res_id'] != '') {
-                    $resourceToAttach = \Resource\models\ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
+                    $resourceToAttach = ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
                     if (!empty($resourceToAttach['docserver_id'])) {
-                        $docserver     = \Docserver\models\DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
-                        $path          = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resourceToAttach['path']) . $resourceToAttach['filename'];
-                        $path          = str_replace('//', '/', $path);
-                        $path          = str_replace('\\', '/', $path);
+                        $docserver = DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
+                        $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resourceToAttach['path']) . $resourceToAttach['filename'];
+                        $path = str_replace('//', '/', $path);
+                        $path = str_replace('\\', '/', $path);
                         $attachments[] = $path;
                     }
                 }
@@ -213,11 +227,11 @@ foreach ($tmpNotifs as $user_id => $tmpNotif) {
         if (count($attachments) > 0) {
             $arrayPDO['attachments'] = implode(',', $attachments);
         }
-        \Notification\models\NotificationsEmailsModel::create($arrayPDO);
+        NotificationsEmailsModel::create($arrayPDO);
 
         $notificationSuccess = array_column($tmpNotif['events'], 'event_stack_sid');
         if (!empty($notificationSuccess)) {
-            \Notification\models\NotificationsEventsModel::update([
+            NotificationsEventsModel::update([
                 'set'   => ['exec_date' => 'CURRENT_TIMESTAMP', 'exec_result' => 'SUCCESS'],
                 'where' => ['event_stack_sid IN (?)'],
                 'data'  => [$notificationSuccess]
@@ -251,23 +265,28 @@ function controlOptions(array &$options)
 
 function setBatchNumber()
 {
-    $parameter = \Parameter\models\ParameterModel::getById(['select' => ['param_value_int'], 'id' => "process_event_stack_id"]);
+    $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => "process_event_stack_id"]);
     if (!empty($parameter)) {
         $GLOBALS['wb'] = $parameter['param_value_int'] + 1;
     } else {
-        \Parameter\models\ParameterModel::create(['id' => 'process_event_stack_id', 'param_value_int' => 1]);
+        ParameterModel::create(['id' => 'process_event_stack_id', 'param_value_int' => 1]);
         $GLOBALS['wb'] = 1;
     }
 }
 
 function updateBatchNumber()
 {
-    \Parameter\models\ParameterModel::update(['id' => 'process_event_stack_id', 'param_value_int' => $GLOBALS['wb']]);
+    ParameterModel::update(['id' => 'process_event_stack_id', 'param_value_int' => $GLOBALS['wb']]);
 }
 
+/**
+ * @param array $args
+ * @return void
+ * @throws Exception
+ */
 function writeLog(array $args)
 {
-    \SrcCore\controllers\LogsController::add([
+    LogsController::add([
         'isTech'    => true,
         'moduleId'  => 'Notification',
         'level'     => $args['level'] ?? 'INFO',
@@ -278,6 +297,6 @@ function writeLog(array $args)
     ]);
 
     if (!empty($args['history'])) {
-        \History\models\BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
+        BatchHistoryModel::create(['info' => $args['message'], 'module_name' => 'Notification']);
     }
 }
