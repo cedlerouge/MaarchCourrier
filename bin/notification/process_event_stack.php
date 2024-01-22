@@ -40,6 +40,7 @@ $file = json_decode($file, true);
 
 $customID = $file['config']['customID'] ?? null;
 $maarchUrl = $file['config']['maarchUrl'];
+$GLOBALS['customId'] = $file['config']['customID'];
 
 chdir($file['config']['maarchDirectory']);
 

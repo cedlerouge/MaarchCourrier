@@ -79,6 +79,7 @@ class LogsController
      * @description Get log config by type
      * @param string $logType logFonctionnel | logTechnique | queries
      * @return  array
+     * @throws Exception
      */
     public static function getLogType(string $logType): array
     {
@@ -94,6 +95,7 @@ class LogsController
     /**
      * @description Get log config
      * @return  array
+     * @throws Exception
      */
     public static function getLogConfig(): ?array
     {
