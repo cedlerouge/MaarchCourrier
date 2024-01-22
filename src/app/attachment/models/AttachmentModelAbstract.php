@@ -277,8 +277,8 @@ abstract class AttachmentModelAbstract
      */
     public static function removeExternalLink(array $args): bool
     {
-        ValidatorModel::notEmpty($args, ['resId', 'externalId']);
-        ValidatorModel::intType($args, ['resId', 'externalId']);
+        ValidatorModel::intType($args, ['resId']);
+        ValidatorModel::stringType($args, ['externalId']);
 
         DatabaseModel::update([
             'table'   => 'res_attachments',

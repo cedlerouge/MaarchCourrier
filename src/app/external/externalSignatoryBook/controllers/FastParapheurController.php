@@ -24,6 +24,7 @@ use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
 use Exception;
+use ExternalSignatoryBook\Infrastructure\DocumentLinkFactory;
 use History\controllers\HistoryController;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
@@ -38,6 +39,7 @@ use SrcCore\models\CurlModel;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\TextFormatModel;
 use SrcCore\models\ValidatorModel;
+use Throwable;
 use User\controllers\UserController;
 use Note\models\NoteModel;
 use Entity\models\EntityModel;
@@ -56,6 +58,7 @@ use ZipArchive;
 class FastParapheurController
 {
     const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+    const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
 
     public function getWorkflowDetails(Request $request, Response $response)
     {
@@ -414,11 +417,26 @@ class FastParapheurController
                     'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
                 ]);
 
-                if ($historyResponse['errors'] === FastParapheurController::INVALID_DOC_ID_ERROR) {
-                    FastParapheurController::removeDocumentLink([
-                        'docItem' => $value,
-                        'type'    => ($version == 'resLetterbox' ? 'resource' : 'attachment')
-                    ]);
+                if (
+                    $historyResponse['errors'] == FastParapheurController::INVALID_DOC_ID_ERROR ||
+                    strpos($historyResponse['errors'], FastParapheurController::INVALID_DOC_ID_TYPE_ERROR) !== false
+                ) {
+                    $documentLink = DocumentLinkFactory::createDocumentLink();
+                    try {
+                        $type  = $version == 'resLetterbox' ? 'resource' : 'attachment';
+                        $title = $version == 'resLetterbox' ? $value['subject'] : $value['title'];
+                        $documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
+                    } catch (Throwable $th) {
+                        $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type; parapheur docId {$value['external_id']}";
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['moduleId'],
+                            'level'     => 'ERROR',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
+                            'eventId'   => "$info. Error: {$th->getMessage()}."
+                        ]);
+                    }
                 } else {
                     $userId = UserModel::get([
                         'select' => ['id'],
@@ -496,9 +514,6 @@ class FastParapheurController
                     $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
-
-                    // Mettre vide pour simuler une erreur de récupération du fichier encodé
-                    //$args['idsToRetrieve'][$version][$resId]['encodedFile'] = '';
 
                     $args['idsToRetrieve'][$version][$resId]['encodedFile'] = $response['b64FileContent'];
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
@@ -588,9 +603,6 @@ class FastParapheurController
                 }
             }
         }
-
-        // Simuler une erreur dans la fonction de récupération des documents signés
-        // return ['error' => 'Une erreur inconnue est survenue'];
 
         return $args['idsToRetrieve'];
     }
@@ -752,13 +764,16 @@ class FastParapheurController
         $signatoryInfo = null;
 
         if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
-            $signatoryInfo = DatabaseModel::select([
+            $user = DatabaseModel::select([
                 'select'    => ['firstname', 'lastname', 'users.id'],
                 'table'     => ['listinstance', 'users'],
                 'left_join' => ['listinstance.item_id = users.id'],
                 'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
                 'data'      => [$args['resId'], 'VISA_CIRCUIT']
-            ])[0];
+            ]);
+            if(!empty($user[0])) {
+                $signatoryInfo = $user[0];
+            }
         } else {
             if (!empty($args['valueResponse']['userFastId'] ?? null)) {
                 $signatoryInfo = UserModel::get([
@@ -2087,44 +2102,6 @@ class FastParapheurController
             return ['response' => $curlReturn['response']];
         }
     */
-
-    /**
-     * @throws Exception
-     */
-    public static function removeDocumentLink(array $args): bool
-    {
-        ValidatorModel::notEmpty($args, ['docItem', 'type']);
-        ValidatorModel::arrayType($args, ['docItem']);
-        ValidatorModel::stringType($args, ['type']);
-
-        $info = '';
-        $userId = UserModel::get([
-            'select' => ['id'],
-            'where'  => ['mode = ? OR mode = ?'],
-            'data'   => ['root_visible', 'root_invisible'],
-            'limit'  => 1
-        ])[0]['id'];
-
-        // remove signatureBookId link
-        if ($args['type'] === 'resource') {
-            ResModel::removeExternalLink(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
-            $info = _DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY;
-        } elseif ($args['type'] === 'attachment') {
-            AttachmentModel::removeExternalLink(['resId' => $args['docItem']['res_id'], 'externalId' => (int)$args['docItem']['external_id']]);
-            $info = _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[0] . " '{$args['docItem']['title']}' " . _ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY[1];
-        }
-
-        HistoryController::add([
-            'tableName' => 'res_letterbox',
-            'recordId'  => $args['docItem']['res_id_master'] ?? $args['docItem']['res_id'],
-            'eventType' => 'ACTION#1',
-            'eventId'   => '1',
-            'userId'    => $userId,
-            'info'      => $info
-        ]);
-
-        return true;
-    }
 
     /**
      * @throws Exception

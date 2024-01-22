@@ -20,6 +20,7 @@ use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use History\controllers\HistoryController;
+use ExternalSignatoryBook\Infrastructure\DocumentLinkFactory;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
@@ -30,12 +31,26 @@ use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
+use Throwable;
 
 /**
  * @codeCoverageIgnore
  */
 class IxbusController
 {
+    /**
+     * The API expects hexadecimal identifiers for various manipulated objects (users, types, folders, etc.).
+     * When these identifiers cannot be interpreted correctly, they generate generic errors
+     * (which can occur in all API calls involving hexadecimal identifiers), such as the following:
+     *
+     *      - Impossible de trouver une correspondance à l'identifiant '{identifiant}' fourni
+     *      - Impossible de trouver une correspondance à l'identifiant fourni
+     */
+    private const GENERIC_ERRORS_HEX_IDENTIFIERS = [
+        'errorCode' => 1,
+        'message'   => "Impossible de trouver une correspondance à l'identifiant"
+    ];
+
     public static function getInitializeDatas($config)
     {
         $curlResponse = CurlModel::exec([
@@ -354,6 +369,43 @@ class IxbusController
         foreach ($aArgs['idsToRetrieve'][$version] as $resId => $value) {
             $folderData = IxbusController::getDossier(['config' => $aArgs['config'], 'folderId' => $value['external_id']]);
 
+            if (!empty($folderData['error'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'ERROR',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "[ixbus api] Cannot fetch folder : {$folderData['error']['message']}"
+                ]);
+
+                if (
+                    $folderData['error']['errorCode'] == IxbusController::GENERIC_ERRORS_HEX_IDENTIFIERS['errorCode'] &&
+                    strpos($folderData['error']['message'], IxbusController::GENERIC_ERRORS_HEX_IDENTIFIERS['message']) !== false
+                ) {
+                    $documentLink = DocumentLinkFactory::createDocumentLink();
+                    try {
+                        $type  = $version == 'resLetterbox' ? 'resource' : 'attachment';
+                        $title = $version == 'resLetterbox' ? $value['subject'] : $value['title'];
+                        $documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
+                    } catch (Throwable $th) {
+                        $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type; parapheur docId {$value['external_id']}";
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['moduleId'],
+                            'level'     => 'ERROR',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
+                            'eventId'   => "$info. Error: {$th->getMessage()}."
+                        ]);
+                    }
+                }
+
+                unset($aArgs['idsToRetrieve'][$version][$resId]);
+                continue;
+            }
+
+
             if (in_array($folderData['data']['etat'], ['Refusé', 'Terminé'])) {
                 $aArgs['idsToRetrieve'][$version][$resId]['status'] = $folderData['data']['etat'] == 'Refusé' ? 'refused' : 'validated';
                 $signedDocument = IxbusController::getDocument(['config' => $aArgs['config'], 'documentId' => $folderData['data']['documents']['principal']['identifiant']]);
@@ -443,7 +495,7 @@ class IxbusController
             'method'  => 'GET'
         ]);
         if (!empty($curlResponse['response']['error'])) {
-            return ['error' => $curlResponse['response']['message']];
+            return ['error' => $curlResponse['response']];
         }
 
         return ['data' => $curlResponse['response']['payload']];

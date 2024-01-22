@@ -69,6 +69,7 @@
       <file>test/unitTests/app/registeredMail/RegisteredNumberRangeControllerTest.php</file>
       <file>test/unitTests/app/home/TileControllerTest.php</file>
       <file>test/unitTests/app/external/signatoryBook/FastParapheurControllerTest.php</file>
+      <file>test/unitTests/app/external/signatoryBook/Application/DocumentLinkTest.php</file>
       <file>test/unitTests/app/resource/Infrastructure/EncryptedResourceTest.php</file>
 <!--      &lt;!&ndash; The last one should be history &ndash;&gt;-->
       <file>test/unitTests/app/history/HistoryControllerTest.php</file>
