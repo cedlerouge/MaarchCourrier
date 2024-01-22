@@ -12,6 +12,7 @@ namespace MaarchCourrier\Tests\app\external\Pastell\Application;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Application\RetrieveFromPastell;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
+use MaarchCourrier\Tests\app\external\Pastell\Mock\HistoryRepositorySpy;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\ParseIParapheurLogMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
@@ -25,6 +26,7 @@ class RetrieveFromPastellTest extends TestCase
     private PastellConfigMock $pastellConfigMock;
     private ParseIParapheurLogMock $parseIParapheurLogMock;
     private RetrieveFromPastell $retrieveFromPastell;
+    private HistoryRepositorySpy $historyRepositorySpy;
 
     protected function setUp(): void
     {
@@ -33,6 +35,7 @@ class RetrieveFromPastellTest extends TestCase
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigurationCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
         $resourceDataMock = new ResourceDataMock();
+        $this->historyRepositorySpy = new HistoryRepositorySpy();
 
         $this->parseIParapheurLogMock = new ParseIParapheurLogMock(
             $this->pastellApiMock,
@@ -46,7 +49,8 @@ class RetrieveFromPastellTest extends TestCase
             $this->pastellConfigMock,
             $pastellConfigurationCheck,
             $this->parseIParapheurLogMock,
-            $resourceDataMock
+            $resourceDataMock,
+            $this->historyRepositorySpy
         );
     }
 
@@ -91,6 +95,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result['error']
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -143,6 +149,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result['success']
         );
+
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -183,6 +191,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -223,6 +233,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -263,6 +275,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -307,6 +321,8 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     /**
@@ -332,6 +348,8 @@ class RetrieveFromPastellTest extends TestCase
                 'success' => [],
                 'error'   => [42 => 'An error occurred !']
             ], $result);
+
+        $this->assertTrue($this->historyRepositorySpy->historyAdded);
     }
 
     public function testTheSignatoryNameIsTheOneInParapheur(): void
@@ -368,5 +386,7 @@ class RetrieveFromPastellTest extends TestCase
             ],
             $result
         );
+
+        $this->assertFalse($this->historyRepositorySpy->historyAdded);
     }
 }

@@ -18,6 +18,7 @@ use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
+use ExternalSignatoryBook\pastell\Domain\HistoryRepositoryInterface;
 
 class RetrieveFromPastell
 {
@@ -27,6 +28,7 @@ class RetrieveFromPastell
     private ParseIParapheurLog $parseIParapheurLog;
     private PastellConfig $config;
     private ResourceDataInterface $resourceData;
+    private HistoryRepositoryInterface $historyRepository;
 
     /**
      * @param PastellApiInterface $pastellApi
@@ -34,13 +36,15 @@ class RetrieveFromPastell
      * @param PastellConfigurationCheck $pastellConfigCheck
      * @param ParseIParapheurLog $parseIParapheurLog
      * @param ResourceDataInterface $resourceData
+     * @param HistoryRepositoryInterface $historyRepository
      */
     public function __construct(
-        PastellApiInterface       $pastellApi,
-        PastellConfigInterface    $pastellConfig,
-        PastellConfigurationCheck $pastellConfigCheck,
-        ParseIParapheurLog        $parseIParapheurLog,
-        ResourceDataInterface     $resourceData
+        PastellApiInterface        $pastellApi,
+        PastellConfigInterface     $pastellConfig,
+        PastellConfigurationCheck  $pastellConfigCheck,
+        ParseIParapheurLog         $parseIParapheurLog,
+        ResourceDataInterface      $resourceData,
+        HistoryRepositoryInterface $historyRepository
     )
     {
         $this->pastellApi = $pastellApi;
@@ -49,6 +53,7 @@ class RetrieveFromPastell
         $this->parseIParapheurLog = $parseIParapheurLog;
         $this->config = $this->pastellConfig->getPastellConfig();
         $this->resourceData = $resourceData;
+        $this->historyRepository = $historyRepository;
     }
 
     /**
@@ -62,28 +67,36 @@ class RetrieveFromPastell
             return ['success' => [], 'error' => 'Cannot retrieve resources from pastell : pastell configuration is invalid'];
         }
         $errors = [];
+
         foreach ($idsToRetrieve as $key => $value) {
             $info = $this->pastellApi->getFolderDetail($this->config, $value['external_id']);
             if (!empty($info['error'])) {
                 $errors[$key] = 'Error when getting folder detail : ' . $info['error'];
+
+                $infosError = (is_array($info['error'])) ? implode('-', $info['error']) : $info['error'];
+                $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Error when getting folder detail : ' . $infosError);
                 unset($idsToRetrieve[$key]);
             } else {
                 if (in_array('verif-iparapheur', $info['actionPossibles'] ?? [])) {
                     $verif = $this->pastellApi->verificationIParapheur($this->config, $value['external_id']);
                     if ($verif !== true) {
                         $errors[$key] = 'Action "verif-iparapheur" failed';
+
+                        $this->historyRepository->addLogInHistory($value['res_id_master'] ?? $value['res_id'], 'Action "verif-iparapheur" failed');
                         unset($idsToRetrieve[$key]);
                         continue;
                     }
                 }
                 // Need res_id_master for parseLogIparapheur and res_id for updateDocument (for attachments and main document)
                 $resId = $value['res_id_master'] ?? $value['res_id'];
-                $result = $this->parseIParapheurLog->parseLogIparapheur($resId , $value['external_id']);
+                $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $value['external_id']);
                 $this->resourceData->updateDocumentExternalStateSignatoryUser($value['res_id'], $documentType == 'resLetterbox' ? 'resource' : 'attachment', $result['signatory'] ?? '');
-
 
                 if (!empty($result['error'])) {
                     $errors[$key] = $result['error'];
+
+                    $resultError = (is_array($result['error'])) ? implode('-', $result['error']) : $result['error'];
+                    $this->historyRepository->addLogInHistory($resId, $resultError);
                     unset($idsToRetrieve[$key]);
                     continue;
                 }
@@ -99,6 +112,8 @@ class RetrieveFromPastell
                     $deleteFolderResult = $this->pastellApi->deleteFolder($this->config, $value['external_id']);
                     if (!empty($deleteFolderResult['error'])) {
                         $errors[$key] = $deleteFolderResult['error'];
+                        $deleteError = (is_array($deleteFolderResult['error'])) ? implode('-', $deleteFolderResult['error']) : $deleteFolderResult['error'];
+                        $this->historyRepository->addLogInHistory($resId, $deleteError);
                         unset($idsToRetrieve[$key]);
                     }
                 }

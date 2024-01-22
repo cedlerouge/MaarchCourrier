@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Res Model
-* @author dev@maarch.org
-*/
+ * @brief Res Model
+ * @author dev@maarch.org
+ */
 
 namespace Resource\models;
 
@@ -77,10 +77,10 @@ abstract class ResModelAbstract
         ValidatorModel::intVal($args, ['resId']);
 
         $resource = DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => ['res_id = ?'],
-            'data'      => [$args['resId']]
+            'select' => $args['select'],
+            'table'  => ['res_letterbox'],
+            'where'  => ['res_id = ?'],
+            'data'   => [$args['resId']]
         ]);
 
         if (empty($resource[0])) {
@@ -120,11 +120,11 @@ abstract class ResModelAbstract
         ValidatorModel::arrayType($args, ['set', 'postSet', 'where', 'data']);
 
         DatabaseModel::update([
-            'table'     => 'res_letterbox',
-            'set'       => $args['set'] ?? null,
-            'postSet'   => $args['postSet'] ?? null,
-            'where'     => $args['where'],
-            'data'      => $args['data']
+            'table'   => 'res_letterbox',
+            'set'     => $args['set'] ?? null,
+            'postSet' => $args['postSet'] ?? null,
+            'where'   => $args['where'],
+            'data'    => $args['data']
         ]);
 
         return true;
@@ -171,10 +171,10 @@ abstract class ResModelAbstract
                 'res_letterbox.status != ?',
                 'res_letterbox.status = status.id'
             ],
-            'data'      => [$aArgs['userId'], ['res_letterbox', 'res_view_letterbox'], 'none', 'linkup', 'attach%', 'DEL'],
-            'groupBy'   => ['res_letterbox.type_id', 'res_letterbox.creation_date', 'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.status', 'res_letterbox.category_id'],
-            'order_by'  => ['MAX(history.event_date) DESC'],
-            'limit'     => $aArgs['limit']
+            'data'     => [$aArgs['userId'], ['res_letterbox', 'res_view_letterbox'], 'none', 'linkup', 'attach%', 'DEL'],
+            'groupBy'  => ['res_letterbox.type_id', 'res_letterbox.creation_date', 'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.status', 'res_letterbox.category_id'],
+            'order_by' => ['MAX(history.event_date) DESC'],
+            'limit'    => $aArgs['limit']
         ]);
     }
 
@@ -189,10 +189,10 @@ abstract class ResModelAbstract
         ValidatorModel::stringType($args, ['altIdentifier']);
 
         $resource = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => ['alt_identifier = ?'],
-            'data'      => [$args['altIdentifier']]
+            'select' => empty($args['select']) ? ['*'] : $args['select'],
+            'table'  => ['res_letterbox'],
+            'where'  => ['alt_identifier = ?'],
+            'data'   => [$args['altIdentifier']]
         ]);
 
         if (empty($resource[0])) {
@@ -209,24 +209,24 @@ abstract class ResModelAbstract
     {
         return [
             [
-                'id'              => 'incoming',
-                'label'           => _INCOMING
+                'id'    => 'incoming',
+                'label' => _INCOMING
             ],
             [
-                'id'              => 'outgoing',
-                'label'           =>  _OUTGOING
+                'id'    => 'outgoing',
+                'label' => _OUTGOING
             ],
             [
-                'id'              => 'internal',
-                'label'           => _INTERNAL
+                'id'    => 'internal',
+                'label' => _INTERNAL
             ],
             [
-                'id'              => 'ged_doc',
-                'label'           => _GED_DOC
+                'id'    => 'ged_doc',
+                'label' => _GED_DOC
             ],
             [
-                'id'              => 'registeredMail',
-                'label'           => _REGISTERED_MAIL
+                'id'    => 'registeredMail',
+                'label' => _REGISTERED_MAIL
             ]
         ];
     }

@@ -288,6 +288,7 @@ if (!empty($idsToRetrieve['resLetterbox'])) {
 
 if (!empty($retrievedMails['error'])) {
     Bt_writeLog(['level' => 'ERROR', 'message' => $retrievedMails['error']]);
+    Bt_logInDataBase(1, 1, '[External signatory book - ' . $configRemoteSignatoryBook['id'] . '] Error during retrieval of signed mails : ' . $retrievedMails['error']);
 }
 
 $validateVisaWorkflow = [];
@@ -295,6 +296,8 @@ $validateVisaWorkflow = [];
 //On dégèle les pj et on créé une nouvelle ligne si le document a été signé
 $nbAttachRetrieved = 0;
 $nbDocRetrieved = 0;
+$nbAttachError = 0;
+$nbDocError = 0;
 
 $nbRetrievedMailsAttach = count($retrievedMails['noVersion'] ?? []);
 
@@ -375,6 +378,15 @@ foreach ($retrievedMails['noVersion'] ?? [] as $resId => $value) {
             $historyInfo = 'La signature de la pièce jointe ' . $historyIdentifier . ' a été validée dans le parapheur externe' . $additionalHistoryInfo;
         } else {
             Bt_writeLog(['level' => 'ERROR', 'message' => 'Signed file content is missing !']);
+
+            $nbAttachError++;
+            Bt_history([
+                'table_name' => 'res_attachments',
+                'record_id'  => $value['res_id_master'],
+                'info'       => '[Erreur parapheur ' . $configRemoteSignatoryBook['id'] . '] Signed file content is missing (id n°' . $value['res_id'] . ') !',
+                'event_type' => 'ACTION#1',
+                'event_id'   => '1'
+            ]);
             continue;
         }
     } elseif ($value['status'] == 'refused') {
@@ -506,6 +518,7 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
                 Bt_writeLog(['level' => 'INFO', 'message' => "Signed main document created : {$return['id']}"]);
             } else {
                 Bt_writeLog(['level' => 'ERROR', 'message' => "Create Signed main document failed : {$storeResult['errors']}"]);
+                Bt_logInDataBase(1, 1, '[External signatory book - ' . $configRemoteSignatoryBook['id'] . '] Create Signed main document failed : ' . $storeResult['errors']);
                 continue;
             }
             DatabaseModel::insert([
@@ -522,6 +535,16 @@ foreach ($retrievedMails['resLetterbox'] as $resId => $value) {
             ]);
         } else {
             Bt_writeLog(['level' => 'ERROR', 'message' => 'Signed file content is missing !']);
+
+            $nbDocError++;
+            Bt_history([
+                'table_name' => 'res_letterbox',
+                'record_id'  => $resId,
+                'info'       => '[Erreur parapheur ' . $configRemoteSignatoryBook['id'] . '] Contenu du fichier signé absent !',
+                'event_type' => 'ACTION#1',
+                'event_id'   => '1'
+            ]);
+
             continue;
         }
     }
@@ -580,8 +603,8 @@ if ($configRemoteSignatoryBook['id'] == 'fastParapheur' && !empty($validateVisaW
 }
 Bt_writeLog(['level' => 'INFO', 'message' => $nbAttachRetrieved . ' attachment(s) retrieved']);
 Bt_writeLog(['level' => 'INFO', 'message' => $nbDocRetrieved . ' document(s) retrieved']);
-Bt_logInDataBase($nbAttachRetrieved, 0, $nbAttachRetrieved . ' attachment(s) retrieved from ' . $configRemoteSignatoryBook['id']);
-Bt_logInDataBase($nbDocRetrieved, 0, $nbDocRetrieved . ' document(s) retrieved from ' . $configRemoteSignatoryBook['id']);
+Bt_logInDataBase($nbAttachRetrieved, $nbAttachError, $nbAttachRetrieved . ' attachment(s) retrieved from ' . $configRemoteSignatoryBook['id']);
+Bt_logInDataBase($nbDocRetrieved, $nbDocError, $nbDocRetrieved . ' document(s) retrieved from ' . $configRemoteSignatoryBook['id']);
 
 Bt_updateWorkBatch();
 
