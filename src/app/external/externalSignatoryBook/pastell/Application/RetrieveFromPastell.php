@@ -40,6 +40,7 @@ class RetrieveFromPastell
      * @param ParseIParapheurLog $parseIParapheurLog
      * @param ResourceDataInterface $resourceData
      * @param HistoryRepositoryInterface $historyRepository
+     * @param DocumentLink $documentLink
      */
     public function __construct(
         PastellApiInterface        $pastellApi,
