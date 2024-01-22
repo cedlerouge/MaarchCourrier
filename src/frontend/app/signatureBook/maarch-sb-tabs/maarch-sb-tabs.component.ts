@@ -2,8 +2,8 @@ import { Component, Input, OnInit} from '@angular/core';
 
 @Component({
     selector: 'app-maarch-sb-tabs',
-    templateUrl: 'maarchSbTabs.component.html',
-    styleUrls: ['maarchSbTabs.component.scss'],
+    templateUrl: 'maarch-sb-tabs.component.html',
+    styleUrls: ['maarch-sb-tabs.component.scss'],
 })
 export class MaarchSbTabsComponent implements OnInit {
 
