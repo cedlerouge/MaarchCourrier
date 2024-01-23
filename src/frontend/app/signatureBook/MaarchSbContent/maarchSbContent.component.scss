@@ -1,6 +1,7 @@
 .sbContent-container {
     display: flex;
     align-items: center;
+    flex: 1;
 }
 
 .title-container {
@@ -14,7 +15,7 @@
 }
 
 iframe {
-    height: 100vh; 
+    height: 100%;
     width: 100%;
     border: none;
 }

@@ -75,10 +75,12 @@
                 </div>
                 <div class="signatorybook-content">
                     <div class="book-content">
-                        <mat-drawer-container style="flex: 1">
+                        <mat-drawer-container style="flex: 1;background: none;">
                             <mat-drawer mode="over" #drawerStamps>Mes signatures</mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">
-                                <app-maarch-sb-content></app-maarch-sb-content>
+                                <app-maarch-sb-content
+                                    style="display: contents;"
+                                ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
