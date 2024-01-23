@@ -75,33 +75,10 @@
                 </div>
                 <div class="signatorybook-content">
                     <div class="book-content">
-                        <div
-                            title="MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION (Projet de réponse)"
-                            style="
-                                font-size: 20px;
-                                font-weight: bold;
-                                color: var(--maarch-color-primary);
-                                display: flex;
-                                gap: 10px;
-                                align-items: center;
-                                padding: 10px;
-                            "
-                        >
-                            <i
-                                class="far fa-plus-square"
-                                [title]="'lang.showInformationsBlock' | translate"
-                                style="cursor: pointer"
-                            ></i>
-                            <span>MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION</span>
-                            <small class="subSubject">Projet de réponse</small>
-                        </div>
                         <mat-drawer-container style="flex: 1">
                             <mat-drawer mode="over" #drawerStamps>Mes signatures</mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">
-                                <iframe
-                                    style="height: 100%; width: 100%"
-                                    src="https://www.africau.edu/images/default/sample.pdf"
-                                ></iframe>
+                                <app-maarch-sb-content></app-maarch-sb-content>
                                 <app-maarch-sb-actions
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
