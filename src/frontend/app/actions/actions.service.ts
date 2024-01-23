@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { tap, catchError, filter, finalize, exhaustMap } from 'rxjs/operators';
+import { tap, catchError, filter, finalize, exhaustMap, map } from 'rxjs/operators';
 import { of, Subject, Observable } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ConfirmActionComponent } from './confirm-action/confirm-action.component';
@@ -48,6 +48,7 @@ import { ResetRecordManagementComponent } from './reset-record-management-action
 import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledgment-record-management-action/check-acknowledgment-record-management.component';
 import { FiltersListService } from '@service/filtersList.service';
 import { SessionStorageService } from '@service/session-storage.service';
+import { Action } from '@models/actions.model';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -102,6 +103,29 @@ export class ActionsService implements OnDestroy {
 
     setLoading(state: boolean) {
         this.loading = state;
+    }
+
+    getActions(userId: number, groupId: number, basketId: number, resId: number): Observable<Action[]> {
+        return this.http
+                .get(
+                    '../rest/resourcesList/users/' +
+                        userId +
+                        '/groups/' +
+                        groupId +
+                        '/baskets/' +
+                        basketId +
+                        '/actions?resId=' +
+                        resId
+                )
+                .pipe(
+                    map((data: any) => {
+                        return data.actions
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err.error.errors);
+                        return of(false);
+                    })
+                );
     }
 
     setActionInformations(action: any, userId: number, groupId: number, basketId: number, resIds: number[]) {

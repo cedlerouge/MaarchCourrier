@@ -6,7 +6,7 @@ module.exports = withModuleFederationPlugin({
     "maarch-plugins": "../../plugins/maarch-plugins/remoteEntry.js",
   },
   shared: {
-    ...shareAll({ singleton: true, strictVersion: true, requiredVersion: 'auto' }),
+    ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto' }),
   },
 });
 

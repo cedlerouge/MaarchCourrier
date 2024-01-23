@@ -82,6 +82,10 @@
                                     style="display: contents;"
                                 ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
+                                    [resId]="resId"
+                                    [userId]="userId"
+                                    [basketId]="basketId"
+                                    [groupId]="groupId"
                                     (openPanelSignatures)="drawerStamps.toggle()"
                                 ></app-maarch-sb-actions>
                             </mat-drawer-content>
