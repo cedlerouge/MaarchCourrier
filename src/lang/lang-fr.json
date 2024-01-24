@@ -2841,5 +2841,6 @@
     "docserverIsEncrypted": "La zone de stockage est chiffrée",
     "duplicateUsersWithSameMode": "Certains utilisateurs sont présents au moins deux fois avec le même rôle.",
     "sizeCalculationInProgress": "Calcul de la taille des zones de stockage en cours",
-    "notAllowedResourcesDesc": "Certains documents sont en dehors de votre périmètre. Seules les données suivantes seront visibles : <br><b>Numéro Chrono, Objet, Statut et Libellé du dossier</b>."
+    "notAllowedResourcesDesc": "Certains documents sont en dehors de votre périmètre. Seules les données suivantes seront visibles : <br><b>Numéro Chrono, Objet, Statut et Libellé du dossier</b>.",
+    "myStamps": "Mes griffes"
 }

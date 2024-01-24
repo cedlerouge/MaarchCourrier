@@ -1,0 +1,14 @@
+<div class="component-container">
+    <h3 style="padding: 0 10px;">{{'lang.myStamps' | translate}}</h3>
+    <div class="stamps-container">
+        <button
+            *ngFor="let stamp of stamps"
+            mat-raised-button
+            class="stamp-button"
+            [title]="stamp.title"
+            [style.backgroundImage]="'url(' + (stamp.contentUrl | secureUrl | async) + ')'"
+            (click)="signWithStamp(stamp)"
+        ></button>
+        <i *ngIf="stamps.length === 0" class="fa fa-ban no-stamp"></i>
+    </div>
+</div>

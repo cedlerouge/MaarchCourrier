@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { Action } from '@models/actions.model';
+import { Stamp } from '@models/signature-book.model';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
 
@@ -16,6 +17,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() basketId: number;
     @Input() groupId: number;
     @Input() userId: number;
+    @Input() stamp: Stamp;
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
@@ -26,11 +28,8 @@ export class SignatureBookActionsComponent implements OnInit {
 
     subscription: Subscription;
 
-    constructor(public http: HttpClient, private notify: NotificationService, private actionService: ActionsService, private router: Router) {
-        // Event after process action
-        this.subscription = this.actionService.catchAction().subscribe(message => {
-            this.processAfterAction();
-        });
+    constructor(public http: HttpClient, private notify: NotificationService, private actionsService: ActionsService, private router: Router) {
+
     }
 
     async ngOnInit(): Promise<void> {
@@ -44,7 +43,7 @@ export class SignatureBookActionsComponent implements OnInit {
 
     loadActions() {
         return new Promise((resolve) => {
-            this.actionService.getActions(this.userId, this.groupId, this.basketId, this.resId)
+            this.actionsService.getActions(this.userId, this.groupId, this.basketId, this.resId)
                 .pipe(
                     tap((actions: Action[]) => {
                         this.leftActions = [actions[1]];
@@ -65,7 +64,7 @@ export class SignatureBookActionsComponent implements OnInit {
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
                 tap((data: any) => {
-                    this.actionService.launchAction(
+                    this.actionsService.launchAction(
                         action,
                         this.userId,
                         this.groupId,
@@ -94,6 +93,10 @@ export class SignatureBookActionsComponent implements OnInit {
 
     ngOnDestroy() {
         this.subscription.unsubscribe();
+    }
+
+    signWithStamp(stamp: Stamp) {
+        this.actionsService.emitActionWithData(stamp);
     }
 
 }
