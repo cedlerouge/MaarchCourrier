@@ -132,11 +132,11 @@ export class AttachmentsListComponent implements OnInit {
                                     signable: element.signable
                                 });
                             }
-                            this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                             this.groupId = param['groupSerialId'];                            
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
                             element.canDelete = element.canDelete;
                         });
+                        this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                         this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
                         if (this.isModal) {
                             this.setTaget('inSignatureBook');
