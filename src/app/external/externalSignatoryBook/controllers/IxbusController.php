@@ -213,7 +213,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $value['title'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $value['title']);
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -270,7 +270,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $mainResource['subject'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $mainResource['subject']);
             $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
@@ -320,9 +320,10 @@ class IxbusController
 
     public static function createFolder(array $aArgs)
     {
+        $contentLength = strlen(json_encode($aArgs['body']));
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/dossier',
-            'headers' => ['content-type:application/json', 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'headers' => ["content-length: $contentLength", 'content-type:application/json', 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
             'method'  => 'POST',
             'body'    => json_encode($aArgs['body'])
         ]);
@@ -335,12 +336,14 @@ class IxbusController
 
     public static function addFileToFolder(array $aArgs)
     {
+        $body = ['fichier' => CurlModel::makeCurlFile(['path' => $aArgs['filePath'], 'name' => $aArgs['fileName']]), 'type' => $aArgs['fileType']];
+        $contentLength = strlen(json_encode($body));
         $curlResponse = CurlModel::exec([
             'url'           => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/document/' . $aArgs['folderId'],
-            'headers'       => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'headers'       => ["content-length: $contentLength", 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
             'customRequest' => 'POST',
             'method'        => 'CUSTOM',
-            'body'          => ['fichier' => CurlModel::makeCurlFile(['path' => $aArgs['filePath'], 'name' => $aArgs['fileName']]), 'type' => $aArgs['fileType']]
+            'body'          => $body
         ]);
         if (!empty($curlResponse['response']['error'])) {
             return ['error' => $curlResponse['response']['message']];
@@ -353,7 +356,7 @@ class IxbusController
     {
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/dossier/' . $aArgs['folderId'] . '/transmettre',
-            'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'headers' => ["content-length: 0", 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
             'method'  => 'POST'
         ]);
         if (!empty($curlResponse['response']['error'])) {
