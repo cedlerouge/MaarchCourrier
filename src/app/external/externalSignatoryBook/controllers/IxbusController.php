@@ -229,7 +229,7 @@ class IxbusController
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
-                return ['error' => $addedFile['message']];
+                return ['error' => $addedFile['error']];
             }
 
             foreach ($attachmentsData as $attachmentData) {
@@ -241,13 +241,13 @@ class IxbusController
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
-                    return ['error' => $addedFile['message']];
+                    return ['error' => $addedFile['error']];
                 }
             }
 
             $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]);
             if (!empty($transmittedFolder['error'])) {
-                return ['error' => $transmittedFolder['message']];
+                return ['error' => $transmittedFolder['error']];
             }
 
             $attachmentToFreeze[$collId][$resId] = $folderId;
@@ -287,7 +287,7 @@ class IxbusController
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
-                return ['error' => $addedFile['message']];
+                return ['error' => $addedFile['error']];
             }
 
             $attachmentsData = array_filter($attachmentsData, function ($attachment) use ($filePath, $fileName) {
@@ -303,13 +303,13 @@ class IxbusController
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
-                    return ['error' => $addedFile['message']];
+                    return ['error' => $addedFile['error']];
                 }
             }
 
             $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]);
             if (!empty($transmittedFolder['error'])) {
-                return ['error' => $transmittedFolder['message']];
+                return ['error' => $transmittedFolder['error']];
             }
 
             $attachmentToFreeze[$collId][$resId] = $folderId;
@@ -320,10 +320,9 @@ class IxbusController
 
     public static function createFolder(array $aArgs)
     {
-        $contentLength = strlen(json_encode($aArgs['body']));
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/dossier',
-            'headers' => ["content-length: $contentLength", 'content-type:application/json', 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'headers' => ['content-type:application/json', 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
             'method'  => 'POST',
             'body'    => json_encode($aArgs['body'])
         ]);
@@ -336,14 +335,12 @@ class IxbusController
 
     public static function addFileToFolder(array $aArgs)
     {
-        $body = ['fichier' => CurlModel::makeCurlFile(['path' => $aArgs['filePath'], 'name' => $aArgs['fileName']]), 'type' => $aArgs['fileType']];
-        $contentLength = strlen(json_encode($body));
         $curlResponse = CurlModel::exec([
             'url'           => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/document/' . $aArgs['folderId'],
-            'headers'       => ["content-length: $contentLength", 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'headers'       => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
             'customRequest' => 'POST',
             'method'        => 'CUSTOM',
-            'body'          => $body
+            'body'          => ['fichier' => CurlModel::makeCurlFile(['path' => $aArgs['filePath'], 'name' => $aArgs['fileName']]), 'type' => $aArgs['fileType']]
         ]);
         if (!empty($curlResponse['response']['error'])) {
             return ['error' => $curlResponse['response']['message']];
@@ -356,8 +353,9 @@ class IxbusController
     {
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/dossier/' . $aArgs['folderId'] . '/transmettre',
-            'headers' => ["content-length: 0", 'IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
-            'method'  => 'POST'
+            'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
+            'method'  => 'POST',
+            'body'    => '{}'
         ]);
         if (!empty($curlResponse['response']['error'])) {
             return ['error' => $curlResponse['response']['message']];
