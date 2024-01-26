@@ -420,7 +420,7 @@ class DocserverControllerTest extends CourrierTestCase
         $responseBody = json_decode((string)$response->getBody());
 
         //assert
-        $this->assertSame(304, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('Last calculation is too early', $responseBody->error);
     }
 
@@ -437,7 +437,7 @@ class DocserverControllerTest extends CourrierTestCase
         $responseBody = json_decode((string)$response->getBody());
 
         //assert
-        $this->assertSame(304, $response->getStatusCode());
+        $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('Process already running', $responseBody->error);
     }
 }
