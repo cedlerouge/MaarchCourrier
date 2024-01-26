@@ -182,7 +182,7 @@ class DocserverController
         $lockFile = $tmpPath . DIRECTORY_SEPARATOR . 'calculateDocserversSize.lck';
 
         if (file_exists($lockFile)) {
-            return $response->withStatus(403)->withJson(['error' => 'Process already running']);
+            return $response->withStatus(200)->withJson(['error' => 'Process already running']);
         }
 
         file_put_contents($lockFile, "locked");
@@ -196,7 +196,7 @@ class DocserverController
 
             if (!empty($last_calculation_date['param_value_date']) && $hoursDiff < 2) {
                 unlink($lockFile);
-                return $response->withStatus(403)->withJson(['error' => 'Last calculation is too early']);
+                return $response->withStatus(200)->withJson(['error' => 'Last calculation is too early']);
             }
         }
 
