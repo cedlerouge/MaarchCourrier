@@ -8,10 +8,14 @@
                 mat-button
                 class="sign-button"
                 [title]="'lang.applyStamp' | translate"
+                *ngIf="stamp?.contentUrl"
                 [disabled]="stamp === null"
-                [style.backgroundImage]="'url(' + (stamp?.contentUrl ?? 'assets/noThumbnail.png' | secureUrl | async) + ')'"
+                [style.backgroundImage]="'url(' + (stamp?.contentUrl | secureUrl | async) + ')'"
                 (click)="signWithStamp(stamp)"
             ></button>
+            <div *ngIf="!stamp?.contentUrl" class="no-stamp">
+                {{ 'lang.noStamp' | translate }}
+            </div>
             <button *ngIf="stamp !== undefined" mat-button class="open-sign-list-button" (click)="openSignaturesList()">
                 >
             </button>
