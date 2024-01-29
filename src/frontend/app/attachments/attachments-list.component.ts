@@ -124,7 +124,7 @@ export class AttachmentsListComponent implements OnInit {
                             ... attachment,
                             signable: this.attachmentTypes.find((type: any) => type.typeId === attachment.type).signable
                         }));
-                        this.attachments.forEach((element: any) => {                            
+                        this.attachments.forEach((element: any) => {
                             if (this.filterAttachTypes.filter(attachType => attachType.id === element.type).length === 0) {
                                 this.filterAttachTypes.push({
                                     id: element.type,
@@ -132,11 +132,10 @@ export class AttachmentsListComponent implements OnInit {
                                     signable: element.signable
                                 });
                             }
-                            this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
-                            this.groupId = param['groupSerialId'];                            
                             element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail';
-                            element.canDelete = element.canDelete;
                         });
+                        this.groupId = param['groupSerialId'];
+                        this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                         this.attachments = this.isModal ? this.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA') : this.attachmentsClone;
                         if (this.isModal) {
                             this.setTaget('inSignatureBook');
@@ -175,7 +174,6 @@ export class AttachmentsListComponent implements OnInit {
                             });
                         }
                         element.thumbnailUrl = '../rest/attachments/' + element.resId + '/thumbnail?tsp=' + timeStamp;
-                        element.canDelete = element.canDelete;
                     });
                     this.attachmentsClone = JSON.parse(JSON.stringify(this.attachments));
                     if (this.attachments.filter((attach: any) => attach.type === this.currentFilter).length === 0) {

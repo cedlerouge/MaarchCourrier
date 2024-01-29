@@ -19,20 +19,38 @@ use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use History\controllers\HistoryController;
+use ExternalSignatoryBook\Infrastructure\DocumentLinkFactory;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
+use SrcCore\controllers\LogsController;
 use SrcCore\models\CurlModel;
 use SrcCore\models\TextFormatModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
+use User\models\UserModel;
+use Throwable;
 
 /**
  * @codeCoverageIgnore
  */
 class IxbusController
 {
+    /**
+     * The API expects hexadecimal identifiers for various manipulated objects (users, types, folders, etc.).
+     * When these identifiers cannot be interpreted correctly, they generate generic errors
+     * (which can occur in all API calls involving hexadecimal identifiers), such as the following:
+     *
+     *      - Impossible de trouver une correspondance à l'identifiant '{identifiant}' fourni
+     *      - Impossible de trouver une correspondance à l'identifiant fourni
+     */
+    private const GENERIC_ERRORS_HEX_IDENTIFIERS = [
+        'errorCode' => 1,
+        'message'   => "Impossible de trouver une correspondance à l'identifiant"
+    ];
+
     public static function getInitializeDatas($config)
     {
         $curlResponse = CurlModel::exec([
@@ -195,7 +213,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $value['title'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $value['title']);
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
             if (!empty($createdFile['error'])) {
@@ -211,7 +229,7 @@ class IxbusController
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
-                return ['error' => $addedFile['message']];
+                return ['error' => $addedFile['error']];
             }
 
             foreach ($attachmentsData as $attachmentData) {
@@ -223,13 +241,13 @@ class IxbusController
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
-                    return ['error' => $addedFile['message']];
+                    return ['error' => $addedFile['error']];
                 }
             }
 
             $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]);
             if (!empty($transmittedFolder['error'])) {
-                return ['error' => $transmittedFolder['message']];
+                return ['error' => $transmittedFolder['error']];
             }
 
             $attachmentToFreeze[$collId][$resId] = $folderId;
@@ -252,7 +270,7 @@ class IxbusController
                 return ['error' => 'Fingerprints do not match'];
             }
 
-            $bodyData['nom'] = $mainResource['subject'];
+            $bodyData['nom'] = str_replace(["\r\n", "\n", "\r"], " ", $mainResource['subject']);
             $fileName = TextFormatModel::formatFilename(['filename' => $mainResource['subject'], 'maxLength' => 250]) . '.pdf';
 
             $createdFile = IxBusController::createFolder(['config' => $aArgs['config'], 'body' => $bodyData]);
@@ -269,7 +287,7 @@ class IxbusController
                 'fileType' => 'principal'
             ]);
             if (!empty($addedFile['error'])) {
-                return ['error' => $addedFile['message']];
+                return ['error' => $addedFile['error']];
             }
 
             $attachmentsData = array_filter($attachmentsData, function ($attachment) use ($filePath, $fileName) {
@@ -285,13 +303,13 @@ class IxbusController
                     'fileType' => 'annexe'
                 ]);
                 if (!empty($addedFile['error'])) {
-                    return ['error' => $addedFile['message']];
+                    return ['error' => $addedFile['error']];
                 }
             }
 
             $transmittedFolder = IxBusController::transmitFolder(['config' => $aArgs['config'], 'folderId' => $folderId]);
             if (!empty($transmittedFolder['error'])) {
-                return ['error' => $transmittedFolder['message']];
+                return ['error' => $transmittedFolder['error']];
             }
 
             $attachmentToFreeze[$collId][$resId] = $folderId;
@@ -336,7 +354,8 @@ class IxbusController
         $curlResponse = CurlModel::exec([
             'url'     => rtrim($aArgs['config']['data']['url'], '/') . '/api/parapheur/v1/dossier/' . $aArgs['folderId'] . '/transmettre',
             'headers' => ['IXBUS_API:' . $aArgs['config']['data']['tokenAPI']],
-            'method'  => 'POST'
+            'method'  => 'POST',
+            'body'    => '{}'
         ]);
         if (!empty($curlResponse['response']['error'])) {
             return ['error' => $curlResponse['response']['message']];
@@ -350,6 +369,43 @@ class IxbusController
         $version = $aArgs['version'];
         foreach ($aArgs['idsToRetrieve'][$version] as $resId => $value) {
             $folderData = IxbusController::getDossier(['config' => $aArgs['config'], 'folderId' => $value['external_id']]);
+
+            if (!empty($folderData['error'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'ERROR',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "[ixbus api] Cannot fetch folder : {$folderData['error']['message']}"
+                ]);
+
+                if (
+                    $folderData['error']['errorCode'] == IxbusController::GENERIC_ERRORS_HEX_IDENTIFIERS['errorCode'] &&
+                    strpos($folderData['error']['message'], IxbusController::GENERIC_ERRORS_HEX_IDENTIFIERS['message']) !== false
+                ) {
+                    $documentLink = DocumentLinkFactory::createDocumentLink();
+                    try {
+                        $type  = $version == 'resLetterbox' ? 'resource' : 'attachment';
+                        $title = $version == 'resLetterbox' ? $value['subject'] : $value['title'];
+                        $documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
+                    } catch (Throwable $th) {
+                        $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type, parapheur docId {$value['external_id']}";
+                        LogsController::add([
+                            'isTech'    => true,
+                            'moduleId'  => $GLOBALS['moduleId'],
+                            'level'     => 'ERROR',
+                            'tableName' => $GLOBALS['batchName'],
+                            'eventType' => 'script',
+                            'eventId'   => "$info. Error: {$th->getMessage()}."
+                        ]);
+                    }
+                }
+
+                unset($aArgs['idsToRetrieve'][$version][$resId]);
+                continue;
+            }
+
 
             if (in_array($folderData['data']['etat'], ['Refusé', 'Terminé'])) {
                 $aArgs['idsToRetrieve'][$version][$resId]['status'] = $folderData['data']['etat'] == 'Refusé' ? 'refused' : 'validated';
@@ -370,6 +426,33 @@ class IxbusController
                     ]);
                 }
             } else {
+                if (!empty($folderData['error'])) {
+                    LogsController::add([
+                        'isTech'    => true,
+                        'moduleId'  => $GLOBALS['moduleId'],
+                        'level'     => 'ERROR',
+                        'tableName' => $GLOBALS['batchName'],
+                        'eventType' => 'script',
+                        'eventId'   => "[Ixbus api] {$folderData['error']}"
+                    ]);
+
+                    $userId = UserModel::get([
+                        'select' => ['id'],
+                        'where'  => ['mode = ? OR mode = ?'],
+                        'data'   => ['root_visible', 'root_invisible'],
+                        'limit'  => 1
+                    ])[0]['id'];
+
+                    HistoryController::add([
+                        'tableName' => 'res_letterbox',
+                        'recordId'  => $value['res_id_master'] ?? $value['res_id'],
+                        'eventType' => 'ACTION#1',
+                        'eventId'   => '1',
+                        'userId'    => $userId,
+                        'info'      => "[Ixbus api] {$folderData['error']}"
+                    ]);
+                }
+
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
             }
         }
@@ -413,7 +496,7 @@ class IxbusController
             'method'  => 'GET'
         ]);
         if (!empty($curlResponse['response']['error'])) {
-            return ['error' => $curlResponse['response']['message']];
+            return ['error' => $curlResponse['response']];
         }
 
         return ['data' => $curlResponse['response']['payload']];

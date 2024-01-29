@@ -32,6 +32,13 @@ export class DocserverAdministrationComponent implements OnInit {
     isDocserverEncryptionStatus: boolean = false;
     forbiddenDocserversTypesForEncrypted: string[] = ['MIGRATION', 'FULLTEXT'];
 
+    collectionsTypes: { id: string, label: string }[] = [
+        { id: 'letterbox_coll', label: 'letterbox_coll' },
+        { id: 'attachments_coll', label: 'attachments_coll' },
+        { id: 'archive_transfer_coll', label: 'archive_transfer_coll' },
+        { id: 'templates', label: 'templates' }
+    ];
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
