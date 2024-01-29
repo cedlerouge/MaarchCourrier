@@ -33,18 +33,7 @@
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <div class="book-mark-container">
-                            <button
-                                *ngFor="let attachment of attachments;let i=index"
-                                mat-button
-                                class="book-mark-item book-mark-item-to-right"
-                                [class.book-mark-item-selected]="selectedAttachment===i"
-                                [class.book-mark-item-selected-to-right]="selectedAttachment===i"
-                                (click)="selectedAttachment=i"
-                            >
-                                {{attachment}} {{i}}
-                            </button>
-                        </div>
+                        <app-maarch-sb-tabs [documents]="attachments" [signable]="false" [(selectedId)]="selectedAttachment"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content">
                         <div
@@ -86,18 +75,7 @@
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <div class="book-mark-container">
-                            <button
-                                *ngFor="let docToSign of docsToSign;let i=index"
-                                mat-button
-                                class="book-mark-item book-mark-item-to-left"
-                                [class.book-mark-item-selected]="selectedDocToSign===i"
-                                [class.book-mark-item-selected-to-left]="selectedDocToSign===i"
-                                (click)="selectedDocToSign=i"
-                            >
-                                {{docToSign}} {{i}}
-                            </button>
-                        </div>
+                        <app-maarch-sb-tabs [documents]="docsToSign" [signable]="true" [(selectedId)]="selectedDocToSign"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>
