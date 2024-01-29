@@ -6,7 +6,7 @@
  * This file is part of Maarch software.
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
@@ -18,6 +18,7 @@ class PastellApiMock implements PastellApiInterface
     public array $connector = ['193', '776', '952'];
     public array $flux = ['ls-document-pdf', 'test', 'not-pdf'];
     public array $iParapheurType = ['XELIANS COURRIER', 'TEST', 'PASTELL'];
+    public bool $doesFolderExist = true;
     public array $folder = ['idFolder' => 'hfqvhv'];
     public array $iParapheurSousType = ['courrier', 'réponse au citoyen'];
     public array $documentDetails = [
@@ -139,8 +140,11 @@ class PastellApiMock implements PastellApiInterface
      */
     public function getFolderDetail(PastellConfig $config, string $idFolder): array
     {
+        if (!$this->doesFolderExist) {
+            return ["code" => 404, "error" => "Le document blabla n'appartient pas à l'entité {$config->getEntity()}"];
+        }
         if ($idFolder === 'blabla') {
-            return ["error" => 'An error occurred !'];
+            return ["code" => 400, "error" => 'An error occurred !'];
         }
 
         return $this->documentDetails;

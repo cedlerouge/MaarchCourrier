@@ -7,13 +7,13 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellApiMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellConfigMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ProcessVisaWorkflowSpy;
 use PHPUnit\Framework\TestCase;
 
 class ParseIParapheurLogTest extends TestCase
