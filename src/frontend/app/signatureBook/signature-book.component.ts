@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
+import { NotificationService } from '@service/notification/notification.service';
+import { catchError, of, tap } from 'rxjs';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -7,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class SignatureBookComponent implements OnInit {
 
-    resId: number;
+    resId: number = 0;
     basketId: number;
     groupId: number;
     userId: number;
@@ -15,11 +18,7 @@ export class SignatureBookComponent implements OnInit {
     selectedAttachment: number = 0;
     selectedDocToSign: number = 0;
 
-    attachments: string[] = [
-        'Annexe',
-        'Annexe',
-        'Annexe'
-    ];
+    attachments: string[] = [];
 
     docsToSign: string[] = [
         'Doc à signer',
@@ -31,12 +30,36 @@ export class SignatureBookComponent implements OnInit {
     ];
 
     constructor(
+        public http: HttpClient,
         private route: ActivatedRoute,
+        private router: Router,
+        private notify: NotificationService
     ) {}
 
     async ngOnInit(): Promise<void> {
         await this.initParams();
         console.log('oké');
+        this.route.params.subscribe(params => {
+            if (typeof params['resId'] !== 'undefined') {
+                this.resId = params['resId'];
+                this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
+                    tap((data: any) => {
+                        this.attachments = data.attachments
+                        .filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA')
+                        .map((attachment: any) => (
+                            attachment.title
+                        ));
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        this.router.navigate(['/home']);
+                        return of(false);
+                    })
+                ).subscribe();
+            } else {
+                this.router.navigate(['/home']);
+            }
+        });
     }
 
 
@@ -51,4 +74,5 @@ export class SignatureBookComponent implements OnInit {
             });
         });
     }
+
 }
