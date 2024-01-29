@@ -19,7 +19,7 @@
 }
 
 .action-button {
-    width: 150px;
+    width: 200px;
     font-size: 20px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -30,8 +30,11 @@
         display: flex;
 
         .action-button-button-label {
+            white-space: break-spaces;
             text-overflow: ellipsis;
             overflow: hidden;
+            line-height: 25px;
+            width: 100%;
         }
     }
 
