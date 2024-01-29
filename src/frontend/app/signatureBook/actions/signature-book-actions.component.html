@@ -7,11 +7,14 @@
             <button
                 mat-button
                 class="sign-button"
+                [title]="'lang.applyStamp' | translate"
                 [disabled]="stamp === null"
-                [style.backgroundImage]="'url(' + (stamp?.contentUrl | secureUrl | async) + ')'"
+                [style.backgroundImage]="'url(' + (stamp?.contentUrl ?? 'assets/noThumbnail.png' | secureUrl | async) + ')'"
                 (click)="signWithStamp(stamp)"
             ></button>
-            <button *ngIf="stamp !== undefined" mat-button class="open-sign-list-button" (click)="openSignaturesList()">></button>
+            <button *ngIf="stamp !== undefined" mat-button class="open-sign-list-button" (click)="openSignaturesList()">
+                >
+            </button>
         </div>
     </div>
     <div class="book-footer-center">

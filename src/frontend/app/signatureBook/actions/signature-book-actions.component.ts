@@ -5,7 +5,7 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 import { Action } from '@models/actions.model';
 import { Stamp } from '@models/signature-book.model';
 import { NotificationService } from '@service/notification/notification.service';
-import { Subscription, catchError, of, tap } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -26,8 +26,6 @@ export class SignatureBookActionsComponent implements OnInit {
     leftActions: Action[] = [];
     rightActions: Action[] = [];
 
-    subscription: Subscription;
-
     constructor(public http: HttpClient, private notify: NotificationService, private actionsService: ActionsService, private router: Router) {
 
     }
@@ -35,6 +33,8 @@ export class SignatureBookActionsComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         await this.loadActions();
         this.loading = false;
+        console.log(this.stamp?.contentUrl ?? 'assets/noThumbnail.png');
+        
     }
 
     openSignaturesList() {
@@ -89,10 +89,6 @@ export class SignatureBookActionsComponent implements OnInit {
     backToBasket() {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
-    }
-
-    ngOnDestroy() {
-        this.subscription.unsubscribe();
     }
 
     signWithStamp(stamp: Stamp) {

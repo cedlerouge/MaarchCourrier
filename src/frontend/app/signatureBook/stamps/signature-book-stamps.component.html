@@ -5,7 +5,7 @@
             *ngFor="let stamp of stamps"
             mat-raised-button
             class="stamp-button"
-            [title]="stamp.title"
+            [title]="'lang.applyStamp' | translate"
             [style.backgroundImage]="'url(' + (stamp.contentUrl | secureUrl | async) + ')'"
             (click)="signWithStamp(stamp)"
         ></button>
