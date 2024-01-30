@@ -37,7 +37,7 @@ export class SignatureBookComponent implements OnInit {
     ) {}
 
     async ngOnInit(): Promise<void> {
-        await this.initParams();
+        const res:any = await this.initParams();
         console.log('oké');
         this.route.params.subscribe(params => {
             if (typeof params['resId'] !== 'undefined') {

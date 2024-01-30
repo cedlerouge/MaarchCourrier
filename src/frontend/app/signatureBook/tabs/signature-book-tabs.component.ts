@@ -1,4 +1,4 @@
-import { Component, Input, OnInit} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
 @Component({
     selector: 'app-maarch-sb-tabs',
@@ -7,10 +7,17 @@ import { Component, Input, OnInit} from '@angular/core';
 })
 export class MaarchSbTabsComponent implements OnInit {
 
-    @Input() docsToSign: string[] = [];
+    @Input() documents: string[] = [];
+    @Input() signable: boolean = false;
 
-    constructor() {}
+    @Input() selectedId: number;
+    @Output() selectedIdChange = new EventEmitter<number>();
 
-    ngOnInit(): void {} 
+    constructor() {}
 
+    ngOnInit(): void {}
+
+    selectDocument(id: number): void {
+        this.selectedIdChange.emit(id);
+    }
 }

@@ -1,12 +1,17 @@
 <div class="book-mark-container">
     <button
-        *ngFor="let docToSign of docsToSign;let i=index"
+        *ngFor="let document of documents;let i=index"
         mat-button
-        class="book-mark-item book-mark-item-to-left"
-        [class.book-mark-item-selected]="selectedDocToSign===i"
-        [class.book-mark-item-selected-to-left]="selectedDocToSign===i"
-        (click)="selectedDocToSign=i"
-    >
-        {{docToSign}} {{i}}
+        class="book-mark-item"
+        [class.book-mark-item-to-left]="signable"
+        [class.book-mark-item-to-right]="!signable"
+        [ngClass]="{
+            'book-mark-item-selected': selectedId === i,
+            'book-mark-item-selected-to-left': selectedId === i && signable,
+            'book-mark-item-selected-to-right': selectedId === i && !signable
+        }"
+        (click)="selectDocument(i)"
+        >
+           {{document}} {{i}}
     </button>
 </div>
