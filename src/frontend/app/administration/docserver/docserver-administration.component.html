@@ -45,14 +45,8 @@
                                 <mat-form-field>
                                     <mat-select required name="collection" id="collection" title="{{'lang.collection' | translate}}"
                                         placeholder="{{'lang.collection' | translate}}" [(ngModel)]="docserver.coll_id">
-                                        <mat-option value="letterbox_coll" selected>
-                                            letterbox_coll
-                                        </mat-option>
-                                        <mat-option value="attachments_coll">
-                                            attachments_coll
-                                        </mat-option>
-                                        <mat-option value="archive_transfer_coll">
-                                            archive_transfer_coll
+                                        <mat-option *ngFor="let collection of collectionsTypes" [value]="collection.id">
+                                            {{ collection.label }}
                                         </mat-option>
                                     </mat-select>
                                 </mat-form-field>

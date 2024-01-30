@@ -11,6 +11,10 @@ import { catchError, of, tap } from 'rxjs';
 export class SignatureBookComponent implements OnInit {
 
     resId: number = 0;
+    basketId: number;
+    groupId: number;
+    userId: number;
+
     selectedAttachment: number = 0;
     selectedDocToSign: number = 0;
 
@@ -32,7 +36,10 @@ export class SignatureBookComponent implements OnInit {
         private notify: NotificationService
     ) {}
 
-    ngOnInit(): void {
+    async ngOnInit(): Promise<void> {
+        const res:any = await this.initParams();
+        console.log('oké');
+
         this.route.params.subscribe(params => {
             if (typeof params['resId'] !== 'undefined') {
                 this.resId = params['resId'];
@@ -53,6 +60,18 @@ export class SignatureBookComponent implements OnInit {
             } else {
                 this.router.navigate(['/home']);
             }
+    }
+
+
+    initParams() {
+        return new Promise((resolve) => {
+            this.route.params.subscribe(params => {
+                this.resId = +params['resId'];
+                this.basketId = params['basketId'];
+                this.groupId = params['groupId'];
+                this.userId = params['userId'];
+                resolve(true);
+            });
         });
     }
 }

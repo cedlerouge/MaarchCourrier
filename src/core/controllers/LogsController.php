@@ -1,20 +1,21 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Logs Controller
-* @author dev@maarch.org
-* @ingroup core
-*/
+ * @brief Logs Controller
+ * @author dev@maarch.org
+ * @ingroup core
+ */
 
 namespace SrcCore\controllers;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\processors\LogProcessor;
@@ -29,7 +30,7 @@ use Monolog\Processor\MemoryUsageProcessor;
 
 class LogsController
 {
-    public const DEFAULT_LOG_FORMAT     = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
+    public const DEFAULT_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%WHERE%][%ID%][%HOW%][%USER%][%WHAT%][%ID_MODULE%][%REMOTE_IP%]\n";
     public const DEFAULT_SQL_LOG_FORMAT = "[%datetime%] %level_name% [%extra.process_id%] [%channel%][%QUERY%][%DATA%][%EXCEPTION%]\n";
 
     /**
@@ -76,8 +77,9 @@ class LogsController
 
     /**
      * @description Get log config by type
-     * @param   string  $logType    logFonctionnel | logTechnique | queries
+     * @param string $logType logFonctionnel | logTechnique | queries
      * @return  array
+     * @throws Exception
      */
     public static function getLogType(string $logType): array
     {
@@ -93,6 +95,7 @@ class LogsController
     /**
      * @description Get log config
      * @return  array
+     * @throws Exception
      */
     public static function getLogConfig(): ?array
     {
@@ -109,7 +112,7 @@ class LogsController
      * @description Add log line
      * @param array $args
      * @return  array|bool
-     * @throws \Exception
+     * @throws Exception
      */
     public static function add(array $args)
     {
@@ -138,9 +141,9 @@ class LogsController
 
         $maxSize = LogsController::calculateFileSizeToBytes($loggerConfig['maxFileSize']);
         LogsController::rotateLogFileBySize([
-            'path'      => $loggerConfig['file'],
-            'maxSize'   => $maxSize,
-            'maxFiles'  => $loggerConfig['maxBackupFiles']
+            'path'     => $loggerConfig['file'],
+            'maxSize'  => $maxSize,
+            'maxFiles' => $loggerConfig['maxBackupFiles']
         ]);
 
         LogsController::logWithMonolog([
@@ -159,7 +162,7 @@ class LogsController
      * @description     Write prepare log line with monolog
      * @param array $log
      * @return  void
-     * @throws \Exception
+     * @throws Exception
      */
     private static function logWithMonolog(array $log)
     {
@@ -217,7 +220,7 @@ class LogsController
      * @description Create new log file based on size and number of files to keep, when file size is exceeded
      * @param array $file
      * @return  void
-     * @throws \Exception
+     * @throws Exception
      */
     public static function rotateLogFileBySize(array $file)
     {
@@ -231,14 +234,16 @@ class LogsController
 
             // delete last file
             $fn = sprintf($pattern, $file['maxFiles']);
-            if (file_exists($fn)) { unlink($fn);}
+            if (file_exists($fn)) {
+                unlink($fn);
+            }
 
             // shift file names (add '-%index' before the extension)
             if (!empty($file['maxFiles'])) {
                 for ($i = $file['maxFiles'] - 1; $i > 0; $i--) {
                     $fn = sprintf($pattern, $i);
-                    if(file_exists($fn)) { 
-                        rename($fn, sprintf($pattern, $i + 1)); 
+                    if (file_exists($fn)) {
+                        rename($fn, sprintf($pattern, $i + 1));
                     }
                 }
             }
@@ -248,24 +253,30 @@ class LogsController
 
     /**
      * @description Convert File size to KB
-     * @param string $value     The size + prefix (of 2 characters)
+     * @param string $value The size + prefix (of 2 characters)
      * @return  int
      */
     public static function calculateFileSizeToBytes(string $value): ?int
     {
-		$maxFileSize = null;
-		$numpart = substr($value,0, strlen($value) -2);
-		$suffix = strtoupper(substr($value, -2));
+        $maxFileSize = null;
+        $numpart = substr($value, 0, strlen($value) - 2);
+        $suffix = strtoupper(substr($value, -2));
 
-		switch($suffix) {
-			case 'KB': $maxFileSize = (int)((int)$numpart * 1024); break;
-			case 'MB': $maxFileSize = (int)((int)$numpart * 1024 * 1024); break;
-			case 'GB': $maxFileSize = (int)((int)$numpart * 1024 * 1024 * 1024); break;
-			default:
-				if (is_numeric($value)) {
-					$maxFileSize = (int)$value;
-				}
-		}
-		return $maxFileSize;
-	}
+        switch ($suffix) {
+            case 'KB':
+                $maxFileSize = (int)((int)$numpart * 1024);
+                break;
+            case 'MB':
+                $maxFileSize = (int)((int)$numpart * 1024 * 1024);
+                break;
+            case 'GB':
+                $maxFileSize = (int)((int)$numpart * 1024 * 1024 * 1024);
+                break;
+            default:
+                if (is_numeric($value)) {
+                    $maxFileSize = (int)$value;
+                }
+        }
+        return $maxFileSize;
+    }
 }

@@ -9,7 +9,7 @@
 
 declare(strict_types=1);
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 

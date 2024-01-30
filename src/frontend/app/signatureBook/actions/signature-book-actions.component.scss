@@ -24,6 +24,16 @@
     padding-top: 10px;
     padding-bottom: 10px;
     background-color: white;
+    overflow: hidden;
+
+    ::ng-deep .mat-button-wrapper {
+        display: flex;
+
+        .action-button-button-label {
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
 
     &-left {
         color: var(--maarch-color-danger);
@@ -34,6 +44,13 @@
         color: var(--maarch-color-success);
         border: solid 2px var(--maarch-color-success);
     }
+}
+
+.action-button-button-plus {
+    padding: 0;
+    justify-content: center;
+    display: flex;
+    min-width: 30px;
 }
 
 .sign-button-container {
@@ -59,4 +76,8 @@
     color: white;
     height: 100%;
     min-width: auto;
+}
+
+.spinner-white ::ng-deep circle {
+    stroke: white !important;
 }

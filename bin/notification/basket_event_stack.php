@@ -5,6 +5,7 @@ use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
 use Basket\models\RedirectBasketModel;
 use ContentManagement\controllers\MergeController;
+use Docserver\models\DocserverModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Group\models\GroupModel;
@@ -13,6 +14,7 @@ use Notification\models\NotificationModel;
 use Notification\models\NotificationsEmailsModel;
 use Notification\models\NotificationsEventsModel;
 use Parameter\models\ParameterModel;
+use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\models\CoreConfigModel;
@@ -47,6 +49,7 @@ $file = json_decode($file, true);
 
 $customID = $file['config']['customID'] ?? null;
 $maarchUrl = $file['config']['maarchUrl'];
+$GLOBALS['customId'] = $file['config']['customID'];
 
 chdir($file['config']['maarchDirectory']);
 
@@ -212,7 +215,7 @@ foreach ($baskets as $basket) {
 
             $resourcesWhere = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$whereClause, 'status IN (?)'] : [$whereClause];
             $resourcesData = in_array($notification['diffusion_type'], ['dest_user', 'copy_list']) && !empty($diffusionParams) ? [$diffusionParams] : [];
-            $resources = \Resource\models\ResModel::getOnView([
+            $resources = ResModel::getOnView([
                 'select' => ['res_id'],
                 'where'  => $resourcesWhere,
                 'data'   => $resourcesData
@@ -363,9 +366,9 @@ foreach ($tmpNotifs as $login => $tmpNotif) {
 
                 foreach ($events as $event) {
                     if ($event['res_id'] != '') {
-                        $resourceToAttach = \Resource\models\ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
+                        $resourceToAttach = ResModel::getById(['resId' => $event['res_id'], 'select' => ['path', 'filename', 'docserver_id']]);
                         if (!empty($resourceToAttach['docserver_id'])) {
-                            $docserver = \Docserver\models\DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
+                            $docserver = DocserverModel::getByDocserverId(['docserverId' => $resourceToAttach['docserver_id'], 'select' => ['path_template']]);
                             $path = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resourceToAttach['path']) . $resourceToAttach['filename'];
                             $path = str_replace('//', '/', $path);
                             $path = str_replace('\\', '/', $path);
@@ -438,6 +441,8 @@ function updateBatchNumber()
 }
 
 /**
+ * @param array $args
+ * @return void
  * @throws Exception
  */
 function writeLog(array $args)

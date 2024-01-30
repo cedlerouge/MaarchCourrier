@@ -7,7 +7,7 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Mock;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\ProcessVisaWorkflowInterface;
 
