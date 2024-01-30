@@ -92,18 +92,7 @@
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <div class="book-mark-container">
-                            <button
-                                *ngFor="let docToSign of docsToSign;let i=index"
-                                mat-button
-                                class="book-mark-item book-mark-item-to-left"
-                                [class.book-mark-item-selected]="selectedDocToSign===i"
-                                [class.book-mark-item-selected-to-left]="selectedDocToSign===i"
-                                (click)="selectedDocToSign=i"
-                            >
-                                {{docToSign}} {{i}}
-                            </button>
-                        </div>
+                        <app-maarch-sb-tabs [docsToSign]="docsToSign"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>
