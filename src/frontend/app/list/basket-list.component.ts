@@ -199,6 +199,7 @@ export class BasketListComponent implements OnInit, OnDestroy {
                     this.displayFolderTags = data.displayFolderTags;
                     this.templateColumns = data.templateColumns;
                     this.headerService.setHeader(data.basketLabel, '', 'fa fa-inbox');
+                    this.filtersListService.setResourcesOrder(data.resources);
                     return data.resources;
                 }),
                 catchError((err: any) => {
