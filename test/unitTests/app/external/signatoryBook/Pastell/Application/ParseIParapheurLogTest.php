@@ -89,7 +89,7 @@ class ParseIParapheurLogTest extends TestCase
                 'status'      => 'validated',
                 'format'      => 'pdf',
                 'encodedFile' => 'toto',
-                'signatory' => 'tata'
+                'signatory'   => 'tata'
             ],
             $result
         );
@@ -126,8 +126,8 @@ class ParseIParapheurLogTest extends TestCase
 
         $this->assertSame(
             [
-                'status'  => 'refused',
-                'content' => 'Nom : annotation',
+                'status'    => 'refused',
+                'content'   => 'Nom : annotation',
                 'signatory' => 'Nom'
             ],
             $result
