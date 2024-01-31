@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 
+import { Attachement } from '@models/attachement.model';
+
 @Component({
     selector: 'app-maarch-sb-tabs',
     templateUrl: 'signature-book-tabs.component.html',
@@ -7,15 +9,26 @@ import { Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 })
 export class MaarchSbTabsComponent implements OnInit {
 
-    @Input() documents: string[] = [];
+    @Input() documents: Attachement[] | string[] = [];
     @Input() signable: boolean = false;
 
     @Input() selectedId: number;
     @Output() selectedIdChange = new EventEmitter<number>();
     
+    documentList: string[]=[];
+    
     constructor() {}
     
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        if ((Array.isArray(this.documents)) && (this.documents.length >0)) {
+            if (this.documents[0] instanceof Attachement) {
+                this.documentList = this.documents.map(document=>document.title);
+            }
+            else {
+                this.documentList = JSON.parse(JSON.stringify(this.documents));
+            }
+        }
+    }
     
     selectDocument(id: number): void {
         this.selectedIdChange.emit(id);

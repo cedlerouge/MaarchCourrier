@@ -33,7 +33,7 @@
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs [documents]="attachments" [signable]="false" [(selectedId)]="selectedAttachment"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" [documents]="attachments" [signable]="false" [(selectedId)]="selectedAttachment"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content">
                         <div
@@ -81,7 +81,7 @@
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs [documents]="docsToSign" [signable]="true" [(selectedId)]="selectedDocToSign"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" [documents]="docsToSign" [signable]="true" [(selectedId)]="selectedDocToSign"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>

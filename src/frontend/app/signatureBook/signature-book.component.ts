@@ -4,11 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, of, tap } from 'rxjs';
 
+import { Attachement } from '@models/attachement.model';
+
 @Component({
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
 export class SignatureBookComponent implements OnInit {
+
+    loadingAttachments: boolean = true;
+    loadingDocsToSign: boolean = true;
 
     resId: number = 0;
     basketId: number;
@@ -18,16 +23,8 @@ export class SignatureBookComponent implements OnInit {
     selectedAttachment: number;
     selectedDocToSign: number = 0;
 
-    attachments: string[] = [];
-
-    docsToSign: string[] = [
-        'Doc à signer',
-        'Doc à signer',
-        'Doc à signer',
-        'Doc à signer',
-        'Doc à signer',
-        'Doc à signer',
-    ];
+    attachments: Attachement[] = [];
+    docsToSign: string[] = [];
 
     constructor(
         public http: HttpClient,
@@ -37,31 +34,16 @@ export class SignatureBookComponent implements OnInit {
     ) {}
 
     async ngOnInit(): Promise<void> {
-        const res:any = await this.initParams();
+        await this.initParams();
         console.log('oké');
-        this.route.params.subscribe(params => {
-            if (typeof params['resId'] !== 'undefined') {
-                this.resId = params['resId'];
-                this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                    tap((data: any) => {
-                        this.attachments = data.attachments
-                        .filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA')
-                        .map((attachment: any) => (
-                            attachment.title
-                        ));
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err);
-                        this.router.navigate(['/home']);
-                        return of(false);
-                    })
-                ).subscribe();
-            } else {
-                this.router.navigate(['/home']);
-            }
-        });
+  
+        if (this.resId !== undefined) {
+            this.initAttachments();
+            this.initDocsToSign();
+        } else {
+            this.router.navigate(['/home']);
+        }
     }
-
 
     initParams() {
         return new Promise((resolve) => {
@@ -75,4 +57,42 @@ export class SignatureBookComponent implements OnInit {
         });
     }
 
+    initAttachments() {
+        return new Promise((resolve) => {
+            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
+                tap((data: any) => {
+                    console.log('data', data);
+                    this.attachments = data.attachments.map(item => {
+                        let attachement = new Attachement();
+                        Object.keys(item).forEach(key => {
+                            attachement[key] = item[key];
+                        });
+                        return attachement;
+                    });
+
+                    this.attachments = this.attachments
+                    .filter((attachment) => attachment.inSignatureBook && attachment.status === 'A_TRA');
+
+                    this.loadingAttachments = false;
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    initDocsToSign() {
+        this.docsToSign = [
+            'Doc à signer',
+            'Doc à signer',
+            'Doc à signer',
+            'Doc à signer',
+            'Doc à signer',
+            'Doc à signer',
+        ];
+        this.loadingDocsToSign = false;
+    }
 }
