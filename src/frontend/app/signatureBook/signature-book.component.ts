@@ -15,7 +15,7 @@ export class SignatureBookComponent implements OnInit {
     groupId: number;
     userId: number;
 
-    selectedAttachment: number = 0;
+    selectedAttachment: number;
     selectedDocToSign: number = 0;
 
     attachments: string[] = [];
@@ -44,17 +44,17 @@ export class SignatureBookComponent implements OnInit {
                 this.resId = params['resId'];
                 this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
                     tap((data: any) => {
-                        this.attachments = data.attachments
-                        .filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA')
-                        .map((attachment: any) => (
-                            attachment.title
-                        ));
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err);
-                        this.router.navigate(['/home']);
-                        return of(false);
-                    })
+                        this.attachments = data.attachments
+                        .filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA')
+                        .map((attachment: any) => (
+                            attachment.title
+                        ));
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        this.router.navigate(['/home']);
+                        return of(false);
+                    })
                 ).subscribe();
             } else {
                 this.router.navigate(['/home']);
