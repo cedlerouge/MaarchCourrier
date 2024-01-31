@@ -99,11 +99,8 @@ describe('SignatureBookActionsComponent', () => {
                 ],
             });
             fixture.detectChanges();
-            expect(
-                (fixture.debugElement.nativeElement.querySelector('.sign-button') as HTMLElement).getAttribute(
-                    'disabled'
-                )
-            ).toContain('true');
+            expect(fixture.debugElement.nativeElement.querySelector('.no-stamp')).toBeTruthy();
+            expect(fixture.debugElement.nativeElement.querySelector('.sign-button')).toBeFalsy();
         }));
     });
 });
