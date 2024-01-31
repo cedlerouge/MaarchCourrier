@@ -117,7 +117,7 @@ class DocserverModelAbstract
                 'size_limit_number'     => $aArgs['size_limit_number'],
                 'is_readonly'           => $aArgs['is_readonly'],
                 'creation_date'         => 'CURRENT_TIMESTAMP',
-                'is_encrypted'          => empty($aArgs['is_encrypted']) ? 'false':'true',
+                'is_encrypted'          => empty($aArgs['is_encrypted']) ? 'false' : 'true',
             ]
         ]);
 

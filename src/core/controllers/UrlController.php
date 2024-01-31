@@ -26,7 +26,7 @@ class UrlController
         $baseUri = trim(dirname($baseUri), '/');
         $baseUri = str_replace('rest', '', $baseUri);
 
-        return '/'.$baseUri;
+        return '/' . $baseUri;
     }
 
     private static function getHost()
@@ -35,7 +35,7 @@ class UrlController
             return $_SERVER['HTTP_X_FORWARDED_HOST'];
         }
 
-        $rawHost = explode(':',$_SERVER['HTTP_HOST']);
+        $rawHost = explode(':', $_SERVER['HTTP_HOST']);
 
         return $rawHost[0];
     }

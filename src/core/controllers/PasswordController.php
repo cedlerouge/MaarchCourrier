@@ -23,7 +23,6 @@ use SrcCore\models\PasswordModel;
 use SrcCore\models\ValidatorModel;
 use Exception;
 use SrcCore\models\CoreConfigModel;
-use SrcCore\controllers\LogsController;
 
 
 class PasswordController
@@ -107,9 +106,9 @@ class PasswordController
 
     /**
      * Encrypt data with the old vhost or new file encryption key
-     * 
+     *
      * @param   array   $args{dataToEncrypt: string}
-     * 
+     *
      * @throws  Exception   It can throws an exception
      */
     public static function encrypt(array $args): string
@@ -128,7 +127,7 @@ class PasswordController
      * Decrypt encrypted data with the old vhost or new file encryption key
      *
      * @param   array   $args{encryptedData: string}
-     * 
+     *
      * @throws  Exception   It can throws an exception
      */
     public static function decrypt(array $args): string
@@ -146,7 +145,7 @@ class PasswordController
     /**
      * @deprecated This function logic will be moved to PasswordController::encrypt() in future major versions.
      * Please use PasswordController::encrypt() instead.
-     * 
+     *
      * @return string
      */
     public static function newEncrypt(array $args): string
@@ -193,7 +192,7 @@ class PasswordController
     /**
      * @deprecated This function logic will be moved to PasswordController::decrypt() in future major versions.
      * Please use PasswordController::decrypt() instead.
-     * 
+     *
      * @return string
      */
     public static function newDecrypt(array $args): string
@@ -216,9 +215,9 @@ class PasswordController
                     'moduleId'  => 'Encryption/Decryption',
                     'level'     => 'ERROR',
                     'eventType' => 'Decrypt',
-                    'eventId'   => 'Decryption failed: data length '. strlen($encryptedData). ' is less than iv length ' . $initialisationVectorLength
+                    'eventId'   => 'Decryption failed: data length ' . strlen($encryptedData) . ' is less than iv length ' . $initialisationVectorLength
                 ]);
-                throw new Exception('Decryption failed: data length '. strlen($encryptedData). ' is less than iv length ' . $initialisationVectorLength);
+                throw new Exception('Decryption failed: data length ' . strlen($encryptedData) . ' is less than iv length ' . $initialisationVectorLength);
             }
 
             // Extract the initialisation vector and encrypted data

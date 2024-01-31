@@ -82,7 +82,7 @@ class AdrModel
 
         return $document[0];
     }
-    
+
     public static function getTypedAttachAdrByResId(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['resId', 'type']);

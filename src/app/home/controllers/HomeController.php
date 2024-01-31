@@ -114,7 +114,7 @@ class HomeController
                         $externalSignatoryBookUrl = rtrim((string)$value->url, "/");
                     }
                     break;
-                } else if ($value->id == "fastParapheur" && $value->id == $signatoryBookEnabled) {
+                } elseif ($value->id == "fastParapheur" && $value->id == $signatoryBookEnabled) {
                     if (!empty($value->url) && !empty($value->subscriberId) && !empty($externalId['fastParapheur'])) {
                         $isExternalSignatoryBookConnected = true;
                         $fastParapheurUrl = (string)$value->url;
@@ -126,7 +126,7 @@ class HomeController
             }
         }
 
-        $homeMessage = ParameterModel::getById(['select' => ['param_value_string'], 'id'=> 'homepage_message']);
+        $homeMessage = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'homepage_message']);
         $homeMessage = trim($homeMessage['param_value_string']);
 
         return $response->withJson([

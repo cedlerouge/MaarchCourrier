@@ -23,7 +23,7 @@ use ExternalSignatoryBook\Domain\Exceptions\ParameterMustBeGreaterThanZeroExcept
 
 class DocumentLink
 {
-    const DOCUMENT_TYPES = ['resource', 'attachment'];
+    public const DOCUMENT_TYPES = ['resource', 'attachment'];
     private UserRepositoryInterface $userRepository;
     private ResourceRepositoryInterface $resourceRepository;
     private AttachmentRepositoryInterface $attachmentRepository;

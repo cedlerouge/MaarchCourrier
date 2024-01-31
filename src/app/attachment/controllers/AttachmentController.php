@@ -115,7 +115,7 @@ class AttachmentController
             $attachment['modificationDate'] = null;
         }
         $typist = UserModel::getById(['id' => $attachment['typist'], 'select' => ['firstname', 'lastname']]);
-        $attachment['typistLabel'] = $typist['firstname']. ' ' .$typist['lastname'];
+        $attachment['typistLabel'] = $typist['firstname'] . ' ' . $typist['lastname'];
         $attachment['modifiedBy'] = UserModel::getLabelledUserById(['id' => $attachment['modifiedBy']]);
 
         $attachmentsTypes = AttachmentTypeModel::get(['select' => ['type_id', 'label']]);
@@ -369,7 +369,7 @@ class AttachmentController
             $attachments[$key]['typistLabel'] = '';
             if (!empty($attachment['typist'])) {
                 $typist = UserModel::getById(['id' => $attachment['typist'], 'select' => ['firstname', 'lastname']]);
-                $attachments[$key]['typistLabel'] = $typist['firstname']. ' ' .$typist['lastname'];
+                $attachments[$key]['typistLabel'] = $typist['firstname'] . ' ' . $typist['lastname'];
             }
             $attachments[$key]['modifiedBy'] = UserModel::getLabelledUserById(['id' => $attachment['modifiedBy']]);
 
@@ -403,7 +403,6 @@ class AttachmentController
 
             $attachments[$key]['canUpdate'] = AttachmentController::canUpdateAttachment(['attachment' => $attachments[$key]]);
             $attachments[$key]['canDelete'] = AttachmentController::canDeleteAttachment(['attachment' => $attachments[$key]]);
-
         }
 
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
@@ -448,7 +447,7 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canUpdate = true;
-            } else if (!empty($currentStepByResId)) {
+            } elseif (!empty($currentStepByResId)) {
                 if ($attachment['inSignatureBook']) {
                     $canUpdate = false;
                 } else {
@@ -460,7 +459,6 @@ class AttachmentController
         }
 
         return $canUpdate;
-
     }
 
     public function canDeleteAttachment(array $args)
@@ -493,7 +491,7 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canDelete = true;
-            } else if (!empty($currentStepByResId)) {
+            } elseif (!empty($currentStepByResId)) {
                 if ($attachment['inSignatureBook']) {
                     $canDelete = false;
                 } else {
@@ -512,7 +510,7 @@ class AttachmentController
 
             if (empty($currentStepByResId)) {
                 $canDelete = true;
-            } else if (!empty($currentStepByResId)) {
+            } elseif (!empty($currentStepByResId)) {
                 if ($attachment['inSignatureBook']) {
                     $canDelete = false;
                 } else {
@@ -524,7 +522,6 @@ class AttachmentController
         }
 
         return $canDelete;
-
     }
 
     public function setInSignatureBook(Request $request, Response $response, array $aArgs)
@@ -763,7 +760,6 @@ class AttachmentController
                 ]);
                 return $response->withStatus(400)->withJson(['errors' => $e->getMessage()]);
             }
-
         }
 
         return $response->withJson(['fileContent' => $base64Content, 'pageCount' => $pageCount]);
@@ -969,7 +965,7 @@ class AttachmentController
         ]);
 
         if ($data['mode'] == 'base64') {
-            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $filename.'.'.$pathInfo['extension']]);
+            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $filename . '.' . $pathInfo['extension']]);
         } else {
             $response->write($fileContent);
             $response = $response->withAddedHeader('Content-Disposition', "attachment; filename={$filename}.{$pathInfo['extension']}");
@@ -1157,7 +1153,7 @@ class AttachmentController
                     'encodedFile'       => $mergedDocument['encodedDocument'],
                     'format'            => $attachment['format'],
                     'resIdMaster'       => $attachment['res_id_master'],
-                    'chrono'            => $attachment['identifier'] . '-' . ($key+1),
+                    'chrono'            => $attachment['identifier'] . '-' . ($key + 1),
                     'type'              => $attachment['attachment_type'],
                     'recipientId'       => $recipient['item_id'],
                     'recipientType'     => 'contact',
@@ -1252,7 +1248,7 @@ class AttachmentController
             } elseif ($origin['res_id_master'] != $body['resIdMaster']) {
                 return ['errors' => 'Body resIdMaster is different from origin'];
             }
-            
+
             if ($body['type'] == 'signed_response') {
                 $origin = AttachmentModel::getLastVersionByOriginId($body['resIdMaster'], $body['originId']);
                 if (!in_array($origin['status'], ['A_TRA', 'TRA', 'SIGN', 'FRZ'])) {

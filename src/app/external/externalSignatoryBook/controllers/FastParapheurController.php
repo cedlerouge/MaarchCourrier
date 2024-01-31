@@ -56,8 +56,8 @@ use ZipArchive;
  */
 class FastParapheurController
 {
-    const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
-    const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
+    public const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+    public const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
 
     public function getWorkflowDetails(Request $request, Response $response)
     {
@@ -770,7 +770,7 @@ class FastParapheurController
                 'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
                 'data'      => [$args['resId'], 'VISA_CIRCUIT']
             ]);
-            if(!empty($user[0])) {
+            if (!empty($user[0])) {
                 $signatoryInfo = $user[0];
             }
         } else {
@@ -1141,11 +1141,13 @@ class FastParapheurController
                         'members' => [$step['id']]
                     ];
                 }
-            } elseif ($step['type'] == 'externalOTP'
+            } elseif (
+                $step['type'] == 'externalOTP'
                 && Validator::notEmpty()->phone()->validate($step['phone'])
                 && Validator::notEmpty()->email()->validate($step['email'])
                 && Validator::notEmpty()->stringType()->validate($step['firstname'])
-                && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+                && Validator::notEmpty()->stringType()->validate($step['lastname'])
+            ) {
                 $circuit['steps'][] = [
                     'step'    => 'OTPSignature',
                     'members' => [$step['email']]
@@ -1355,7 +1357,6 @@ class FastParapheurController
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
         foreach ($uploads as $upload) {
-
             $result = FastParapheurController::onDemandUploadFilesToFast([
                 'config'     => $args['config'],
                 'upload'     => $upload,
@@ -1385,7 +1386,6 @@ class FastParapheurController
             }
 
             $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
-
         }
 
         return $returnIds;
@@ -1683,16 +1683,13 @@ class FastParapheurController
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
             $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . implode('.', $str);
-
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
             $response = _FOR_MAIN_DOC . ". " . implode('.', $str);
-
         } elseif (!empty($curlReturn['response']['comment']) && $args['version'] == 'noVersion') {
             $attachmentName = AttachmentModel::getById(['select' => ['title'], 'id' => $args['res_id']]);
             $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . $curlReturn['response']['comment'];
-
         } elseif (!empty($curlReturn['response']['comment'])) {
             $response = _FOR_MAIN_DOC . ". " . $curlReturn['response']['comment'];
         }
@@ -1716,7 +1713,7 @@ class FastParapheurController
         ]);
         if (!empty($curlReturn['errors'])) {
             return ['code' => $curlReturn['code'], 'errors' => $curlReturn['errors']];
-        } else if (empty($curlReturn['response']['users'])) {
+        } elseif (empty($curlReturn['response']['users'])) {
             return [];
         }
 
@@ -1759,7 +1756,7 @@ class FastParapheurController
         ]);
         if (!empty($fpUsers['errors'])) {
             return ['code' => $fpUsers['code'], 'errors' => $fpUsers['errors']];
-        } else if (empty($fpUsers)) {
+        } elseif (empty($fpUsers)) {
             return ['code' => 400, 'errors' => "FastParapheur users not found!"];
         }
         $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));

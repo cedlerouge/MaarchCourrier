@@ -20,7 +20,7 @@ interface AutoUpdateInterface
     /**
      * Function to perform any backups for the update.
      * Use trycatch at the root of the function.
-     * 
+     *
      * @return  void   If backup is successful
      * @throws  \Exception If the backup failed
      */
@@ -29,7 +29,7 @@ interface AutoUpdateInterface
     /**
      * Function to perform any update for a feature.
      * Use trycatch at the root of the function.
-     * 
+     *
      * @return  void   If update is successful
      * @throws  \Exception If the update failed
      */
@@ -38,7 +38,7 @@ interface AutoUpdateInterface
     /**
      * Function to perform any rollback for the update.
      * Use trycatch at the root of the function.
-     * 
+     *
      * @return  void   If rollback is successful
      * @throws  \Exception If the rollback failed
      */

@@ -305,7 +305,8 @@ class Office365SharepointController
         return $response->withStatus(204);
     }
 
-    public static function getSiteId(array $args) {
+    public static function getSiteId(array $args)
+    {
         ValidatorModel::notEmpty($args, ['clientId', 'clientSecret', 'tenantId', 'siteUrl']);
         ValidatorModel::stringType($args, ['clientId', 'clientSecret', 'tenantId', 'siteUrl']);
 
@@ -347,7 +348,8 @@ class Office365SharepointController
         return $result['response']['id'];
     }
 
-    private static function getAuthenticationToken(array $args) {
+    private static function getAuthenticationToken(array $args)
+    {
         ValidatorModel::notEmpty($args, ['configuration']);
         ValidatorModel::arrayType($args, ['configuration']);
 

@@ -709,8 +709,8 @@ class MultigestController
                     $keyAttachmentMetadataValue = str_replace('|', '-', $metadataValue);
                 }
             }
-            $metadataFields .= '|'.$keyMetadataField;
-            $metadataValues .= '|'.$keyMetadataValue;
+            $metadataFields .= '|' . $keyMetadataField;
+            $metadataValues .= '|' . $keyMetadataValue;
 
             $metadataFields = $metadataFields;
             $metadataValues = $metadataValues;
@@ -791,7 +791,8 @@ class MultigestController
         return true;
     }
 
-    public static function getResourceField(array $document, string $field, array $rawContacts) {
+    public static function getResourceField(array $document, string $field, array $rawContacts)
+    {
         if ($field == 'doctypeLabel' && !empty($document['type_id'])) {
             $doctype = DoctypeModel::getById(['select' => ['description'], 'id' => $document['type_id']]);
             if (!empty($doctype)) {

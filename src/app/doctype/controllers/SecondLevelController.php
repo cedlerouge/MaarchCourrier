@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -37,7 +38,7 @@ class SecondLevelController
             'data'   => [$aArgs['id']]
         ]);
         $doctype['secondLevel']['hasChildren'] = empty($hasChildren) ? false : true;
-        
+
         if (!empty($doctype['secondLevel'])) {
             if ($doctype['secondLevel']['enabled'] == 'Y') {
                 $doctype['secondLevel']['enabled'] = true;
@@ -64,12 +65,12 @@ class SecondLevelController
 
         $data = $request->getParsedBody();
         $data = $this->manageValue($data);
-        
+
         $errors = $this->control($data, 'create');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
         }
-    
+
         $secondLevelId = SecondLevelModel::create($data);
 
         HistoryController::add([
@@ -100,7 +101,7 @@ class SecondLevelController
 
         $data   = $this->manageValue($data);
         $errors = $this->control($data, 'update');
-      
+
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
         }
@@ -112,7 +113,7 @@ class SecondLevelController
             'recordId'  => $data['doctypes_second_level_id'],
             'eventType' => 'UP',
             'eventId'   => 'subfolderup',
-            'info'      => _DOCTYPE_SECONDLEVEL_UPDATED. ' : ' . $data['doctypes_second_level_label']
+            'info'      => _DOCTYPE_SECONDLEVEL_UPDATED . ' : ' . $data['doctypes_second_level_label']
         ]);
 
         return $response->withJson([
@@ -140,7 +141,7 @@ class SecondLevelController
             'recordId'  => $aArgs['id'],
             'eventType' => 'DEL',
             'eventId'   => 'subfolderdel',
-            'info'      => _DOCTYPE_SECONDLEVEL_DELETED. ' : ' . $secondLevel['doctypes_second_level_label']
+            'info'      => _DOCTYPE_SECONDLEVEL_DELETED . ' : ' . $secondLevel['doctypes_second_level_label']
         ]);
 
         return $response->withJson([
@@ -159,19 +160,23 @@ class SecondLevelController
             } else {
                 $obj = SecondLevelModel::getById(['id' => $aArgs['doctypes_second_level_id']]);
             }
-           
+
             if (empty($obj)) {
-                $errors[] = 'Id ' .$aArgs['doctypes_second_level_id']. ' does not exists';
+                $errors[] = 'Id ' . $aArgs['doctypes_second_level_id'] . ' does not exists';
             }
         }
-           
-        if (!Validator::notEmpty()->validate($aArgs['doctypes_second_level_label']) ||
-            !Validator::length(1, 255)->validate($aArgs['doctypes_second_level_label'])) {
+
+        if (
+            !Validator::notEmpty()->validate($aArgs['doctypes_second_level_label']) ||
+            !Validator::length(1, 255)->validate($aArgs['doctypes_second_level_label'])
+        ) {
             $errors[] = 'Invalid doctypes_second_level_label';
         }
 
-        if (!Validator::notEmpty()->validate($aArgs['doctypes_first_level_id']) ||
-            !Validator::intVal()->validate($aArgs['doctypes_first_level_id'])) {
+        if (
+            !Validator::notEmpty()->validate($aArgs['doctypes_first_level_id']) ||
+            !Validator::intVal()->validate($aArgs['doctypes_first_level_id'])
+        ) {
             $errors[] = 'Invalid doctypes_first_level_id';
         }
 
@@ -180,7 +185,7 @@ class SecondLevelController
         }
 
         if ($aArgs['enabled'] != 'Y' && $aArgs['enabled'] != 'N') {
-            $errors[]= 'Invalid enabled value';
+            $errors[] = 'Invalid enabled value';
         }
 
         return $errors;

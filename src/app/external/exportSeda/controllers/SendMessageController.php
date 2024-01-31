@@ -81,7 +81,7 @@ class SendMessageController
         $messageObject = $aArgs['messageObject'];
         $type = $aArgs['type'];
 
-        $seda2Message = self::initMessage(new stdClass);
+        $seda2Message = self::initMessage(new stdClass());
 
         $seda2Message->MessageIdentifier->value = $messageObject->messageIdentifier;
         $seda2Message->ArchivalAgreement->value = $messageObject->archivalAgreement;
@@ -169,7 +169,7 @@ class SendMessageController
 
     private static function initMessage($messageObject)
     {
-        $date = new DateTime;
+        $date = new DateTime();
         $messageObject->Date = $date->format(DateTime::ATOM);
         $messageObject->MessageIdentifier = new stdClass();
         $messageObject->MessageIdentifier->value = "";
@@ -227,8 +227,7 @@ class SendMessageController
         $archiveUnitId = null,
         $dataObjectReferenceId = null,
         $relatedObjectReference = null
-    ): stdClass
-    {
+    ): stdClass {
         $archiveUnit = new stdClass();
 
         if ($archiveUnitId) {
@@ -332,7 +331,7 @@ class SendMessageController
 
                 if ($object->folders) {
                     $content->FilePlanPosition = [];
-                    $content->FilePlanPosition[] = new stdClass;
+                    $content->FilePlanPosition[] = new stdClass();
                     $content->FilePlanPosition[0]->value = "";
                     foreach ($object->folders as $folder) {
                         $content->FilePlanPosition[0]->value .= "/" . $folder;

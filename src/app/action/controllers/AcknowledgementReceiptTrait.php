@@ -97,7 +97,7 @@ trait AcknowledgementReceiptTrait
             if (empty($template[0])) {
                 return [];
             }
-    
+
             $docserver = DocserverModel::getByDocserverId(['docserverId' => 'TEMPLATES', 'select' => ['path_template']]);
             $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template[0]['template_path']) . $template[0]['template_file_name'];
         }
@@ -138,7 +138,7 @@ trait AcknowledgementReceiptTrait
 
                     $pathInfo = pathinfo($pathToDocument);
                     $extension = $pathInfo['extension'];
-                    $tmpFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" .rand(). "." . $extension;
+                    $tmpFile = CoreConfigModel::getTmpPath() . "tmp_file_{$GLOBALS['id']}_" . rand() . "." . $extension;
                     $fileContent = MergeController::mergeChronoDocument(['chrono' => '', 'path' => $pathToDocument, 'type' => 'acknowledgementReceipt', 'resIdMaster' => $args['resId'], 'resId' => null, 'title' => null]);
                     file_put_contents($tmpFile, base64_decode($fileContent['encodedDocument']));
                     $mergedDocument = MergeController::mergeDocument([

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
@@ -125,7 +126,7 @@ abstract class PriorityModelAbstract
             'where' => ['id = ?'],
             'data'  => [$aArgs['id']]
         ]);
-        
+
         return true;
     }
 }

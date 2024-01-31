@@ -18,11 +18,10 @@ use Configuration\models\ConfigurationModel;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\ValidatorModel;
-use Respect\Validation\Validator;
 
 class DocumentEditorController
 {
-    const DOCUMENT_EDITION_METHODS = ['java', 'onlyoffice', 'collaboraonline', 'office365sharepoint'];
+    public const DOCUMENT_EDITION_METHODS = ['java', 'onlyoffice', 'collaboraonline', 'office365sharepoint'];
 
     public static function get(Request $request, Response $response)
     {
@@ -70,7 +69,8 @@ class DocumentEditorController
         return strpos($exec, 'succeeded!') !== false || strpos($exec, 'open') !== false || strpos($exec, 'Connected') !== false;
     }
 
-    public static function uriIsValid($args): ?bool {
+    public static function uriIsValid($args): ?bool
+    {
         $whitelist = '/^(?:\w+(?:\/)?|(?:https?:\/\/)?((?:[\da-z.-]+)\.(?:[a-z.]{2,6})|(?:\d{1,3}\.){3}\d{1,3})(?:[\/\w.-]*)*\/?)$/i';
         return preg_match($whitelist, $args);
     }

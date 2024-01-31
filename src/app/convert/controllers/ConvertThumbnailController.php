@@ -51,7 +51,7 @@ class ConvertThumbnailController
             $command = "convert -thumbnail {$size} -background white -alpha remove "
                 . escapeshellarg($filePath) . '[0] ' . escapeshellarg($filePathOutput);
         }
-        exec($command.' 2>&1', $output, $return);
+        exec($command . ' 2>&1', $output, $return);
 
         return ['return' => $return, 'output' => $output, 'filePathOutput' => $filePathOutput];
     }
@@ -72,7 +72,7 @@ class ConvertThumbnailController
         $convertedFile = ConvertThumbnailController::convertInThumbnail($tmpFilePath);
 
         if ($convertedFile['return'] !== 0) {
-            return ['errors' => "[ConvertThumbnail] ".implode(" ", $convertedFile['output'])];
+            return ['errors' => "[ConvertThumbnail] " . implode(" ", $convertedFile['output'])];
         }
 
         if (is_file($tmpFilePath)) {
@@ -266,10 +266,10 @@ class ConvertThumbnailController
         $convertPage = $args['page'] - 1;
         $command = "convert -density 500x500 -quality 100 -resize 1000x -background white -alpha remove "
             . escapeshellarg($pathToDocument) . "[{$convertPage}] " . escapeshellarg("{$tmpPath}{$fileNameOnTmp}.png");
-        exec($command.' 2>&1', $output, $return);
+        exec($command . ' 2>&1', $output, $return);
 
         if ($return !== 0) {
-            return ['errors' => "[ConvertThumbnail] Convert command failed for page {$args['page']} : ".implode(" ", $output)];
+            return ['errors' => "[ConvertThumbnail] Convert command failed for page {$args['page']} : " . implode(" ", $output)];
         }
 
         $content = file_get_contents("{$tmpPath}{$fileNameOnTmp}.png");

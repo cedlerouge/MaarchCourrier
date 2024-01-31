@@ -37,6 +37,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 use User\models\UserModel;
 
+// phpcs:ignore
 include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
 
 /**
@@ -102,12 +103,12 @@ class XParaphController
             foreach ($aArgs['steps'] as $key => $step) {
                 $order = $key + 1;
                 $xmlStep .= '<EtapeDepot>
-                                <user_siret xsi:type="xsd:string">'.$aArgs['info']['siret'].'</user_siret>
-                                <user_login xsi:type="xsd:string">'.$step['login'].'</user_login>
-                                <action xsi:type="xsd:string">'.$step['action'].'</action>
-                                <contexte xsi:type="xsd:string">'.$step['contexte'].'</contexte>
+                                <user_siret xsi:type="xsd:string">' . $aArgs['info']['siret'] . '</user_siret>
+                                <user_login xsi:type="xsd:string">' . $step['login'] . '</user_login>
+                                <action xsi:type="xsd:string">' . $step['action'] . '</action>
+                                <contexte xsi:type="xsd:string">' . $step['contexte'] . '</contexte>
                                 <norejet xsi:type="xsd:string">0</norejet>
-                                <ordre xsi:type="xsd:int">'.$order.'</ordre>
+                                <ordre xsi:type="xsd:int">' . $order . '</ordre>
                             </EtapeDepot>';
             }
 
@@ -118,19 +119,19 @@ class XParaphController
                 <urn:XPRF_Deposer soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
                     <params xsi:type="urn:XPRF_Deposer_Param">
                         <reponse xsi:type="xsd:string">SOAP</reponse>
-                        <siret xsi:type="xsd:string">'.$aArgs['info']['siret'].'</siret>
-                        <login xsi:type="xsd:string">'.$aArgs['info']['login'].'</login>
-                        <logingen xsi:type="xsd:string">'.$userGeneric['login'].'</logingen>
-                        <password xsi:type="xsd:string">'.$userGeneric['password'].'</password>
-                        <docutype xsi:type="xsd:string">'.$aArgs['config']['data']['docutype'].'</docutype>
-                        <docustype xsi:type="xsd:string">'.$aArgs['config']['data']['docustype'].'</docustype>
-                        <objet xsi:type="xsd:string">'.$value['title'].'</objet>
-                        <contenu xsi:type="xsd:base64Binary">'.base64_encode($fileContent).'</contenu>
-                        <nom xsi:type="xsd:string">'.$value['title'].'</nom>
-                        <taille xsi:type="xsd:int">'.$filesize.'</taille>
-                        <pml xsi:type="xsd:string">'.$pml.'</pml>
+                        <siret xsi:type="xsd:string">' . $aArgs['info']['siret'] . '</siret>
+                        <login xsi:type="xsd:string">' . $aArgs['info']['login'] . '</login>
+                        <logingen xsi:type="xsd:string">' . $userGeneric['login'] . '</logingen>
+                        <password xsi:type="xsd:string">' . $userGeneric['password'] . '</password>
+                        <docutype xsi:type="xsd:string">' . $aArgs['config']['data']['docutype'] . '</docutype>
+                        <docustype xsi:type="xsd:string">' . $aArgs['config']['data']['docustype'] . '</docustype>
+                        <objet xsi:type="xsd:string">' . $value['title'] . '</objet>
+                        <contenu xsi:type="xsd:base64Binary">' . base64_encode($fileContent) . '</contenu>
+                        <nom xsi:type="xsd:string">' . $value['title'] . '</nom>
+                        <taille xsi:type="xsd:int">' . $filesize . '</taille>
+                        <pml xsi:type="xsd:string">' . $pml . '</pml>
                         <avertir xsi:type="xsd:string">1</avertir>
-                        <etapes xsi:type="urn:EtapeDepot" soapenc:arrayType="urn:EtapeDepotItem[]">'.$xmlStep.'</etapes>
+                        <etapes xsi:type="urn:EtapeDepot" soapenc:arrayType="urn:EtapeDepotItem[]">' . $xmlStep . '</etapes>
                     </params>
                 </urn:XPRF_Deposer>
                 </soapenv:Body>
@@ -272,9 +273,9 @@ class XParaphController
                 foreach ($coordinates as $key => $coordinate) {
                     if ($coordinate['p'] == $i) {
                         $signatureNb = $key + 1;
-                        $pdf->SetXY($coordinate['x'], -$coordinate['y']-15);
+                        $pdf->SetXY($coordinate['x'], -$coordinate['y'] - 15);
                         $pdf->SetTextColor(255, 255, 255);
-                        $pdf->Write(5, '[[[signature'.$signatureNb.']]]');
+                        $pdf->Write(5, '[[[signature' . $signatureNb . ']]]');
                     }
                 }
             }
@@ -339,12 +340,12 @@ class XParaphController
             <soapenv:Body>
                 <urn:XPRF_Initialisation_Deposer soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
                     <params xsi:type="urn:XPRF_Initialisation_Deposer_Param">
-                        <siret xsi:type="xsd:string">'.$data['siret'].'</siret>
-                        <login xsi:type="xsd:string">'.$data['login'].'</login>
-                        <logingen xsi:type="xsd:string">'.$userGeneric['login'].'</logingen>
-                        <password xsi:type="xsd:string">'.$userGeneric['password'].'</password>
+                        <siret xsi:type="xsd:string">' . $data['siret'] . '</siret>
+                        <login xsi:type="xsd:string">' . $data['login'] . '</login>
+                        <logingen xsi:type="xsd:string">' . $userGeneric['login'] . '</logingen>
+                        <password xsi:type="xsd:string">' . $userGeneric['password'] . '</password>
                         <action xsi:type="xsd:string">DETAIL</action>
-                        <scenario xsi:type="xsd:string">' . $config['data']['docutype'] . '-' . $config['data']['docustype'].'</scenario>
+                        <scenario xsi:type="xsd:string">' . $config['data']['docutype'] . '-' . $config['data']['docustype'] . '</scenario>
                         <version xsi:type="xsd:string">2</version>
                     </params>
                 </urn:XPRF_Initialisation_Deposer>
@@ -434,7 +435,7 @@ class XParaphController
                         continue;
                     }
                     $file      = base64_decode($processedFile['zip']);
-                    $unzipName = 'tmp_file_' .rand(). '_xParaph_' .rand();
+                    $unzipName = 'tmp_file_' . rand() . '_xParaph_' . rand();
                     $tmpName   = $unzipName . '.zip';
 
                     file_put_contents($tmpPath . $tmpName, $file);
@@ -461,7 +462,7 @@ class XParaphController
                     $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
 
                     $file      = base64_decode($processedFile['zip']);
-                    $unzipName = 'tmp_file_' .rand(). '_xParaph_' .rand();
+                    $unzipName = 'tmp_file_' . rand() . '_xParaph_' . rand();
                     $tmpName   = $unzipName . '.zip';
 
                     file_put_contents($tmpPath . $tmpName, $file);
@@ -534,7 +535,7 @@ class XParaphController
         $depotIds = '';
 
         foreach ($aArgs['depotsIds'] as $key => $step) {
-            $depotIds .= '<listDepotIds>'.$key.'</listDepotIds>';
+            $depotIds .= '<listDepotIds>' . $key . '</listDepotIds>';
         }
 
         // use $step['login'] because only need anyone who exist in xparaph
@@ -545,10 +546,10 @@ class XParaphController
             <soapenv:Body>
                 <urn:XPRF_AvancementDepot soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
                     <params xsi:type="urn:XPRF_AvancementDepot_Param">
-                        <siret xsi:type="xsd:string">'.$aArgs['userGeneric']['siret'].'</siret>
-                        <login xsi:type="xsd:string">'.$step['login'].'</login>
-                        <logingen xsi:type="xsd:string">'.$aArgs['userGeneric']['login'].'</logingen>
-                        <password xsi:type="xsd:string">'.$aArgs['userGeneric']['password'].'</password>
+                        <siret xsi:type="xsd:string">' . $aArgs['userGeneric']['siret'] . '</siret>
+                        <login xsi:type="xsd:string">' . $step['login'] . '</login>
+                        <logingen xsi:type="xsd:string">' . $aArgs['userGeneric']['login'] . '</logingen>
+                        <password xsi:type="xsd:string">' . $aArgs['userGeneric']['password'] . '</password>
                         <depotids xsi:type="urn:listDepotIds" soapenc:arrayType="xsd:string[]">' . $depotIds . '</depotids>
                         <withNote xsi:type="xsd:string">1</withNote>
                     </params>
@@ -581,11 +582,11 @@ class XParaphController
             <soapenv:Body>
                 <urn:XPRF_getFiles soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
                     <params xsi:type="urn:XPRF_getFiles_Param">
-                        <siret xsi:type="xsd:string">'.$aArgs['userGeneric']['siret'].'</siret>
-                        <login xsi:type="xsd:string">'.$aArgs['depotLogin'].'</login>
-                        <logingen xsi:type="xsd:string">'.$aArgs['userGeneric']['login'].'</logingen>
-                        <password xsi:type="xsd:string">'.$aArgs['userGeneric']['password'].'</password>
-                        <depotid xsi:type="xsd:string">'.$aArgs['depotId'].'</depotid>
+                        <siret xsi:type="xsd:string">' . $aArgs['userGeneric']['siret'] . '</siret>
+                        <login xsi:type="xsd:string">' . $aArgs['depotLogin'] . '</login>
+                        <logingen xsi:type="xsd:string">' . $aArgs['userGeneric']['login'] . '</logingen>
+                        <password xsi:type="xsd:string">' . $aArgs['userGeneric']['password'] . '</password>
+                        <depotid xsi:type="xsd:string">' . $aArgs['depotId'] . '</depotid>
                     </params>
                 </urn:XPRF_getFiles>
             </soapenv:Body>
@@ -691,8 +692,8 @@ class XParaphController
      */
     public static function getTextArrayWithCoordinates(Page $page = null)
     {
-        if ($contents = $page->get('Contents')) {
-
+        $contents = $page->get('Contents');
+        if ($contents) {
             if ($contents instanceof ElementMissing) {
                 return array();
             } elseif ($contents instanceof ElementNull) {
@@ -754,11 +755,9 @@ class XParaphController
         $current_position_tm = array('x' => false, 'y' => false);
 
         foreach ($sections as $section) {
-
             $commands = $pdfObject->getCommandsText($section);
 
             foreach ($commands as $command) {
-
                 switch ($command[PDFObject::OPERATOR]) {
                     // set character spacing
                     case 'Tc':
@@ -783,9 +782,11 @@ class XParaphController
                         $current_font = $page->getFont($id);
                         break;
 
+                    // phpcs:ignore
                     case "'":
+                        // phpcs:ignore
                     case 'Tj':
-                    $command[PDFObject::COMMAND] = array($command);
+                        $command[PDFObject::COMMAND] = array($command);
                     case 'TJ':
                         // Skip if not previously defined, should never happened.
                         if (is_null($current_font)) {

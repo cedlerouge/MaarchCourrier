@@ -16,13 +16,13 @@ namespace Resource\Domain;
 
 class ResourceConverted implements HasDocserverFileInterface
 {
-    private int     $id;
-    private int     $resId;
-    private string  $type;
-    private int     $version;
-    private string  $docserverId;
-    private string  $path;
-    private string  $filename;
+    private int $id;
+    private int $resId;
+    private string $type;
+    private int $version;
+    private string $docserverId;
+    private string $path;
+    private string $filename;
     private ?string $fingerprint;
     private ?string $subject;
 

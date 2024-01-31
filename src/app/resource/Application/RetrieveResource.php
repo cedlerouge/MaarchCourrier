@@ -34,7 +34,7 @@ class RetrieveResource
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
@@ -79,7 +79,7 @@ class RetrieveResource
 
         $document = $this->getConvertedResourcePdfById($resId);
 
-        $docserverAndFilePath= $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
+        $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
 
         $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {

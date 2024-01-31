@@ -48,7 +48,7 @@ class IssuingSiteController
                 'where'  => ['site_id = ?'],
                 'data'   => [$site['id']]
             ]);
-    
+
             $entities = array_column($entities, 'entity_id');
             $sites[$key]['entities'] = $entities;
         }

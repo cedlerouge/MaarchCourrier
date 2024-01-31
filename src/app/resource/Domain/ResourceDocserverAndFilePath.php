@@ -16,8 +16,8 @@ namespace Resource\Domain;
 
 class ResourceDocserverAndFilePath
 {
-    private Docserver   $docserver;
-    private string      $filePath;
+    private Docserver $docserver;
+    private string $filePath;
 
     /**
      * @param Docserver $docserver
@@ -49,4 +49,3 @@ class ResourceDocserverAndFilePath
         $this->filePath = $filePath;
     }
 }
-

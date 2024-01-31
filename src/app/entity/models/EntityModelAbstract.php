@@ -505,7 +505,7 @@ abstract class EntityModelAbstract
             if (empty($entitiesIds)) {
                 return $entities;
             }
-            $entities = array_values(array_filter($entities, function($entity) use ($entitiesIds) {
+            $entities = array_values(array_filter($entities, function ($entity) use ($entitiesIds) {
                 return empty($entity['parent_entity_id']) || ($entity['parent_entity_id'] != $entity['entity_id'] && in_array($entity['parent_entity_id'], $entitiesIds));
             }));
         } while (count($entities) != $entitiesCount);

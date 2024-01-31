@@ -30,7 +30,6 @@ class PastellConfigurationCheck
     {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
-
     }
 
     /**
@@ -67,7 +66,7 @@ class PastellConfigurationCheck
         $connectors = $this->pastellApi->getConnector($config);
         if (!empty($connectors['errors'])) {
             return false;
-        } else if (!in_array($config->getConnector(), $connectors)) {
+        } elseif (!in_array($config->getConnector(), $connectors)) {
             return false;
         }
 

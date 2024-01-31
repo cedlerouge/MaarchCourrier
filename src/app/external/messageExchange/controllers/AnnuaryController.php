@@ -312,7 +312,8 @@ class AnnuaryController
         for ($index = 0; $index < 14; $index++) {
             $number = (int)$args['siret'][$index];
             if (($index % 2) == 0) {
-                if (($number *= 2) > 9) {
+                $number *= 2;
+                if ($number > 9) {
                     $number -= 9;
                 }
             }

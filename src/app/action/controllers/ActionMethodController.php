@@ -61,7 +61,7 @@ class ActionMethodController
     use ExternalSignatoryBookTrait;
     use ExportSEDATrait;
 
-    const COMPONENTS_ACTIONS = [
+    public const COMPONENTS_ACTIONS = [
         'confirmAction'                             => null,
         'closeMailAction'                           => 'closeMailAction',
         'closeMailWithAttachmentsOrNotesAction'     => 'closeMailWithAttachmentsOrNotesAction',

@@ -72,5 +72,4 @@ class Response extends SlimResponse
 
         return $this;
     }
-
 }

@@ -14,7 +14,7 @@ class RetrieveDocserverAndFilePath
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface
     ) {

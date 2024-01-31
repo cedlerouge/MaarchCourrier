@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -71,7 +72,7 @@ class FirstLevelModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_first_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_first_level_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes_first_level',
             'set'       => $aArgs,

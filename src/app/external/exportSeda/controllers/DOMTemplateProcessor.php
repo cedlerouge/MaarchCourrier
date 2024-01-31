@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) 2015 Maarch
  *
@@ -23,6 +24,7 @@
  *
  * @author Cyril Vazquez <cyril.vazquez@maarch.org>
  */
+// phpcs:ignore
 class DOMTemplateProcessor extends \DOMXPath
 {
     /**
@@ -90,7 +92,8 @@ class DOMTemplateProcessor extends \DOMXPath
      */
     protected function xinclude($node = null)
     {
-        if ($pis = $this->query("descendant-or-self::processing-instruction('xinclude')", $node)) {
+        $pis = $this->query("descendant-or-self::processing-instruction('xinclude')", $node);
+        if ($pis) {
             foreach ($pis as $pi) {
                 $includeFragment = $this->document->createDocumentFragment();
                 $source = file_get_contents(__DIR__ . trim($pi->data));
@@ -129,7 +132,7 @@ class DOMTemplateProcessor extends \DOMXPath
      * Remove empty elements and attributes
      * @param DOMNode $node The context node. If omitted the entire document will be processed.
      */
-    public function removeEmptyNodes($node=null)
+    public function removeEmptyNodes($node = null)
     {
         if (!$node) {
             $node = $this->document->documentElement;
@@ -138,7 +141,7 @@ class DOMTemplateProcessor extends \DOMXPath
         switch ($node->nodeType) {
             case \XML_ELEMENT_NODE:
                 $childNodeList = $node->childNodes;
-                for ($i=$childNodeList->length-1; $i>=0; $i--) {
+                for ($i = $childNodeList->length - 1; $i >= 0; $i--) {
                     $this->removeEmptyNodes($childNodeList->item($i));
                 }
 
@@ -198,7 +201,7 @@ class DOMTemplateProcessor extends \DOMXPath
                     }
                     $instr = $this->parsedPis[$mergeNode->data];
 
-                    if ($merged = $this->mergePi($mergeNode, $instr, $source)) {
+                    if ($this->mergePi($mergeNode, $instr, $source)) {
                         if ($mergeNode->parentNode) {
                             $mergeNode->parentNode->removeChild($mergeNode);
                         }
@@ -263,6 +266,7 @@ class DOMTemplateProcessor extends \DOMXPath
             case $type == 'object':
                 switch (true) {
                     // Object merged with a form
+                    // phpcs:ignore
                     case ($targetForm = $this->query("following-sibling::form", $pi)->item(0)):
                         $this->mergedForms->attach($targetForm, array($pi, $instr, $value));
                         break;
@@ -279,7 +283,6 @@ class DOMTemplateProcessor extends \DOMXPath
                     case method_exists($value, '__toString'):
                         return $this->mergeText($pi, $instr, (string)$value);
                 }
-
         }
     }
 
@@ -355,7 +358,8 @@ class DOMTemplateProcessor extends \DOMXPath
         $params = $instr->params;
         switch (true) {
             case isset($params['attr']):
-                if (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
+                $targetNode = $this->query("following-sibling::*", $pi)->item(0);
+                if (!$targetNode) {
                     return true;
                 }
                 $targetNode->setAttribute($params['attr'], $value);
@@ -393,12 +397,14 @@ class DOMTemplateProcessor extends \DOMXPath
 
             $targetNode = $this->document->createDocumentFragment();
             $targetNode->appendXML($source);
+            // phpcs:ignore
         } elseif (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
             return true;
         }
 
         reset($array);
-        if ($count = count($array)) {
+        $count = count($array);
+        if ($count) {
             $i = 0;
             while ($i < $count) {
                 //do {
@@ -432,7 +438,8 @@ class DOMTemplateProcessor extends \DOMXPath
     protected function mergeObject($pi, $instr, $object)
     {
         $params = $instr->params;
-        if (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
+        $targetNode = $this->query("following-sibling::*", $pi)->item(0);
+        if (!$targetNode) {
             return true;
         }
 
@@ -505,9 +512,11 @@ class DOMTemplateProcessor extends \DOMXPath
                 // Select
                 case 'select':
                     $value = $this->quote($value);
-                    if ($option = $this->query(".//option[@value=" . $value . "]", $element)->item(0)) {
+                    $option = $this->query(".//option[@value=" . $value . "]", $element)->item(0);
+                    if ($option) {
                         $option->setAttribute('selected', 'true');
-                        if ($optGroup = $this->query("parent::optgroup", $option)->item(0)) {
+                        $optGroup = $this->query("parent::optgroup", $option)->item(0);
+                        if ($optGroup) {
                             $optGroup->removeAttribute('disabled');
                         }
                     }
@@ -535,6 +544,7 @@ class DOMTemplateProcessor extends \DOMXPath
         if (isset($params['include'])) {
             $res = $params['include'];
             $targetNode = $this->document->createDocumentFragment();
+            // phpcs:ignore
         } elseif (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
             return true;
         }

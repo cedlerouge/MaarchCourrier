@@ -14,6 +14,7 @@
 
 namespace Mercure\scripts;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use Contact\models\ContactModel;
@@ -30,6 +31,7 @@ use SrcCore\models\DatabasePDO;
 // --fileConfig : Path of LAD file configuration (optionnal);
 // --reindexAll : Re-index all contacts database (optionnal);
 
+// phpcs:ignore
 IndexContactsScript::initalize($argv);
 
 class IndexContactsScript

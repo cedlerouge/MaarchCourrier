@@ -14,7 +14,6 @@
 
 namespace Resource\models;
 
-use Parameter\models\ParameterModel;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;

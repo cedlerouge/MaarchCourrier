@@ -36,7 +36,7 @@ before_script:
   - mv composer.phar /usr/local/bin/composer
 
 job_e2e:
-  image: php:7.4-apache
+  image: php:8.1-apache
   stage: test
   services:
     - name: postgres:10.1
@@ -83,60 +83,79 @@ job_php-8.1:
     - name: postgres:10.1
       command: [ "-c", "datestyle=iso,dmy" ]
   script:
+    - pecl install pcov > /dev/null && docker-php-ext-enable pcov > /dev/null
     - composer install
     - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
     - chmod +x /usr/local/bin/phpunit
-    - phpunit --coverage-text --colors=never --testsuite MaarchAcceptanceTest
-    - phpunit --coverage-text --colors=never --testsuite MaarchTestSuite
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
-  artifacts:
-    paths:
-      - test/unitTests/build/
-    expire_in: 2h
-  # coverage: '^\s*Lines:\s*\d+.\d+\%'
-
-job_php-8.0:
-  image: php:8.0-apache
-  stage: test
-  services:
-    - name: postgres:10.1
-      command: [ "-c", "datestyle=iso,dmy" ]
-  script:
-    - composer install
-    - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
-    - chmod +x /usr/local/bin/phpunit
-    - phpunit --coverage-text --colors=never --testsuite MaarchAcceptanceTest
-    - phpunit --coverage-text --colors=never --testsuite MaarchTestSuite
+    - vendor/bin/phpunit --colors=never --testsuite MaarchAcceptanceTest
+    - php -dpcov.enabled=1 -dpcov.directory=. vendor/bin/phpunit --coverage-text --colors=never --log-junit test/unitTests/build/phpunit.xml --coverage-cobertura=test/unitTests/build/coverage.cobertura.xml --testsuite MaarchTestSuite
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  coverage: '/^\s*Lines:\s*\d+.\d+\%/'
   artifacts:
+    reports:
+      junit: test/unitTests/build/phpunit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: test/unitTests/build/coverage.cobertura.xml
     paths:
-      - test/unitTests/build/
-    expire_in: 2h
-  # coverage: '^\s*Lines:\s*\d+.\d+\%'
+      - test/unitTests/build/phpunit.xml
+    when: always
+    expire_in: 10 days
 
-job_php-7.4:
-  image: php:7.4-apache
+phpcs:
   stage: test
-  services:
-    - name: postgres:10.1
-      command: [ "-c", "datestyle=iso,dmy" ]
-  script:
-    - composer install
-    - curl --location -s --output /usr/local/bin/phpunit https://phar.phpunit.de/phpunit-9.phar
-    - chmod +x /usr/local/bin/phpunit
-    - phpunit --coverage-text --colors=never --testsuite MaarchAcceptanceTest
-    - phpunit --coverage-text --colors=never --testsuite MaarchTestSuite
+  image: php:8.1-cli-alpine
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-
+  before_script:
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php');"
+    - mv composer.phar /usr/local/bin/composer
+  script:
+    - composer install --ignore-platform-reqs
+    - composer run phpcs -- --report=full --report-\\Micheh\\PhpCodeSniffer\\Report\\Gitlab=phpcs-quality-report.json
   artifacts:
-    paths:
-      - test/unitTests/build/
-    expire_in: 2h
-  # coverage: '^\s*Lines:\s*\d+.\d+\%'
+    reports:
+      codequality: phpcs-quality-report.json
+
+phpcs-warnings:
+  stage: test
+  image: php:8.1-cli-alpine
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php');"
+    - mv composer.phar /usr/local/bin/composer
+  script:
+    - composer install --ignore-platform-reqs
+    - composer run phpcs-psr12:warnings -- --report=full --report-\\Micheh\\PhpCodeSniffer\\Report\\Gitlab=phpcs-warnings-report.json
+  allow_failure: true
+  artifacts:
+    reports:
+      codequality: phpcs-warnings-report.json
+
+phpstan:
+  stage: test
+  image: php:8.1-cli-alpine
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  before_script:
+    - php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    - php composer-setup.php
+    - php -r "unlink('composer-setup.php');"
+    - mv composer.phar /usr/local/bin/composer
+  script:
+    - composer install --ignore-platform-reqs
+    - composer run phpstan -- --error-format=gitlab > report.json
+  allow_failure: true
+  artifacts:
+    reports:
+      codequality: report.json
+
 
 create_merge_request:
   image: debian:10-slim

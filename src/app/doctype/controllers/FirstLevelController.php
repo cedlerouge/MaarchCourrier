@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -48,22 +49,22 @@ class FirstLevelController
 
         $structure = [];
         foreach ($firstLevels as $firstLevelValue) {
-            $firstLevelValue['id'] = 'firstlevel_'.$firstLevelValue['doctypes_first_level_id'];
+            $firstLevelValue['id'] = 'firstlevel_' . $firstLevelValue['doctypes_first_level_id'];
             $firstLevelValue['text'] = $firstLevelValue['doctypes_first_level_label'];
             $firstLevelValue['parent'] = '#';
             $firstLevelValue['state']['opened'] = true;
             array_push($structure, $firstLevelValue);
         }
         foreach ($secondLevels as $secondLevelValue) {
-            $secondLevelValue['id'] = 'secondlevel_'.$secondLevelValue['doctypes_second_level_id'];
+            $secondLevelValue['id'] = 'secondlevel_' . $secondLevelValue['doctypes_second_level_id'];
             $secondLevelValue['text'] = $secondLevelValue['doctypes_second_level_label'];
-            $secondLevelValue['parent'] = 'firstlevel_'.$secondLevelValue['doctypes_first_level_id'];
+            $secondLevelValue['parent'] = 'firstlevel_' . $secondLevelValue['doctypes_first_level_id'];
             array_push($structure, $secondLevelValue);
         }
         foreach ($docTypes as $doctypeValue) {
             $doctypeValue['id'] = $doctypeValue['type_id'];
             $doctypeValue['text'] = $doctypeValue['description'];
-            $doctypeValue['parent'] = 'secondlevel_'.$doctypeValue['doctypes_second_level_id'];
+            $doctypeValue['parent'] = 'secondlevel_' . $doctypeValue['doctypes_second_level_id'];
             $doctypeValue['icon'] = 'fa fa-copy';
             array_push($structure, $doctypeValue);
         }
@@ -140,7 +141,7 @@ class FirstLevelController
             'recordId' => $firstLevelId,
             'eventType' => 'ADD',
             'eventId' => 'structureadd',
-            'info' => _DOCTYPE_FIRSTLEVEL_ADDED.' : '.$data['doctypes_first_level_label'],
+            'info' => _DOCTYPE_FIRSTLEVEL_ADDED . ' : ' . $data['doctypes_first_level_label'],
         ]);
 
         return $response->withJson([
@@ -174,7 +175,7 @@ class FirstLevelController
             'recordId' => $obj['doctypes_first_level_id'],
             'eventType' => 'UP',
             'eventId' => 'structureup',
-            'info' => _DOCTYPE_FIRSTLEVEL_UPDATED.' : '.$obj['doctypes_first_level_label'],
+            'info' => _DOCTYPE_FIRSTLEVEL_UPDATED . ' : ' . $obj['doctypes_first_level_label'],
         ]);
 
         return $response->withJson([
@@ -203,7 +204,7 @@ class FirstLevelController
             'recordId'      => $aArgs['id'],
             'eventType'     => 'DEL',
             'eventId'       => 'structuredel',
-            'info'          => _DOCTYPE_FIRSTLEVEL_DELETED.' : '.$firstLevel['doctypes_first_level_label'],
+            'info'          => _DOCTYPE_FIRSTLEVEL_DELETED . ' : ' . $firstLevel['doctypes_first_level_label'],
         ]);
 
         return $response->withJson([
@@ -224,12 +225,14 @@ class FirstLevelController
             }
 
             if (empty($obj)) {
-                $errors[] = 'Id '.$aArgs['doctypes_first_level_id'].' does not exists';
+                $errors[] = 'Id ' . $aArgs['doctypes_first_level_id'] . ' does not exists';
             }
         }
 
-        if (!Validator::notEmpty()->validate($aArgs['doctypes_first_level_label']) ||
-            !Validator::length(1, 255)->validate($aArgs['doctypes_first_level_label'])) {
+        if (
+            !Validator::notEmpty()->validate($aArgs['doctypes_first_level_label']) ||
+            !Validator::length(1, 255)->validate($aArgs['doctypes_first_level_label'])
+        ) {
             $errors[] = 'Invalid doctypes_first_level_label';
         }
 

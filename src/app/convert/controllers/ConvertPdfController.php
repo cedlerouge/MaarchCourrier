@@ -54,7 +54,7 @@ class ConvertPdfController
                 $command = 'export DISPLAY=:0 && ' . $command;
             }
 
-            exec($command.' 2>&1', $output, $return);
+            exec($command . ' 2>&1', $output, $return);
         } elseif (strtolower($extension) != 'pdf') {
             $url = str_replace('rest/', '', UrlController::getCoreUrl());
             if (OnlyOfficeController::canConvert(['url' => $url, 'fullFilename' => $aArgs['fullFilename']])) {
@@ -96,17 +96,17 @@ class ConvertPdfController
         ValidatorModel::notEmpty($aArgs, ['fullFilename']);
 
         if (!file_exists($aArgs['fullFilename'])) {
-            return ['errors' => '[ConvertPdf] Document '.$aArgs['fullFilename'].' does not exist'];
+            return ['errors' => '[ConvertPdf] Document ' . $aArgs['fullFilename'] . ' does not exist'];
         }
 
         $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $aArgs['fullFilename']]);
 
         $docInfo = pathinfo($aArgs['fullFilename']);
         $tmpPath = CoreConfigModel::getTmpPath();
-        if (!file_exists($tmpPath.$docInfo["filename"].'.pdf')) {
-            return ['errors' => '[ConvertPdf]  Conversion failed ! '. implode(" ", $convertedFile['output'])];
+        if (!file_exists($tmpPath . $docInfo["filename"] . '.pdf')) {
+            return ['errors' => '[ConvertPdf]  Conversion failed ! ' . implode(" ", $convertedFile['output'])];
         } else {
-            return ['fullFilename' => $tmpPath.$docInfo["filename"].'.pdf'];
+            return ['fullFilename' => $tmpPath . $docInfo["filename"] . '.pdf'];
         }
     }
 
@@ -156,13 +156,13 @@ class ConvertPdfController
 
         $fileNameOnTmp = rand() . $docInfo["filename"];
 
-        copy($pathToDocument, $tmpPath.$fileNameOnTmp .'.'. strtolower($docInfo["extension"]));
+        copy($pathToDocument, $tmpPath . $fileNameOnTmp . '.' . strtolower($docInfo["extension"]));
 
         if (strtolower($docInfo["extension"]) != 'pdf') {
-            $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$fileNameOnTmp.'.'.$docInfo["extension"]]);
+            $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath . $fileNameOnTmp . '.' . $docInfo["extension"]]);
 
-            if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
-                return ['errors' => '[ConvertPdf]  Conversion failed ! '. implode(" ", $convertedFile['output'])];
+            if (!file_exists($tmpPath . $fileNameOnTmp . '.pdf')) {
+                return ['errors' => '[ConvertPdf]  Conversion failed ! ' . implode(" ", $convertedFile['output'])];
             }
         }
 
@@ -211,11 +211,11 @@ class ConvertPdfController
         $tmpPath = CoreConfigModel::getTmpPath();
         $tmpFilename = 'converting' . rand() . '_' . rand();
 
-        file_put_contents($tmpPath.$tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
-        $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$tmpFilename . '.' . $aArgs['extension']]);
+        file_put_contents($tmpPath . $tmpFilename . '.' . $aArgs['extension'], base64_decode($aArgs['encodedResource']));
+        $convertedFile = ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath . $tmpFilename . '.' . $aArgs['extension']]);
 
-        if (!file_exists($tmpPath.$tmpFilename.'.pdf')) {
-            return ['errors' => '[ConvertPdf]  Conversion failed ! '. implode(" ", $convertedFile['output'])];
+        if (!file_exists($tmpPath . $tmpFilename . '.pdf')) {
+            return ['errors' => '[ConvertPdf]  Conversion failed ! ' . implode(" ", $convertedFile['output'])];
         }
 
         if (is_file("{$tmpPath}{$tmpFilename}.{$aArgs['extension']}")) {
@@ -227,7 +227,7 @@ class ConvertPdfController
         $aReturn = [];
 
         if (!empty($aArgs['context']) && $aArgs['context'] == 'scan') {
-            $aReturn["tmpFilename"] = $tmpFilename.'.pdf';
+            $aReturn["tmpFilename"] = $tmpFilename . '.pdf';
         } else {
             $aReturn["encodedResource"] = base64_encode($resource);
             unlink("{$tmpPath}{$tmpFilename}.pdf");
@@ -316,7 +316,7 @@ class ConvertPdfController
         if (strtolower($extension) == strtolower('txt')) {
             $content = file_get_contents($filePath);
             $bom = chr(239) . chr(187) . chr(191); # use BOM to be on safe side
-            file_put_contents($filePath, $bom.$content);
+            file_put_contents($filePath, $bom . $content);
         }
     }
 
@@ -361,7 +361,7 @@ class ConvertPdfController
                 return $response->withStatus(400)->withJson(['errors' => 'File type not allowed. Extension : ' . $ext . '. Mime Type : ' . $mimeType . '.']);
             } elseif ($size > $uploadMaxFilesize) {
                 $maximumSizeLabel = round($maxFilesizeMo / 1048576, 3) . ' Mo';
-                return $response->withStatus(400)->withJson(['errors' => 'File maximum size is exceeded ('.$maximumSizeLabel.')']);
+                return $response->withStatus(400)->withJson(['errors' => 'File maximum size is exceeded (' . $maximumSizeLabel . ')']);
             } elseif (!$canConvert) {
                 return $response->withStatus(400)->withJson(['errors' => 'File accepted but can not be converted in pdf']);
             }

@@ -599,8 +599,10 @@ class FolderPrintController
 
                 // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf, convertedAr_*.pdf and listNotes_*.pdf after merged is complete
                 foreach ($documentPaths as $documentPath) {
-                    if (strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false
-                        || strpos($documentPath, "convertedAr_") !== false  || strpos($documentPath, "listNotes_") !== false) {
+                    if (
+                        strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false
+                        || strpos($documentPath, "convertedAr_") !== false  || strpos($documentPath, "listNotes_") !== false
+                    ) {
                         unlink($documentPath);
                     }
                 }
@@ -628,8 +630,8 @@ class FolderPrintController
             unlink($filePathOnTmp);
         }
 
-        $zip = new \ZipArchive;
-        if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== TRUE) {
+        $zip = new \ZipArchive();
+        if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== true) {
             return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
         }
         foreach ($folderPrintPaths as $folderPrintPath) {
@@ -719,7 +721,7 @@ class FolderPrintController
             $noteText = str_replace('←', '<=', $note['note_text']);
 
             $date = explode('-', date('d-m-Y', strtotime($note['creation_date'])));
-            $date = $date[0].'/'.$date[1].'/'.$date[2].' '.date('H:i', strtotime($note['creation_date']));
+            $date = $date[0] . '/' . $date[1] . '/' . $date[2] . ' ' . date('H:i', strtotime($note['creation_date']));
 
             $notes[] = ['user' => $userName, 'note' => $noteText, 'date' => $date];
         }
@@ -1038,7 +1040,7 @@ class FolderPrintController
         </tr>
         </tbody>
         </table><br>";
-        $emailMeta_emailDataBody = $emailMeta.$email['body'];
+        $emailMeta_emailDataBody = $emailMeta . $email['body'];
 
         $tmpDir = CoreConfigModel::getTmpPath();
         $filePathInTmpNoExtension = $tmpDir . 'email_' . $email['id'] . '_' . $GLOBALS['id'];

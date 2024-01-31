@@ -409,7 +409,7 @@ class InstallerController
             $db = new \PDO($dsn, $body['user'], $body['password'], $options);
         }
 
-        if(empty($db)) {
+        if (empty($db)) {
             return $response->withStatus(400)->withJson(['errors' => 'Database instance is empty']);
         }
 
@@ -736,7 +736,7 @@ class InstallerController
          * Private key generation
          */
         try {
-            $random = random_bytes(64 );
+            $random = random_bytes(64);
         } catch (Exception $e) {
             LogsController::add([
                 'isTech'    => true,

@@ -40,15 +40,14 @@ class SendToPastell
      * @param VisaCircuitDataInterface $visaCircuitData
      */
     public function __construct(
-        PastellConfigurationCheck    $checkConfigPastell,
-        PastellApiInterface          $pastellApi,
-        PastellConfigInterface       $pastellConfig,
-        ResourceDataInterface        $resourceData,
-        ResourceFileInterface        $resourceFile,
+        PastellConfigurationCheck $checkConfigPastell,
+        PastellApiInterface $pastellApi,
+        PastellConfigInterface $pastellConfig,
+        ResourceDataInterface $resourceData,
+        ResourceFileInterface $resourceFile,
         ProcessVisaWorkflowInterface $processVisaWorkflow,
-        VisaCircuitDataInterface     $visaCircuitData
-    )
-    {
+        VisaCircuitDataInterface $visaCircuitData
+    ) {
         $this->checkConfigPastell = $checkConfigPastell;
         $this->pastellConfig = $pastellConfig;
         $this->pastellApi = $pastellApi;

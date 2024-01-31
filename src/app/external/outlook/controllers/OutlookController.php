@@ -26,7 +26,6 @@ use SrcCore\controllers\LanguageController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\controllers\PasswordController;
 use Status\models\StatusModel;
-use User\models\UserModel;
 
 class OutlookController
 {

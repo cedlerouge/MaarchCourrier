@@ -35,12 +35,12 @@ class RetrieveThumbnailResourceByPage
 {
     private ResourceDataInterface $resourceData;
     private ResourceFileInterface $resourceFile;
-    private ResourceLogInterface  $resourceLog;
+    private ResourceLogInterface $resourceLog;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
-        ResourceLogInterface  $resourceLog
+        ResourceLogInterface $resourceLog
     ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;

@@ -184,8 +184,8 @@ class EntityController
 
         $models = [];
         $tmpModels = IndexingModelModel::get([
-            'select'=> ['id', 'label', 'category'],
-            'where' => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'], 
+            'select' => ['id', 'label', 'category'],
+            'where' => ['(id IN (SELECT DISTINCT(model_id) FROM indexing_models_entities WHERE entity_id = ? OR keyword = ?))'],
             'data'  => [$entity['entity_id'], IndexingModelController::ALL_ENTITIES]
         ]);
         foreach ($tmpModels as $key => $model) {
@@ -455,7 +455,7 @@ class EntityController
         GroupModel::update([
             'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$entity['id']}')"],
             'where'     => ["indexation_parameters->'entities' @> ?"],
-            'data'      => ['"'.$entity['id'].'"']
+            'data'      => ['"' . $entity['id'] . '"']
         ]);
 
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
@@ -529,7 +529,7 @@ class EntityController
         //Entities
         $entities = EntityModel::get(['select' => ['entity_id', 'parent_entity_id'], 'where' => ['parent_entity_id = ?'], 'data' => [$aArgs['id']]]);
         foreach ($entities as $entity) {
-            if ($entity['entity_id'] = $aArgs['newEntityId']) {
+            if ($entity['entity_id'] == $aArgs['newEntityId']) {
                 EntityModel::update(['set' => ['parent_entity_id' => $dyingEntity['parent_entity_id']], 'where' => ['entity_id = ?'], 'data' => [$aArgs['newEntityId']]]);
             } else {
                 EntityModel::update(['set' => ['parent_entity_id' => $aArgs['newEntityId']], 'where' => ['entity_id = ?'], 'data' => [$entity['entity_id']]]);
@@ -557,12 +557,12 @@ class EntityController
         GroupModel::update([
             'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{entities}', (indexation_parameters->'entities') - '{$dyingEntity['id']}')"],
             'where'     => ["indexation_parameters->'entities' @> ?"],
-            'data'      => ['"'.$dyingEntity['id'].'"']
+            'data'      => ['"' . $dyingEntity['id'] . '"']
         ]);
         //ResourceContact
         $dyingConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?'], 'data' => ['entity', $dyingEntity['id']]]);
         $successorConnection = [];
-        if(!empty($dyingConnection)) {
+        if (!empty($dyingConnection)) {
             $successorConnection = ResourceContactModel::get(['select' => ['id', 'res_id', 'item_id', 'mode'], 'where' => ['type = ?', 'item_id = ?', 'res_id in (?)'], 'data' => ['entity', $successorEntity['id'], array_unique(array_column($dyingConnection, 'res_id'))]]);
         }
         $dyingIds = array_column($dyingConnection, 'id');
@@ -574,10 +574,10 @@ class EntityController
                 }
             }
         }
-        if(!empty($idsToDelete)) {
+        if (!empty($idsToDelete)) {
             ResourceContactModel::delete(['where' => ['id in (?)'], 'data' => [$idsToDelete]]);
         }
-        if(!empty($dyingIds)) {
+        if (!empty($dyingIds)) {
             ResourceContactModel::update(['set' => ['item_id' => $successorEntity['id']], 'where' => ['id in (?)'], 'data' => [$dyingIds]]);
         }
         EntityModel::delete(['where' => ['entity_id = ?'], 'data' => [$aArgs['id']]]);
@@ -857,7 +857,9 @@ class EntityController
             }
         }
 
-        $csvHead = array_map(function ($field) { return $field; }, array_column($fields, 'label'));
+        $csvHead = array_map(function ($field) {
+            return $field;
+        }, array_column($fields, 'label'));
         fputcsv($file, $csvHead, $delimiter);
 
         foreach ($entities as $entity) {
