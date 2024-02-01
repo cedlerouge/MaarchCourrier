@@ -32,8 +32,7 @@ export class SignatureBookComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         await this.initParams();
-        console.log('oké');
-  
+
         if (this.resId !== undefined) {
             this.initAttachments();
             this.initDocsToSign();
