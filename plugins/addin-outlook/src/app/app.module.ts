@@ -14,6 +14,7 @@ import { MessageBoxComponent } from './plugins/messageBox/message-box.component'
 import { PanelComponent } from './panel/panel.component';
 import { LatinisePipe } from 'ngx-pipes';
 import { LoginComponent } from './login/login.component';
+import { SafeHtmlPipe } from './plugins/safeHtml.pipe';
 
 @NgModule({
     declarations: [
@@ -31,7 +32,8 @@ import { LoginComponent } from './login/login.component';
         AppRoutingModule,
         ReactiveFormsModule,
         AppMaterialModule,
-        InternationalizationModule
+        InternationalizationModule,
+        SafeHtmlPipe
     ],
     providers: [
         { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
