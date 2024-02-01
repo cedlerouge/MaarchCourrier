@@ -11,10 +11,8 @@ export class MaarchSbTabsComponent implements OnInit {
 
     @Input() documents: Attachement[] | string[] = [];
     @Input() signable: boolean = false;
-
-    @Input() selectedId: number;
-    @Output() selectedIdChange = new EventEmitter<number>();
     
+    selectedId: number;
     documentList: string[]=[];
     
     constructor() {}
@@ -28,9 +26,5 @@ export class MaarchSbTabsComponent implements OnInit {
                 this.documentList = JSON.parse(JSON.stringify(this.documents));
             }
         }
-    }
-    
-    selectDocument(id: number): void {
-        this.selectedIdChange.emit(id);
     }
 }

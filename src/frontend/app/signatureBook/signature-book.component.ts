@@ -20,9 +20,6 @@ export class SignatureBookComponent implements OnInit {
     groupId: number;
     userId: number;
 
-    selectedAttachment: number;
-    selectedDocToSign: number = 0;
-
     attachments: Attachement[] = [];
     docsToSign: string[] = [];
 
