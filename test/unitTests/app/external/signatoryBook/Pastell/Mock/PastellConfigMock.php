@@ -35,7 +35,7 @@ class PastellConfigMock implements PastellConfigInterface
             'VisaOK',
             'CachetOK',
             'RejetVisa',
-            'RejetSignataire'
+            'RejetCachet'
         );
     }
 

@@ -75,7 +75,7 @@ class ParseIParapheurLog
                 break;
             } elseif ($status == $this->pastellStates->getRefusedSign() || $status == $this->pastellStates->getRefusedVisa()) {
                 $return = $this->handleRefused((string)$historyLog->nom ?? '', (string)$historyLog->annotation ?? '');
-                $return['signatory'] = $historyLog->nom ?? '';
+                $return['signatory'] = (string)$historyLog->nom ?? '';
                 break;
             }
         }

@@ -9,12 +9,15 @@
 
 namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Application;
 
+use Exception;
 use ExternalSignatoryBook\pastell\Application\ParseIParapheurLog;
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellApiMock;
 use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellConfigMock;
 use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ProcessVisaWorkflowSpy;
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
+use stdClass;
 
 class ParseIParapheurLogTest extends TestCase
 {
@@ -25,10 +28,10 @@ class ParseIParapheurLogTest extends TestCase
     protected function setUp(): void
     {
         $this->pastellApiMock = new PastellApiMock();
-        $this->pastellApiMock->journalXml = new \stdClass();
-        $this->pastellApiMock->journalXml->MessageRetour = new \stdClass();
-        $this->pastellApiMock->journalXml->LogDossier = new \stdClass();
-        $this->pastellApiMock->journalXml->LogDossier->LogDossier = [new \stdClass(), new \stdClass()];
+        $this->pastellApiMock->journalXml = new stdClass();
+        $this->pastellApiMock->journalXml->MessageRetour = new stdClass();
+        $this->pastellApiMock->journalXml->LogDossier = new stdClass();
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier = [new stdClass(), new stdClass()];
         $this->processVisaWorkflow = new ProcessVisaWorkflowSpy();
         $this->pastellConfigMock = new PastellConfigMock();
         $pastellConfigCheck = new PastellConfigurationCheck($this->pastellApiMock, $this->pastellConfigMock);
@@ -102,7 +105,7 @@ class ParseIParapheurLogTest extends TestCase
     {
         return [
             'visa' => ['RejetVisa'],
-            'sign' => ['RejetSignataire']
+            'sign' => ['RejetCachet']
         ];
     }
 
@@ -129,6 +132,36 @@ class ParseIParapheurLogTest extends TestCase
                 'status'    => 'refused',
                 'content'   => 'Nom : annotation',
                 'signatory' => 'Nom'
+            ],
+            $result
+        );
+    }
+
+    /**
+     * @dataProvider refusedStateProvider
+     * @param string $state
+     * @return void
+     */
+    public function testParseLogIParapheurDocumentIsRefusedAndHistoryLogIsXmlElement(string $state): void
+    {
+        $this->pastellApiMock->documentsDownload = [
+            'encodedFile' => 'toto'
+        ];
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[0]->status = 'view';
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->status = $state;
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->nom = new SimpleXMLElement('<nom>Bruce Wayne - XELIANS</nom>');
+        $this->pastellApiMock->journalXml->LogDossier->LogDossier[1]->annotation = new SimpleXMLElement('<annotation>Je refuse</annotation>');
+        $this->pastellApiMock->journalXml->MessageRetour->codeRetour = 'OK';
+        $resId = 42;
+        $idFolder = 'djqfdh';
+
+        $result = $this->parseIParapheurLog->parseLogIparapheur($resId, $idFolder);
+
+        $this->assertSame(
+            [
+                'status'    => 'refused',
+                'content'   => 'Bruce Wayne - XELIANS : Je refuse',
+                'signatory' => 'Bruce Wayne - XELIANS'
             ],
             $result
         );
