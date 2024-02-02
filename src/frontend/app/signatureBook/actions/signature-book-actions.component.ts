@@ -3,8 +3,9 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { Action } from '@models/actions.model';
+import { StampInterface } from '@models/signature-book.model';
 import { NotificationService } from '@service/notification/notification.service';
-import { Subscription, catchError, of, tap } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -16,6 +17,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() basketId: number;
     @Input() groupId: number;
     @Input() userId: number;
+    @Input() stamp: StampInterface;
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
@@ -24,18 +26,13 @@ export class SignatureBookActionsComponent implements OnInit {
     leftActions: Action[] = [];
     rightActions: Action[] = [];
 
-    subscription: Subscription;
+    constructor(public http: HttpClient, private notify: NotificationService, private actionsService: ActionsService, private router: Router) {
 
-    constructor(public http: HttpClient, private notify: NotificationService, private actionService: ActionsService, private router: Router) {
-        // Event after process action
-        this.subscription = this.actionService.catchAction().subscribe(message => {
-            this.processAfterAction();
-        });
     }
 
     async ngOnInit(): Promise<void> {
         await this.loadActions();
-        this.loading = false;
+        this.loading = false; 
     }
 
     openSignaturesList() {
@@ -44,7 +41,7 @@ export class SignatureBookActionsComponent implements OnInit {
 
     loadActions() {
         return new Promise((resolve) => {
-            this.actionService.getActions(this.userId, this.groupId, this.basketId, this.resId)
+            this.actionsService.getActions(this.userId, this.groupId, this.basketId, this.resId)
                 .pipe(
                     tap((actions: Action[]) => {
                         this.leftActions = [actions[1]];
@@ -65,7 +62,7 @@ export class SignatureBookActionsComponent implements OnInit {
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
                 tap((data: any) => {
-                    this.actionService.launchAction(
+                    this.actionsService.launchAction(
                         action,
                         this.userId,
                         this.groupId,
@@ -92,8 +89,8 @@ export class SignatureBookActionsComponent implements OnInit {
         this.router.navigate([path]);
     }
 
-    ngOnDestroy() {
-        this.subscription.unsubscribe();
+    signWithStamp(stamp: StampInterface) {
+        this.actionsService.emitActionWithData(stamp);
     }
 
 }
