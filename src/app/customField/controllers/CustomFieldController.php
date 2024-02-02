@@ -18,7 +18,6 @@
 namespace CustomField\controllers;
 
 use Action\models\ActionModel;
-use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
 use Configuration\models\ConfigurationModel;
 use CustomField\models\CustomFieldModel;
@@ -35,7 +34,17 @@ use SrcCore\models\DatabaseModel;
 
 class CustomFieldController
 {
-    const NUMERIC_TYPES = ['smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'serial', 'bigserial'];
+    public const NUMERIC_TYPES = [
+        'smallint',
+        'integer',
+        'bigint',
+        'decimal',
+        'numeric',
+        'real',
+        'double precision',
+        'serial',
+        'bigserial'
+    ];
 
     public function get(Request $request, Response $response)
     {
@@ -281,14 +290,14 @@ class CustomFieldController
         ActionModel::update([
             'postSet' => ['parameters' => "jsonb_set(parameters, '{requiredFields}', (parameters->'requiredFields') - 'indexingCustomField_{$args['id']}')"],
             'where'   => ["parameters->'requiredFields' @> ?"],
-            'data'    => ['"indexingCustomField_'.$args['id'].'"']
+            'data'    => ['"indexingCustomField_' . $args['id'] . '"']
         ]);
 
         $itemsPositionToRemove = DatabaseModel::select([
             'select'    => ['a.id as action_id', 'position'],
             'table'     => ["actions a, jsonb_array_elements( a.parameters->'fillRequiredFields') with ordinality arr(elem, position)"],
             'where'     => ["a.parameters->'fillRequiredFields' IS NOT NULL AND elem->>'id' = ?"],
-            'data'      => ['indexingCustomField_'.$args['id']]
+            'data'      => ['indexingCustomField_' . $args['id']]
         ]);
         if (!empty($itemsPositionToRemove)) {
             foreach ($itemsPositionToRemove as $key => $item) {
@@ -308,7 +317,7 @@ class CustomFieldController
 
         //When customField is deleted, delete from all baskets where it can be found
         $groups = GroupBasketModel::get(['select' => ['group_id', 'basket_id', 'list_display']]);
-        foreach ($groups as $group){
+        foreach ($groups as $group) {
             $group_id = $group['group_id'];
             $basket_id = $group['basket_id'];
             $subInfos = json_decode($group['list_display'], true)['subInfos'];
@@ -348,10 +357,10 @@ class CustomFieldController
 
         //When customField is deleted, delete from search model
         $searchTemplates = SearchTemplateModel::get(['select' => ['query'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
-        foreach ($searchTemplates as $searchTemplate){
+        foreach ($searchTemplates as $searchTemplate) {
             $queries = json_decode($searchTemplate['query'], true);
-            foreach ($queries as $key => $query){
-                if ($query['identifier'] === 'indexingCustomField_' . $args['id']){
+            foreach ($queries as $key => $query) {
+                if ($query['identifier'] === 'indexingCustomField_' . $args['id']) {
                     unset($queries[$key]);
                     $queries = array_values($queries);
                     $queries = json_encode($queries);

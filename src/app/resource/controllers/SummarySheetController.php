@@ -1083,8 +1083,10 @@ class SummarySheetController
                     }
                 }
             } elseif ($unit['unit'] == 'workflowHistory') {
-                if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])
-                    && !PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])) {
+                if (
+                    !PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])
+                    && !PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])
+                ) {
                     continue;
                 }
 

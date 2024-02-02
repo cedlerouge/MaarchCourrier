@@ -47,9 +47,9 @@ class AdapterMaarchCourrierController
 
         $pathParts = pathinfo($filePath);
         $res[0] =  $messageObject->ArchivalAgency->OrganizationDescriptiveMetadata->Communication[0]->value
-            . '?extension='. $pathParts['extension']
-            . '&size='. filesize($filePath)
-            . '&type='. $type;
+            . '?extension=' . $pathParts['extension']
+            . '&size=' . filesize($filePath)
+            . '&type=' . $type;
 
         $res[1] = [
             'accept:application/json',

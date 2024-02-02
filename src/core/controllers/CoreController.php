@@ -156,11 +156,12 @@ class CoreController
 
     /**
      * getMimeTypeAndFileSize
-     * 
+     *
      * @param array $args with either an 'encodedFile' (base64 string), or a 'path' (file path as string)
      * @return array with 'mime' and 'size' entries or array with 'errors' entry
      */
-    public static function getMimeTypeAndFileSize(array $args) {
+    public static function getMimeTypeAndFileSize(array $args)
+    {
         ValidatorModel::stringType($args, ['encodedFile', 'path']);
         if (empty($args['encodedFile']) && empty($args['path'])) {
             return ['errors' => 'args needs one of encodedFile or path'];
@@ -171,7 +172,7 @@ class CoreController
         if (!empty($args['encodedFile'])) {
             $resource = fopen('php://temp', 'r+');
             $streamFilterBase64 = stream_filter_append($resource, 'convert.base64-decode', STREAM_FILTER_WRITE);
-            stream_set_chunk_size($resource, 1024*1024);
+            stream_set_chunk_size($resource, 1024 * 1024);
             $size = fwrite($resource, $args['encodedFile']);
             stream_filter_remove($streamFilterBase64);
         } elseif (!empty($args['path'])) {
@@ -181,7 +182,7 @@ class CoreController
             $resource = fopen($args['path'], 'r');
             $size = filesize($args['path']);
         }
-        
+
         if (empty($resource)) {
             return ['errors' => 'could not decode encoded data, or open target file'];
         }
@@ -197,24 +198,24 @@ class CoreController
         return ['mime' => $mimeType, 'size' => $size];
     }
 
-    
+
     /**
      * get MASK param erorr_reporting
-     * 
-     * 1       E_ERROR     
-     * 2       E_WARNING   
-     * 4       E_PARSE     
-     * 8       E_NOTICE    
-     * 16      E_CORE_ERROR    
-     * 32      E_CORE_WARNING  
-     * 64      E_COMPILE_ERROR     
-     * 128     E_COMPILE_WARNING   
-     * 256     E_USER_ERROR    
-     * 512     E_USER_WARNING  
-     * 1024    E_USER_NOTICE   
-     * 2048    E_STRICT    
-     * 4096    E_RECOVERABLE_ERROR     
-     * 8192    E_DEPRECATED    
+     *
+     * 1       E_ERROR
+     * 2       E_WARNING
+     * 4       E_PARSE
+     * 8       E_NOTICE
+     * 16      E_CORE_ERROR
+     * 32      E_CORE_WARNING
+     * 64      E_COMPILE_ERROR
+     * 128     E_COMPILE_WARNING
+     * 256     E_USER_ERROR
+     * 512     E_USER_WARNING
+     * 1024    E_USER_NOTICE
+     * 2048    E_STRICT
+     * 4096    E_RECOVERABLE_ERROR
+     * 8192    E_DEPRECATED
      * 16384   E_USER_DEPRECATED
      */
     public static function getErrorReportingFromPhpIni()
@@ -248,7 +249,8 @@ class CoreController
 
         $content = json_encode($body['jsonContent'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        if ($fp = @fopen("src/lang/lang-{$body['langId']}.json", 'w')) {
+        $fp = @fopen("src/lang/lang-{$body['langId']}.json", 'w');
+        if ($fp !== false) {
             fwrite($fp, $content);
             fclose($fp);
             return $response->withStatus(204);

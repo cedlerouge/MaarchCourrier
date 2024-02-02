@@ -343,7 +343,6 @@ class AlfrescoController
                 'method'        => 'POST',
                 'body'          => json_encode($requestBody)
             ]);
-
         } else {
             $curlResponse = CurlModel::exec([
                 'url'           => "{$alfrescoUri}/alfresco/versions/1/nodes/{$body['nodeId']}/children",

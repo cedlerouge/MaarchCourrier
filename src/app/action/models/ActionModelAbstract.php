@@ -15,7 +15,6 @@
 namespace Action\models;
 
 use SrcCore\models\ValidatorModel;
-use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 
 abstract class ActionModelAbstract

@@ -21,13 +21,11 @@ use Attachment\models\AttachmentModel;
 use Basket\models\BasketModel;
 use Basket\models\GroupBasketModel;
 use Convert\controllers\ConvertPdfController;
-use Convert\controllers\ConvertThumbnailController;
 use Convert\models\AdrModel;
 use CustomField\models\CustomFieldModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Email\models\EmailModel;
-use Entity\controllers\ListInstanceController;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Folder\models\FolderModel;
@@ -47,11 +45,9 @@ use Resource\models\ResourceContactModel;
 use Resource\models\UserFollowedResourceModel;
 use Respect\Validation\Validator;
 use Search\controllers\SearchController;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use Shipping\models\ShippingModel;
 use Slim\Psr7\Request;
 use SrcCore\controllers\CoreController;
-use SrcCore\controllers\LogsController;
 use SrcCore\controllers\PreparedClauseController;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
@@ -109,7 +105,6 @@ class ResController extends ResourceControlController
             $customId = CoreConfigModel::getCustomId();
             $customId = empty($customId) ? 'null' : $customId;
             exec("php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$resId} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &");
-
         }
 
         HistoryController::add([
@@ -280,7 +275,8 @@ class ResController extends ResourceControlController
         return $response->withJson($formattedData);
     }
 
-    public function canUpdateFile(array $args) {
+    public function canUpdateFile(array $args)
+    {
         $resource = $args['resource'];
 
         $canUpdate = $GLOBALS['id'] == $resource['typist'];
@@ -306,7 +302,7 @@ class ResController extends ResourceControlController
 
             if (empty($currentStepByResId)) {
                 $canUpdate = true;
-            } else if (!empty($currentStepByResId)) {
+            } elseif (!empty($currentStepByResId)) {
                 if ($resource['integrations']['inSignatureBook']) {
                     $canUpdate = false;
                 } else {
@@ -318,7 +314,6 @@ class ResController extends ResourceControlController
         }
 
         return $canUpdate;
-
     }
 
     public function update(Request $request, Response $response, array $args)
@@ -667,7 +662,7 @@ class ResController extends ResourceControlController
         $pathInfo       = $resourceVersionFile->getPathInfo();
         $fileContent    = $resourceVersionFile->getFileContent();
 
-        return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'filename' => $formatFilename.'_V'.$args['version'].'.'.$pathInfo['extension']]);
+        return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'filename' => $formatFilename . '_V' . $args['version'] . '.' . $pathInfo['extension']]);
     }
 
     public function getOriginalFileContent(Request $request, Response $response, array $args)
@@ -717,7 +712,7 @@ class ResController extends ResourceControlController
         $mimeType = $mimeAndSize['mime'];
 
         if ($dataMode == 'base64') {
-            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $formatFilename.'.'.$pathInfo['extension']]);
+            return $response->withJson(['encodedDocument' => base64_encode($fileContent), 'extension' => $pathInfo['extension'], 'mimeType' => $mimeType, 'filename' => $formatFilename . '.' . $pathInfo['extension']]);
         } else {
             $response->write($fileContent);
             $response = $response->withAddedHeader('Content-Disposition', "attachment; filename={$formatFilename}.{$pathInfo['extension']}");
@@ -880,7 +875,7 @@ class ResController extends ResourceControlController
                 return $response->withStatus(400)->withJson(['errors' => 'Bad Request: invalid res_id']);
             }
             if (!Validator::StringType()->notEmpty()->validate($mail['external_id'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Bad Request: invalid external_id for element : '.$mail['res_id']]);
+                return $response->withStatus(400)->withJson(['errors' => 'Bad Request: invalid external_id for element : ' . $mail['res_id']]);
             }
         }
 
@@ -927,7 +922,7 @@ class ResController extends ResourceControlController
 
             ResModel::update([
                 'postSet'   => [
-                    'integrations' => "jsonb_set(integrations, '{inSignatureBook}', '".$inSignatureBook."')",
+                    'integrations' => "jsonb_set(integrations, '{inSignatureBook}', '" . $inSignatureBook . "')",
                 ],
                 'where' => ['res_id in (?)'],
                 'data'  => [$body['resources']]
@@ -951,7 +946,7 @@ class ResController extends ResourceControlController
 
             ResModel::update([
                 'postSet'   => [
-                    'integrations' => "jsonb_set(integrations, '{inShipping}', '".$inShipping."')",
+                    'integrations' => "jsonb_set(integrations, '{inShipping}', '" . $inShipping . "')",
                 ],
                 'where' => ['res_id in (?)'],
                 'data'  => [$body['resources']]

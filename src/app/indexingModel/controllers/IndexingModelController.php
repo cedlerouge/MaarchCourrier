@@ -38,9 +38,9 @@ use User\models\UserModel;
 
 class IndexingModelController
 {
-    const INDEXABLE_DATES = ['documentDate', 'departureDate', 'arrivalDate', 'processLimitDate'];
-    const ALLOWED_VALUES_ALL_DOCTYPES = '_ALL_DOCTYPES_';
-    const ALL_ENTITIES = 'ALL_ENTITIES';
+    public const INDEXABLE_DATES = ['documentDate', 'departureDate', 'arrivalDate', 'processLimitDate'];
+    public const ALLOWED_VALUES_ALL_DOCTYPES = '_ALL_DOCTYPES_';
+    public const ALL_ENTITIES = 'ALL_ENTITIES';
 
     public function get(Request $request, Response $response)
     {
@@ -66,7 +66,7 @@ class IndexingModelController
         }
 
         $entities = IndexingModelController::getModelEntities(['id' => $args['id']]);
-        if(!empty($entities['error'])) {
+        if (!empty($entities['error'])) {
             return $response->withJson(['errors' => $entities['error']]);
         }
         $model['entities'] = $entities['entities'];
@@ -193,8 +193,10 @@ class IndexingModelController
             foreach ($fieldsMaster as $field) {
                 $found = false;
                 foreach ($body['fields'] as $value) {
-                    if (($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
-                            || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'])) {
+                    if (
+                        ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
+                            || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'])
+                    ) {
                         if (!$field['enabled'] && $field['identifier'] == $value['identifier']) {
                             $value = $field;
                         }
@@ -216,7 +218,7 @@ class IndexingModelController
             }
             $body['fields'] = $arrayTmp;
             $body['mandatoryFile'] = $masterModel['mandatory_file'];
-	    $body['mandatoryFile'] = $masterModel['lad_processing'];
+            $body['mandatoryFile'] = $masterModel['lad_processing'];
         }
         $body['mandatoryFile'] = empty($body['mandatoryFile']) ? 'false' : 'true';
         $body['ladProcessing'] = empty($body['ladProcessing']) ? 'false' : 'true';
@@ -285,8 +287,8 @@ class IndexingModelController
                 'model_id'  => $modelId,
                 'keyword'   => IndexingModelController::ALL_ENTITIES,
             ]);
-        } else if (!empty($body['entities'])) {
-            foreach($body['entities'] as $entity) {
+        } elseif (!empty($body['entities'])) {
+            foreach ($body['entities'] as $entity) {
                 IndexingModelsEntitiesModel::create([
                     'model_id'  => $modelId,
                     'entity_id' => $entity,
@@ -390,8 +392,10 @@ class IndexingModelController
                 foreach ($body['fields'] as $field) {
                     $found = false;
                     foreach ($childFields as $value) {
-                        if (($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
-                                || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'] && $value['enabled'] == $field['enabled'])) {
+                        if (
+                            ($field['identifier'] == 'destination' && $value['identifier'] == 'diffusionList')
+                                || ($value['identifier'] == $field['identifier'] && $value['mandatory'] == $field['mandatory'] && $value['unit'] == $field['unit'] && $value['enabled'] == $field['enabled'])
+                        ) {
                             $fieldsToKeep[] = $value;
                             if ($value['identifier'] != 'diffusionList') {
                                 $found = true;
@@ -514,7 +518,7 @@ class IndexingModelController
                 'keyword'   => IndexingModelController::ALL_ENTITIES,
             ]);
         } else {
-            foreach($body['entities'] as $entity) {
+            foreach ($body['entities'] as $entity) {
                 IndexingModelsEntitiesModel::create([
                     'model_id'  => $args['id'],
                     'entity_id' => $entity,
@@ -720,7 +724,7 @@ class IndexingModelController
                 } else {
                     foreach ($entities as $key => $oEntity) {
                         if ($oEntity['entity_id'] == $entity['parent_entity_id']) {
-                            array_splice($entities, $key+1, 0, [$entity]);
+                            array_splice($entities, $key + 1, 0, [$entity]);
                             continue;
                         }
                     }
@@ -765,9 +769,9 @@ class IndexingModelController
         $models = IndexingModelModel::get(['where' => $where, 'data' => $data]);
         foreach ($models as $key => $model) {
             $models[$key]['mandatoryFile'] = $model['mandatory_file'];
-	    $models[$key]['ladProcessing'] = $model['lad_processing'];
+            $models[$key]['ladProcessing'] = $model['lad_processing'];
             unset($models[$key]['mandatory_file']);
-	    unset($models[$key]['lad_processing']);
+            unset($models[$key]['lad_processing']);
         }
         return $models;
     }

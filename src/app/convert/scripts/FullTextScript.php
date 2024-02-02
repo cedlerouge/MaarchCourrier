@@ -14,6 +14,7 @@
 
 namespace Convert\scripts;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use Attachment\models\AttachmentModel;
@@ -35,7 +36,7 @@ use User\models\UserModel;
 // --userId      : technical identifer user (for saving log);
 // --mode        : 'reindex' - 'reindex-full' => usefull to re analyse fulltext result;
 
-
+// phpcs:ignore
 FullTextScript::initalize($argv);
 
 class FullTextScript
@@ -49,27 +50,27 @@ class FullTextScript
 
         if (array_search('--customId', $args) > 0) {
             $cmd = array_search('--customId', $args);
-            $customId = $args[$cmd+1];
+            $customId = $args[$cmd + 1];
         }
 
         if (array_search('--resId', $args) > 0) {
             $cmd = array_search('--resId', $args);
-            $resId = $args[$cmd+1];
+            $resId = $args[$cmd + 1];
         }
 
         if (array_search('--collId', $args) > 0) {
             $cmd = array_search('--collId', $args);
-            $collId = $args[$cmd+1];
+            $collId = $args[$cmd + 1];
         }
 
         if (array_search('--userId', $args) > 0) {
             $cmd = array_search('--userId', $args);
-            $userId = $args[$cmd+1];
+            $userId = $args[$cmd + 1];
         }
 
         if (array_search('--mode', $args) > 0) {
             $cmd = array_search('--mode', $args);
-            $mode = $args[$cmd+1];
+            $mode = $args[$cmd + 1];
         }
 
         if (!empty($userId)) {

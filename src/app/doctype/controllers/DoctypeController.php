@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -68,7 +69,7 @@ class DoctypeController
         }
 
         $data = $request->getParsedBody();
-        
+
         $errors = DoctypeController::control($data, 'create');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
@@ -78,13 +79,13 @@ class DoctypeController
         }
 
         $secondLevelInfo = SecondLevelModel::getById(['select' => ['doctypes_first_level_id'], 'id' => $data['doctypes_second_level_id']]);
-        
+
         if (empty($secondLevelInfo)) {
             return $response->withStatus(500)->withJson(['errors' => 'doctypes_second_level_id does not exists']);
         }
 
         $data['doctypes_first_level_id'] = $secondLevelInfo['doctypes_first_level_id'];
-    
+
         $doctypeId = DoctypeModel::create([
             'description'                   => $data['description'],
             'doctypes_first_level_id'       => $data['doctypes_first_level_id'],
@@ -123,7 +124,7 @@ class DoctypeController
 
         $data                            = $request->getParsedBody();
         $data['type_id']                 = $aArgs['id'];
-        
+
         $errors = DoctypeController::control($data, 'update');
         if (!empty($errors)) {
             return $response->withStatus(500)->withJson(['errors' => $errors]);
@@ -137,7 +138,7 @@ class DoctypeController
             return $response->withStatus(500)->withJson(['errors' => 'doctypes_second_level_id does not exists']);
         }
         $data['doctypes_first_level_id'] = $secondLevelInfo['doctypes_first_level_id'];
-    
+
         DoctypeModel::update([
             'type_id'                       => $data['type_id'],
             'description'                   => $data['description'],
@@ -285,37 +286,49 @@ class DoctypeController
             } else {
                 $obj = DoctypeModel::getById(['id' => $aArgs['type_id']]);
             }
-           
+
             if (empty($obj)) {
-                $errors[] = 'Id ' .$aArgs['type_id']. ' does not exists';
+                $errors[] = 'Id ' . $aArgs['type_id'] . ' does not exists';
             }
         }
-           
-        if (!Validator::notEmpty()->validate($aArgs['description']) ||
-            !Validator::length(1, 255)->validate($aArgs['description'])) {
+
+        if (
+            !Validator::notEmpty()->validate($aArgs['description']) ||
+            !Validator::length(1, 255)->validate($aArgs['description'])
+        ) {
             $errors[] = 'Invalid description';
         }
 
-        if (!Validator::notEmpty()->validate($aArgs['doctypes_second_level_id']) ||
-            !Validator::intVal()->validate($aArgs['doctypes_second_level_id'])) {
-            $errors[]= 'Invalid doctypes_second_level_id value';
+        if (
+            !Validator::notEmpty()->validate($aArgs['doctypes_second_level_id']) ||
+            !Validator::intVal()->validate($aArgs['doctypes_second_level_id'])
+        ) {
+            $errors[] = 'Invalid doctypes_second_level_id value';
         }
-        if (!Validator::notEmpty()->validate($aArgs['process_delay']) &&
-            (!Validator::intVal()->validate($aArgs['process_delay']) || $aArgs['process_delay'] < 0)) {
-            $errors[]= 'Invalid process_delay value';
+        if (
+            !Validator::notEmpty()->validate($aArgs['process_delay']) &&
+            (!Validator::intVal()->validate($aArgs['process_delay']) || $aArgs['process_delay'] < 0)
+        ) {
+            $errors[] = 'Invalid process_delay value';
         }
-        if (!Validator::notEmpty()->validate($aArgs['delay1']) &&
-            (!Validator::intVal()->validate($aArgs['delay1']) || $aArgs['delay1'] < 0)) {
-            $errors[]= 'Invalid delay1 value';
+        if (
+            !Validator::notEmpty()->validate($aArgs['delay1']) &&
+            (!Validator::intVal()->validate($aArgs['delay1']) || $aArgs['delay1'] < 0)
+        ) {
+            $errors[] = 'Invalid delay1 value';
         }
-        if (!Validator::notEmpty()->validate($aArgs['delay2']) &&
-            (!Validator::intVal()->validate($aArgs['delay2']) || $aArgs['delay2'] < 0)) {
-            $errors[]= 'Invalid delay2 value';
+        if (
+            !Validator::notEmpty()->validate($aArgs['delay2']) &&
+            (!Validator::intVal()->validate($aArgs['delay2']) || $aArgs['delay2'] < 0)
+        ) {
+            $errors[] = 'Invalid delay2 value';
         }
-        if (Validator::notEmpty()->validate($aArgs['duration_current_use'] ?? null) &&
+        if (
+            Validator::notEmpty()->validate($aArgs['duration_current_use'] ?? null) &&
             (!Validator::intVal()->validate($aArgs['duration_current_use'] ?? null) ||
-            ($aArgs['duration_current_use'] ?? 0) < 0)) {
-            $errors[]= 'Invalid duration_current_use value';
+            ($aArgs['duration_current_use'] ?? 0) < 0)
+        ) {
+            $errors[] = 'Invalid duration_current_use value';
         }
 
         return $errors;

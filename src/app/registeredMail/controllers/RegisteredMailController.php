@@ -152,7 +152,8 @@ class RegisteredMailController
     public function getCountries(Request $request, Response $response)
     {
         $countries = [];
-        if (($handle = fopen("referential/liste-197-etats.csv", "r")) !== false) {
+        $handle = fopen("referential/liste-197-etats.csv", "r");
+        if ($handle !== false) {
             fgetcsv($handle, 0, ';');
             while (($data = fgetcsv($handle, 0, ';')) !== false) {
                 $countries[] = utf8_encode($data[0]);
@@ -582,7 +583,6 @@ class RegisteredMailController
             $pdf->useImportedPage($pageId);
         }
         if ($args['type'] != 'RW') {
-
             // FEUILLE 1 : GAUCHE
             $pdf->SetXY(50, 15);
             $pdf->cell(0, 0, $registeredMailNumber);
@@ -654,14 +654,14 @@ class RegisteredMailController
             $pdf->SetXY(140, 70);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@'.$barcodeObj->getPngData(), 140, 75, 60, 12, '', '', '', false, 300);
+            $pdf->Image('@' . $barcodeObj->getPngData(), 140, 75, 60, 12, '', '', '', false, 300);
 
 
             // 2eme feuille
             $pdf->SetXY(63, 100);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@'.$barcodeObj->getPngData(), 63, 105, 60, 12, '', '', '', false, 300);
+            $pdf->Image('@' . $barcodeObj->getPngData(), 63, 105, 60, 12, '', '', '', false, 300);
 
 
             if ($args['warranty'] == 'R1') {
@@ -733,7 +733,7 @@ class RegisteredMailController
                 $pdf->SetXY(37, 205);
                 $pdf->cell(0, 0, $registeredMailNumber);
                 $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-                $pdf->Image('@'.$barcodeObj->getPngData(), 37, 212, 60, 12, '', '', '', false, 300);
+                $pdf->Image('@' . $barcodeObj->getPngData(), 37, 212, 60, 12, '', '', '', false, 300);
 
                 $y = 230;
                 $pdf->SetXY(57, $y);
@@ -860,12 +860,12 @@ class RegisteredMailController
             $pdf->SetXY(52, 36.5);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@'.$barcodeObj->getPngData(), 38, 41, 60, 10, '', '', '', false, 300);
+            $pdf->Image('@' . $barcodeObj->getPngData(), 38, 41, 60, 10, '', '', '', false, 300);
 
             $pdf->SetXY(52, 57);
             $pdf->cell(0, 0, $registeredMailNumber);
             $barcodeObj = $barcode->getBarcodeObj('C128', $registeredMailNumber, -4, -100);
-            $pdf->Image('@'.$barcodeObj->getPngData(), 38, 62, 60, 10, '', '', '', false, 300);
+            $pdf->Image('@' . $barcodeObj->getPngData(), 38, 62, 60, 10, '', '', '', false, 300);
             $pdf->SetXY(52, 72);
             $pdf->cell(0, 0, $registeredMailNumber);
 

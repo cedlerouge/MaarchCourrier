@@ -41,6 +41,7 @@ use Template\controllers\DatasourceController;
 use Template\models\TemplateModel;
 use User\models\UserModel;
 
+// phpcs:ignore
 include_once('vendor/tinybutstrong/opentbs/tbs_plugin_opentbs.php');
 //include_once('vendor/rafikhaceb/pi-barcode/pi_barcode.php');
 
@@ -255,33 +256,33 @@ class MergeController
                 if (!empty($delegate)) {
                     $userLabel = $delegate . ', ' . _INSTEAD_OF . ' ' . $userLabel;
                 }
-                $visas .= "{$userLabel} (" . (!empty($primaryEntity['role']) ? $primaryEntity['role'].', ' : '') . "{$primaryEntity['entity_label']}) - {$modeLabel}\n";
+                $visas .= "{$userLabel} (" . (!empty($primaryEntity['role']) ? $primaryEntity['role'] . ', ' : '') . "{$primaryEntity['entity_label']}) - {$modeLabel}\n";
 
                 if ($mode === 'sign') {
                     $signCount++;
-                    $visa['nameSign'.$signCount]   = $userLabel;
-                    $visa['roleSign'.$signCount]   = $primaryEntity['role'];
-                    $visa['entitySign'.$signCount] = $primaryEntity['entity_label'];
-                    $visa['dateSign'.$signCount]   = !empty($value['process_date']) ? TextFormatModel::formatDate($value['process_date']) : null;
+                    $visa['nameSign' . $signCount]   = $userLabel;
+                    $visa['roleSign' . $signCount]   = $primaryEntity['role'];
+                    $visa['entitySign' . $signCount] = $primaryEntity['entity_label'];
+                    $visa['dateSign' . $signCount]   = !empty($value['process_date']) ? TextFormatModel::formatDate($value['process_date']) : null;
                 } else {
                     $visaCount++;
-                    $visa['nameVisa'.$visaCount]   = $userLabel;
-                    $visa['roleVisa'.$visaCount]   = $primaryEntity['role'];
-                    $visa['entityVisa'.$visaCount] = $primaryEntity['entity_label'];
-                    $visa['dateVisa'.$visaCount]   = !empty($value['process_date']) ? TextFormatModel::formatDate($value['process_date']) : null;
+                    $visa['nameVisa' . $visaCount]   = $userLabel;
+                    $visa['roleVisa' . $visaCount]   = $primaryEntity['role'];
+                    $visa['entityVisa' . $visaCount] = $primaryEntity['entity_label'];
+                    $visa['dateVisa' . $visaCount]   = !empty($value['process_date']) ? TextFormatModel::formatDate($value['process_date']) : null;
                 }
             }
             if ($visaCount > 0) {
-                $visa['nameVisaLast'] = $visa['nameVisa'.$visaCount];
-                $visa['roleVisaLast'] = $visa['roleVisa'.$visaCount];
-                $visa['entityVisaLast'] = $visa['entityVisa'.$visaCount];
-                $visa['dateVisaLast'] = $visa['dateVisa'.$visaCount];
+                $visa['nameVisaLast'] = $visa['nameVisa' . $visaCount];
+                $visa['roleVisaLast'] = $visa['roleVisa' . $visaCount];
+                $visa['entityVisaLast'] = $visa['entityVisa' . $visaCount];
+                $visa['dateVisaLast'] = $visa['dateVisa' . $visaCount];
             }
             if ($signCount > 0) {
-                $visa['nameSignLast'] = $visa['nameSign'.$signCount];
-                $visa['roleSignLast'] = $visa['roleSign'.$signCount];
-                $visa['entitySignLast'] = $visa['entitySign'.$signCount];
-                $visa['dateSignLast'] = $visa['dateSign'.$signCount];
+                $visa['nameSignLast'] = $visa['nameSign' . $signCount];
+                $visa['roleSignLast'] = $visa['roleSign' . $signCount];
+                $visa['entitySignLast'] = $visa['entitySign' . $signCount];
+                $visa['dateSignLast'] = $visa['dateSign' . $signCount];
             }
             unset($visaCount);
             unset($signCount);
@@ -309,18 +310,18 @@ class MergeController
                     $processDate = ' - ' . TextFormatModel::formatDate($value['process_date']);
                 }
                 $opinions .= "{$user['firstname']} {$user['lastname']} ({$primaryEntity['entity_label']}) {$processDate}\n";
-                $opinion['firstname'.$opinionCount] = $user['firstname'];
-                $opinion['lastname'.$opinionCount] = $user['lastname'];
-                $opinion['role'.$opinionCount] = $primaryEntity['role'];
-                $opinion['entity'.$opinionCount] = $primaryEntity['entity_label'];
-                $opinion['note'.$opinionCount] = [];
+                $opinion['firstname' . $opinionCount] = $user['firstname'];
+                $opinion['lastname' . $opinionCount] = $user['lastname'];
+                $opinion['role' . $opinionCount] = $primaryEntity['role'];
+                $opinion['entity' . $opinionCount] = $primaryEntity['entity_label'];
+                $opinion['note' . $opinionCount] = [];
                 foreach ($visibleNotes as $visibleNote) {
                     $visibleNote['note_text'] = $visibleNote['note_text'] ?? '';
                     if ($visibleNote['user_id'] === $valueUserId && strpos($visibleNote['note_text'], _AVIS_NOTE_PREFIX) === 0) {
-                        $opinion['note'.$opinionCount][] = trim(str_replace(_AVIS_NOTE_PREFIX, '', $visibleNote['note_text']));
+                        $opinion['note' . $opinionCount][] = trim(str_replace(_AVIS_NOTE_PREFIX, '', $visibleNote['note_text']));
                     }
                 }
-                $opinion['note'.$opinionCount] = implode(' ; ', $opinion['note'.$opinionCount]);
+                $opinion['note' . $opinionCount] = implode(' ; ', $opinion['note' . $opinionCount]);
                 $opinionCount++;
             }
             unset($opinionCount);
@@ -488,7 +489,7 @@ class MergeController
             $args['path'] = null;
         }
 
-        $barcodeFile = CoreConfigModel::getTmpPath() . mt_rand() ."_{$GLOBALS['id']}_barcode.png";
+        $barcodeFile = CoreConfigModel::getTmpPath() . mt_rand() . "_{$GLOBALS['id']}_barcode.png";
         $generator = new PiBarCode();
         $generator->setCode($args['chrono']);
         $generator->setType('C128');
@@ -499,7 +500,7 @@ class MergeController
         $generator->writeBarcodeFile($barcodeFile);
 
         // Generate QR Code
-        $qrcodeFile = CoreConfigModel::getTmpPath() . mt_rand() ."_{$GLOBALS['id']}_qrcode.png";
+        $qrcodeFile = CoreConfigModel::getTmpPath() . mt_rand() . "_{$GLOBALS['id']}_qrcode.png";
         $parameter = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'QrCodePrefix']);
         $prefix = '';
         if ($parameter['param_value_int'] == 1 && !empty($args['chrono'])) {
@@ -737,13 +738,13 @@ class MergeController
             $fileNameOnTmp = rand() . $filename;
             file_put_contents($tmpPath . $fileNameOnTmp . '.' . $extension, $tbs->Source);
 
-            ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$fileNameOnTmp.'.'.$extension]);
+            ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath . $fileNameOnTmp . '.' . $extension]);
 
-            if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
+            if (!file_exists($tmpPath . $fileNameOnTmp . '.pdf')) {
                 return ['errors' => 'Merged document conversion failed'];
             }
 
-            $content = file_get_contents($tmpPath.$fileNameOnTmp.'.pdf');
+            $content = file_get_contents($tmpPath . $fileNameOnTmp . '.pdf');
 
             $storeResult = DocserverController::storeResourceOnDocServer([
                 'collId'          => 'attachments_coll',
@@ -756,8 +757,8 @@ class MergeController
                 return ['errors' => $storeResult['errors']];
             }
 
-            unlink($tmpPath.$fileNameOnTmp.'.'.$extension);
-            unlink($tmpPath.$fileNameOnTmp.'.pdf');
+            unlink($tmpPath . $fileNameOnTmp . '.' . $extension);
+            unlink($tmpPath . $fileNameOnTmp . '.pdf');
 
             AdrModel::createAttachAdr([
                 'resId'       => $args['resId'],
@@ -773,13 +774,13 @@ class MergeController
 
             file_put_contents($tmpPath . $fileNameOnTmp . '.' . $extension, $tbs->Source);
 
-            ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath.$fileNameOnTmp.'.'.$extension]);
+            ConvertPdfController::convertInPdf(['fullFilename' => $tmpPath . $fileNameOnTmp . '.' . $extension]);
 
-            if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
+            if (!file_exists($tmpPath . $fileNameOnTmp . '.pdf')) {
                 return ['errors' => 'Merged document conversion failed'];
             }
 
-            $content = file_get_contents($tmpPath.$fileNameOnTmp.'.pdf');
+            $content = file_get_contents($tmpPath . $fileNameOnTmp . '.pdf');
 
             $storeResult = DocserverController::storeResourceOnDocServer([
                 'collId'          => 'letterbox_coll',
@@ -792,8 +793,8 @@ class MergeController
                 return ['errors' => $storeResult['errors']];
             }
 
-            unlink($tmpPath.$fileNameOnTmp.'.'.$extension);
-            unlink($tmpPath.$fileNameOnTmp.'.pdf');
+            unlink($tmpPath . $fileNameOnTmp . '.' . $extension);
+            unlink($tmpPath . $fileNameOnTmp . '.pdf');
 
             AdrModel::createDocumentAdr([
                 'resId'       => $args['resId'],

@@ -114,20 +114,20 @@ class ContactCustomFieldController
                 if (!empty($body['values'][$key]) && !in_array($value, $body['values'])) {
                     if ($field['type'] == 'checkbox') {
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_insert(custom_fields, '{{$args['id']}, 0}', '\"".str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key])."\"')"],
+                            'postSet'   => ['custom_fields' => "jsonb_insert(custom_fields, '{{$args['id']}, 0}', '\"" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"".str_replace(["\\", '"'], ["\\\\", '\"'], $value)."\""]
+                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', (custom_fields->'{$args['id']}') - '".str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value)."')"],
+                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', (custom_fields->'{$args['id']}') - '" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value) . "')"],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"".str_replace(["\\", '"'], ["\\\\", '\"'], $value)."\""]
+                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                     } else {
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"".str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key])."\"')"],
+                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"".str_replace(["\\", '"'], ["\\\\", '\"'], $value)."\""]
+                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                     }
                 }

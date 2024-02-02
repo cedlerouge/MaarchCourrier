@@ -191,11 +191,11 @@ class IParapheurController
         }
         $attachmentPath     = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]);
         $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
-        $dossierTitre       = 'Courrier : '. TextFormatModel::formatFilename(['filename' => $aArgs['title'], 'maxLength' => 250]) .' Référence : '. $aArgs['resId'];
+        $dossierTitre       = 'Courrier : ' . TextFormatModel::formatFilename(['filename' => $aArgs['title'], 'maxLength' => 250]) . ' Référence : ' . $aArgs['resId'];
 
         $mainResource = ResModel::getById(['resId' => $aArgs['resIdMaster'], 'select' => ['process_limit_date']]);
         if (empty($mainResource['process_limit_date'])) {
-            $processLimitDate = $mainResource['process_limit_date'] = date('Y-m-d', strtotime(date("Y-m-d"). ' + 14 days'));
+            $processLimitDate = $mainResource['process_limit_date'] = date('Y-m-d', strtotime(date("Y-m-d") . ' + 14 days'));
         } else {
             $processLimitDateTmp = explode(" ", $mainResource['process_limit_date']);
             $processLimitDate = $processLimitDateTmp[0];

@@ -17,14 +17,13 @@ namespace MessageExchange\controllers;
 use Action\models\ActionModel;
 use Entity\models\EntityModel;
 use ExportSeda\controllers\SendMessageController;
-use MessageExchange\controllers\ReceiveMessageExchangeController;
-use MessageExchange\controllers\SendMessageExchangeController;
 use MessageExchange\models\MessageExchangeModel;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
 
+// phpcs:ignore
 require_once 'modules/export_seda/Controllers/ReceiveMessage.php';
 
 class MessageExchangeReviewController
@@ -58,13 +57,13 @@ class MessageExchangeReviewController
             $user          = UserModel::getByLogin(['login' => $aArgs['userId'], 'select' => ['id']]);
             $primaryEntity = UserModel::getPrimaryEntityById(['id' => $user['id'], 'select' => ['entities.entity_label']]);
             $entityInfo    = EntityModel::getByEntityId(['entityId' => $messageExchangeData['destination'], 'select' => ['entity_label']]);
-            $reviewObject->Comment[0]->value = '['.date('d/m/Y H:i:s').'] "'.$actionInfo['label_action'].'" '._M2M_ACTION_DONE.' '.$primaryEntity['entity_label'].'. '._M2M_ENTITY_DESTINATION.' : '.$entityInfo['entity_label'];
+            $reviewObject->Comment[0]->value = '[' . date('d/m/Y H:i:s') . '] "' . $actionInfo['label_action'] . '" ' . _M2M_ACTION_DONE . ' ' . $primaryEntity['entity_label'] . '. ' . _M2M_ENTITY_DESTINATION . ' : ' . $entityInfo['entity_label'];
 
             $date               = new \DateTime();
             $reviewObject->Date = $date->format(\DateTime::ATOM);
 
             $reviewObject->MessageIdentifier        = new \stdClass();
-            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'].'_NotificationSent';
+            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'] . '_NotificationSent';
 
             $reviewObject->CodeListVersions        = new \stdClass();
             $reviewObject->CodeListVersions->value = '';
@@ -72,25 +71,25 @@ class MessageExchangeReviewController
             $reviewObject->UnitIdentifier        = new \stdClass();
             $reviewObject->UnitIdentifier->value = $messageExchangeData['external_id']['m2m'];
 
-            $messageExchangeReply = MessageExchangeModel::getMessageByReference(['reference' => $messageExchangeData['external_id']['m2m'].'_ReplySent']);
+            $messageExchangeReply = MessageExchangeModel::getMessageByReference(['reference' => $messageExchangeData['external_id']['m2m'] . '_ReplySent']);
             $dataObject = json_decode($messageExchangeReply['data']);
             $reviewObject->OriginatingAgency = $dataObject->TransferringAgency;
             $reviewObject->ArchivalAgency    = $dataObject->ArchivalAgency;
 
             if ($reviewObject->ArchivalAgency->OrganizationDescriptiveMetadata->Communication[0]->Channel == 'url') {
                 $tab = explode('saveMessageExchangeReturn', $reviewObject->ArchivalAgency->OrganizationDescriptiveMetadata->Communication[0]->value);
-                $reviewObject->ArchivalAgency->OrganizationDescriptiveMetadata->Communication[0]->value = $tab[0].'saveMessageExchangeReview';
+                $reviewObject->ArchivalAgency->OrganizationDescriptiveMetadata->Communication[0]->value = $tab[0] . 'saveMessageExchangeReview';
             }
 
-            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'].'_Notification';
-            
+            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'] . '_Notification';
+
             $filePath = SendMessageController::generateMessageFile(['messageObject' => $reviewObject, 'type' => 'ArchiveModificationNotification']);
 
-            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'].'_NotificationSent';
+            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'] . '_NotificationSent';
             $reviewObject->TransferringAgency = $reviewObject->OriginatingAgency;
             $messageExchangeSaved = SendMessageExchangeController::saveMessageExchange(['dataObject' => $reviewObject, 'res_id_master' => $aArgs['res_id_master'], 'type' => 'ArchiveModificationNotification', 'file_path' => $filePath, 'userId' => $aArgs['userId']]);
 
-            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'].'_Notification';
+            $reviewObject->MessageIdentifier->value = $messageExchangeData['external_id']['m2m'] . '_Notification';
 
             $reviewObject->DataObjectPackage                                               = new \stdClass();
             $reviewObject->DataObjectPackage->DescriptiveMetadata                          = new \stdClass();
@@ -98,7 +97,7 @@ class MessageExchangeReviewController
             $reviewObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]          = new \stdClass();
             $reviewObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content = new \stdClass();
             $reviewObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->OriginatingSystemId = $aArgs['res_id_master'];
-            $reviewObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_NOTIFICATION]'.date('Ymd_his');
+            $reviewObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_NOTIFICATION]' . date('Ymd_his');
 
             $reviewObject->TransferringAgency->OrganizationDescriptiveMetadata                 = new \stdClass();
             $reviewObject->TransferringAgency->OrganizationDescriptiveMetadata->UserIdentifier = $aArgs['userId'];

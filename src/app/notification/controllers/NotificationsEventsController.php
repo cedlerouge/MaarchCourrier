@@ -24,7 +24,7 @@ class NotificationsEventsController
         if ($aArgs['recordId'] == '') {
             return;
         }
-        
+
         $aNotifications = NotificationModel::getEnableNotifications();
         if (empty($aNotifications)) {
             return;
@@ -33,9 +33,11 @@ class NotificationsEventsController
         foreach ($aNotifications as $notification) {
             $event_ids = explode(',', $notification['event_id']);
 
-            if ($aArgs['eventId'] == $notification['event_id']
+            if (
+                $aArgs['eventId'] == $notification['event_id']
                 || NotificationsEventsController::wildcardMatch(["pattern" => $notification['event_id'], "str" => $aArgs['eventId']])
-                || in_array($aArgs['eventId'], $event_ids)) {
+                || in_array($aArgs['eventId'], $event_ids)
+            ) {
                 NotificationsEventsModel::create([
                     'notification_sid' => $notification['notification_sid'],
                     'table_name'       => $aArgs['tableName'],

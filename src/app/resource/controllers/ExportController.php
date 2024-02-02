@@ -44,7 +44,7 @@ use BroadcastList\models\BroadcastListRoleModel;
 
 class ExportController
 {
-    const PUBLIC_PROPERTIES = [
+    private const PUBLIC_PROPERTIES = [
         'getStatus',
         'alt_identifier',
         'subject',
@@ -417,8 +417,7 @@ class ExportController
      * @return Fpdi
      * @throws Exception
      */
-    private
-    static function getPdf(array $aArgs): Fpdi
+    private static function getPdf(array $aArgs): Fpdi
     {
         ValidatorModel::notEmpty($aArgs, ['data', 'resources', 'chunkedResIds']);
         ValidatorModel::arrayType($aArgs, ['data', 'resources', 'chunkedResIds']);

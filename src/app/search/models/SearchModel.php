@@ -23,10 +23,10 @@ class SearchModel
     public static function createTemporarySearchData(array $args)
     {
         $database = new DatabasePDO();
-        
-        $query = "DROP TABLE IF EXISTS search_tmp_".$GLOBALS['id'].";";
+
+        $query = "DROP TABLE IF EXISTS search_tmp_" . $GLOBALS['id'] . ";";
         $database->query($query);
-        $query = "CREATE TEMPORARY TABLE search_tmp_".$GLOBALS['id']." (
+        $query = "CREATE TEMPORARY TABLE search_tmp_" . $GLOBALS['id'] . " (
             res_id bigint, 
             priority character varying(16), 
             type_id bigint,
@@ -53,7 +53,7 @@ class SearchModel
         }
 
         $temporaryData = "SELECT " . $selectValues . " FROM res_view_letterbox " . $joinDestOrder . " WHERE " . implode(' AND ', $args['where']);
-        $query         = "INSERT INTO search_tmp_".$GLOBALS['id']." (" . $selectValues . ") " . $temporaryData;
+        $query         = "INSERT INTO search_tmp_" . $GLOBALS['id'] . " (" . $selectValues . ") " . $temporaryData;
         $database->query($query, $args['data']);
     }
 

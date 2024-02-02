@@ -353,7 +353,7 @@ trait ExportSEDATrait
         $data->ArchivalAgreement = new stdClass();
         $data->ArchivalAgreement->value = $args['messageObject']->ArchivalAgreement->value;
 
-        if (isset($args['messageObject']->ReplyCode)){
+        if (isset($args['messageObject']->ReplyCode)) {
             $data->ReplyCode = $args['messageObject']->ReplyCode;
         }
 

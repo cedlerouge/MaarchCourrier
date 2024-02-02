@@ -399,7 +399,7 @@ class ListTemplateController
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
-        
+
         $data = $request->getParsedBody();
 
         DatabaseModel::beginTransaction();
@@ -555,7 +555,7 @@ class ListTemplateController
                 $serviceRoles = 'update_diffusion_except_recipient_details';
                 $triggerContext = true;
             }
-    
+
             if ($data['context'] == 'redirect') {
                 $triggerContext = true;
                 $canUpdateDiffusionRecipient = true;

@@ -33,6 +33,7 @@ use SrcCore\controllers\CoreController;
 use SrcCore\models\CoreConfigModel;
 use User\models\UserModel;
 
+// phpcs:ignore
 require_once 'modules/export_seda/Controllers/ReceiveMessage.php';
 
 class ReceiveMessageExchangeController
@@ -47,13 +48,13 @@ class ReceiveMessageExchangeController
 
         $data = $request->getParsedBody();
 
-        $this->addComment('['.date("d/m/Y H:i:s") . '] Réception du pli numérique');
+        $this->addComment('[' . date("d/m/Y H:i:s") . '] Réception du pli numérique');
         $tmpName = self::createFile(['base64' => $data['base64'], 'extension' => $data['extension'], 'size' => $data['size']]);
         if (!empty($tmpName['errors'])) {
             return $response->withStatus(400)->withJson($tmpName);
         }
-        $this->addComment('['.date("d/m/Y H:i:s") . '] Pli numérique déposé sur le serveur');
-        $this->addComment('['.date("d/m/Y H:i:s") . '] Validation du pli numérique');
+        $this->addComment('[' . date("d/m/Y H:i:s") . '] Pli numérique déposé sur le serveur');
+        $this->addComment('[' . date("d/m/Y H:i:s") . '] Validation du pli numérique');
         /********** EXTRACTION DU ZIP ET CONTROLE *******/
         $receiveMessage = new \ReceiveMessage();
         $tmpPath = CoreConfigModel::getTmpPath();
@@ -62,7 +63,7 @@ class ReceiveMessageExchangeController
         if ($res['status'] == 1) {
             return $response->withStatus(400)->withJson(["errors" => 'Reception error : ' . $res['content']]);
         }
-        self::$aComments[] = '['.date("d/m/Y H:i:s") . '] Pli numérique validé';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] Pli numérique validé';
 
         $sDataObject = $res['content'];
         $sDataObject = json_decode($sDataObject);
@@ -75,23 +76,23 @@ class ReceiveMessageExchangeController
         $aDefaultConfig = self::readXmlConfig();
 
         /*************** CONTACT **************/
-        $this->addComment('['.date("d/m/Y H:i:s") . '] Selection ou création du contact');
+        $this->addComment('[' . date("d/m/Y H:i:s") . '] Selection ou création du contact');
         $contactReturn = self::saveContact(["dataObject" => $sDataObject, "defaultConfig" => $aDefaultConfig]);
 
         if ($contactReturn['returnCode'] <> 0) {
             return $response->withStatus(400)->withJson(["errors" => $contactReturn['errors']]);
         }
-        self::$aComments[] = '['.date("d/m/Y H:i:s") . '] Contact sélectionné ou créé';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] Contact sélectionné ou créé';
 
         /*************** RES LETTERBOX **************/
-        $this->addComment('['.date("d/m/Y H:i:s") . '] Enregistrement du message');
+        $this->addComment('[' . date("d/m/Y H:i:s") . '] Enregistrement du message');
         $resLetterboxReturn = self::saveResLetterbox(["dataObject" => $sDataObject, "defaultConfig" => $aDefaultConfig, "contact" => $contactReturn]);
 
         if (!empty($resLetterboxReturn['errors'])) {
             return $response->withStatus(400)->withJson(["errors" => $resLetterboxReturn['errors']]);
         }
 
-        self::$aComments[] = '['.date("d/m/Y H:i:s") . '] Message enregistré';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] Message enregistré';
         /************** NOTES *****************/
         $notesReturn = self::saveNotes(["dataObject" => $sDataObject, "resId" => $resLetterboxReturn, "userId" => $GLOBALS['id']]);
         if (!empty($notesReturn['errors'])) {
@@ -118,10 +119,10 @@ class ReceiveMessageExchangeController
             foreach ($userBaskets as $value) {
                 if ($value['basket_id'] == $aDefaultConfig['basketRedirection_afterUpload'][0]) {
                     $userGroups = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
-                    $basketRedirection = 'index.php#/basketList/users/'.$GLOBALS['id'].'/groups/'.$userGroups[0]['id'].'/baskets/'.$value['id'];
+                    $basketRedirection = 'index.php#/basketList/users/' . $GLOBALS['id'] . '/groups/' . $userGroups[0]['id'] . '/baskets/' . $value['id'];
                     $resource = ResModel::getById(['id' => $resLetterboxReturn]);
                     if (!empty($resource['alt_identifier'])) {
-                        $basketRedirection .= '?chrono='.$resource['alt_identifier'];
+                        $basketRedirection .= '?chrono=' . $resource['alt_identifier'];
                     }
                     break;
                 }
@@ -163,7 +164,7 @@ class ReceiveMessageExchangeController
         }
         $mimeType = $mimeAndSize['mime'];
         $ext      = $aArgs['extension'];
-        $tmpName  = 'tmp_file_' .$GLOBALS['login']. '_ArchiveTransfer_' .rand(). '.' . $ext;
+        $tmpName  = 'tmp_file_' . $GLOBALS['login'] . '_ArchiveTransfer_' . rand() . '.' . $ext;
 
         if (!in_array(strtolower($ext), ['zip', 'tar'])) {
             return ["errors" => 'Only zip file is allowed'];
@@ -284,7 +285,7 @@ class ReceiveMessageExchangeController
         $transferringAgencyMetadata = $transferringAgency->OrganizationDescriptiveMetadata;
 
         if (strrpos($transferringAgencyMetadata->Communication[0]->value, "/rest/") !== false) {
-            $contactCommunicationValue = substr($transferringAgencyMetadata->Communication[0]->value, 0, strrpos($transferringAgencyMetadata->Communication[0]->value, "/rest/")+1);
+            $contactCommunicationValue = substr($transferringAgencyMetadata->Communication[0]->value, 0, strrpos($transferringAgencyMetadata->Communication[0]->value, "/rest/") + 1);
         } else {
             $contactCommunicationValue = $transferringAgencyMetadata->Communication[0]->value;
         }
@@ -358,7 +359,7 @@ class ReceiveMessageExchangeController
                 $countNote++;
             }
         }
-        self::$aComments[] = '['.date("d/m/Y H:i:s") . '] '.$countNote . ' note(s) enregistrée(s)';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] ' . $countNote . ' note(s) enregistrée(s)';
         return true;
     }
 
@@ -402,7 +403,7 @@ class ReceiveMessageExchangeController
                 $countAttachment++;
             }
         }
-        self::$aComments[] = '['.date("d/m/Y H:i:s") . '] '.$countAttachment . ' attachement(s) enregistré(s)';
+        self::$aComments[] = '[' . date("d/m/Y H:i:s") . '] ' . $countAttachment . ' attachement(s) enregistré(s)';
         return $resId;
     }
 
@@ -422,7 +423,7 @@ class ReceiveMessageExchangeController
     protected function sendAcknowledgement($aArgs = [])
     {
         $dataObject = $aArgs['dataObject'];
-        $date       = new \DateTime;
+        $date       = new \DateTime();
 
         $acknowledgementObject                                   = new \stdClass();
         $acknowledgementObject->Date                             = $date->format(\DateTime::ATOM);
@@ -455,7 +456,7 @@ class ReceiveMessageExchangeController
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit = array();
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0] = new \stdClass();
         $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content = new \stdClass();
-        $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_ACK]'.date("Ymd_his");
+        $acknowledgementObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_ACK]' . date("Ymd_his");
 
         SendMessageController::send($acknowledgementObject, $messageExchangeSaved['messageId'], 'Acknowledgement');
 
@@ -465,7 +466,7 @@ class ReceiveMessageExchangeController
     protected function sendReply($aArgs = [])
     {
         $dataObject = $aArgs['dataObject'];
-        $date       = new \DateTime;
+        $date       = new \DateTime();
 
         $replyObject                                    = new \stdClass();
         $replyObject->Comment                           = $aArgs['Comment'];
@@ -497,7 +498,7 @@ class ReceiveMessageExchangeController
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content = new \stdClass();
         $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->OriginatingSystemId = $aArgs['res_id_master'];
 
-        $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_REPLY]'.date("Ymd_his");
+        $replyObject->DataObjectPackage->DescriptiveMetadata->ArchiveUnit[0]->Content->Title[0] = '[CAPTUREM2M_REPLY]' . date("Ymd_his");
 
         SendMessageController::send($replyObject, $messageExchangeSaved['messageId'], 'ArchiveTransferReply');
     }

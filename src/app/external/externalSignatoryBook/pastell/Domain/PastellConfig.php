@@ -40,14 +40,13 @@ class PastellConfig
         string $url,
         string $login,
         string $password,
-        int    $entity,
-        int    $connector,
+        int $entity,
+        int $connector,
         string $documentType,
         string $iParapheurType,
         string $iParapheurSousType,
         string $postAction
-    )
-    {
+    ) {
         $this->url = $url;
         $this->login = $login;
         $this->password = $password;
@@ -103,5 +102,4 @@ class PastellConfig
     {
         return $this->postAction;
     }
-
 }

@@ -33,7 +33,7 @@ use User\models\UserGroupModel;
 
 class IndexingController
 {
-    const KEYWORDS = [
+    public const KEYWORDS = [
         'ALL_ENTITIES'          => '@all_entities',
         'ENTITIES_JUST_BELOW'   => '@immediate_children[@my_primary_entity]',
         'ENTITIES_BELOW'        => '@subentities[@my_entities]',
@@ -44,7 +44,7 @@ class IndexingController
         'SAME_LEVEL_ENTITIES'   => '@sisters_entities[@my_primary_entity]'
     ];
 
-    const HOLLIDAYS = [
+    public const HOLLIDAYS = [
         '01-01',
         '01-05',
         '08-05',
@@ -229,7 +229,7 @@ class IndexingController
                 } else {
                     foreach ($entities as $key => $oEntity) {
                         if ($oEntity['entity_id'] == $entity['parent_entity_id']) {
-                            array_splice($entities, $key+1, 0, [$entity]);
+                            array_splice($entities, $key + 1, 0, [$entity]);
                             continue;
                         }
                     }
@@ -353,7 +353,7 @@ class IndexingController
                 $entities[$key]['level'] = $aArgs['level'];
             }
             $entitiesId = array_column($entities, 'entity_id');
-            $entitiesChild = IndexingController::getEntitiesChildrenLevel(['entitiesId' => $entitiesId, 'level' => $aArgs['level']+1]);
+            $entitiesChild = IndexingController::getEntitiesChildrenLevel(['entitiesId' => $entitiesId, 'level' => $aArgs['level'] + 1]);
             $entities = array_merge([$entities], $entitiesChild);
         }
 
@@ -402,7 +402,7 @@ class IndexingController
                 if (in_array($tmpDate->format('N'), [6, 7]) || in_array($tmpDate->format('d-m'), $hollidays)) {
                     ++$args['delay'];
                 }
-                if ($i+1 <= $args['delay']) {
+                if ($i + 1 <= $args['delay']) {
                     ++$processDelayUpdated;
                 }
             }

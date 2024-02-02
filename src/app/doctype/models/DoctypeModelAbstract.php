@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -70,7 +71,7 @@ class DoctypeModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['type_id']);
         ValidatorModel::intVal($aArgs, ['type_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes',
             'set'       => $aArgs,
@@ -85,7 +86,7 @@ class DoctypeModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_first_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_first_level_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes',
             'set'       => $aArgs,
@@ -100,7 +101,7 @@ class DoctypeModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_second_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_second_level_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes',
             'set'       => $aArgs,

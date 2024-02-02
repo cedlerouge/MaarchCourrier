@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
@@ -16,7 +17,6 @@ use User\models\UserModel;
 
 class UserRoot implements UserRootInterface
 {
-
     /**
      * @return int
      */

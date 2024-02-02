@@ -31,7 +31,7 @@ class RetrieveThumbnailResource
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
@@ -90,8 +90,10 @@ class RetrieveThumbnailResource
                 }
 
                 $check = $this->resourceFile->convertToThumbnail(
-                    $resId, $latestPdfVersion->getVersion(),
-                    $fileContent, pathinfo($docserverAndFilePath->getFilePath(), PATHINFO_EXTENSION)
+                    $resId,
+                    $latestPdfVersion->getVersion(),
+                    $fileContent,
+                    pathinfo($docserverAndFilePath->getFilePath(), PATHINFO_EXTENSION)
                 );
                 if (isset($check['errors'])) {
                     throw new ConvertThumbnailException($check['errors']);

@@ -15,7 +15,6 @@ use jamesiarmes\PhpEws\Type\ItemIdType;
 use jamesiarmes\PhpEws\Type\RequestAttachmentIdType;
 use jamesiarmes\PhpEws\Type\ConnectingSIDType;
 use jamesiarmes\PhpEws\Type\ExchangeImpersonationType;
-
 use Convert\controllers\ConvertPdfController;
 use Resource\controllers\StoreController;
 use SrcCore\models\ValidatorModel;
@@ -23,9 +22,8 @@ use Respect\Validation\Validator;
 use SrcCore\models\CurlModel;
 use SrcCore\controllers\LogsController;
 
-
-class EWSController {
-
+class EWSController
+{
     private const BASE_TOKEN_URL = 'https://login.microsoftonline.com/';
 
     public static function initOauth2(array $args)
@@ -40,9 +38,9 @@ class EWSController {
             'method'  => 'POST',
             'multipartBody' => [
                 'grant_type'    => 'client_credentials',
-				'client_id'     => $args['clientId'],
-				'client_secret' => $args['clientSecret'],
-				'scope'         => 'https://' . $args['ewsHost'] . '/.default'
+                'client_id'     => $args['clientId'],
+                'client_secret' => $args['clientSecret'],
+                'scope'         => 'https://' . $args['ewsHost'] . '/.default'
             ]
         ]);
 
@@ -148,8 +146,8 @@ class EWSController {
 
         // Some fixes on the message id from outlook js API, seen at :
         // https://blog.mastykarz.nl/office-365-unified-api-mail/
-        $args['emailId'] = str_replace( '-', '/', $args['emailId'] );
-        $args['emailId'] = str_replace( '_', '+', $args['emailId'] );
+        $args['emailId'] = str_replace('-', '/', $args['emailId']);
+        $args['emailId'] = str_replace('_', '+', $args['emailId']);
 
         // Build the get item request.
         $request = new GetItemType();
@@ -195,7 +193,7 @@ class EWSController {
         foreach ($responseMessages as $responseMessage) {
             // Make sure the request succeeded.
             if ($responseMessage->ResponseClass != ResponseClassType::SUCCESS) {
-                $errors[] = 'Failed to get attachments list : '.$responseMessage->MessageText.' (' . $responseMessage->ResponseCode . ')';
+                $errors[] = 'Failed to get attachments list : ' . $responseMessage->MessageText . ' (' . $responseMessage->ResponseCode . ')';
                 continue;
             }
 
@@ -226,7 +224,7 @@ class EWSController {
             $request->AttachmentIds = new NonEmptyArrayOfRequestAttachmentIdsType();
 
             // Iterate over the attachments for the message.
-            foreach ( $attachments as $attachment_id ) {
+            foreach ($attachments as $attachment_id) {
                 $id = new RequestAttachmentIdType();
                 $id->Id = $attachment_id;
                 $request->AttachmentIds->AttachmentId[] = $id;
@@ -240,7 +238,7 @@ class EWSController {
             foreach ($attachmentResponseMessages as $attachmentResponseMessage) {
                 // Make sure the request succeeded.
                 if ($attachmentResponseMessage->ResponseClass != ResponseClassType::SUCCESS) {
-                    $errors[] = 'Failed to get attachment : '.$responseMessage->MessageText.' (' . $responseMessage->ResponseCode . ')';
+                    $errors[] = 'Failed to get attachment : ' . $responseMessage->MessageText . ' (' . $responseMessage->ResponseCode . ')';
                     continue;
                 }
 

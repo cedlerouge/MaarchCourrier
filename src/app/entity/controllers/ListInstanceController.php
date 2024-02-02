@@ -35,7 +35,7 @@ use SignatureBook\controllers\SignatureBookController;
 
 class ListInstanceController
 {
-    const MAPPING_TYPES = [
+    public const MAPPING_TYPES = [
         'visaCircuit'    => 'VISA_CIRCUIT',
         'opinionCircuit' => 'AVIS_CIRCUIT'
     ];
@@ -180,9 +180,11 @@ class ListInstanceController
         if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]) || PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_details', 'userId' => $GLOBALS['id']])) {
             $fullRight = true;
         } else {
-            if (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_details', 'userId' => $GLOBALS['id']])
+            if (
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_details', 'userId' => $GLOBALS['id']])
                 && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_process', 'userId' => $GLOBALS['id']])
-                && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_process', 'userId' => $GLOBALS['id']])) {
+                && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_process', 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
         }

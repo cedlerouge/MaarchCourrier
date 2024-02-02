@@ -27,4 +27,3 @@ interface PastellConfigInterface
      */
     public function getPastellStates(): ?PastellStates;
 }
-

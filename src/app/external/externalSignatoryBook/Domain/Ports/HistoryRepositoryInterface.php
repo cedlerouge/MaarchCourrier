@@ -23,5 +23,4 @@ interface HistoryRepositoryInterface
      * @return void
      */
     public function addHistoryForResource(string $recordId, int $userId, string $info): void;
-
 }

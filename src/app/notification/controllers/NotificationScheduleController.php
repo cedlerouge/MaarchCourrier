@@ -148,9 +148,11 @@ class NotificationScheduleController
         if (!Validator::intVal()->validate($data['notification_sid'])) {
             $errors[] = 'notification_sid is not a numeric';
         }
-        if (!Validator::notEmpty()->validate($data['notification_sid']) ||
+        if (
+            !Validator::notEmpty()->validate($data['notification_sid']) ||
             !Validator::notEmpty()->validate($data['notification_id']) ||
-            !Validator::notEmpty()->validate($data['event_id'])) {
+            !Validator::notEmpty()->validate($data['event_id'])
+        ) {
             $errors[] = 'one of arguments is empty';
         }
 

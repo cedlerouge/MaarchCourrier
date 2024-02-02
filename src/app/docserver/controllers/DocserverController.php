@@ -105,9 +105,7 @@ class DocserverController
                 return ['errors' => 'Directory path is not writable : ' . $directoryPath . '/migration'];
             }
             return ['path' => $directoryPath . '/migration'];
-
         }
-
     }
 
     public function create(Request $request, Response $response)
@@ -290,7 +288,7 @@ class DocserverController
                 'size_limit_number'     => $data['size_limit_number'],
                 'path_template'         => $data['path_template'],
                 'is_readonly'           => empty($data['is_readonly']) ? 'N' : 'Y',
-                'is_encrypted'          => $data['is_encrypted'] ?? false ? 'false':'true'
+                'is_encrypted'          => $data['is_encrypted'] ?? false ? 'false' : 'true'
 
             ],
             'where' => ['id = ?'],

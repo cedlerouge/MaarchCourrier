@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -44,7 +45,7 @@ class SecondLevelModelAbstract
             'where'  => ['doctypes_second_level_id = ?'],
             'data'   => [$aArgs['id']]
         ]);
-        
+
         if (empty($aReturn[0])) {
             return [];
         }
@@ -70,7 +71,7 @@ class SecondLevelModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_second_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_second_level_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes_second_level',
             'set'       => $aArgs,
@@ -85,7 +86,7 @@ class SecondLevelModelAbstract
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_first_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_first_level_id']);
-        
+
         DatabaseModel::update([
             'table'     => 'doctypes_second_level',
             'set'       => $aArgs,

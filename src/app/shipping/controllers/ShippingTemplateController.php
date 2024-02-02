@@ -93,7 +93,7 @@ class ShippingTemplateController
         if (empty($shippingInfo)) {
             return $response->withStatus(400)->withJson(['errors' => 'Shipping does not exist']);
         }
-        
+
         $shippingInfo['account'] = json_decode($shippingInfo['account'], true);
         $shippingInfo['account']['password'] = '';
         $shippingInfo['options']  = json_decode($shippingInfo['options'], true);
@@ -140,7 +140,7 @@ class ShippingTemplateController
         }
 
         $body = $request->getParsedBody();
-        
+
         $errors = ShippingTemplateController::checkData($body, 'create');
         if (!empty($errors)) {
             return $response->withStatus(400)->withJson(['errors' => $errors]);
@@ -243,7 +243,7 @@ class ShippingTemplateController
                 return $response->withStatus(400)->withJson(['errors' => $subscriptions['errors']]);
             }
             $body['subscriptions'] = $subscriptions['subscriptions'];
-            $body['token_min_iat'] = date_create_from_format('U', $subscriptions['iat']-1);
+            $body['token_min_iat'] = date_create_from_format('U', $subscriptions['iat'] - 1);
             $body['token_min_iat'] = date_format($body['token_min_iat'], 'c');
         } elseif (!$body['subscribed'] && $alreadySubscribed) {
             $subscriptions = ShippingTemplateController::unsubscribeFromNotifications($body);
@@ -270,7 +270,7 @@ class ShippingTemplateController
             'recordId'  => $args['id'],
             'eventType' => 'UP',
             'eventId'   => 'shippingup',
-            'info'      => _MAILEVA_UPDATED. ' : ' . $body['label']
+            'info'      => _MAILEVA_UPDATED . ' : ' . $body['label']
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -313,7 +313,7 @@ class ShippingTemplateController
             'recordId'  => $args['id'],
             'eventType' => 'DEL',
             'eventId'   => 'shippingdel',
-            'info'      => _MAILEVA_DELETED. ' : ' . $shippingInfo['label']
+            'info'      => _MAILEVA_DELETED . ' : ' . $shippingInfo['label']
         ]);
 
         $shippings = ShippingTemplateModel::get(['select' => ['id', 'label', 'description', 'options', 'fee', 'entities']]);
@@ -647,10 +647,12 @@ class ShippingTemplateController
             if (empty($shippingInfo)) {
                 $errors[] = 'Shipping does not exist';
             }
-        } elseif (!empty($args['account']) && (
+        } elseif (
+            !empty($args['account']) && (
             !Validator::notEmpty()->validate($args['account']['id'])
             || !Validator::notEmpty()->validate($args['account']['password'])
-        )) {
+            )
+        ) {
             $errors[] = 'account id or password is empty';
         }
 
@@ -913,7 +915,8 @@ class ShippingTemplateController
         return $response->withStatus($httpStatusCode)->withJson(['errors' => $error]);
     }
 
-    private static function getMailevaAuthToken(array $mailevaConfig, array $shippingTemplateAccount) {
+    private static function getMailevaAuthToken(array $mailevaConfig, array $shippingTemplateAccount)
+    {
         $curlAuth = CurlModel::exec([
             'url'           => $mailevaConfig['connectionUri'] . '/authentication/oauth2/token',
             'basicAuth'     => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],

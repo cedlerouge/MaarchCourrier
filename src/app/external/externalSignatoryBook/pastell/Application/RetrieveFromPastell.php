@@ -43,15 +43,14 @@ class RetrieveFromPastell
      * @param DocumentLink $documentLink
      */
     public function __construct(
-        PastellApiInterface        $pastellApi,
-        PastellConfigInterface     $pastellConfig,
-        PastellConfigurationCheck  $pastellConfigCheck,
-        ParseIParapheurLog         $parseIParapheurLog,
-        ResourceDataInterface      $resourceData,
+        PastellApiInterface $pastellApi,
+        PastellConfigInterface $pastellConfig,
+        PastellConfigurationCheck $pastellConfigCheck,
+        ParseIParapheurLog $parseIParapheurLog,
+        ResourceDataInterface $resourceData,
         HistoryRepositoryInterface $historyRepository,
-        DocumentLink               $documentLink
-    )
-    {
+        DocumentLink $documentLink
+    ) {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
         $this->pastellConfigCheck = $pastellConfigCheck;

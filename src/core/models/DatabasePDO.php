@@ -14,7 +14,7 @@
 
 namespace SrcCore\models;
 
-use \SrcCore\controllers\LogsController;
+use SrcCore\controllers\LogsController;
 
 class DatabasePDO
 {

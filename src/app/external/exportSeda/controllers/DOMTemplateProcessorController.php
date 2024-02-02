@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) 2015 Maarch
  *
@@ -93,7 +94,8 @@ class DOMTemplateProcessorController extends \DOMXPath
      */
     protected function xinclude($node = null)
     {
-        if ($pis = $this->query("descendant-or-self::processing-instruction('xinclude')", $node)) {
+        $pis = $this->query("descendant-or-self::processing-instruction('xinclude')", $node);
+        if ($pis) {
             foreach ($pis as $pi) {
                 $includeFragment = $this->document->createDocumentFragment();
                 $source = file_get_contents('src/app/external/exportSeda' . trim($pi->data));
@@ -141,7 +143,7 @@ class DOMTemplateProcessorController extends \DOMXPath
         switch ($node->nodeType) {
             case \XML_ELEMENT_NODE:
                 $childNodeList = $node->childNodes;
-                for ($i=$childNodeList->length-1; $i>=0; $i--) {
+                for ($i = $childNodeList->length - 1; $i >= 0; $i--) {
                     $this->removeEmptyNodes($childNodeList->item($i));
                 }
 
@@ -201,7 +203,7 @@ class DOMTemplateProcessorController extends \DOMXPath
                     }
                     $instr = $this->parsedPis[$mergeNode->data];
 
-                    if ($merged = $this->mergePi($mergeNode, $instr, $source)) {
+                    if ($this->mergePi($mergeNode, $instr, $source)) {
                         if ($mergeNode->parentNode) {
                             $mergeNode->parentNode->removeChild($mergeNode);
                         }
@@ -266,6 +268,7 @@ class DOMTemplateProcessorController extends \DOMXPath
             case $type == 'object':
                 switch (true) {
                     // Object merged with a form
+                    // phpcs:ignore
                     case ($targetForm = $this->query("following-sibling::form", $pi)->item(0)):
                         $this->mergedForms->attach($targetForm, array($pi, $instr, $value));
                         break;
@@ -356,7 +359,8 @@ class DOMTemplateProcessorController extends \DOMXPath
         $params = $instr->params;
         switch (true) {
             case isset($params['attr']):
-                if (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
+                $targetNode = $this->query("following-sibling::*", $pi)->item(0);
+                if (!$targetNode) {
                     return true;
                 }
                 $targetNode->setAttribute($params['attr'], $value);
@@ -394,12 +398,14 @@ class DOMTemplateProcessorController extends \DOMXPath
 
             $targetNode = $this->document->createDocumentFragment();
             $targetNode->appendXML($source);
+            // phpcs:ignore
         } elseif (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
             return true;
         }
 
         reset($array);
-        if ($count = count($array)) {
+        $count = count($array);
+        if ($count) {
             $i = 0;
             while ($i < $count) {
                 //do {
@@ -433,7 +439,8 @@ class DOMTemplateProcessorController extends \DOMXPath
     protected function mergeObject($pi, $instr, $object)
     {
         $params = $instr->params;
-        if (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
+        $targetNode = $this->query("following-sibling::*", $pi)->item(0);
+        if (!$targetNode) {
             return true;
         }
 
@@ -506,9 +513,11 @@ class DOMTemplateProcessorController extends \DOMXPath
                 // Select
                 case 'select':
                     $value = $this->quote($value);
-                    if ($option = $this->query(".//option[@value=" . $value . "]", $element)->item(0)) {
+                    $option = $this->query(".//option[@value=" . $value . "]", $element)->item(0);
+                    if ($option) {
                         $option->setAttribute('selected', 'true');
-                        if ($optGroup = $this->query("parent::optgroup", $option)->item(0)) {
+                        $optGroup = $this->query("parent::optgroup", $option)->item(0);
+                        if ($optGroup) {
                             $optGroup->removeAttribute('disabled');
                         }
                     }
@@ -536,6 +545,7 @@ class DOMTemplateProcessorController extends \DOMXPath
         if (isset($params['include'])) {
             $res = $params['include'];
             $targetNode = $this->document->createDocumentFragment();
+            // phpcs:ignore
         } elseif (!$targetNode = $this->query("following-sibling::*", $pi)->item(0)) {
             return true;
         }

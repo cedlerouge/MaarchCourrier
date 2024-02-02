@@ -294,7 +294,7 @@ class CoreConfigModel
             // old way (before use internal source)
             if (is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
                 $libPath = $libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php';
-            } else if (is_file($libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php')) {
+            } elseif (is_file($libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php')) {
                 $libPath = $libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php';
             }
         }

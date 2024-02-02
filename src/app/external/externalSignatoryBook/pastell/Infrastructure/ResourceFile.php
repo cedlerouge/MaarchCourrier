@@ -14,7 +14,6 @@
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
-use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
