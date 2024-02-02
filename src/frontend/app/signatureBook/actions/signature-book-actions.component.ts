@@ -32,9 +32,7 @@ export class SignatureBookActionsComponent implements OnInit {
 
     async ngOnInit(): Promise<void> {
         await this.loadActions();
-        this.loading = false;
-        console.log(this.stamp?.contentUrl ?? 'assets/noThumbnail.png');
-        
+        this.loading = false; 
     }
 
     openSignaturesList() {
