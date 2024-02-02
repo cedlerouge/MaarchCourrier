@@ -1,0 +1,12 @@
+<div class="book-mark-container">
+    <button
+        *ngFor="let docToSign of docsToSign;let i=index"
+        mat-button
+        class="book-mark-item book-mark-item-to-left"
+        [class.book-mark-item-selected]="selectedDocToSign===i"
+        [class.book-mark-item-selected-to-left]="selectedDocToSign===i"
+        (click)="selectedDocToSign=i"
+    >
+        {{docToSign}} {{i}}
+    </button>
+</div>

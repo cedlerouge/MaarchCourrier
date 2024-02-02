@@ -101,15 +101,6 @@
     font-size: 20px;
 }
 
-.book-mark-item-to-left {
-    align-self: flex-end;
-    border-left: solid 1px var(--maarch-color-primary);
-    border-top-left-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 0px;
-    border-top-right-radius: 0px;
-}
-
 .book-mark-item-to-right {
     align-self: flex-start;
     border-right: solid 1px var(--maarch-color-primary);
@@ -127,14 +118,6 @@
     box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.46);
 }
 
-.book-mark-item-selected-to-left {
-    align-self: flex-start;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
 .book-mark-item-selected-to-right {
     align-self: flex-end;
     border-top-left-radius: 10px;
@@ -148,7 +131,6 @@
     rotate: -90deg;
 }
 
-.book-mark-item-selected-to-left ::ng-deep .mat-button-wrapper,
 .book-mark-item-selected-to-right ::ng-deep .mat-button-wrapper   {
     color: white;
 }

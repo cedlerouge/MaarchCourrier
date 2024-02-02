@@ -96,7 +96,7 @@ export class AuthService {
                 .pipe(
                     tap((data: any) => {
                         this.applicationName = data.applicationName;
-                        this.appUrl = data.maarchUrl;
+                        this.appUrl = data.maarchUrl.replace(/\/$/, "");
                         this.authMode = data.authMode;
                         this.setAppSession(data.instanceId);
                         resolve(true);

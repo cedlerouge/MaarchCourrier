@@ -1,4 +1,4 @@
-import { catchError, delay, finalize, of, tap } from 'rxjs';
+import { catchError, finalize, of, tap } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -67,33 +67,35 @@ export class CoreDialogComponent implements OnInit {
         } else {
             await this.applyMinorUpdate();
             this.checkAppSecurity();
-    
+
             const tokenInfo = this.authService.getToken();
-            if (tokenInfo !== null) {
-                const result = await this.getLoggedUserInfo();
-                await this.intializeLanguage();
-                if (!result) {
-                    this.authService.logout(false, true);
-                } else if (result === 'User must change his password') {
-                    this.router.navigate(['/password-modification']);
-                } else if (this.headerService.user.status === 'ABS') {
-                    this.router.navigate(['/activate-user']);
-                }
-            } else {
-                this.authService.logout(false, true);
-            }
-    
-            if (this.authService.isAuth() && this.router.url === '/login') {
-                if (!this.functionsService.empty(this.authService.getToken()?.split('.')[1]) && !this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id))) {
-                    this.router.navigate([this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id)]);
+            if (window.location.hash.indexOf('/reset-password') === -1) {
+                if (tokenInfo !== null) {
+                    const result = await this.getLoggedUserInfo();
+                    await this.intializeLanguage();
+                    if (!result) {
+                        this.authService.logout(false, true);
+                    } else if (result === 'User must change his password') {
+                        this.router.navigate(['/password-modification']);
+                    } else if (this.headerService.user.status === 'ABS') {
+                        this.router.navigate(['/activate-user']);
+                    }
                 } else {
-                    this.router.navigate(['/home']);
+                    this.authService.logout(false, true);
+                }
+
+                if (this.authService.isAuth() && this.router.url === '/login') {
+                    if (!this.functionsService.empty(this.authService.getToken()?.split('.')[1]) && !this.functionsService.empty(this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id))) {
+                        this.router.navigate([this.authService.getUrl(JSON.parse(atob(this.authService.getToken().split('.')[1])).user.id)]);
+                    } else {
+                        this.router.navigate(['/home']);
+                    }
                 }
             }
         }
 
         console.debug('INIT CORE DONE');
-        
+
         setTimeout(() => {
             this.dialogRef.close();
         }, 500);
@@ -245,7 +247,7 @@ export class CoreDialogComponent implements OnInit {
                 })
             ).subscribe();
         });
-        
+
     }
 
     setIconLogo() {

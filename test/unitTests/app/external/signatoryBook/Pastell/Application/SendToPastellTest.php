@@ -7,17 +7,17 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\external\Pastell\Application;
+namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Application;
 
 use ExternalSignatoryBook\pastell\Application\PastellConfigurationCheck;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellApiMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\PastellConfigMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ProcessVisaWorkflowSpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceDataMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\ResourceFileMock;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\SendToPastellSpy;
-use MaarchCourrier\Tests\app\external\Pastell\Mock\VisaCircuitDataMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellApiMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\PastellConfigMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ProcessVisaWorkflowSpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ResourceDataMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\ResourceFileMock;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\SendToPastellSpy;
+use MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock\VisaCircuitDataMock;
 use PHPUnit\Framework\TestCase;
 
 class SendToPastellTest extends TestCase

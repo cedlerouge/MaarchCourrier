@@ -34,6 +34,7 @@ use Resource\models\ResModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
+use SrcCore\controllers\LogsController;
 use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -93,19 +94,18 @@ class MaarchParapheurController
         }
         $recipients = ContactController::getFormattedContacts(['resId' => $mainResource[0]['res_id'], 'mode' => 'recipient']);
 
-
         $units = [];
         $units[] = ['unit' => 'primaryInformations'];
-        $units[] = ['unit' => 'secondaryInformations',       'label' => _SECONDARY_INFORMATION];
+        $units[] = ['unit' => 'secondaryInformations', 'label' => _SECONDARY_INFORMATION];
         $units[] = ['unit' => 'senderRecipientInformations', 'label' => _DEST_INFORMATION];
-        $units[] = ['unit' => 'diffusionList',               'label' => _DIFFUSION_LIST];
-        $units[] = ['unit' => 'visaWorkflow',                'label' => _VISA_WORKFLOW];
-        $units[] = ['unit' => 'opinionWorkflow',             'label' => _AVIS_WORKFLOW];
-        $units[] = ['unit' => 'notes',                       'label' => _NOTES_COMMENT];
+        $units[] = ['unit' => 'diffusionList', 'label' => _DIFFUSION_LIST];
+        $units[] = ['unit' => 'visaWorkflow', 'label' => _VISA_WORKFLOW];
+        $units[] = ['unit' => 'opinionWorkflow', 'label' => _AVIS_WORKFLOW];
+        $units[] = ['unit' => 'notes', 'label' => _NOTES_COMMENT];
 
         // Data for resources
         $tmpIds = [$aArgs['resIdMaster']];
-        $data   = [];
+        $data = [];
         foreach ($units as $unit) {
             if ($unit['unit'] == 'notes') {
                 $data['notes'] = NoteModel::get([
@@ -121,17 +121,17 @@ class MaarchParapheurController
                 }
             } elseif ($unit['unit'] == 'opinionWorkflow') {
                 $data['listInstancesOpinion'] = ListInstanceModel::get([
-                    'select'    => ['item_id', 'process_date', 'res_id'],
-                    'where'     => ['difflist_type = ?', 'res_id in (?)'],
-                    'data'      => ['AVIS_CIRCUIT', $tmpIds],
-                    'orderBy'   => ['listinstance_id']
+                    'select'  => ['item_id', 'process_date', 'res_id'],
+                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
+                    'data'    => ['AVIS_CIRCUIT', $tmpIds],
+                    'orderBy' => ['listinstance_id']
                 ]);
             } elseif ($unit['unit'] == 'visaWorkflow') {
                 $data['listInstancesVisa'] = ListInstanceModel::get([
-                    'select'    => ['item_id', 'requested_signature', 'process_date', 'res_id'],
-                    'where'     => ['difflist_type = ?', 'res_id in (?)'],
-                    'data'      => ['VISA_CIRCUIT', $tmpIds],
-                    'orderBy'   => ['listinstance_id']
+                    'select'  => ['item_id', 'requested_signature', 'process_date', 'res_id'],
+                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
+                    'data'    => ['VISA_CIRCUIT', $tmpIds],
+                    'orderBy' => ['listinstance_id']
                 ]);
             } elseif ($unit['unit'] == 'diffusionList') {
                 $data['listInstances'] = ListInstanceModel::get([
@@ -170,7 +170,7 @@ class MaarchParapheurController
         ]);
 
         $tmpPath = CoreConfigModel::getTmpPath();
-        $summarySheetFilePath = $tmpPath . "summarySheet_".$aArgs['resIdMaster'] . "_" . $aArgs['userId'] ."_".rand().".pdf";
+        $summarySheetFilePath = $tmpPath . "summarySheet_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" . rand() . ".pdf";
         $pdf->Output($summarySheetFilePath, 'F');
 
         $concatPdf = new Fpdi('P', 'pt');
@@ -192,7 +192,7 @@ class MaarchParapheurController
             }
 
             unlink($summarySheetFilePath);
-            $concatFilename = $tmpPath . "concatPdf_".$aArgs['resIdMaster'] . "_" . $aArgs['userId'] ."_".rand().".pdf";
+            $concatFilename = $tmpPath . "concatPdf_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" . rand() . ".pdf";
             $concatPdf->Output($concatFilename, 'F');
             $arrivedMailMainfilePath = $concatFilename;
         }
@@ -202,7 +202,7 @@ class MaarchParapheurController
         }
 
         if (empty($mainResource[0]['process_limit_date'])) {
-            $processLimitDate = date('Y-m-d H:i:s', strtotime(date("Y-m-d H:i:s"). ' + 14 days'));
+            $processLimitDate = date('Y-m-d H:i:s', strtotime(date("Y-m-d H:i:s") . ' + 14 days'));
         } else {
             $processLimitDate = $mainResource[0]['process_limit_date'];
         }
@@ -212,7 +212,7 @@ class MaarchParapheurController
         if (!empty($mainResource[0]['priority'])) {
             $priority = PriorityModel::getById(['select' => ['label'], 'id' => $mainResource[0]['priority']]);
         }
-        $sender              = UserModel::getByLogin(['select' => ['id', 'firstname', 'lastname'], 'login' => $aArgs['userId']]);
+        $sender = UserModel::getByLogin(['select' => ['id', 'firstname', 'lastname'], 'login' => $aArgs['userId']]);
         $senderPrimaryEntity = UserModel::getPrimaryEntityById(['id' => $sender['id'], 'select' => ['entities.entity_label']]);
 
         if ($aArgs['objectSent'] == 'attachment') {
@@ -223,13 +223,13 @@ class MaarchParapheurController
             $excludeAttachmentTypes = ['signed_response'];
 
             $attachments = AttachmentModel::get([
-                'select'    => [
+                'select' => [
                     'res_id', 'title', 'identifier', 'attachment_type',
                     'status', 'typist', 'docserver_id', 'path', 'filename', 'creation_date',
                     'validation_date', 'relation', 'origin_id', 'res_id_master'
                 ],
-                'where'     => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS', 'SIGN')", "in_signature_book = 'true'"],
-                'data'      => [$aArgs['resIdMaster'], $excludeAttachmentTypes]
+                'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS', 'SIGN')", "in_signature_book = 'true'"],
+                'data'   => [$aArgs['resIdMaster'], $excludeAttachmentTypes]
             ]);
             foreach ($attachments as $keyAttachment => $attachment) {
                 if (strpos($attachment['identifier'], '-') != false) {
@@ -297,22 +297,22 @@ class MaarchParapheurController
                 }
                 $mailingIds = [];
                 foreach ($attachments as $value) {
-                    $resId  = $value['res_id'];
+                    $resId = $value['res_id'];
                     $collId = 'attachments_coll';
 
                     $adrInfo = null;
                     if ($value['status'] == 'SIGN') {
                         $signedAttachment = AttachmentModel::get([
-                            'select'    => ['res_id'],
-                            'where'     => ['origin = ?', 'status not in (?)', 'attachment_type = ?'],
-                            'data'      => ["{$resId},res_attachments", ['OBS', 'DEL', 'TMP', 'FRZ'], 'signed_response']
+                            'select' => ['res_id'],
+                            'where'  => ['origin = ?', 'status not in (?)', 'attachment_type = ?'],
+                            'data'   => ["{$resId},res_attachments", ['OBS', 'DEL', 'TMP', 'FRZ'], 'signed_response']
                         ]);
                         if (!empty($signedAttachment[0])) {
                             $adrInfo = AdrModel::getConvertedDocumentById([
-                                'select'    => ['docserver_id','path', 'filename', 'fingerprint'],
-                                'resId'     => $signedAttachment[0]['res_id'],
-                                'collId'    => 'attachments_coll',
-                                'type'      => 'PDF'
+                                'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
+                                'resId'  => $signedAttachment[0]['res_id'],
+                                'collId' => 'attachments_coll',
+                                'type'   => 'PDF'
                             ]);
                         }
                     }
@@ -394,20 +394,20 @@ class MaarchParapheurController
                     }
 
                     $bodyData = [
-                        'title'             => $value['title'],
-                        'reference'         => $value['identifier'] ?? "",
-                        'encodedDocument'   => $encodedZipDocument,
-                        'sender'            => trim($sender['firstname'] . ' ' .$sender['lastname']),
-                        'deadline'          => $processLimitDate,
-                        'attachments'       => $attachmentsData,
-                        'workflow'          => $workflow,
-                        'metadata'          => $metadata,
-                        'mailingId'         => empty($value['mailingResId']) ? null : $mailingIds[$value['mailingResId']]
+                        'title'           => $value['title'],
+                        'reference'       => $value['identifier'] ?? "",
+                        'encodedDocument' => $encodedZipDocument,
+                        'sender'          => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                        'deadline'        => $processLimitDate,
+                        'attachments'     => $attachmentsData,
+                        'workflow'        => $workflow,
+                        'metadata'        => $metadata,
+                        'mailingId'       => empty($value['mailingResId']) ? null : $mailingIds[$value['mailingResId']]
                     ];
                     if (!empty($aArgs['note'])) {
                         $noteCreationDate = new \DateTime();
                         $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' .$sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
                     }
 
                     $bodyData['linkId'] = $value['res_id_master'];
@@ -422,7 +422,6 @@ class MaarchParapheurController
                             'Content-Type: application/json'
                         ]
                     ]);
-
 
                     if (!empty($response['response']['errors']) || !empty($response['errors'])) {
                         return ['error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors'] ?? $response['errors']];
@@ -483,19 +482,19 @@ class MaarchParapheurController
                     }
 
                     $bodyData = [
-                        'title'             => $mainResource[0]['subject'],
-                        'reference'         => $mainResource[0]['alt_identifier'] ?? "",
-                        'encodedDocument'   => $encodedMainZipFile,
-                        'sender'            => trim($sender['firstname'] . ' ' .$sender['lastname']),
-                        'deadline'          => $processLimitDate,
-                        'attachments'       => $attachmentsData,
-                        'workflow'          => $workflow,
-                        'metadata'          => $metadata
+                        'title'           => $mainResource[0]['subject'],
+                        'reference'       => $mainResource[0]['alt_identifier'] ?? "",
+                        'encodedDocument' => $encodedMainZipFile,
+                        'sender'          => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                        'deadline'        => $processLimitDate,
+                        'attachments'     => $attachmentsData,
+                        'workflow'        => $workflow,
+                        'metadata'        => $metadata
                     ];
                     if (!empty($aArgs['note'])) {
                         $noteCreationDate = new \DateTime();
                         $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' .$sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
                     }
 
                     $bodyData['linkId'] = $aArgs['resIdMaster'];
@@ -523,18 +522,18 @@ class MaarchParapheurController
 
             $workflow = [['userId' => $processingUser, 'mode' => 'note']];
             $bodyData = [
-                'title'            => $mainResource[0]['subject'],
-                'reference'        => $mainResource[0]['alt_identifier'] ?? "",
-                'encodedDocument'  => $encodedMainZipFile,
-                'sender'           => trim($sender['firstname'] . ' ' .$sender['lastname']),
-                'deadline'         => $processLimitDate,
-                'workflow'         => $workflow,
-                'metadata'         => $metadata
+                'title'           => $mainResource[0]['subject'],
+                'reference'       => $mainResource[0]['alt_identifier'] ?? "",
+                'encodedDocument' => $encodedMainZipFile,
+                'sender'          => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                'deadline'        => $processLimitDate,
+                'workflow'        => $workflow,
+                'metadata'        => $metadata
             ];
             if (!empty($aArgs['note'])) {
                 $noteCreationDate = new \DateTime();
                 $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' .$sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
             }
 
             $response = CurlModel::exec([
@@ -553,15 +552,15 @@ class MaarchParapheurController
 
         $workflowInfos = [];
         foreach ($workflow as $value) {
-            if(!empty($value['externalInformations'])) {
+            if (!empty($value['externalInformations'])) {
                 $userInfos['firstname'] = $value['externalInformations']['firstname'];
                 $userInfos['lastname'] = $value['externalInformations']['lastname'];
             } else {
                 $curlResponse = CurlModel::exec([
-                    'url'           => rtrim($aArgs['config']['data']['url'], '/') . '/rest/users/'.$value['userId'],
-                    'basicAuth'     => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
-                    'headers'       => ['content-type:application/json'],
-                    'method'        => 'GET'
+                    'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/users/' . $value['userId'],
+                    'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
+                    'headers'   => ['content-type:application/json'],
+                    'method'    => 'GET'
                 ]);
                 $userInfos['firstname'] = $curlResponse['response']['user']['firstname'];
                 $userInfos['lastname'] = $curlResponse['response']['user']['lastname'];
@@ -573,7 +572,7 @@ class MaarchParapheurController
             } elseif ($value['mode'] == 'sign') {
                 $mode = _SIGNATORY;
             }
-            $workflowInfos[] = $userInfos['firstname'] . ' ' . $userInfos['lastname'] . ' ('. $mode .')';
+            $workflowInfos[] = $userInfos['firstname'] . ' ' . $userInfos['lastname'] . ' (' . $mode . ')';
         }
         if (!empty($workflowInfos)) {
             $historyInfos = ' ' . _WF_SEND_TO . ' ' . implode(", ", $workflowInfos);
@@ -606,9 +605,9 @@ class MaarchParapheurController
     {
         $zip = new \ZipArchive();
 
-        $pathInfo    = pathinfo($aArgs['filepath'], PATHINFO_FILENAME);
-        $tmpPath     = CoreConfigModel::getTmpPath();
-        $zipFilename = $tmpPath . $pathInfo."_".rand().".zip";
+        $pathInfo = pathinfo($aArgs['filepath'], PATHINFO_FILENAME);
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $zipFilename = $tmpPath . $pathInfo . "_" . rand() . ".zip";
 
         if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
             $zip->addFile($aArgs['filepath'], $aArgs['filename']);
@@ -616,7 +615,7 @@ class MaarchParapheurController
             $zip->close();
 
             $fileContent = file_get_contents($zipFilename);
-            $base64 =  base64_encode($fileContent);
+            $base64 = base64_encode($fileContent);
             unlink($zipFilename);
             return $base64;
         } else {
@@ -647,6 +646,37 @@ class MaarchParapheurController
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
                 continue;
             }
+
+            if (!empty($documentWorkflow['errors'])) {
+                LogsController::add([
+                    'isTech'    => true,
+                    'moduleId'  => $GLOBALS['moduleId'],
+                    'level'     => 'ERROR',
+                    'tableName' => $GLOBALS['batchName'],
+                    'eventType' => 'script',
+                    'eventId'   => "[MaarchParapheur api] {$documentWorkflow['errors']}"
+                ]);
+
+                $userId = UserModel::get([
+                    'select' => ['id'],
+                    'where'  => ['mode = ? OR mode = ?'],
+                    'data'   => ['root_visible', 'root_invisible'],
+                    'limit'  => 1
+                ])[0]['id'];
+
+                HistoryController::add([
+                    'tableName' => 'res_letterbox',
+                    'recordId'  => $value['res_id_master'] ?? $value['res_id'],
+                    'eventType' => 'ACTION#1',
+                    'eventId'   => '1',
+                    'userId'    => $userId,
+                    'info'      => "[MaarchParapheur api] {$documentWorkflow['errors']}"
+                ]);
+
+                unset($aArgs['idsToRetrieve'][$version][$resId]);
+                continue;
+            }
+
             $state = MaarchParapheurController::getState(['workflow' => $documentWorkflow]);
 
             if (in_array($state['status'], ['validated', 'refused'])) {
@@ -657,9 +687,9 @@ class MaarchParapheurController
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $signedProofDocument = MaarchParapheurController::getDocumentProof(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
                     if (!empty($signedProofDocument['encodedProofDocument'])) {
-                        $aArgs['idsToRetrieve'][$version][$resId]['log']       = $signedProofDocument['encodedProofDocument'];
+                        $aArgs['idsToRetrieve'][$version][$resId]['log'] = $signedProofDocument['encodedProofDocument'];
                         $aArgs['idsToRetrieve'][$version][$resId]['logFormat'] = $signedProofDocument['format'];
-                        $aArgs['idsToRetrieve'][$version][$resId]['logTitle']  = '[Faisceau de preuve]';
+                        $aArgs['idsToRetrieve'][$version][$resId]['logTitle'] = '[Faisceau de preuve]';
                     }
                 } elseif ($state['status'] == 'refused' && in_array($state['mode'], ['sign', 'visa'])) {
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'refused';
@@ -715,6 +745,10 @@ class MaarchParapheurController
             'method'    => 'GET'
         ]);
 
+        if ($response['errors']) {
+            return ['errors' => $response['errors']];
+        }
+
         return $response['response']['workflow'];
     }
 
@@ -743,9 +777,9 @@ class MaarchParapheurController
 
     public static function getState($aArgs)
     {
-        $state['status']       = 'validated';
+        $state['status'] = 'validated';
         $state['workflowInfo'] = [];
-        $state['notes']        = [];
+        $state['notes'] = [];
         foreach ($aArgs['workflow'] as $step) {
             if (!empty($step['note'])) {
                 $state['notes'][] = [
@@ -761,11 +795,11 @@ class MaarchParapheurController
                 $state['workflowInfo'][] = $step['userDisplay'] . ' (Visé le ' . $step['processDate'] . ')';
             }
             if ($step['status'] == 'REF') {
-                $state['status']          = 'refused';
-                $state['workflowInfo'][]  = $step['userDisplay'] . ' (Refusé le ' . $step['processDate'] . ')';
+                $state['status'] = 'refused';
+                $state['workflowInfo'][] = $step['userDisplay'] . ' (Refusé le ' . $step['processDate'] . ')';
                 break;
             } elseif ($step['status'] == 'STOP') {
-                $state['status']         = 'refused';
+                $state['status'] = 'refused';
                 $state['workflowInfo'][] = $step['userDisplay'] . ' (Interrompu le ' . $step['processDate'] . ')';
                 break;
             } elseif (empty($step['status'])) {
@@ -790,25 +824,25 @@ class MaarchParapheurController
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
-                    $url      = $value->url;
-                    $userId   = $value->userId;
+                    $url = $value->url;
+                    $userId = $value->userId;
                     $password = $value->password;
                     break;
                 }
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/users/'.$aArgs['id'].'/picture',
-                'basicAuth'     => ['user' => $userId, 'password' => $password],
-                'headers'       => ['content-type:application/json'],
-                'method'        => 'GET'
+                'url'       => rtrim($url, '/') . '/rest/users/' . $aArgs['id'] . '/picture',
+                'basicAuth' => ['user' => $userId, 'password' => $password],
+                'headers'   => ['content-type:application/json'],
+                'method'    => 'GET'
             ]);
 
             if ($curlResponse['code'] != '200') {
                 if (!empty($curlResponse['response']['errors'])) {
-                    $errors =  $curlResponse['response']['errors'];
+                    $errors = $curlResponse['response']['errors'];
                 } else {
-                    $errors =  $curlResponse['errors'];
+                    $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
                     $errors = 'An error occured. Please check your configuration file.';
@@ -850,26 +884,26 @@ class MaarchParapheurController
 
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
-                    $url      = $value->url;
-                    $userId   = $value->userId;
+                    $url = $value->url;
+                    $userId = $value->userId;
                     $password = $value->password;
                     break;
                 }
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/users',
-                'basicAuth'     => ['user' => $userId, 'password' => $password],
-                'headers'       => ['content-type:application/json'],
-                'method'        => 'POST',
-                'body'          => json_encode($bodyData)
+                'url'       => rtrim($url, '/') . '/rest/users',
+                'basicAuth' => ['user' => $userId, 'password' => $password],
+                'headers'   => ['content-type:application/json'],
+                'method'    => 'POST',
+                'body'      => json_encode($bodyData)
             ]);
 
             if ($curlResponse['code'] != '200') {
                 if (!empty($curlResponse['response']['errors'])) {
-                    $errors =  $curlResponse['response']['errors'];
+                    $errors = $curlResponse['response']['errors'];
                 } else {
-                    $errors =  $curlResponse['errors'];
+                    $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
                     $errors = 'An error occured. Please check your configuration file.';
@@ -886,11 +920,11 @@ class MaarchParapheurController
         UserModel::updateExternalId(['id' => $aArgs['id'], 'externalId' => json_encode($externalId)]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
-            'info'         => _USER_CREATED_IN_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'ADD',
+            'eventId'   => 'userCreation',
+            'info'      => _USER_CREATED_IN_MAARCHPARAPHEUR . " {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['externalId' => $curlResponse['response']['id']]);
@@ -915,25 +949,25 @@ class MaarchParapheurController
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
-                    $url      = $value->url;
-                    $userId   = $value->userId;
+                    $url = $value->url;
+                    $userId = $value->userId;
                     $password = $value->password;
                     break;
                 }
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/users/'.$body['maarchParapheurUserId'],
-                'basicAuth'     => ['user' => $userId, 'password' => $password],
-                'headers'       => ['content-type:application/json'],
-                'method'        => 'GET'
+                'url'       => rtrim($url, '/') . '/rest/users/' . $body['maarchParapheurUserId'],
+                'basicAuth' => ['user' => $userId, 'password' => $password],
+                'headers'   => ['content-type:application/json'],
+                'method'    => 'GET'
             ]);
 
             if ($curlResponse['code'] != '200') {
                 if (!empty($curlResponse['response']['errors'])) {
-                    $errors =  $curlResponse['response']['errors'];
+                    $errors = $curlResponse['response']['errors'];
                 } else {
-                    $errors =  $curlResponse['errors'];
+                    $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
                     $errors = 'An error occured. Please check your configuration file.';
@@ -949,9 +983,9 @@ class MaarchParapheurController
         }
 
         $userInfos = UserModel::getByExternalId([
-            'select'            => ['user_id'],
-            'externalId'        => $body['maarchParapheurUserId'],
-            'externalName'      => 'maarchParapheur'
+            'select'       => ['user_id'],
+            'externalId'   => $body['maarchParapheurUserId'],
+            'externalName' => 'maarchParapheur'
         ]);
 
         if (!empty($userInfos)) {
@@ -966,11 +1000,11 @@ class MaarchParapheurController
         UserModel::updateExternalId(['id' => $aArgs['id'], 'externalId' => json_encode($externalId)]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
-            'info'         => _USER_LINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'ADD',
+            'eventId'   => 'userCreation',
+            'info'      => _USER_LINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -992,11 +1026,11 @@ class MaarchParapheurController
         UserModel::updateExternalId(['id' => $aArgs['id'], 'externalId' => json_encode($externalId)]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
-            'info'         => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'ADD',
+            'eventId'   => 'userCreation',
+            'info'      => _USER_UNLINKED_TO_MAARCHPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -1013,14 +1047,14 @@ class MaarchParapheurController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
 
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
-            $url      = null;
-            $userId   = null;
+            $url = null;
+            $userId = null;
             $password = null;
 
             foreach ($loadedXml->signatoryBook as $value) {
                 if ($value->id == "maarchParapheur") {
-                    $url      = $value->url;
-                    $userId   = $value->userId;
+                    $url = $value->url;
+                    $userId = $value->userId;
                     $password = $value->password;
                     break;
                 }
@@ -1030,7 +1064,6 @@ class MaarchParapheurController
                 return $response->withStatus(400)->withJson(['errors' => 'Could not get remote signatory book configuration. Please check your configuration file.']);
             }
 
-
             $userInfo = UserModel::getById(['select' => ['external_id'], 'id' => $aArgs['id']]);
             $userExternalIds = json_decode($userInfo['external_id'] ?? '{}', true);
 
@@ -1039,18 +1072,18 @@ class MaarchParapheurController
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/users/' . $userExternalIds['maarchParapheur'],
-                'basicAuth'     => ['user' => $userId, 'password' => $password],
-                'headers'       => ['content-type:application/json'],
-                'method'        => 'GET'
+                'url'       => rtrim($url, '/') . '/rest/users/' . $userExternalIds['maarchParapheur'],
+                'basicAuth' => ['user' => $userId, 'password' => $password],
+                'headers'   => ['content-type:application/json'],
+                'method'    => 'GET'
             ]);
 
             $errors = '';
             if ($curlResponse['code'] != '200') {
                 if (!empty($curlResponse['response']['errors'])) {
-                    $errors =  $curlResponse['response']['errors'];
+                    $errors = $curlResponse['response']['errors'];
                 } else {
-                    $errors =  $curlResponse['errors'];
+                    $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
                     $errors = 'An error occured. Please check your configuration file.';
@@ -1078,14 +1111,14 @@ class MaarchParapheurController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
 
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
-            $userInfo   = UserModel::getById(['select' => ['external_id', 'user_id'], 'id' => $aArgs['id']]);
+            $userInfo = UserModel::getById(['select' => ['external_id', 'user_id'], 'id' => $aArgs['id']]);
             $externalId = json_decode($userInfo['external_id'], true);
 
             if (!empty($externalId['maarchParapheur'])) {
                 $userSignatures = UserSignatureModel::get([
-                    'select'    => ['signature_path', 'signature_file_name', 'id'],
-                    'where'     => ['user_serial_id = ?'],
-                    'data'      => [$aArgs['id']]
+                    'select' => ['signature_path', 'signature_file_name', 'id'],
+                    'where'  => ['user_serial_id = ?'],
+                    'data'   => [$aArgs['id']]
                 ]);
                 if (empty($userSignatures)) {
                     return $response->withStatus(400)->withJson(['errors' => 'User has no signature']);
@@ -1101,10 +1134,10 @@ class MaarchParapheurController
                 foreach ($userSignatures as $value) {
                     $pathToSignature = $docserver['path_template'] . str_replace('#', '/', $value['signature_path']) . $value['signature_file_name'];
                     if (is_file($pathToSignature)) {
-                        $base64          = base64_encode(file_get_contents($pathToSignature));
-                        $format          = pathinfo($pathToSignature, PATHINFO_EXTENSION);
-                        $signatures[]    = ['encodedSignature' => $base64, 'format' => $format];
-                        $signaturesId[]   = $value['id'];
+                        $base64 = base64_encode(file_get_contents($pathToSignature));
+                        $format = pathinfo($pathToSignature, PATHINFO_EXTENSION);
+                        $signatures[] = ['encodedSignature' => $base64, 'format' => $format];
+                        $signaturesId[] = $value['id'];
                     } else {
                         return $response->withStatus(403)->withJson(['errors' => 'File does not exists : ' . $pathToSignature]);
                     }
@@ -1117,19 +1150,19 @@ class MaarchParapheurController
 
                 foreach ($loadedXml->signatoryBook as $value) {
                     if ($value->id == "maarchParapheur") {
-                        $url      = $value->url;
-                        $userId   = $value->userId;
+                        $url = $value->url;
+                        $userId = $value->userId;
                         $password = $value->password;
                         break;
                     }
                 }
 
                 $curlResponse = CurlModel::exec([
-                    'url'           => rtrim($url, '/') . '/rest/users/' . $externalId['maarchParapheur'] . '/externalSignatures',
-                    'basicAuth'     => ['user' => $userId, 'password' => $password],
-                    'headers'       => ['content-type:application/json'],
-                    'method'        => 'PUT',
-                    'body'          => json_encode($bodyData)
+                    'url'       => rtrim($url, '/') . '/rest/users/' . $externalId['maarchParapheur'] . '/externalSignatures',
+                    'basicAuth' => ['user' => $userId, 'password' => $password],
+                    'headers'   => ['content-type:application/json'],
+                    'method'    => 'PUT',
+                    'body'      => json_encode($bodyData)
                 ]);
             } else {
                 return $response->withStatus(403)->withJson(['errors' => 'user does not exists in maarch Parapheur']);
@@ -1137,9 +1170,9 @@ class MaarchParapheurController
 
             if ($curlResponse['code'] != '204') {
                 if (!empty($curlResponse['response']['errors'])) {
-                    $errors =  $curlResponse['response']['errors'];
+                    $errors = $curlResponse['response']['errors'];
                 } else {
-                    $errors =  $curlResponse['errors'];
+                    $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
                     $errors = 'An error occured. Please check your configuration file.';
@@ -1151,11 +1184,11 @@ class MaarchParapheurController
         }
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $aArgs['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'signatureSync',
-            'info'         => _SIGNATURES_SEND_TO_MAARCHPARAPHEUR . " : " . implode(", ", $signaturesId)
+            'tableName' => 'users',
+            'recordId'  => $aArgs['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'signatureSync',
+            'info'      => _SIGNATURES_SEND_TO_MAARCHPARAPHEUR . " : " . implode(", ", $signaturesId)
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -1193,13 +1226,13 @@ class MaarchParapheurController
             return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
         }
 
-        $url      = '';
-        $userId   = '';
+        $url = '';
+        $userId = '';
         $password = '';
         foreach ($loadedXml->signatoryBook as $value) {
             if ($value->id == "maarchParapheur") {
-                $url      = rtrim($value->url, '/');
-                $userId   = $value->userId;
+                $url = rtrim($value->url, '/');
+                $userId = $value->userId;
                 $password = $value->password;
                 break;
             }
@@ -1210,17 +1243,17 @@ class MaarchParapheurController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'           => rtrim($url, '/') . "/rest/documents/{$externalId['signatureBookId']}/workflow",
-            'basicAuth'     => ['user' => $userId, 'password' => $password],
-            'headers'       => ['content-type:application/json'],
-            'method'        => 'GET'
+            'url'       => rtrim($url, '/') . "/rest/documents/{$externalId['signatureBookId']}/workflow",
+            'basicAuth' => ['user' => $userId, 'password' => $password],
+            'headers'   => ['content-type:application/json'],
+            'method'    => 'GET'
         ]);
 
         if ($curlResponse['code'] != '200') {
             if (!empty($curlResponse['response']['errors'])) {
-                $errors =  $curlResponse['response']['errors'];
+                $errors = $curlResponse['response']['errors'];
             } else {
-                $errors =  $curlResponse['errors'];
+                $errors = $curlResponse['errors'];
             }
             if (empty($errors)) {
                 $errors = 'An error occured. Please check your configuration file.';
@@ -1238,13 +1271,13 @@ class MaarchParapheurController
             return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
         }
 
-        $url      = '';
-        $userId   = '';
+        $url = '';
+        $userId = '';
         $password = '';
         foreach ($loadedXml->signatoryBook as $value) {
             if ($value->id == "maarchParapheur") {
-                $url      = rtrim($value->url, '/');
-                $userId   = $value->userId;
+                $url = rtrim($value->url, '/');
+                $userId = $value->userId;
                 $password = $value->password;
                 break;
             }
@@ -1255,10 +1288,10 @@ class MaarchParapheurController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'           => rtrim($url, '/') . "/rest/connectors",
-            'basicAuth'     => ['user' => $userId, 'password' => $password],
-            'headers'       => ['content-type:application/json'],
-            'method'        => 'GET'
+            'url'       => rtrim($url, '/') . "/rest/connectors",
+            'basicAuth' => ['user' => $userId, 'password' => $password],
+            'headers'   => ['content-type:application/json'],
+            'method'    => 'GET'
         ]);
 
         if ($curlResponse['code'] != '200') {
@@ -1266,9 +1299,9 @@ class MaarchParapheurController
                 return $response->withJson(['otp' => []]);
             }
             if (!empty($curlResponse['response']['errors'])) {
-                $errors =  $curlResponse['response']['errors'];
+                $errors = $curlResponse['response']['errors'];
             } else {
-                $errors =  $curlResponse['errors'];
+                $errors = $curlResponse['errors'];
             }
             if (empty($errors)) {
                 $errors = 'An error occured. Please check your configuration file.';
@@ -1293,8 +1326,8 @@ class MaarchParapheurController
 
         foreach ($loadedXml->signatoryBook as $signatoryBook) {
             if ($signatoryBook->id == "maarchParapheur") {
-                $url      = $signatoryBook->url;
-                $userId   = $signatoryBook->userId;
+                $url = $signatoryBook->url;
+                $userId = $signatoryBook->userId;
                 $password = $signatoryBook->password;
                 break;
             }
@@ -1304,10 +1337,10 @@ class MaarchParapheurController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'           => rtrim($url, '/') . '/rest/users/' . $args['userId'],
-            'basicAuth'     => ['user' => $userId, 'password' => $password],
-            'headers'       => ['content-type:application/json'],
-            'method'        => 'GET'
+            'url'       => rtrim($url, '/') . '/rest/users/' . $args['userId'],
+            'basicAuth' => ['user' => $userId, 'password' => $password],
+            'headers'   => ['content-type:application/json'],
+            'method'    => 'GET'
         ]);
 
         if (empty($curlResponse['response']['user'])) {

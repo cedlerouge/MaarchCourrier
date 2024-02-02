@@ -35,9 +35,6 @@ export class LoginComponent implements OnInit {
 
     ngOnInit() {
         this.urlProfile = `${this.authService.appUrl}/dist/index.html#/profile`;
-        const tradTutoStep1 = this.translate.instant('lang.tutoStep1', {url : this.urlProfile});
-        this.tutoStep1Msg = this.sanitizer.bypassSecurityTrustHtml(tradTutoStep1);
-        
         this.loginForm = new FormGroup({
             login: new FormControl('', Validators.required),
             password: new FormControl('', Validators.required),
@@ -54,7 +51,7 @@ export class LoginComponent implements OnInit {
             if (tokens?.token && tokens?.refreshToken) {
                 this.authService.saveTokens(tokens.token, tokens.refreshToken);
                 this.authService.updateUserInfo(tokens.token);
-                this.success.emit(true); 
+                this.success.emit(true);
             } else {
                 this.notificationService.error(this.translate.instant('lang.badTokens'));
                 this.loading = false;

@@ -139,6 +139,7 @@ import { SaveNumericPackageComponent } from './save-numeric-package.component';
 import { SignatureBookComponent } from './signatureBook/signature-book.component';
 import { SignatureBookActionsComponent } from './signatureBook/actions/signature-book-actions.component';
 import { SignatureBookStampsComponent } from './signatureBook/stamps/signature-book-stamps.component';
+import { MaarchSbTabsComponent } from './signatureBook/tabs/signature-book-tabs.component';
 import { MaarchSbContentComponent } from './signatureBook/MaarchSbContent/maarchSbContent.component';
 import { VisaWorkflowModalComponent } from './visa/modal/visa-workflow-modal.component';
 import { ExternalVisaWorkflowComponent } from './visa/externalVisaWorkflow/external-visa-workflow.component';
@@ -249,6 +250,7 @@ export class MyHammerConfig extends HammerGestureConfig {
         SignatureBookComponent,
         SignatureBookActionsComponent,
         SignatureBookStampsComponent,
+        MaarchSbTabsComponent,
         MaarchSbContentComponent,
         VisaWorkflowModalComponent,
         DevLangComponent,

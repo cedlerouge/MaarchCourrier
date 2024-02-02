@@ -1,21 +1,22 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Core Config Model
-* @author dev@maarch.org
-* @ingroup core
-*/
+ * @brief Core Config Model
+ * @author dev@maarch.org
+ * @ingroup core
+ */
 
 namespace SrcCore\models;
 
 use Configuration\models\ConfigurationModel;
+use Exception;
 
 class CoreConfigModel
 {
@@ -58,7 +59,7 @@ class CoreConfigModel
         return self::$customId;
     }
 
-    public static function getConfigPath()
+    public static function getConfigPath(): string
     {
         $customId = CoreConfigModel::getCustomId();
         if (!empty($customId) && is_file("custom/{$customId}/config/config.json")) {
@@ -70,6 +71,9 @@ class CoreConfigModel
         return $path;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getApplicationName()
     {
         static $applicationName;
@@ -97,6 +101,9 @@ class CoreConfigModel
         return $file['version'];
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getLanguage()
     {
         $availableLanguages = ['fr'];
@@ -116,8 +123,8 @@ class CoreConfigModel
     public static function getCustomLanguage($aArgs = [])
     {
         $customId = CoreConfigModel::getCustomId();
-        if (file_exists('custom/' . $customId . '/lang/lang-'.$aArgs['lang'].'.ts')) {
-            $fileContent = file_get_contents('custom/' . $customId . '/lang/lang-'.$aArgs['lang'].'.ts');
+        if (file_exists('custom/' . $customId . '/lang/lang-' . $aArgs['lang'] . '.ts')) {
+            $fileContent = file_get_contents('custom/' . $customId . '/lang/lang-' . $aArgs['lang'] . '.ts');
             $fileContent = str_replace("\n", "", $fileContent);
 
             $strpos = strpos($fileContent, "=");
@@ -125,9 +132,7 @@ class CoreConfigModel
 
             $trimmed = rtrim($substr, ',}');
             $trimmed .= '}';
-            $decode = json_decode($trimmed);
-
-            return $decode;
+            return json_decode($trimmed);
         }
 
         return '';
@@ -137,8 +142,9 @@ class CoreConfigModel
      * Get the timezone
      *
      * @return string
+     * @throws Exception
      */
-    public static function getTimezone()
+    public static function getTimezone(): string
     {
         $timezone = 'Europe/Paris';
 
@@ -158,7 +164,7 @@ class CoreConfigModel
      *
      * @return string
      */
-    public static function getTmpPath()
+    public static function getTmpPath(): string
     {
         if (isset($_SERVER['MAARCH_TMP_DIR'])) {
             $tmpDir = $_SERVER['MAARCH_TMP_DIR'];
@@ -178,12 +184,12 @@ class CoreConfigModel
     /**
      * Get the Encrypt Key
      *
+     * @return string
      * @deprecated This function is deprecated and will be removed in future major versions.
      * Please use getEncryptKey() instead.
      *
-     * @return string
      */
-    public static function getOldEncryptKey()
+    public static function getOldEncryptKey(): string
     {
         if (isset($_SERVER['MAARCH_ENCRYPT_KEY'])) {
             $encryptKey = $_SERVER['MAARCH_ENCRYPT_KEY'];
@@ -197,10 +203,10 @@ class CoreConfigModel
     }
 
     /**
+     * @return bool
      * @deprecated This function will be removed in future major versions.
      * Please use getEncryptKey() instead.
      *
-     * @return bool
      */
     public static function useVhostEncryptKey(): bool
     {
@@ -234,6 +240,9 @@ class CoreConfigModel
         return $encryptKey;
     }
 
+    /**
+     * @return bool
+     */
     public static function hasEncryptKeyChanged(): bool
     {
         $encryptKey = CoreConfigModel::getEncryptKey();
@@ -267,14 +276,15 @@ class CoreConfigModel
 
     public static function getFpdiPdfParserLibrary()
     {
-        $libDir     = CoreConfigModel::getLibrariesDirectory();
-        $libPath    = null;
+        $libDir = CoreConfigModel::getLibrariesDirectory();
+        $libPath = null;
 
         if (!empty($libDir) && is_file($libDir . 'FPDI-PDF-Parser/src/autoload.php')) {
             $libPath = $libDir . 'FPDI-PDF-Parser/src/autoload.php';
         }
         return $libPath;
     }
+
     public static function getSetaSignFormFillerLibrary()
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -291,7 +301,11 @@ class CoreConfigModel
         return $libPath;
     }
 
-    public static function getLoggingMethod()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getLoggingMethod(): array
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'config/login_method.xml']);
 
@@ -307,7 +321,7 @@ class CoreConfigModel
         return $loggingMethod;
     }
 
-    public static function getMailevaConfiguration()
+    public static function getMailevaConfiguration(): array
     {
         $mailevaConfig = ['enabled' => false];
 
@@ -315,9 +329,9 @@ class CoreConfigModel
         if (!empty($configuration)) {
             $configuration = json_decode($configuration['value'], true);
 
-            $mailevaConfig['enabled']       = $configuration['enabled'];
+            $mailevaConfig['enabled'] = $configuration['enabled'];
             $mailevaConfig['connectionUri'] = rtrim($configuration['authUri'], '/');
-            $mailevaConfig['uri']           = rtrim($configuration['uri'], '/');
+            $mailevaConfig['uri'] = rtrim($configuration['uri'], '/');
 
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.maileva.com') {
                 $mailevaConfig['clientId'] = '69d315c2b3694accbce85f2871add37d';
@@ -332,6 +346,9 @@ class CoreConfigModel
         return $mailevaConfig;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getXmlLoaded(array $args)
     {
         ValidatorModel::notEmpty($args, ['path']);
@@ -353,6 +370,9 @@ class CoreConfigModel
         return $xmlfile;
     }
 
+    /**
+     * @throws Exception
+     */
     public static function getJsonLoaded(array $args)
     {
         ValidatorModel::notEmpty($args, ['path']);
@@ -380,7 +400,7 @@ class CoreConfigModel
      *
      * @return string $uniqueId
      */
-    public static function uniqueId()
+    public static function uniqueId(): string
     {
         $parts = explode('.', microtime(true));
         $sec = $parts[0];
@@ -397,7 +417,12 @@ class CoreConfigModel
         return $uniqueId;
     }
 
-    public static function getKeycloakConfiguration(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getKeycloakConfiguration(array $aArgs = []): array
     {
         ValidatorModel::stringType($aArgs, ['customId']);
 
@@ -416,15 +441,15 @@ class CoreConfigModel
         if (file_exists($path)) {
             $loadedXml = simplexml_load_file($path);
             if ($loadedXml) {
-                $keycloakConfig['authServerUrl']       = (string)$loadedXml->AUTH_SERVER_URL;
-                $keycloakConfig['realm']               = (string)$loadedXml->REALM;
-                $keycloakConfig['clientId']            = (string)$loadedXml->CLIENT_ID;
-                $keycloakConfig['clientSecret']        = (string)$loadedXml->CLIENT_SECRET;
-                $keycloakConfig['redirectUri']         = (string)$loadedXml->REDIRECT_URI;
+                $keycloakConfig['authServerUrl'] = (string)$loadedXml->AUTH_SERVER_URL;
+                $keycloakConfig['realm'] = (string)$loadedXml->REALM;
+                $keycloakConfig['clientId'] = (string)$loadedXml->CLIENT_ID;
+                $keycloakConfig['clientSecret'] = (string)$loadedXml->CLIENT_SECRET;
+                $keycloakConfig['redirectUri'] = (string)$loadedXml->REDIRECT_URI;
                 $keycloakConfig['encryptionAlgorithm'] = (string)$loadedXml->ENCRYPTION_ALGORITHM;
-                $keycloakConfig['encryptionKeyPath']   = (string)$loadedXml->ENCRYPTION_KEY_PATH;
-                $keycloakConfig['encryptionKey']       = (string)$loadedXml->ENCRYPTION_KEY;
-                $keycloakConfig['scope']               = (string)$loadedXml->SCOPE;
+                $keycloakConfig['encryptionKeyPath'] = (string)$loadedXml->ENCRYPTION_KEY_PATH;
+                $keycloakConfig['encryptionKey'] = (string)$loadedXml->ENCRYPTION_KEY;
+                $keycloakConfig['scope'] = (string)$loadedXml->SCOPE;
 
                 if (empty($keycloakConfig['encryptionAlgorithm'])) {
                     $keycloakConfig['encryptionAlgorithm'] = null;
@@ -441,18 +466,22 @@ class CoreConfigModel
         return $keycloakConfig;
     }
 
-    public static function getColumns(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getColumns(array $args): array
     {
         ValidatorModel::notEmpty($args, ['table']);
         ValidatorModel::stringType($args, ['table']);
 
-        $columns = DatabaseModel::getColumns(['table' => $args['table']]);
-
-        return $columns;
+        return DatabaseModel::getColumns(['table' => $args['table']]);
     }
 
     /**
      * @return bool
+     * @throws Exception
      */
     public static function isEnableDocserverEncryption(): bool
     {

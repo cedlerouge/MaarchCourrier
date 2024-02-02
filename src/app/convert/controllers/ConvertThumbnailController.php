@@ -105,6 +105,7 @@ class ConvertThumbnailController
                 if (empty($resource['filename'])) {
                     return true;
                 }
+                $version = $resource['version'];
 
                 $convertedDocument = AdrModel::getDocuments([
                     'select'    => ['id', 'docserver_id', 'path', 'filename', 'fingerprint'],
@@ -158,7 +159,6 @@ class ConvertThumbnailController
                 return ['errors' => '[ConvertThumbnail] Document does not exist on docserver'];
             }
 
-            $version = $resource['version'];
             $extension = pathinfo($pathToDocument, PATHINFO_EXTENSION);
             $fileContent = file_get_contents($pathToDocument);
         }
