@@ -14,6 +14,7 @@
 
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
+use Exception;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
 use ExternalSignatoryBook\pastell\Domain\PastellConfigInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellStates;
@@ -23,6 +24,7 @@ class PastellXmlConfig implements PastellConfigInterface
 {
     /**
      * @return PastellConfig|null
+     * @throws Exception
      */
     public function getPastellConfig(): ?PastellConfig
     {
@@ -49,6 +51,7 @@ class PastellXmlConfig implements PastellConfigInterface
 
     /**
      * @return PastellStates|null
+     * @throws Exception
      */
     public function getPastellStates(): ?PastellStates
     {

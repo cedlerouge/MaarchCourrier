@@ -38,26 +38,41 @@ class PastellStates
         $this->refusedSign = $refusedSign;
     }
 
+    /**
+     * @return string
+     */
     public function getErrorCode(): string
     {
         return $this->errorCode;
     }
 
+    /**
+     * @return string
+     */
     public function getVisaState(): string
     {
         return $this->visaState;
     }
 
+    /**
+     * @return string
+     */
     public function getSignState(): string
     {
         return $this->signState;
     }
 
+    /**
+     * @return string
+     */
     public function getRefusedVisa(): string
     {
         return $this->refusedVisa;
     }
 
+    /**
+     * @return string
+     */
     public function getRefusedSign(): string
     {
         return $this->refusedSign;
