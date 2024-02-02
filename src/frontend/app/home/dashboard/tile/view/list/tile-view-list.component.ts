@@ -75,10 +75,15 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
     }
 
     isDate(val: any) {
-        if (!isNaN(Date.parse(val))) {
+        if (!isNaN(Date.parse(val)) && this.isISO8601DateValid(val)) {
             return true;
         } else {
             return false;
         }
+    }
+
+    isISO8601DateValid(dateString: any): boolean {
+        var iso8601Pattern =  /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})\.(\d{6})$/; // ISO 8601 date with microseconds
+        return iso8601Pattern.test(dateString);
     }
 }
