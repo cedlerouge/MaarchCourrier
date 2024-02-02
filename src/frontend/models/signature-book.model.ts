@@ -1,4 +1,4 @@
-export interface Stamp {
+export interface StampInterface {
     id: number;
     userId: number;
     title: string;

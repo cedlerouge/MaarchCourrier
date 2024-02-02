@@ -3,7 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { Action } from '@models/actions.model';
-import { Stamp } from '@models/signature-book.model';
+import { StampInterface } from '@models/signature-book.model';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, of, tap } from 'rxjs';
 
@@ -17,7 +17,7 @@ export class SignatureBookActionsComponent implements OnInit {
     @Input() basketId: number;
     @Input() groupId: number;
     @Input() userId: number;
-    @Input() stamp: Stamp;
+    @Input() stamp: StampInterface;
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
@@ -91,7 +91,7 @@ export class SignatureBookActionsComponent implements OnInit {
         this.router.navigate([path]);
     }
 
-    signWithStamp(stamp: Stamp) {
+    signWithStamp(stamp: StampInterface) {
         this.actionsService.emitActionWithData(stamp);
     }
 

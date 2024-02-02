@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
-import { Stamp } from '@models/signature-book.model';
+import { StampInterface } from '@models/signature-book.model';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, map, of, tap } from 'rxjs';
 
@@ -14,12 +14,12 @@ export class SignatureBookStampsComponent implements OnInit {
 
     @Input() userId: number;
 
-    @Output() stampsLoaded: EventEmitter<Stamp> = new EventEmitter();
+    @Output() stampsLoaded: EventEmitter<StampInterface> = new EventEmitter();
 
 
     loading: boolean = true;
 
-    stamps: Stamp[] = [];
+    stamps: StampInterface[] = [];
 
     constructor(
         public http: HttpClient,
@@ -34,9 +34,9 @@ export class SignatureBookStampsComponent implements OnInit {
     getUserSignatures() {
         return new Promise<boolean>((resolve) => {
             // this.http.get(`../rest/${this.userId}/stamps`).pipe(
-            this.http.get<Stamp[]>(`../rest/currentUser/profile`).pipe(
+            this.http.get<StampInterface[]>(`../rest/currentUser/profile`).pipe(
                 map((data: any) => {
-                    let stamps : Stamp[] = data.signatures.map((sign: any) => {
+                    let stamps : StampInterface[] = data.signatures.map((sign: any) => {
                         return {
                             id: sign.id,
                             userId: sign.user_serial_id,
@@ -47,7 +47,7 @@ export class SignatureBookStampsComponent implements OnInit {
                     return stamps;
                      
                 }),
-                tap((stamps: Stamp[]) => {
+                tap((stamps: StampInterface[]) => {
                     this.stamps = stamps;
                     this.stampsLoaded.emit(this.stamps[0] ?? null);
                     resolve(true);
@@ -60,7 +60,7 @@ export class SignatureBookStampsComponent implements OnInit {
         })
     }
 
-    signWithStamp(stamp: Stamp) {
+    signWithStamp(stamp: StampInterface) {
         this.actionsService.emitActionWithData(stamp);
     }
 }

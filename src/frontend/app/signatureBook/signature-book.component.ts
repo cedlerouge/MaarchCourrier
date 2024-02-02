@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
-import { Stamp } from '@models/signature-book.model';
+import { StampInterface } from '@models/signature-book.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -21,7 +21,7 @@ export class SignatureBookComponent implements OnInit {
     selectedAttachment: number = 0;
     selectedDocToSign: number = 0;
 
-    defaultStamp: Stamp;
+    defaultStamp: StampInterface;
 
     attachments: string[] = [
         'Annexe',
