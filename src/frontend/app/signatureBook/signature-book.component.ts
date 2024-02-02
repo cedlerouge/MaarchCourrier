@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, map, of, tap } from 'rxjs';
 
-import { Attachement } from '@models/attachement.model';
+import { Attachment, AttachmentInterface } from '@models/attachment.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -20,8 +20,8 @@ export class SignatureBookComponent implements OnInit {
     groupId: number;
     userId: number;
 
-    attachments: Attachement[] = [];
-    docsToSign: string[] = [];
+    attachments: Attachment[] = [];
+    docsToSign: Attachment[] = [];
 
     constructor(
         public http: HttpClient,
@@ -56,19 +56,9 @@ export class SignatureBookComponent implements OnInit {
     initAttachments() {
         return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                tap((data: any) => {
-                    console.log('data', data);
-                    this.attachments = data.attachments.map(item => {
-                        let attachement = new Attachement();
-                        Object.keys(item).forEach(key => {
-                            attachement[key] = item[key];
-                        });
-                        return attachement;
-                    });
-
-                    this.attachments = this.attachments
-                    .filter((attachment) => attachment.inSignatureBook && attachment.status === 'A_TRA');
-
+                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
+                tap((attachments: AttachmentInterface[]) => {
+                    this.attachments = attachments;
                     this.loadingAttachments = false;
                     resolve(true);
                 }),
@@ -81,14 +71,19 @@ export class SignatureBookComponent implements OnInit {
     }
 
     initDocsToSign() {
-        this.docsToSign = [
-            'Doc à signer',
-            'Doc à signer',
-            'Doc à signer',
-            'Doc à signer',
-            'Doc à signer',
-            'Doc à signer',
-        ];
-        this.loadingDocsToSign = false;
+        return new Promise((resolve) => {
+            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
+                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
+                tap((docsToSign: AttachmentInterface[]) => {
+                    this.docsToSign = docsToSign;
+                    this.loadingDocsToSign = false;
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }

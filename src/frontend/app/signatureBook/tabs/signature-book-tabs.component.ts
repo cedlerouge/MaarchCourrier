@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { Attachement } from '@models/attachement.model';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     selector: 'app-maarch-sb-tabs',
@@ -9,22 +9,12 @@ import { Attachement } from '@models/attachement.model';
 })
 export class MaarchSbTabsComponent implements OnInit {
 
-    @Input() documents: Attachement[] | string[] = [];
+    @Input() documents: Attachment[];
     @Input() signable: boolean = false;
 
-    selectedId: number;
-    documentList: string[]=[];
+    selectedId: number = 0;
 
     constructor() {}
 
-    ngOnInit(): void {
-        if ((Array.isArray(this.documents)) && (this.documents.length >0)) {
-            if (this.documents[0] instanceof Attachement) {
-                this.documentList = this.documents.map((document: any) => document.title);
-            }
-            else {
-                this.documentList = JSON.parse(JSON.stringify(this.documents));
-            }
-        }
-    }
+    ngOnInit(): void {}
 }

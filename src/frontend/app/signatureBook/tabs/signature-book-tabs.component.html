@@ -1,6 +1,6 @@
 <div class="book-mark-container">
     <button
-        *ngFor="let document of documentList;let i=index"
+        *ngFor="let document of documents;let i=index"
         mat-button
         class="book-mark-item"
         [class.book-mark-item-to-left]="signable"
@@ -12,6 +12,6 @@
         }"
         (click)="selectedId=i"
         >
-        {{document}} {{i}}
+        {{document.title}} {{i}}
     </button>
 </div>
