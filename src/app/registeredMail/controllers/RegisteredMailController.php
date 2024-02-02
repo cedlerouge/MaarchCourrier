@@ -515,8 +515,8 @@ class RegisteredMailController
             'firstname'             => $primaryEntity['short_label'],
             'address_number'        => $args['issuingSite']['address_number'],
             'address_street'        => $args['issuingSite']['address_street'],
-            'address_additional1'   => $args['issuingSite']['address_additional1'],
-            'address_additional2'   => $args['issuingSite']['address_additional2'],
+            'address_additional1'   => $args['issuingSite']['address_additional1'] ?? '',
+            'address_additional2'   => $args['issuingSite']['address_additional2'] ?? '',
             'address_postcode'      => $args['issuingSite']['address_postcode'],
             'address_town'          => $args['issuingSite']['address_town'],
             'address_country'       => $args['issuingSite']['address_country']
@@ -529,8 +529,8 @@ class RegisteredMailController
             'lastname'              => $args['recipient']['lastname'],
             'address_number'        => $args['recipient']['addressNumber'],
             'address_street'        => $args['recipient']['addressStreet'],
-            'address_additional1'   => $args['recipient']['addressAdditional1'],
-            'address_additional2'   => $args['recipient']['addressAdditional2'],
+            'address_additional1'   => $args['recipient']['addressAdditional1'] ?? '',
+            'address_additional2'   => $args['recipient']['addressAdditional2'] ?? '',
             'address_postcode'      => $args['recipient']['addressPostcode'],
             'address_town'          => $args['recipient']['addressTown'],
             'address_country'       => $args['recipient']['addressCountry']
