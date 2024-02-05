@@ -74,7 +74,7 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
         }
     }
 
-    isDate(value: any, col: string) {
+    isDate(value: any, col: string): boolean {
         if (col === 'creationDate') {
             if (value instanceof Date) {
                 return true;
@@ -93,5 +93,6 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
                 }
             }
         }
+        return false;
     }
 }
