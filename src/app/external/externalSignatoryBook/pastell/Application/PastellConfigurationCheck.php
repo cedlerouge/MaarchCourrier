@@ -30,7 +30,6 @@ class PastellConfigurationCheck
     {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
-
     }
 
     /**

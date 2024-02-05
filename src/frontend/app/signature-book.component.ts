@@ -171,6 +171,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                         this.rightViewerLink = this.signatureBook.attachments[0].viewerLink;
                     }
 
+                    this.signatureBook.resList  = this.loadResourcesOrder();
                     this.signatureBook.resListIndex = this.signatureBook.resList.map((e: any) => e.res_id).indexOf(this.resId);
 
                     this.displayPanel('RESLEFT');
@@ -233,10 +234,11 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
         for (let i = 0; i < c; i++) {
             if (this.signatureBook.resList[i].res_id === this.resId) {
-                if (this.signatureBook.resList[i + 1]) {
+                const canGoToNext: boolean = !this.functions.empty(this.signatureBook.resList[i + 1]);
+                if (canGoToNext) {
                     idToGo = this.signatureBook.resList[i + 1].res_id;
-                } else if (i > 0) {
-                    idToGo = this.signatureBook.resList[i - 1].res_id;
+                } else {
+                    idToGo = -1;
                 }
             }
         }
@@ -834,6 +836,21 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
             this.zoomLeft = this.zoomLeft * zoomFactor;
         } else if (type === 'out') {
             this.zoomLeft = this.zoomLeft / zoomFactor;
+        }
+    }
+
+    loadResourcesOrder(): number [] {
+        // I retrieve the order of the banner mail stored before entering the internal signature pad.
+        const dataOrder: any[] = this.filtersListService.getResourcesOrder();
+
+        // Formatting the data so that it can replace the data contained in this.signatureBook.resList,
+        // which is not always in the right order.
+        if (!this.functions.empty(dataOrder)) {
+            const reorderResList = dataOrder.map((item2: any) => {
+                const matchingItem1 = this.signatureBook.resList.find((item1: any) => item1.res_id === item2.resId);
+                return !this.functions.empty(matchingItem1) ? { ...matchingItem1, res_id: item2.resId} : null;
+            });
+            return reorderResList.filter(item => item !== null);
         }
     }
 }

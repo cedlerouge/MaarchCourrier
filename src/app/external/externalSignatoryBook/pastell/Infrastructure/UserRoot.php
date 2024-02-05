@@ -9,6 +9,7 @@
  * @brief Pastell UserRoot (for History)
  * @author dev@maarch.org
  */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Domain\UserRootInterface;

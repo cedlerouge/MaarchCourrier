@@ -10,6 +10,7 @@ namespace MaarchCourrier\Tests\app\external\signatoryBook\Pastell\Mock;
 
 use ExternalSignatoryBook\pastell\Domain\PastellApiInterface;
 use ExternalSignatoryBook\pastell\Domain\PastellConfig;
+use stdClass;
 
 class PastellApiMock implements PastellApiInterface
 {
@@ -157,7 +158,7 @@ class PastellApiMock implements PastellApiInterface
      */
     public function getXmlDetail(PastellConfig $config, string $idFolder): object
     {
-        return $this->journalXml ?? new \stdClass();
+        return $this->journalXml ?? new stdClass();
     }
 
     /**
