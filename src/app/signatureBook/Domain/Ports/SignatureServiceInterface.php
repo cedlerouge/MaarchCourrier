@@ -12,7 +12,7 @@
  * @author  dev@maarch.org
  */
 
-namespace SignatureBook\Domain\Port;
+namespace SignatureBook\Domain\Ports;
 
 use SignatureBook\Domain\UserSignature;
 
@@ -22,7 +22,7 @@ interface SignatureServiceInterface
      * Get user signatures by user ID.
      *
      * @param int $userId User ID.
-     * @return UserSignature[]|null Array of user signatures.
+     * @return UserSignature[] Array of user signatures.
      */
-    public function getSignaturesByUserId(int $userId): ?array;
+    public function getSignaturesByUserId(int $userId): array;
 }

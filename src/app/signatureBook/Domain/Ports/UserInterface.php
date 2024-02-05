@@ -13,9 +13,9 @@
  * @ingroup core
  */
 
-namespace SrcCore\Domain\Ports;
+namespace SignatureBook\Domain\Ports;
 
-use SrcCore\Domain\User;
+use SignatureBook\Domain\User;
 
 interface UserInterface
 {

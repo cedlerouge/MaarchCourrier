@@ -13,7 +13,7 @@
  * @ingroup core
  */
 
-namespace SrcCore\Domain;
+namespace SignatureBook\Domain;
 
 class User
 {

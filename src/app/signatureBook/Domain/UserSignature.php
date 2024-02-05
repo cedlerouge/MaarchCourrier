@@ -14,7 +14,9 @@
 
 namespace SignatureBook\Domain;
 
-class UserSignature
+use JsonSerializable;
+
+class UserSignature implements JsonSerializable
 {
     private int $id;
     private int $userSerialId;
@@ -23,6 +25,10 @@ class UserSignature
     private string $signatureFileName;
     private string $fingerprint;
 
+    /**
+     * @param array $array
+     * @return UserSignature
+     */
     public static function createFromArray(array $array = []): UserSignature
     {
         $userSignature = new UserSignature();
@@ -38,18 +44,20 @@ class UserSignature
     }
 
     /**
-     * @param array $twoDimensionalArray
-     * @return UserSignature[]
+     * Convert UserSignature object to an associative array.
+     *
+     * @return array
      */
-    public static function createUserSignatureArrayFromArray(array $twoDimensionalArray = []): array
+    public function toArray(): array
     {
-        $userSignatures = [];
-
-        foreach ($twoDimensionalArray as $a) {
-            $userSignatures[] = UserSignature::createFromArray($a);
-        }
-
-        return $userSignatures;
+        return [
+            'id' => $this->id,
+            'userSerialId' => $this->userSerialId,
+            'signatureLabel' => $this->signatureLabel,
+            'signaturePath' => $this->signaturePath,
+            'signatureFileName' => $this->signatureFileName,
+            'fingerprint' => $this->fingerprint,
+        ];
     }
 
     /**
@@ -149,4 +157,15 @@ class UserSignature
     }
 
 
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'userSerialId' => $this->getUserSerialId(),
+            'signatureLabel' => $this->getSignatureLabel(),
+            'signaturePath' => $this->getSignaturePath(),
+            'signatureFileName' => $this->getSignatureFileName(),
+            'fingerprint' => $this->getFingerprint(),
+        ];
+    }
 }

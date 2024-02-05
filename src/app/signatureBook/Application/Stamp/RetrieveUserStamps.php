@@ -14,9 +14,9 @@
 
 namespace SignatureBook\Application\Stamp;
 
-use SignatureBook\Domain\Port\SignatureServiceInterface;
-use SrcCore\Domain\Exceptions\UserDoesNotExistException;
-use SrcCore\Domain\Ports\UserInterface;
+use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
+use SignatureBook\Domain\Ports\SignatureServiceInterface;
+use SignatureBook\Domain\Ports\UserInterface;
 
 class RetrieveUserStamps
 {

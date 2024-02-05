@@ -12,7 +12,7 @@
  * @author  dev@maarch.org
  */
 
-namespace SrcCore\Domain\Exceptions;
+namespace SignatureBook\Domain\Exceptions;
 
 use Exception;
 

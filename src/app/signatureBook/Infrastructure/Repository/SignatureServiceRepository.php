@@ -2,7 +2,7 @@
 
 namespace SignatureBook\Infrastructure\Repository;
 
-use SignatureBook\Domain\Port\SignatureServiceInterface;
+use SignatureBook\Domain\Ports\SignatureServiceInterface;
 use SignatureBook\Domain\UserSignature;
 use User\models\UserSignatureModel;
 
@@ -10,16 +10,21 @@ class SignatureServiceRepository implements SignatureServiceInterface
 {
     /**
      * @param int $userId
-     * @return UserSignature[]|null
+     * @return UserSignature[]
      */
-    public function getSignaturesByUserId(int $userId): ?array
+    public function getSignaturesByUserId(int $userId): array
     {
         $signatures = UserSignatureModel::getByUserSerialId(['userSerialid' => $userId]);
 
         if (empty($signatures)) {
-            return null;
+            return [];
         }
 
-        return UserSignature::createUserSignatureArrayFromArray($signatures);
+        $userSignatures = [];
+        foreach ($signatures as $s) {
+            $userSignatures[] = UserSignature::createFromArray($s);
+        }
+
+        return $userSignatures;
     }
 }
