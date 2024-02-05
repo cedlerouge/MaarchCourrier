@@ -1,17 +1,18 @@
 <div class="title-container"
-    title="MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION (Projet de réponse)"
->
+    [title]="setTitle(attachmentData) + ' (' + attachmentData?.typeLabel + ')'">
     <i
         class="far fa-plus-square"
         [title]="'lang.showInformationsBlock' | translate"
         style="cursor: pointer"
     ></i>
-    <span>MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION</span>
-    <small class="subSubject">Projet de réponse</small>
+    <span>{{setTitle(attachmentData)}}</span>
+    <small class="subSubject">{{attachmentData?.typeLabel}}</small>
 </div>
-
+<div *ngIf="loading" class="loading" style="display:flex;height:100%;">
+    <mat-spinner style="margin:auto;"></mat-spinner>
+</div>
 <div class="sbContent-container">
     <iframe
-        src="assets/sample/test.pdf"
+        [src]="attachmentContent"
     ></iframe>
 </div>
