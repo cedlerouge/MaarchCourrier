@@ -35,7 +35,7 @@ use User\models\UserModel;
 
 class TemplateController
 {
-    const AUTHORIZED_MIMETYPES = [
+    public const AUTHORIZED_MIMETYPES = [
         'application/zip',
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -160,7 +160,7 @@ class TemplateController
             $finfo    = new \finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($fileContent);
             if (!StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) || !in_array($mimeType, self::AUTHORIZED_MIMETYPES)) {
-                return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : '.$mimeType]);
+                return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : ' . $mimeType]);
             }
 
             $storeResult = DocserverController::storeResourceOnDocServer([
@@ -270,7 +270,7 @@ class TemplateController
             $finfo    = new \finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($fileContent);
             if (!StoreController::isFileAllowed(['extension' => $format, 'type' => $mimeType]) || !in_array($mimeType, self::AUTHORIZED_MIMETYPES)) {
-                return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : '.$mimeType]);
+                return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE . ' : ' . $mimeType]);
             }
 
             $storeResult = DocserverController::storeResourceOnDocServer([
@@ -468,7 +468,7 @@ class TemplateController
             $where[] = 'templates.template_attachment_type in (?)';
             $data[] = explode(',', $queryParams['attachmentType']);
         }
-        
+
         $templates = TemplateModel::getWithAssociation([
             'select'    => ['DISTINCT(templates.template_id)', 'templates.template_label', 'templates.template_file_name', 'templates.template_path', 'templates.template_attachment_type'],
             'where'     => $where,

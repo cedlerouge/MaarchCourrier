@@ -1,0 +1,35 @@
+.stamp-button {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 200px;
+    height: 100px;
+}
+
+.stamps-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    overflow: auto;
+}
+
+.component-container {
+    justify-content: flex-end;
+    height: 100%;
+    color: white;
+    background-color: var(--maarch-color-primary);
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+        text-align: center;
+    }
+}
+
+.no-stamp {
+    font-size: 75px;
+    opacity: 0.2;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

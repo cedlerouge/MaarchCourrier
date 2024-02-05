@@ -1316,7 +1316,7 @@ class SearchController
                         } else {
                             break;
                         }
-                        $cptIds ++;
+                        $cptIds++;
                     }
 
                     if (empty($listIds)) {

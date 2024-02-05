@@ -16,12 +16,12 @@ namespace Resource\Domain;
 
 class ResourceFileInfo
 {
-    private ?int    $creatorId;
-    private ?int    $pageCount;
-    private array   $pathInfo;
-    private string  $fileContent;
-    private string  $formatFilename;
-    private string  $originalFormat;
+    private ?int $creatorId;
+    private ?int $pageCount;
+    private array $pathInfo;
+    private string $fileContent;
+    private string $formatFilename;
+    private string $originalFormat;
 
     public function __construct(
         ?int $creatorId,
@@ -99,4 +99,3 @@ class ResourceFileInfo
         $this->originalFormat = $originalFormat;
     }
 }
-

@@ -14,6 +14,7 @@
 
 namespace Convert\scripts;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use Attachment\models\AttachmentModel;
@@ -28,6 +29,7 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabasePDO;
 use User\models\UserModel;
 
+// phpcs:ignore
 ConvertPdfScript::launchConvert($argv);
 
 class ConvertPdfScript
@@ -50,11 +52,11 @@ class ConvertPdfScript
         }
         $cmd = array_search('--userId', $args);
         if ($cmd > 0) {
-            $userId = $args[$cmd+1];
+            $userId = $args[$cmd + 1];
         }
         $cmd = array_search('--coreUrl', $args);
         if ($cmd > 0) {
-            $coreUrl = $args[$cmd+1];
+            $coreUrl = $args[$cmd + 1];
         }
 
         if (empty($resId) || empty($type) || empty($userId)) {
@@ -135,11 +137,11 @@ class ConvertPdfScript
             if (!$converted) {
                 ConvertPdfController::addBom($fullFilename);
                 $command = "timeout 30 unoconv -f pdf " . escapeshellarg($fullFilename);
-                exec('export HOME=' . $tmpPath . ' && '.$command, $output, $return);
+                exec('export HOME=' . $tmpPath . ' && ' . $command, $output, $return);
             }
 
-            if (!file_exists($tmpPath.$fileNameOnTmp.'.pdf')) {
-                return ['errors' => 'Conversion failed ! '. implode(" ", $output)];
+            if (!file_exists($tmpPath . $fileNameOnTmp . '.pdf')) {
+                return ['errors' => 'Conversion failed ! ' . implode(" ", $output)];
             }
         }
 

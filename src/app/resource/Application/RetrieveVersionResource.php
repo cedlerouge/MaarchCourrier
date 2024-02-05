@@ -34,7 +34,7 @@ class RetrieveVersionResource
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath

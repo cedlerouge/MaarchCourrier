@@ -69,5 +69,4 @@ class AdministrationController
 
         return $response->withJson(['count' => $count]);
     }
-
 }

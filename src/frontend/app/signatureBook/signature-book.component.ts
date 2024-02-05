@@ -1,8 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
 import { catchError, map, of, tap } from 'rxjs';
+import { Subscription } from 'rxjs';
+import { MatDrawer } from '@angular/material/sidenav';
+import { StampInterface } from '@models/signature-book.model';
 
 import { Attachment, AttachmentInterface } from '@models/attachment.model';
 
@@ -12,6 +16,8 @@ import { Attachment, AttachmentInterface } from '@models/attachment.model';
 })
 export class SignatureBookComponent implements OnInit {
 
+    @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;    
+    
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
 
@@ -23,12 +29,20 @@ export class SignatureBookComponent implements OnInit {
     attachments: Attachment[] = [];
     docsToSign: Attachment[] = [];
 
+    subscription: Subscription;
+    defaultStamp: StampInterface;
+
     constructor(
         public http: HttpClient,
         private route: ActivatedRoute,
         private router: Router,
-        private notify: NotificationService
-    ) {}
+        private notify: NotificationService,
+        private actionsService: ActionsService,
+    ) {
+        this.subscription = this.actionsService.catchAction().subscribe(message => {
+            this.stampsPanel.close();
+        });
+    }
 
     async ngOnInit(): Promise<void> {
         await this.initParams();
@@ -44,7 +58,7 @@ export class SignatureBookComponent implements OnInit {
     initParams() {
         return new Promise((resolve) => {
             this.route.params.subscribe(params => {
-                this.resId = +params['resId'];
+                this.resId = params['resId'];
                 this.basketId = params['basketId'];
                 this.groupId = params['groupId'];
                 this.userId = params['userId'];
@@ -85,5 +99,10 @@ export class SignatureBookComponent implements OnInit {
                 })
             ).subscribe();
         });
+    }
+
+    ngOnDestroy() {
+        // unsubscribe to ensure no memory leaks
+        this.subscription.unsubscribe();
     }
 }

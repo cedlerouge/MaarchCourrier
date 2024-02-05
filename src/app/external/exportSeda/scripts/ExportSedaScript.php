@@ -14,13 +14,13 @@
 
 namespace ExportSeda\controllers;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Doctype\models\DoctypeModel;
 use Entity\models\EntityModel;
-use ExportSeda\controllers\ExportSEDATrait;
 use Resource\models\ResModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\models\DatabasePDO;
@@ -29,6 +29,7 @@ use User\models\UserModel;
 // ARGS
 // --encodedData : All data encoded in base64
 
+// phpcs:ignore
 ExportSedaScript::initialize($argv);
 
 class ExportSedaScript
@@ -37,7 +38,7 @@ class ExportSedaScript
     {
         if (array_search('--encodedData', $args) > 0) {
             $cmd = array_search('--encodedData', $args);
-            $data = json_decode(base64_decode($args[$cmd+1]), true);
+            $data = json_decode(base64_decode($args[$cmd + 1]), true);
         }
 
         if (!empty($data)) {

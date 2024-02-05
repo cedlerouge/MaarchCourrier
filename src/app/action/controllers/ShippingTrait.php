@@ -32,7 +32,6 @@ use SrcCore\controllers\PasswordController;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
 
-
 trait ShippingTrait
 {
     public static function createMailevaShippings(array $args)

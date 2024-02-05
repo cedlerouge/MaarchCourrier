@@ -69,7 +69,7 @@ class UserModel
         $aUser = DatabaseModel::select([
             'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'     => ['users'],
-            'where'     => ['external_id->>\''.$aArgs['externalName'].'\' = ?'],
+            'where'     => ['external_id->>\'' . $aArgs['externalName'] . '\' = ?'],
             'data'      => [$aArgs['externalId']]
         ]);
 
@@ -284,7 +284,7 @@ class UserModel
 
         $labelledUser = '';
         if (!empty($rawUser)) {
-            $labelledUser = $rawUser['firstname']. ' ' .$rawUser['lastname'];
+            $labelledUser = $rawUser['firstname'] . ' ' . $rawUser['lastname'];
         }
 
         return $labelledUser;

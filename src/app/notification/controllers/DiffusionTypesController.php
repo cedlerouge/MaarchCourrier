@@ -62,7 +62,7 @@ class DiffusionTypesController
             $leftJoin = ['li.item_id = us.id'];
             $where    = ["li.item_mode = 'cc' AND item_type='user_id'"];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -70,7 +70,7 @@ class DiffusionTypesController
                     $where[]    = 'notes.id = :recordid AND li.item_id != notes.user_id';
                     $where[]    = '( notes.id not in (SELECT DISTINCT note_id FROM note_entities) OR us.id IN (SELECT ue.user_id FROM note_entities ne JOIN users_entities ue ON ne.item_id = ue.entity_id WHERE ne.note_id = :recordid))';
                     break;
-        
+
                 case 'res_letterbox':
                 case 'res_view_letterbox':
                     $table[]    = 'res_letterbox lb';
@@ -85,7 +85,7 @@ class DiffusionTypesController
                     $where[]    = "listinstance_id = :recordid AND lb.status not in ('INIT', 'AVAL') AND li.item_id <> :userid";
                     $arrayPDO[':userid'] = $args['event']['user_id'];
             }
-        
+
             // Main document resource from view
             $recipientsUser = DatabaseModel::select([
                 'select'    => ['distinct us.*'],
@@ -94,7 +94,7 @@ class DiffusionTypesController
                 'where'     => $where,
                 'data'      => $arrayPDO,
             ]);
-        
+
             // Copy to entities
             $table    = ['listinstance li', 'entities e', 'users_entities ue', 'users us'];
             $leftJoin = ['li.item_id = e.id', 'e.entity_id = ue.entity_id', 'ue.user_id = us.id'];
@@ -119,7 +119,7 @@ class DiffusionTypesController
                 default:
                     $where[] = "listinstance_id = :recordid";
             }
-        
+
             // Main document resource from view
             $recipientsEntities = DatabaseModel::select([
                 'select'    => ['distinct us.*'],
@@ -136,7 +136,7 @@ class DiffusionTypesController
             $table    = ['listinstance li'];
             $leftJoin = [];
             $where    = [];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -155,7 +155,7 @@ class DiffusionTypesController
                 default:
                     $where[] = "listinstance_id = :recordid";
             }
-        
+
             // Main document resource from view
             $resId = DatabaseModel::select([
                 'select'    => ['li.res_id'],
@@ -186,7 +186,7 @@ class DiffusionTypesController
             $leftJoin = [];
             $where    = [];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -213,13 +213,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $resId = DatabaseModel::select([
                 'select'    => ['li.res_id'],
@@ -240,7 +240,7 @@ class DiffusionTypesController
             $leftJoin = ['li.item_id = us.id'];
             $where    = ["li.item_mode = 'sign' and process_date IS NULL"];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -250,7 +250,7 @@ class DiffusionTypesController
                     $where[]    = 'notes.id = :recordid AND li.item_id != notes.user_id';
                     $where[]    = '(notes.id not in (SELECT DISTINCT note_id FROM note_entities) OR us.id IN (SELECT ue.user_id FROM note_entities ne JOIN users_entities ue ON ne.item_id = ue.entity_id WHERE ne.note_id = :recordid))';
                     break;
-        
+
                 case 'res_letterbox':
                 case 'res_view_letterbox':
                     $table[]    = 'res_letterbox lb';
@@ -268,13 +268,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $recipients = DatabaseModel::select([
                 'select'    => ['distinct us.*'],
@@ -290,7 +290,7 @@ class DiffusionTypesController
             $leftJoin = [];
             $where    = [];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -317,13 +317,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $resId = DatabaseModel::select([
                 'select'    => ['li.res_id'],
@@ -344,7 +344,7 @@ class DiffusionTypesController
             $leftJoin = ['li.item_id = us.id'];
             $where    = ["li.item_mode = 'visa' and process_date IS NULL"];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -354,7 +354,7 @@ class DiffusionTypesController
                     $where[]    = 'notes.id = :recordid AND li.item_id != notes.user_id';
                     $where[]    = '(notes.id not in (SELECT DISTINCT note_id FROM note_entities) OR us.id IN (SELECT ue.user_id FROM note_entities ne JOIN users_entities ue ON ne.item_id = ue.entity_id WHERE ne.note_id = :recordid))';
                     break;
-        
+
                 case 'res_letterbox':
                 case 'res_view_letterbox':
                     $table[]    = 'res_letterbox lb';
@@ -372,13 +372,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $recipients = DatabaseModel::select([
                 'select'    => ['distinct us.*'],
@@ -394,7 +394,7 @@ class DiffusionTypesController
             $leftJoin = [];
             $where    = [];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -421,13 +421,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $resId = DatabaseModel::select([
                 'select'    => ['li.res_id'],
@@ -448,7 +448,7 @@ class DiffusionTypesController
             $leftJoin = ['li.item_id = us.id'];
             $where    = ["li.item_mode = 'dest'"];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -458,7 +458,7 @@ class DiffusionTypesController
                     $where[]    = 'notes.id = :recordid AND us.id != notes.user_id';
                     $where[]    = '(notes.id not in (SELECT DISTINCT note_id FROM note_entities) OR us.id IN (SELECT ue.user_id FROM note_entities ne JOIN users_entities ue ON ne.item_id = ue.entity_id WHERE ne.note_id = :recordid))';
                     break;
-        
+
                 case 'res_letterbox':
                 case 'res_view_letterbox':
                     $table[]    = 'res_letterbox lb';
@@ -476,13 +476,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $recipients = DatabaseModel::select([
                 'select'    => ['distinct us.*'],
@@ -498,7 +498,7 @@ class DiffusionTypesController
             $leftJoin = ['li.item_id = us.id'];
             $where    = [];
             $arrayPDO = [':recordid' => $args['event']['record_id']];
-        
+
             switch ($args['event']['table_name']) {
                 case 'notes':
                     $table[]    = 'notes';
@@ -525,13 +525,13 @@ class DiffusionTypesController
             if (!empty($args['notification']['diffusion_properties'])) {
                 $aStatus    = explode(',', $args['notification']['diffusion_properties']);
                 foreach ($aStatus as $key => $status) {
-                    $inQuestion[] = ':statustab'.$key;
-                    $arrayPDO[':statustab'.$key] = $status;
+                    $inQuestion[] = ':statustab' . $key;
+                    $arrayPDO[':statustab' . $key] = $status;
                 }
                 $inQuestion = implode(', ', $inQuestion);
-                $where[]    = 'lb.status in ('.$inQuestion.')';
+                $where[]    = 'lb.status in (' . $inQuestion . ')';
             }
-        
+
             // Main document resource from view
             $resId = DatabaseModel::select([
                 'select'    => ['li.res_id'],

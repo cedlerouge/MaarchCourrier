@@ -115,20 +115,22 @@ class TextFormatModel
         if (strlen($string) >= $max) {
             $string = substr($string, 0, $max);
             $espace = strrpos($string, " ");
-            $string = substr($string, 0, $espace)."...";
+            $string = substr($string, 0, $espace) . "...";
             return $string;
         } else {
             return $string;
         }
     }
 
-    public static function snakeToCamel($subject) {
+    public static function snakeToCamel($subject)
+    {
         $subject = lcfirst(ucwords($subject, '_'));
         $subject = str_replace('_', '', $subject);
         return $subject;
     }
 
-    public static function camelToSnake($subject) {
+    public static function camelToSnake($subject)
+    {
         $snakeCaseSubject = '';
         foreach (str_split($subject) as $index => $character) {
             if ($index > 0 && strtoupper($character) == $character && strpos('0123456789_', $character) === false) {

@@ -31,7 +31,7 @@ class RetrieveOriginalResource
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
-    public function __construct (
+    public function __construct(
         ResourceDataInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
@@ -73,7 +73,7 @@ class RetrieveOriginalResource
         $format = $document->getFormat();
 
         $signedDocument = null;
-        if($isSignedVersion) {
+        if ($isSignedVersion) {
             $signedDocument = $this->resourceData->getSignResourceData($resId, $document->getVersion());
 
             if ($signedDocument != null) {

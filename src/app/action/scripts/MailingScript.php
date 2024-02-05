@@ -14,6 +14,7 @@
 
 namespace ExportSeda\controllers;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use Action\controllers\ExternalSignatoryBookTrait;
@@ -27,6 +28,7 @@ use User\models\UserModel;
 // ARGS
 // --encodedData : All data encoded in base64
 
+// phpcs:ignore
 MailingScript::initialize($argv);
 
 class MailingScript
@@ -35,7 +37,7 @@ class MailingScript
     {
         if (array_search('--encodedData', $args) > 0) {
             $cmd = array_search('--encodedData', $args);
-            $data = json_decode(base64_decode($args[$cmd+1]), true);
+            $data = json_decode(base64_decode($args[$cmd + 1]), true);
         }
 
         if (!empty($data)) {

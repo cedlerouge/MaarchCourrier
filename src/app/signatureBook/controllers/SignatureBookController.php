@@ -265,9 +265,9 @@ class SignatureBookController
             $attachments[$key]['viewerId']        = $viewerId;
 
             if ($value['status'] == 'SIGN') {
-                $attachments[$key]['viewerLink'] = "../rest/attachments/{$viewerId}/content?".rand();
+                $attachments[$key]['viewerLink'] = "../rest/attachments/{$viewerId}/content?" . rand();
             } else {
-                $attachments[$key]['viewerLink'] = "../rest/attachments/{$realId}/content?".rand();
+                $attachments[$key]['viewerLink'] = "../rest/attachments/{$realId}/content?" . rand();
             }
         }
 
@@ -298,8 +298,13 @@ class SignatureBookController
                 $attachments[$key]['obsAttachments'] = $obsData[$value['origin_id']];
             }
 
-            unset($attachments[$key]['path'], $attachments[$key]['filename'], $attachments[$key]['dest_user'],
-                $attachments[$key]['dest_contact_id'], $attachments[$key]['dest_address_id'], $attachments[$key]['origin_id']
+            unset(
+                $attachments[$key]['path'],
+                $attachments[$key]['filename'],
+                $attachments[$key]['dest_user'],
+                $attachments[$key]['dest_contact_id'],
+                $attachments[$key]['dest_address_id'],
+                $attachments[$key]['origin_id']
             );
         }
 
@@ -313,7 +318,7 @@ class SignatureBookController
             $attachments[0]['attachment_type'] = _MAIN_DOCUMENT;
             $attachments[0]['title'] = $attachments[0]['subject'];
             $attachments[0]['sign'] = true;
-            $attachments[0]['viewerLink'] = "../rest/resources/{$args['resId']}/content?".rand();
+            $attachments[0]['viewerLink'] = "../rest/resources/{$args['resId']}/content?" . rand();
 
             $attachments[0]['canModify'] = $canUpdateDocuments;
             $attachments[0]['canDelete'] = false;
@@ -497,12 +502,12 @@ class SignatureBookController
         $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath} {$width} {$height} {$tmpPath} 2> /dev/null";
         exec($command, $output, $return);
 
-        $signedDocument = @file_get_contents($tmpPath.$convertedDocument['filename']);
+        $signedDocument = @file_get_contents($tmpPath . $convertedDocument['filename']);
         if ($signedDocument === false) {
             SignatureBookController::deleteTMPFile($document['format'], $pathToDocument, $args['resId']);
             return $response->withStatus(400)->withJson(['errors' => 'Signature failed : ' . implode($output)]);
         }
-        unlink($tmpPath.$convertedDocument['filename']);
+        unlink($tmpPath . $convertedDocument['filename']);
 
         if (in_array($document['format'], MergeController::OFFICE_EXTENSIONS)) {
             unlink($pathToDocument);
@@ -683,12 +688,12 @@ class SignatureBookController
         $command = "java -jar modules/visa/dist/SignPdf.jar {$pathToDocument} {$signaturePath} {$width} {$height} {$tmpPath} 2> /dev/null";
         exec($command, $output, $return);
 
-        $signedDocument = @file_get_contents($tmpPath.$convertedDocument['filename']);
+        $signedDocument = @file_get_contents($tmpPath . $convertedDocument['filename']);
         if ($signedDocument === false) {
             SignatureBookController::deleteTMPAttachment($attachment['format'], $pathToDocument, $args['id']);
             return $response->withStatus(400)->withJson(['errors' => 'Signature failed : ' . implode($output)]);
         }
-        unlink($tmpPath.$convertedDocument['filename']);
+        unlink($tmpPath . $convertedDocument['filename']);
 
         if (in_array($attachment['format'], MergeController::OFFICE_EXTENSIONS)) {
             unlink($pathToDocument);
@@ -894,5 +899,4 @@ class SignatureBookController
             AdrModel::deleteAttachmentAdr(['where' => ['res_id = ?', 'type = ?'], 'data' => [$id, 'TMP']]);
         }
     }
-
 }

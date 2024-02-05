@@ -14,6 +14,7 @@
 
 namespace Email\scripts;
 
+// phpcs:ignore
 require 'vendor/autoload.php';
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
@@ -28,7 +29,9 @@ use User\models\UserModel;
 //encryptKey = $argv[4];
 //options    = $argv[5];
 
+// phpcs:ignore
 $options = empty($argv[5]) ? null : unserialize($argv[5]);
+// phpcs:ignore
 EmailScript::send(['customId' => $argv[1], 'emailId' => $argv[2], 'userId' => $argv[3], 'encryptKey' => $argv[4], 'options' => $options]);
 
 class EmailScript

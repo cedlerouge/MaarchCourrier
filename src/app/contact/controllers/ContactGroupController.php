@@ -550,7 +550,7 @@ class ContactGroupController
             'tableName' => 'contacts_groups_lists',
             'recordId'  => $args['id'],
             'eventType' => 'DEL',
-            'info'      => _CONTACTS_GROUP_LIST_DELETED. " : {$contactsGroup['label']}",
+            'info'      => _CONTACTS_GROUP_LIST_DELETED . " : {$contactsGroup['label']}",
             'moduleId'  => 'contact',
             'eventId'   => 'contactsGroupListSuppression'
         ]);

@@ -15,7 +15,6 @@
 namespace ExportSeda\controllers;
 
 use Configuration\models\ConfigurationModel;
-use SrcCore\models\CoreConfigModel;
 
 class TransferController
 {

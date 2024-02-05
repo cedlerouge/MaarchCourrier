@@ -100,7 +100,7 @@ class EntitySeparatorController
                     [-2, -2, -2, -2]       // padding (use absolute or negative values as multiplication factors)
                 )->setBackgroundColor('white'); // background color
 
-                $pdf->Image('@'.$bobj->getPngData(), 0, 40, 200, '', '', '', '', false, 300, 'C');
+                $pdf->Image('@' . $bobj->getPngData(), 0, 40, 200, '', '', '', '', false, 300, 'C');
             }
 
             $pdf->SetY($pdf->GetY() + 300);

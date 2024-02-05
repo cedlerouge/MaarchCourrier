@@ -58,7 +58,7 @@ class OcrController
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],
                 'resId'      => $body['resId']
             ]);
-        } else if ($body['type'] == 'attachment') {
+        } elseif ($body['type'] == 'attachment') {
             $collId = 'attachments_coll';
             $infosDoc = AttachmentModel::getById([
                 'select'      => ['format', 'docserver_id', 'path', 'filename'],

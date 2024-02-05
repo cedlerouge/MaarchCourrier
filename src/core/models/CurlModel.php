@@ -72,7 +72,7 @@ class CurlModel
             if (empty($body)) {
                 $body = explode(PHP_EOL, $rawResponse);
                 // we remove the 4 starting item of the array (header)
-                for ($i=0; $i < 5; $i++) {
+                for ($i = 0; $i < 5; $i++) {
                     array_shift($body);
                 }
                 // and the last item (footer)
@@ -131,7 +131,7 @@ class CurlModel
         }
         //Auth
         if (!empty($args['basicAuth'])) {
-            $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Basic ' . base64_encode($args['basicAuth']['user']. ':' .$args['basicAuth']['password']);
+            $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Basic ' . base64_encode($args['basicAuth']['user'] . ':' . $args['basicAuth']['password']);
         }
         if (!empty($args['bearerAuth'])) {
             $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Bearer ' . $args['bearerAuth']['token'];
@@ -206,13 +206,13 @@ class CurlModel
             }
         } elseif (in_array('Accept: application/zip', $args['headers'])) {
             $formatedResponse = trim($response);
-        } elseif(empty($args['fileResponse'])) {
+        } elseif (empty($args['fileResponse'])) {
             $formatedResponse = json_decode($response, true);
             if (empty($code) && !empty($formatedResponse["code"])) {
                 $code = $formatedResponse["code"];
             }
             if (empty($errors) && !empty($formatedResponse["error"])) {
-                $errors = $args['url'] . " ". $formatedResponse["error"];
+                $errors = $args['url'] . " " . $formatedResponse["error"];
             }
         }
 

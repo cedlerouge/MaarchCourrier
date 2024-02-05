@@ -61,7 +61,7 @@ use User\models\UserSignatureModel;
 
 class UserController
 {
-    const ALTERNATIVES_CONNECTIONS_METHODS = ['sso', 'cas', 'ldap', 'keycloak', 'shibboleth', 'azure_saml'];
+    private const ALTERNATIVES_CONNECTIONS_METHODS = ['sso', 'cas', 'ldap', 'keycloak', 'shibboleth', 'azure_saml'];
 
     public function get(Request $request, Response $response)
     {
@@ -940,8 +940,10 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])
-            && $aArgs['id'] != $GLOBALS['id']) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])
+            && $aArgs['id'] != $GLOBALS['id']
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -980,8 +982,10 @@ class UserController
 
     public function addSignature(Request $request, Response $response, array $aArgs)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
-            && $aArgs['id'] != $GLOBALS['id']) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
+            && $aArgs['id'] != $GLOBALS['id']
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -997,7 +1001,7 @@ class UserController
         }
 
         $file     = base64_decode($data['base64']);
-        $tmpName  = "tmp_file_{$aArgs['id']}_" .rand(). "_{$data['name']}";
+        $tmpName  = "tmp_file_{$aArgs['id']}_" . rand() . "_{$data['name']}";
 
         $finfo    = new \finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($file);
@@ -1022,8 +1026,8 @@ class UserController
             'format'            => $ext
         ]);
 
-        if (!file_exists($storeInfos['path_template']. str_replace('#', '/', $storeInfos['destination_dir']) .$storeInfos['file_destination_name'])) {
-            return $response->withStatus(500)->withJson(['errors' => $storeInfos['error'] .' '. _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
+        if (!file_exists($storeInfos['path_template'] . str_replace('#', '/', $storeInfos['destination_dir']) . $storeInfos['file_destination_name'])) {
+            return $response->withStatus(500)->withJson(['errors' => $storeInfos['error'] . ' ' . _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
         }
 
         UserSignatureModel::create([
@@ -1040,8 +1044,10 @@ class UserController
 
     public function updateSignature(Request $request, Response $response, array $aArgs)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
-            && $aArgs['id'] != $GLOBALS['id']) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
+            && $aArgs['id'] != $GLOBALS['id']
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -1069,8 +1075,10 @@ class UserController
 
     public function deleteSignature(Request $request, Response $response, array $aArgs)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
-            && $aArgs['id'] != $GLOBALS['id']) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
+            && $aArgs['id'] != $GLOBALS['id']
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -1800,7 +1808,9 @@ class UserController
 
         $file = fopen('php://temp', 'w');
 
-        $csvHead = array_map(function ($field) { return $field; }, array_column($fields, 'label'));
+        $csvHead = array_map(function ($field) {
+            return $field;
+        }, array_column($fields, 'label'));
         fputcsv($file, $csvHead, $delimiter);
 
         $userAccountTypes = [
@@ -2098,7 +2108,7 @@ class UserController
                 'sender'        => ['email' => $sender],
                 'recipients'    => [$user['mail']],
                 'object'        => _NOTIFICATIONS_FORGOT_PASSWORD_SUBJECT,
-                'body'          => _NOTIFICATIONS_FORGOT_PASSWORD_BODY . '<a href="' . $url . '">'._CLICK_HERE.'</a>' . _NOTIFICATIONS_FORGOT_PASSWORD_FOOTER,
+                'body'          => _NOTIFICATIONS_FORGOT_PASSWORD_BODY . '<a href="' . $url . '">' . _CLICK_HERE . '</a>' . _NOTIFICATIONS_FORGOT_PASSWORD_FOOTER,
                 'isHtml'        => true,
                 'status'        => 'WAITING'
             ]

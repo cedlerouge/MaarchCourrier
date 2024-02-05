@@ -101,6 +101,10 @@ export class ActionsService implements OnDestroy {
         this.eventAction.next(true);
     }
 
+    emitActionWithData(data: any) {
+        this.eventAction.next(data);
+    }
+
     setLoading(state: boolean) {
         this.loading = state;
     }

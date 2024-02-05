@@ -305,9 +305,9 @@ class ResourceListController
                         $entitiesChildren = array_merge($entitiesChildren, $children);
                     }
                 }
-    
+
                 $tmpWhere = [];
-    
+
                 $replace = preg_replace('/(^,)|(,$)/', '', $args['data']['entitiesChildren']);
                 $replace = preg_replace('/(,,)/', ',', $replace);
                 if ($replace != $args['data']['entitiesChildren']) {
@@ -972,8 +972,10 @@ class ResourceListController
             if (isset($args['listDisplay'])) {
                 $display = [];
                 $listDisplayValues = array_column($args['listDisplay'], 'value');
-                if (in_array('getRegisteredMailRecipient', $listDisplayValues) || in_array('getRegisteredMailReference', $listDisplayValues)
-                    || in_array('getRegisteredMailIssuingSite', $listDisplayValues)) {
+                if (
+                    in_array('getRegisteredMailRecipient', $listDisplayValues) || in_array('getRegisteredMailReference', $listDisplayValues)
+                    || in_array('getRegisteredMailIssuingSite', $listDisplayValues)
+                ) {
                     $registeredMail = RegisteredMailModel::getByResId(['resId' => $resource['res_id'], 'select' => ['issuing_site', 'recipient', 'reference']]);
                 }
                 if (!empty($args['listDisplay'])) {
@@ -1057,7 +1059,7 @@ class ResourceListController
                             } elseif (strpos($value['value'], 'indexingCustomField_') !== false) {
                                 $customId = explode('_', $value['value'])[1];
                                 $customValue = json_decode($resource['custom_fields'] ?? '{}', true);
-    
+
                                 $value['displayLabel'] = $customFieldsLabels[$customId] ?? '';
                                 if ($customFields[$customId] == 'contact' && !empty($customValue[$customId])) {
                                     $value['displayValue'] = ContactController::getContactCustomField(['contacts' => $customValue[$customId], 'onlyContact' => true]);
@@ -1367,14 +1369,14 @@ class ResourceListController
 
         if (!empty($resIds)) {
             $resIds = array_column($resIds, 'res_id');
-    
+
             $userEntities = EntityModel::getWithUserEntities([
                 'select' => ['entities.id'],
                 'where'  => ['users_entities.user_id = ?'],
                 'data'   => [$GLOBALS['id']]
             ]);
             $userEntities = array_column($userEntities, 'id');
-    
+
             $rawFolders = FolderModel::getWithEntitiesAndResources([
                 'select'  => ['folders.id', 'folders.label', 'count(resources_folders.res_id) as count'],
                 'where'   => ['resources_folders.res_id in (?)', '(folders.user_id = ? OR entities_folders.entity_id in (?) or keyword = ?)'],

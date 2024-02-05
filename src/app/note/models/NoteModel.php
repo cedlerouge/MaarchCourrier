@@ -139,7 +139,8 @@ class NoteModel
             $countedNotes[$resId] = [];
             foreach ($aNotes as $key => $value) {
                 if ($value['identifier'] == $resId && !in_array($value['id'], $countedNotes[$resId])) {
-                    if (empty($value['item_id']) ||
+                    if (
+                        empty($value['item_id']) ||
                         (!empty($value['item_id']) && (($value['user_id'] == $aArgs['userId']) || (in_array($value['item_id'], $entities))))
                     ) {
                         ++$nb[$resId];

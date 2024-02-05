@@ -205,7 +205,6 @@ class ConfigurationController
             }
 
             $data['default'] = $default ?? '';
-
         } elseif ($args['privilege'] == 'admin_shippings') {
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
@@ -234,7 +233,7 @@ class ConfigurationController
                     return $response->withStatus(400)->withJson(['errors' => "Body signature['content'] is empty or not string"]);
                 }
             }
-        } elseif ($args['privilege'] == 'admin_lad'){
+        } elseif ($args['privilege'] == 'admin_lad') {
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
             } elseif (!Validator::boolType()->validate($data['enabled'] ?? null)) {
@@ -413,11 +412,11 @@ class ConfigurationController
         $communication = [];
         $login = '';
         $password = $xmlConfig['m2m_password'][0] ?? '';
-        if(!empty($body['communications']['login'])) {
+        if (!empty($body['communications']['login'])) {
             $login = $body['communications']['login'];
         }
         unset($body['communications']['login']);
-        if(!empty($body['communications']['password'])) {
+        if (!empty($body['communications']['password'])) {
             $password = $body['communications']['password'];
         }
         unset($body['communications']['password']);
@@ -513,7 +512,7 @@ class ConfigurationController
 
         foreach (['posX', 'posY', 'angle', 'opacity', 'size'] as $value) {
             if (!Validator::numericVal()->validate($body[$value] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body '.$value.' is not an integer']);
+                return $response->withStatus(400)->withJson(['errors' => 'Body ' . $value . ' is not an integer']);
             }
         }
 

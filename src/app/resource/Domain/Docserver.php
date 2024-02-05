@@ -16,7 +16,7 @@ namespace Resource\Domain;
 
 class Docserver
 {
-    private int    $id;
+    private int $id;
     private string $docserverId;
     private string $docserverTypeId;
     private string $pathTemplate;

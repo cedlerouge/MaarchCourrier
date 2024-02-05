@@ -125,8 +125,10 @@ class RegisteredNumberRangeController
         ]);
 
         foreach ($ranges as $range) {
-            if ($body['rangeStart'] <= $range['range_start'] && $range['range_start'] <= $body['rangeEnd']
-                || $body['rangeStart'] <= $range['range_end'] && $range['range_end'] <= $body['rangeEnd']) {
+            if (
+                $body['rangeStart'] <= $range['range_start'] && $range['range_start'] <= $body['rangeEnd']
+                || $body['rangeStart'] <= $range['range_end'] && $range['range_end'] <= $body['rangeEnd']
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Range overlaps another range', 'lang' => 'rangeOverlaps']);
             }
         }
@@ -199,8 +201,10 @@ class RegisteredNumberRangeController
         ]);
 
         foreach ($ranges as $item) {
-            if ($body['rangeStart'] <= $item['range_start'] && $item['range_start'] <= $body['rangeEnd']
-                || $body['rangeStart'] <= $item['range_end'] && $item['range_end'] <= $body['rangeEnd']) {
+            if (
+                $body['rangeStart'] <= $item['range_start'] && $item['range_start'] <= $body['rangeEnd']
+                || $body['rangeStart'] <= $item['range_end'] && $item['range_end'] <= $body['rangeEnd']
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Range overlaps another range', 'lang' => 'rangeOverlaps']);
             }
         }

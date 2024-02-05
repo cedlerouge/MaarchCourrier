@@ -34,9 +34,11 @@ use Template\models\TemplateModel;
 class OnlyOfficeController
 {
     // List of format convertible by OnlyOffice https://api.onlyoffice.com/editors/conversionapi
-    const CONVERTIBLE_EXTENSIONS = ['doc', 'docm', 'docx', 'dot', 'dotm', 'dotx', 'epub', 'fodt', 'html', 'mht', 'odt', 'ott', 'rtf', 'txt', 'xps',
+    private const CONVERTIBLE_EXTENSIONS = [
+        'doc', 'docm', 'docx', 'dot', 'dotm', 'dotx', 'epub', 'fodt', 'html', 'mht', 'odt', 'ott', 'rtf', 'txt', 'xps',
         'csv', 'fods', 'ods', 'ots', 'xls', 'xlsm', 'xlsx', 'xlt', 'xltm', 'xltx',
-        'fodp', 'odp', 'otp', 'pot', 'potm', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx'];
+        'fodp', 'odp', 'otp', 'pot', 'potm', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx'
+    ];
 
     public function getConfiguration(Request $request, Response $response)
     {
@@ -114,7 +116,7 @@ class OnlyOfficeController
             }
 
             $path = $body['objectId'];
-            
+
             $fileContent = @file_get_contents($path);
             if ($fileContent == false) {
                 return $response->withStatus(400)->withJson(['errors' => 'No content found']);
@@ -339,7 +341,7 @@ class OnlyOfficeController
             return false;
         }
 
-        if (strpos($args['url'], 'localhost') !== false || strpos($args['url'], '127.0.0.1') !== false ) {
+        if (strpos($args['url'], 'localhost') !== false || strpos($args['url'], '127.0.0.1') !== false) {
             return false;
         }
 

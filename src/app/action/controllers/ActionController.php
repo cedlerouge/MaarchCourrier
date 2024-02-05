@@ -129,7 +129,7 @@ class ActionController
                     unset($parameters['errorStatus']);
                 }
             }
-            if (!empty($parameters['lockVisaCircuit'])){
+            if (!empty($parameters['lockVisaCircuit'])) {
                 $parameters['lockVisaCircuit'] = false;
             }
             if (!empty($parameters['keepDestForRedirection'])) {
@@ -205,7 +205,7 @@ class ActionController
                 $parameters['requiredFields'] = $requiredFields;
             }
 
-            if(!empty($parameters['lockVisaCircuit']) && $body['component'] !== "sendSignatureBookAction"){
+            if (!empty($parameters['lockVisaCircuit']) && $body['component'] !== "sendSignatureBookAction") {
                 $parameters['lockVisaCircuit'] = false;
             }
         }
@@ -232,7 +232,7 @@ class ActionController
             GroupModel::update([
                 'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
                 'where'     => ["indexation_parameters->'actions' @> ?"],
-                'data'      => ['"'.$args['id'].'"']
+                'data'      => ['"' . $args['id'] . '"']
             ]);
         }
 
@@ -241,7 +241,7 @@ class ActionController
             'recordId'  => $args['id'],
             'eventType' => 'UP',
             'eventId'   => 'actionup',
-            'info'      => _ACTION_UPDATED. ' : ' . $body['label_action']
+            'info'      => _ACTION_UPDATED . ' : ' . $body['label_action']
         ]);
 
         return $response->withJson(['success' => 'success']);
@@ -268,7 +268,7 @@ class ActionController
         GroupModel::update([
             'postSet'   => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
             'where'     => ["indexation_parameters->'actions' @> ?"],
-            'data'      => ['"'.$args['id'].'"']
+            'data'      => ['"' . $args['id'] . '"']
         ]);
 
         HistoryController::add([
@@ -276,7 +276,7 @@ class ActionController
             'recordId'  => $args['id'],
             'eventType' => 'DEL',
             'eventId'   => 'actiondel',
-            'info'      => _ACTION_DELETED. ' : ' . $action['label_action']
+            'info'      => _ACTION_DELETED . ' : ' . $action['label_action']
         ]);
 
         return $response->withJson(['actions' => ActionModel::get()]);
@@ -291,7 +291,7 @@ class ActionController
         array_unshift($status, '_NOSTATUS_');
 
         if (!(in_array($aArgs['id_status'], $status))) {
-            $errors[]= 'Invalid Status';
+            $errors[] = 'Invalid Status';
         }
 
         if ($mode == 'update') {
@@ -302,12 +302,14 @@ class ActionController
             }
 
             if (empty($obj)) {
-                $errors[] = 'Id ' .$aArgs['id']. ' does not exist';
+                $errors[] = 'Id ' . $aArgs['id'] . ' does not exist';
             }
         }
 
-        if (!Validator::notEmpty()->validate($aArgs['label_action']) ||
-            !Validator::length(1, 255)->validate($aArgs['label_action'])) {
+        if (
+            !Validator::notEmpty()->validate($aArgs['label_action']) ||
+            !Validator::length(1, 255)->validate($aArgs['label_action'])
+        ) {
             $errors[] = 'Invalid label action';
         }
         if (!Validator::stringType()->notEmpty()->validate($aArgs['action_page'])) {
@@ -319,26 +321,26 @@ class ActionController
         }
 
         if (!Validator::notEmpty()->validate($aArgs['history']) || ($aArgs['history'] != 'Y' && $aArgs['history'] != 'N')) {
-            $errors[]= 'Invalid history value';
+            $errors[] = 'Invalid history value';
         }
 
         $lockVisaCircuit = $aArgs['parameters']['lockVisaCircuit'] ?? false;
-        if($aArgs['component'] == 'sendSignatureBookAction' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)){
+        if ($aArgs['component'] == 'sendSignatureBookAction' && !Validator::notEmpty()->validate($lockVisaCircuit) && !Validator::boolType()->validate($lockVisaCircuit)) {
             $errors[] = 'lockCircuitVisa is not a boolean';
         }
 
         $keepDestForRedirection =  $aArgs['parameters']['keepDestForRedirection'] ?? false;
-        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepDestForRedirection) && !Validator::boolType()->validate($keepDestForRedirection)){
+        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepDestForRedirection) && !Validator::boolType()->validate($keepDestForRedirection)) {
             $errors[] = 'keepDestForRedirection is not a boolean';
         }
 
         $keepCopyForRedirection =  $aArgs['parameters']['keepCopyForRedirection'] ?? false;
-        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepCopyForRedirection) && !Validator::boolType()->validate($keepCopyForRedirection)){
+        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepCopyForRedirection) && !Validator::boolType()->validate($keepCopyForRedirection)) {
             $errors[] = 'keepCopyForRedirection is not a boolean';
         }
 
         $keepOtherRoleForRedirection =  $aArgs['parameters']['keepOtherRoleForRedirection'] ?? false;
-        if($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepOtherRoleForRedirection) && !Validator::boolType()->validate($keepOtherRoleForRedirection)){
+        if ($aArgs['component'] == 'redirectAction' && !Validator::notEmpty()->validate($keepOtherRoleForRedirection) && !Validator::boolType()->validate($keepOtherRoleForRedirection)) {
             $errors[] = 'keepOtherRoleForRedirection is not a boolean';
         }
 
@@ -360,7 +362,7 @@ class ActionController
         $obj['action']['actionCategories'] = array_column($obj['categoriesList'], 'id');
 
         $obj['statuses'] = StatusModel::get();
-        array_unshift($obj['statuses'], ['id'=>'_NOSTATUS_','label_status'=> _UNCHANGED]);
+        array_unshift($obj['statuses'], ['id' => '_NOSTATUS_','label_status' => _UNCHANGED]);
         $obj['keywordsList'] = ActionModel::getKeywords();
 
         return $response->withJson($obj);
@@ -430,7 +432,7 @@ class ActionController
             ]);
             $modelFields = array_column($modelFields, 'identifier');
 
-            foreach($fillRequiredFields as $fillRequiredFieldItem) {
+            foreach ($fillRequiredFields as $fillRequiredFieldItem) {
                 $idCustom = explode("_", $fillRequiredFieldItem['id'])[1];
                 $customFieldModel = CustomFieldModel::get(['select' => ['label'],'where' => ['id = ?'],'data' => [$idCustom]]);
 

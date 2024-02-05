@@ -52,7 +52,7 @@ trait RegisteredMailTrait
             'select' => ['company', 'lastname', 'firstname', 'address_town as "addressTown"', 'address_number as "addressNumber"', 'address_street as "addressStreet"', 'address_country as "addressCountry"', 'address_postcode as "addressPostcode"', 'address_additional1 as addressAdditional1', 'address_additional2 as addressAdditional2', 'department'],
             'id' => $args['data']['recipient'][0]['id']]
         );
-        
+
         if (empty($args['data']['recipient']['lastname']) && !empty($args['data']['recipient']['department'])) {
             $args['data']['recipient']['lastname'] = $args['data']['recipient']['department'];
         }

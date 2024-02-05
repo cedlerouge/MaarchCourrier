@@ -37,14 +37,13 @@ use User\models\UserModel;
 use Folder\models\FolderModel;
 use Folder\controllers\FolderController;
 use MessageExchange\controllers\AnnuaryController;
-use Parameter\models\ParameterModel;
 use Contact\models\ContactAddressSectorModel;
 use ExternalSignatoryBook\controllers\FastParapheurController;
 
 class AutoCompleteController
 {
-    const LIMIT = 50;
-    const TINY_LIMIT = 10;
+    public const LIMIT = 50;
+    public const TINY_LIMIT = 10;
 
     public static function getUsers(Request $request, Response $response)
     {
@@ -131,7 +130,7 @@ class AutoCompleteController
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/autocomplete/users?search='.urlencode($data['search']),
+                'url'           => rtrim($url, '/') . '/rest/autocomplete/users?search=' . urlencode($data['search']),
                 'basicAuth'     => ['user' => $userId, 'password' => $password],
                 'headers'       => ['content-type:application/json'],
                 'method'        => 'GET'
@@ -814,7 +813,7 @@ class AutoCompleteController
         $department = $data['department'];
         $department = ($department === '2A' || $department === '2B') ? '20' : $department;
         $requestData['where'][] = 'address_postcode LIKE ?';
-        $requestData['data'][] = $department.'%';
+        $requestData['data'][] = $department . '%';
         $hits = ContactAddressSectorModel::get([
                 'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
                 'where'   => $requestData['where'],
@@ -823,24 +822,24 @@ class AutoCompleteController
                 'limit'   => 10
             ]);
             $addresses = [];
-            foreach ($hits as $hit) {
-                if (count($addresses) >= self::TINY_LIMIT) {
-                    break;
-                }
-                $afnorName = ContactController::getAfnorName($hit['address_street']);
-                $addresses [] = [
-                    'banId'         => $hit['ban_id'],
-                    'lon'           => null,
-                    'lat'           => null,
-                    'number'        => $hit['address_number'],
-                    'afnorName'     => $afnorName,
-                    'postalCode'    => $hit['address_postcode'],
-                    'city'          => $hit['address_town'],
-                    'address'       => mb_strtoupper("{$hit['address_number']} {$afnorName}, {$hit['address_town']} ({$hit['address_postcode']})"),
-                    'sector'        => $hit['label'],
-                    'indicator'     => 'sector'
-                ];
+        foreach ($hits as $hit) {
+            if (count($addresses) >= self::TINY_LIMIT) {
+                break;
             }
+            $afnorName = ContactController::getAfnorName($hit['address_street']);
+            $addresses [] = [
+                'banId'         => $hit['ban_id'],
+                'lon'           => null,
+                'lat'           => null,
+                'number'        => $hit['address_number'],
+                'afnorName'     => $afnorName,
+                'postalCode'    => $hit['address_postcode'],
+                'city'          => $hit['address_town'],
+                'address'       => mb_strtoupper("{$hit['address_number']} {$afnorName}, {$hit['address_town']} ({$hit['address_postcode']})"),
+                'sector'        => $hit['label'],
+                'indicator'     => 'sector'
+            ];
+        }
 
         $customId = CoreConfigModel::getCustomId();
         if (is_dir("custom/{$customId}/referential/ban/indexes/{$data['department']}")) {
@@ -1085,7 +1084,6 @@ class AutoCompleteController
                     ];
                 }
             }
-
         }
         return $response->withJson($unitOrganizations);
     }
@@ -1109,7 +1107,7 @@ class AutoCompleteController
 
         $selectedFolders = FolderModel::get([
             'where'    => ["{$fields} AND id in (?)"],
-            'data'     => [ '%'.$data['search'].'%', $arrScopedFoldersIds],
+            'data'     => [ '%' . $data['search'] . '%', $arrScopedFoldersIds],
             'orderBy'  => ['label']
         ]);
 

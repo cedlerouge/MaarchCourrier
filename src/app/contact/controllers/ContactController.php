@@ -43,7 +43,7 @@ use User\models\UserModel;
 
 class ContactController
 {
-    const MAPPING_FIELDS = [
+    public const MAPPING_FIELDS = [
         'civility'              => 'civility',
         'firstname'             => 'firstname',
         'lastname'              => 'lastname',
@@ -132,8 +132,10 @@ class ContactController
 
     public function create(Request $request, Response $response)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'create_contacts', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'create_contacts', 'userId' => $GLOBALS['id']])
+            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -210,7 +212,7 @@ class ContactController
         }
         if (!empty($historyInfoContact) && !empty($body['company'])) {
             $historyInfoContact .= ' (' . $body['company'] . ')';
-        } else if (!empty($body['company'])) {
+        } elseif (!empty($body['company'])) {
             $historyInfoContact .= $body['company'];
         }
 
@@ -280,7 +282,7 @@ class ContactController
         }
         if (!empty($rawContact['communication_means'])) {
             $communicationMeans = json_decode($rawContact['communication_means'], true);
-            if(!empty($communicationMeans['url'])) {
+            if (!empty($communicationMeans['url'])) {
                 $contact['communicationMeans']['url'] = $communicationMeans['url'];
             } elseif (!empty($communicationMeans['email'])) {
                 $contact['communicationMeans']['email'] = $communicationMeans['email'];
@@ -318,8 +320,10 @@ class ContactController
 
     public function update(Request $request, Response $response, array $args)
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_contacts', 'userId' => $GLOBALS['id']])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'update_contacts', 'userId' => $GLOBALS['id']])
+            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -645,7 +649,6 @@ class ContactController
         }
 
         foreach ($data['contactsParameters'] as $key => $contactParameter) {
-
             if ($key == "label") {
                 unset($contactParameter['label']);
             }
@@ -800,7 +803,7 @@ class ContactController
         if (!empty($args['address_street'])) {
             $args['address_street'] = ContactController::getAfnorName($args['address_street']);
         }
-        $afnorAddress[4] = trim(substr($args['address_number'].' '.$args['address_street'], 0, 38));
+        $afnorAddress[4] = trim(substr($args['address_number'] . ' ' . $args['address_street'], 0, 38));
 
         // Ligne 5
         if (!empty($args['address_additional2'])) {
@@ -810,7 +813,7 @@ class ContactController
         // Ligne 6
         $args['address_postcode'] = strtoupper($args['address_postcode'] ?? '');
         $args['address_town'] = strtoupper($args['address_town'] ?? '');
-        $afnorAddress[6] = trim(substr($args['address_postcode'].' '.$args['address_town'], 0, 38));
+        $afnorAddress[6] = trim(substr($args['address_postcode'] . ' ' . $args['address_town'], 0, 38));
 
         // Ligne 7
         if (!empty($args['address_country'])) {
@@ -834,13 +837,13 @@ class ContactController
         $civilities = ContactCivilityModel::get(['select' => ['*']]);
         $civilities = array_column($civilities, null, 'id');
 
-        if (strlen(($civilities[$args['civility']]['label'] ?? '').' '.$args['fullName']) > $args['strMaxLength']) {
+        if (strlen(($civilities[$args['civility']]['label'] ?? '') . ' ' . $args['fullName']) > $args['strMaxLength']) {
             $args['civility'] = $civilities[$args['civility']]['abbreviation'];
         } else {
             $args['civility'] = $civilities[$args['civility']]['label'] ?? null;
         }
 
-        return substr($args['civility'].' '.$args['fullName'], 0, $args['strMaxLength']);
+        return substr($args['civility'] . ' ' . $args['fullName'], 0, $args['strMaxLength']);
     }
 
     public function getAvailableDepartments(Request $request, Response $response)
@@ -848,8 +851,8 @@ class ContactController
         $customId = CoreConfigModel::getCustomId();
 
         $referentialDirectory = 'referential/ban/indexes';
-        if (is_dir("custom/{$customId}/".$referentialDirectory)) {
-            $customFilesDepartments = scandir("custom/{$customId}/".$referentialDirectory);
+        if (is_dir("custom/{$customId}/" . $referentialDirectory)) {
+            $customFilesDepartments = scandir("custom/{$customId}/" . $referentialDirectory);
         }
         if (is_dir($referentialDirectory)) {
             $filesDepartments = scandir($referentialDirectory);
@@ -858,14 +861,14 @@ class ContactController
         $departments = [];
         if (!empty($customFilesDepartments)) {
             foreach ($customFilesDepartments as $value) {
-                if ($value != '.' && $value != '..' && is_writable("custom/{$customId}/".$referentialDirectory.'/'.$value)) {
+                if ($value != '.' && $value != '..' && is_writable("custom/{$customId}/" . $referentialDirectory . '/' . $value)) {
                     $departments[] = $value;
                 }
             }
         }
         if (!empty($filesDepartments)) {
             foreach ($filesDepartments as $value) {
-                if ($value != '.' && $value != '..' && !in_array($value, $departments) && is_writable($referentialDirectory.'/'.$value)) {
+                if ($value != '.' && $value != '..' && !in_array($value, $departments) && is_writable($referentialDirectory . '/' . $value)) {
                     $departments[] = $value;
                 }
             }
@@ -950,7 +953,6 @@ class ContactController
                     $criteria[] = "replace(lower(unaccent(" . $allowedFields[$criterion] . ") ), ' ', '')";
                 }
             }
-
         }
 
         $fields = ['distinct(id)', 'enabled', 'dense_rank() over (order by ' . implode(',', $criteria) . ') duplicate_id', 'custom_fields'];
@@ -1811,19 +1813,19 @@ class ContactController
         $address = '';
 
         if (!empty($args['contact']['address_number'])) {
-            $address.= $args['contact']['address_number'] . ' ';
+            $address .= $args['contact']['address_number'] . ' ';
         }
         if (!empty($args['contact']['address_street'])) {
-            $address.= $args['contact']['address_street'] . ' ';
+            $address .= $args['contact']['address_street'] . ' ';
         }
         if (!empty($args['contact']['address_postcode'])) {
-            $address.= $args['contact']['address_postcode'] . ' ';
+            $address .= $args['contact']['address_postcode'] . ' ';
         }
         if (!empty($args['contact']['address_town'])) {
-            $address.= $args['contact']['address_town'] . ' ';
+            $address .= $args['contact']['address_town'] . ' ';
         }
         if (!empty($args['contact']['address_country'])) {
-            $address.= $args['contact']['address_country'];
+            $address .= $args['contact']['address_country'];
         }
 
         $contactName = '';

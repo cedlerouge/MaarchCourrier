@@ -94,7 +94,7 @@ class FullTextController
             \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
             $index->setMaxBufferedDocs(1000);
 
-            $term = new \Zend_Search_Lucene_Index_Term((integer)$args['resId'], 'Id');
+            $term = new \Zend_Search_Lucene_Index_Term((int)$args['resId'], 'Id');
             $terms = $index->termDocs($term);
             foreach ($terms as $value) {
                 $index->delete($value);
@@ -102,12 +102,12 @@ class FullTextController
 
             $doc = new \Zend_Search_Lucene_Document();
 
-            $doc->addField(\Zend_Search_Lucene_Field::UnIndexed('Id', (integer)$args['resId']));
+            $doc->addField(\Zend_Search_Lucene_Field::UnIndexed('Id', (int)$args['resId']));
             $doc->addField(\Zend_Search_Lucene_Field::UnStored('contents', $fileContent, 'utf-8'));
 
             $index->addDocument($doc);
             $index->commit();
-            if ((integer)$args['resId'] % 100 === 0) {
+            if ((int)$args['resId'] % 100 === 0) {
                 $index->optimize(); // Optimize every 100 documents
             }
         } catch (\Exception $e) {

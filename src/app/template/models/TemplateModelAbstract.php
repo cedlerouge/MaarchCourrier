@@ -243,7 +243,7 @@ abstract class TemplateModelAbstract
         ValidatorModel::arrayType($aArgs, ['data']);
 
         $data = $aArgs['data'];
-        
+
         $listEntities = DatabaseModel::select([
         'select'    => ['ta.value_field', 'e.entity_label'],
         'table'     => ['templates t','templates_association ta', 'entities e'],
@@ -252,7 +252,7 @@ abstract class TemplateModelAbstract
         'data'      => empty($data['template_id']) ? [$data['target'], $data['template_attachment_type'], $data['entities']]   : [$data['target'], $data['template_attachment_type'], $data['entities'], $data['template_id']],
         'groupBy'   => ['ta.value_field', 'e.entity_label']
         ]);
-        
+
         return $listEntities;
     }
 }

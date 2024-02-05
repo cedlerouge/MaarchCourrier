@@ -22,5 +22,4 @@ interface ResourceRepositoryInterface
      * @return void
      */
     public function removeExternalLink(int $id, string $externalId): void;
-
 }

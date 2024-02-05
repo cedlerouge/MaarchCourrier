@@ -57,7 +57,7 @@ class VersionUpdateController
 
         if (count($versions) < 3) {
             return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$applicationVersion}"]);
-        } else if (strlen($versions[0]) !== 4) {
+        } elseif (strlen($versions[0]) !== 4) {
             return $response->withStatus(400)->withJson(['errors' => "Bad tag format : {$applicationVersion}"]);
         }
 
@@ -82,9 +82,9 @@ class VersionUpdateController
 
             if ($majorVersionTag > $currentMajorVersionTag) {
                 $availableMajorVersions[] = $value['name'];
-            } else if ($majorVersionTag == $currentMajorVersionTag && $minorVersionTag > $currentMinorVersionTag) {
+            } elseif ($majorVersionTag == $currentMajorVersionTag && $minorVersionTag > $currentMinorVersionTag) {
                 $availableMinorVersions[] = $value['name'];
-            } else if ($minorVersionTag == $currentMinorVersionTag && $patchVersionTag > $currentPatchVersionTag) {
+            } elseif ($minorVersionTag == $currentMinorVersionTag && $patchVersionTag > $currentPatchVersionTag) {
                 $availablePatchVersions[] = $value['name'];
             }
         }
@@ -92,7 +92,7 @@ class VersionUpdateController
         natcasesort($availableMajorVersions);
         natcasesort($availableMinorVersions);
         natcasesort($availablePatchVersions);
-        
+
         if (empty($availableMajorVersions)) {
             $lastAvailableMajorVersion = null;
         } else {
@@ -163,13 +163,13 @@ class VersionUpdateController
         ) {
             return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same major tag"]);
         } elseif (
-            $targetMajorVersionTag == $currentMajorVersionTag && 
+            $targetMajorVersionTag == $currentMajorVersionTag &&
             $targetMinorVersionTag < $currentMinorVersionTag
         ) {
             return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same minor tag"]);
         } elseif (
-            $targetMajorVersionTag == $currentMajorVersionTag && 
-            $targetMinorVersionTag == $currentMinorVersionTag && 
+            $targetMajorVersionTag == $currentMajorVersionTag &&
+            $targetMinorVersionTag == $currentMinorVersionTag &&
             $targetPatchVersionTag < $currentPatchVersionTag
         ) {
             return $response->withStatus(400)->withJson(['errors' => "Can't update to previous / same patch tag"]);
@@ -206,7 +206,7 @@ class VersionUpdateController
             'recordId'  => $targetTag,
             'eventType' => 'UP',
             'userId'    => $GLOBALS['id'],
-            'info'      => _APP_UPDATED_TO_TAG. ' : ' . $targetTag,
+            'info'      => _APP_UPDATED_TO_TAG . ' : ' . $targetTag,
             'moduleId'  => null,
             'eventId'   => 'appUpdate',
         ]);
@@ -304,8 +304,8 @@ class VersionUpdateController
             $folderPatchVersion = (int)$folderVersions[2];
 
             if (
-                $folderMajorVersion > $dbMajorVersion || 
-                ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion > $dbMinorVersion) || 
+                $folderMajorVersion > $dbMajorVersion ||
+                ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion > $dbMinorVersion) ||
                 ($folderMajorVersion == $dbMajorVersion && $folderMinorVersion == $dbMinorVersion && $folderPatchVersion > $dbPatchVersion)
             ) {
                 if (is_dir("$migrationFolderPath/$folder")) {
@@ -326,7 +326,7 @@ class VersionUpdateController
     /**
      * Central function to run different types of files. SQL or PHP
      * @param   string[]    $tagFolderList  A list of strings
-     * @throws  Exception   
+     * @throws  Exception
      * @return  true        Return true when successful
      */
     public static function executeTagFolderFiles(array $tagFolderList)
@@ -410,7 +410,6 @@ class VersionUpdateController
         }
 
         if (file_exists($sqlFilePath)) {
-
             $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
             $actualTime = date("dmY-His");
             $tablesToSave = '';
@@ -458,7 +457,7 @@ class VersionUpdateController
                 'recordId'  => $fileName,
                 'eventType' => 'UP',
                 'userId'    => $GLOBALS['id'],
-                'info'      => _DB_UPDATED_WITH_FILE. ' : ' . $fileName,
+                'info'      => _DB_UPDATED_WITH_FILE . ' : ' . $fileName,
                 'moduleId'  => null,
                 'eventId'   => 'databaseUpdate',
             ]);
@@ -495,7 +494,7 @@ class VersionUpdateController
             $numberOfFiles++;
             $filePath = "migration/$tagVersion/$fileName";
             $migrationClass = require $filePath;
-            $migration = new $migrationClass;
+            $migration = new $migrationClass();
 
             if (empty($migration) || !$migration instanceof AutoUpdateInterface) {
                 LogsController::add([

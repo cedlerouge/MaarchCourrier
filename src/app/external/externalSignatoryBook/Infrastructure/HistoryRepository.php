@@ -36,5 +36,4 @@ class HistoryRepository implements HistoryRepositoryInterface
             'info'      => $info
         ]);
     }
-
 }

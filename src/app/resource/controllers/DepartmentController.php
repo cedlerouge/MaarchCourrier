@@ -21,7 +21,7 @@ use SrcCore\models\ValidatorModel;
 
 class DepartmentController
 {
-    const FRENCH_DEPARTMENTS = [
+    private const FRENCH_DEPARTMENTS = [
         "01"    => "Ain",
         "02"    => "Aisne",
         "03"    => "Allier",

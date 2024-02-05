@@ -19,8 +19,16 @@ use User\models\UserModel;
 
 class GroupController
 {
-    const INDEXING_ACTIONS = ['confirmAction', 'noConfirmAction', 'closeMailAction', 'sendSignatureBookAction', 'closeAndIndexAction',
-                                'saveRegisteredMailAction', 'saveAndPrintRegisteredMailAction', 'saveAndIndexRegisteredMailAction'];
+    public const INDEXING_ACTIONS = [
+        'confirmAction',
+        'noConfirmAction',
+        'closeMailAction',
+        'sendSignatureBookAction',
+        'closeAndIndexAction',
+        'saveRegisteredMailAction',
+        'saveAndPrintRegisteredMailAction',
+        'saveAndIndexRegisteredMailAction'
+    ];
 
     public function get(Request $request, Response $response)
     {
@@ -69,7 +77,7 @@ class GroupController
 
         $existingGroup = GroupModel::getByGroupId(['groupId' => $data['group_id'], 'select' => ['1']]);
         if (!empty($existingGroup)) {
-            return $response->withStatus(400)->withJson(['errors' => _ID. ' ' . _ALREADY_EXISTS]);
+            return $response->withStatus(400)->withJson(['errors' => _ID . ' ' . _ALREADY_EXISTS]);
         }
 
         if (!PreparedClauseController::isRequestValid(['clause' => $data['security']['where_clause'], 'userId' => $GLOBALS['login'], 'limit' => 1])) {
@@ -202,7 +210,7 @@ class GroupController
         }
         $oldGroupUsers = GroupModel::getUsersById(['id' => $aArgs['id'], 'select' => ['users.id']]);
         $newGroupUsers = GroupModel::getUsersById(['id' => $aArgs['id'], 'select' => ['users.id']]);
-        
+
         //Mapped array to have only user_id
         $oldGroupUsers = array_map(function ($entry) {
             return $entry['id'];

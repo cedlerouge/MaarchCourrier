@@ -58,8 +58,16 @@ use User\models\UserModel;
 
 class TileController
 {
-    const TYPES = ['myLastResources', 'basket', 'searchTemplate', 'followedMail', 'folder', 'externalSignatoryBook', 'shortcut'];
-    const VIEWS = ['list', 'summary', 'chart'];
+    private const TYPES = [
+        'myLastResources',
+        'basket',
+        'searchTemplate',
+        'followedMail',
+        'folder',
+        'externalSignatoryBook',
+        'shortcut'
+    ];
+    private const VIEWS = ['list', 'summary', 'chart'];
 
     public function get(Request $request, Response $response)
     {
@@ -326,7 +334,7 @@ class TileController
             $enabledExternalSignatoryBook = (string)$loadedXml->signatoryBookEnabled;
             if ($enabledExternalSignatoryBook == 'maarchParapheur') {
                 $tile['externalSignatoryBookUrl'] = rtrim((string)($loadedXml->xpath('//signatoryBook[id=\'maarchParapheur\']/url')[0]), '/');
-            } else if ($enabledExternalSignatoryBook == 'fastParapheur') {
+            } elseif ($enabledExternalSignatoryBook == 'fastParapheur') {
                 $fastParapheurUrl = str_replace('/parapheur-ws/rest/v1', '', (string)($loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']/url')[0]));
                 $tile['externalSignatoryBookUrl'] = rtrim($fastParapheurUrl, "/");
             }
@@ -628,7 +636,8 @@ class TileController
     {
         $tile['resourcesNumber'] = null;
 
-        if (($tile['parameters']['privilegeId'] == 'indexing' && !PrivilegeController::canIndex(['userId' => $GLOBALS['id'], 'groupId' => $tile['parameters']['groupId']])) ||
+        if (
+            ($tile['parameters']['privilegeId'] == 'indexing' && !PrivilegeController::canIndex(['userId' => $GLOBALS['id'], 'groupId' => $tile['parameters']['groupId']])) ||
             ($tile['parameters']['privilegeId'] != 'indexing' && !PrivilegeController::hasPrivilege(['privilegeId' => $tile['parameters']['privilegeId'], 'userId' => $GLOBALS['id']]))
         ) {
             return ['errors' => 'Service forbidden'];

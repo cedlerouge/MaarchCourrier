@@ -35,8 +35,6 @@ export class LoginComponent implements OnInit {
 
     ngOnInit() {
         this.urlProfile = `${this.authService.appUrl}/dist/index.html#/profile`;
-        const tradTutoStep1 = this.translate.instant('lang.tutoStep1', {url : this.urlProfile});
-        this.tutoStep1Msg = this.sanitizer.bypassSecurityTrustHtml(tradTutoStep1);
         this.loginForm = new FormGroup({
             login: new FormControl('', Validators.required),
             password: new FormControl('', Validators.required),

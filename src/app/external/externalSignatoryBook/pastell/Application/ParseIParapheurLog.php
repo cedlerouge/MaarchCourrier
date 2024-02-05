@@ -32,12 +32,11 @@ class ParseIParapheurLog
     private PastellStates $pastellStates;
 
     public function __construct(
-        PastellApiInterface          $pastellApi,
-        PastellConfigInterface       $pastellConfig,
-        PastellConfigurationCheck    $pastellConfigCheck,
+        PastellApiInterface $pastellApi,
+        PastellConfigInterface $pastellConfig,
+        PastellConfigurationCheck $pastellConfigCheck,
         ProcessVisaWorkflowInterface $processVisaWorkflow
-    )
-    {
+    ) {
         $this->pastellApi = $pastellApi;
         $this->pastellConfig = $pastellConfig;
         $this->pastellConfigCheck = $pastellConfigCheck;

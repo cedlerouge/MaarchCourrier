@@ -77,7 +77,7 @@ class PasswordModel
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id', 'value']);
         ValidatorModel::stringType($aArgs, ['enabled']);
-        
+
         DatabaseModel::update([
             'table'     => 'password_rules',
             'set'       => [
@@ -132,7 +132,7 @@ class PasswordModel
             'data'      => [$aArgs['userSerialId']],
             'order_by'  => ['id DESC']
         ]);
-        
+
         if (count($passwordHistory) >= 10) {
             DatabaseModel::delete([
                 'table'     => 'password_history',

@@ -66,18 +66,18 @@ class SendMessageExchangeController
 
         $oData->MessageIdentifier                     = new \stdClass();
         $oData->MessageIdentifier->value              = $dataObject->MessageIdentifier->value;
-        
+
         $oData->TransferringAgency                    = new \stdClass();
         $oData->TransferringAgency->Identifier        = new \stdClass();
         $oData->TransferringAgency->Identifier->value = $dataObject->TransferringAgency->Identifier->value;
-        
+
         $oData->ArchivalAgency                        = new \stdClass();
         $oData->ArchivalAgency->Identifier            = new \stdClass();
         $oData->ArchivalAgency->Identifier->value     = $dataObject->ArchivalAgency->Identifier->value;
-        
+
         $oData->archivalAgreement                     = new \stdClass();
         $oData->archivalAgreement->value              = "";
-        
+
         $replyCode = "";
         if (!empty($dataObject->ReplyCode)) {
             $replyCode = $dataObject->ReplyCode;
@@ -225,7 +225,7 @@ class SendMessageExchangeController
             }
         }
 
-        $mainDocument[0]['Title'] = '[CAPTUREM2M]'.$body['object'];
+        $mainDocument[0]['Title'] = '[CAPTUREM2M]' . $body['object'];
 
         foreach ($body['contacts'] as $contactId) {
             /******** GET ARCHIVAl INFORMATIONs **************/
@@ -289,7 +289,7 @@ class SendMessageExchangeController
                 'eventType' => 'UP',
                 'eventId'   => 'resup',
                 'info'       => _NUMERIC_PACKAGE_ADDED . _ON_DOC_NUM
-                    . $args['resId'] . ' ('.$messageId.') : "' . TextFormatModel::cutString(['string' => $mainDocument[0]['Title'], 'max' => 254])
+                    . $args['resId'] . ' (' . $messageId . ') : "' . TextFormatModel::cutString(['string' => $mainDocument[0]['Title'], 'max' => 254])
             ]);
 
             HistoryController::add([
@@ -355,7 +355,7 @@ class SendMessageExchangeController
         if (!empty($aArgs['body'])) {
             $entityRoot = EntityModel::getEntityRootById(['entityId' => $aArgs['TransferringAgencyInformations']['entity_id']]);
             $userInfo = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['firstname', 'lastname', 'mail']]);
-            $headerNote = $userInfo['firstname'] . ' ' . $userInfo['lastname'] . ' (' . $entityRoot['entity_label'] . ' - ' . $aArgs['TransferringAgencyInformations']['entity_label'] . ' - ' .$userInfo['mail'].') : ';
+            $headerNote = $userInfo['firstname'] . ' ' . $userInfo['lastname'] . ' (' . $entityRoot['entity_label'] . ' - ' . $aArgs['TransferringAgencyInformations']['entity_label'] . ' - ' . $userInfo['mail'] . ') : ';
             $oBody->value = $headerNote . ' ' . $aArgs['body'];
         } else {
             $oBody->value = '';
@@ -384,9 +384,9 @@ class SendMessageExchangeController
                     ]);
                     if (!empty($userInfo['entity_id'])) {
                         $entityRoot          = EntityModel::getEntityRootById(['entityId' => $userInfo['entity_id']]);
-                        $additionalUserInfos = ' ('.$entityRoot['entity_label'].' - '.$userInfo['entity_label'].')';
+                        $additionalUserInfos = ' (' . $entityRoot['entity_label'] . ' - ' . $userInfo['entity_label'] . ')';
                     }
-                    $oComment->value = $userInfo['firstname'].' '.$userInfo['lastname'].' - '.$date->format('d-m-Y H:i:s'). $additionalUserInfos . ' : '.$value['note_text'];
+                    $oComment->value = $userInfo['firstname'] . ' ' . $userInfo['lastname'] . ' - ' . $date->format('d-m-Y H:i:s') . $additionalUserInfos . ' : ' . $value['note_text'];
                     array_push($aReturn, $oComment);
                 }
             }
@@ -396,14 +396,14 @@ class SendMessageExchangeController
 
     public static function generateMessageObject($aArgs = [])
     {
-        $date = new \DateTime;
+        $date = new \DateTime();
 
         $messageObject          = new \stdClass();
         $messageObject->Comment = $aArgs['Comment'];
         $messageObject->Date    = $date->format(\DateTime::ATOM);
 
         $messageObject->MessageIdentifier = new \stdClass();
-        $messageObject->MessageIdentifier->value = 'ArchiveTransfer_'.date("Ymd_His").'_'.$GLOBALS['login'];
+        $messageObject->MessageIdentifier->value = 'ArchiveTransfer_' . date("Ymd_His") . '_' . $GLOBALS['login'];
 
         /********* BINARY DATA OBJECT PACKAGE *********/
         $messageObject->DataObjectPackage                   = new \stdClass();
@@ -433,28 +433,28 @@ class SendMessageExchangeController
                 } else {
                     $binaryDataObjectId = $value['res_id'];
                 }
-    
+
                 $binaryDataObject                           = new \stdClass();
                 $binaryDataObject->id                       = $binaryDataObjectId;
-    
+
                 $binaryDataObject->MessageDigest            = new \stdClass();
                 $binaryDataObject->MessageDigest->value     = $value['fingerprint'];
                 $binaryDataObject->MessageDigest->algorithm = "sha256";
-    
+
                 $binaryDataObject->Size                     = $value['filesize'];
-    
+
                 $uri = str_replace("##", DIRECTORY_SEPARATOR, $value['path']);
                 $uri = str_replace("#", DIRECTORY_SEPARATOR, $uri);
-                
+
                 $docServers = DocserverModel::getByDocserverId(['docserverId' => $value['docserver_id']]);
                 $binaryDataObject->Attachment           = new \stdClass();
                 $binaryDataObject->Attachment->uri      = '';
                 $binaryDataObject->Attachment->filename = basename($value['filename']);
-                $binaryDataObject->Attachment->value    = base64_encode(file_get_contents($docServers['path_template'] . $uri . '/'. $value['filename']));
-    
+                $binaryDataObject->Attachment->value    = base64_encode(file_get_contents($docServers['path_template'] . $uri . '/' . $value['filename']));
+
                 $binaryDataObject->FormatIdentification           = new \stdClass();
                 $binaryDataObject->FormatIdentification->MimeType = mime_content_type($docServers['path_template'] . $uri . $value['filename']);
-    
+
                 array_push($aReturn, $binaryDataObject);
             }
         }
@@ -484,7 +484,7 @@ class SendMessageExchangeController
         $documentArchiveUnit->ArchiveUnit = [];
         foreach ($aArgs['attachment'] as $key => $value) {
             $attachmentArchiveUnit     = new \stdClass();
-            $attachmentArchiveUnit->id = 'archiveUnit_'.$value['tablenameExchangeMessage'] . "_" . $key . "_" . $value['res_id'];
+            $attachmentArchiveUnit->id = 'archiveUnit_' . $value['tablenameExchangeMessage'] . "_" . $key . "_" . $value['res_id'];
             $attachmentArchiveUnit->Content = self::getContent([
                 'DescriptionLevel'                       => 'Item',
                 'Title'                                  => $value['Title'],
@@ -496,7 +496,7 @@ class SendMessageExchangeController
                 'CreatedDate'                            => $value['creation_date'],
             ]);
             $dataObjectReference                        = new \stdClass();
-            $dataObjectReference->DataObjectReferenceId = $value['tablenameExchangeMessage'].'_'.$key.'_'.$value['res_id'];
+            $dataObjectReference->DataObjectReferenceId = $value['tablenameExchangeMessage'] . '_' . $key . '_' . $value['res_id'];
             $attachmentArchiveUnit->DataObjectReference = [$dataObjectReference];
 
             array_push($documentArchiveUnit->ArchiveUnit, $attachmentArchiveUnit);
