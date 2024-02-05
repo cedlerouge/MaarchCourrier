@@ -74,11 +74,25 @@ export class TileViewListComponent implements OnInit, AfterViewInit {
         }
     }
 
-    isDate(val: any) {
-        if (!isNaN(Date.parse(val))) {
-            return true;
-        } else {
-            return false;
+    isDate(value: any, col: string): boolean {
+        if (col === 'creationDate') {
+            if (value instanceof Date) {
+                return true;
+            }
+            // Check if the value can be transformed into a Date object
+            const dateObject = new Date(value);
+            if (!isNaN(dateObject.getTime())) {
+                // Check if the string contains only digits or date separation characters
+                const isNumericDate = /^[0-9-: T.]+$/.test(value);
+                if (isNumericDate) {
+                    // Check if the string is fully consumed (no untreated characters)
+                    const remainingChars = value.slice(dateObject.toString().length).trim();
+                    if (remainingChars === '') {
+                        return true;
+                    }
+                }
+            }
         }
+        return false;
     }
 }
