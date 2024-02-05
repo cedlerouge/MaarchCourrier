@@ -3,12 +3,13 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, filter, map, of, tap } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StampInterface } from '@models/signature-book.model';
 
 import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { MessageActionInterface } from '@models/actions.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -39,9 +40,13 @@ export class SignatureBookComponent implements OnInit {
         private notify: NotificationService,
         private actionsService: ActionsService,
     ) {
-        this.subscription = this.actionsService.catchAction().subscribe(message => {
-            this.stampsPanel.close();
-        });
+        this.subscription = this.actionsService.catchActionWithData().pipe(
+            filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
+            tap(() => {
+                this.stampsPanel.close();
+                this.notify.success('apposition de la griffe!');
+            })
+        ).subscribe();
     }
 
     async ngOnInit(): Promise<void> {
