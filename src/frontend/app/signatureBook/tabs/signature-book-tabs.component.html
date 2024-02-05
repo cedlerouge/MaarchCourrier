@@ -3,6 +3,7 @@
         *ngFor="let document of documents;let i=index"
         mat-button
         class="book-mark-item"
+        [title]="document.title"
         [class.book-mark-item-to-left]="signable"
         [class.book-mark-item-to-right]="!signable"
         [ngClass]="{
