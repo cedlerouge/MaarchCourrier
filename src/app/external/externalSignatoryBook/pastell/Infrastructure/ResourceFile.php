@@ -18,6 +18,7 @@ use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use Exception;
 use ExternalSignatoryBook\pastell\Domain\ResourceFileInterface;
 use Resource\controllers\StoreController;
 
@@ -27,6 +28,7 @@ class ResourceFile implements ResourceFileInterface
      * Getting the file path of main file
      * @param int $resId
      * @return string
+     * @throws Exception
      */
     public function getMainResourceFilePath(int $resId): string
     {
@@ -44,6 +46,7 @@ class ResourceFile implements ResourceFileInterface
      * @param int $resId
      * @param string $fingerprint
      * @return string|null
+     * @throws Exception
      */
     public function getAttachmentFilePath(int $resId, string $fingerprint): string
     {

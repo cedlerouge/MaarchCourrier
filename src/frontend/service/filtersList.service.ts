@@ -27,6 +27,8 @@ export class FiltersListService {
     filterMode: boolean = false;
     mode: string = 'basket';
 
+    resourcesOrder: any[] = [];
+
     constructor() { }
 
     initListsProperties(userId: number, groupId: number, targetId: number, mode: string, specificChrono: string = '') {
@@ -172,4 +174,11 @@ export class FiltersListService {
         return filters;
     }
 
+    getResourcesOrder(): any[] {
+        return this.resourcesOrder;
+    }
+
+    setResourcesOrder(resourcesOrder: any): void {
+        this.resourcesOrder = JSON.parse(JSON.stringify(resourcesOrder));
+    }
 }

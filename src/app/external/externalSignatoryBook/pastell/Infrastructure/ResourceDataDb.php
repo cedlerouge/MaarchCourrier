@@ -18,6 +18,7 @@ namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
+use Exception;
 use ExternalSignatoryBook\pastell\Domain\ResourceDataInterface;
 use Resource\models\ResModel;
 
@@ -26,6 +27,7 @@ class ResourceDataDb implements ResourceDataInterface
     /**
      * @param int $resId
      * @return array
+     * @throws Exception
      */
     public function getMainResourceData(int $resId): array
     {
@@ -39,6 +41,7 @@ class ResourceDataDb implements ResourceDataInterface
     /**
      * @param int $resId
      * @return array
+     * @throws Exception
      */
     public function getIntegratedAttachmentsData(int $resId): array
     {
@@ -55,9 +58,7 @@ class ResourceDataDb implements ResourceDataInterface
     public function getAttachmentTypes(): array
     {
         $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
-        $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
-
-        return $attachmentTypes;
+        return array_column($attachmentTypes, 'signable', 'type_id');
     }
 
     /**
@@ -65,6 +66,7 @@ class ResourceDataDb implements ResourceDataInterface
      * @param string $type
      * @param string $signatoryUser
      * @return void
+     * @throws Exception
      */
     public function updateDocumentExternalStateSignatoryUser(int $resId, string $type, string $signatoryUser): void
     {

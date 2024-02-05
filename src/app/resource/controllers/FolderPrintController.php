@@ -47,7 +47,7 @@ class FolderPrintController
      * if 1 resource, sends a single PDF
      * if several resources, sends one PDF per resource combined into a ZIP archive
      */
-    public function generateFile(Request $request, Response $response)
+    public function generateFile(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -205,8 +205,8 @@ class FolderPrintController
                                 'res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
                                 'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'
                             ],
-                            'where'  => ['origin = ?'],
-                            'data'   => [$attachment['res_id'] . ',res_attachments']
+                            'where'  => ['origin = ?', 'status not in (?)'],
+                            'data'   => [$attachment['res_id'] . ',res_attachments', ['DEL', 'OBS']]
                         ]);
 
                         if (!empty($originAttachment[0])) {
@@ -454,8 +454,8 @@ class FolderPrintController
                             'res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
                             'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'
                         ],
-                        'where'  => ['origin = ?'],
-                        'data'   => [$attachment['res_id'] . ',res_attachments']
+                        'where'  => ['origin = ?', 'status not in (?)'],
+                        'data'   => [$attachment['res_id'] . ',res_attachments', ['DEL', 'OBS']]
                     ]);
 
                     if (!empty($originAttachment[0])) {

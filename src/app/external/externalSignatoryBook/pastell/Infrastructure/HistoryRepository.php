@@ -10,6 +10,7 @@
  * @brief Pastell HistoryRepository
  * @author dev@maarch.org
  */
+
 namespace ExternalSignatoryBook\pastell\Infrastructure;
 
 use ExternalSignatoryBook\pastell\Domain\HistoryRepositoryInterface;
@@ -17,6 +18,11 @@ use History\controllers\HistoryController;
 
 class HistoryRepository implements HistoryRepositoryInterface
 {
+    /**
+     * @param int $id
+     * @param string $message
+     * @return void
+     */
     public function addLogInHistory(int $id, string $message): void
     {
         $userRoot = new UserRoot();

@@ -86,7 +86,7 @@ class RetrieveFromPastell
                     $info['error'] == "Le document {$value['external_id']} n'appartient pas à l'entité {$this->config->getEntity()}"
                 ) {
                     try {
-                        $type  = $documentType == 'resLetterbox' ? 'resource' : 'attachment';
+                        $type = $documentType == 'resLetterbox' ? 'resource' : 'attachment';
                         $title = $documentType == 'resLetterbox' ? $value['subject'] : $value['title'];
                         $this->documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
                     } catch (Throwable $th) {
