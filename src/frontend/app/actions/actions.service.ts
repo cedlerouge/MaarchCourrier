@@ -48,7 +48,7 @@ import { ResetRecordManagementComponent } from './reset-record-management-action
 import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledgment-record-management-action/check-acknowledgment-record-management.component';
 import { FiltersListService } from '@service/filtersList.service';
 import { SessionStorageService } from '@service/session-storage.service';
-import { Action } from '@models/actions.model';
+import { Action, MessageActionInterface } from '@models/actions.model';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -93,16 +93,22 @@ export class ActionsService implements OnDestroy {
         }
     }
 
+    // TODO: Deprecated (use catchActionWithData)
     catchAction(): Observable<any> {
         return this.eventAction.asObservable();
     }
 
+    // TODO: Deprecated (use emitActionWithData)
     emitAction() {
         this.eventAction.next(true);
     }
 
-    emitActionWithData(data: any) {
+    emitActionWithData(data: MessageActionInterface) {
         this.eventAction.next(data);
+    }
+
+    catchActionWithData(): Observable<MessageActionInterface> {
+        return this.eventAction.asObservable();
     }
 
     setLoading(state: boolean) {

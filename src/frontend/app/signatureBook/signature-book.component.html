@@ -27,24 +27,13 @@
             </div>
         </div>
     </div>
-    <mat-drawer-container class="example-container" [hasBackdrop]="false">
+    <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
         <mat-drawer #drawerResList mode="over"> Parapheur électronique </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <div class="book-mark-container">
-                            <button
-                                *ngFor="let attachment of attachments;let i=index"
-                                mat-button
-                                class="book-mark-item book-mark-item-to-right"
-                                [class.book-mark-item-selected]="selectedAttachment===i"
-                                [class.book-mark-item-selected-to-right]="selectedAttachment===i"
-                                (click)="selectedAttachment=i"
-                            >
-                                {{attachment}} {{i}}
-                            </button>
-                        </div>
+                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" [documents]="attachments" [signable]="false"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content">
                         <div
@@ -69,7 +58,7 @@
                         </div>
                         <iframe
                             style="height: 100%; width: 100%"
-                            src="https://www.africau.edu/images/default/sample.pdf"
+                            src="assets/sample/test.pdf"
                         ></iframe>
                     </div>
                 </div>
@@ -95,7 +84,7 @@
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs [docsToSign]="docsToSign"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" [documents]="docsToSign" [signable]="true"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>

@@ -1,4 +1,6 @@
-import { Component, Input, OnInit} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     selector: 'app-maarch-sb-tabs',
@@ -7,10 +9,12 @@ import { Component, Input, OnInit} from '@angular/core';
 })
 export class MaarchSbTabsComponent implements OnInit {
 
-    @Input() docsToSign: string[] = [];
+    @Input() documents: Attachment[];
+    @Input() signable: boolean = false;
+
+    selectedId: number = 0;
 
     constructor() {}
 
-    ngOnInit(): void {} 
-
+    ngOnInit(): void {}
 }

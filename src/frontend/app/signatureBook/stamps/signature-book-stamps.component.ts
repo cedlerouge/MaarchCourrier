@@ -61,6 +61,9 @@ export class SignatureBookStampsComponent implements OnInit {
     }
 
     signWithStamp(stamp: StampInterface) {
-        this.actionsService.emitActionWithData(stamp);
+        this.actionsService.emitActionWithData({
+            id: 'selectedStamp',
+            data: stamp
+        });
     }
 }
