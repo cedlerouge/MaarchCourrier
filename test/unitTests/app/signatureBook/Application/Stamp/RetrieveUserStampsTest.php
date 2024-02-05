@@ -21,7 +21,7 @@ class RetrieveUserStampsTest extends TestCase
         $this->retrieveUserStamps = new RetrieveUserStamps($this->user, $this->signatureService);
     }
 
-    public function retrieveUserStampsWithUserIdIs0ReturnUserDoesNotExistException()
+    public function retrieveUserStampsWithUserIdIs0ReturnUserDoesNotExistException(): void
     {
         $this->user->doesUserExist = false;
 
