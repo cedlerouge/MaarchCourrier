@@ -17,6 +17,8 @@ export class MaarchSbContentComponent implements OnInit {
 
     subscription: Subscription;
 
+    subscriptionDocument: Subscription;
+
     documentData = new Attachment();
 
     documentType: 'attachments' | 'resources';
@@ -37,10 +39,13 @@ export class MaarchSbContentComponent implements OnInit {
                 if (res.id === 'selectedStamp') {
                     this.notificationService.success('apposition de la griffe!');
                 } else if (res.id === 'attachmentToSign') {
+                    this.subscriptionDocument?.unsubscribe();
                     this.documentData = res.data;
                     this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                     this.loading = true;
-                    this.loadContent();
+                    setTimeout(() => {
+                        this.loadContent();
+                    }, 1000);
                 }
             }),
             catchError((err: any) => {
@@ -71,7 +76,7 @@ export class MaarchSbContentComponent implements OnInit {
 
     loadContent(): void {
         this.documentContent = null;
-        this.requestWithLoader(`../rest/${this.documentType}/${this.documentData.resId}/content?mode=base64`).pipe(
+        return this.subscriptionDocument = this.requestWithLoader(`../rest/${this.documentType}/${this.documentData.resId}/content?mode=base64`).pipe(
             tap((data: any) => {
                 if (data.encodedDocument) {
                     this.documentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
