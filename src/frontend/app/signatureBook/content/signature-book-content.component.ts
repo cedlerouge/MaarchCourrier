@@ -10,8 +10,8 @@ import { Subscription, catchError, finalize, map, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-maarch-sb-content',
-    templateUrl: 'maarch-sb-content.component.html',
-    styleUrls: ['maarch-sb-content.component.scss'],
+    templateUrl: 'signature-book-content.component.html',
+    styleUrls: ['signature-book-content.component.scss'],
 })
 export class MaarchSbContentComponent implements OnInit {
 
