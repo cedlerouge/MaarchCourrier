@@ -1,18 +1,18 @@
 <div class="title-container"
-    [title]="setTitle(attachmentData) + ' (' + attachmentData?.typeLabel + ')'">
+    [title]="getTitle()">
     <i
         class="far fa-plus-square"
         [title]="'lang.showInformationsBlock' | translate"
         style="cursor: pointer"
     ></i>
-    <span>{{setTitle(attachmentData)}}</span>
-    <small class="subSubject">{{attachmentData?.typeLabel}}</small>
+    <span>{{getLabel()}}</span>
+    <small class="subSubject">{{documentData?.typeLabel}}</small>
 </div>
 <div *ngIf="loading" class="loading" style="display:flex;height:100%;">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
 <div class="sbContent-container">
     <iframe
-        [src]="attachmentContent"
+        [src]="documentContent"
     ></iframe>
 </div>

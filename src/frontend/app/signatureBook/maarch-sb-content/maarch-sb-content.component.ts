@@ -1,12 +1,12 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { Component, OnInit, Sanitizer } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
-import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { AttachmentInterface } from '@models/attachment.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
-import { Subscription, catchError, filter, map, of, tap } from 'rxjs';
+import { Subscription, catchError, filter, finalize, map, of, tap } from 'rxjs';
 import { Observable } from 'tinymce';
 
 @Component({
@@ -17,11 +17,13 @@ import { Observable } from 'tinymce';
 export class MaarchSbContentComponent implements OnInit {
 
     subscription: Subscription;
-    attachmentSubscription: Subscription;
+    documentSubscription: Subscription;
 
-    attachmentData: AttachmentInterface;
+    documentData: AttachmentInterface;
 
-    attachmentContent: any = null;
+    documentType: string = '';
+
+    documentContent: SafeResourceUrl = null;
 
     loading: boolean = true;
 
@@ -43,10 +45,11 @@ export class MaarchSbContentComponent implements OnInit {
             })
         ).subscribe();
 
-        this.attachmentSubscription = this.actionsService.catchAction().pipe(
+        this.documentSubscription = this.actionsService.catchAction().pipe(
             filter((data: MessageActionInterface) => data.id === 'attachmentToSign'),
             tap((res: MessageActionInterface) => {
-                this.attachmentData = res.data;
+                this.documentData = res.data;
+                this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachment' : 'resource';
                 this.loadContent();
             }),
             catchError((err: any) => {
@@ -61,25 +64,32 @@ export class MaarchSbContentComponent implements OnInit {
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
-        this.attachmentSubscription.unsubscribe();
+        this.documentSubscription.unsubscribe();
     }
 
-    setTitle(attachment: AttachmentInterface): string {
-        return !this.functionsService.empty(attachment?.chrono) ? `${attachment?.chrono}: ${attachment?.title}` : `${attachment?.title}`;
+    getLabel(): string {
+        return !this.functionsService.empty(this.documentData?.chrono) ? `${this.documentData?.chrono}: ${this.documentData?.title}` : `${this.documentData?.title}`;
+    }
+
+    getTitle(): string {
+        if (this.documentType === 'attachment') {
+            return `${this.getLabel()} (${this.documentData.typeLabel})`
+        } else if (this.documentType === 'resource') {
+            return `${this.getLabel()}`;
+        }
     }
 
     loadContent(): void {
         this.loading = true;
-        this.attachmentContent = '';
-        const documentType: string = !this.functionsService.empty(this.attachmentData?.resIdMaster) ? 'attachment' : 'resource';
-        if (documentType === 'attachment') {
-            this.requestWithLoader(`../rest/attachments/${this.attachmentData.resId}/content?mode=base64`).pipe(
+        this.documentContent = '';
+        if (this.documentType === 'attachment') {
+            this.requestWithLoader(`../rest/attachments/${this.documentData.resId}/content?mode=base64`).pipe(
                 tap((data: any) => {
                     if (data.encodedDocument) {
-                        this.attachmentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
-                        this.loading = false;
+                        this.documentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
                     }
                 }),
+                finalize(() => this.loading = false),
                 catchError((err: any) => {
                     this.notificationService.handleSoftErrors(err);
                     return of(false);
@@ -88,9 +98,9 @@ export class MaarchSbContentComponent implements OnInit {
         }
     }
 
-    requestWithLoader(url: string) {
+    requestWithLoader(url: string): any {
         return this.http.get<any>(url, { reportProgress: true, observe: 'events' }).pipe(
-            map((event) => {
+            map((event: any) => {
                 switch (event.type) {
                     case HttpEventType.DownloadProgress:
                         const downloadProgress = Math.round(100 * event.loaded / event.total);
