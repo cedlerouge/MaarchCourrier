@@ -604,6 +604,7 @@ class UserController
         $user['preferences']        = json_decode($user['preferences'], true);
         $user['featureTour']        = json_decode($user['feature_tour'], true);
         unset($user['feature_tour']);
+        $user['signatures']         = UserSignatureModel::getByUserSerialId(['userSerialid' => $user['id']]);
         $user['groups']             = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
         $user['entities']           = UserModel::getEntitiesById(['id' => $GLOBALS['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]);
         $user['baskets']            = BasketModel::getBasketsByLogin(['login' => $user['user_id']]);

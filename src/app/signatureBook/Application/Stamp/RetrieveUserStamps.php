@@ -17,6 +17,7 @@ namespace SignatureBook\Application\Stamp;
 use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use SignatureBook\Domain\Ports\SignatureServiceInterface;
 use SignatureBook\Domain\Ports\UserInterface;
+use SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStamps
 {
@@ -36,9 +37,11 @@ class RetrieveUserStamps
     }
 
     /**
+     * @param int $userId
+     * @return UserSignature[]
      * @throws UserDoesNotExistException
      */
-    public function getUserSignatures(int $userId): ?array
+    public function getUserSignatures(int $userId): array
     {
         if (empty($this->user->getUserById($userId))) {
             throw new UserDoesNotExistException();

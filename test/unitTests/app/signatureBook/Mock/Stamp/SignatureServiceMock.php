@@ -1,25 +1,27 @@
 <?php
 
-namespace unitTests\app\signatureBook\Mock\Stamp;
+namespace MaarchCourrier\Tests\app\signatureBook\Mock\Stamp;
 
-use SignatureBook\Domain\Port\SignatureServiceInterface;
+use SignatureBook\Domain\Ports\SignatureServiceInterface;
 use SignatureBook\Domain\UserSignature;
 
 class SignatureServiceMock implements SignatureServiceInterface
 {
     public bool $doesSignatureStampsExist = true;
 
-
-    public function getSignaturesByUserId(int $userId): ?array
+    /**
+     * @param int $userId
+     * @return UserSignature[]
+     */
+    public function getSignaturesByUserId(int $userId): array
     {
         if (!$this->doesSignatureStampsExist) {
-            return null;
+            return [];
         }
 
         $userSignatures = [];
-        $userSignatures[] = UserSignature::createUserSignatureArrayFromArray([
-            ['id' => 1, 'user_serial_id' => 1]
-        ]);
+        $userSignatures[] = UserSignature::createFromArray(['id' => 1, 'user_serial_id' => 1, 'signature_label' => 'Marvel Signature Stamp']);
+        $userSignatures[] = UserSignature::createFromArray(['id' => 2, 'user_serial_id' => 1, 'signature_label' => 'Stan Lee Approve Stamp']);
 
         return $userSignatures;
     }
