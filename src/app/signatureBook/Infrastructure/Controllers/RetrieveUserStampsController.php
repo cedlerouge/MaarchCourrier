@@ -30,7 +30,7 @@ class RetrieveUserStampsController
 
         try {
             $retrieveUserStamps = new RetrieveUserStamps($userRepository, $signatureServiceRepository);
-            return $response->withJson($retrieveUserStamps->getUserSignatures($args['id']));
+            return $response->withJson(['signatures' => $retrieveUserStamps->getUserSignatures($args['id'])]);
         } catch (Throwable $th) {
             return $response->withStatus($th->getCode())->withJson(['errors' => $th->getMessage()]);
         }
