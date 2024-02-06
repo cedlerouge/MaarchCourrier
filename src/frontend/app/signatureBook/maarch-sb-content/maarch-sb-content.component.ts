@@ -49,8 +49,11 @@ export class MaarchSbContentComponent implements OnInit {
             filter((data: MessageActionInterface) => data.id === 'attachmentToSign'),
             tap((res: MessageActionInterface) => {
                 this.documentData = res.data;
-                this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachment' : 'resource';
-                this.loadContent();
+                this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
+                this.loading = true;
+                setTimeout(() => {
+                    this.loadContent();
+                }, 50);
             }),
             catchError((err: any) => {
                 this.notificationService.handleSoftErrors(err);
@@ -72,30 +75,27 @@ export class MaarchSbContentComponent implements OnInit {
     }
 
     getTitle(): string {
-        if (this.documentType === 'attachment') {
+        if (this.documentType === 'attachments') {
             return `${this.getLabel()} (${this.documentData.typeLabel})`
-        } else if (this.documentType === 'resource') {
+        } else if (this.documentType === 'resources') {
             return `${this.getLabel()}`;
         }
     }
 
     loadContent(): void {
-        this.loading = true;
         this.documentContent = '';
-        if (this.documentType === 'attachment') {
-            this.requestWithLoader(`../rest/attachments/${this.documentData.resId}/content?mode=base64`).pipe(
-                tap((data: any) => {
-                    if (data.encodedDocument) {
-                        this.documentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
-                    }
-                }),
-                finalize(() => this.loading = false),
-                catchError((err: any) => {
-                    this.notificationService.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        }
+        this.requestWithLoader(`../rest/${this.documentType}/${this.documentData.resId}/content?mode=base64`).pipe(
+            tap((data: any) => {
+                if (data.encodedDocument) {
+                    this.documentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
+                }
+            }),
+            finalize(() => this.loading = false),
+            catchError((err: any) => {
+                this.notificationService.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     requestWithLoader(url: string): any {
