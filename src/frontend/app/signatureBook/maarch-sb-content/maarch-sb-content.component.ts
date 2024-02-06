@@ -81,7 +81,7 @@ export class MaarchSbContentComponent implements OnInit {
     }
 
     loadContent(): void {
-        this.documentContent = '';
+        this.documentContent = null;
         this.requestWithLoader(`../rest/${this.documentType}/${this.documentData.resId}/content?mode=base64`).pipe(
             tap((data: any) => {
                 if (data.encodedDocument) {
