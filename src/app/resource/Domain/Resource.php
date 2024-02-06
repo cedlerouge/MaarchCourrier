@@ -73,7 +73,7 @@ class Resource implements HasDocserverFileInterface
         $resource = new Resource();
 
         $resource->setResId($array['res_id'] ?? 0);
-        $resource->setSubject($array['subject'] ?? null);
+        $resource->setSubject($array['subject'] ?? '');
         $resource->setTypeId($array['type_id'] ?? null);
         $resource->setFormat($array['format'] ?? null);
         $resource->setTypist($array['typist'] ?? 0);
