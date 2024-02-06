@@ -1,4 +1,4 @@
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActionsService } from '@appRoot/actions/actions.service';
@@ -6,8 +6,7 @@ import { MessageActionInterface } from '@models/actions.model';
 import { Attachment } from '@models/attachment.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
-import { Subscription, catchError, filter, finalize, map, of, tap } from 'rxjs';
-import { Observable } from 'tinymce';
+import { Subscription, catchError, finalize, map, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-maarch-sb-content',
@@ -17,11 +16,10 @@ import { Observable } from 'tinymce';
 export class MaarchSbContentComponent implements OnInit {
 
     subscription: Subscription;
-    documentSubscription: Subscription;
 
     documentData = new Attachment();
 
-    documentType: string = '';
+    documentType: 'attachments' | 'resources';
 
     documentContent: SafeResourceUrl = null;
 
@@ -35,23 +33,15 @@ export class MaarchSbContentComponent implements OnInit {
         private notificationService: NotificationService
     ) {
         this.subscription = this.actionsService.catchAction().pipe(
-            filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
-            tap(() => {
-                this.notificationService.success('apposition de la griffe!');
-            }),
-            catchError((err: any) => {
-                this.notificationService.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
-
-        this.documentSubscription = this.actionsService.catchAction().pipe(
-            filter((data: MessageActionInterface) => data.id === 'attachmentToSign'),
             tap((res: MessageActionInterface) => {
-                this.documentData = res.data;
-                this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
-                this.loading = true;
-                this.loadContent();
+                if (res.id === 'selectedStamp') {
+                    this.notificationService.success('apposition de la griffe!');
+                } else if (res.id === 'attachmentToSign') {
+                    this.documentData = res.data;
+                    this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
+                    this.loading = true;
+                    this.loadContent();
+                }
             }),
             catchError((err: any) => {
                 this.notificationService.handleSoftErrors(err);
@@ -65,7 +55,6 @@ export class MaarchSbContentComponent implements OnInit {
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
-        this.documentSubscription.unsubscribe();
     }
 
     getLabel(): string {
@@ -98,7 +87,7 @@ export class MaarchSbContentComponent implements OnInit {
 
     requestWithLoader(url: string): any {
         return this.http.get<any>(url, { reportProgress: true, observe: 'events' }).pipe(
-            map((event: any) => {
+            map((event: HttpEvent<any>) => {
                 switch (event.type) {
                     case HttpEventType.DownloadProgress:
                         const downloadProgress = Math.round(100 * event.loaded / event.total);
