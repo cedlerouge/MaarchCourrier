@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
-import { AttachmentInterface } from '@models/attachment.model';
+import { Attachment } from '@models/attachment.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, filter, finalize, map, of, tap } from 'rxjs';
@@ -19,7 +19,7 @@ export class MaarchSbContentComponent implements OnInit {
     subscription: Subscription;
     documentSubscription: Subscription;
 
-    documentData: AttachmentInterface;
+    documentData = new Attachment();
 
     documentType: string = '';
 
@@ -51,9 +51,7 @@ export class MaarchSbContentComponent implements OnInit {
                 this.documentData = res.data;
                 this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                 this.loading = true;
-                setTimeout(() => {
-                    this.loadContent();
-                }, 50);
+                this.loadContent();
             }),
             catchError((err: any) => {
                 this.notificationService.handleSoftErrors(err);

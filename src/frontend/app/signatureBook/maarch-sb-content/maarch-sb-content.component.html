@@ -8,10 +8,10 @@
     <span>{{getLabel()}}</span>
     <small class="subSubject">{{documentData?.typeLabel}}</small>
 </div>
-<div *ngIf="loading" class="loading" style="display:flex;height:100%;">
-    <mat-spinner style="margin:auto;"></mat-spinner>
-</div>
 <div class="sbContent-container">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner style="margin:auto;"></mat-spinner>
+    </div>
     <iframe
         [src]="documentContent"
     ></iframe>
