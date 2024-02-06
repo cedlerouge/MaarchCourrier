@@ -64,12 +64,16 @@ class Resource implements HasDocserverFileInterface
     private bool $retentionFrozen;
     private ?bool $binding;
 
+    /**
+     * @param array $array
+     * @return Resource
+     */
     public static function createFromArray(array $array = []): Resource
     {
         $resource = new Resource();
 
         $resource->setResId($array['res_id'] ?? 0);
-        $resource->setSubject($array['subject'] ?? null);
+        $resource->setSubject($array['subject'] ?? '');
         $resource->setTypeId($array['type_id'] ?? null);
         $resource->setFormat($array['format'] ?? null);
         $resource->setTypist($array['typist'] ?? 0);

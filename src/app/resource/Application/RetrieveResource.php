@@ -14,7 +14,6 @@
 
 namespace Resource\Application;
 
-use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
@@ -34,11 +33,17 @@ class RetrieveResource
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
+    /**
+     * @param ResourceDataInterface $resourceDataInterface
+     * @param ResourceFileInterface $resourceFileInterface
+     * @param RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
+     */
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
-        ResourceFileInterface $resourceFileInterface,
+        ResourceDataInterface        $resourceDataInterface,
+        ResourceFileInterface        $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
-    ) {
+    )
+    {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
@@ -54,7 +59,6 @@ class RetrieveResource
      * @throws ResourceHasNoFileException
      * @throws ResourceFingerPrintDoesNotMatchException
      * @throws ResourceFailedToGetDocumentFromDocserverException
-     * @throws ParameterCanNotBeEmptyException
      * @throws ConvertedResultException
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceNotFoundInDocserverException
@@ -73,9 +77,9 @@ class RetrieveResource
             throw new ResourceHasNoFileException();
         }
 
-        $format     = $document->getFormat();
-        $subject    = $document->getSubject();
-        $creatorId  = $document->getTypist();
+        $format = $document->getFormat();
+        $subject = $document->getSubject();
+        $creatorId = $document->getTypist();
 
         $document = $this->getConvertedResourcePdfById($resId);
 
@@ -118,7 +122,9 @@ class RetrieveResource
     }
 
     /**
-     * @throws  ConvertedResultException
+     * @param int $resId
+     * @return ResourceConverted
+     * @throws ConvertedResultException
      */
     private function getConvertedResourcePdfById(int $resId): ResourceConverted
     {
