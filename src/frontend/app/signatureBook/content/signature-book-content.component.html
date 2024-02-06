@@ -1,0 +1,18 @@
+<div class="title-container"
+    [title]="getTitle()">
+    <i
+        class="far fa-plus-square"
+        [title]="'lang.showInformationsBlock' | translate"
+        style="cursor: pointer"
+    ></i>
+    <span>{{getLabel()}}</span>
+    <small class="subSubject">{{documentData?.typeLabel}}</small>
+</div>
+<div class="sbContent-container">
+    <div *ngIf="loading" class="loading">
+        <mat-spinner style="margin:auto;"></mat-spinner>
+    </div>
+    <iframe
+        [src]="documentContent"
+    ></iframe>
+</div>

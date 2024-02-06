@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { ActionsService } from '@appRoot/actions/actions.service';
 
-import { Attachment } from '@models/attachment.model';
+import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { FunctionsService } from '@service/functions.service';
 
 @Component({
     selector: 'app-maarch-sb-tabs',
@@ -14,7 +16,22 @@ export class MaarchSbTabsComponent implements OnInit {
 
     selectedId: number = 0;
 
-    constructor() {}
+    constructor(
+        public functionsService: FunctionsService,
+        private actionsService: ActionsService
+    ) {}
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+        this.actionsService.emitActionWithData({ id: 'attachmentToSign', data: this.documents[0] })
+    }
+
+    selectDocument(i: number, attachment: AttachmentInterface): void {
+        this.selectedId = i;
+        if (this.signable) {
+            this.actionsService.emitActionWithData({
+                id: 'attachmentToSign',
+                data: attachment
+            });
+        }
+    }
 }
