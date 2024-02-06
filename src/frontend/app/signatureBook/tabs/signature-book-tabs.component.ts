@@ -27,9 +27,11 @@ export class MaarchSbTabsComponent implements OnInit {
 
     selectDocument(i: number, attachment: AttachmentInterface): void {
         this.selectedId = i;
-        this.actionsService.emitActionWithData({
-            id: 'attachmentToSign',
-            data: attachment
-        })
+        if (this.signable) {
+            this.actionsService.emitActionWithData({
+                id: 'attachmentToSign',
+                data: attachment
+            });
+        }
     }
 }
