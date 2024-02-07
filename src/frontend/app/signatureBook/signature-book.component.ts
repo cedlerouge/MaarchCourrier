@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,7 +15,7 @@ import { MessageActionInterface } from '@models/actions.model';
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
-export class SignatureBookComponent implements OnInit {
+export class SignatureBookComponent implements OnInit, OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;    
     
@@ -39,6 +39,7 @@ export class SignatureBookComponent implements OnInit {
         private router: Router,
         private notify: NotificationService,
         private actionsService: ActionsService,
+        private actionService: ActionsService
     ) {
         this.subscription = this.actionsService.catchActionWithData().pipe(
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
@@ -53,12 +54,15 @@ export class SignatureBookComponent implements OnInit {
         await this.initParams();
 
         if (this.resId !== undefined) {
+            this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
             this.initAttachments();
             this.initDocsToSign();
         } else {
             this.router.navigate(['/home']);
         }
     }
+
+    
 
     initParams() {
         return new Promise((resolve) => {
@@ -106,8 +110,10 @@ export class SignatureBookComponent implements OnInit {
         });
     }
 
-    ngOnDestroy() {
+    async ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        this.actionService.stopRefreshResourceLock();
+        this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
 }
