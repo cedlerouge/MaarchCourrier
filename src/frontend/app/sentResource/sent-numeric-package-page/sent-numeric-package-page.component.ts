@@ -3,7 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { switchMap, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
+import {
+    switchMap,
+    catchError,
+    filter,
+    exhaustMap,
+    tap,
+    debounceTime,
+    distinctUntilChanged,
+    finalize,
+    map
+} from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { ContactService } from '@service/contact.service';
@@ -95,7 +105,8 @@ export class SentNumericPackagePageComponent implements OnInit {
         private stringPipe: StripTagsPipe,
         private reversePipe: ReversePipe,
         private splitLoginPwd: SplitLoginPwdPipe
-    ) { }
+    ) {
+    }
 
     async ngOnInit(): Promise<void> {
 
@@ -340,7 +351,6 @@ export class SentNumericPackagePageComponent implements OnInit {
     initM2MList() {
         this.recipientsCtrl.valueChanges.pipe(
             filter(value => value !== null),
-            debounceTime(300),
             tap((value) => {
                 if (value.length === 0) {
                     this.filteredEmails = of([]);
@@ -348,6 +358,7 @@ export class SentNumericPackagePageComponent implements OnInit {
             }),
             filter(value => value.length > 2),
             distinctUntilChanged(),
+            debounceTime(300),
             switchMap(data => this.http.get('../rest/autocomplete/contacts/m2m', { params: { 'search': data } })),
             tap((data: any) => {
                 data = data.map((contact: any) => ({
@@ -397,7 +408,15 @@ export class SentNumericPackagePageComponent implements OnInit {
         this.numericPackageStatus = 'WAITING';
         if (this.data.emailId === null) {
             if (this.numericPackage.object === '') {
-                const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.confirm'), msg: this.translate.instant('lang.warnEmptySubject') } });
+                const dialogRef = this.dialog.open(ConfirmComponent, {
+                    panelClass: 'maarch-modal',
+                    autoFocus: false,
+                    disableClose: true,
+                    data: {
+                        title: this.translate.instant('lang.confirm'),
+                        msg: this.translate.instant('lang.warnEmptySubject')
+                    }
+                });
 
                 dialogRef.afterClosed().pipe(
                     filter((data: string) => data === 'ok'),
@@ -430,7 +449,12 @@ export class SentNumericPackagePageComponent implements OnInit {
     }
 
     deleteEmail() {
-        const dialogRef = this.dialog.open(ConfirmComponent, { panelClass: 'maarch-modal', autoFocus: false, disableClose: true, data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') } });
+        const dialogRef = this.dialog.open(ConfirmComponent, {
+            panelClass: 'maarch-modal',
+            autoFocus: false,
+            disableClose: true,
+            data: { title: this.translate.instant('lang.delete'), msg: this.translate.instant('lang.confirmAction') }
+        });
 
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
