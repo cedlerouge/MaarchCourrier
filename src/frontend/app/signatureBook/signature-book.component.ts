@@ -112,6 +112,6 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
         this.actionService.stopRefreshResourceLock();
-        this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
 }
