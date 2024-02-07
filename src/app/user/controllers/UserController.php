@@ -2483,14 +2483,4 @@ class UserController
 
         return true;
     }
-
-    public function getVisaSignatures(Request $request, Response $response, array $args)
-    {
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['id']]);
-        if (empty($user)) {
-            return $response->withStatus(400)->withJson(['errors' => 'User does not exist']);
-        }
-        $signatures = UserSignatureModel::getByUserSerialId(['userSerialid' => $args['id']]);
-        return $response->withJson($signatures);
-    }
 }
