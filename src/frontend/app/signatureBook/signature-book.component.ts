@@ -17,8 +17,8 @@ import { MessageActionInterface } from '@models/actions.model';
 })
 export class SignatureBookComponent implements OnInit, OnDestroy {
 
-    @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;    
-    
+    @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
+
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
 
@@ -61,8 +61,6 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
             this.router.navigate(['/home']);
         }
     }
-
-    
 
     initParams() {
         return new Promise((resolve) => {
