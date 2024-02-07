@@ -3,17 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {
-    switchMap,
-    catchError,
-    filter,
-    exhaustMap,
-    tap,
-    debounceTime,
-    distinctUntilChanged,
-    finalize,
-    map
-} from 'rxjs/operators';
+import { switchMap, catchError, filter, exhaustMap, tap, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { UntypedFormControl } from '@angular/forms';
 import { FunctionsService } from '@service/functions.service';
 import { ContactService } from '@service/contact.service';
@@ -22,7 +12,6 @@ import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
 import { StripTagsPipe, ReversePipe } from 'ngx-pipes';
 import { Observable, of } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { SplitLoginPwdPipe } from '@plugins/splitLoginPwd.pipe';
 
 @Component({
