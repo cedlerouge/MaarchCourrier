@@ -9,6 +9,19 @@ use User\controllers\UserController;
 
 class RetrieveUserStampsControllerTest extends CourrierTestCase
 {
+    private function addUserSignature(int $userId): void
+    {
+        $userController = new UserController();
+        $body = [
+            'base64' => base64_encode(file_get_contents("install/samples/templates/2021/03/0001/0009_1477994073.jpg")),
+            'label' => "signature-icon.jpg",
+            'name' => "signature-icon.jpg",
+        ];
+        $fullRequest = $this->createRequestWithBody('POST', $body);
+        $response = $userController->addSignature($fullRequest, new Response(), ['id' => $userId]);
+        $responseBody = json_decode((string)$response->getBody());
+    }
+
     public function testRetrieveUserStampsViaApi(): void
     {
         $userId = 19;
@@ -25,18 +38,5 @@ class RetrieveUserStampsControllerTest extends CourrierTestCase
         $this->assertNotEmpty($userStamps['signatures']);
         $this->assertIsArray($userStamps['signatures']);
         $this->assertNotEmpty($userStamps['signatures'][0]);
-    }
-
-    private function addUserSignature(int $userId): void
-    {
-        $userController = new UserController();
-        $body = [
-            'base64' => base64_encode(file_get_contents("install/samples/templates/2021/03/0001/0009_1477994073.jpg")),
-            'label' => "signature-icon.jpg",
-            'name' => "signature-icon.jpg",
-        ];
-        $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response = $userController->addSignature($fullRequest, new Response(), ['id' => $userId]);
-        $responseBody = json_decode((string)$response->getBody());
     }
 }

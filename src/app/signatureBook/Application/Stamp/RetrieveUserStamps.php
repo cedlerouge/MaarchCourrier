@@ -43,9 +43,11 @@ class RetrieveUserStamps
      */
     public function getUserSignatures(int $userId): array
     {
-        if (empty($this->user->getUserById($userId))) {
+        $user = $this->user->getUserById($userId);
+
+        if (empty($user->getId())) {
             throw new UserDoesNotExistException();
         }
-        return $this->signatureService->getSignaturesByUserId($userId);
+        return $this->signatureService->getSignaturesByUserId($user->getId());
     }
 }

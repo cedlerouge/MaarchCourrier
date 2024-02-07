@@ -44,23 +44,6 @@ class UserSignature implements JsonSerializable
     }
 
     /**
-     * Convert UserSignature object to an associative array.
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'userSerialId' => $this->userSerialId,
-            'signatureLabel' => $this->signatureLabel,
-            'signaturePath' => $this->signaturePath,
-            'signatureFileName' => $this->signatureFileName,
-            'fingerprint' => $this->fingerprint,
-        ];
-    }
-
-    /**
      * @return int
      */
     public function getId(): int
