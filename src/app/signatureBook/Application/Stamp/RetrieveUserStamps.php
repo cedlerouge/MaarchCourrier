@@ -45,7 +45,7 @@ class RetrieveUserStamps
     {
         $user = $this->user->getUserById($userId);
 
-        if (empty($user->getId())) {
+        if (empty($user)) {
             throw new UserDoesNotExistException();
         }
         return $this->signatureService->getSignaturesByUserId($user->getId());
