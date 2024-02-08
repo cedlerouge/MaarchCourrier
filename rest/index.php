@@ -12,6 +12,8 @@
  * @author dev@maarch.org
  */
 
+use MaarchCourrier\Core\Infrastructure\Error\ErrorHandler;
+
 require '../vendor/autoload.php';
 
 //Root application position
@@ -787,9 +789,10 @@ $app->add($contentLengthMiddleware);
  * for middleware added after it.
  */
 $errorMiddleware = $app->addErrorMiddleware(true, true, true); // TODO use monolog to log errors
+$errorMiddleware->setDefaultErrorHandler(ErrorHandler::class);
 
 // Get the default error handler and register my custom error renderer.
-$errorHandler = $errorMiddleware->getDefaultErrorHandler();
-$errorHandler->registerErrorRenderer('application/json', \SrcCore\http\JsonErrorRenderer::class);
+//$errorHandler = $errorMiddleware->getDefaultErrorHandler();
+//$errorHandler->registerErrorRenderer('application/json', \SrcCore\http\JsonErrorRenderer::class);
 
 $app->run();
