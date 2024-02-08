@@ -229,7 +229,6 @@ create_major_tag:
     - chmod +x ./ci/new_major_tag.sh
     - ./ci/new_major_tag.sh
 
-
 test-karma:
   stage: test
   image: timbru31/node-chrome:20-slim
@@ -251,3 +250,13 @@ test-karma:
     expire_in: 10 days
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+lint:
+  stage: test
+  image: node:20.9.0-slim
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+    - npm i -g npm@10.1.0
+    - npm i --legacy-peer-deps
+    - npm run lint
