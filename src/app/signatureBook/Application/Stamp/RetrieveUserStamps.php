@@ -14,6 +14,7 @@
 
 namespace SignatureBook\Application\Stamp;
 
+use SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
 use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
 use SignatureBook\Domain\Ports\UserRepositoryInterface;
@@ -34,15 +35,20 @@ class RetrieveUserStamps
     /**
      * @param int $userId
      * @return UserSignature[]
-     * @throws UserDoesNotExistException
+     * @throws UserDoesNotExistException|AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException
      */
     public function getUserSignatures(int $userId): array
     {
         $user = $this->user->getUserById($userId);
-
         if ($user === null) {
             throw new UserDoesNotExistException();
         }
+
+        // TODO see with Nicolas later
+        if ($GLOBALS['id'] !== $user->getId()) {
+            throw new AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException();
+        }
+
         return $this->signatureService->getSignaturesByUserId($user->getId());
     }
 }

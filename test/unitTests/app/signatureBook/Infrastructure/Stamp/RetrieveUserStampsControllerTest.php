@@ -9,6 +9,22 @@ use User\controllers\UserController;
 
 class RetrieveUserStampsControllerTest extends CourrierTestCase
 {
+    private ?string $previousConnectedUser;
+
+    protected function setUp(): void
+    {
+        if ($GLOBALS['login'] !== null) {
+            $this->previousConnectedUser = $GLOBALS['login'];
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->previousConnectedUser !== null) {
+            $this->connectAsUser($this->previousConnectedUser);
+        }
+    }
+
     private function addUserSignature(int $userId): void
     {
         $userController = new UserController();
@@ -18,13 +34,13 @@ class RetrieveUserStampsControllerTest extends CourrierTestCase
             'name' => "signature-icon.jpg",
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
-        $response = $userController->addSignature($fullRequest, new Response(), ['id' => $userId]);
-        $responseBody = json_decode((string)$response->getBody());
+        $userController->addSignature($fullRequest, new Response(), ['id' => $userId]);
     }
 
     public function testRetrieveUserStampsViaApi(): void
     {
-        $userId = 19;
+        $this->connectAsUser('bbain');
+        $userId = $GLOBALS['id'];
         $this->addUserSignature($userId);
         $retrieveUserStampsController = new RetrieveUserStampsController();
         $request = $this->createRequest('GET');

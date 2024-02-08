@@ -16,6 +16,7 @@ namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 
 use PHPUnit\Framework\TestCase;
 use SignatureBook\Application\Stamp\RetrieveUserStamps;
+use SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
 use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
@@ -23,15 +24,26 @@ use SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStampsTest extends TestCase
 {
+    private ?int $PREVIOUS_GLOBAL_ID;
     private UserRepositoryRepositoryMock $userRepository;
     private SignatureRepositoryMock $signatureService;
     private RetrieveUserStamps $retrieveUserStamps;
 
     protected function setUp(): void
     {
+        if ($GLOBALS['id'] !== null) {
+            $this->PREVIOUS_GLOBAL_ID = $GLOBALS['id'];
+        }
         $this->userRepository = new UserRepositoryRepositoryMock();
         $this->signatureService = new SignatureRepositoryMock();
         $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService);
+    }
+
+    protected function tearDown(): void
+    {
+        if ($this->PREVIOUS_GLOBAL_ID !== null) {
+            $GLOBALS['id'] = $this->PREVIOUS_GLOBAL_ID;
+        }
     }
 
     public function testRetrieveUserStampsWithUserIdIs0AndReturnUserDoesNotExistException(): void
@@ -50,8 +62,18 @@ class RetrieveUserStampsTest extends TestCase
         $this->retrieveUserStamps->getUserSignatures(1);
     }
 
+    public function testRetrieveUserStampsFromUser2WithUser1ConnectedReturnException(): void
+    {
+        $GLOBALS['id'] = 1;
+
+        $this->expectException(AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException::class);
+
+        $this->retrieveUserStamps->getUserSignatures(2);
+    }
+
     public function testRetrieveUserStampsWithNoStampsToGetAndReturnEmptyList(): void
     {
+        $GLOBALS['id'] = 1;
         $this->signatureService->doesSignatureStampsExist = false;
 
         $signatureStamps = $this->retrieveUserStamps->getUserSignatures(1);
@@ -62,6 +84,7 @@ class RetrieveUserStampsTest extends TestCase
 
     public function testRetrieveUserStampsWithMultipleSignatureStampsAndReturnAList(): void
     {
+        $GLOBALS['id'] = 1;
         $signatureStamps = $this->retrieveUserStamps->getUserSignatures(1);
 
         $this->assertIsArray($signatureStamps);

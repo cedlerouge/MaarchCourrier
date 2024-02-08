@@ -26,6 +26,6 @@ class UserRepositoryRepositoryMock implements UserRepositoryInterface
         if ($userId <= 0 || !$this->doesUserExist) {
             return null;
         }
-        return User::createFromArray(['id' => 1]);
+        return User::createFromArray(['id' => $userId]);
     }
 }
