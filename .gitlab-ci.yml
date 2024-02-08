@@ -256,6 +256,8 @@ lint:
   image: node:20.9.0-slim
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    before_script:
+    - echo "Check lint"
   script:
     - npm i -g npm@10.1.0
     - npm i --legacy-peer-deps
