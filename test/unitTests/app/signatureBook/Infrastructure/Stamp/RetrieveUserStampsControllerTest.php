@@ -34,9 +34,7 @@ class RetrieveUserStampsControllerTest extends CourrierTestCase
 
         $this->assertNotEmpty($userStamps);
         $this->assertIsArray($userStamps);
-        $this->assertArrayHasKey('signatures', $userStamps);
-        $this->assertNotEmpty($userStamps['signatures']);
-        $this->assertIsArray($userStamps['signatures']);
-        $this->assertNotEmpty($userStamps['signatures'][0]);
+        $this->assertNotEmpty($userStamps[0]);
+        $this->assertIsArray($userStamps[0]);
     }
 }
