@@ -8,16 +8,15 @@
  */
 
 /**
- * @brief Custom Automatic Update Interface
+ * @brief User Repository Interface
  * @author dev@maarch.org
- * @ingroup core
  */
 
 namespace SignatureBook\Domain\Ports;
 
 use SignatureBook\Domain\User;
 
-interface UserInterface
+interface UserRepositoryInterface
 {
     /**
      * @param int $userId

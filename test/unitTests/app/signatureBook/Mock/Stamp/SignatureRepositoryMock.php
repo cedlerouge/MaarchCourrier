@@ -2,10 +2,10 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Mock\Stamp;
 
-use SignatureBook\Domain\Ports\SignatureServiceInterface;
+use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
 use SignatureBook\Domain\UserSignature;
 
-class SignatureServiceMock implements SignatureServiceInterface
+class SignatureRepositoryMock implements SignatureRepositoryInterface
 {
     public bool $doesSignatureStampsExist = true;
 

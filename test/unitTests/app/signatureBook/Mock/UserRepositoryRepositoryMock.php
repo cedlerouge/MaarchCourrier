@@ -12,22 +12,20 @@
  * @author  dev@maarch.org
  */
 
-namespace SignatureBook\Infrastructure\Repository;
+namespace MaarchCourrier\Tests\app\signatureBook\Mock;
 
-use SignatureBook\Domain\Ports\UserInterface;
+use SignatureBook\Domain\Ports\UserRepositoryInterface;
 use SignatureBook\Domain\User;
-use User\models\UserModel;
 
-class UserRepository implements UserInterface
+class UserRepositoryRepositoryMock implements UserRepositoryInterface
 {
+    public bool $doesUserExist = true;
+
     public function getUserById(int $userId): ?User
     {
-        $user = UserModel::getById(['id' => $userId, 'select' => ['id']]);
-
-        if (empty($user)) {
+        if ($userId <= 0 || !$this->doesUserExist) {
             return null;
         }
-
-        return User::createFromArray($user);
+        return User::createFromArray(['id' => 1]);
     }
 }

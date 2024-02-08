@@ -17,20 +17,20 @@ namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 use PHPUnit\Framework\TestCase;
 use SignatureBook\Application\Stamp\RetrieveUserStamps;
 use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
-use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureServiceMock;
-use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryMock;
+use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
+use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
 use SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStampsTest extends TestCase
 {
-    private UserRepositoryMock $userRepository;
-    private SignatureServiceMock $signatureService;
+    private UserRepositoryRepositoryMock $userRepository;
+    private SignatureRepositoryMock $signatureService;
     private RetrieveUserStamps $retrieveUserStamps;
 
     protected function setUp(): void
     {
-        $this->userRepository = new UserRepositoryMock();
-        $this->signatureService = new SignatureServiceMock();
+        $this->userRepository = new UserRepositoryRepositoryMock();
+        $this->signatureService = new SignatureRepositoryMock();
         $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService);
     }
 

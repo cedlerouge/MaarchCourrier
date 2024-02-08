@@ -8,8 +8,8 @@
 */
 
 /**
-* @brief   User Signature
-* @author  dev@maarch.org
+* @brief User Signature
+* @author dev@maarch.org
 */
 
 namespace SignatureBook\Domain;
@@ -33,12 +33,13 @@ class UserSignature implements JsonSerializable
     {
         $userSignature = new UserSignature();
 
-        $userSignature->setId($array['id'] ?? 0);
-        $userSignature->setUserSerialId($array['user_serial_id'] ?? 0);
-        $userSignature->setSignatureLabel($array['signature_label'] ?? '');
-        $userSignature->setSignaturePath($array['signature_path'] ?? '');
-        $userSignature->setSignatureFileName($array['signature_file_name'] ?? '');
-        $userSignature->setFingerprint($array['fingerprint'] ?? '');
+        $userSignature
+            ->setId($array['id'] ?? 0)
+            ->setUserSerialId($array['user_serial_id'] ?? 0)
+            ->setSignatureLabel($array['signature_label'] ?? '')
+            ->setSignaturePath($array['signature_path'] ?? '')
+            ->setSignatureFileName($array['signature_file_name'] ?? '')
+            ->setFingerprint($array['fingerprint'] ?? '');
 
         return $userSignature;
     }
@@ -54,9 +55,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param int $id
      */
-    public function setId(int $id): void
+    public function setId(int $id): self
     {
         $this->id = $id;
+        return $this;
     }
 
     /**
@@ -70,9 +72,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param int $userSerialId
      */
-    public function setUserSerialId(int $userSerialId): void
+    public function setUserSerialId(int $userSerialId): self
     {
         $this->userSerialId = $userSerialId;
+        return $this;
     }
 
     /**
@@ -86,9 +89,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param string $signatureLabel
      */
-    public function setSignatureLabel(string $signatureLabel): void
+    public function setSignatureLabel(string $signatureLabel): self
     {
         $this->signatureLabel = $signatureLabel;
+        return $this;
     }
 
     /**
@@ -102,9 +106,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param string $signaturePath
      */
-    public function setSignaturePath(string $signaturePath): void
+    public function setSignaturePath(string $signaturePath): self
     {
         $this->signaturePath = $signaturePath;
+        return $this;
     }
 
     /**
@@ -118,9 +123,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param string $signatureFileName
      */
-    public function setSignatureFileName(string $signatureFileName): void
+    public function setSignatureFileName(string $signatureFileName): self
     {
         $this->signatureFileName = $signatureFileName;
+        return $this;
     }
 
     /**
@@ -134,9 +140,10 @@ class UserSignature implements JsonSerializable
     /**
      * @param string $fingerprint
      */
-    public function setFingerprint(string $fingerprint): void
+    public function setFingerprint(string $fingerprint): self
     {
         $this->fingerprint = $fingerprint;
+        return $this;
     }
 
     public function jsonSerialize(): array

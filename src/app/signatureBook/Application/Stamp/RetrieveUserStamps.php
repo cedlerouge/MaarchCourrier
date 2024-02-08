@@ -8,26 +8,26 @@
  */
 
 /**
- * @brief   Retrieve User Signature
- * @author  dev@maarch.org
+ * @brief Retrieve User Signature
+ * @author dev@maarch.org
  */
 
 namespace SignatureBook\Application\Stamp;
 
 use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
-use SignatureBook\Domain\Ports\SignatureServiceInterface;
-use SignatureBook\Domain\Ports\UserInterface;
+use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use SignatureBook\Domain\Ports\UserRepositoryInterface;
 use SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStamps
 {
     /**
-     * @param UserInterface $user
-     * @param SignatureServiceInterface $signatureService
+     * @param UserRepositoryInterface $user
+     * @param SignatureRepositoryInterface $signatureService
      */
     public function __construct(
-        private readonly UserInterface $user,
-        private readonly SignatureServiceInterface $signatureService
+        private readonly UserRepositoryInterface   $user,
+        private readonly SignatureRepositoryInterface $signatureService
     ) {
     }
 

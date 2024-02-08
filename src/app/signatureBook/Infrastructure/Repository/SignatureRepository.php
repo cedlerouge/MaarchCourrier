@@ -1,12 +1,24 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief Signature Service Repository
+ * @author dev@maarch.org
+ */
+
 namespace SignatureBook\Infrastructure\Repository;
 
-use SignatureBook\Domain\Ports\SignatureServiceInterface;
+use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
 use SignatureBook\Domain\UserSignature;
 use User\models\UserSignatureModel;
 
-class SignatureServiceRepository implements SignatureServiceInterface
+class SignatureRepository implements SignatureRepositoryInterface
 {
     /**
      * @param int $userId

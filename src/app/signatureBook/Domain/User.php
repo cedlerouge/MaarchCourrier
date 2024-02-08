@@ -8,9 +8,8 @@
  */
 
 /**
- * @brief Custom Automatic Update Interface
+ * @brief User Class
  * @author dev@maarch.org
- * @ingroup core
  */
 
 namespace SignatureBook\Domain;

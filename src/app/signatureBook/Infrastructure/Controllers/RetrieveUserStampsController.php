@@ -8,15 +8,15 @@
  */
 
 /**
- * @brief   User Signature
- * @author  dev@maarch.org
+ * @brief Retrieve User Stamps Controller
+ * @author dev@maarch.org
  */
 
 namespace SignatureBook\Infrastructure\Controllers;
 
 use SignatureBook\Application\Stamp\RetrieveUserStamps;
-use SignatureBook\Infrastructure\Repository\SignatureServiceRepository;
-use SignatureBook\Infrastructure\Repository\UserRepository;
+use SignatureBook\Infrastructure\Repository\SignatureRepository;
+use SignatureBook\Infrastructure\Repository\UserRepositoryRepository;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use Throwable;
@@ -25,8 +25,8 @@ class RetrieveUserStampsController
 {
     public function getUserSignatureStamps(Request $request, Response $response, array $args): Response
     {
-        $userRepository = new UserRepository();
-        $signatureServiceRepository = new SignatureServiceRepository();
+        $userRepository = new UserRepositoryRepository();
+        $signatureServiceRepository = new SignatureRepository();
 
         try {
             $retrieveUserStamps = new RetrieveUserStamps($userRepository, $signatureServiceRepository);

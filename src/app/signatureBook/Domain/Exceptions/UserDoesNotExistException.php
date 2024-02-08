@@ -8,8 +8,8 @@
  */
 
 /**
- * @brief   User Signature
- * @author  dev@maarch.org
+ * @brief User Does Not ExistException
+ * @author dev@maarch.org
  */
 
 namespace SignatureBook\Domain\Exceptions;

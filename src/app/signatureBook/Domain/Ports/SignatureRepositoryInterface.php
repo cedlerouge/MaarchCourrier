@@ -8,15 +8,15 @@
  */
 
 /**
- * @brief   User Signature
- * @author  dev@maarch.org
+ * @brief Signature Service Interface
+ * @author dev@maarch.org
  */
 
 namespace SignatureBook\Domain\Ports;
 
 use SignatureBook\Domain\UserSignature;
 
-interface SignatureServiceInterface
+interface SignatureRepositoryInterface
 {
     /**
      * Get user signatures by user ID.
