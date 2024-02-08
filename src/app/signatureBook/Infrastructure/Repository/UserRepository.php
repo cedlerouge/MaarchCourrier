@@ -18,7 +18,7 @@ use SignatureBook\Domain\Ports\UserRepositoryInterface;
 use SignatureBook\Domain\User;
 use User\models\UserModel;
 
-class UserRepositoryRepository implements UserRepositoryInterface
+class UserRepository implements UserRepositoryInterface
 {
     public function getUserById(int $userId): ?User
     {

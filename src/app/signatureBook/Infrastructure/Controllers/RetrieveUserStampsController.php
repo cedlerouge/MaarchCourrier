@@ -16,7 +16,7 @@ namespace SignatureBook\Infrastructure\Controllers;
 
 use SignatureBook\Application\Stamp\RetrieveUserStamps;
 use SignatureBook\Infrastructure\Repository\SignatureRepository;
-use SignatureBook\Infrastructure\Repository\UserRepositoryRepository;
+use SignatureBook\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use Throwable;
@@ -25,7 +25,7 @@ class RetrieveUserStampsController
 {
     public function getUserSignatureStamps(Request $request, Response $response, array $args): Response
     {
-        $userRepository = new UserRepositoryRepository();
+        $userRepository = new UserRepository();
         $signatureServiceRepository = new SignatureRepository();
 
         try {
