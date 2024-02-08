@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief   User Signature
+ * @brief   Retrieve User Signature
  * @author  dev@maarch.org
  */
 
@@ -21,19 +21,14 @@ use SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStamps
 {
-    private UserInterface $user;
-    private SignatureServiceInterface $signatureService;
-
     /**
      * @param UserInterface $user
      * @param SignatureServiceInterface $signatureService
      */
     public function __construct(
-        UserInterface $user,
-        SignatureServiceInterface $signatureService
+        private readonly UserInterface $user,
+        private readonly SignatureServiceInterface $signatureService
     ) {
-        $this->user = $user;
-        $this->signatureService = $signatureService;
     }
 
     /**
@@ -45,7 +40,7 @@ class RetrieveUserStamps
     {
         $user = $this->user->getUserById($userId);
 
-        if (empty($user)) {
+        if ($user === null) {
             throw new UserDoesNotExistException();
         }
         return $this->signatureService->getSignaturesByUserId($user->getId());
