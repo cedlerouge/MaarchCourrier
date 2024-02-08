@@ -19,11 +19,11 @@ import { ConfirmComponent } from '../../plugins/modal/confirm.component';
 })
 export class AvisWorkflowComponent implements OnInit {
 
-    @Input('injectDatas') injectDatas: any;
-    @Input('adminMode') adminMode: boolean;
-    @Input('resId') resId: number = null;
-    @Input('showListModels') showListModels: boolean = true;
-    @Input('mode') mode: 'parallel' | 'circuit' = 'circuit';
+    @Input() injectDatas: any;
+    @Input() adminMode: boolean;
+    @Input() resId: number = null;
+    @Input() showListModels: boolean = true;
+    @Input() mode: 'parallel' | 'circuit' = 'circuit';
 
     @ViewChild('searchAvisUserInput', { static: false }) searchAvisUserInput: ElementRef;
 

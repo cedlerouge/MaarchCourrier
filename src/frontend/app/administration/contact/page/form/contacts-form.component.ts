@@ -824,7 +824,7 @@ export class ContactsFormComponent implements OnInit {
         if (Object.keys(communicationMeans).every((item: any) => this.functions.empty(communicationMeans[item]))) {
             communicationMeans = null;
         }
-        return { ... contact, communicationMeans};
+        return { ... contact, communicationMeans };
     }
 
     isEmptyUnit(id: string) {

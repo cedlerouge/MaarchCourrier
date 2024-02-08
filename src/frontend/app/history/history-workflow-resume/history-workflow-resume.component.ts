@@ -17,8 +17,8 @@ import { PrivilegeService } from '@service/privileges.service';
 
 export class HistoryWorkflowResumeComponent implements OnInit {
 
-    @Input('resId') resId: number = null;
-    @Output('goTo') goTo = new EventEmitter<string>();
+    @Input() resId: number = null;
+    @Output() goTo = new EventEmitter<string>();
 
     loading: boolean = true;
     disabledHistory: boolean = true;

@@ -152,7 +152,7 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
 
         formatedSignatures.push(this.newSignature);
 
-        this.http.put(this.route, {signatures : formatedSignatures}).pipe(
+        this.http.put(this.route, { signatures : formatedSignatures }).pipe(
             tap((data: any) => {
                 this.signatures.push(this.newSignature);
                 this.addMode = false;
@@ -206,7 +206,7 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
 
         const formatedSignatures = this.signatures.map((sign: any) => this.formatSignature(sign));
 
-        this.http.put(this.route, {signatures : formatedSignatures}).pipe(
+        this.http.put(this.route, { signatures : formatedSignatures }).pipe(
             tap(() => {
                 this.notify.success(this.translate.instant('lang.signatureUpdated'));
                 tinymce.remove('textarea#emailSignature' + this.signatures[index].id);
@@ -273,7 +273,7 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
             tap(() => {
                 this.signatures.splice(index, 1);
             }),
-            exhaustMap(() => this.http.put(this.route, {signatures : this.signatures})),
+            exhaustMap(() => this.http.put(this.route, { signatures : this.signatures })),
             tap(() => {
                 this.signaturesClone.splice(index, 1);
                 this.notify.success(this.translate.instant('lang.signatureDeleted'));

@@ -41,7 +41,7 @@ export class CloseAndIndexActionComponent implements OnInit {
             tap((data: any) => {
                 this.data.resIds = [data.resId];
             }),
-            exhaustMap(() => this.http.put(this.data.indexActionRoute, {resource : this.data.resIds[0], note : this.noteEditor.getNote()})),
+            exhaustMap(() => this.http.put(this.data.indexActionRoute, { resource : this.data.resIds[0], note : this.noteEditor.getNote() })),
             tap(() => {
                 this.dialogRef.close(this.data.resIds);
             }),
@@ -55,7 +55,7 @@ export class CloseAndIndexActionComponent implements OnInit {
     }
 
     executeAction() {
-        this.http.put(this.data.processActionRoute, {resources : this.data.resIds, note : this.noteEditor.getNote()}).pipe(
+        this.http.put(this.data.processActionRoute, { resources : this.data.resIds, note : this.noteEditor.getNote() }).pipe(
             tap(() => {
                 this.dialogRef.close(this.data.resIds);
             }),

@@ -1499,7 +1499,7 @@ export class IndexingFormComponent implements OnInit {
         const dialogRef = this.dialog.open(IndexingModelValuesSelectorComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
-            data: {...field, allDoctypes: this.allDoctypes}
+            data: { ...field, allDoctypes: this.allDoctypes }
         });
         dialogRef.afterClosed().pipe(
             filter((data: any) => !this.functions.empty(data)),
@@ -1629,7 +1629,7 @@ export class IndexingFormComponent implements OnInit {
                             }));
                             this.linkedResources = data;
                             this.selectedContactClone = JSON.parse(JSON.stringify(contact));
-                            this.msgToDisplay = this.translate.instant('lang.hasLinkedRes', {'nbDays': this.suggestLinksNdaysAgo});
+                            this.msgToDisplay = this.translate.instant('lang.hasLinkedRes', { 'nbDays': this.suggestLinksNdaysAgo });
                             this.hasLinkedRes = true;
                         }
                     } else {

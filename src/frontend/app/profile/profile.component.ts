@@ -50,9 +50,9 @@ export class ProfileComponent implements OnInit {
     firstFormGroup: UntypedFormGroup;
     ruleText: string = '';
     otherRuleText: string;
-    validPassword: Boolean = false;
-    matchPassword: Boolean = false;
-    hidePassword: Boolean = true;
+    validPassword: boolean = false;
+    matchPassword: boolean = false;
+    hidePassword: boolean = true;
     passwordRules: any = {
         minLength: { enabled: false, value: 0 },
         complexityUpper: { enabled: false, value: 0 },
@@ -247,8 +247,8 @@ export class ProfileComponent implements OnInit {
         this.http.get('../rest/passwordRules')
             .subscribe((data: any) => {
                 const valArr: ValidatorFn[] = [];
-                const ruleTextArr: String[] = [];
-                const otherRuleTextArr: String[] = [];
+                const ruleTextArr: string[] = [];
+                const otherRuleTextArr: string[] = [];
 
                 valArr.push(Validators.required);
 

@@ -418,7 +418,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
                         this.canEditData = data.listEventData.canUpdateData && this.functions.empty(this.currentResourceInformations.registeredMail_deposit_id);
                         this.canChangeModel = data.listEventData.canUpdateModel;
                         this.canGoToNextRes = !this.functions.empty(data.listEventData.canGoToNextRes) ? data.listEventData.canGoToNextRes : null;
-                        this.currentResourceInformations = {... this.currentResourceInformations, canGoToNextRes: this.canGoToNextRes};
+                        this.currentResourceInformations = { ... this.currentResourceInformations, canGoToNextRes: this.canGoToNextRes };
                     }
                 }),
                 catchError((err: any) => {
@@ -680,7 +680,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
     }
 
     openTechnicalInfo() {
-        this.dialog.open(TechnicalInformationComponent, { panelClass: 'maarch-modal', autoFocus: false, data: { resId : this.currentResourceInformations.resId} });
+        this.dialog.open(TechnicalInformationComponent, { panelClass: 'maarch-modal', autoFocus: false, data: { resId : this.currentResourceInformations.resId } });
     }
 
     removeModal(index: number) {
@@ -1012,31 +1012,31 @@ export class ProcessComponent implements OnInit, OnDestroy {
     goToResource(event: string = 'next' || 'previous') {
         this.sessionStorage.save('currentTool', this.currentTool);
 
-            this.http.put(`../rest/resourcesList/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/locked`, { resources: this.allResources }).pipe(
-                tap((data: any) => {
-                    const allResourcesUnlock: number[] = [...data.resourcesToProcess];
-                    const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
+        this.http.put(`../rest/resourcesList/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/locked`, { resources: this.allResources }).pipe(
+            tap((data: any) => {
+                const allResourcesUnlock: number[] = [...data.resourcesToProcess];
+                const index: number = this.allResources.indexOf(parseInt(this.currentResourceInformations.resId, 10));
 
-                    const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
-                    let indexLoop: number = index;
-                    do {
-                        indexLoop = indexLoop + nextLoop;
-                        if ((indexLoop < 0) || (indexLoop === this.allResources.length)) {
-                            indexLoop = -1;
-                            break;
-                        }
-                    } while (!allResourcesUnlock.includes(this.allResources[indexLoop]));
-
-                    if (indexLoop === -1) {
-                        this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
-                    } else {
-                        this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[indexLoop]]);
+                const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
+                let indexLoop: number = index;
+                do {
+                    indexLoop = indexLoop + nextLoop;
+                    if ((indexLoop < 0) || (indexLoop === this.allResources.length)) {
+                        indexLoop = -1;
+                        break;
                     }
-                }),
-                catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+                } while (!allResourcesUnlock.includes(this.allResources[indexLoop]));
+
+                if (indexLoop === -1) {
+                    this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
+                } else {
+                    this.router.navigate(['/process/users/' + this.currentUserId + '/groups/' + this.currentGroupId + '/baskets/' + this.currentBasketId + '/resId/' + this.allResources[indexLoop]]);
+                }
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }

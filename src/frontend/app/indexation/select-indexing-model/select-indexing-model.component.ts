@@ -10,7 +10,7 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { AddPrivateIndexingModelModalComponent } from '../private-indexing-model/add-private-indexing-model-modal.component';
 import { HeaderService } from '@service/header.service';
 import { IndexingFormComponent } from '../indexing-form/indexing-form.component';
-import {PrivilegeService} from '@service/privileges.service';
+import { PrivilegeService } from '@service/privileges.service';
 
 @Component({
     selector: 'app-select-indexing-model',
@@ -48,7 +48,7 @@ export class SelectIndexingModelComponent implements OnInit {
     }
 
     getIndexingModelList() {
-        this.http.get('../rest/indexingModels', {params: {showInUserEntity: true}}).pipe(
+        this.http.get('../rest/indexingModels', { params: { showInUserEntity: true } }).pipe(
             tap((data: any) => {
                 this.indexingModels = data.indexingModels;
                 if (this.indexingModels.length > 0) {
@@ -90,7 +90,7 @@ export class SelectIndexingModelComponent implements OnInit {
     }
 
     selectIndexingModel(indexingModel: any) {
-        this.afterSelectedListModel.emit({indexingModel: indexingModel, prevCategory: JSON.parse(JSON.stringify(this.currentIndexingModel.category))});
+        this.afterSelectedListModel.emit({ indexingModel: indexingModel, prevCategory: JSON.parse(JSON.stringify(this.currentIndexingModel.category)) });
         this.currentIndexingModel = indexingModel;
     }
 

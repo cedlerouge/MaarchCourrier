@@ -104,7 +104,7 @@ export class GiveAvisParallelActionComponent implements OnInit {
         const opinionUserState: string = this.translate.instant('lang.delegatedOpinion').concat(' ', this.delegation.userDelegated);
         const noteContent: string = this.delegation.isDelegated ? `[${this.translate.instant('lang.opinionUserState')}] ${this.noteEditor.getNoteContent()} ← ${opinionUserState}` : `[${this.translate.instant('lang.opinionUserState')}] ${this.noteEditor.getNoteContent()}`;
         this.noteEditor.setNoteContent(noteContent);
-        this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote()}).pipe(
+        this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(realResSelected);

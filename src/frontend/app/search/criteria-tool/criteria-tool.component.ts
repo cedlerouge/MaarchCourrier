@@ -139,9 +139,9 @@ export class CriteriaToolComponent implements OnInit {
 
         if (['senders', 'recipients'].indexOf(this.currentParam?.target) > -1 && !this.functions.empty(this.currentParam.value)) {
             if (this.currentParam.target === 'senders') {
-                this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [this.currentParam.value]}});
+                this.criteriaSearchService.updateListsPropertiesCriteria({ senders: { type: 'autocomplete', values: [this.currentParam.value] } });
             } else {
-                this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [this.currentParam.value]}});
+                this.criteriaSearchService.updateListsPropertiesCriteria({ recipients: { type: 'autocomplete', values: [this.currentParam.value] } });
             }
         }
 
@@ -275,9 +275,9 @@ export class CriteriaToolComponent implements OnInit {
                 if (!this.functions.empty(contactArray.myControl.value) && this.appContactAutocomplete.toArray().find((item: any) => item.id === this.currentParam?.target).controlAutocomplete.value.length === 0) {
                     objCriteria[this.currentParam.target]['values'] = contactArray.myControl.value;
                     if (this.currentParam.target === 'senders') {
-                        this.criteriaSearchService.updateListsPropertiesCriteria({senders: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                        this.criteriaSearchService.updateListsPropertiesCriteria({ senders: { type: 'autocomplete', values: [contactArray.myControl.value] } });
                     } else {
-                        this.criteriaSearchService.updateListsPropertiesCriteria({recipients: {type: 'autocomplete', values: [contactArray.myControl.value]}});
+                        this.criteriaSearchService.updateListsPropertiesCriteria({ recipients: { type: 'autocomplete', values: [contactArray.myControl.value] } });
                     }
                 }
             }
@@ -484,11 +484,11 @@ export class CriteriaToolComponent implements OnInit {
             this.http.get('../rest/statuses').pipe(
                 tap((data: any) => {
                     elem.values = data.statuses
-                    .filter((val: any) => val.can_be_searched === "Y")
-                    .map((val: any) => ({
-                        id: val.identifier,
-                        label: val.label_status
-                    }));
+                        .filter((val: any) => val.can_be_searched === "Y")
+                        .map((val: any) => ({
+                            id: val.identifier,
+                            label: val.label_status
+                        }));
                     resolve(true);
                 }),
                 catchError((err: any) => {
