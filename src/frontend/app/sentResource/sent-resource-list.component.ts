@@ -20,7 +20,7 @@ import { ShippingModalComponent } from './shippingModal/shipping-modal.component
 })
 export class SentResourceListComponent implements OnInit {
 
-    @Input('resId') resId: number = null;
+    @Input() resId: number = null;
     @Input() editMode: boolean = true;
     @Input() currentUserId: number = null;
     @Input() currentGroupId: number = null;
@@ -256,7 +256,7 @@ export class SentResourceListComponent implements OnInit {
         this.dataSource.filter = ev.value;
     }
 
-    open(row: any = {id: null, type: null}) {
+    open(row: any = { id: null, type: null }) {
 
         if (row.type === 'm2m_ARCHIVETRANSFER') {
             this.openPromptNumericPackage(row);
@@ -265,7 +265,7 @@ export class SentResourceListComponent implements OnInit {
         }
     }
 
-    async openPromptMail(row: any = {id: null, type: null}) {
+    async openPromptMail(row: any = { id: null, type: null }) {
         let title = this.translate.instant('lang.sendElement');
 
         if (row.id !== null) {
@@ -314,7 +314,7 @@ export class SentResourceListComponent implements OnInit {
         }
     }
 
-    openPromptNumericPackage(row: any = {id: null, type: null}) {
+    openPromptNumericPackage(row: any = { id: null, type: null }) {
 
         let title = this.translate.instant('lang.sendElement');
 

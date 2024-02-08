@@ -83,9 +83,9 @@ export class AttachmentCreateComponent implements OnInit {
 
         setTimeout(() => {
             if (this.sendMassMode) {
-                this.appDocumentViewer.toArray()[0].setDatas({inMailing: true});
+                this.appDocumentViewer.toArray()[0].setDatas({ inMailing: true });
             } else {
-                this.appDocumentViewer.toArray()[0].setDatas({inMailing: false});
+                this.appDocumentViewer.toArray()[0].setDatas({ inMailing: false });
             }
         }, 0);
     }
@@ -512,12 +512,12 @@ export class AttachmentCreateComponent implements OnInit {
         if (this.sendMassMode) {
             this.sendMassMode = !this.sendMassMode;
             this.selectedContact.enable();
-            this.appDocumentViewer?.toArray()[0]?.setDatas({inMailing: false});
+            this.appDocumentViewer?.toArray()[0]?.setDatas({ inMailing: false });
         } else {
             if (this.attachments.length === 1) {
                 this.sendMassMode = !this.sendMassMode;
                 this.selectedContact.disable();
-                this.appDocumentViewer?.toArray()[0]?.setDatas({inMailing: true});
+                this.appDocumentViewer?.toArray()[0]?.setDatas({ inMailing: true });
                 if (!this.functions.empty(this.appDocumentViewer?.toArray()[0]?.file.content)) {
                     if (!this.appDocumentViewer?.toArray()[0]?.isExtensionAllowed(this.appDocumentViewer?.toArray()[0]?.file)) {
                         this.appDocumentViewer?.toArray()[0]?.cleanFile(false);

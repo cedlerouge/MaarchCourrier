@@ -26,9 +26,9 @@ declare let tinymce: any;
 })
 export class MailEditorComponent implements OnInit, OnDestroy {
 
-    @ViewChild('recipientsField', {static: false}) recipientsField: ElementRef;
-    @ViewChild('copiesField', {static: false}) copiesField: ElementRef;
-    @ViewChild('invisibleCopiesField', {static: false}) invisibleCopiesField: ElementRef;
+    @ViewChild('recipientsField', { static: false }) recipientsField: ElementRef;
+    @ViewChild('copiesField', { static: false }) copiesField: ElementRef;
+    @ViewChild('invisibleCopiesField', { static: false }) invisibleCopiesField: ElementRef;
 
     @Input() resId: number = null;
     @Input() emailId: any = null;
@@ -74,7 +74,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
     emailSubject: string = '';
     emailStatus: string = 'WAITING';
 
-    recipientsInput: UntypedFormControl = new UntypedFormControl({disabled: this.recipientDisabled});
+    recipientsInput: UntypedFormControl = new UntypedFormControl({ disabled: this.recipientDisabled });
     filteredEmails: Observable<string[]>;
 
     emailSignListForm = new UntypedFormControl();
@@ -757,7 +757,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                     } else {
                         const emptyMails: number = this.correspondents.filter((contact: any) => this.functions.empty(contact.email)).length;
                         if (emptyMails > 0) {
-                            this.msgToDisplay = this.translate.instant('lang.correspondentEmptyEmails', {nbr: emptyMails});
+                            this.msgToDisplay = this.translate.instant('lang.correspondentEmptyEmails', { nbr: emptyMails });
                         } else {
                             this.msgToDisplay = '';
                         }

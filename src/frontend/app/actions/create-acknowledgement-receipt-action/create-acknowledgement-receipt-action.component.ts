@@ -121,7 +121,7 @@ export class CreateAcknowledgementReceiptActionComponent implements OnInit {
             };
         }
         if (this.canAddCopies) {
-            data = {...data, sender : this.appMailEditor.getSender(), cc : this.appMailEditor.getCopies(), cci : this.appMailEditor.getInvisibleCopies()};
+            data = { ...data, sender : this.appMailEditor.getSender(), cc : this.appMailEditor.getCopies(), cci : this.appMailEditor.getInvisibleCopies() };
         }
         this.http.put(this.data.processActionRoute, { resources: this.realResSelected, note: this.noteEditor.getNote(), data }).pipe(
             tap((res: any) => {

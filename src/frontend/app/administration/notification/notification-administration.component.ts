@@ -268,7 +268,7 @@ export class NotificationAdministrationComponent implements OnInit {
             this.notification.is_enabled = 'Y';
             if ((this.notification.event_id === 'baskets') && (!this.notification.hasOwnProperty('send_as_recap'))) {
                 this.notification.send_as_recap = false;
-            };
+            }
             this.http.post('../rest/notifications', this.notification)
                 .pipe(
                     tap(() => {

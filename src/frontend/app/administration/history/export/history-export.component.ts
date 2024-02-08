@@ -121,7 +121,7 @@ export class HistoryExportComponent implements OnInit {
     exportData() {
         this.localStorage.save(`export${this.localStorageNames[this.dialogData.origin]}Fields_${this.headerService.user.id}`, JSON.stringify(this.exportModel));
         this.loadingExport = true;
-        this.http.put(`../rest/${this.dialogData.origin}/export?limit=1000`, {... this.exportModel, 'parameters': this.dialogData.parameters}, { responseType: 'blob' }).pipe(
+        this.http.put(`../rest/${this.dialogData.origin}/export?limit=1000`, { ... this.exportModel, 'parameters': this.dialogData.parameters }, { responseType: 'blob' }).pipe(
             tap((data: any) => {
                 if (data.type !== 'text/html') {
                     const downloadLink = document.createElement('a');

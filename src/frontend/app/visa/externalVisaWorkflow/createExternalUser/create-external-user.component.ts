@@ -111,7 +111,7 @@ export class CreateExternalUserComponent implements OnInit {
         if (this.userOTP.type === 'fast') {
             this.userOTP.availableRoles = this.userOTP.availableRoles.filter((item: any) => item !== 'visa');
         }
-        this.dialogRef.close({otp: this.userOTP});
+        this.dialogRef.close({ otp: this.userOTP });
     }
 
     isValidForm() {

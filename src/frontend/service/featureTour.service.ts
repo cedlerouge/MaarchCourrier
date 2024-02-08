@@ -159,7 +159,7 @@ export class FeatureTourService {
     endTour() {
         if (this.currentStepType !== undefined) {
             this.featureTourEnd.push(this.currentStepType);
-            this.http.put('../rest/currentUser/profile/featureTour', {featureTour : this.featureTourEnd}).pipe(
+            this.http.put('../rest/currentUser/profile/featureTour', { featureTour : this.featureTourEnd }).pipe(
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
                     return of(false);

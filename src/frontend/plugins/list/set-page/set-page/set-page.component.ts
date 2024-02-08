@@ -12,7 +12,7 @@ export class SetPageComponent implements OnInit {
 
     @Input() paginator: MatPaginator;
     @Input() pageLength: number = 0;
-    @Input() currentPage = new UntypedFormControl({value: 1}, [Validators.min(1), Validators.max(this.pageLength)]);
+    @Input() currentPage = new UntypedFormControl({ value: 1 }, [Validators.min(1), Validators.max(this.pageLength)]);
     pageSize: number = 10;
     hasError: boolean = false;
 

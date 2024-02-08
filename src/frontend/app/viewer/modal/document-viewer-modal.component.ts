@@ -9,7 +9,7 @@ import { DocumentViewerComponent } from '../document-viewer.component';
 })
 export class DocumentViewerModalComponent implements OnInit, AfterViewInit {
 
-    @ViewChild('appDocumentViewer', { static: false}) appDocumentViewer: DocumentViewerComponent;
+    @ViewChild('appDocumentViewer', { static: false }) appDocumentViewer: DocumentViewerComponent;
 
     loading: boolean = false;
 

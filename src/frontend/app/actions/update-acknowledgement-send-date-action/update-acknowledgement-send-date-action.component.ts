@@ -49,7 +49,7 @@ export class UpdateAcknowledgementSendDateActionComponent implements OnInit {
     }
 
     executeAction() {
-        this.http.put(this.data.processActionRoute, {resources : this.data.resIds, note : this.noteEditor.getNote(), data : {send_date : (this.acknowledgementSendDate.getTime() / 1000).toString()}}).pipe(
+        this.http.put(this.data.processActionRoute, { resources : this.data.resIds, note : this.noteEditor.getNote(), data : { send_date : (this.acknowledgementSendDate.getTime() / 1000).toString() } }).pipe(
             tap(() => {
                 this.dialogRef.close(this.data.resIds);
             }),

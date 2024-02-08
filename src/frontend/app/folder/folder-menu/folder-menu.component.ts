@@ -18,11 +18,11 @@ import { FunctionsService } from '@service/functions.service';
 })
 export class FolderMenuComponent implements OnInit {
 
-    @Input('resIds') resIds: number[];
+    @Input() resIds: number[];
     @Input('currentFolders') currentFoldersList: any[];
 
-    @Output('refreshFolders') refreshFolders = new EventEmitter<string>();
-    @Output('refreshList') refreshList = new EventEmitter<string>();
+    @Output() refreshFolders = new EventEmitter<string>();
+    @Output() refreshList = new EventEmitter<string>();
 
     foldersList: any[] = [];
     pinnedFolder: boolean = true;

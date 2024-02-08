@@ -36,7 +36,7 @@ export class SignatureBookStampsComponent implements OnInit {
             // this.http.get(`../rest/${this.userId}/stamps`).pipe(
             this.http.get<StampInterface[]>(`../rest/currentUser/profile`).pipe(
                 map((data: any) => {
-                    let stamps : StampInterface[] = data.signatures.map((sign: any) => {
+                    const stamps : StampInterface[] = data.signatures.map((sign: any) => {
                         return {
                             id: sign.id,
                             userId: sign.user_serial_id,

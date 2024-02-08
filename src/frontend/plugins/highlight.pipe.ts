@@ -1,9 +1,9 @@
-import { Pipe } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import { LatinisePipe } from 'ngx-pipes';
 import { FunctionsService } from '@service/functions.service';
 
 @Pipe({ name: 'highlight' })
-export class HighlightPipe {
+export class HighlightPipe implements PipeTransform {
 
     constructor(
         private latinisePipe: LatinisePipe,

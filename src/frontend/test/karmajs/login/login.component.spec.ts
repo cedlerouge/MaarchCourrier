@@ -14,7 +14,6 @@ import { Observable, of } from 'rxjs';
 import { MatIconRegistry } from '@angular/material/icon';
 import { BrowserModule, DomSanitizer } from '@angular/platform-browser';
 import * as langFrJson from '@langs/lang-fr.json';
-import { Router } from '@angular/router';
 import { Component } from '@angular/core';
 
 /*
@@ -141,8 +140,8 @@ describe('LoginComponent', () => {
             // Use whenStable() to wait for all pending asynchronous activities to complete
             fixture.whenStable().then(() => {
                 // Check that the navigation was triggered
-                const router = TestBed.inject(Router);
-                const navigateSpy = spyOn(router, 'navigate');
+                // const router = TestBed.inject(Router);
+                // const navigateSpy = spyOn(router, 'navigate');
 
                 // Handle the POST request and provide a mock response
                 httpTestingController = TestBed.inject(HttpTestingController);

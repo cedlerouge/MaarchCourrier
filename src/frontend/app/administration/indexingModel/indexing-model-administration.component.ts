@@ -65,7 +65,7 @@ export class IndexingModelAdministrationComponent implements OnInit {
         icon: 'fa fa-hashtag',
         allowed: true,
         text: '- ' + this.translate.instant('lang.allEntities'),
-        state: {selected: false}
+        state: { selected: false }
     };
 
     ladEnabled: boolean = false;

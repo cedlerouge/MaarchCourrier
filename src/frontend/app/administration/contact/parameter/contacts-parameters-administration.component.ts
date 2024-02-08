@@ -37,7 +37,7 @@ export class ContactsParametersAdministrationComponent implements OnInit {
 
     contactsParameters: any = [];
 
-    arrRatingColumns: String[] = [];
+    arrRatingColumns: string[] = [];
     fillingColor = {
         'first_threshold': '#E81C2B',
         'second_threshold': '#F4891E',
