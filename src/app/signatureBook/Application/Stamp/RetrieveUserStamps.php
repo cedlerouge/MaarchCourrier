@@ -26,7 +26,7 @@ class RetrieveUserStamps
      * @param SignatureRepositoryInterface $signatureService
      */
     public function __construct(
-        private readonly UserRepositoryInterface   $user,
+        private readonly UserRepositoryInterface $user,
         private readonly SignatureRepositoryInterface $signatureService
     ) {
     }
