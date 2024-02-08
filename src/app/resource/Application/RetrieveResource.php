@@ -39,11 +39,10 @@ class RetrieveResource
      * @param RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
      */
     public function __construct(
-        ResourceDataInterface        $resourceDataInterface,
-        ResourceFileInterface        $resourceFileInterface,
+        ResourceDataInterface $resourceDataInterface,
+        ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
-    )
-    {
+    ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
