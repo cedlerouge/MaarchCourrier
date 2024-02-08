@@ -100,6 +100,7 @@
     "symplify/easy-coding-standard": "^12.1"
   },
   "scripts": {
+    "reload-packages": "rm -Rf vendor && composer i",
     "phpcs-courrier": "vendor/bin/phpcs --standard=phpcs-rules.xml --extensions=php --tab-width=4 -sp src/app src/core src/backend",
     "phpcs-psr12": "vendor/bin/phpcs --standard=PSR12 src/app src/core src/backend -p -n",
     "phpcs-psr12:warnings": "vendor/bin/phpcs --standard=PSR12 src/app src/core src/backend -p",
