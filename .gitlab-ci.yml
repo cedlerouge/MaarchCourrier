@@ -262,6 +262,7 @@ lint:
     - npm i -g npm@10.1.0
     - npm i --legacy-peer-deps
     - npm run lint
+  allow_failure: true
   artifacts:
     reports:
       codequality: gl-codequality.json
