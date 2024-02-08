@@ -2,6 +2,7 @@ import { Injectable, ViewContainerRef } from '@angular/core';
 import { loadRemoteModule } from '@angular-architects/module-federation';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from './notification/notification.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
     providedIn: 'root',
@@ -9,7 +10,8 @@ import { NotificationService } from './notification/notification.service';
 export class PluginManagerService {
     plugins: any = {};
     constructor(
-        private httpClient: HttpClient, 
+        private httpClient: HttpClient,
+        private authService : AuthService,
         private notificationService: NotificationService) {}
 
     get http(): HttpClient {
@@ -38,10 +40,11 @@ export class PluginManagerService {
             return false;
         }
         try {
+            containerRef.detach();
             const remoteComponent: any = containerRef.createComponent(
                 this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]
             );
-
+            extraData = {...extraData, pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins'}
             remoteComponent.instance.init({ ...this, ...extraData });
             return remoteComponent.instance;
         } catch (error) {

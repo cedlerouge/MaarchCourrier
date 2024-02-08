@@ -835,6 +835,7 @@ class AttachmentController
         ]);
 
         $data = $request->getQueryParams();
+        $data['mode'] = $data['mode'] ?? null;
 
         $mimeAndSize = CoreController::getMimeTypeAndFileSize(['path' => $pathToDocument]);
         if (!empty($mimeAndSize['errors'])) {

@@ -12,7 +12,6 @@ import { FunctionsService } from './functions.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { AdministrationService } from '@appRoot/administration/administration.service';
-import { PluginManagerService } from './plugin-manager.service';
 
 @Injectable({
     providedIn: 'root'
@@ -47,7 +46,6 @@ export class AuthService {
         private localStorage: LocalStorageService,
         private privilegeService: PrivilegeService,
         private functionsService: FunctionsService,
-        private pluginManagerService: PluginManagerService,
         public dialog: MatDialog,
         public translate: TranslateService,
         public adminService: AdministrationService,
