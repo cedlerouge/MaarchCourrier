@@ -43,7 +43,8 @@
       "ExternalSignatoryBook\\": "src/app/external/externalSignatoryBook/",
       "ExternalSummary\\": "src/app/external/summary/",
       "Outlook\\": "src/app/external/outlook/",
-      "Multigest\\": "src/app/external/multigest/"
+      "Multigest\\": "src/app/external/multigest/",
+      "MaarchCourrier\\": "src/backend/"
     }
   },
   "autoload-dev": {
