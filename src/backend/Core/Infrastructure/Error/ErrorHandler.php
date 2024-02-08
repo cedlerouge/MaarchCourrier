@@ -34,12 +34,12 @@ class ErrorHandler implements ErrorHandlerInterface
         $response = new Response();
 
         $problem = $exception;
+        $debug = $this->environnement->isDebug();
 
         if (!$exception instanceof Problem) {
-            $problem = new InternalServerProblem($exception);
+            $problem = new InternalServerProblem($exception, $debug);
         }
 
-        $debug = $this->environnement->isDebug();
 
         $payload = $problem->jsonSerialize($debug);
 
