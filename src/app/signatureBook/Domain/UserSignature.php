@@ -139,16 +139,29 @@ class UserSignature implements JsonSerializable
         $this->fingerprint = $fingerprint;
     }
 
-
     public function jsonSerialize(): array
     {
-        return [
-            'id' => $this->getId(),
-            'userSerialId' => $this->getUserSerialId(),
-            'signatureLabel' => $this->getSignatureLabel(),
-            'signaturePath' => $this->getSignaturePath(),
-            'signatureFileName' => $this->getSignatureFileName(),
-            'fingerprint' => $this->getFingerprint(),
-        ];
+        $array = [];
+
+        if ($this->getId() > 0) {
+            $array['id'] = $this->getId();
+        }
+        if (!empty($this->getUserSerialId())) {
+            $array['userSerialId'] = $this->getUserSerialId();
+        }
+        if (!empty($this->getSignatureLabel())) {
+            $array['signatureLabel'] = $this->getSignatureLabel();
+        }
+        if (!empty($this->getSignaturePath())) {
+            $array['signaturePath'] = $this->getSignaturePath();
+        }
+        if (!empty($this->getSignatureFileName())) {
+            $array['signatureFileName'] = $this->getSignatureFileName();
+        }
+        if (!empty($this->getFingerprint())) {
+            $array['fingerprint'] = $this->getFingerprint();
+        }
+
+        return $array;
     }
 }
