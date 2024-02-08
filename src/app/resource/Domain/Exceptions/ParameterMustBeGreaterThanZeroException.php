@@ -14,12 +14,18 @@
 
 namespace Resource\Domain\Exceptions;
 
-use Exception;
+use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class ParameterMustBeGreaterThanZeroException extends Exception
+class ParameterMustBeGreaterThanZeroException extends Problem
 {
     public function __construct(string $parameterName)
     {
-        parent::__construct("Parameter '$parameterName' must be greater than 0", 400);
+        parent::__construct(
+            "Parameter '$parameterName' must be greater than 0",
+            400,
+            [
+                'parameterName' => $parameterName
+            ]
+        );
     }
 }
