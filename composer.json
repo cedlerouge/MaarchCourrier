@@ -51,7 +51,7 @@
     "psr-4": {
       "MaarchCourrier\\Tests\\": "test/unitTests/",
       "MaarchCourrier\\AcceptanceTests\\": "test/acceptanceTests/",
-      "MaarchCourrier\\Tests\\Functional\\": "test/Functional"
+      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/"
     }
   },
   "config": {
