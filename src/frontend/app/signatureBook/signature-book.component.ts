@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -48,6 +48,11 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                 this.notify.success('apposition de la griffe!');
             })
         ).subscribe();
+    }
+
+    @HostListener('window:unload', [ '$event' ])
+    async unloadHandler() {
+        await this.unclockResource();
     }
 
     async ngOnInit(): Promise<void> {
@@ -111,6 +116,10 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     async ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        await this.unclockResource();
+    }
+
+    async unclockResource(): Promise<void> {
         this.actionService.stopRefreshResourceLock();
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
