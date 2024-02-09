@@ -16,10 +16,10 @@ namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
 use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
-use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
+use MaarchCourrier\User\Domain\Exceptions\UserDoesNotExistException;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase

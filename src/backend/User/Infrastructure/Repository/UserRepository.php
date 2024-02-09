@@ -12,10 +12,10 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Infrastructure\Repository;
+namespace MaarchCourrier\User\Infrastructure\Repository;
 
-use MaarchCourrier\SignatureBook\Domain\Ports\UserRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\User;
+use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\User;
 use User\models\UserModel;
 
 class UserRepository implements UserRepositoryInterface

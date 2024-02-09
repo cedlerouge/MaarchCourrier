@@ -16,9 +16,9 @@ namespace MaarchCourrier\SignatureBook\Infrastructure\Controllers;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
 use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
-use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureRepository;
-use MaarchCourrier\SignatureBook\Infrastructure\Repository\UserRepository;
+use MaarchCourrier\User\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 

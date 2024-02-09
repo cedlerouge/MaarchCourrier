@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain\Exceptions;
+namespace MaarchCourrier\User\Domain\Exceptions;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 

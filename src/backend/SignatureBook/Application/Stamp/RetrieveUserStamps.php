@@ -15,10 +15,10 @@
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
 use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
-use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\Ports\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
+use MaarchCourrier\User\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
 
 class RetrieveUserStamps
 {

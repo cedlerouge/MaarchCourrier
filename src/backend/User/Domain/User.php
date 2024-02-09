@@ -12,9 +12,11 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain;
+namespace MaarchCourrier\User\Domain;
 
-class User
+use MaarchCourrier\User\Domain\Ports\UserInterface;
+
+class User implements UserInterface
 {
     private int $id;
 
