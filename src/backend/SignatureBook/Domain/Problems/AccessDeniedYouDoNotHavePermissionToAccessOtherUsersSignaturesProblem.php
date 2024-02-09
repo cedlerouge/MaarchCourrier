@@ -12,11 +12,11 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain\Exceptions;
+namespace MaarchCourrier\SignatureBook\Domain\Problems;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException extends Problem
+class AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem extends Problem
 {
     public function __construct()
     {

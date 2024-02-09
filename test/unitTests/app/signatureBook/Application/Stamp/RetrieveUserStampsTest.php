@@ -15,11 +15,11 @@
 namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
-use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
+use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
-use MaarchCourrier\User\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
@@ -48,7 +48,7 @@ class RetrieveUserStampsTest extends TestCase
 
     public function testRetrieveUserStampsWithUserIdIs0AndReturnUserDoesNotExistException(): void
     {
-        $this->expectException(UserDoesNotExistException::class);
+        $this->expectException(UserDoesNotExistProblem::class);
 
         $this->retrieveUserStamps->getUserSignatures(0);
     }
@@ -57,7 +57,7 @@ class RetrieveUserStampsTest extends TestCase
     {
         $this->userRepository->doesUserExist = false;
 
-        $this->expectException(UserDoesNotExistException::class);
+        $this->expectException(UserDoesNotExistProblem::class);
 
         $this->retrieveUserStamps->getUserSignatures(1);
     }
@@ -66,7 +66,7 @@ class RetrieveUserStampsTest extends TestCase
     {
         $GLOBALS['id'] = 1;
 
-        $this->expectException(AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException::class);
+        $this->expectException(AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem::class);
 
         $this->retrieveUserStamps->getUserSignatures(2);
     }

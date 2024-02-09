@@ -12,11 +12,11 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\User\Domain\Exceptions;
+namespace MaarchCourrier\User\Domain\Problems;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class UserDoesNotExistException extends Problem
+class UserDoesNotExistProblem extends Problem
 {
     public function __construct()
     {

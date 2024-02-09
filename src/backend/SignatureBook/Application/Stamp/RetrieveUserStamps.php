@@ -14,10 +14,10 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
+use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
-use MaarchCourrier\User\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
 
 class RetrieveUserStamps
@@ -35,18 +35,18 @@ class RetrieveUserStamps
     /**
      * @param int $userId
      * @return UserSignature[]
-     * @throws UserDoesNotExistException|AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException
+     * @throws UserDoesNotExistProblem|AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem
      */
     public function getUserSignatures(int $userId): array
     {
         $user = $this->user->getUserById($userId);
         if ($user === null) {
-            throw new UserDoesNotExistException();
+            throw new UserDoesNotExistProblem();
         }
 
         // TODO see with Nicolas later
         if ($GLOBALS['id'] !== $user->getId()) {
-            throw new AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException();
+            throw new AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem();
         }
 
         return $this->signatureService->getSignaturesByUserId($user->getId());
