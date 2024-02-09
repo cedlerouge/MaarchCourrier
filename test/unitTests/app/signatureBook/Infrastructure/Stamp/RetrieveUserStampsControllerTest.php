@@ -37,7 +37,7 @@ class RetrieveUserStampsControllerTest extends CourrierTestCase
         $userController->addSignature($fullRequest, new Response(), ['id' => $userId]);
     }
 
-    public function testRetrieveUserStampsViaApi(): void
+    public function testGetAListOfUserStampsFromApiRouteExpectNoExceptions(): void
     {
         $this->connectAsUser('bbain');
         $userId = $GLOBALS['id'];

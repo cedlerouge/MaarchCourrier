@@ -18,7 +18,7 @@ use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermi
 use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
 use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Ports\UserRepositoryInterface;
-use MaarchCourrier\SignatureBook\UserSignature;
+use MaarchCourrier\SignatureBook\Domain\UserSignature;
 
 class RetrieveUserStamps
 {

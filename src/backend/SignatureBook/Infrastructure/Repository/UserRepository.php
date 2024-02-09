@@ -22,6 +22,10 @@ class UserRepository implements UserRepositoryInterface
 {
     public function getUserById(int $userId): ?User
     {
+        if ($userId <= 0) {
+            return null;
+        }
+
         $user = UserModel::getById(['id' => $userId, 'select' => ['id']]);
 
         if (empty($user)) {
