@@ -46,14 +46,25 @@ class RetrieveUserStampsTest extends TestCase
         }
     }
 
-    public function testRetrieveUserStampsWithUserIdIs0AndReturnUserDoesNotExistException(): void
+    public function provideConnectedUserIds(): array
     {
-        $this->expectException(UserDoesNotExistProblem::class);
-
-        $this->retrieveUserStamps->getUserSignatures(0);
+        return [
+            "Connected User Id '2'" => [
+                'userId' => 2
+            ],
+            "Connected User Id '3'" => [
+                'input' => 3
+            ],
+            "Connected User Id '4'" => [
+                'input' => 4
+            ],
+            "Connected User Id '10'" => [
+                'input' => 10
+            ],
+        ];
     }
 
-    public function testRetrieveUserStampsWithUnknownUserAndReturnUserDoesNotExistException(): void
+    public function testCannotGetUserStampsIfTheUserDoesNotExistReturnAnException(): void
     {
         $this->userRepository->doesUserExist = false;
 
@@ -62,16 +73,19 @@ class RetrieveUserStampsTest extends TestCase
         $this->retrieveUserStamps->getUserSignatures(1);
     }
 
-    public function testRetrieveUserStampsFromUser2WithUser1ConnectedReturnException(): void
+    /**
+     * @dataProvider provideConnectedUserIds
+     */
+    public function testConnectedUserCannotRetrieveUserId1StampsReturnException(int $userId): void
     {
-        $GLOBALS['id'] = 1;
+        $GLOBALS['id'] = $userId;
 
         $this->expectException(AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem::class);
 
-        $this->retrieveUserStamps->getUserSignatures(2);
+        $this->retrieveUserStamps->getUserSignatures(1);
     }
 
-    public function testRetrieveUserStampsWithNoStampsToGetAndReturnEmptyList(): void
+    public function testConnectedUserCanRetrieveHisListOfEmptyStampsIfHeHasNoUserSignatures(): void
     {
         $GLOBALS['id'] = 1;
         $this->signatureService->doesSignatureStampsExist = false;
@@ -82,7 +96,7 @@ class RetrieveUserStampsTest extends TestCase
         $this->assertEmpty($signatureStamps);
     }
 
-    public function testRetrieveUserStampsWithMultipleSignatureStampsAndReturnAList(): void
+    public function testConnectedUserCanRetrieveHisListOfUserSignatures(): void
     {
         $GLOBALS['id'] = 1;
         $signatureStamps = $this->retrieveUserStamps->getUserSignatures(1);
