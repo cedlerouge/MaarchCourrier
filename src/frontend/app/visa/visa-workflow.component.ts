@@ -313,6 +313,7 @@ export class VisaWorkflowComponent implements OnInit {
     deleteItem(index: number) {
         this.visaWorkflow.items.splice(index, 1);
         this.workflowUpdated.emit(this.visaWorkflow.items);
+        this.saveVisaWorkflow();
     }
 
     getVisaCount() {
@@ -437,6 +438,7 @@ export class VisaWorkflowComponent implements OnInit {
                 this.searchVisaSignUser.reset();
                 this.searchVisaSignUserInput.nativeElement.blur();
                 this.workflowUpdated.emit(this.visaWorkflow.items);
+                this.saveVisaWorkflow();
                 resolve(true);
             } else if (item.type === 'entity') {
                 this.http.get(`../rest/listTemplates/${item.id}`).pipe(
@@ -456,9 +458,10 @@ export class VisaWorkflowComponent implements OnInit {
                                 currentRole: itemTemplate.item_mode
                             }))
                         );
-                        this.searchVisaSignUser.reset();
+                        this.saveVisaWorkflow();
                         this.searchVisaSignUserInput.nativeElement.blur();
                         this.workflowUpdated.emit(this.visaWorkflow.items);
+                        this.searchVisaSignUser.reset();
                         resolve(true);
                     })
                 ).subscribe();
