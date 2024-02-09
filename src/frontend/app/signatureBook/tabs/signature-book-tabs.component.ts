@@ -22,7 +22,9 @@ export class MaarchSbTabsComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.actionsService.emitActionWithData({ id: 'attachmentToSign', data: this.documents[0] })
+        if (this.documents.length > 0) {
+            this.actionsService.emitActionWithData({ id: 'attachmentToSign', data: this.documents[0] })
+        }
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {

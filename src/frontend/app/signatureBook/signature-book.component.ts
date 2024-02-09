@@ -106,6 +106,11 @@ export class SignatureBookComponent implements OnInit {
         });
     }
 
+    backToBasket() {
+        const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
+        this.router.navigate([path]);
+    }
+
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();

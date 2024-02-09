@@ -24,13 +24,13 @@ export class MaarchSbContentComponent implements OnInit {
 
     subscriptionDocument: Subscription;
 
-    documentData = new Attachment();
+    documentData: Attachment;
 
     documentType: 'attachments' | 'resources';
 
     documentContent: SafeResourceUrl = null;
 
-    loading: boolean = true;
+    loading: boolean = false;
 
     pluginInstance: any = false;
 
@@ -51,10 +51,10 @@ export class MaarchSbContentComponent implements OnInit {
                         this.pluginInstance.addStamp(signContent);
                     }
                 } else if (res.id === 'attachmentToSign') {
+                    this.loading = true;
                     this.subscriptionDocument?.unsubscribe();
                     this.documentData = res.data;
                     this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
-                    this.loading = true;
                     setTimeout(async () => {
                         await this.loadContent();
                         this.initPlugin();
