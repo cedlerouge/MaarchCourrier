@@ -12,9 +12,9 @@
  * @author dev@maarch.org
  */
 
-namespace SignatureBook\Domain\Ports;
+namespace MaarchCourrier\SignatureBook\Domain\Ports;
 
-use SignatureBook\Domain\User;
+use MaarchCourrier\SignatureBook\Domain\User;
 
 interface UserRepositoryInterface
 {

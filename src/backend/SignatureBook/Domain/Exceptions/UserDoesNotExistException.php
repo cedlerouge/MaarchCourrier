@@ -12,14 +12,17 @@
  * @author dev@maarch.org
  */
 
-namespace SignatureBook\Domain\Exceptions;
+namespace MaarchCourrier\SignatureBook\Domain\Exceptions;
 
-use Exception;
+use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class UserDoesNotExistException extends Exception
+class UserDoesNotExistException extends Problem
 {
     public function __construct()
     {
-        parent::__construct("User does not exist", 400);
+        parent::__construct(
+            "User does not exist",
+            400
+        );
     }
 }

@@ -14,13 +14,13 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 
-use PHPUnit\Framework\TestCase;
-use SignatureBook\Application\Stamp\RetrieveUserStamps;
-use SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
-use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
+use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
+use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
-use SignatureBook\Domain\UserSignature;
+use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
 {

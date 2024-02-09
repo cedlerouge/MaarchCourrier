@@ -12,13 +12,13 @@
  * @author dev@maarch.org
  */
 
-namespace SignatureBook\Application\Stamp;
+namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
-use SignatureBook\Domain\Exceptions\UserDoesNotExistException;
-use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
-use SignatureBook\Domain\Ports\UserRepositoryInterface;
-use SignatureBook\Domain\UserSignature;
+use MaarchCourrier\SignatureBook\Domain\Exceptions\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesException;
+use MaarchCourrier\SignatureBook\Domain\Exceptions\UserDoesNotExistException;
+use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Ports\UserRepositoryInterface;
+use MaarchCourrier\SignatureBook\UserSignature;
 
 class RetrieveUserStamps
 {

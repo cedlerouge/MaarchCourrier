@@ -12,10 +12,10 @@
  * @author dev@maarch.org
  */
 
-namespace SignatureBook\Infrastructure\Repository;
+namespace MaarchCourrier\SignatureBook\Infrastructure\Repository;
 
-use SignatureBook\Domain\Ports\SignatureRepositoryInterface;
-use SignatureBook\Domain\UserSignature;
+use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use User\models\UserSignatureModel;
 
 class SignatureRepository implements SignatureRepositoryInterface

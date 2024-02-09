@@ -12,7 +12,7 @@
 * @author dev@maarch.org
 */
 
-namespace SignatureBook\Domain;
+namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
 

@@ -2,8 +2,8 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Infrastructure\Stamp;
 
+use MaarchCourrier\SignatureBook\Infrastructure\Controllers\RetrieveUserStampsController;
 use MaarchCourrier\Tests\CourrierTestCase;
-use SignatureBook\Infrastructure\Controllers\RetrieveUserStampsController;
 use SrcCore\http\Response;
 use User\controllers\UserController;
 
