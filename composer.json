@@ -50,7 +50,8 @@
   "autoload-dev": {
     "psr-4": {
       "MaarchCourrier\\Tests\\": "test/unitTests/",
-      "MaarchCourrier\\AcceptanceTests\\": "test/acceptanceTests/"
+      "MaarchCourrier\\AcceptanceTests\\": "test/acceptanceTests/",
+      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/"
     }
   },
   "config": {
@@ -99,13 +100,13 @@
     "symplify/easy-coding-standard": "^12.1"
   },
   "scripts": {
-    "phpcs-courrier": "vendor/bin/phpcs --standard=phpcs-rules.xml --extensions=php --tab-width=4 -sp src/app src/core",
-    "phpcs-psr12": "vendor/bin/phpcs --standard=PSR12 src/app src/core -p -n",
-    "phpcs-psr12:warnings": "vendor/bin/phpcs --standard=PSR12 src/app src/core -p",
+    "phpcs-courrier": "vendor/bin/phpcs --standard=phpcs-rules.xml --extensions=php --tab-width=4 -sp src/app src/core src/backend",
+    "phpcs-psr12": "vendor/bin/phpcs --standard=PSR12 src/app src/core src/backend -p -n",
+    "phpcs-psr12:warnings": "vendor/bin/phpcs --standard=PSR12 src/app src/core src/backend -p",
     "phpcs": [
       "@phpcs-courrier",
       "@phpcs-psr12"
     ],
-    "phpstan": "vendor/bin/phpstan analyse --memory-limit 4G  ./src/app/ src/core -c phpstan.neon"
+    "phpstan": "vendor/bin/phpstan analyse --memory-limit 4G  ./src/app/ src/core src/backend -c phpstan.neon"
   }
 }
