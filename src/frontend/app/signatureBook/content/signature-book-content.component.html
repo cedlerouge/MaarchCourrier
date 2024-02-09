@@ -12,7 +12,9 @@
     <div *ngIf="loading" class="loading">
         <mat-spinner style="margin:auto;"></mat-spinner>
     </div>
+    <ng-container #myPlugin></ng-container>
     <iframe
+        *ngIf="!pluginInstance"
         [src]="documentContent"
     ></iframe>
 </div>

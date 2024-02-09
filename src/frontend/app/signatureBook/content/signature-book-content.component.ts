@@ -1,12 +1,15 @@
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { SafeResourceUrl } from '@angular/platform-browser';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
 import { Attachment } from '@models/attachment.model';
+import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
+import { HeaderService } from '@service/header.service';
 import { NotificationService } from '@service/notification/notification.service';
-import { Subscription, catchError, finalize, map, of, tap } from 'rxjs';
+import { PluginManagerService } from '@service/plugin-manager.service';
+import { Subscription, catchError, finalize, of, tap } from 'rxjs';
 
 @Component({
     selector: 'app-maarch-sb-content',
@@ -14,6 +17,8 @@ import { Subscription, catchError, finalize, map, of, tap } from 'rxjs';
     styleUrls: ['signature-book-content.component.scss'],
 })
 export class MaarchSbContentComponent implements OnInit {
+
+    @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
 
     subscription: Subscription;
 
@@ -27,24 +32,32 @@ export class MaarchSbContentComponent implements OnInit {
 
     loading: boolean = true;
 
+    pluginInstance: any = false;
+
     constructor(
         public functionsService: FunctionsService,
         private http: HttpClient,
-        private sanitizer: DomSanitizer,
         private actionsService: ActionsService,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        private pluginManagerService: PluginManagerService,
+        private translateService: TranslateService,
+        private headerService: HeaderService,
     ) {
         this.subscription = this.actionsService.catchAction().pipe(
-            tap((res: MessageActionInterface) => {
+            tap(async (res: MessageActionInterface) => {
                 if (res.id === 'selectedStamp') {
-                    this.notificationService.success('apposition de la griffe!');
+                    if (this.pluginInstance) {
+                        const signContent = await this.getSignatureContent(res.data.contentUrl);
+                        this.pluginInstance.addStamp(signContent);
+                    }
                 } else if (res.id === 'attachmentToSign') {
                     this.subscriptionDocument?.unsubscribe();
                     this.documentData = res.data;
                     this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                     this.loading = true;
-                    setTimeout(() => {
-                        this.loadContent();
+                    setTimeout(async () => {
+                        await this.loadContent();
+                        this.initPlugin();
                     }, 1000);
                 }
             }),
@@ -55,11 +68,23 @@ export class MaarchSbContentComponent implements OnInit {
         ).subscribe();
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void { }
 
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+    }
+
+    async initPlugin() {
+        const data: any = {
+            file : {
+                filename : this.documentData.title,
+                content: this.documentContent
+            },
+            email: this.headerService.user.mail,
+            currentLang: this.translateService.instant('lang.language'),
+        }
+        this.pluginInstance = await this.pluginManagerService.initPlugin('maarch-plugins-pdftron', this.myPlugin, data)
     }
 
     getLabel(): string {
@@ -74,35 +99,47 @@ export class MaarchSbContentComponent implements OnInit {
         }
     }
 
-    loadContent(): void {
+    loadContent(): Promise<boolean> {
         this.documentContent = null;
-        return this.subscriptionDocument = this.requestWithLoader(`../rest/${this.documentType}/${this.documentData.resId}/content?mode=base64`).pipe(
-            tap((data: any) => {
-                if (data.encodedDocument) {
-                    this.documentContent = this.sanitizer.bypassSecurityTrustResourceUrl(`data:${data.mimeType};base64,${data.encodedDocument}`);
-                }
-            }),
-            finalize(() => this.loading = false),
-            catchError((err: any) => {
-                this.notificationService.handleSoftErrors(err);
-                return of(false);
-            })
-        ).subscribe();
+        return new Promise((resolve) => {
+            this.subscriptionDocument = this.http.get(`../rest/${this.documentType}/${this.documentData.resId}/content`, { responseType: 'blob' }).pipe(
+                tap((data: Blob) => {
+                    this.documentContent = data;
+                }),
+                finalize(() => {
+                    this.loading = false;
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notificationService.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
-    requestWithLoader(url: string): any {
-        return this.http.get<any>(url, { reportProgress: true, observe: 'events' }).pipe(
-            map((event: HttpEvent<any>) => {
-                switch (event.type) {
-                    case HttpEventType.DownloadProgress:
-                        const downloadProgress = Math.round(100 * event.loaded / event.total);
-                        return { status: 'progressDownload', message: downloadProgress };
-                    case HttpEventType.Response:
-                        return event.body;
-                    default:
-                        return `Unhandled event: ${event.type}`;
-                }
-            })
-        );
+    getSignatureContent(contentUrl: string) {
+        return new Promise((resolve) => {
+            this.http.get(contentUrl, { responseType: 'blob' })
+                .pipe(
+                    tap(async (res: Blob) => {
+                        resolve(await this.blobToBase64(res));
+                    }),
+                    catchError((err: any) => {
+                        this.notificationService.handleSoftErrors(err.error.errors);
+                        resolve(false)
+                        return of(false);
+                    })
+                )
+                .subscribe();
+        });
     }
+
+    blobToBase64(blob: Blob) {
+        return new Promise((resolve, _) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      }
 }
