@@ -52,7 +52,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
     @HostListener('window:unload', [ '$event' ])
     async unloadHandler() {
-        await this.unlockResource();
+        this.unlockResource();
     }
 
     async ngOnInit(): Promise<void> {
@@ -121,7 +121,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
-        await this.unlockResource();
+        this.unlockResource();
     }
 
     async unlockResource(): Promise<void> {
