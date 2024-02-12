@@ -24,5 +24,4 @@ class SignatureServiceConfig
         $this->url = $url;
         return $this;
     }
-
 }
