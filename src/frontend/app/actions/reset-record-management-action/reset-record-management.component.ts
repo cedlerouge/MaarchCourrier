@@ -65,7 +65,7 @@ export class ResetRecordManagementComponent implements OnInit {
     }
 
     executeAction() {
-        this.http.put(this.data.processActionRoute, { resources: this.selectedRes, note: this.noteEditor.getNote(), data: {resetAction: true} }).pipe(
+        this.http.put(this.data.processActionRoute, { resources: this.selectedRes, note: this.noteEditor.getNote(), data: { resetAction: true } }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(this.selectedRes);

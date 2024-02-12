@@ -42,7 +42,7 @@ export class HeaderPanelComponent implements OnInit {
                         searchTerm = storedCriteria.criteria.meta.values;
                     }
                 }
-                this.router.navigate(['/search'], { queryParams: {value: searchTerm } });
+                this.router.navigate(['/search'], { queryParams: { value: searchTerm } });
             } else {
                 this._location.back();
             }

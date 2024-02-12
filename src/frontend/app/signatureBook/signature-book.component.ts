@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,10 +15,10 @@ import { MessageActionInterface } from '@models/actions.model';
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
-export class SignatureBookComponent implements OnInit {
+export class SignatureBookComponent implements OnInit, OnDestroy {
 
-    @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;    
-    
+    @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
+
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
 
@@ -39,6 +39,7 @@ export class SignatureBookComponent implements OnInit {
         private router: Router,
         private notify: NotificationService,
         private actionsService: ActionsService,
+        private actionService: ActionsService
     ) {
         this.subscription = this.actionsService.catchActionWithData().pipe(
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
@@ -49,10 +50,16 @@ export class SignatureBookComponent implements OnInit {
         ).subscribe();
     }
 
+    @HostListener('window:unload', [ '$event' ])
+    async unloadHandler() {
+        await this.unlockResource();
+    }
+
     async ngOnInit(): Promise<void> {
         await this.initParams();
 
         if (this.resId !== undefined) {
+            this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
             this.initAttachments();
             this.initDocsToSign();
         } else {
@@ -114,5 +121,11 @@ export class SignatureBookComponent implements OnInit {
     ngOnDestroy() {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        await this.unlockResource();
+    }
+
+    async unlockResource(): Promise<void> {
+        this.actionService.stopRefreshResourceLock();
+        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
 }

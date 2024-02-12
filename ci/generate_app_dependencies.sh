@@ -10,7 +10,8 @@ apt-get install -y libpq-dev libxml2-dev libxslt1-dev libpng-dev unoconv xpdf-ut
 && docker-php-ext-configure pdo_pgsql --with-pdo-pgsql \
 && docker-php-ext-install pdo_pgsql pgsql \
 && docker-php-ext-install xsl soap zip \
-&& docker-php-ext-install gd
+&& docker-php-ext-install gd \
+&& docker-php-ext-install bcmath
 
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php

@@ -113,7 +113,7 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
                     console.log(err);
                     this.notify.error(this.translate.instant('lang.tileLoadError', { 0: (this.tile.position + 1) }));
                     this.onError = true;
-                    this.hasError.emit({id: this.tile.id, error: this.onError});
+                    this.hasError.emit({ id: this.tile.id, error: this.onError });
                     this.errorMessage = err.error.errors;
                     resolve(false);
                     return of(false);
@@ -133,7 +133,7 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
                     console.log(err);
                     this.notify.error(this.translate.instant('lang.tileLoadError', { 0: (this.tile.position + 1) }));
                     this.onError = true;
-                    this.hasError.emit({id: this.tile.id, error: this.onError});
+                    this.hasError.emit({ id: this.tile.id, error: this.onError });
                     this.errorMessage = err.error.errors;
                     resolve(false);
                     return of(false);
@@ -156,7 +156,7 @@ export class TileDashboardComponent implements OnInit, AfterViewInit {
                     console.log(err);
                     this.notify.error(this.translate.instant('lang.tileLoadError', { 0: (this.tile.position + 1) }));
                     this.onError = true;
-                    this.hasError.emit({id: this.tile.id, error: this.onError});
+                    this.hasError.emit({ id: this.tile.id, error: this.onError });
                     this.errorMessage = err.error.errors;
                     resolve(false);
                     return of(false);

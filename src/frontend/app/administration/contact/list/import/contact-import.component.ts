@@ -325,7 +325,7 @@ export class ContactImportComponent implements OnInit {
                 if (data.errors.count > 0) {
                     textModal += `<br/>${data.errors.count} ${this.translate.instant('lang.withErrors')}  : <ul>`;
                     data.errors.details.forEach(element => {
-                        textModal += `<li> ${this.translate.instant('lang.' + element.lang, {0: element.langParam})} (${this.translate.instant('lang.line')} : ${this.hasHeader ? element.index + 2 : element.index + 1})</li>`;
+                        textModal += `<li> ${this.translate.instant('lang.' + element.lang, { 0: element.langParam })} (${this.translate.instant('lang.line')} : ${this.hasHeader ? element.index + 2 : element.index + 1})</li>`;
                     });
                     textModal += '</ul>';
                 }

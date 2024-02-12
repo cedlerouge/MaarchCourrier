@@ -83,7 +83,7 @@ export class RegisteredMailComponent implements OnInit {
             this.adminFormGroup.controls['rangeStart'].valueChanges.pipe(
                 tap((value: string) => {
                     if (value > this.adminFormGroup.controls['rangeEnd'].value) {
-                        this.adminFormGroup.controls['rangeStart'].setErrors({'rangeError': true});
+                        this.adminFormGroup.controls['rangeStart'].setErrors({ 'rangeError': true });
                     } else {
                         this.adminFormGroup.controls['rangeStart'].setErrors(null);
                         this.adminFormGroup.controls['rangeEnd'].setErrors(null);
@@ -94,7 +94,7 @@ export class RegisteredMailComponent implements OnInit {
             this.adminFormGroup.controls['rangeEnd'].valueChanges.pipe(
                 tap((value: string) => {
                     if (value < this.adminFormGroup.controls['rangeStart'].value) {
-                        this.adminFormGroup.controls['rangeEnd'].setErrors({'rangeError': true});
+                        this.adminFormGroup.controls['rangeEnd'].setErrors({ 'rangeError': true });
                     } else {
                         this.adminFormGroup.controls['rangeStart'].setErrors(null);
                         this.adminFormGroup.controls['rangeEnd'].setErrors(null);

@@ -33,10 +33,9 @@ export class SignatureBookStampsComponent implements OnInit {
 
     getUserSignatures() {
         return new Promise<boolean>((resolve) => {
-            // this.http.get(`../rest/${this.userId}/stamps`).pipe(
-            this.http.get<StampInterface[]>(`../rest/currentUser/profile`).pipe(
-                map((data: any) => {
-                    let stamps : StampInterface[] = data.signatures.map((sign: any) => {
+            this.http.get<StampInterface[]>(`../rest/users/${this.userId}/visaSignatures`).pipe(
+                map((signatures: any) => {
+                    const stamps : StampInterface[] = signatures.map((sign: any) => {
                         return {
                             id: sign.id,
                             userId: sign.user_serial_id,
@@ -45,7 +44,6 @@ export class SignatureBookStampsComponent implements OnInit {
                         }
                     });
                     return stamps;
-                     
                 }),
                 tap((stamps: StampInterface[]) => {
                     this.stamps = stamps;

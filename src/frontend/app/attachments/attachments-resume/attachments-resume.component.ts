@@ -18,8 +18,8 @@ import { AttachmentPageComponent } from '../attachments-page/attachment-page.com
 
 export class AttachmentsResumeComponent implements OnInit {
 
-    @Input('resId') resId: number = null;
-    @Output('goTo') goTo = new EventEmitter<string>();
+    @Input() resId: number = null;
+    @Output() goTo = new EventEmitter<string>();
 
     loading: boolean = true;
 
@@ -55,7 +55,7 @@ export class AttachmentsResumeComponent implements OnInit {
     }
 
     showAttachment(attachment: any) {
-        this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: '99vw', disableClose: true, panelClass: 'modal-container', data: { resId: attachment.resId} });
+        this.dialogRef = this.dialog.open(AttachmentPageComponent, { height: '99vh', width: '99vw', disableClose: true, panelClass: 'modal-container', data: { resId: attachment.resId } });
 
         this.dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'success'),

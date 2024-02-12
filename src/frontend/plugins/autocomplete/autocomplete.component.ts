@@ -307,7 +307,7 @@ export class PluginAutocompleteComponent implements OnInit {
             panelClass: 'maarch-modal',
             disableClose: true,
             width: '500px',
-            data: { otpInfo : null, resId : this.resId}
+            data: { otpInfo : null, resId : this.resId }
         });
         dialogRef.afterClosed().pipe(
             tap(async (data: any) => {

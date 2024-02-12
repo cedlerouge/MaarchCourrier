@@ -31,7 +31,7 @@ export class AttachmentTypeAdministrationComponent implements OnInit {
         icon: new UntypedFormControl({ value: '', disabled: false }),
         versionEnabled: new UntypedFormControl({ value: false, disabled: false }),
         newVersionDefault: new UntypedFormControl({ value: false, disabled: false }),
-        signedByDefault: new UntypedFormControl({ value: false, disabled: false})
+        signedByDefault: new UntypedFormControl({ value: false, disabled: false })
     };
 
     unlistedAttachmentTypes: string[] = ['signed_response', 'summary_sheet', 'shipping_deposit_proof', 'shipping_acknowledgement_of_receipt'];

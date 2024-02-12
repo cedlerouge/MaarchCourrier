@@ -31,7 +31,7 @@ export class CheckMailServerModalComponent implements OnInit {
     ngOnInit(): void {
         this.serverConf = this.data.serverConf;
         this.recipient = this.data.recipient;
-        this.statusMsg = this.translate.instant('lang.emailSendInProgress', {0: this.recipient});
+        this.statusMsg = this.translate.instant('lang.emailSendInProgress', { 0: this.recipient });
         this.testEmailServer();
     }
 
@@ -47,7 +47,7 @@ export class CheckMailServerModalComponent implements OnInit {
 
         this.http.post('../rest/emails', email).pipe(
             tap((data: any) => {
-                this.statusMsg = this.translate.instant('lang.emailSendSuccess', {0: this.recipient});
+                this.statusMsg = this.translate.instant('lang.emailSendSuccess', { 0: this.recipient });
                 this.authService.mailServerOnline = true;
                 setTimeout(() => {
                     this.dialogRef.close('success');
@@ -56,7 +56,7 @@ export class CheckMailServerModalComponent implements OnInit {
             finalize(() => this.loading = false),
             catchError((err: any) => {
                 this.authService.mailServerOnline = false;
-                this.statusMsg = this.translate.instant('lang.emailSendFailed', {sender: this.serverConf.from, recipient: this.recipient});
+                this.statusMsg = this.translate.instant('lang.emailSendFailed', { sender: this.serverConf.from, recipient: this.recipient });
                 this.error = err.error.errors;
                 return of(false);
             })
