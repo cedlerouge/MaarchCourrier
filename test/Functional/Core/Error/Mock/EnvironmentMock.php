@@ -14,9 +14,9 @@
 
 namespace MaarchCourrier\Tests\Functional\Core\Error\Mock;
 
-use MaarchCourrier\Core\Domain\Port\EnvironnementInterface;
+use MaarchCourrier\Core\Domain\Port\EnvironmentInterface;
 
-class EnvironnementMock implements EnvironnementInterface
+class EnvironmentMock implements EnvironmentInterface
 {
     public bool $debug = false;
 

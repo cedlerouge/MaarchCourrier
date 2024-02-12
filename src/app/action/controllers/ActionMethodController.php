@@ -18,6 +18,7 @@ use Action\models\ResMarkAsReadModel;
 use Alfresco\controllers\AlfrescoController;
 use DateTime;
 use Exception;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\ContinueCircuitActionFactory;
 use Multigest\controllers\MultigestController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
@@ -516,6 +517,14 @@ class ActionMethodController
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
+
+        $continueCircuitAction = ContinueCircuitActionFactory::create();
+
+        try {
+            $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);
+        } catch (\Throwable $th) {
+            return ['errors' => $th->getMessage()];
+        }
 
         $listInstance = ListInstanceModel::get([
             'select'  => ['listinstance_id', 'item_id'],

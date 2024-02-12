@@ -14,11 +14,11 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
-use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 
 class RetrieveUserStamps
 {

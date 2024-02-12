@@ -14,15 +14,22 @@
 
 namespace MaarchCourrier\Core\Infrastructure;
 
-use MaarchCourrier\Core\Domain\Port\EnvironnementInterface;
+use MaarchCourrier\Core\Domain\Port\EnvironmentInterface;
 use SrcCore\models\CoreConfigModel;
 
-class Environnement implements EnvironnementInterface
+class Environment implements EnvironmentInterface
 {
     public function isDebug(): bool
     {
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $config = $file['config'];
         return !empty($config['debug']);
+    }
+
+    public function isNewInternalParapheurEnabled(): bool
+    {
+        $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $config = $file['config'];
+        return $config['newInternalParaph'];
     }
 }

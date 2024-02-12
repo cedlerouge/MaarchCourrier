@@ -15,7 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controllers;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
-use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureRepository;
 use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\Repository\UserRepository;

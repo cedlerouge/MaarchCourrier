@@ -2,7 +2,7 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Mock\Stamp;
 
-use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 
 class SignatureRepositoryMock implements SignatureRepositoryInterface

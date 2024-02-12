@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain\Ports;
+namespace MaarchCourrier\SignatureBook\Domain\Port;
 
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 
