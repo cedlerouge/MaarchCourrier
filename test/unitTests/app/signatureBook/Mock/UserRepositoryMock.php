@@ -15,7 +15,7 @@
 namespace MaarchCourrier\Tests\app\signatureBook\Mock;
 
 use MaarchCourrier\User\Domain\User;
-use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
 
 class UserRepositoryMock implements UserRepositoryInterface
 {

@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\User\Domain\Ports;
+namespace MaarchCourrier\User\Domain\Port;
 
 use MaarchCourrier\User\Domain\User;
 

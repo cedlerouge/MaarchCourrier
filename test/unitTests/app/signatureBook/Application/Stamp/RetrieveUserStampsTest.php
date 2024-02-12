@@ -19,7 +19,8 @@ use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissi
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryMock;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
@@ -28,6 +29,7 @@ class RetrieveUserStampsTest extends TestCase
     private UserRepositoryMock $userRepository;
     private SignatureRepositoryMock $signatureService;
     private RetrieveUserStamps $retrieveUserStamps;
+    private CurrentUserInformations $currentUserInformations;
 
     protected function setUp(): void
     {
@@ -36,7 +38,8 @@ class RetrieveUserStampsTest extends TestCase
         }
         $this->userRepository = new UserRepositoryMock();
         $this->signatureService = new SignatureRepositoryMock();
-        $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService);
+        $this->currentUserInformations = new CurrentUserInformations();
+        $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService, $this->currentUserInformations);
     }
 
     protected function tearDown(): void

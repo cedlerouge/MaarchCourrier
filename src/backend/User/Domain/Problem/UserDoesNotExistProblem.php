@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\User\Domain\Problems;
+namespace MaarchCourrier\User\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 

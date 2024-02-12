@@ -17,18 +17,21 @@ namespace MaarchCourrier\SignatureBook\Application\Stamp;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
-use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
+use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class RetrieveUserStamps
 {
     /**
      * @param UserRepositoryInterface $user
      * @param SignatureRepositoryInterface $signatureService
+     * @param CurrentUserInformations $currentUserInformations
      */
     public function __construct(
         private readonly UserRepositoryInterface $user,
-        private readonly SignatureRepositoryInterface $signatureService
+        private readonly SignatureRepositoryInterface $signatureService,
+        private readonly CurrentUserInformations $currentUserInformations
     ) {
     }
 
@@ -44,8 +47,7 @@ class RetrieveUserStamps
             throw new UserDoesNotExistProblem();
         }
 
-        // TODO see with Nicolas later
-        if ($GLOBALS['id'] !== $user->getId()) {
+        if ($this->currentUserInformations->getCurrentUserId() !== $user->getId()) {
             throw new AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem();
         }
 
