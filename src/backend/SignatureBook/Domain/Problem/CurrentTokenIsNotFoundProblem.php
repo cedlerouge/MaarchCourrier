@@ -20,6 +20,6 @@ class CurrentTokenIsNotFoundProblem extends Problem
 {
     public function __construct()
     {
-        parent::__construct('Exception no current token found', 400);
+        parent::__construct('No current token found', 400);
     }
 }

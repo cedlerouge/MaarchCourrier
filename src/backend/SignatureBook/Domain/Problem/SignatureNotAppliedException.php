@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class MaarchParapheurSignatureNotAppliedException extends Problem
+class SignatureNotAppliedException extends Problem
 {
     public function __construct(string $message)
     {

@@ -14,6 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
+use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
@@ -31,7 +32,7 @@ class RetrieveUserStamps
     public function __construct(
         private readonly UserRepositoryInterface $user,
         private readonly SignatureRepositoryInterface $signatureService,
-        private readonly CurrentUserInformations $currentUserInformations
+        private readonly CurrentUserInterface $currentUserInformations
     ) {
     }
 

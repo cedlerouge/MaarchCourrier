@@ -12,12 +12,12 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Infrastructure\Controllers;
+namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
 use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureRepository;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
@@ -35,7 +35,11 @@ class RetrieveUserStampsController
         $signatureServiceRepository = new SignatureRepository();
         $currentUserInformations = new CurrentUserInformations();
 
-        $retrieveUserStamps = new RetrieveUserStamps($userRepository, $signatureServiceRepository, $currentUserInformations);
+        $retrieveUserStamps = new RetrieveUserStamps(
+            $userRepository,
+            $signatureServiceRepository,
+            $currentUserInformations
+        );
         return $response->withJson($retrieveUserStamps->getUserSignatures($args['id']));
     }
 }

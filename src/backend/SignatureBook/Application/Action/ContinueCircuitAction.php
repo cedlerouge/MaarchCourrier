@@ -19,13 +19,14 @@ use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\MaarchParapheurSignatureNotAppliedException;
+use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmpty;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedException;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundException;
 
 class ContinueCircuitAction
 {
     public function __construct(
-        private readonly ?CurrentUserInterface $currentUser,
+        private readonly CurrentUserInterface $currentUser,
         private readonly SignatureServiceInterface $signatureService,
         private readonly SignatureServiceConfigLoaderInterface $signatureServiceConfigLoader,
         private readonly bool $isNewSignatureBookEnabled
@@ -50,21 +51,32 @@ class ContinueCircuitAction
             throw new CurrentTokenIsNotFoundProblem();
         }
 
+        if (
+               empty($data['idDocument'])
+            || empty($data['hashSignature'])
+            || empty($data['signatures'])
+            || empty($data['certificate'])
+            || empty($data['signatureContentLength'])
+            || empty($data['signatureFieldName'])
+            || empty($data['tmpUniqueId'])
+        ) {
+            throw new DataToBeSentToTheParapheurAreEmpty();
+        }
+
         $applySuccess = $this->signatureService
             ->setUrl($signatureBook->getUrl())
             ->applySignature(
                 $data['idDocument'],
-                $data['hashSignature'] ?? '',
-                $data['signatures'] ?? [],
-                $data['certificate'] ?? '',
-                $data['signatureContentLength'] ?? '',
-                $data['signatureFieldName'] ?? '',
-                $data['tmpUniqueId'] ?? '',
+                $data['hashSignature'],
+                $data['signatures'],
+                $data['certificate'],
+                $data['signatureContentLength'],
+                $data['signatureFieldName'],
+                $data['tmpUniqueId'],
                 $accessToken
             );
-
         if (is_array($applySuccess)) {
-            throw new MaarchParapheurSignatureNotAppliedException($applySuccess['errors']);
+            throw new SignatureNotAppliedException($applySuccess['errors']);
         }
 
         return true;

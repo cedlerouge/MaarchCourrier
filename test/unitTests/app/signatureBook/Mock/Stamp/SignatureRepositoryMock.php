@@ -20,8 +20,12 @@ class SignatureRepositoryMock implements SignatureRepositoryInterface
         }
 
         $userSignatures = [];
-        $userSignatures[] = UserSignature::createFromArray(['id' => 1, 'user_serial_id' => 1, 'signature_label' => 'Marvel Signature Stamp']);
-        $userSignatures[] = UserSignature::createFromArray(['id' => 2, 'user_serial_id' => 1, 'signature_label' => 'Stan Lee Approve Stamp']);
+        $userSignatures[] = UserSignature::createFromArray(
+            ['id' => 1, 'user_serial_id' => 1, 'signature_label' => 'Marvel Signature Stamp']
+        );
+        $userSignatures[] = UserSignature::createFromArray(
+            ['id' => 2, 'user_serial_id' => 1, 'signature_label' => 'Stan Lee Approve Stamp']
+        );
 
         return $userSignatures;
     }

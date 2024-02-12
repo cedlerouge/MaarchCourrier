@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Environnement class
+ * @brief Environment class
  * @author dev@maarch.org
  */
 
@@ -30,6 +30,6 @@ class Environment implements EnvironmentInterface
     {
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $config = $file['config'];
-        return $config['newInternalParaph'];
+        return !empty($config['newInternalParaph']);
     }
 }

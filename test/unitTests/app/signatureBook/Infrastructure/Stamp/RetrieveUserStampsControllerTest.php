@@ -2,8 +2,9 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Infrastructure\Stamp;
 
-use MaarchCourrier\SignatureBook\Infrastructure\Controllers\RetrieveUserStampsController;
+use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveUserStampsController;
 use MaarchCourrier\Tests\CourrierTestCase;
+use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use SrcCore\http\Response;
 use User\controllers\UserController;
 
@@ -13,7 +14,8 @@ class RetrieveUserStampsControllerTest extends CourrierTestCase
 
     protected function setUp(): void
     {
-        if ($GLOBALS['login'] !== null) {
+        $currentUser = new CurrentUserInformations();
+        if ($currentUser->getCurrentUserId() !== null) {
             $this->previousConnectedUser = $GLOBALS['login'];
         }
     }

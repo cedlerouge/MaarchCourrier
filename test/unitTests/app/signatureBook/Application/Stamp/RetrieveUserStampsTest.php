@@ -33,13 +33,17 @@ class RetrieveUserStampsTest extends TestCase
 
     protected function setUp(): void
     {
-        if ($GLOBALS['id'] !== null) {
+        $this->currentUserInformations = new CurrentUserInformations();
+        if ($this->currentUserInformations->getCurrentUserId() !== null) {
             $this->PREVIOUS_GLOBAL_ID = $GLOBALS['id'];
         }
         $this->userRepository = new UserRepositoryMock();
         $this->signatureService = new SignatureRepositoryMock();
-        $this->currentUserInformations = new CurrentUserInformations();
-        $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService, $this->currentUserInformations);
+        $this->retrieveUserStamps = new RetrieveUserStamps(
+            $this->userRepository,
+            $this->signatureService,
+            $this->currentUserInformations
+        );
     }
 
     protected function tearDown(): void
