@@ -11,9 +11,10 @@ apt-get install -y libpq-dev libxml2-dev libxslt1-dev libpng-dev unoconv xpdf-ut
 && docker-php-ext-install pdo_pgsql pgsql \
 && docker-php-ext-install xsl soap zip \
 && docker-php-ext-install gd \
+&& docker-php-ext-install bcmath \
 && FIREFOX_URL="https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US" \
-&& ACTUAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} $FIREFOX_URL) \
-&& curl --silent --show-error --location --fail --retry 3 --output /tmp/firefox.tar.bz2 $ACTUAL_URL \
+&& ACTUAL_URL=$(curl -Ls -o /dev/null -w %{url_effective} "$FIREFOX_URL") \
+&& curl --silent --show-error --location --fail --retry 3 --output /tmp/firefox.tar.bz2 "$ACTUAL_URL" \
 && tar -xvjf /tmp/firefox.tar.bz2 -C /opt \
 && ln -s /opt/firefox/firefox /usr/local/bin/firefox \
 && curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
