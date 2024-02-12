@@ -1,4 +1,4 @@
-<div class="title-container"
+<div *ngIf="documentData" class="title-container"
     [title]="getTitle()">
     <i
         class="far fa-plus-square"
@@ -14,7 +14,11 @@
     </div>
     <ng-container #myPlugin></ng-container>
     <iframe
-        *ngIf="!pluginInstance"
+        *ngIf="!pluginInstance && documentData"
         [src]="documentContent"
     ></iframe>
+    <div class="empty-doc" *ngIf="!documentData && !loading">
+        <i class="fa-solid fa-file-signature"></i>
+        <div>{{ 'lang.noDocumentToSign' | translate }}</div>
+    </div>
 </div>
