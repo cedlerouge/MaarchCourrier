@@ -24,4 +24,12 @@ class EnvironmentMock implements EnvironmentInterface
     {
         return $this->debug;
     }
+
+    /**
+     * @return bool
+     */
+    public function isNewInternalParapheurEnabled(): bool
+    {
+        return true;
+    }
 }
