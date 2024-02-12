@@ -18,14 +18,14 @@ use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
 use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
-use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryRepositoryMock;
+use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
 {
     private ?int $PREVIOUS_GLOBAL_ID;
-    private UserRepositoryRepositoryMock $userRepository;
+    private UserRepositoryMock $userRepository;
     private SignatureRepositoryMock $signatureService;
     private RetrieveUserStamps $retrieveUserStamps;
 
@@ -34,7 +34,7 @@ class RetrieveUserStampsTest extends TestCase
         if ($GLOBALS['id'] !== null) {
             $this->PREVIOUS_GLOBAL_ID = $GLOBALS['id'];
         }
-        $this->userRepository = new UserRepositoryRepositoryMock();
+        $this->userRepository = new UserRepositoryMock();
         $this->signatureService = new SignatureRepositoryMock();
         $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService);
     }

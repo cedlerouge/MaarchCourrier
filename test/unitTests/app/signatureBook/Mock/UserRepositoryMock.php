@@ -17,7 +17,7 @@ namespace MaarchCourrier\Tests\app\signatureBook\Mock;
 use MaarchCourrier\User\Domain\User;
 use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
 
-class UserRepositoryRepositoryMock implements UserRepositoryInterface
+class UserRepositoryMock implements UserRepositoryInterface
 {
     public bool $doesUserExist = true;
 
