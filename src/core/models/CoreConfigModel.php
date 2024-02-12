@@ -353,10 +353,10 @@ class CoreConfigModel
 
     /**
      * @param array $args
-     * @return SimpleXMLElement|bool
+     * @return SimpleXMLElement|bool|null
      * @throws Exception
      */
-    public static function getXmlLoaded(array $args): SimpleXMLElement|bool
+    public static function getXmlLoaded(array $args): SimpleXMLElement|bool|null
     {
         ValidatorModel::notEmpty($args, ['path']);
         ValidatorModel::stringType($args, ['path']);
