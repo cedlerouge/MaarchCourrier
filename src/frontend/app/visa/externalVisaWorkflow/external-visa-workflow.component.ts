@@ -367,7 +367,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                 panelClass: 'maarch-modal',
                 disableClose: true,
                 width: '500px',
-                data: { otpInfo : objToSend, resId : this.resId}
+                data: { otpInfo : objToSend, resId : this.resId }
             });
             dialogRef.afterClosed().pipe(
                 tap(async (data: any) => {

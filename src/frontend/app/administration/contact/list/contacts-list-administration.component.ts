@@ -380,7 +380,7 @@ export class ContactsListAdministrationComponent implements OnInit {
         const dialogRef = this.dialog.open(ManageDuplicateComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
-            data: { duplicate: selection._selected.map((contactId: any) => ({ id: contactId, type: 'contact'})) }
+            data: { duplicate: selection._selected.map((contactId: any) => ({ id: contactId, type: 'contact' })) }
         });
         dialogRef.afterClosed().pipe(
             filter((data: any) => !this.functions.empty(data)),

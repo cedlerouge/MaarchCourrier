@@ -51,7 +51,7 @@ export class IxbusParaphComponent implements OnInit {
 
     ngOnInit(): void {
         this.additionalsInfos.ixbus.natures.forEach((element: any) => {
-            this.natures.push({id: element.identifiant, label: element.nom});
+            this.natures.push({ id: element.identifiant, label: element.nom });
         });
 
         if (this.localStorage.get(`ixBusSignatureMode_${this.headerService.user.id}`) !== null) {

@@ -117,8 +117,8 @@ export class ActionsService implements OnDestroy {
 
     getActions(userId: number, groupId: number, basketId: number, resId: number): Observable<Action[]> {
         return this.http
-                .get(
-                    '../rest/resourcesList/users/' +
+            .get(
+                '../rest/resourcesList/users/' +
                         userId +
                         '/groups/' +
                         groupId +
@@ -126,16 +126,16 @@ export class ActionsService implements OnDestroy {
                         basketId +
                         '/actions?resId=' +
                         resId
-                )
-                .pipe(
-                    map((data: any) => {
-                        return data.actions
-                    }),
-                    catchError((err: any) => {
-                        this.notify.handleSoftErrors(err.error.errors);
-                        return of(false);
-                    })
-                );
+            )
+            .pipe(
+                map((data: any) => {
+                    return data.actions
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err.error.errors);
+                    return of(false);
+                })
+            );
     }
 
     setActionInformations(action: any, userId: number, groupId: number, basketId: number, resIds: number[]) {

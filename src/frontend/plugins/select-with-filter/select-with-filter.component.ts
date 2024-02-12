@@ -66,10 +66,10 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
     public formCtrl: UntypedFormControl;
 
     @Output()
-    returnSelectedObjects = new EventEmitter<any>();
+        returnSelectedObjects = new EventEmitter<any>();
 
     @Output()
-    selectionChange = new EventEmitter<any>();
+        selectionChange = new EventEmitter<any>();
 
     filteredList: any[];
 

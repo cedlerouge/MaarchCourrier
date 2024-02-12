@@ -28,11 +28,11 @@ export class AlertComponent implements OnInit {
     ngOnInit(): void {
         if (this.data?.isCounter !== undefined) {
             let timeLeft: number = 10; // secondes
-            this.data.msg = this.translate.instant('lang.inactivityWarning', {counter: timeLeft});
+            this.data.msg = this.translate.instant('lang.inactivityWarning', { counter: timeLeft });
             const interval = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
-                    this.data.msg = this.translate.instant('lang.inactivityWarning', {counter: timeLeft});
+                    this.data.msg = this.translate.instant('lang.inactivityWarning', { counter: timeLeft });
                 } else {
                     clearInterval(interval);
                 }

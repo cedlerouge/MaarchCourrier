@@ -69,7 +69,7 @@ export class RejectVisaBackToPrevousActionComponent implements OnInit {
     }
 
     executeAction() {
-        this.http.put(this.data.processActionRoute, {resources : this.data.resIds, note : this.noteEditor.getNote()}).pipe(
+        this.http.put(this.data.processActionRoute, { resources : this.data.resIds, note : this.noteEditor.getNote() }).pipe(
             tap(() => {
                 this.dialogRef.close(this.data.resIds);
             }),

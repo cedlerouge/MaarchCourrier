@@ -12,7 +12,7 @@ import { FoldersService } from '../folders.service';
 })
 export class FolderPinnedComponent implements OnInit, OnDestroy {
 
-    @Input('noInit') noInit: boolean = false;
+    @Input() noInit: boolean = false;
 
     subscription: Subscription;
 

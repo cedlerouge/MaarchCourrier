@@ -69,8 +69,8 @@ export class PasswordModificationComponent implements OnInit {
         this.http.get('../rest/passwordRules')
             .subscribe((data: any) => {
                 const valArr: ValidatorFn[] = [];
-                const ruleTextArr: String[] = [];
-                const otherRuleTextArr: String[] = [];
+                const ruleTextArr: string[] = [];
+                const otherRuleTextArr: string[] = [];
 
                 valArr.push(Validators.required);
 

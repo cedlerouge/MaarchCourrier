@@ -184,7 +184,7 @@ export class ContactDuplicateComponent implements OnInit {
     manageDuplicate(duplicateId: string) {
         const dialogRef = this.dialog.open(ManageDuplicateComponent, {
             panelClass: 'maarch-modal',
-            data: { duplicate: this.duplicatesContacts.filter((contact: any) => contact.duplicateId === duplicateId).map((contact: any) => ({ id: contact.id, type: 'contact'})) }
+            data: { duplicate: this.duplicatesContacts.filter((contact: any) => contact.duplicateId === duplicateId).map((contact: any) => ({ id: contact.id, type: 'contact' })) }
         });
         dialogRef.afterClosed().pipe(
             filter((data: any) => !this.functionsService.empty(data)),

@@ -40,7 +40,7 @@ import { CheckSaeInterconnectionComponent } from './checkSaeInterconnection/chec
 export class OtherParametersComponent implements OnInit {
 
     editorsConf: any = {
-        java: {default: new UntypedFormControl(false)},
+        java: { default: new UntypedFormControl(false) },
         onlyoffice: {
             ssl: new UntypedFormControl(false),
             uri: new UntypedFormControl('192.168.0.11', [Validators.required]),
@@ -737,7 +737,7 @@ export class OtherParametersComponent implements OnInit {
         Object.keys(this.saeConfig).forEach(elemId => {
             if (elemId === 'maarchRM') {
                 Object.keys(this.saeConfig[elemId]).forEach((item: any) => {
-                    maarchRM[item] =  item !== 'M2M' ? this.saeConfig[elemId][item].value : { gec: this.saeConfig[elemId][item].value};
+                    maarchRM[item] =  item !== 'M2M' ? this.saeConfig[elemId][item].value : { gec: this.saeConfig[elemId][item].value };
                 });
             } else {
                 Object.keys(this.saeConfig[elemId]).forEach((item: any) => {

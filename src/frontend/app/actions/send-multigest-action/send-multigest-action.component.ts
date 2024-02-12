@@ -82,7 +82,7 @@ export class SendMultigestActionComponent implements OnInit {
 
         const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
 
-        this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote()}).pipe(
+        this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close('success');

@@ -848,7 +848,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         if (!this.functions.empty(dataOrder)) {
             const reorderResList = dataOrder.map((item2: any) => {
                 const matchingItem1 = this.signatureBook.resList.find((item1: any) => item1.res_id === item2.resId);
-                return !this.functions.empty(matchingItem1) ? { ...matchingItem1, res_id: item2.resId} : null;
+                return !this.functions.empty(matchingItem1) ? { ...matchingItem1, res_id: item2.resId } : null;
             });
             return reorderResList.filter(item => item !== null);
         }
