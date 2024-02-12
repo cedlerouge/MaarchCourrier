@@ -8,20 +8,20 @@
  */
 
 /**
- * @brief User Access Denied Exception
+ * @brief User Does Not ExistException
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain\Problems;
+namespace MaarchCourrier\Core\Domain\User\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem extends Problem
+class UserDoesNotExistProblem extends Problem
 {
     public function __construct()
     {
         parent::__construct(
-            "Access Denied. You do not have permission to access other users signatures.",
+            "User does not exist",
             400
         );
     }

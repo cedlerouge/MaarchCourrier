@@ -14,11 +14,11 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Problems\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
-use MaarchCourrier\User\Domain\Ports\UserRepositoryInterface;
 
 class RetrieveUserStamps
 {
@@ -35,7 +35,7 @@ class RetrieveUserStamps
     /**
      * @param int $userId
      * @return UserSignature[]
-     * @throws UserDoesNotExistProblem|AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem
+     * @throws UserDoesNotExistProblem|CannotAccessOtherUsersSignaturesProblem
      */
     public function getUserSignatures(int $userId): array
     {
@@ -46,7 +46,7 @@ class RetrieveUserStamps
 
         // TODO see with Nicolas later
         if ($GLOBALS['id'] !== $user->getId()) {
-            throw new AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem();
+            throw new CannotAccessOtherUsersSignaturesProblem();
         }
 
         return $this->signatureService->getSignaturesByUserId($user->getId());

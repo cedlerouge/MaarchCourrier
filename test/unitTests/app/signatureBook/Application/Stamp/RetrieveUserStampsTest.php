@@ -14,12 +14,12 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
 
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
-use MaarchCourrier\SignatureBook\Domain\Problems\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\SignatureBook\Domain\Problems\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryMock;
-use MaarchCourrier\User\Domain\Problems\UserDoesNotExistProblem;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
@@ -76,11 +76,11 @@ class RetrieveUserStampsTest extends TestCase
     /**
      * @dataProvider provideConnectedUserIds
      */
-    public function testConnectedUserCannotRetrieveUserId1StampsReturnException(int $userId): void
+    public function testConnectedUserCannotRetrieveUserIdStampsReturnException(int $userId): void
     {
         $GLOBALS['id'] = $userId;
 
-        $this->expectException(AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem::class);
+        $this->expectException(CannotAccessOtherUsersSignaturesProblem::class);
 
         $this->retrieveUserStamps->getUserSignatures(1);
     }
