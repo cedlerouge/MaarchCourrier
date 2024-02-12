@@ -17,10 +17,11 @@ namespace SrcCore\models;
 
 use Configuration\models\ConfigurationModel;
 use Exception;
+use SimpleXMLElement;
 
 class CoreConfigModel
 {
-    protected static $customId;
+    protected static mixed $customId;
 
     public static function getCustomId()
     {
@@ -49,7 +50,10 @@ class CoreConfigModel
             if (!empty($value['path']) && $value['path'] == $path) {
                 self::$customId = $value['id'];
                 return self::$customId;
-            } elseif ($value['uri'] == $_SERVER['HTTP_HOST'] || ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])) {
+            } elseif (
+                $value['uri'] == $_SERVER['HTTP_HOST'] ||
+                ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])
+            ) {
                 self::$customId = $value['id'];
                 return self::$customId;
             }
@@ -247,10 +251,11 @@ class CoreConfigModel
     {
         $encryptKey = CoreConfigModel::getEncryptKey();
 
-        return $encryptKey !== "Security Key Maarch Courrier #2008" && $encryptKey !== "Security Key Maarch Courrier 2008";
+        return $encryptKey !== "Security Key Maarch Courrier #2008" &&
+            $encryptKey !== "Security Key Maarch Courrier 2008";
     }
 
-    public static function getLibrariesDirectory()
+    public static function getLibrariesDirectory(): ?string
     {
         if (isset($_SERVER['LIBRARIES_DIR'])) {
             $librariesDirectory = rtrim($_SERVER['LIBRARIES_DIR'], '/') . '/';
@@ -263,7 +268,7 @@ class CoreConfigModel
         return $librariesDirectory;
     }
 
-    public static function getSetaPdfFormFillerLibrary()
+    public static function getSetaPdfFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -274,7 +279,7 @@ class CoreConfigModel
         return $libPath;
     }
 
-    public static function getFpdiPdfParserLibrary()
+    public static function getFpdiPdfParserLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -285,7 +290,7 @@ class CoreConfigModel
         return $libPath;
     }
 
-    public static function getSetaSignFormFillerLibrary()
+    public static function getSetaSignFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -347,9 +352,11 @@ class CoreConfigModel
     }
 
     /**
+     * @param array $args
+     * @return SimpleXMLElement|bool
      * @throws Exception
      */
-    public static function getXmlLoaded(array $args)
+    public static function getXmlLoaded(array $args): SimpleXMLElement|bool
     {
         ValidatorModel::notEmpty($args, ['path']);
         ValidatorModel::stringType($args, ['path']);
