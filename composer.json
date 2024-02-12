@@ -85,8 +85,8 @@
     "http-interop/http-factory-guzzle": "^1.2",
     "symfony/options-resolver": "v5.4.11",
     "symfony/deprecation-contracts": "v2.5.2",
-    "psr/log": "2.0.0",
-    "psr/cache": "2.0.0",
+    "psr/log": "3.0.0",
+    "psr/cache": "3.0.0",
     "slim/psr7": "^1.6",
     "smalot/pdfparser": "^2.3"
   },
