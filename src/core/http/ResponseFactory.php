@@ -22,8 +22,10 @@ use Psr\Http\Message\ResponseInterface;
 
 class ResponseFactory implements ResponseFactoryInterface
 {
-    public function createResponse(int $code = StatusCodeInterface::STATUS_OK, string $reasonPhrase = ''): ResponseInterface
-    {
+    public function createResponse(
+        int $code = StatusCodeInterface::STATUS_OK,
+        string $reasonPhrase = ''
+    ): ResponseInterface {
         $response = new Response($code);
 
         if ($reasonPhrase !== '') {

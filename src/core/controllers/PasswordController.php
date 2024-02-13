@@ -27,22 +27,12 @@ use SrcCore\models\CoreConfigModel;
 
 class PasswordController
 {
-    /**
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
-    public function getRules(Request $request, Response $response): Response
+    public function getRules(Request $request, Response $response)
     {
         return $response->withJson(['rules' => PasswordModel::getRules()]);
     }
 
-    /**
-     * @param Request $request
-     * @param Response $response
-     * @return Response
-     */
-    public function updateRules(Request $request, Response $response): Response
+    public function updateRules(Request $request, Response $response)
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_password_rules', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -83,12 +73,7 @@ class PasswordController
         return $response->withJson(['success' => 'success']);
     }
 
-    /**
-     * @param array $aArgs
-     * @return bool
-     * @throws Exception
-     */
-    public static function isPasswordValid(array $aArgs): bool
+    public static function isPasswordValid(array $aArgs)
     {
         ValidatorModel::notEmpty($aArgs, ['password']);
         ValidatorModel::stringType($aArgs, ['password']);
@@ -122,9 +107,9 @@ class PasswordController
     /**
      * Encrypt data with the old vhost or new file encryption key
      *
-     * @param array $args {dataToEncrypt: string}
+     * @param   array   $args{dataToEncrypt: string}
      *
-     * @throws  Exception   It can throw an exception
+     * @throws  Exception   It can throws an exception
      */
     public static function encrypt(array $args): string
     {
@@ -141,9 +126,9 @@ class PasswordController
     /**
      * Decrypt encrypted data with the old vhost or new file encryption key
      *
-     * @param array $args {encryptedData: string}
+     * @param   array   $args{encryptedData: string}
      *
-     * @throws  Exception   It can throw an exception
+     * @throws  Exception   It can throws an exception
      */
     public static function decrypt(array $args): string
     {
@@ -158,11 +143,10 @@ class PasswordController
     }
 
     /**
-     * @param array $args
-     * @return string
-     * @throws Exception
      * @deprecated This function logic will be moved to PasswordController::encrypt() in future major versions.
      * Please use PasswordController::encrypt() instead.
+     *
+     * @return string
      */
     public static function newEncrypt(array $args): string
     {
@@ -170,11 +154,11 @@ class PasswordController
         ValidatorModel::stringType($args, ['dataToEncrypt']);
 
         $encryptedResult = null;
-        $encryptKey = CoreConfigModel::getEncryptKey();
-        $cipherMethod = 'AES-256-CTR';
+        $encryptKey      = CoreConfigModel::getEncryptKey();
+        $cipherMethod    = 'AES-256-CTR';
 
         try {
-            $encryptKeyHash = openssl_digest($encryptKey, 'sha256');
+            $encryptKeyHash  = openssl_digest($encryptKey, 'sha256');
 
             $initialisationVector = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipherMethod));
             $encrypted = openssl_encrypt(
@@ -212,11 +196,10 @@ class PasswordController
     }
 
     /**
-     * @param array $args
-     * @return string
-     * @throws Exception
      * @deprecated This function logic will be moved to PasswordController::decrypt() in future major versions.
      * Please use PasswordController::decrypt() instead.
+     *
+     * @return string
      */
     public static function newDecrypt(array $args): string
     {
@@ -224,9 +207,9 @@ class PasswordController
         ValidatorModel::stringType($args, ['encryptedData']);
 
         $decryptedResult = null;
-        $encryptKey = CoreConfigModel::getEncryptKey();
-        $cipherMethod = 'AES-256-CTR';
-        $encryptedData = base64_decode($args['encryptedData']);
+        $encryptKey      = CoreConfigModel::getEncryptKey();
+        $cipherMethod    = 'AES-256-CTR';
+        $encryptedData   = base64_decode($args['encryptedData']);
 
         try {
             $initialisationVectorLength = openssl_cipher_iv_length($cipherMethod);
@@ -238,19 +221,23 @@ class PasswordController
                     'moduleId'  => 'Encryption/Decryption',
                     'level'     => 'ERROR',
                     'eventType' => 'Decrypt',
-                    'eventId'   => 'Decryption failed: data length ' . strlen($encryptedData) .
-                        ' is less than iv length ' . $initialisationVectorLength
+                    'eventId'   => 'Decryption failed: data length '
+                        . strlen($encryptedData)
+                        . ' is less than iv length '
+                        . $initialisationVectorLength
                 ]);
                 throw new Exception(
-                    'Decryption failed: data length ' . strlen($encryptedData) . ' is less than iv length ' .
-                    $initialisationVectorLength
+                    'Decryption failed: data length '
+                    . strlen($encryptedData)
+                    . ' is less than iv length '
+                    . $initialisationVectorLength
                 );
             }
 
             // Extract the initialisation vector and encrypted data
-            $initialisationVector = substr($encryptedData, 0, $initialisationVectorLength);
-            $encryptedData = substr($encryptedData, $initialisationVectorLength);
-            $encryptKeyHash = openssl_digest($encryptKey, 'sha256');
+            $initialisationVector   = substr($encryptedData, 0, $initialisationVectorLength);
+            $encryptedData          = substr($encryptedData, $initialisationVectorLength);
+            $encryptKeyHash         = openssl_digest($encryptKey, 'sha256');
 
             $decryptedResult = openssl_decrypt(
                 $encryptedData,

@@ -84,7 +84,12 @@ class AutoCompleteController
 
         $data = [];
         foreach ($users as $value) {
-            $primaryEntity = UserModel::getPrimaryEntityById(['id' => $value['id'], 'select' => ['entities.entity_label']]);
+            $primaryEntity = UserModel::getPrimaryEntityById(
+                [
+                    'id' => $value['id'],
+                    'select' => ['entities.entity_label']
+                ]
+            );
             $data[] = [
                 'type'                  => 'user',
                 'id'                    => empty($queryParams['serial']) ? $value['user_id'] : $value['id'],
@@ -126,11 +131,17 @@ class AutoCompleteController
                 }
             }
             if (empty($url) || empty($userId) || empty($password)) {
-                return $response->withStatus(500)->withJson(['errors' => 'Maarch Parapheur is not fully configured']);
+                return $response->withStatus(500)->withJson(
+                    [
+                        'errors' => 'Maarch Parapheur is not fully configured'
+                    ]
+                );
             }
 
             $curlResponse = CurlModel::exec([
-                'url'           => rtrim($url, '/') . '/rest/autocomplete/users?search=' . urlencode($data['search']),
+                'url'           => rtrim($url, '/')
+                    . '/rest/autocomplete/users?search='
+                    . urlencode($data['search']),
                 'basicAuth'     => ['user' => $userId, 'password' => $password],
                 'headers'       => ['content-type:application/json'],
                 'method'        => 'GET'
@@ -199,7 +210,14 @@ class AutoCompleteController
             'where'  => ['users_entities.user_id = ?'],
             'data'   => [$GLOBALS['id']]
         ]);
-        $subscriberIds = array_values(array_unique(array_column($subscriberIds, 'fastParapheurSubscriberId')));
+        $subscriberIds = array_values(
+            array_unique(
+                array_column(
+                    $subscriberIds,
+                    'fastParapheurSubscriberId'
+                )
+            )
+        );
 
         if (empty($subscriberIds)) {
             $fpUsers = FastParapheurController::getUsers(['config' => $config]);
@@ -208,7 +226,11 @@ class AutoCompleteController
             }
         } else {
             foreach ($subscriberIds as $subscriberId) {
-                $subscriberUsers = FastParapheurController::getUsers(['subscriberId' => $subscriberId, 'config' => $config]);
+                $subscriberUsers = FastParapheurController::getUsers(
+                    [
+                        'subscriberId' => $subscriberId,
+                        'config' => $config]
+                );
                 if (!empty($subscriberUsers['errors'])) {
                     return $response->withStatus(400)->withJson(['errors' => $subscriberUsers['errors']]);
                 }
@@ -233,7 +255,10 @@ class AutoCompleteController
             foreach ($alreadyConnectedUsers as $alreadyConnectedUser) {
                 foreach ($fpUsers as $key => $fpUser) {
                     if ($fpUser['email'] == $alreadyConnectedUser['fastParapheurEmail']) {
-                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name'] . ' (' . $fpUsers[$key]['idToDisplay'] . ')';
+                        $fpUsers[$key]['idToDisplay'] = $alreadyConnectedUser['name']
+                            . ' ('
+                            . $fpUsers[$key]['idToDisplay']
+                            . ')';
                     }
                 }
             }
@@ -266,7 +291,11 @@ class AutoCompleteController
         //Contacts
         $autocompleteContacts = [];
         if (empty($queryParams['noContacts'])) {
-            $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
+            $searchableParameters = ContactParameterModel::get(
+                [
+                    'select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]
+                ]
+            );
 
             $fields = [];
             foreach ($searchableParameters as $searchableParameter) {
@@ -378,7 +407,8 @@ class AutoCompleteController
 
             $entities = EntityModel::get([
                 'select'    => [
-                    'id', 'entity_id', 'entity_label', 'short_label', 'email', 'address_number', 'address_street', 'address_additional1',
+                    'id', 'entity_id', 'entity_label', 'short_label', 'email',
+                    'address_number', 'address_street', 'address_additional1',
                     'address_additional2', 'address_postcode', 'address_town', 'address_country'
                 ],
                 'where'     => $requestData['where'],
@@ -415,7 +445,11 @@ class AutoCompleteController
         if (empty($queryParams['noContactsGroups'])) {
             $fields = ['label'];
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $fields]);
-            $hasService = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']]);
+            $hasService = PrivilegeController::hasPrivilege(
+                [
+                    'privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']
+                ]
+            );
 
             $where = [];
             $data = [];
@@ -456,15 +490,39 @@ class AutoCompleteController
             }
         }
 
-        $total = count($autocompleteContacts) + count($autocompleteUsers) + count($autocompleteEntities) + count($autocompleteContactsGroups);
+        $total = count($autocompleteContacts)
+            + count($autocompleteUsers)
+            + count($autocompleteEntities)
+            + count($autocompleteContactsGroups);
         if ($total > $limit) {
             $divider = $total / $limit;
-            $autocompleteContacts       = array_slice($autocompleteContacts, 0, round(count($autocompleteContacts) / $divider));
-            $autocompleteUsers          = array_slice($autocompleteUsers, 0, round(count($autocompleteUsers) / $divider));
-            $autocompleteEntities       = array_slice($autocompleteEntities, 0, round(count($autocompleteEntities) / $divider));
-            $autocompleteContactsGroups = array_slice($autocompleteContactsGroups, 0, round(count($autocompleteContactsGroups) / $divider));
+            $autocompleteContacts       = array_slice(
+                $autocompleteContacts,
+                0,
+                round(count($autocompleteContacts) / $divider)
+            );
+            $autocompleteUsers          = array_slice(
+                $autocompleteUsers,
+                0,
+                round(count($autocompleteUsers) / $divider)
+            );
+            $autocompleteEntities       = array_slice(
+                $autocompleteEntities,
+                0,
+                round(count($autocompleteEntities) / $divider)
+            );
+            $autocompleteContactsGroups = array_slice(
+                $autocompleteContactsGroups,
+                0,
+                round(count($autocompleteContactsGroups) / $divider)
+            );
         }
-        $autocompleteData = array_merge($autocompleteContacts, $autocompleteUsers, $autocompleteEntities, $autocompleteContactsGroups);
+        $autocompleteData = array_merge(
+            $autocompleteContacts,
+            $autocompleteUsers,
+            $autocompleteEntities,
+            $autocompleteContactsGroups
+        );
 
         return $response->withJson($autocompleteData);
     }
@@ -571,7 +629,11 @@ class AutoCompleteController
         }
 
         $allowedGroups = [0];
-        $groups = PrivilegeModel::get(['select' => ['DISTINCT group_id'], 'where' => ['service_id in (?)'], 'data' => [$services]]);
+        $groups = PrivilegeModel::get(
+            [
+                'select' => ['DISTINCT group_id'], 'where' => ['service_id in (?)'], 'data' => [$services]
+            ]
+        );
         if (!empty($groups)) {
             $groups = array_column($groups, 'group_id');
             $groups = GroupModel::get(['select' => ['id'], 'where' => ['group_id in (?)'], 'data' => [$groups]]);
@@ -685,7 +747,13 @@ class AutoCompleteController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
+        $searchableParameters = ContactParameterModel::get(
+            [
+                'select' => ['identifier'],
+                'where' => ['searchable = ?'],
+                'data' => [true]
+            ]
+        );
 
         $fields = [];
         foreach ($searchableParameters as $searchableParameter) {
@@ -709,7 +777,10 @@ class AutoCompleteController
         ]);
 
         $contacts = ContactModel::get([
-            'select'    => ['id', 'firstname', 'lastname', 'company', 'address_number', 'address_street', 'address_town', 'address_postcode'],
+            'select'    => [
+                'id', 'firstname', 'lastname', 'company',
+                'address_number', 'address_street', 'address_town', 'address_postcode'
+            ],
             'where'     => $requestData['where'],
             'data'      => $requestData['data'],
             'orderBy'   => ['company', 'lastname NULLS FIRST'],
@@ -736,8 +807,9 @@ class AutoCompleteController
         $contacts = ContactModel::get([
             'select'    => [
                 'id', 'company', 'address_number as "addressNumber"', 'address_street as "addressStreet"',
-                'address_additional1 as "addressAdditional1"', 'address_additional2 as "addressAdditional2"', 'address_postcode as "addressPostcode"',
-                'address_town as "addressTown"', 'address_country as "addressCountry"'
+                'address_additional1 as "addressAdditional1"', 'address_additional2 as "addressAdditional2"',
+                'address_postcode as "addressPostcode"', 'address_town as "addressTown"',
+                'address_country as "addressCountry"'
             ],
             'where'     => ['enabled = ?', $fields],
             'data'      => [true, $queryParams['search'] . '%'],
@@ -753,17 +825,26 @@ class AutoCompleteController
         $queryParams = $request->getQueryParams();
 
         if (!Validator::stringType()->notEmpty()->validate($queryParams['firstname'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Query params firstname is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                [
+                    'errors' => 'Query params firstname is empty or not a string'
+                ]
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($queryParams['lastname'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Query params lastname is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                [
+                    'errors' => 'Query params lastname is empty or not a string'
+                ]
+            );
         }
 
         $firstnameField = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => ['firstname']]);
         $lastnameField = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => ['lastname']]);
         $contacts = ContactModel::get([
             'select'    => [
-                'id', 'company', 'firstname', 'lastname', 'address_number as "addressNumber"', 'address_street as "addressStreet"',
-                'address_additional1 as "addressAdditional1"', 'address_additional2 as "addressAdditional2"', 'address_postcode as "addressPostcode"',
+                'id', 'company', 'firstname', 'lastname', 'address_number as "addressNumber"',
+                'address_street as "addressStreet"', 'address_additional1 as "addressAdditional1"',
+                'address_additional2 as "addressAdditional2"', 'address_postcode as "addressPostcode"',
                 'address_town as "addressTown"', 'address_country as "addressCountry"'
             ],
             'where'     => ['enabled = ?', $firstnameField, $lastnameField],
@@ -785,7 +866,17 @@ class AutoCompleteController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        $data['address'] = TextFormatModel::normalize(['string' => str_replace(['*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'], ' ', $data['address'])]);
+        $data['address'] = TextFormatModel::normalize(
+            [
+                'string' => str_replace(
+                    [
+                        '*', '~', '-', '\'', '"', '(', ')', ';', '/', '\\'
+                    ],
+                    ' ',
+                    $data['address']
+                )
+            ]
+        );
         $addressWords = explode(' ', $data['address']);
         foreach ($addressWords as $key => $value) {
             if (mb_strlen($value) <= 2 && !is_numeric($value)) {
@@ -815,10 +906,21 @@ class AutoCompleteController
         $requestData['where'][] = 'address_postcode LIKE ?';
         $requestData['data'][] = $department . '%';
         $hits = ContactAddressSectorModel::get([
-                'select'  => ['address_number', 'address_street', 'address_postcode', 'address_town', 'label', 'ban_id'],
+                'select'  => [
+                    'address_number',
+                    'address_street',
+                    'address_postcode',
+                    'address_town',
+                    'label',
+                    'ban_id'
+                ],
                 'where'   => $requestData['where'],
                 'data'    => $requestData['data'],
-                'orderBy' => ['substring(address_number from \'^\d+\')::integer asc', 'length(replace(address_number, \' \', \'\')) asc', 'address_street asc'],
+                'orderBy' => [
+                    'substring(address_number from \'^\d+\')::integer asc',
+                    'length(replace(address_number, \' \', \'\')) asc',
+                    'address_street asc'
+                ],
                 'limit'   => 10
             ]);
             $addresses = [];
@@ -835,7 +937,10 @@ class AutoCompleteController
                 'afnorName'     => $afnorName,
                 'postalCode'    => $hit['address_postcode'],
                 'city'          => $hit['address_town'],
-                'address'       => mb_strtoupper("{$hit['address_number']} {$afnorName}, {$hit['address_town']} ({$hit['address_postcode']})"),
+                'address'       => mb_strtoupper(
+                    "{$hit['address_number']} {$afnorName}, 
+                    {$hit['address_town']} ({$hit['address_postcode']})"
+                ),
                 'sector'        => $hit['label'],
                 'indicator'     => 'sector'
             ];
@@ -850,8 +955,12 @@ class AutoCompleteController
             return $response->withStatus(400)->withJson(['errors' => 'Department indexes do not exist']);
         }
 
-        \Zend_Search_Lucene_Analysis_Analyzer::setDefault(new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive());
-        \Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(\Zend_Search_Lucene_Search_QueryParser::B_AND);
+        \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+            new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
+        );
+        \Zend_Search_Lucene_Search_QueryParser::setDefaultOperator(
+            \Zend_Search_Lucene_Search_QueryParser::B_AND
+        );
         \Zend_Search_Lucene_Search_QueryParser::setDefaultEncoding('utf-8');
 
         $index = \Zend_Search_Lucene::open($path);
@@ -939,7 +1048,17 @@ class AutoCompleteController
                 ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
                 ldap_set_option($ldap, LDAP_OPT_NETWORK_TIMEOUT, 5);
 
-                $search = @ldap_search($ldap, $annuary['baseDN'], "(ou=*{$data['company']}*)", ['ou', 'postOfficeBox', 'destinationIndicator', 'labeledURI']);
+                $search = @ldap_search(
+                    $ldap,
+                    $annuary['baseDN'],
+                    "(ou=*{$data['company']}*)",
+                    [
+                        'ou',
+                        'postOfficeBox',
+                        'destinationIndicator',
+                        'labeledURI'
+                    ]
+                );
                 if ($search === false) {
                     continue;
                 }
@@ -980,7 +1099,13 @@ class AutoCompleteController
         }
 
         $autocompleteData = [];
-        $searchableParameters = ContactParameterModel::get(['select' => ['identifier'], 'where' => ['searchable = ?'], 'data' => [true]]);
+        $searchableParameters = ContactParameterModel::get(
+            [
+                'select' => ['identifier'],
+                'where' => ['searchable = ?'],
+                'data' => [true]
+            ]
+        );
 
         $fields = [];
         foreach ($searchableParameters as $searchableParameter) {
@@ -998,7 +1123,12 @@ class AutoCompleteController
         $requestData = AutoCompleteController::getDataForRequest([
             'search'        => $queryParams['search'],
             'fields'        => $fields,
-            'where'         => ['enabled = ?', "external_id->>'m2m' is not null", "external_id->>'m2m' != ''", "(communication_means->>'url' is not null OR communication_means->>'email' is not null)"],
+            'where'         => [
+                'enabled = ?',
+                "external_id->>'m2m' is not null",
+                "external_id->>'m2m' != ''",
+                "(communication_means->>'url' is not null OR communication_means->>'email' is not null)"
+            ],
             'data'          => [true],
             'fieldsNumber'  => $fieldsNumber
         ]);
@@ -1056,9 +1186,19 @@ class AutoCompleteController
             ldap_set_option($ldap, LDAP_OPT_NETWORK_TIMEOUT, 5);
 
             if (filter_var($data['communicationValue'], FILTER_VALIDATE_EMAIL)) {
-                $search = @ldap_search($ldap, $annuary['baseDN'], "(postofficebox={$data['communicationValue']})", ['destinationIndicator']);
+                $search = @ldap_search(
+                    $ldap,
+                    $annuary['baseDN'],
+                    "(postofficebox={$data['communicationValue']})",
+                    ['destinationIndicator']
+                );
             } else {
-                $search = @ldap_search($ldap, $annuary['baseDN'], "(labeleduri={$data['communicationValue']})", ['destinationIndicator']);
+                $search = @ldap_search(
+                    $ldap,
+                    $annuary['baseDN'],
+                    "(labeleduri={$data['communicationValue']})",
+                    ['destinationIndicator']
+                );
             }
             if ($search === false) {
                 $error = 'Ldap search failed : baseDN is maybe wrong => ' . ldap_error($ldap);
@@ -1177,7 +1317,10 @@ class AutoCompleteController
             return $response->withStatus(400)->withJson(['errors' => 'Query town is not a string']);
         }
 
-        if (!is_file('referential/codes-postaux.json') || !is_readable('referential/codes-postaux.json')) {
+        if (
+            !is_file('referential/codes-postaux.json')
+            || !is_readable('referential/codes-postaux.json')
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Cannot read postcodes']);
         }
 
@@ -1209,12 +1352,18 @@ class AutoCompleteController
             $townFound = !empty($searchTowns);
             foreach ($searchTowns as $searchTown) {
                 if ($searchTown == 'ST' || $searchTown == 'SAINT') {
-                    if (strpos($code['label'], 'ST') === false && strpos($code['label'], 'SAINT') === false) {
+                    if (
+                        strpos($code['label'], 'ST') === false
+                        && strpos($code['label'], 'SAINT') === false
+                    ) {
                         $townFound = false;
                         break;
                     }
                 } elseif ($searchTown == 'STE' || $searchTown == 'SAINTE') {
-                    if (strpos($code['label'], 'STE') === false && strpos($code['label'], 'SAINTE') === false) {
+                    if (
+                        strpos($code['label'], 'STE') === false
+                        && strpos($code['label'], 'SAINTE') === false
+                    ) {
                         $townFound = false;
                         break;
                     }
