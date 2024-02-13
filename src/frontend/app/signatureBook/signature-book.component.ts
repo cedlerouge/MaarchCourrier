@@ -51,7 +51,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:unload', [ '$event' ])
-    async unloadHandler() {
+    async unloadHandler(): Promise<void> {
         this.unlockResource();
     }
 
@@ -66,7 +66,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         }
     }
 
-    initParams() {
+    initParams(): Promise<boolean> {
         return new Promise((resolve) => {
             this.route.params.subscribe(params => {
                 this.resId = params['resId'];
@@ -116,12 +116,12 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         });
     }
 
-    backToBasket() {
+    backToBasket(): void {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
         this.unlockResource();
