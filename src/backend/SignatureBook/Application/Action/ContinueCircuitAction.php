@@ -58,7 +58,6 @@ class ContinueCircuitAction
             || empty($data['certificate'])
             || empty($data['signatureContentLength'])
             || empty($data['signatureFieldName'])
-            || empty($data['tmpUniqueId'])
         ) {
             throw new DataToBeSentToTheParapheurAreEmpty();
         }
@@ -72,7 +71,7 @@ class ContinueCircuitAction
                 $data['certificate'],
                 $data['signatureContentLength'],
                 $data['signatureFieldName'],
-                $data['tmpUniqueId'],
+                $data['tmpUniqueId'] ?? null,
                 $accessToken
             );
         if (is_array($applySuccess)) {
