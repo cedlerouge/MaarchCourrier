@@ -29,6 +29,7 @@ class NotificationScheduleController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -43,7 +44,13 @@ class NotificationScheduleController
     }
 
     // Save Crontab
-    public function create(Request $request, Response $response)
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
