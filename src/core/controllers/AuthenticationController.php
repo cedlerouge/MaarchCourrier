@@ -52,7 +52,6 @@ class AuthenticationController
      */
     public function getInformations(Request $request, Response $response)
     {
-        throw new ParameterMustBeGreaterThanZeroException("test");
         $path = CoreConfigModel::getConfigPath();
         if (!file_exists($path)) {
             return $response->withStatus(403)->withJson(['errors' => 'No configuration file found']);
