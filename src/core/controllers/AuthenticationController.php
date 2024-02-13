@@ -49,7 +49,7 @@ class AuthenticationController
     /**
      * @throws Exception
      */
-    public function getInformations(Request $request, Response $response)
+    public function getInformations(Request $request, Response $response): Response
     {
         $path = CoreConfigModel::getConfigPath();
         if (!file_exists($path)) {
