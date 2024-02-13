@@ -21,7 +21,6 @@ use Firebase\JWT\JWT;
 use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use phpCAS;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
