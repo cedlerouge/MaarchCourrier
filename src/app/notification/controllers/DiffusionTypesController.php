@@ -24,9 +24,9 @@ class DiffusionTypesController
 {
     /**
      * @param array $args
-     * @return array|int
+     * @return array|int|null
      */
-    public static function getItemsToNotify(array $args = []): array | int
+    public static function getItemsToNotify(array $args = []): array|int|null
     {
         $diffusionTypes = NotificationModel::getDiffusionType();
         foreach ($diffusionTypes as $diffusionType) {
