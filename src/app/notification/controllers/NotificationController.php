@@ -27,7 +27,13 @@ use SrcCore\models\CoreConfigModel;
 
 class NotificationController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -36,7 +42,14 @@ class NotificationController
         return $response->withJson(['notifications' => NotificationModel::get()]);
     }
 
-    public function getBySid(Request $request, Response $response, $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getBySid(Request $request, Response $response, $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -80,7 +93,11 @@ class NotificationController
         }
         $filename .= '_' . $notification['notification_id'] . '.sh';
 
-        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace(
+            'custom/' . $customId . '/src/app/notification/controllers',
+            '',
+            __DIR__
+        );
         $corePath = str_replace('src/app/notification/controllers', '', $corePath);
         if ($customId != '') {
             $pathToFollow = $corePath . 'custom/' . $customId . '/';
@@ -98,9 +115,12 @@ class NotificationController
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
      * @throws Exception
      */
-    public function create(Request $request, Response $response)
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -118,7 +138,9 @@ class NotificationController
             return $response->withStatus(500)->withJson(['errors' => $errors]);
         }
 
-        $notificationInDb = NotificationModel::getByNotificationId(['notificationId' => $data['notification_id'], 'select' => ['notification_sid']]);
+        $notificationInDb = NotificationModel::getByNotificationId(
+            ['notificationId' => $data['notification_id'], 'select' => ['notification_sid']]
+        );
 
         if (Validator::notEmpty()->validate($notificationInDb)) {
             return $response->withStatus(400)->withJson(['errors' => _NOTIFICATION_ALREADY_EXIST]);
@@ -138,8 +160,16 @@ class NotificationController
 
         if (NotificationModel::create($data)) {
             if (PHP_OS == 'Linux') {
-                $notificationAdded = NotificationModel::getByNotificationId(['notificationId' => $data['notification_id'], 'select' => ['notification_sid']]);
-                NotificationScheduleModel::createScriptNotification(['notification_sid' => $notificationAdded['notification_sid'], 'event_id' => $data['event_id'], 'notification_id' => $data['notification_id']]);
+                $notificationAdded = NotificationModel::getByNotificationId(
+                    ['notificationId' => $data['notification_id'], 'select' => ['notification_sid']]
+                );
+                NotificationScheduleModel::createScriptNotification(
+                    [
+                        'notification_sid' => $notificationAdded['notification_sid'],
+                        'event_id'         => $data['event_id'],
+                        'notification_id'  => $data['notification_id']
+                    ]
+                );
             }
 
             HistoryController::add([
@@ -150,16 +180,22 @@ class NotificationController
                 'info'      => _ADD_NOTIFICATIONS . ' : ' . $data['notification_id'],
             ]);
 
-            return $response->withJson(NotificationModel::getByNotificationId(['notificationId' => $data['notification_id']]));
+            return $response->withJson(
+                NotificationModel::getByNotificationId(['notificationId' => $data['notification_id']])
+            );
         } else {
             return $response->withStatus(400)->withJson(['errors' => 'Notification Create Error']);
         }
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
      * @throws Exception
      */
-    public function update(Request $request, Response $response, array $aArgs)
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -188,7 +224,13 @@ class NotificationController
         $notification = NotificationModel::getById(['notification_sid' => $data['notification_sid']]);
 
         if (PHP_OS == 'Linux') {
-            NotificationScheduleModel::createScriptNotification(['notification_sid' => $data['notification_sid'], 'event_id' => $data['event_id'], 'notification_id' => $notification['notification_id']]);
+            NotificationScheduleModel::createScriptNotification(
+                [
+                    'notification_sid' => $data['notification_sid'],
+                    'event_id'         => $data['event_id'],
+                    'notification_id'  => $notification['notification_id']
+                ]
+            );
         }
 
         HistoryController::add([
@@ -202,7 +244,14 @@ class NotificationController
         return $response->withJson(['notification' => $notification]);
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -238,7 +287,11 @@ class NotificationController
 
             $flagCron = false;
 
-            $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
+            $corePath = str_replace(
+                'custom/' . $customId . '/src/app/notification/controllers',
+                '',
+                __DIR__
+            );
             $corePath = str_replace('src/app/notification/controllers', '', $corePath);
             if ($customId != '') {
                 $pathToFollow = $corePath . 'custom/' . $customId . '/';
@@ -269,6 +322,12 @@ class NotificationController
         ]);
     }
 
+    /**
+     * @param $aArgs
+     * @param $mode
+     * @return array
+     * @throws Exception
+     */
     protected function control($aArgs, $mode): array
     {
         $errors = [];
@@ -300,7 +359,10 @@ class NotificationController
         if (!Validator::intType()->notEmpty()->validate($aArgs['template_id'])) {
             $errors[] = 'wrong format for template_id';
         }
-        if (!Validator::notEmpty()->validate($aArgs['is_enabled']) || ($aArgs['is_enabled'] != 'Y' && $aArgs['is_enabled'] != 'N')) {
+        if (
+            !Validator::notEmpty()->validate($aArgs['is_enabled']) ||
+            ($aArgs['is_enabled'] != 'Y' && $aArgs['is_enabled'] != 'N')
+        ) {
             $errors[] = 'Invalid is_enabled value';
         }
         if ($aArgs['event_id'] === 'baskets' && !Validator::boolType()->validate($aArgs['send_as_recap'])) {
@@ -310,7 +372,13 @@ class NotificationController
         return $errors;
     }
 
-    public function initNotification(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function initNotification(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
