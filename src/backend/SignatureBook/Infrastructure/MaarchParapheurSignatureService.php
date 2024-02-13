@@ -39,14 +39,16 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $signatureContentLength,
         string $signatureFieldName,
         ?string $tmpUniqueId,
-        string $accessToken
-    ): bool {
+        string $accessToken,
+        string $cookieSession
+    ): array|bool {
         $response = CurlModel::exec([
                 'url'  => rtrim($this->url, '/') . '/rest/documents/' . $idDocument . '/actions/1',
                 'bearerAuth'     => ['token' => $accessToken],
                 'headers'       => [
                     'content-type: application/json',
-                    'Accept: application/json'
+                    'Accept: application/json',
+                    //'cookie' => $cookieSession soit ici
                 ],
                 'method'        => 'PUT',
                 'body'      => json_encode([
@@ -57,6 +59,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                     'signatureFieldName'     => $signatureFieldName,
                     'tmpUniqueId'            => $tmpUniqueId
                 ]),
+                //'cookie' => 'PHPSESSID=n0e2cktq1uq6nit53nn5ck2k3b' soit ici
         ]);
         if ($response['code'] > 200) {
             return $response['response'];

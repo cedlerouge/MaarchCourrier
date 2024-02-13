@@ -523,7 +523,7 @@ class ActionMethodController
         try {
             $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);
         } catch (\Throwable $th) {
-            return ['errors' => $th->getMessage()];
+            return ['errors' => [$th->getMessage()]];
         }
 
         $listInstance = ListInstanceModel::get([

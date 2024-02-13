@@ -35,7 +35,8 @@ class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
         string $signatureContentLength,
         string $signatureFieldName,
         ?string $tmpUniqueId,
-        string $accessToken
+        string $accessToken,
+        string $cookieSession
     ): array|bool {
         return $this->applySignature;
     }

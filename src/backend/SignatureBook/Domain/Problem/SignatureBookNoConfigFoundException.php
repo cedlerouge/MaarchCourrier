@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief SignatureBookNoConfigFoundException class
+ * @brief SignatureBookNoConfigFoundProblem class
  * @author dev@maarch.org
  */
 
@@ -20,6 +20,6 @@ class SignatureBookNoConfigFoundException extends Problem
 {
     public function __construct()
     {
-        parent::__construct('Exception no configuration file found', 400);
+        parent::__construct('No configuration file found', 400);
     }
 }

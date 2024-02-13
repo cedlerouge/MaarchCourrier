@@ -17,7 +17,7 @@ namespace MaarchCourrier\Tests\unitTests\app\signatureBook\Application\Action;
 use Exception;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmpty;
-use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedException;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundException;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Action\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\app\signatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
@@ -47,7 +47,8 @@ class ContinueCircuitActionTest extends TestCase
             e107c2df02622974c795bb07537de9a8df6cf0c9497c08f261e89ee4617bec",
         "signatureContentLength" => 30000,
         "signatureFieldName" => "Signature",
-        "tmpUniqueId" => 4
+        "tmpUniqueId" => 4,
+        'cookieSession' => "PHPSESSID=n9dskdn94ndz23nn"
     ];
 
     protected function setUp(): void
@@ -90,7 +91,7 @@ class ContinueCircuitActionTest extends TestCase
     public function testAnExceptionIsReturnedDuringApplicationOfTheSignature(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
-        $this->expectException(SignatureNotAppliedException::class);
+        $this->expectException(SignatureNotAppliedProblem::class);
         $this->continueCircuitAction->execute(1, $this->data, []);
     }
 

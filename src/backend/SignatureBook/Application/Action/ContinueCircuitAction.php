@@ -20,7 +20,7 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterfa
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmpty;
-use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedException;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundException;
 
 class ContinueCircuitAction
@@ -57,6 +57,7 @@ class ContinueCircuitAction
             || empty($data['certificate'])
             || empty($data['signatureContentLength'])
             || empty($data['signatureFieldName'])
+            || empty($data['cookieSession'])
         ) {
             throw new DataToBeSentToTheParapheurAreEmpty();
         }
@@ -71,10 +72,11 @@ class ContinueCircuitAction
                 $data['signatureContentLength'],
                 $data['signatureFieldName'],
                 $data['tmpUniqueId'] ?? null,
-                $accessToken
+                $accessToken,
+                $data['cookieSession']
             );
         if (is_array($applySuccess)) {
-            throw new SignatureNotAppliedException($applySuccess['errors']);
+            throw new SignatureNotAppliedProblem($applySuccess['errors']);
         }
 
         return true;

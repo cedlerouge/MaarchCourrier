@@ -26,6 +26,7 @@ interface SignatureServiceInterface
         string $signatureContentLength,
         string $signatureFieldName,
         ?string $tmpUniqueId,
-        string $accessToken
+        string $accessToken,
+        string $cookieSession
     ): array|bool;
 }

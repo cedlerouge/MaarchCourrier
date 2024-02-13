@@ -16,12 +16,12 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class SignatureNotAppliedException extends Problem
+class SignatureNotAppliedProblem extends Problem
 {
     public function __construct(string $message)
     {
         parent::__construct(
-            "Exception during the application of the signature : " . $message,
+            "Signature not applied on document : " . $message,
             400,
             [
                 'value' => $message
