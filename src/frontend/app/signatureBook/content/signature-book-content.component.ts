@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
@@ -16,7 +16,7 @@ import { Subscription, catchError, finalize, of, tap } from 'rxjs';
     templateUrl: 'signature-book-content.component.html',
     styleUrls: ['signature-book-content.component.scss'],
 })
-export class MaarchSbContentComponent implements OnInit {
+export class MaarchSbContentComponent implements OnInit, OnDestroy {
 
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
 
@@ -137,9 +137,9 @@ export class MaarchSbContentComponent implements OnInit {
 
     blobToBase64(blob: Blob) {
         return new Promise((resolve, _) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(blob);
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
         });
-      }
+    }
 }

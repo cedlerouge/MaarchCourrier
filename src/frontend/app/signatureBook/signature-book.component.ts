@@ -60,8 +60,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
         if (this.resId !== undefined) {
             this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-            this.initAttachments();
-            this.initDocsToSign();
+            await this.initDocuments();
         } else {
             this.router.navigate(['/home']);
         }
@@ -79,34 +78,38 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         });
     }
 
-    initAttachments() {
+    initDocuments(): Promise<boolean> {
         return new Promise((resolve) => {
-            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
-                tap((attachments: AttachmentInterface[]) => {
-                    this.attachments = attachments;
-                    this.loadingAttachments = false;
-                    resolve(true);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
-    }
+            this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
+                map((data: any) => data.attachments),
+                tap((attachments: any[]) => {
+                    // Function to map attachment properties using AttachmentInterface attributes
+                    const mapAttachment = (attachment: any) => ({
+                        resId: attachment.res_id,
+                        resIdMaster: attachment?.isResource ? null : attachment.res_id,
+                        canConvert: attachment.isConverted,
+                        canDelete: attachment.canDelete,
+                        canUpdate: attachment.canModify,
+                        chrono: attachment.alt_identifier ?? attachment.identifier ?? null,
+                        creationDate: attachment.creation_date ?? null,
+                        title: attachment.title,
+                        typeLabel: attachment.attachment_type
+                    }) as AttachmentInterface;
 
-    initDocsToSign() {
-        return new Promise((resolve) => {
-            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
-                tap((docsToSign: AttachmentInterface[]) => {
-                    this.docsToSign = docsToSign;
+                    // Filter attachments based on the "sign" property, which is set to True and mapped to the "docsToSign" array
+                    this.docsToSign = attachments.filter((attachment: any) => attachment.sign).map(mapAttachment);
+
+                    // Filter attachments based on the "sign" property, which is set to False and mapped to the "attachments" array
+                    this.attachments = attachments.filter((attachment: any) => !attachment.sign).map(mapAttachment);
+
+                    this.loadingAttachments = false;
                     this.loadingDocsToSign = false;
+
                     resolve(true);
                 }),
                 catchError((err: any) => {
-                    this.notify.handleErrors(err);
+                    this.notify.handleSoftErrors(err);
+                    resolve(false);
                     return of(false);
                 })
             ).subscribe();
