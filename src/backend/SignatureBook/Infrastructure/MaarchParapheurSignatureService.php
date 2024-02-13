@@ -38,13 +38,12 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $certificate,
         string $signatureContentLength,
         string $signatureFieldName,
-        string $tmpUniqueId,
+        ?string $tmpUniqueId,
         string $accessToken
     ): bool {
         $response = CurlModel::exec([
                 'url'  => rtrim($this->url, '/') . '/rest/documents/' . $idDocument . '/actions/1',
                 'bearerAuth'     => ['token' => $accessToken],
-                //'basicAuth' => ['user' => 'barbara.bain@maarch.com', 'password' => 'maarch'],
                 'headers'       => [
                     'content-type: application/json',
                     'Accept: application/json'

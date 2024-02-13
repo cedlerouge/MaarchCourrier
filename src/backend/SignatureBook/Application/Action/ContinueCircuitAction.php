@@ -54,7 +54,6 @@ class ContinueCircuitAction
         if (
                empty($data['idDocument'])
             || empty($data['hashSignature'])
-            || empty($data['signatures'])
             || empty($data['certificate'])
             || empty($data['signatureContentLength'])
             || empty($data['signatureFieldName'])
@@ -67,7 +66,7 @@ class ContinueCircuitAction
             ->applySignature(
                 $data['idDocument'],
                 $data['hashSignature'],
-                $data['signatures'],
+                $data['signatures'] ?? [],
                 $data['certificate'],
                 $data['signatureContentLength'],
                 $data['signatureFieldName'],
