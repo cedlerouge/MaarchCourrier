@@ -60,7 +60,8 @@
                             [resIds]="data.resIds"
                             [resourcesToSign]="resourcesToSign"
                             [additionalsInfos]="additionalsInfos"
-                            [externalSignatoryBookDatas]="externalSignatoryBookDatas">
+                            [externalSignatoryBookDatas]="externalSignatoryBookDatas"
+                            (workflowUpdated)="visaWorkflowClone = $event">
                         </app-maarch-paraph>
                         <app-x-paraph #xParaph *ngIf="authService.externalSignatoryBook.id === 'xParaph' && !loading"
                             [additionalsInfos]="additionalsInfos"

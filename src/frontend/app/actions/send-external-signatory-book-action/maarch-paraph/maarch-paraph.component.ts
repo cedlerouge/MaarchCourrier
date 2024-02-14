@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { SignaturePositionComponent } from './signature-position/signature-position.component';
@@ -9,6 +9,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MatDialog } from '@angular/material/dialog';
 import { ExternalVisaWorkflowComponent } from '@appRoot/visa/externalVisaWorkflow/external-visa-workflow.component';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Component({
     selector: 'app-maarch-paraph',
@@ -23,6 +24,8 @@ export class MaarchParaphComponent implements OnInit {
     @Input() resourcesToSign: any[] = [];
     @Input() additionalsInfos: any;
     @Input() externalSignatoryBookDatas: any;
+
+    @Output() workflowUpdated = new EventEmitter<UserWorkflow[]>();
 
     loading: boolean = false;
 
