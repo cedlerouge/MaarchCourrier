@@ -206,13 +206,13 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     async loadWorkflowEntity() {
 
         if (this.appVisaWorkflow !== undefined) {
-            if (this.appVisaWorkflow.emptyWorkflow()) {
+            if (this.appVisaWorkflow?.emptyWorkflow()) {
                 await this.appVisaWorkflow.loadDefaultWorkflow(this.data.resIds[0]);
             }
         } else {
             // issue component undefined ??
             setTimeout(async () => {
-                if (this.appVisaWorkflow.emptyWorkflow()) {
+                if (this.appVisaWorkflow?.emptyWorkflow()) {
                     await this.appVisaWorkflow.loadDefaultWorkflow(this.data.resIds[0]);
                 }
             }, 100);
@@ -264,7 +264,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
                 await this.checkSignatureBook();
                 setTimeout(async () => {
-                    if (this.appVisaWorkflow.emptyWorkflow()) {
+                    if (this.appVisaWorkflow?.emptyWorkflow()) {
                         await this.appVisaWorkflow.loadWorkflow(this.data.resIds[0]);
                     }
                     this.loadWorkflowEntity();
