@@ -46,7 +46,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     lastOneMustBeSignatory: boolean = false;
     workflowSignatoryRole: string = '';
     lockVisaCircuit: boolean;
-    visaWorkflowClone = new UserWorkflow(); //'swa
+    visaWorkflowClone: UserWorkflow[]=[];
 
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
@@ -292,7 +292,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     checkWorkflowParameters(items: any[]) {
         let nbVisaRole = 0;
         let nbSignRole = 0;
-        this.visaWorkflowClone = JSON.parse(JSON.stringify(items)); //'swa
+        this.visaWorkflowClone = JSON.parse(JSON.stringify(items));
         items.forEach(item => {
             if (this.functions.empty(item.process_date)) {
                 if (item.requested_signature) {

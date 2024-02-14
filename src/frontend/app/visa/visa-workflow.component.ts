@@ -33,8 +33,8 @@ export class VisaWorkflowComponent implements OnInit {
     @Input() showListModels: boolean = true;
     @Input() showComment: boolean = true;
 
-    @Input() visaWorkflowFromAction: UserWorkflow[] = []; //'swa
-    
+    @Input() visaWorkflowFromAction: UserWorkflow[] = [];
+
     @Output() workflowUpdated = new EventEmitter<any>();
     @Output() refreshActionsList = new EventEmitter<boolean>();
 
@@ -97,7 +97,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        if (!this.functions.empty(this.visaWorkflowFromAction)) { //'swa
+        if (!this.functions.empty(this.visaWorkflowFromAction)) {
             this.visaWorkflow.items = this.visaWorkflowFromAction;
         }
         this.checkWorkflowSignatoryRole();
@@ -122,8 +122,6 @@ export class VisaWorkflowComponent implements OnInit {
 
     loadListModel(entityId: number) {
         this.loading = true;
-
-        //this.visaWorkflow.items = []; //'swa 
 
         const route = `../rest/listTemplates/entities/${entityId}?type=visaCircuit`;
 
@@ -257,7 +255,6 @@ export class VisaWorkflowComponent implements OnInit {
     loadWorkflow(resId: number) {
         this.resId = resId;
         this.loading = true;
-        //this.visaWorkflow.items = []; //'swa
         return new Promise((resolve) => {
             this.http.get('../rest/resources/' + resId + '/visaCircuit').pipe(
                 tap((data: any) => {
