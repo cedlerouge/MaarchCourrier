@@ -46,7 +46,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     lastOneMustBeSignatory: boolean = false;
     workflowSignatoryRole: string = '';
     lockVisaCircuit: boolean;
-    visaWorkflowClone: UserWorkflow[]=[];
+    visaWorkflowClone: UserWorkflow[];
 
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
@@ -206,7 +206,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     async loadWorkflowEntity() {
 
         if (this.appVisaWorkflow !== undefined) {
-            if (this.appVisaWorkflow?.emptyWorkflow()) {
+            if (this.appVisaWorkflow.emptyWorkflow()) {
                 await this.appVisaWorkflow.loadDefaultWorkflow(this.data.resIds[0]);
             }
         } else {
