@@ -15,16 +15,17 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Exception;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurSignatureService implements SignatureServiceInterface
 {
-    private string $url;
+    private SignatureServiceConfig $config;
 
-    public function setUrl(string $url): MaarchParapheurSignatureService
+    public function setConfig(SignatureServiceConfig $config): MaarchParapheurSignatureService
     {
-        $this->url = $url;
+        $this->config = $config;
         return $this;
     }
 
@@ -43,12 +44,12 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $cookieSession
     ): array|bool {
         $response = CurlModel::exec([
-                'url'  => rtrim($this->url, '/') . '/rest/documents/' . $idDocument . '/actions/1',
+                'url'  => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $idDocument . '/actions/1',
                 'bearerAuth'     => ['token' => $accessToken],
                 'headers'       => [
                     'content-type: application/json',
                     'Accept: application/json',
-                    //'cookie' => $cookieSession soit ici
+                    'cookie: PHPSESSID=' . $cookieSession
                 ],
                 'method'        => 'PUT',
                 'body'      => json_encode([
@@ -59,8 +60,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                     'signatureFieldName'     => $signatureFieldName,
                     'tmpUniqueId'            => $tmpUniqueId
                 ]),
-                //'cookie' => 'PHPSESSID=n0e2cktq1uq6nit53nn5ck2k3b' soit ici
-        ]);
+            ]);
         if ($response['code'] > 200) {
             return $response['response'];
         }

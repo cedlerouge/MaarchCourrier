@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain\Port;
 
 interface SignatureServiceInterface
 {
-    public function setUrl(string $url): SignatureServiceInterface;
+    public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface;
 
     public function applySignature(
         int $idDocument,

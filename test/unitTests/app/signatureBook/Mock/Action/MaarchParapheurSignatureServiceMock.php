@@ -14,16 +14,16 @@
 
 namespace MaarchCourrier\Tests\app\signatureBook\Mock\Action;
 
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 
 class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
 {
-    private $url;
+    private SignatureServiceConfig $config;
     public array|bool $applySignature = true;
-    public function setUrl(string $url): SignatureServiceInterface
+    public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface
     {
-        $this->url;
-
+        $this->config = $config;
         return $this;
     }
 

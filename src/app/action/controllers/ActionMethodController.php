@@ -513,7 +513,7 @@ class ActionMethodController
     /**
      * @throws Exception
      */
-    public static function continueVisaCircuit(array $args)
+    public static function continueVisaCircuit(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);

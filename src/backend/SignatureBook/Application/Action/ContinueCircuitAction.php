@@ -39,6 +39,9 @@ class ContinueCircuitAction
     public function execute(int $resId, array $data, array $note): bool
     {
         $data['idDocument'] = intval($data['idDocument'] ?? 0) ;
+        if (empty($data['cookieSession'])) {
+            $data['cookieSession'] = $_COOKIE['PHPSESSID'];
+        }
         if (!$this->isNewSignatureBookEnabled) {
             return true;
         }
@@ -51,19 +54,26 @@ class ContinueCircuitAction
             throw new CurrentTokenIsNotFoundProblem();
         }
 
-        if (
-               empty($data['idDocument'])
-            || empty($data['hashSignature'])
-            || empty($data['certificate'])
-            || empty($data['signatureContentLength'])
-            || empty($data['signatureFieldName'])
-            || empty($data['cookieSession'])
-        ) {
-            throw new DataToBeSentToTheParapheurAreEmpty();
+        $RequiredData = [
+            'idDocument',
+            'hashSignature',
+            'certificate',
+            'signatureContentLength',
+            'signatureFieldName'
+        ];
+        $missingData = [];
+
+        foreach ($RequiredData as $RequiredDatum) {
+            if (empty($data[$RequiredDatum])) {
+                $missingData[] = $RequiredDatum;
+            }
         }
 
+        if (!empty($missingData)) {
+            throw new DataToBeSentToTheParapheurAreEmpty($missingData);
+        }
         $applySuccess = $this->signatureService
-            ->setUrl($signatureBook->getUrl())
+            ->setConfig($signatureBook)
             ->applySignature(
                 $data['idDocument'],
                 $data['hashSignature'],
