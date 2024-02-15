@@ -84,7 +84,7 @@ class StoreController
                 ResModel::update(['set' => $data, 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
             }
 
-            return $resId;
+            return ['resId' => $resId, 'encodedResource' => base64_encode($fileContent)];
         } catch (\Exception $e) {
             return ['errors' => '[storeResource] ' . $e->getMessage()];
         }

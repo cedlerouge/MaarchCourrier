@@ -83,7 +83,10 @@ class ResController extends ResourceControlController
             return $response->withStatus(400)->withJson(['errors' => $control['errors']]);
         }
 
-        $resId = StoreController::storeResource($body);
+        $storedResource = StoreController::storeResource($body);
+        $resId = $storedResource['resId'];
+        $body['encodedFile'] = $storedResource['encodedResource'];
+
         if (empty($resId) || !empty($resId['errors'])) {
             return $response->withStatus(500)->withJson(['errors' => '[ResController create] ' . $resId['errors']]);
         }
@@ -407,9 +410,10 @@ class ResController extends ResourceControlController
             ];
         }
         $body['resId'] = $args['resId'];
-        $resId = StoreController::storeResource($body);
-        if (empty($resId) || !empty($resId['errors'])) {
-            return $response->withStatus(500)->withJson(['errors' => '[ResController update] ' . $resId['errors']]);
+        $storedResource = StoreController::storeResource($body);
+
+        if (!empty($storedResource['errors'])) {
+            return $response->withStatus(500)->withJson(['errors' => '[ResController update] ' . $storedResource['errors']]);
         }
 
         if (!$onlyDocument) {
