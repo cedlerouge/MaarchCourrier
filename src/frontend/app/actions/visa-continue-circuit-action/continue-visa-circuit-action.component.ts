@@ -4,12 +4,13 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
-import { tap, finalize, catchError } from 'rxjs/operators';
+import { tap, finalize, catchError, map } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
+import { HeaderService } from '@service/header.service';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -30,6 +31,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
 
+    externalUserId: number = null;
+
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -39,6 +42,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         public functions: FunctionsService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
+        private headerService: HeaderService
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -49,7 +53,13 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             functions: this.functions,
             notification: this.notify,
             translate: this.translate,
-            pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins'
+            pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
+            http: this.http,
+            additionalInfo: {
+                resource: this.data.resource,
+                sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
+                externalSignatoryBook: this.authService.externalSignatoryBook
+            }
         };
         this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
     }
