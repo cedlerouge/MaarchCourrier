@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ViewContainerRef, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -16,7 +16,7 @@ import { HeaderService } from '@service/header.service';
     templateUrl: 'continue-visa-circuit-action.component.html',
     styleUrls: ['continue-visa-circuit-action.component.scss'],
 })
-export class ContinueVisaCircuitActionComponent implements OnInit {
+export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
 
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
@@ -32,6 +32,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     componentInstance: any = null;
 
     externalUserId: number = null;
+    externalDocumentId: number = null;
 
     constructor(
         public translate: TranslateService,
@@ -54,7 +55,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             notification: this.notify,
             translate: this.translate,
             pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
-            http: this.http,
             additionalInfo: {
                 resource: this.data.resource,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
@@ -62,6 +62,14 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             }
         };
         this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
+
+        this.componentInstance.maarchFortifyService.getDataSubject().subscribe((data: any) => {
+            this.externalDocumentId = data;
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.componentInstance?.maarchFortifyService?.getDataSubject().unsubscribe();
     }
 
     checkSignatureBook() {
