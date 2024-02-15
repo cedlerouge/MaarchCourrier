@@ -8,6 +8,7 @@ export interface AttachmentInterface {
     creationDate: string;
     title: string;
     typeLabel: string;
+    sign: boolean;
 }
 
 export class Attachment implements AttachmentInterface {
@@ -21,6 +22,7 @@ export class Attachment implements AttachmentInterface {
     creationDate: string = null;
     title: string = '';
     typeLabel: string = null;
+    sign: boolean = false;
 
     constructor(json: any = null) {
         if (json) {

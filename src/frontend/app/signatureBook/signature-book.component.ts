@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StampInterface } from '@models/signature-book.model';
 
-import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 
 @Component({
@@ -81,10 +81,8 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     initDocuments(): Promise<boolean> {
         return new Promise((resolve) => {
             this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
-                map((data: any) => data.attachments),
-                tap((attachments: any[]) => {
-                    // Function to map attachment properties using AttachmentInterface attributes
-                    const mapAttachment = (attachment: any) => ({
+                map((data: any) => {
+                    const attachments = data.attachments.map((attachment: any) => new Attachment({
                         resId: attachment.res_id,
                         resIdMaster: attachment?.isResource ? null : attachment.res_id,
                         canConvert: attachment.isConverted,
@@ -93,22 +91,26 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                         chrono: attachment.alt_identifier ?? attachment.identifier ?? null,
                         creationDate: attachment.creation_date ?? null,
                         title: attachment.title,
-                        typeLabel: attachment.attachment_type
-                    }) as AttachmentInterface;
-
+                        typeLabel: attachment.attachment_type,
+                        sign: attachment.sign ?? false
+                    }));
+                    return attachments;
+                }),
+                tap((attachments: Attachment[]) => {
                     // Filter attachments based on the "sign" property, which is set to True and mapped to the "docsToSign" array
-                    this.docsToSign = attachments.filter((attachment: any) => attachment.sign).map(mapAttachment);
+                    this.docsToSign = attachments.filter((attachment) => attachment.sign);
 
                     // Filter attachments based on the "sign" property, which is set to False and mapped to the "attachments" array
-                    this.attachments = attachments.filter((attachment: any) => !attachment.sign).map(mapAttachment);
+                    this.attachments = attachments.filter((attachment) => !attachment.sign);
 
                     this.loadingAttachments = false;
                     this.loadingDocsToSign = false;
 
                     resolve(true);
                 }),
+
                 catchError((err: any) => {
-                    this.notify.handleSoftErrors(err);
+                    this.notify.handleErrors(err);
                     resolve(false);
                     return of(false);
                 })
