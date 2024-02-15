@@ -135,6 +135,12 @@ class AuthenticationController
                 $externalSignatoryBook['id'] = (string)$loadedXml->signatoryBookEnabled;
                 if ($externalSignatoryBook['id'] == 'maarchParapheur') {
                     $externalSignatoryBook['integratedWorkflow'] = true;
+                    foreach ($loadedXml->signatoryBook as $value) {
+                        if ((string)$value->id === $externalSignatoryBook['id']) {
+                            $externalSignatoryBook['url'] = (string)$value->url;
+                            break;
+                        }
+                    }
                 } else {
                     foreach ($loadedXml->signatoryBook as $value) {
                         if ((string)$value->id === $externalSignatoryBook['id']) {
