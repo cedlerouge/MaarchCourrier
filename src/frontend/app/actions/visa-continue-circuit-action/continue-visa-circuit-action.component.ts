@@ -97,7 +97,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     executeAction(realResSelected: number[]) {
 
-        this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote(), cookieSession: this.authService.getToken() }).pipe(
+        this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(realResSelected);
