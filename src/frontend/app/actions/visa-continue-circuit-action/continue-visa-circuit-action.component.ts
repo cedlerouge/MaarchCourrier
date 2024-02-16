@@ -32,7 +32,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     componentInstance: any = null;
 
     externalUserId: number = null;
-    externalDocumentId: number = null;
+    pluginData: object = null;
 
     constructor(
         public translate: TranslateService,
@@ -64,7 +64,12 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
         this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
 
         this.componentInstance.maarchFortifyService.getDataSubject().subscribe((data: any) => {
-            this.externalDocumentId = data;
+            this.pluginData = data;
+            if (!this.functions.empty(this.pluginData)) {
+                const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
+                this.executeAction(realResSelected, this.pluginData);
+            }
+
         });
     }
 
@@ -113,9 +118,9 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
         this.loading = false;
     }
 
-    executeAction(realResSelected: number[]) {
+    executeAction(realResSelected: number[], objToSend: object = null) {
 
-        this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote() }).pipe(
+        this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote(), data: objToSend }).pipe(
             tap((data: any) => {
                 if (!data) {
                     this.dialogRef.close(realResSelected);
