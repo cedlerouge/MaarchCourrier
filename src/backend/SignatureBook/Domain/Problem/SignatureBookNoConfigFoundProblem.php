@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class SignatureBookNoConfigFoundException extends Problem
+class SignatureBookNoConfigFoundProblem extends Problem
 {
     public function __construct()
     {

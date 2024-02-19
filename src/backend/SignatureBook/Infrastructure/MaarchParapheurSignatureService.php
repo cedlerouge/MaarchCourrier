@@ -33,7 +33,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
      * @throws Exception
      */
     public function applySignature(
-        int $idDocument,
+        int $documentId,
         string $hashSignature,
         array $signatures,
         string $certificate,
@@ -44,7 +44,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $cookieSession
     ): array|bool {
         $response = CurlModel::exec([
-                'url'  => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $idDocument . '/actions/1',
+                'url'  => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $documentId . '/actions/1',
                 'bearerAuth'     => ['token' => $accessToken],
                 'headers'       => [
                     'content-type: application/json',

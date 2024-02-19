@@ -11,7 +11,7 @@
  * @brief SignatureServiceConfigLoaderRepositoryMock class
  * @author dev@maarch.org
  */
-namespace MaarchCourrier\Tests\app\signatureBook\Mock\Action;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action;
 
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;

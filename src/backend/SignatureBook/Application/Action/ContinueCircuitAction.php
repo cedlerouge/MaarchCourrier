@@ -19,9 +19,9 @@ use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmpty;
+use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundException;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
 
 class ContinueCircuitAction
 {
@@ -38,44 +38,43 @@ class ContinueCircuitAction
      */
     public function execute(int $resId, array $data, array $note): bool
     {
-        $data['idDocument'] = intval($data['idDocument'] ?? 0) ;
-        if (empty($data['cookieSession'])) {
-            $data['cookieSession'] = $_COOKIE['PHPSESSID'];
-        }
+        $data['documentId'] = intval($data['documentId'] ?? 0) ;
+
         if (!$this->isNewSignatureBookEnabled) {
             return true;
         }
         $signatureBook = $this->signatureServiceConfigLoader->getSignatureServiceConfig();
         if ($signatureBook === null) {
-            throw new SignatureBookNoConfigFoundException();
+            throw new SignatureBookNoConfigFoundProblem();
         }
         $accessToken = $this->currentUser->getCurrentUserToken();
         if (empty($accessToken)) {
             throw new CurrentTokenIsNotFoundProblem();
         }
 
-        $RequiredData = [
-            'idDocument',
+        $requiredData = [
+            'documentId',
             'hashSignature',
             'certificate',
             'signatureContentLength',
-            'signatureFieldName'
+            'signatureFieldName',
+            'cookieSession'
         ];
         $missingData = [];
 
-        foreach ($RequiredData as $RequiredDatum) {
-            if (empty($data[$RequiredDatum])) {
-                $missingData[] = $RequiredDatum;
+        foreach ($requiredData as $requiredDatum) {
+            if (empty($data[$requiredDatum])) {
+                $missingData[] = $requiredDatum;
             }
         }
 
         if (!empty($missingData)) {
-            throw new DataToBeSentToTheParapheurAreEmpty($missingData);
+            throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
         }
         $applySuccess = $this->signatureService
             ->setConfig($signatureBook)
             ->applySignature(
-                $data['idDocument'],
+                $data['documentId'],
                 $data['hashSignature'],
                 $data['signatures'] ?? [],
                 $data['certificate'],

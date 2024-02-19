@@ -19,7 +19,7 @@ interface SignatureServiceInterface
     public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface;
 
     public function applySignature(
-        int $idDocument,
+        int $documentId,
         string $hashSignature,
         array $signatures,
         string $certificate,

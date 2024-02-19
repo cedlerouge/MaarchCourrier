@@ -1,6 +1,6 @@
 <?php
 
-namespace MaarchCourrier\Tests\app\signatureBook\Mock\Stamp;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Stamp;
 
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;

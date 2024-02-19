@@ -14,6 +14,7 @@
       <directory>test/unitTests/app/external/signatoryBook/Pastell/</directory>
       <directory>test/unitTests/app/resource/Application/</directory>
       <directory>test/Functional/</directory>
+      <directory>test/Unit/</directory>
       <file>test/unitTests/app/home/HomeControllerTest.php</file>
       <file>test/unitTests/app/action/ActionControllerTest.php</file>
       <file>test/unitTests/app/administration/AdministrationControllerTest.php</file>
@@ -59,7 +60,6 @@
       <!--            <file>test/unitTests/app/search/SearchControllerTest.php</file>-->
       <file>test/unitTests/app/template/DatasourceControllerTest.php</file>
       <file>test/unitTests/app/signatureBook/SignatureBookControllerTest.php</file>
-      <file>test/UnitTests/app/signatureBook/Application/Action/ContinueCircuitTest.php</file>
       <file>test/unitTests/app/signatureBook/Application/Stamp/RetrieveUserStampsTest.php</file>
       <file>test/unitTests/app/signatureBook/Infrastructure/Stamp/RetrieveUserStampsControllerTest.php</file>
       <file>test/unitTests/app/acknowledgementReceipt/AcknowledgementReceiptControllerTest.php</file>

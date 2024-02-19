@@ -519,7 +519,9 @@ class ActionMethodController
         ValidatorModel::intVal($args, ['resId']);
 
         $continueCircuitAction = ContinueCircuitActionFactory::create();
-
+        if (empty($args['data']['cookieSession'])) {
+            $args['data']['cookieSession'] = $_COOKIE['PHPSSID'];
+        }
         try {
             $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);
         } catch (\Throwable $th) {

@@ -12,16 +12,16 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\Tests\unitTests\app\signatureBook\Application\Action;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Action;
 
 use Exception;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmpty;
+use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundException;
-use MaarchCourrier\Tests\app\signatureBook\Mock\Action\CurrentUserInformationsMock;
-use MaarchCourrier\Tests\app\signatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
-use MaarchCourrier\Tests\app\signatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
+use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use PHPUnit\Framework\TestCase;
 use MaarchCourrier\SignatureBook\Application\Action\ContinueCircuitAction;
 
@@ -37,7 +37,7 @@ class ContinueCircuitActionTest extends TestCase
     private MaarchParapheurSignatureServiceMock $signatureServiceMock;
 
     private array $data = [
-        "idDocument" => 4,
+        "documentId" => 4,
         "certificate" => 'certifciate',
         "signatures" => [
             'signatures1' => 'signature'
@@ -67,38 +67,38 @@ class ContinueCircuitActionTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testTheNewInternParaphIsEnabledThenTrueIsReturned(): void
+    public function testTheNewInternalParapheurIsEnabled(): void
     {
         $result = $this->continueCircuitAction->execute(1, $this->data, []);
         self::assertTrue($result);
     }
 
 
-    public function testExceptionIsReturnedWhenNoSignatureBookConfigFound(): void
+    public function testCannotSignIfTheSignatureBookConfigIsNotFound(): void
     {
         $this->configLoaderMock->signatureServiceConfigLoader = null;
-        $this->expectException(SignatureBookNoConfigFoundException::class);
+        $this->expectException(SignatureBookNoConfigFoundProblem::class);
         $this->continueCircuitAction->execute(1, $this->data, []);
     }
 
-    public function testExceptionIsReturnedWhenNoTokenIsFound(): void
+    public function testCannotSignIfNoTokenIsFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
         $this->continueCircuitAction->execute(1, $this->data, []);
     }
 
-    public function testAnExceptionIsReturnedDuringApplicationOfTheSignature(): void
+    public function testCannotSignIfDuringTheApplicationOfTheSignatureAnErrorOccurred(): void
     {
         $this->signatureServiceMock->applySignature = ['errors' => 'An error has occurred'];
         $this->expectException(SignatureNotAppliedProblem::class);
         $this->continueCircuitAction->execute(1, $this->data, []);
     }
 
-    public function testTheDataToSentIsEmptyThenAProblemIsReturned(): void
+    public function testCannotSignIfMandatoryDataIsEmpty(): void
     {
         $data = [
-            "idDocument" => 4,
+            "documentId" => 4,
             "certificate" => 'certifciate',
             "signatures" => [],
             "hashSignature" => "",
@@ -107,7 +107,7 @@ class ContinueCircuitActionTest extends TestCase
             "tmpUniqueId" => 4,
             'cookieSession' => "PHPSESSID=n9dskdn94ndz23nn"
         ];
-        $this->expectException(DataToBeSentToTheParapheurAreEmpty::class);
+        $this->expectException(DataToBeSentToTheParapheurAreEmptyProblem::class);
         $this->continueCircuitAction->execute(1, $data, []);
     }
 }

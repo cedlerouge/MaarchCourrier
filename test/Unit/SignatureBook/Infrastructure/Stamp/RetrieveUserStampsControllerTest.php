@@ -1,6 +1,6 @@
 <?php
 
-namespace MaarchCourrier\Tests\app\signatureBook\Infrastructure\Stamp;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Infrastructure\Stamp;
 
 use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveUserStampsController;
 use MaarchCourrier\Tests\CourrierTestCase;

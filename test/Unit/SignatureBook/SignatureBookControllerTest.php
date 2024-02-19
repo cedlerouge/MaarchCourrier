@@ -7,7 +7,7 @@
  *
  */
 
-namespace MaarchCourrier\Tests\app\signatureBook;
+namespace MaarchCourrier\Tests\Unit\SignatureBook;
 
 use Attachment\controllers\AttachmentController;
 use Basket\models\BasketModel;

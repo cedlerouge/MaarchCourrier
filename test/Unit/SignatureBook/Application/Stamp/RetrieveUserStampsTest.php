@@ -12,7 +12,7 @@
  * @author  dev@maarch.org
  */
 
-namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Stamp;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
 use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
