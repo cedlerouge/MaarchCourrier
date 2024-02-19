@@ -2,21 +2,23 @@
 
 namespace MaarchCourrier\SignatureBook\Domain;
 
-class CurlRequest
-{
-    private string $url;
-    private string $method;
-    private array $body;
-    private ?int $httpCode;
-    private ?string $contentReturn;
+use JsonSerializable;
 
-    public static function createFromArray(array $array = []): CurlRequest
+class CurlRequest implements JsonSerializable
+{
+    private string $url = "";
+    private string $method = "";
+    private array $body = [];
+    private ?int $httpCode = null;
+    private ?array $contentReturn = null;
+
+    public function createFromArray(array $array = []): CurlRequest
     {
         $request = new CurlRequest();
 
         $request->setUrl($array['url']);
         $request->setMethod($array['method']);
-        $request->setBody($array['body']);
+        (!empty($array['body'])) ? $request->setBody($array['body']) : $request->setBody([]);
 
         return $request;
     }
@@ -61,15 +63,24 @@ class CurlRequest
         $this->httpCode = $httpCode;
     }
 
-    public function getContentReturn(): ?string
+    public function getContentReturn(): ?array
     {
         return $this->contentReturn;
     }
 
-    public function setContentReturn(?string $contentReturn): void
+    public function setContentReturn(?array $contentReturn): void
     {
         $this->contentReturn = $contentReturn;
     }
 
-
+    public function jsonSerialize(): array
+    {
+        return [
+            'url'      => $this->getUrl(),
+            'method'   => $this->getMethod(),
+            'body'     => $this->getBody(),
+            'httpCode' => $this->getHttpCode(),
+            'content'  => $this->getContentReturn()
+        ];
+    }
 }

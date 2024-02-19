@@ -18,6 +18,7 @@ class CurlService implements CurlServiceInterface
 
         $curlRequest->setHttpCode($curlResponse['code']);
         $curlRequest->setContentReturn($curlResponse['response']);
+
         return $curlRequest;
     }
 }
