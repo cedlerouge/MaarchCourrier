@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StampInterface } from '@models/signature-book.model';
 
-import { Attachment, AttachmentInterface } from '@models/attachment.model';
+import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 
 @Component({
@@ -51,7 +51,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     }
 
     @HostListener('window:unload', [ '$event' ])
-    async unloadHandler() {
+    async unloadHandler(): Promise<void> {
         this.unlockResource();
     }
 
@@ -60,14 +60,13 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
         if (this.resId !== undefined) {
             this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-            this.initAttachments();
-            this.initDocsToSign();
+            await this.initDocuments();
         } else {
             this.router.navigate(['/home']);
         }
     }
 
-    initParams() {
+    initParams(): Promise<boolean> {
         return new Promise((resolve) => {
             this.route.params.subscribe(params => {
                 this.resId = params['resId'];
@@ -79,46 +78,52 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         });
     }
 
-    initAttachments() {
+    initDocuments(): Promise<boolean> {
         return new Promise((resolve) => {
-            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
-                tap((attachments: AttachmentInterface[]) => {
-                    this.attachments = attachments;
+            this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
+                map((data: any) => {
+                    const attachments = data.attachments.map((attachment: any) => new Attachment({
+                        resId: attachment.res_id,
+                        resIdMaster: attachment?.isResource ? null : attachment.res_id,
+                        canConvert: attachment.isConverted,
+                        canDelete: attachment.canDelete,
+                        canUpdate: attachment.canModify,
+                        chrono: attachment.alt_identifier ?? attachment.identifier ?? null,
+                        creationDate: attachment.creation_date ?? null,
+                        title: attachment.title,
+                        typeLabel: attachment.attachment_type,
+                        sign: attachment.sign ?? false
+                    }));
+                    return attachments;
+                }),
+                tap((attachments: Attachment[]) => {
+                    // Filter attachments based on the "sign" property, which is set to True and mapped to the "docsToSign" array
+                    this.docsToSign = attachments.filter((attachment) => attachment.sign);
+
+                    // Filter attachments based on the "sign" property, which is set to False and mapped to the "attachments" array
+                    this.attachments = attachments.filter((attachment) => !attachment.sign);
+
                     this.loadingAttachments = false;
-                    resolve(true);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
-        });
-    }
-
-    initDocsToSign() {
-        return new Promise((resolve) => {
-            this.http.get(`../rest/resources/${this.resId}/attachments`).pipe(
-                map((data: any) => data.attachments.filter((attachment: AttachmentInterface) => attachment.inSignatureBook && attachment.status === 'A_TRA')),
-                tap((docsToSign: AttachmentInterface[]) => {
-                    this.docsToSign = docsToSign;
                     this.loadingDocsToSign = false;
+
                     resolve(true);
                 }),
+
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
+                    resolve(false);
                     return of(false);
                 })
             ).subscribe();
         });
     }
 
-    backToBasket() {
+    backToBasket(): void {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
     }
 
-    ngOnDestroy() {
+    ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
         this.unlockResource();
