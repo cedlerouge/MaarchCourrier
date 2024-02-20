@@ -8,7 +8,8 @@
             <app-external-visa-workflow #appExternalVisaWorkflow
                 [adminMode]="true"
                 [resId]="resIds.length === 1 ? resIds[0] : null"
-                [injectDatas]="injectDatasParam">
+                [injectDatas]="injectDatasParam"
+                (workflowUpdated)="workflowUpdated.emit($event)">
             </app-external-visa-workflow >
             <div *ngIf="appExternalVisaWorkflow.getUserOtpsWorkflow().length > 0"
                 class="alert-message alert-message-danger" role="alert">

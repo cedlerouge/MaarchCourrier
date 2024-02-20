@@ -106,6 +106,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             }
         }
         arr.splice(newIndex, 0, arr.splice(oldIndex, 1)[0]);
+        this.workflowUpdated.emit(this.visaWorkflow.items);
         return arr;
     }
 
@@ -123,31 +124,35 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     async loadListModel(entityId: number) {
         this.loading = true;
-        this.visaWorkflow.items = [];
         this.workflowDetails();
         const listModel: any = await this.externalSignatoryBookManagerService?.loadListModel(entityId);
         if (!this.functions.empty(listModel)) {
             if (listModel.listTemplates[0]) {
-                this.visaWorkflow.items = listModel.listTemplates[0].items.map((item: any) => ({
+                const users: UserWorkflow[] = listModel.listTemplates[0].items.map((item: any) => ({
                     ...this.externalSignatoryBookManagerService.setExternalInformation(item),
                     item_entity: item.descriptionToDisplay,
                     requested_signature: item.item_mode !== 'visa',
                     currentRole: item.item_mode
                 }));
+                users.forEach((item: UserWorkflow) => {
+                    if (this.visaWorkflow.items.find((user: UserWorkflow) => user?.item_id === item?.item_id) === undefined) {
+                        this.visaWorkflow.items.push(item);
+                    }
+                })
             }
-            this.visaWorkflow.items.forEach((element: any, key: number) => {
-                if (!this.functions.empty(element['externalId'])) {
-                    this.getUserAvatar(element.externalId[this.authService.externalSignatoryBook.id], key);
-                }
-            });
             this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
         }
+        this.visaWorkflow.items.forEach((element: any, key: number) => {
+            if (!this.functions.empty(element['externalId'])) {
+                this.getUserAvatar(element?.externalInformations?.type ?? element.externalId[this.authService.externalSignatoryBook.id], key);
+            }
+        });
+        this.workflowUpdated.emit(this.visaWorkflow.items);
         this.loading = false;
     }
 
     async loadExternalWorkflow(attachmentId: number, type: string) {
         this.loading = true;
-        this.visaWorkflow.items = [];
         const data: any = await this.externalSignatoryBookManagerService?.loadWorkflow(attachmentId, type);
         if (!this.functions.empty(data.workflow)) {
             data.workflow.forEach((element: any, key: any) => {
@@ -173,6 +178,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                 this.visaWorkflow.items.push(user);
                 this.getUserAvatar(externalId, key);
             });
+            this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
+            this.workflowUpdated.emit(this.visaWorkflow.items);
         }
         this.loading = false;
     }
@@ -290,6 +297,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             }
             this.getUserAvatar(item.externalId[this.externalSignatoryBookManagerService.signatoryBookEnabled], this.visaWorkflow.items.length - 1);
             this.searchVisaSignUser.reset();
+            this.workflowUpdated.emit(this.visaWorkflow.items);
             resolve(true);
         });
     }
@@ -392,6 +400,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                         } else {
                             this.visaWorkflow.items.push(user);
                         }
+                        this.workflowUpdated.emit(this.visaWorkflow.items);
                     }
                 })
             ).subscribe();
@@ -400,6 +409,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     updateVisaWorkflow(user: any) {
         this.visaWorkflow.items.push(user);
+        this.workflowUpdated.emit(this.visaWorkflow.items);
     }
 
     setPositionsWorkfow(resource: any, positions: any) {
