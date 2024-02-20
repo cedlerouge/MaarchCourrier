@@ -105,9 +105,14 @@ class ContinueCircuitActionTest extends TestCase
             "signatureContentLength" => 0,
             "signatureFieldName" => "",
             "tmpUniqueId" => 4,
-            'cookieSession' => "PHPSESSID=n9dskdn94ndz23nn"
+            'cookieSession' => "n9dskdn94ndz23nn"
         ];
         $this->expectException(DataToBeSentToTheParapheurAreEmptyProblem::class);
+        $this->expectExceptionObject(
+            new DataToBeSentToTheParapheurAreEmptyProblem(
+                ['hashSignature, signatureContentLength, signatureFieldName']
+            )
+        );
         $this->continueCircuitAction->execute(1, $data, []);
     }
 }
