@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\User\Infrastructure;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 
 class CurrentUserInformations implements CurrentUserInterface
 {

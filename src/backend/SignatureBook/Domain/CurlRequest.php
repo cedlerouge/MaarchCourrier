@@ -8,7 +8,7 @@ class CurlRequest implements JsonSerializable
 {
     private string $url = "";
     private string $method = "";
-    private array $header = [];
+    private ?string $authBearer = null;
     private array $body = [];
     private ?int $httpCode = null;
     private ?array $contentReturn = null;
@@ -19,7 +19,7 @@ class CurlRequest implements JsonSerializable
 
         $request->setUrl($array['url']);
         $request->setMethod($array['method']);
-        (!empty($array['header'])) ? $request->setHeader($array['header']) : $request->setHeader([]);
+        (!empty($array['authBearer'])) ? $request->setAuthBearer($array['authBearer']) : $request->setAuthBearer(null);
         (!empty($array['body'])) ? $request->setBody($array['body']) : $request->setBody([]);
 
         return $request;
@@ -75,14 +75,14 @@ class CurlRequest implements JsonSerializable
         $this->contentReturn = $contentReturn;
     }
 
-    public function getHeader(): array
+    public function getAuthBearer(): ?string
     {
-        return $this->header;
+        return $this->authBearer;
     }
 
-    public function setHeader(array $header): void
+    public function setAuthBearer(?string $authBearer): void
     {
-        $this->header = $header;
+        $this->authBearer = $authBearer;
     }
 
     public function jsonSerialize(): array

@@ -2,16 +2,19 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
 use MaarchCourrier\SignatureBook\Domain\Ports\CurlServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Ports\SignedResourceRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problems\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\Problems\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problems\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource
 {
     public function __construct(
+        private readonly CurrentUserInterface $currentUser,
         private readonly SignedResourceRepositoryInterface $signedResourceRepository,
         private readonly CurlServiceInterface $curlService
     ) {
@@ -19,6 +22,7 @@ class RetrieveSignedResource
 
     /**
      * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws CurlRequestErrorProblem
      */
     public function retrieve(array $body): SignedResource
     {
@@ -33,10 +37,16 @@ class RetrieveSignedResource
             $signedResource->setSignatureDate($body['signatureState']['updatedDate']);
         }
 
+        $accessToken = $this->currentUser->getCurrentUserToken();
+        if (empty($accessToken)) {
+            throw new CurrentTokenIsNotFoundProblem();
+        }
+
         $curlRequest = new CurlRequest();
         $curlRequest = $curlRequest->createFromArray([
             'url'    => $body['retrieveDocUri'],
-            'method' => 'GET'
+            'method' => 'GET',
+            'authBearer' => $accessToken
         ]);
 
         $curlRequest = $this->curlService->call($curlRequest);
@@ -50,6 +60,8 @@ class RetrieveSignedResource
         if (!empty($curlContent['encodedDocument'])) {
             $signedResource->setEncodedContent($curlContent['encodedDocument']);
         }
+
+        $signedResource->setUserSerialId($this->currentUser->getCurrentUserId());
 
         return $signedResource;
     }

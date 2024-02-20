@@ -10,10 +10,15 @@ class CurlService implements CurlServiceInterface
 {
     public function call(CurlRequest $curlRequest): CurlRequest
     {
+        echo print_r($curlRequest,true);
         $curlResponse = CurlModel::exec([
             'url'    => $curlRequest->getUrl(),
             'method' => $curlRequest->getMethod(),
-            'header' => $curlRequest->getHeader(),
+            'bearerAuth'     => ['token' => $curlRequest->getAuthBearer()],
+            'header' => [
+                'content-type: application/json',
+                'Accept: application/json'
+            ],
             'body'   => http_build_query($curlRequest->getBody())
         ]);
 
