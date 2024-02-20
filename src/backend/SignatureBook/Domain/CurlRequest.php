@@ -8,6 +8,7 @@ class CurlRequest implements JsonSerializable
 {
     private string $url = "";
     private string $method = "";
+    private array $header = [];
     private array $body = [];
     private ?int $httpCode = null;
     private ?array $contentReturn = null;
@@ -18,6 +19,7 @@ class CurlRequest implements JsonSerializable
 
         $request->setUrl($array['url']);
         $request->setMethod($array['method']);
+        (!empty($array['header'])) ? $request->setHeader($array['header']) : $request->setHeader([]);
         (!empty($array['body'])) ? $request->setBody($array['body']) : $request->setBody([]);
 
         return $request;
@@ -71,6 +73,16 @@ class CurlRequest implements JsonSerializable
     public function setContentReturn(?array $contentReturn): void
     {
         $this->contentReturn = $contentReturn;
+    }
+
+    public function getHeader(): array
+    {
+        return $this->header;
+    }
+
+    public function setHeader(array $header): void
+    {
+        $this->header = $header;
     }
 
     public function jsonSerialize(): array

@@ -13,6 +13,7 @@ class CurlService implements CurlServiceInterface
         $curlResponse = CurlModel::exec([
             'url'    => $curlRequest->getUrl(),
             'method' => $curlRequest->getMethod(),
+            'header' => $curlRequest->getHeader(),
             'body'   => http_build_query($curlRequest->getBody())
         ]);
 
