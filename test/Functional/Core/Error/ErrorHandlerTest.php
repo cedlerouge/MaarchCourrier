@@ -16,14 +16,14 @@ namespace MaarchCourrier\Tests\Functional\Core\Error;
 
 use MaarchCourrier\Core\Infrastructure\Error\ErrorHandler;
 use MaarchCourrier\Tests\CourrierTestCase;
-use MaarchCourrier\Tests\Functional\Core\Error\Mock\EnvironnementMock;
+use MaarchCourrier\Tests\Functional\Core\Error\Mock\EnvironmentMock;
 use MaarchCourrier\Tests\Functional\Core\Error\Mock\StubProblem;
 
 class ErrorHandlerTest extends CourrierTestCase
 {
     public function testAnExceptionIsSerialisedAsAnInternalServerProblem(): void
     {
-        $environmentMock = new EnvironnementMock();
+        $environmentMock = new EnvironmentMock();
 
         $errorHandler = new ErrorHandler($environmentMock);
 
@@ -60,7 +60,7 @@ class ErrorHandlerTest extends CourrierTestCase
 
     public function testWithDebugEnabledInternalServerProblemHasDebugFieldsInResponse(): void
     {
-        $environmentMock = new EnvironnementMock();
+        $environmentMock = new EnvironmentMock();
         $environmentMock->debug = true;
 
         $errorHandler = new ErrorHandler($environmentMock);
@@ -92,7 +92,7 @@ class ErrorHandlerTest extends CourrierTestCase
 
     public function testAProblemIsSerializedWithTheCustomProblemData(): void
     {
-        $environmentMock = new EnvironnementMock();
+        $environmentMock = new EnvironmentMock();
 
         $errorHandler = new ErrorHandler($environmentMock);
 
@@ -129,7 +129,7 @@ class ErrorHandlerTest extends CourrierTestCase
 
     public function testWithDebugEnabledCustomProblemHasDebugFieldsInResponse(): void
     {
-        $environmentMock = new EnvironnementMock();
+        $environmentMock = new EnvironmentMock();
         $environmentMock->debug = true;
 
         $errorHandler = new ErrorHandler($environmentMock);

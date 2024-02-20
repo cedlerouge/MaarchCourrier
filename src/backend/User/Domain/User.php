@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\User\Domain;
 
-use MaarchCourrier\Core\Domain\User\Port\UserInterface;
+use MaarchCourrier\User\Domain\Port\UserInterface;
 
 class User implements UserInterface
 {

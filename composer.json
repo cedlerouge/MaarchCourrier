@@ -51,7 +51,8 @@
     "psr-4": {
       "MaarchCourrier\\Tests\\": "test/unitTests/",
       "MaarchCourrier\\AcceptanceTests\\": "test/acceptanceTests/",
-      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/"
+      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/",
+      "MaarchCourrier\\Tests\\Unit\\": "test/Unit/"
     }
   },
   "config": {
@@ -88,7 +89,8 @@
     "psr/log": "3.0.0",
     "psr/cache": "3.0.0",
     "slim/psr7": "^1.6",
-    "smalot/pdfparser": "^2.3"
+    "smalot/pdfparser": "^2.3",
+    "ext-openssl": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",

@@ -16,10 +16,10 @@ declare(strict_types=1);
 
 namespace MaarchCourrier\Core\Infrastructure\Error;
 
-use MaarchCourrier\Core\Domain\Port\EnvironnementInterface;
+use MaarchCourrier\Core\Domain\Port\EnvironmentInterface;
 use MaarchCourrier\Core\Domain\Problem\InternalServerProblem;
 use MaarchCourrier\Core\Domain\Problem\Problem;
-use MaarchCourrier\Core\Infrastructure\Environnement;
+use MaarchCourrier\Core\Infrastructure\Environment;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Slim\Interfaces\ErrorHandlerInterface;
@@ -29,10 +29,10 @@ use Throwable;
 class ErrorHandler implements ErrorHandlerInterface
 {
     public function __construct(
-        private ?EnvironnementInterface $environnement = null
+        private ?EnvironmentInterface $environnement = null
     ) {
         if ($this->environnement === null) {
-            $this->environnement = new Environnement();
+            $this->environnement = new Environment();
         }
     }
 

@@ -14,7 +14,9 @@
 
 namespace MaarchCourrier\Core\Domain\Port;
 
-interface EnvironnementInterface
+interface EnvironmentInterface
 {
     public function isDebug(): bool;
+
+    public function isNewInternalParapheurEnabled(): bool;
 }

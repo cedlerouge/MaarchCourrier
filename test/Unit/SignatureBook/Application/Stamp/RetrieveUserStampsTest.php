@@ -12,14 +12,15 @@
  * @author  dev@maarch.org
  */
 
-namespace MaarchCourrier\Tests\app\signatureBook\Application\Stamp;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
-use MaarchCourrier\SignatureBook\Domain\Problems\CannotAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
-use MaarchCourrier\Tests\app\signatureBook\Mock\Stamp\SignatureRepositoryMock;
-use MaarchCourrier\Tests\app\signatureBook\Mock\UserRepositoryMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Stamp\SignatureRepositoryMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveUserStampsTest extends TestCase
@@ -28,15 +29,21 @@ class RetrieveUserStampsTest extends TestCase
     private UserRepositoryMock $userRepository;
     private SignatureRepositoryMock $signatureService;
     private RetrieveUserStamps $retrieveUserStamps;
+    private CurrentUserInformations $currentUserInformations;
 
     protected function setUp(): void
     {
-        if ($GLOBALS['id'] !== null) {
+        $this->currentUserInformations = new CurrentUserInformations();
+        if ($this->currentUserInformations->getCurrentUserId() !== null) {
             $this->PREVIOUS_GLOBAL_ID = $GLOBALS['id'];
         }
         $this->userRepository = new UserRepositoryMock();
         $this->signatureService = new SignatureRepositoryMock();
-        $this->retrieveUserStamps = new RetrieveUserStamps($this->userRepository, $this->signatureService);
+        $this->retrieveUserStamps = new RetrieveUserStamps(
+            $this->userRepository,
+            $this->signatureService,
+            $this->currentUserInformations
+        );
     }
 
     protected function tearDown(): void

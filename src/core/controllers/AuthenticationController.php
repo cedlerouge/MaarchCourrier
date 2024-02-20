@@ -195,6 +195,7 @@ class AuthenticationController
                     if (!empty($jwt) && !empty($jwt['user']['id'])) {
                         $userId = $jwt['user']['id'];
                     }
+                    $GLOBALS['token'] = $token;
                 }
             }
         }

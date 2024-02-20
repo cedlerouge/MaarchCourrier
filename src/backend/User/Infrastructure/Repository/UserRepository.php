@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\User\Infrastructure\Repository;
 
-use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
 use MaarchCourrier\User\Domain\User;
 use User\models\UserModel;
 
