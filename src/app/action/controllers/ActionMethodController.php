@@ -520,7 +520,7 @@ class ActionMethodController
 
         $continueCircuitAction = ContinueCircuitActionFactory::create();
         if (empty($args['data']['cookieSession'])) {
-            $args['data']['cookieSession'] = $_COOKIE['PHPSSID'];
+            $args['data']['cookieSession'] = $_COOKIE['PHPSSID'] ?? null;
         }
         try {
             $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);

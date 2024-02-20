@@ -16,7 +16,7 @@ namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem extends Problem
+class CannotAccessOtherUsersSignaturesProblem extends Problem
 {
     public function __construct()
     {

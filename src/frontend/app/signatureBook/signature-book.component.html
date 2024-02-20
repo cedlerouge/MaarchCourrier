@@ -18,6 +18,9 @@
         <div class="signatorybook-header-center" style="justify-content: center">
             <mat-icon class="maarchLogo" svgIcon="maarchLogoFull"></mat-icon>
             <div>Parapheur électronique</div>
+            <button mat-icon-button [title]="'lang.backBasket' | translate" (click)="backToBasket()">
+                <mat-icon class="fa-solid fa-arrow-right-from-bracket" style="font-size: 17px;"></mat-icon>
+            </button>
         </div>
         <div class="signatorybook-header-right" style="justify-content: end">
             <div style="font-size: initial">
@@ -73,6 +76,7 @@
                                     style="display: contents;"
                                 ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
+                                    *ngIf="docsToSign.length > 0"
                                     [resId]="resId"
                                     [userId]="userId"
                                     [basketId]="basketId"

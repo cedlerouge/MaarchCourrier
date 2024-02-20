@@ -37,3 +37,22 @@ iframe {
     z-index: 2;
     overflow: hidden;
 }
+
+.empty-doc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    div {
+        line-height: 100px;
+        font-size: 40px;
+        font-weight: bold;
+        color: var(--maarch-color-primary);
+    }
+    width: 100%;
+    i {
+        color: var(--maarch-color-primary);
+        opacity: 0.3;
+        font-size: 250px;
+    }
+}

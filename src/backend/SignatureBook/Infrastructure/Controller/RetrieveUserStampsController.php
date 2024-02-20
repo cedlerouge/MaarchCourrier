@@ -15,7 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
 use MaarchCourrier\SignatureBook\Application\Stamp\RetrieveUserStamps;
-use MaarchCourrier\SignatureBook\Domain\Problem\AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureRepository;
 use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
@@ -26,7 +26,7 @@ use SrcCore\http\Response;
 class RetrieveUserStampsController
 {
     /**
-     * @throws AccessDeniedYouDoNotHavePermissionToAccessOtherUsersSignaturesProblem
+     * @throws CannotAccessOtherUsersSignaturesProblem
      * @throws UserDoesNotExistProblem
      */
     public function getUserSignatureStamps(Request $request, Response $response, array $args): Response

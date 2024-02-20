@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief User Does Not ExistException
+ * @brief User Does Not Exist Problem
  * @author dev@maarch.org
  */
 

@@ -75,7 +75,7 @@ describe('SignatureBookStampsComponent', () => {
     describe('Stamp List', () => {
         it('Stamp List is empty', fakeAsync(() => {
             const req = httpTestingController.expectOne(
-                '../rest/currentUser/profile'
+                `../rest/users/${component.userId}/visaSignatures`
             );
             req.flush([]);
             fixture.detectChanges();
