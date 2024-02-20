@@ -62,6 +62,13 @@ class RetrieveSignedResource
         }
 
         $signedResource->setUserSerialId($this->currentUser->getCurrentUserId());
+        if ($body['payload']['res_id'] !== null) {
+            $signedResource->setResIdSigned($body['payload']['res_id']);
+        }
+
+        if ($body['payload']['res_id_master'] !== null) {
+            $signedResource->setResIdMaster($body['payload']['res_id_master']);
+        }
 
         return $signedResource;
     }

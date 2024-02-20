@@ -10,6 +10,8 @@ class SignedResource implements JsonSerializable
 {
     private int $id = -1;
     private int $userSerialId = -1;
+    private int $resIdSigned = -1;
+    private ?int $resIdMaster = null;
     private string $status = "";
     private ?DateTimeInterface $signatureDate = null;
     private ?string $encodedContent = null;
@@ -64,6 +66,27 @@ class SignedResource implements JsonSerializable
         $this->encodedContent = $encodedContent;
     }
 
+
+    public function getResIdSigned(): int
+    {
+        return $this->resIdSigned;
+    }
+
+    public function setResIdSigned(int $resIdSigned): void
+    {
+        $this->resIdSigned = $resIdSigned;
+    }
+
+    public function getResIdMaster(): ?int
+    {
+        return $this->resIdMaster;
+    }
+
+    public function setResIdMaster(?int $resIdMaster): void
+    {
+        $this->resIdMaster = $resIdMaster;
+    }
+
     public function jsonSerialize(): array
     {
         $array = [];
@@ -85,6 +108,14 @@ class SignedResource implements JsonSerializable
 
         if (!empty($this->getEncodedContent())) {
             $array['encodedContent'] = $this->getEncodedContent();
+        }
+
+        if (!empty($this->getResIdSigned())) {
+            $array['resIdSigned'] = $this->getResIdSigned();
+        }
+
+        if (!empty($this->getResIdMaster())) {
+            $array['resIdMaster'] = $this->getResIdMaster();
         }
 
         return $array;
