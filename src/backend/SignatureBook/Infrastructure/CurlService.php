@@ -10,7 +10,6 @@ class CurlService implements CurlServiceInterface
 {
     public function call(CurlRequest $curlRequest): CurlRequest
     {
-        echo print_r($curlRequest,true);
         $curlResponse = CurlModel::exec([
             'url'    => $curlRequest->getUrl(),
             'method' => $curlRequest->getMethod(),
