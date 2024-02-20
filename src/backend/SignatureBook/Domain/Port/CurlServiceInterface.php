@@ -1,6 +1,6 @@
 <?php
 
-namespace MaarchCourrier\SignatureBook\Domain\Ports;
+namespace MaarchCourrier\SignatureBook\Domain\Port;
 
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
 

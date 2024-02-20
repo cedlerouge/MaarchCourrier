@@ -15,7 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controllers;
 
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
-use MaarchCourrier\SignatureBook\Domain\Problems\RetrieveDocumentUrlEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignedResourceRepository;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;

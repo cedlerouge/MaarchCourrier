@@ -3,7 +3,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
-use MaarchCourrier\SignatureBook\Domain\Ports\CurlServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
 use SrcCore\models\CurlModel;
 
 class CurlService implements CurlServiceInterface

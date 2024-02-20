@@ -4,11 +4,11 @@ namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
-use MaarchCourrier\SignatureBook\Domain\Ports\CurlServiceInterface;
-use MaarchCourrier\SignatureBook\Domain\Ports\SignedResourceRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\Problems\CurlRequestErrorProblem;
-use MaarchCourrier\SignatureBook\Domain\Problems\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problems\RetrieveDocumentUrlEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignedResourceRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource
