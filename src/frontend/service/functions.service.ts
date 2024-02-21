@@ -212,4 +212,18 @@ export class FunctionsService {
         // Return the sanitized HTML content
         return domParser.body.innerHTML;
     }
+
+    blobToBase64(blob: any) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64String = (reader.result as string).split(',')[1];
+                resolve(base64String);
+            };
+            reader.onerror = () => {
+                reject('Unable to read the blob as a Base64 string.');
+            };
+            reader.readAsDataURL(blob);
+        });
+    }
 }

@@ -4,13 +4,16 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
-import { tap, finalize, catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { tap, finalize, catchError } from 'rxjs/operators';
+import { Subscription, of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
+import { ActionsService } from '../actions.service';
+import { MessageActionInterface } from '@models/actions.model';
+import { Attachment } from '@models/attachment.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -22,6 +25,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
 
+    subscription: Subscription;
+
     loading: boolean = false;
 
     resourcesMailing: any[] = [];
@@ -31,20 +36,35 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
 
-    externalUserId: number = null;
     pluginData: object = null;
+    documentDatas: Attachment & { encodedDocument: string } = {
+        ...new Attachment(),
+        encodedDocument: ''
+    };
 
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<ContinueVisaCircuitActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
+        private actionsService: ActionsService,
+        private notify: NotificationService,
         public functions: FunctionsService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
         private headerService: HeaderService
-    ) { }
+    ) {
+        this.subscription = this.actionsService.catchActionWithData().pipe(
+            tap((res: MessageActionInterface) => {
+                if (res.id === 'documentToCreate') {
+                    this.documentDatas = res.data;
+                    this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: string) => {
+                        this.documentDatas.encodedDocument = value;
+                    });
+                }
+            })
+        ).subscribe();
+    }
 
     async ngOnInit(): Promise<void> {
         this.loading = true;
@@ -56,7 +76,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
             translate: this.translate,
             pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
             additionalInfo: {
-                resource: this.data.resource,
+                resource: this.documentDatas,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
                 externalSignatoryBookUrl: (this.authService.externalSignatoryBook.url as string).replace(/\/$/, '')
             }
@@ -74,7 +94,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.componentInstance?.maarchFortifyService?.getDataSubject()?.unsubscribe();
+        this.componentInstance?.maarchFortifyService?.unsubscribeObject();
     }
 
     checkSignatureBook() {
