@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -12,7 +12,7 @@ import { of } from 'rxjs';
     templateUrl: './enabled-basket-persistence-action.component.html',
     styleUrls: ['./enabled-basket-persistence-action.component.scss'],
 })
-export class EnabledBasketPersistenceActionComponent implements OnInit {
+export class EnabledBasketPersistenceActionComponent {
 
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
 
@@ -25,8 +25,6 @@ export class EnabledBasketPersistenceActionComponent implements OnInit {
         public dialogRef: MatDialogRef<EnabledBasketPersistenceActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) { }
-
-    ngOnInit(): void { }
 
     onSubmit() {
         this.loading = true;
