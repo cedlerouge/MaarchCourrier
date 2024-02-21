@@ -105,10 +105,11 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
             this.subscriptionDocument = this.http.get(`../rest/${this.documentType}/${this.documentData.resId}/content`, { responseType: 'blob' }).pipe(
                 tap((data: Blob) => {
                     this.documentContent = data;
+                    const { resId, title } = this.documentData;
                     this.actionsService.emitActionWithData(
                         {
                             id: 'documentToCreate',
-                            data: { ...this.documentData, encodedDocument: data }
+                            data: { resId, title, encodedDocument: data }
                         }
                     );
                 }),

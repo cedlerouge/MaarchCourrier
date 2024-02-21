@@ -37,8 +37,9 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     componentInstance: any = null;
 
     pluginData: object = null;
-    documentDatas: Attachment & { encodedDocument: string } = {
-        ...new Attachment(),
+    documentDatas: {resId: number, title: string, encodedDocument: string } = {
+        resId: null,
+        title: '',
         encodedDocument: ''
     };
 
