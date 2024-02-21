@@ -4,14 +4,14 @@
             <p>{{'lang.sentToIxbusParapheur' | translate}}</p>
         </div>
     </div>
-    <ng-container *ngIf="natures.length == 0">
-        <div *ngIf="natures.length == 0">
+    <ng-container *ngIf="natures.length === 0">
+        <div *ngIf="natures.length === 0">
             <div class="alert-message alert-message-danger mailList" role="alert">
                 <p>{{'lang.noIxbusNature' | translate}}</p>
             </div>
         </div>
     </ng-container>
-    <ng-container *ngIf="natures.length != 0">
+    <ng-container *ngIf="natures.length !== 0">
         <div class="form-group" style="margin-top: 10px">
             <div class="col-sm-12">
                 <app-plugin-select-search [showLabel]="true" [class]="''" [label]="'lang.natureIxbusParapheur' | translate"

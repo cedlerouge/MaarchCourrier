@@ -43,7 +43,6 @@ export class DateOptionModalComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        console.log(this.data);
         this.date = JSON.parse(JSON.stringify(this.data.currentDate));
     }
 

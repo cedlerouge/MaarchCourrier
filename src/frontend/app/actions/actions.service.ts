@@ -677,7 +677,7 @@ export class ActionsService implements OnDestroy {
             data: this.setDatasActionToSend()
         });
         // Subscribe to the sidenavStateChanged event of the SendExternalSignatoryBookActionComponent instance
-        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {            
+        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {
             // Check if the sidenav is closed/opened
             if (!isSidenavOpened) {
                 // If closed, update the size of the dialog to a fixed width

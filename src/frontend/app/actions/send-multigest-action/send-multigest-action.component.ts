@@ -51,7 +51,7 @@ export class SendMultigestActionComponent implements OnInit {
     checkMultigest() {
         this.resourcesErrors = [];
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/actions/' + this.data.action.id + '/checkSendMultigest', { resources: this.data.resIds })
                 .subscribe((data: any) => {
                     if (!this.functions.empty(data.fatalError)) {

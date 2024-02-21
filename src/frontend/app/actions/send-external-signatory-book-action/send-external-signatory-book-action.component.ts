@@ -17,7 +17,6 @@ import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { AuthService } from '@service/auth.service';
 import { AppService } from '@service/app.service';
 import { AttachmentsListComponent } from '@appRoot/attachments/attachments-list.component';
-import { UntypedFormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({

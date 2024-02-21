@@ -10,7 +10,7 @@
                     {{'lang.makeActionOn' | translate}}
                     <b *ngIf="data.resIds.length === 0" color="primary"
                         class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                    <b *ngIf="data.resIds.length == 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                    <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
                     <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                         {{'lang.elements' | translate}}</b> ?
                 </div>
@@ -41,7 +41,7 @@
                         </li>
                     </ul>
                 </div>
-                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow.getFirstVisaUser() != '' && appVisaWorkflow.visaWorkflow.items[0].requested_signature"
+                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow.getFirstVisaUser() !== '' && appVisaWorkflow.visaWorkflow.items[0].requested_signature"
                     class="alert-message alert-message-info" role="alert">
                     <p>{{'lang.mailingActionInformations' | translate}}</p>
                     <ul>
