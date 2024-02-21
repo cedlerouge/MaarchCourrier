@@ -43,7 +43,7 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private headerService: HeaderService,
     ) {
-        this.subscription = this.actionsService.catchAction().pipe(
+        this.subscription = this.actionsService.catchActionWithData().pipe(
             tap(async (res: MessageActionInterface) => {
                 if (res.id === 'selectedStamp') {
                     if (this.pluginInstance) {
@@ -105,6 +105,12 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
             this.subscriptionDocument = this.http.get(`../rest/${this.documentType}/${this.documentData.resId}/content`, { responseType: 'blob' }).pipe(
                 tap((data: Blob) => {
                     this.documentContent = data;
+                    this.actionsService.emitActionWithData(
+                        {
+                            id: 'documentToCreate',
+                            data: { ...this.documentData, encodedDocument: data }
+                        }
+                    );
                 }),
                 finalize(() => {
                     this.loading = false;

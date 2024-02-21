@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { tap, catchError, filter, finalize, exhaustMap, map } from 'rxjs/operators';
-import { of, Subject, Observable } from 'rxjs';
+import { of, Subject, Observable, BehaviorSubject } from 'rxjs';
 import { NotificationService } from '@service/notification/notification.service';
 import { ConfirmActionComponent } from './confirm-action/confirm-action.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
@@ -48,7 +48,7 @@ import { ResetRecordManagementComponent } from './reset-record-management-action
 import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledgment-record-management-action/check-acknowledgment-record-management.component';
 import { FiltersListService } from '@service/filtersList.service';
 import { SessionStorageService } from '@service/session-storage.service';
-import { Action, MessageActionInterface } from '@models/actions.model';
+import { Action, MessageAction, MessageActionInterface } from '@models/actions.model';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -74,6 +74,7 @@ export class ActionsService implements OnDestroy {
     listProperties: any = null;
 
     private eventAction = new Subject<any>();
+    private behaviorSubjectEvent = new BehaviorSubject<MessageActionInterface>(new MessageAction())
 
     constructor(
         public translate: TranslateService,
@@ -104,11 +105,11 @@ export class ActionsService implements OnDestroy {
     }
 
     emitActionWithData(data: MessageActionInterface) {
-        this.eventAction.next(data);
+        this.behaviorSubjectEvent.next(data);
     }
 
     catchActionWithData(): Observable<MessageActionInterface> {
-        return this.eventAction.asObservable();
+        return this.behaviorSubjectEvent.asObservable();
     }
 
     setLoading(state: boolean) {

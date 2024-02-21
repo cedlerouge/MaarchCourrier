@@ -9,3 +9,10 @@ export interface MessageActionInterface {
     id : string;
     data?: any;
 }
+
+export class MessageAction implements MessageActionInterface {
+    id: string = '';
+    data?: any = null;
+
+    constructor() {}
+}
