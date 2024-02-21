@@ -13,7 +13,6 @@ import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { ActionsService } from '../actions.service';
 import { MessageActionInterface } from '@models/actions.model';
-import { Attachment } from '@models/attachment.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -143,6 +142,9 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
 
         this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote(), data: objToSend }).pipe(
             tap((data: any) => {
+                if (objToSend !== null) {
+                    this.componentInstance.close();
+                }
                 if (!data) {
                     this.dialogRef.close(realResSelected);
                 }
