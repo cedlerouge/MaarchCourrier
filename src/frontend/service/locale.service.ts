@@ -19,4 +19,3 @@ export class LocaleService {
         moment.locale(langISO);
     }
 }
-  

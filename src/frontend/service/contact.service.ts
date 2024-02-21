@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { tap, catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { FunctionsService } from './functions.service';
 import { Router } from '@angular/router';
 

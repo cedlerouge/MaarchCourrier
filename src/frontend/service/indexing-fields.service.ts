@@ -415,7 +415,7 @@ export class IndexingFieldsService {
     }
 
     getCustomFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/customFields').pipe(
                 tap((data: any) => {
                     this.customFields = data.customFields.map((info: any) => {
@@ -423,7 +423,6 @@ export class IndexingFieldsService {
                         info.icon = 'fa-hashtag';
                         info.system = false;
                         info.enabled = true;
-                        info.SQLMode = info.SQLMode;
                         if (['integer', 'string', 'date'].indexOf(info.type) > -1 && !this.functions.empty(info.values)) {
                             info.default_value = info.values[0].key;
                         } else {
@@ -476,7 +475,7 @@ export class IndexingFieldsService {
     }
 
     getRolesFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/roles').pipe(
                 tap((data: any) => {
                     const fields: any[] = [];

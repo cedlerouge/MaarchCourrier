@@ -60,6 +60,7 @@ export class LadService {
                     resolve(data.enabled);
                 }),
                 catchError((err: any) => {
+                    this.notificationService.handleSoftErrors(err);
                     return of(false);
                 })
             ).subscribe();

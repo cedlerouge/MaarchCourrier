@@ -135,6 +135,7 @@ export class FeatureTourService {
                         }
                     }, 10);
                 },
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 error => {
                     /* handle error*/
                 },
