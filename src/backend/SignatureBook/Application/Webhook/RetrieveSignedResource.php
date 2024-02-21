@@ -25,8 +25,11 @@ class RetrieveSignedResource
     }
 
     /**
-     * @throws RetrieveDocumentUrlEmptyProblem
+     * @param array $body
+     * @return SignedResource
      * @throws CurlRequestErrorProblem
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
      */
     public function retrieve(array $body): SignedResource
     {

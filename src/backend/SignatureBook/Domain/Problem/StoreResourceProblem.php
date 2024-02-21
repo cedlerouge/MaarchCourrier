@@ -6,12 +6,14 @@ use MaarchCourrier\Core\Domain\Problem\Problem;
 
 class StoreResourceProblem extends Problem
 {
-    public function __construct(array $errors)
+    public function __construct(string $errors)
     {
         parent::__construct(
-            "Attachment out of perimeter",
-            403,
-            $errors
+            "Error during signed file storage : " . $errors,
+            400,
+            [
+                'errors' => $errors
+            ]
         );
     }
 }

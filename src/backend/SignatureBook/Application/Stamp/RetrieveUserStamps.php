@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;

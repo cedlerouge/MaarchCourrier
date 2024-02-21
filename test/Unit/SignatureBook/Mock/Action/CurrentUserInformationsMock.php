@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 
 class CurrentUserInformationsMock implements CurrentUserInterface
 {
