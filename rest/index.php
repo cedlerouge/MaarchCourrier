@@ -564,7 +564,7 @@ $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/res
 $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources/{resId}', \SignatureBook\controllers\SignatureBookController::class . ':getSignatureBook');
 $app->get('/signatureBook/{resId}/attachments', \SignatureBook\controllers\SignatureBookController::class . ':getAttachmentsById');
 $app->get('/signatureBook/{resId}/incomingMailAttachments', \SignatureBook\controllers\SignatureBookController::class . ':getIncomingMailAndAttachmentsById');
-$app->post('/signatureBook/webhook', \MaarchCourrier\SignatureBook\Infrastructure\Controllers\WebhookController::class . ':fetchSignedDocumentOnWebhookTrigger');
+$app->post('/signatureBook/webhook', \MaarchCourrier\SignatureBook\Infrastructure\Controller\WebhookController::class . ':fetchAndStoreSignedDocumentOnWebhookTrigger');
 
 //statuses
 $app->get('/statuses', \Status\controllers\StatusController::class . ':get');

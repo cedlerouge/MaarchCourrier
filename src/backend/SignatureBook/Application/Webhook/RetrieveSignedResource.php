@@ -5,17 +5,21 @@ namespace MaarchCourrier\SignatureBook\Application\Webhook;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
 use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
-use MaarchCourrier\SignatureBook\Domain\Port\SignedResourceRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\StoreSignedResourceServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource
 {
     public function __construct(
         private readonly CurrentUserInterface $currentUser,
-        private readonly SignedResourceRepositoryInterface $signedResourceRepository,
+        private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
+        private readonly StoreSignedResourceServiceInterface $storeSignedResourceService,
         private readonly CurlServiceInterface $curlService
     ) {
     }
@@ -71,5 +75,32 @@ class RetrieveSignedResource
         }
 
         return $signedResource;
+    }
+
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws StoreResourceProblem
+     */
+    public function store(SignedResource $signedResource): int
+    {
+        if ($signedResource->getResIdMaster() !== null) {
+            $attachment = $this->resourceToSignRepository->getAttachmentInformations($signedResource->getResIdSigned());
+            if (empty($attachment)) {
+                throw new AttachmentOutOfPerimeterProblem();
+            } else {
+                $id = $this->storeSignedResourceService->storeAttachement($signedResource, $attachment);
+                $this->resourceToSignRepository->updateAttachementStatus($signedResource->getResIdSigned());
+            }
+        } else {
+            $storeResource = $this->storeSignedResourceService->storeResource($signedResource);
+            if (!empty($storeResult['errors'])) {
+                throw new StoreResourceProblem($storeResult['errors']);
+            } else {
+                $this->resourceToSignRepository->createSignVersionForResource($signedResource->getResIdSigned(), $storeResource);
+                $id = $signedResource->getResIdSigned();
+            }
+        }
+
+        return $id;
     }
 }
