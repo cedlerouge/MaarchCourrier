@@ -58,7 +58,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
             additionalInfo: {
                 resource: this.data.resource,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
-                externalSignatoryBook: this.authService.externalSignatoryBook
+                externalSignatoryBookUrl: (this.authService.externalSignatoryBook.url as string).replace(/\/$/, '')
             }
         };
         this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
@@ -74,7 +74,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.componentInstance?.maarchFortifyService?.getDataSubject().unsubscribe();
+        this.componentInstance?.maarchFortifyService?.getDataSubject()?.unsubscribe();
     }
 
     checkSignatureBook() {
