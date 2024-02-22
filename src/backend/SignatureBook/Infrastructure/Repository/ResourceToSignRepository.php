@@ -62,4 +62,16 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
             'data'  => [$resId]
         ]);
     }
+
+    public function isResourceSigned(int $resId): bool
+    {
+        $signedDocument = AdrModel::getDocuments([
+            'select'  => ['id'],
+            'where'   => ['res_id = ?', 'type = ?'],
+            'data'    => [$resId, ['PDF', 'SIGN']],
+            'limit'   => 1
+        ]);
+
+        return (!empty($signedDocument));
+    }
 }

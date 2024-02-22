@@ -6,8 +6,10 @@ use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 
 class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
 {
-    private bool $signedVersionCreate = false;
-    private bool $attachmentUpdated = false;
+    public bool $signedVersionCreate = false;
+    public bool $attachmentUpdated = false;
+    public bool $attachmentNotExists = false;
+    public bool $resourceAlreadySigned = false;
 
     public function getResourceInformations(int $resId): array
     {
@@ -18,6 +20,10 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
 
     public function getAttachmentInformations(int $resId): array
     {
+        if ($this->attachmentNotExists) {
+            return [];
+        }
+
         return [
             'res_id_master'  => 100,
             'title'          => 'PDF_Reponse_blocsignature',
@@ -37,5 +43,10 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
     public function updateAttachementStatus(int $resId): void
     {
         $this->attachmentUpdated = true;
+    }
+
+    public function isResourceSigned(int $resId): bool
+    {
+        return $this->resourceAlreadySigned;
     }
 }

@@ -10,8 +10,6 @@ class CurlServiceMock implements CurlServiceInterface
     public int $httpCode = 200;
     public bool $badRequest = false;
 
-
-
     public function call(CurlRequest $curlRequest): CurlRequest
     {
         if ($this->badRequest) {

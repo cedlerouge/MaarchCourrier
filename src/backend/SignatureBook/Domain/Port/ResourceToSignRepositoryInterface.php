@@ -8,4 +8,5 @@ interface ResourceToSignRepositoryInterface
     public function getAttachmentInformations(int $resId): array;
     public function createSignVersionForResource(int $resId, array $storeInformations): void;
     public function updateAttachementStatus(int $resId): void;
+    public function isResourceSigned(int $resId): bool;
 }

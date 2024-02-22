@@ -7,8 +7,8 @@ use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class StoreSignedResourceServiceMock implements StoreSignedResourceServiceInterface
 {
-    private bool $errorStorage = false;
-    private int $resIdNewSignedDoc = 1;
+    public bool $errorStorage = false;
+    public int $resIdNewSignedDoc = -1;
 
     public function storeResource(SignedResource $signedResource): array
     {

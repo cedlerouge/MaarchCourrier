@@ -10,6 +10,7 @@ use MaarchCourrier\SignatureBook\Domain\Port\StoreSignedResourceServiceInterface
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
@@ -83,10 +84,11 @@ class RetrieveSignedResource
     /**
      * @throws AttachmentOutOfPerimeterProblem
      * @throws StoreResourceProblem
+     * @throws ResourceAlreadySignProblem
      */
     public function store(SignedResource $signedResource): int
     {
-        if ($signedResource->getResIdMaster() !== null) {
+        if ($signedResource->getResIdMaster() !== null) { //pour les PJ
             $attachment = $this->resourceToSignRepository->getAttachmentInformations($signedResource->getResIdSigned());
             if (empty($attachment)) {
                 throw new AttachmentOutOfPerimeterProblem();
@@ -94,7 +96,11 @@ class RetrieveSignedResource
                 $id = $this->storeSignedResourceService->storeAttachement($signedResource, $attachment);
                 $this->resourceToSignRepository->updateAttachementStatus($signedResource->getResIdSigned());
             }
-        } else {
+        } else { //pour les resources
+            if ($this->resourceToSignRepository->isResourceSigned($signedResource->getResIdSigned())) {
+                throw new ResourceAlreadySignProblem();
+            }
+
             $storeResource = $this->storeSignedResourceService->storeResource($signedResource);
             if (!empty($storeResult['errors'])) {
                 throw new StoreResourceProblem($storeResult['errors']);
