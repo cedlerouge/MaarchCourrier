@@ -122,9 +122,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
         this.http.put(this.data.processActionRoute, { resources : realResSelected, note : this.noteEditor.getNote(), data: objToSend }).pipe(
             tap((data: any) => {
-                if (objToSend !== null) {
-                    this.componentInstance.close();
-                }
                 if (!data) {
                     this.dialogRef.close(realResSelected);
                 }
