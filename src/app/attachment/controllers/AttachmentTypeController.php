@@ -40,7 +40,11 @@ class AttachmentTypeController
 
     public function get(Request $request, Response $response)
     {
-        $rawAttachmentsTypes = AttachmentTypeModel::get(['select' => ['*'], 'where' => ['type_id <> ?'], 'data' => ['summary_sheet']]);
+        $rawAttachmentsTypes = AttachmentTypeModel::get([
+            'select' => ['*'],
+            'where' => ['type_id <> ?'],
+            'data' => ['summary_sheet']
+        ]);
 
         $attachmentsTypes = [];
         foreach ($rawAttachmentsTypes as $rawAttachmentsType) {
@@ -104,7 +108,9 @@ class AttachmentTypeController
 
         $type = AttachmentTypeModel::getByTypeId(['typeId' => $body['typeId'], 'select' => [1]]);
         if (!empty($type)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body typeId is already used by another type', 'lang' => 'attachmentTypeIdAlreadyUsed']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Body typeId is already used by another type', 'lang' => 'attachmentTypeIdAlreadyUsed'
+            ]);
         }
 
         $id = AttachmentTypeModel::create([
@@ -138,7 +144,10 @@ class AttachmentTypeController
         }
 
         $attachmentType = AttachmentTypeModel::getById(['select' => ['type_id'], 'id' => $args['id']]);
-        if (empty($attachmentType['type_id']) || (!empty($body['typeId']) && $body['typeId'] != $attachmentType['type_id'])) {
+        if (
+            empty($attachmentType['type_id']) ||
+            (!empty($body['typeId']) && $body['typeId'] != $attachmentType['type_id'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Attachment type not found or altered']);
         }
 
@@ -168,10 +177,17 @@ class AttachmentTypeController
             $set['icon'] = $body['icon'];
         }
 
-        if ($set['visible'] == 'true' && in_array($attachmentType['type_id'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES)) {
+        if (
+            $set['visible'] == 'true' &&
+            in_array($attachmentType['type_id'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES)
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'This attachment type cannot be made visible']);
         }
-        if (!empty($set['signed_by_default']) && $set['signed_by_default'] == 'false' && $body['typeId'] == 'signed_response') {
+        if (
+            !empty($set['signed_by_default']) &&
+            $set['signed_by_default'] == 'false' &&
+            $body['typeId'] == 'signed_response'
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'This option cannot be disabled on this type']);
         }
 
@@ -199,9 +215,14 @@ class AttachmentTypeController
             return $response->withStatus(400)->withJson(['errors' => 'This attachment type cannot be deleted']);
         }
 
-        $attachments = AttachmentModel::get(['select' => [1], 'where' => ['attachment_type = ?', 'status != ?'], 'data' => [$attachmentType['type_id'], 'DEL']]);
+        $attachments = AttachmentModel::get([
+            'select' => [1],
+            'where' => ['attachment_type = ?', 'status != ?'], 'data' => [$attachmentType['type_id'], 'DEL']
+        ]);
         if (!empty($attachments)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Type is used in attachments', 'lang' => 'attachmentTypeUsed']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Type is used in attachments', 'lang' => 'attachmentTypeUsed'
+            ]);
         }
 
         AttachmentTypeModel::delete([
