@@ -154,7 +154,9 @@ export class ActionsService implements OnDestroy {
 
             return true;
         } else {
+            // eslint-disable-next-line no-console
             console.log('Bad informations: ');
+            // eslint-disable-next-line no-console
             console.log({ 'action': action }, { 'userId': userId }, { 'groupId': groupId }, { 'basketId': basketId }, { 'resIds': resIds });
 
             this.notify.error('Une erreur est survenue');
@@ -194,8 +196,7 @@ export class ActionsService implements OnDestroy {
             try {
                 this[action.component]();
             } catch (error) {
-                console.log(error);
-                console.log(action.component);
+                this.notify.handleSoftErrors(error);
                 alert(this.translate.instant('lang.actionNotExist'));
             }
         }
@@ -218,8 +219,7 @@ export class ActionsService implements OnDestroy {
                             this.lockResource();
                             this[action.component](action.data);
                         } catch (error) {
-                            console.log(error);
-                            console.log(action);
+                            this.notify.handleSoftErrors(error);
                             this.unlockResourceAfterActionModal([]);
                             alert(this.translate.instant('lang.actionNotExist'));
                         }
@@ -229,8 +229,7 @@ export class ActionsService implements OnDestroy {
                 try {
                     this[action.component]();
                 } catch (error) {
-                    console.log(error);
-                    console.log(action);
+                    this.notify.handleSoftErrors(error);
                     alert(this.translate.instant('lang.actionNotExist'));
                 }
             }
@@ -406,6 +405,7 @@ export class ActionsService implements OnDestroy {
     }
 
     /* OPEN SPECIFIC ACTION */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     confirmAction(options: any = null) {
 
         const dialogRef = this.dialog.open(ConfirmActionComponent, {
@@ -431,6 +431,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     closeMailAction(options: any = null) {
         const dialogRef = this.dialog.open(CloseMailActionComponent, {
             disableClose: true,
@@ -454,6 +455,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     closeAndIndexAction(options: any = null) {
         const dialogRef = this.dialog.open(CloseAndIndexActionComponent, {
             panelClass: 'maarch-modal',
@@ -477,6 +479,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     redirectInitiatorEntityAction(options: any = null) {
         const dialogRef = this.dialog.open(RedirectInitiatorEntityActionComponent, {
             panelClass: 'maarch-modal',
@@ -500,6 +503,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     closeMailWithAttachmentsOrNotesAction(options: any = null) {
         const dialogRef = this.dialog.open(closeMailWithAttachmentsOrNotesActionComponent, {
             panelClass: 'maarch-modal',
@@ -523,6 +527,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateAcknowledgementSendDateAction(options: any = null) {
         const dialogRef = this.dialog.open(UpdateAcknowledgementSendDateActionComponent, {
             panelClass: 'maarch-modal',
@@ -546,6 +551,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createAcknowledgementReceiptsAction(options: any = null) {
         const dialogRef = this.dialog.open(CreateAcknowledgementReceiptActionComponent, {
             panelClass: 'maarch-modal',
@@ -569,6 +575,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     updateDepartureDateAction(options: any = null) {
         const dialogRef = this.dialog.open(UpdateDepartureDateActionComponent, {
             panelClass: 'maarch-modal',
@@ -592,6 +599,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     disabledBasketPersistenceAction(options: any = null) {
         const dialogRef = this.dialog.open(DisabledBasketPersistenceActionComponent, {
             panelClass: 'maarch-modal',
@@ -615,6 +623,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     enabledBasketPersistenceAction(options: any = null) {
         const dialogRef = this.dialog.open(EnabledBasketPersistenceActionComponent, {
             panelClass: 'maarch-modal',
@@ -638,6 +647,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     resMarkAsReadAction(options: any = null) {
         const dialogRef = this.dialog.open(ResMarkAsReadActionComponent, {
             panelClass: 'maarch-modal',
@@ -661,6 +671,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     viewDoc(options: any = null) {
         this.dialog.open(ViewDocActionComponent, {
             panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
@@ -668,6 +679,7 @@ export class ActionsService implements OnDestroy {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendExternalSignatoryBookAction(options: any = null) {
         const dialogRef = this.dialog.open(SendExternalSignatoryBookActionComponent, {
             panelClass: 'maarch-modal',
@@ -704,6 +716,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendExternalNoteBookAction(options: any = null) {
         const dialogRef = this.dialog.open(SendExternalNoteBookActionComponent, {
             panelClass: 'maarch-modal',
@@ -727,6 +740,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     redirectAction(options: any = null) {
         const dialogRef = this.dialog.open(RedirectActionComponent, {
             panelClass: 'maarch-modal',
@@ -749,6 +763,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendShippingAction(options: any = null) {
         const dialogRef = this.dialog.open(SendShippingActionComponent, {
             panelClass: 'maarch-modal',
@@ -772,6 +787,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendSignatureBookAction(options: any = null) {
         const dialogRef = this.dialog.open(SendSignatureBookActionComponent, {
             panelClass: 'maarch-modal',
@@ -795,6 +811,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     continueVisaCircuitAction(options: any = null) {
         const dialogRef = this.dialog.open(ContinueVisaCircuitActionComponent, {
             panelClass: 'maarch-modal',
@@ -818,7 +835,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     noConfirmAction(options: any = null) {
         const dataActionToSend = this.setDatasActionToSend();
         if (dataActionToSend.resIds.length === 0) {
@@ -852,18 +869,22 @@ export class ActionsService implements OnDestroy {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     processDocument(options: any = null) {
         this.router.navigate([`/process/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resId/${this.currentResIds}`]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     signatureBookAction(options: any = null) {
         this.router.navigate([`/signatureBook/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resources/${this.currentResIds}`]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     documentDetails(options: any = null) {
         this.router.navigate([`/resources/${this.currentResIds}`]);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     rejectVisaBackToPreviousAction(options: any = null) {
         const dialogRef = this.dialog.open(RejectVisaBackToPrevousActionComponent, {
             panelClass: 'maarch-modal',
@@ -887,6 +908,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     resetVisaAction(options: any = null) {
         const dialogRef = this.dialog.open(ResetVisaActionComponent, {
             panelClass: 'maarch-modal',
@@ -910,6 +932,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interruptVisaAction(options: any = null) {
         const dialogRef = this.dialog.open(InterruptVisaActionComponent, {
             panelClass: 'maarch-modal',
@@ -933,6 +956,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendToOpinionCircuitAction(options: any = null) {
         const dialogRef = this.dialog.open(SendAvisWorkflowComponent, {
             panelClass: 'maarch-modal',
@@ -956,6 +980,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendToParallelOpinion(options: any = null) {
         const dialogRef = this.dialog.open(SendAvisParallelComponent, {
             panelClass: 'maarch-modal',
@@ -979,6 +1004,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     continueOpinionCircuitAction(options: any = null) {
         const dialogRef = this.dialog.open(ContinueAvisCircuitActionComponent, {
             panelClass: 'maarch-modal',
@@ -1002,6 +1028,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     giveOpinionParallelAction(options: any = null) {
         const dialogRef = this.dialog.open(GiveAvisParallelActionComponent, {
             panelClass: 'maarch-modal',
@@ -1025,6 +1052,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     validateParallelOpinionDiffusionAction(options: any = null) {
         const dialogRef = this.dialog.open(ValidateAvisParallelComponent, {
             panelClass: 'maarch-modal',
@@ -1048,6 +1076,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     reconcileAction(options: any = null) {
         const dialogRef = this.dialog.open(ReconcileActionComponent, {
             panelClass: 'maarch-modal',
@@ -1071,6 +1100,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendAlfrescoAction(options: any = null) {
         const dialogRef = this.dialog.open(SendAlfrescoActionComponent, {
             panelClass: 'maarch-modal',
@@ -1094,6 +1124,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendMultigestAction(options: any = null) {
         const dialogRef = this.dialog.open(SendMultigestActionComponent, {
             panelClass: 'maarch-modal',
@@ -1117,6 +1148,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     saveRegisteredMailAction(options: any = null) {
 
         const dialogRef = this.dialog.open(SaveRegisteredMailActionComponent, {
@@ -1142,6 +1174,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     saveAndPrintRegisteredMailAction(options: any = null) {
 
         const dialogRef = this.dialog.open(SaveAndPrintRegisteredMailActionComponent, {
@@ -1167,6 +1200,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     saveAndIndexRegisteredMailAction(options: any = null) {
         const dialogRef = this.dialog.open(SaveAndIndexRegisteredMailActionComponent, {
             panelClass: 'maarch-modal',
@@ -1190,6 +1224,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     printRegisteredMailAction(options: any = null) {
 
         const dialogRef = this.dialog.open(PrintRegisteredMailActionComponent, {
@@ -1215,6 +1250,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     printDepositListAction(options: any = null) {
         const dialogRef = this.dialog.open(PrintDepositListActionComponent, {
             panelClass: 'maarch-modal',
@@ -1239,6 +1275,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sendToRecordManagementAction(options: any = null) {
         const dialogRef = this.dialog.open(SendToRecordManagementComponent, {
             panelClass: 'maarch-modal',
@@ -1264,6 +1301,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     checkReplyRecordManagementAction(options: any = null) {
         const dialogRef = this.dialog.open(CheckReplyRecordManagementComponent, {
             panelClass: 'maarch-modal',
@@ -1287,6 +1325,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     resetRecordManagementAction(options: any = null) {
         const dialogRef = this.dialog.open(ResetRecordManagementComponent, {
             panelClass: 'maarch-modal',
@@ -1310,6 +1349,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     checkAcknowledgmentRecordManagementAction(options: any = null) {
         const dialogRef = this.dialog.open(CheckAcknowledgmentRecordManagementComponent, {
             panelClass: 'maarch-modal',
