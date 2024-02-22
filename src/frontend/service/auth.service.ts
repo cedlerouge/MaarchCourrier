@@ -229,7 +229,8 @@ export class AuthService {
                     groups: data.groups,
                     preferences: data.preferences,
                     privileges: data.privileges[0] === 'ALL_PRIVILEGES' ? this.privilegeService.getAllPrivileges(!data.lockAdvancedPrivileges, this.authMode) : data.privileges,
-                    featureTour: data.featureTour
+                    featureTour: data.featureTour,
+                    externalId: data.external_id
                 };
                 this.headerService.nbResourcesFollowed = data.nbFollowedResources;
                 this.privilegeService.resfreshUserShortcuts();

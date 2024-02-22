@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, ViewContainerRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, Inject, ViewChild, ViewContainerRef } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -12,13 +12,12 @@ import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { ActionsService } from '../actions.service';
-import { MessageActionInterface } from '@models/actions.model';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
     styleUrls: ['continue-visa-circuit-action.component.scss'],
 })
-export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
+export class ContinueVisaCircuitActionComponent implements OnInit {
 
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
@@ -35,13 +34,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
     noResourceToProcess: boolean = null;
     componentInstance: any = null;
 
-    pluginData: object = null;
-    documentDatas: {resId: number, title: string, encodedDocument: string } = {
-        resId: null,
-        title: '',
-        encodedDocument: ''
-    };
-
     constructor(
         public translate: TranslateService,
         public http: HttpClient,
@@ -54,16 +46,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private headerService: HeaderService
     ) {
-        this.subscription = this.actionsService.catchActionWithData().pipe(
-            tap((res: MessageActionInterface) => {
-                if (res.id === 'documentToCreate') {
-                    this.documentDatas = res.data;
-                    this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: string) => {
-                        this.documentDatas.encodedDocument = value;
-                    });
-                }
-            })
-        ).subscribe();
     }
 
     async ngOnInit(): Promise<void> {
@@ -76,25 +58,13 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
             translate: this.translate,
             pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins',
             additionalInfo: {
-                resource: this.documentDatas,
+                resource: this.data.resource.documentToCreate,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
-                externalSignatoryBookUrl: (this.authService.externalSignatoryBook.url as string).replace(/\/$/, '')
+                externalSignatoryBookUrl: (this.authService.externalSignatoryBook.url as string).replace(/\/$/, ''),
+                externalUserId: this.headerService.user.externalId
             }
         };
         this.componentInstance = await this.pluginManagerService.initPlugin('maarch-plugins-fortify', this.myPlugin, data);
-
-        this.componentInstance.maarchFortifyService.getDataSubject().subscribe((data: any) => {
-            this.pluginData = data;
-            if (!this.functions.empty(this.pluginData)) {
-                const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
-                this.executeAction(realResSelected, this.pluginData);
-            }
-
-        });
-    }
-
-    ngOnDestroy(): void {
-        this.componentInstance?.maarchFortifyService?.unsubscribeObject();
     }
 
     checkSignatureBook() {
@@ -129,10 +99,20 @@ export class ContinueVisaCircuitActionComponent implements OnInit, OnDestroy {
 
     async onSubmit() {
         this.loading = true;
+        const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
         if (this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
-            this.componentInstance.open();
+            this.componentInstance.open().pipe(
+                tap((data: any) => {
+                    if (!this.functions.empty(data) && typeof data === "object") {
+                        this.executeAction(realResSelected, data);
+                    }
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
         } else {
-            const realResSelected: number[] = this.data.resIds.filter((resId: any) => this.resourcesErrors.map(resErr => resErr.res_id).indexOf(resId) === -1);
             this.executeAction(realResSelected);
         }
         this.loading = false;
