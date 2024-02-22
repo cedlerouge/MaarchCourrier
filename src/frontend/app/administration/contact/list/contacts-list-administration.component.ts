@@ -214,7 +214,7 @@ export class ContactsListAdministrationComponent implements OnInit {
             dialogRef.afterClosed().pipe(
                 filter((data: string) => data === 'ok'),
                 exhaustMap(() => this.http.delete(`../rest/contacts/${contact.id}`)),
-                tap((data: any) => {
+                tap(() => {
                     this.refreshDao();
                     this.notify.success(this.translate.instant('lang.contactDeleted'));
                 }),
@@ -232,7 +232,7 @@ export class ContactsListAdministrationComponent implements OnInit {
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.put(`../rest/contacts/${contact.id}/activation`, { enabled: !contact.enabled })),
-            tap((data: any) => {
+            tap(() => {
                 this.refreshDao();
                 if (!contact.enabled === true) {
                     this.notify.success(this.translate.instant('lang.contactEnabled'));
@@ -346,7 +346,7 @@ export class ContactsListAdministrationComponent implements OnInit {
         });
         dialogRef.afterClosed().pipe(
             filter((data: any) => !this.functions.empty(data)),
-            tap(async (res: any) => {
+            tap(async () => {
                 this.refreshDao();
             }),
             catchError((err: any) => {
@@ -434,6 +434,7 @@ export class ContactsListAdministrationRedirectModalComponent implements OnInit 
         private notify: NotificationService) {
     }
 
+    // eslint-disable-next-line @angular-eslint/no-empty-lifecycle-method
     ngOnInit(): void {}
 
     setRedirectUser(contact: any) {

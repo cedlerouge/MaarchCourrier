@@ -17,15 +17,15 @@
                             {{'lang.reaffectContactRedirect' | translate}}
                         </mat-radio-button>
                     </mat-radio-group>
-                    <app-plugin-autocomplete *ngIf="this.processMode == 'reaffect'"
+                    <app-plugin-autocomplete *ngIf="this.processMode === 'reaffect'"
                         [labelPlaceholder]="'lang.contactReplacement' | translate"
                         [routeDatas]="['/rest/autocomplete/contacts']" [targetSearchKey]="'contact'"
                         (triggerEvent)="setRedirectUser($event)" singleMode required></app-plugin-autocomplete>
 
                     <div *ngIf="this.processMode" class="alert-message alert-message-info" role="alert">
-                        <span *ngIf="this.processMode == 'delete'"><em>{{'lang.deleteContactInformations' | translate}}</em></span>
+                        <span *ngIf="this.processMode === 'delete'"><em>{{'lang.deleteContactInformations' | translate}}</em></span>
                         <span
-                            *ngIf="this.processMode == 'reaffect'"><em>{{'lang.reaffectContactInformations' | translate}}</em></span>
+                            *ngIf="this.processMode === 'reaffect'"><em>{{'lang.reaffectContactInformations' | translate}}</em></span>
                     </div>
                 </div>
             </div>
@@ -34,7 +34,7 @@
     <span class="divider-modal"></span>
     <mat-dialog-actions>
         <button mat-raised-button color="primary" type="submit"
-            [disabled]="!redirectConfForm.form.valid || (!this.redirectContact && this.processMode == 'reaffect')"
+            [disabled]="!redirectConfForm.form.valid || (!this.redirectContact && this.processMode === 'reaffect')"
             (click)="dialogRef.close({contactId:this.redirectContact, processMode:this.processMode})">{{'lang.delete' | translate}}</button>
         <button class="actions" color="" mat-raised-button
             (click)="dialogRef.close('')">{{'lang.cancel' | translate}}</button>

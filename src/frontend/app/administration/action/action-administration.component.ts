@@ -563,7 +563,7 @@ export class ActionAdministrationComponent implements OnInit {
     setIntermediateStatus(mailevaStatus: any[] = null) {
         if (mailevaStatus !== null) {
             const data: any[] = this.intermediateStatusParams.data;
-            data.forEach((element: any, index: number) => {
+            data.forEach((element: any) => {
                 element.actionStatus = mailevaStatus.indexOf(element.id) > -1 ? 'intermediateStatus' : null;
             });
             this.intermediateSelectedStatus = mailevaStatus;
@@ -579,7 +579,7 @@ export class ActionAdministrationComponent implements OnInit {
     setFinalStatus(mailevaStatus: any[] = null) {
         if (mailevaStatus !== null) {
             const data: any[] = this.finalStatusParams.data;
-            data.forEach((element: any, index: number) => {
+            data.forEach((element: any) => {
                 element.actionStatus = mailevaStatus.indexOf(element.id) > -1 ? 'finalStatus' : null;
             });
             this.finalSelectedStatus = mailevaStatus;
@@ -595,7 +595,7 @@ export class ActionAdministrationComponent implements OnInit {
     setErrorStatus(mailevaStatus: any[] = null) {
         if (mailevaStatus !== null) {
             const data: any[] = this.errorStatusParams.data;
-            data.forEach((element: any, index: number) => {
+            data.forEach((element: any) => {
                 element.actionStatus = mailevaStatus.indexOf(element.id) > -1 ? 'errorStatus' : null;
             });
             this.errorSelectedStatus = mailevaStatus;
@@ -646,7 +646,7 @@ export class ActionAdministrationComponent implements OnInit {
     toogleKeepOther(action: any){
         this.keepOtherRoleForRedirection = action.parameters.keepOtherRoleForRedirection;
     }
-    
+
     private handleRequestObservable(obs: Observable<any>, successMessage: string): void {
         obs.pipe(
             tap(() => {

@@ -9,7 +9,7 @@ import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
 import { AdministrationService } from '../administration.service';
-import { catchError, tap, finalize, filter, exhaustMap } from 'rxjs/operators';
+import { catchError, tap, filter, exhaustMap } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';

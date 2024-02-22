@@ -221,5 +221,6 @@ export class ContactsParametersAdministrationComponent implements OnInit {
         this.onSubmit();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     originalOrder = (a: KeyValue<string, any>, b: KeyValue<string, any>): number => 0;
 }

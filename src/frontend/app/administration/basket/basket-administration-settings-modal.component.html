@@ -17,8 +17,8 @@
                 </div>
             </div>
             <mat-tab-group>
-                <mat-tab *ngIf="data.action.keyword == 'redirect'">
-                    <ng-template mat-tab-label *ngIf="data.action.keyword == 'redirect'">
+                <mat-tab *ngIf="data.action.keyword === 'redirect'">
+                    <ng-template mat-tab-label *ngIf="data.action.keyword === 'redirect'">
                         {{'lang.redirects' | translate}}
                     </ng-template>
                     <mat-accordion>
@@ -34,7 +34,7 @@
                             </mat-form-field>
                             <div id="jstree"></div>
                         </mat-expansion-panel>
-                        <mat-expansion-panel (opened)="initService2()" *ngIf="data.action.keyword == 'redirect'">
+                        <mat-expansion-panel (opened)="initService2()" *ngIf="data.action.keyword === 'redirect'">
                             <mat-expansion-panel-header>
                                 <mat-panel-title>
                                     {{'lang.toUsersEntities' | translate}}

@@ -8,7 +8,6 @@ import { MatSidenav } from '@angular/material/sidenav';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { catchError, exhaustMap, filter } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { NotificationSpec } from 'tinymce';
 import { NotificationService } from '@service/notification/notification.service';
 
 
