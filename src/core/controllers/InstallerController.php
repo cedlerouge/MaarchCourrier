@@ -337,8 +337,8 @@ class InstallerController
         fwrite($fp, json_encode($config, JSON_PRETTY_PRINT));
         fclose($fp);
 
-        $cmd = 'ln -s ' . realpath('.') . "/ {$body['customId']}";
-        exec($cmd);
+        // $cmd = 'ln -s ' . realpath('.') . "/ {$body['customId']}";
+        // exec($cmd);
 
         file_put_contents("custom/{$body['customId']}/initializing.lck", 1);
 

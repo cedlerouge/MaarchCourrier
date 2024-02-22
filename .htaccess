@@ -1,0 +1,12 @@
+<FilesMatch ".*">
+	Require all granted
+</FilesMatch>
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA]
+
+RewriteRule "dist/(.*)" "dist/$1" [QSA]
+RewriteRule "rest/(.*)" "rest/$1" [QSA]
+RewriteRule "node_modules/(.*)" "node_modules/$1" [QSA]
