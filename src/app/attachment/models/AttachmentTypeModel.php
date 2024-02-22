@@ -14,18 +14,22 @@
 
 namespace Attachment\models;
 
+use Exception;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 
 class AttachmentTypeModel
 {
-    public static function get(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function get(array $args): array
     {
         ValidatorModel::notEmpty($args, ['select']);
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy', 'groupBy']);
         ValidatorModel::intType($args, ['limit']);
 
-        $types = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => $args['select'],
             'table'     => ['attachment_types'],
             'where'     => empty($args['where']) ? [] : $args['where'],
@@ -34,11 +38,12 @@ class AttachmentTypeModel
             'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy'],
             'limit'     => empty($args['limit']) ? 0 : $args['limit']
         ]);
-
-        return $types;
     }
 
-    public static function getById(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getById(array $args): array
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
@@ -58,7 +63,10 @@ class AttachmentTypeModel
         return $type[0];
     }
 
-    public static function getByTypeId(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function getByTypeId(array $args): array
     {
         ValidatorModel::notEmpty($args, ['typeId']);
         ValidatorModel::stringType($args, ['typeId']);
@@ -78,7 +86,10 @@ class AttachmentTypeModel
         return $type[0];
     }
 
-    public static function create(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function create(array $args): int
     {
         ValidatorModel::notEmpty($args, [
             'type_id', 'label', 'visible', 'email_link', 'signable',
@@ -111,7 +122,10 @@ class AttachmentTypeModel
         return $nextSequenceId;
     }
 
-    public static function update(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['set', 'where', 'data']);
         ValidatorModel::arrayType($args, ['set', 'where', 'data']);
@@ -126,7 +140,10 @@ class AttachmentTypeModel
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
