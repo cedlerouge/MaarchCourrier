@@ -18,7 +18,7 @@ class CurlServiceMock implements CurlServiceInterface
             ];
         } else {
             $returnFromParapheur = [
-                'base64' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
+                'encodedDocument' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
                 'mimetype' => "application/pdf",
                 'filename' => "PDF_signature.pdf"
             ];

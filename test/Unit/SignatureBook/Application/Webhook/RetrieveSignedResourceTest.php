@@ -57,7 +57,7 @@ class RetrieveSignedResourceTest extends TestCase
         );
 
         $this->returnFromCurlRequestParapheur = [
-            'base64' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
+            'encodedDocument' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
             'mimetype' => "application/pdf",
             'filename' => "PDF_signature.pdf"
         ];
@@ -139,7 +139,7 @@ class RetrieveSignedResourceTest extends TestCase
         $signedResource = new SignedResource();
         $signedResource->setResIdSigned(10);
         $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['base64']);
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
         $newId = $this->retrieveSignedResource->store($signedResource);
         $this->assertSame($newId, $signedResource->getResIdSigned());
@@ -158,7 +158,7 @@ class RetrieveSignedResourceTest extends TestCase
         $signedResource = new SignedResource();
         $signedResource->setResIdSigned(10);
         $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['base64']);
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
         $this->expectException(ResourceAlreadySignProblem::class);
         $newId = $this->retrieveSignedResource->store($signedResource);
@@ -174,8 +174,9 @@ class RetrieveSignedResourceTest extends TestCase
 
         $signedResource = new SignedResource();
         $signedResource->setResIdSigned(10);
+        $signedResource->setResIdMaster(null);
         $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['base64']);
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
         $this->expectException(StoreResourceProblem::class);
         $newId = $this->retrieveSignedResource->store($signedResource);
@@ -195,7 +196,7 @@ class RetrieveSignedResourceTest extends TestCase
         $signedResource->setResIdSigned(100);
         $signedResource->setResIdMaster(10);
         $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['base64']);
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
         $newId = $this->retrieveSignedResource->store($signedResource);
         $this->assertSame($newId, $this->storeSignedResourceServiceMock->resIdNewSignedDoc);
@@ -214,7 +215,7 @@ class RetrieveSignedResourceTest extends TestCase
         $signedResource->setResIdSigned(100);
         $signedResource->setResIdMaster(10);
         $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['base64']);
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
         $this->expectException(AttachmentOutOfPerimeterProblem::class);
         $newId = $this->retrieveSignedResource->store($signedResource);

@@ -102,8 +102,8 @@ class RetrieveSignedResource
             }
 
             $storeResource = $this->storeSignedResourceService->storeResource($signedResource);
-            if (!empty($storeResult['errors'])) {
-                throw new StoreResourceProblem($storeResult['errors']);
+            if (!empty($storeResource['errors'])) {
+                throw new StoreResourceProblem($storeResource['errors']);
             } else {
                 $this->resourceToSignRepository->createSignVersionForResource($signedResource->getResIdSigned(), $storeResource);
                 $id = $signedResource->getResIdSigned();
