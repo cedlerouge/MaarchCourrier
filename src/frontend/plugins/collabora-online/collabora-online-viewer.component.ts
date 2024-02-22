@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, filter, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -18,7 +18,7 @@ declare let $: any;
     templateUrl: 'collabora-online-viewer.component.html',
     styleUrls: ['collabora-online-viewer.component.scss'],
 })
-export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class CollaboraOnlineViewerComponent implements OnInit, OnDestroy {
 
     @Input() editMode: boolean = false;
     @Input() file: any = {};
@@ -267,10 +267,6 @@ export class CollaboraOnlineViewerComponent implements OnInit, AfterViewInit, On
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return parseInt(result, 10);
-    }
-
-    ngAfterViewInit() {
-
     }
 
     getConfiguration() {

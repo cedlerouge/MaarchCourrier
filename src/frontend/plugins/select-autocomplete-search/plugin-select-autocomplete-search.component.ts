@@ -8,7 +8,7 @@ import {
 import { ControlValueAccessor, UntypedFormControl } from '@angular/forms';
 import { MatLegacyOption as MatOption } from '@angular/material/legacy-core';
 import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
-import { take, takeUntil, startWith, map, debounceTime, filter, tap, switchMap, finalize } from 'rxjs/operators';
+import { take, takeUntil, map, debounceTime, filter, tap, switchMap } from 'rxjs/operators';
 import { Subject, ReplaySubject, Observable, forkJoin, of } from 'rxjs';
 import { LatinisePipe } from 'ngx-pipes';
 import { TranslateService } from '@ngx-translate/core';

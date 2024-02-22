@@ -8,7 +8,7 @@ import {
     OnDestroy
 } from '@angular/core';
 import { UntypedFormGroup, UntypedFormBuilder } from '@angular/forms';
-import { A, Z, ZERO, NINE, SPACE, END, HOME } from '@angular/cdk/keycodes';
+import { A, Z, ZERO, NINE, SPACE } from '@angular/cdk/keycodes';
 import { LatinisePipe } from 'ngx-pipes';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';

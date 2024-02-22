@@ -80,12 +80,9 @@ export class AutocompleteListComponent implements OnInit {
         private latinisePipe: LatinisePipe
     ) { }
 
+    // eslint-disable-next-line @angular-eslint/no-empty-lifecycle-method
     ngOnInit() {
         // this.initAutocompleteData();
-
-        if (this.datasFormControl.value.length > 0) {
-
-        }
     }
 
     getLabel(option: any) {

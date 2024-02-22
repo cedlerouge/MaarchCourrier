@@ -27,6 +27,7 @@ export class SecureUrlPipe implements PipeTransform {
 
             if (url !== undefined) {
                 // The next and error callbacks from the observer
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { next, error } = observer;
 
                 this.http.get(url, { headers: headers, responseType: 'blob' }).pipe(

@@ -56,11 +56,13 @@ export class MaarchFlatTreeComponent implements OnInit {
         private latinisePipe: LatinisePipe,
     ) { }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @HostListener('document:keydown.Shift', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (this.selectionPropagation) {
             this.holdShift = true;
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     @HostListener('document:keyup.Shift', ['$event']) onKeyupHandler(event: KeyboardEvent) {
         this.holdShift = false;
     }

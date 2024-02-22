@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Input } from '@angular/core';
 
 @Component({
@@ -6,7 +6,7 @@ import { Input } from '@angular/core';
     templateUrl: 'message-box.component.html',
     styleUrls: ['message-box.component.scss'],
 })
-export class MessageBoxComponent implements OnInit {
+export class MessageBoxComponent {
 
     /**
      * Style of alert
@@ -19,6 +19,4 @@ export class MessageBoxComponent implements OnInit {
     @Input() content: string = null;
 
     constructor( ) { }
-
-    ngOnInit() { }
 }
