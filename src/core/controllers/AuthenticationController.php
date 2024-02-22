@@ -15,6 +15,8 @@
 namespace SrcCore\controllers;
 
 use Configuration\models\ConfigurationModel;
+use DateInterval;
+use DateTime;
 use Email\controllers\EmailController;
 use Exception;
 use Firebase\JWT\JWT;
@@ -22,6 +24,7 @@ use History\controllers\HistoryController;
 use Parameter\models\ParameterModel;
 use phpCAS;
 use Respect\Validation\Validator;
+use SimpleSAML\Auth\Simple;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\models\AuthenticationModel;
@@ -38,13 +41,34 @@ class AuthenticationController
 {
     public const MAX_DURATION_TOKEN = 30; //Minutes
     public const ROUTES_WITHOUT_AUTHENTICATION = [
-        'GET/authenticationInformations', 'PUT/versionsUpdateSQL', 'GET/validUrl', 'GET/authenticate/token', 'GET/images', 'POST/password', 'PUT/password', 'GET/passwordRules',
-        'GET/jnlp/{jnlpUniqueId}', 'GET/onlyOffice/mergedFile', 'POST/onlyOfficeCallback', 'POST/authenticate',
-        'GET/wopi/files/{id}', 'GET/wopi/files/{id}/contents', 'POST/wopi/files/{id}/contents', 'GET/onlyOffice/content', 'GET/languages/{lang}', 'GET/languages',
+        'GET/authenticationInformations',
+        'PUT/versionsUpdateSQL',
+        'GET/validUrl',
+        'GET/authenticate/token',
+        'GET/images',
+        'POST/password',
+        'PUT/password',
+        'GET/passwordRules',
+        'GET/jnlp/{jnlpUniqueId}',
+        'GET/onlyOffice/mergedFile',
+        'POST/onlyOfficeCallback',
+        'POST/authenticate',
+        'GET/wopi/files/{id}',
+        'GET/wopi/files/{id}/contents',
+        'POST/wopi/files/{id}/contents',
+        'GET/onlyOffice/content',
+        'GET/languages/{lang}',
+        'GET/languages',
         'POST/administration/shippings/{id}/notifications'
     ];
 
-    public function getInformations(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getInformations(Request $request, Response $response): Response
     {
         $path = CoreConfigModel::getConfigPath();
         if (!file_exists($path)) {
@@ -68,23 +92,40 @@ class AuthenticationController
             $hostname = (string)$casConfiguration->WEB_CAS_URL;
             $port = (string)$casConfiguration->WEB_CAS_PORT;
             $uri = (string)$casConfiguration->WEB_CAS_CONTEXT;
-            $authUri = "https://{$hostname}:{$port}{$uri}/login?service=" . UrlController::getCoreUrl() . 'dist/index.html#/login';
+            $authUri = "https://{$hostname}:{$port}{$uri}/login?service=" .
+                UrlController::getCoreUrl() .
+                'dist/index.html#/login';
         } elseif ($loggingMethod['id'] == 'keycloak') {
             $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
             $provider = new Keycloak($keycloakConfig);
             $authUri = $provider->getAuthorizationUrl(['scope' => $keycloakConfig['scope']]);
             $keycloakState = $provider->getState();
         } elseif ($loggingMethod['id'] == 'sso') {
-            $ssoConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_sso', 'select' => ['value']]);
-            $ssoConfiguration = !empty($ssoConfiguration['value']) ? json_decode($ssoConfiguration['value'], true) : null;
+            $ssoConfiguration = ConfigurationModel::getByPrivilege(
+                [
+                    'privilege' => 'admin_sso',
+                    'select'    => ['value']
+                ]
+            );
+            $ssoConfiguration = !empty($ssoConfiguration['value'])
+                ? json_decode($ssoConfiguration['value'], true)
+                : null;
             $authUri = $ssoConfiguration['url'] ?? null;
         } elseif ($loggingMethod['id'] == 'openam') {
             $configuration = CoreConfigModel::getJsonLoaded(['path' => 'config/openAM.json']);
             $authUri = $configuration['connectionUrl'] ?? null;
         }
 
-        $emailConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
-        $emailConfiguration = !empty($emailConfiguration['value']) ? json_decode($emailConfiguration['value'], true) : null;
+
+        $emailConfiguration = ConfigurationModel::getByPrivilege(
+            [
+                'privilege' => 'admin_email_server',
+                'select'    => ['value']
+            ]
+        );
+        $emailConfiguration = !empty($emailConfiguration['value'])
+            ? json_decode($emailConfiguration['value'], true)
+            : null;
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         $externalSignatoryBook = null;
@@ -97,7 +138,11 @@ class AuthenticationController
                 } else {
                     foreach ($loadedXml->signatoryBook as $value) {
                         if ((string)$value->id === $externalSignatoryBook['id']) {
-                            $externalSignatoryBook['integratedWorkflow'] = filter_var((string)$value->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                            $externalSignatoryBook['integratedWorkflow'] =
+                                filter_var(
+                                    (string)$value->integratedWorkflow,
+                                    FILTER_VALIDATE_BOOLEAN
+                                ) ?? false;
                             break;
                         }
                     }
@@ -134,6 +179,11 @@ class AuthenticationController
         return $response->withJson($return);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
     public function getValidUrl(Request $request, Response $response): Response
     {
         if (!is_file('custom/custom.json')) {
@@ -159,7 +209,12 @@ class AuthenticationController
         return $response->withJson(['url' => $url]);
     }
 
-    public static function authentication($authorizationHeaders = [])
+    /**
+     * @param array $authorizationHeaders
+     * @return mixed|null
+     * @throws Exception
+     */
+    public static function authentication(array $authorizationHeaders = []): mixed
     {
         $userId = null;
 
@@ -172,8 +227,19 @@ class AuthenticationController
             }
         }
 
-        if (!empty($_SERVER['PHP_AUTH_USER']) && !empty($_SERVER['PHP_AUTH_PW']) && $canBasicAuth) {
-            if (AuthenticationModel::authentication(['login' => $_SERVER['PHP_AUTH_USER'], 'password' => $_SERVER['PHP_AUTH_PW']])) {
+        if (
+            !empty($_SERVER['PHP_AUTH_USER'])
+            && !empty($_SERVER['PHP_AUTH_PW'])
+            && $canBasicAuth
+        ) {
+            if (
+                AuthenticationModel::authentication(
+                    [
+                        'login'    => $_SERVER['PHP_AUTH_USER'],
+                        'password' => $_SERVER['PHP_AUTH_PW']
+                    ]
+                )
+            ) {
                 $user = UserModel::getByLogin(['select' => ['id', 'mode'], 'login' => $_SERVER['PHP_AUTH_USER']]);
                 $userId = $user['id'];
             }
@@ -181,7 +247,7 @@ class AuthenticationController
             if (!empty($authorizationHeaders)) {
                 $token = null;
                 foreach ($authorizationHeaders as $authorizationHeader) {
-                    if (strpos($authorizationHeader, 'Bearer') === 0) {
+                    if (str_starts_with($authorizationHeader, 'Bearer')) {
                         $token = str_replace('Bearer ', '', $authorizationHeader);
                     }
                 }
@@ -212,6 +278,8 @@ class AuthenticationController
     }
 
     /**
+     * @param array $args
+     * @return array|true[]
      * @throws Exception
      */
     public static function isRouteAvailable(array $args): array
@@ -220,15 +288,39 @@ class AuthenticationController
         ValidatorModel::intVal($args, ['userId']);
         ValidatorModel::stringType($args, ['currentRoute', 'currentMethod']);
 
-        $user = UserModel::getById(['select' => ['status', 'password_modification_date', 'mode', 'authorized_api'], 'id' => $args['userId']]);
+        $user = UserModel::getById(
+            [
+                'select' => ['status', 'password_modification_date', 'mode', 'authorized_api'],
+                'id'     => $args['userId']
+            ]
+        );
 
         if ($user['mode'] == 'rest') {
             $authorizedApi = json_decode($user['authorized_api'], true);
-            if (!empty($authorizedApi) && !in_array($args['currentMethod'] . $args['currentRoute'], $authorizedApi)) {
+            if (
+                !empty($authorizedApi)
+                && !in_array(
+                    $args['currentMethod'] .
+                    $args['currentRoute'],
+                    $authorizedApi
+                )
+            ) {
                 return ['isRouteAvailable' => false, 'errors' => 'This route is not authorized for this user'];
             }
             return ['isRouteAvailable' => true];
-        } elseif ($user['status'] == 'ABS' && !in_array($args['currentRoute'], ['/users/{id}/status', '/currentUser/profile', '/header', '/passwordRules', '/users/{id}/password'])) {
+        } elseif (
+            $user['status'] == 'ABS'
+            && !in_array(
+                $args['currentRoute'],
+                [
+                    '/users/{id}/status',
+                    '/currentUser/profile',
+                    '/header',
+                    '/passwordRules',
+                    '/users/{id}/password'
+                ]
+            )
+        ) {
             return ['isRouteAvailable' => false, 'errors' => 'User is ABS and must be activated'];
         }
 
@@ -238,9 +330,9 @@ class AuthenticationController
             if ($loggingMethod['id'] == 'standard') {
                 $passwordRules = PasswordModel::getEnabledRules();
                 if (!empty($passwordRules['renewal'])) {
-                    $currentDate = new \DateTime();
-                    $lastModificationDate = new \DateTime($user['password_modification_date']);
-                    $lastModificationDate->add(new \DateInterval("P{$passwordRules['renewal']}D"));
+                    $currentDate = new DateTime();
+                    $lastModificationDate = new DateTime($user['password_modification_date']);
+                    $lastModificationDate->add(new DateInterval("P{$passwordRules['renewal']}D"));
 
                     if ($currentDate > $lastModificationDate) {
                         return ['isRouteAvailable' => false, 'errors' => 'User must change his password'];
@@ -253,9 +345,11 @@ class AuthenticationController
     }
 
     /**
+     * @param array $args
+     * @return array|true
      * @throws Exception
      */
-    public static function handleFailedAuthentication(array $args)
+    public static function handleFailedAuthentication(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
@@ -263,11 +357,19 @@ class AuthenticationController
         $passwordRules = PasswordModel::getEnabledRules();
 
         if (!empty($passwordRules['lockAttempts'])) {
-            $user = UserModel::getById(['select' => ['failed_authentication', 'locked_until'], 'id' => $args['userId']]);
+            $user = UserModel::getById(
+                [
+                    'select' => [
+                        'failed_authentication',
+                        'locked_until'
+                    ],
+                    'id'     => $args['userId']
+                ]
+            );
             $set = [];
             if (!empty($user['locked_until'])) {
-                $currentDate = new \DateTime();
-                $lockedUntil = new \DateTime($user['locked_until']);
+                $currentDate = new DateTime();
+                $lockedUntil = new DateTime($user['locked_until']);
                 if ($lockedUntil < $currentDate) {
                     $set['locked_until'] = null;
                     $user['failed_authentication'] = 0;
@@ -277,13 +379,21 @@ class AuthenticationController
             }
 
             $set['failed_authentication'] = $user['failed_authentication'] + 1;
-            UserModel::update([
-                'set'   => $set,
-                'where' => ['id = ?'],
-                'data'  => [$args['userId']]
-            ]);
+            UserModel::update(
+                [
+                    'set'   => $set,
+                    'where' => ['id = ?'],
+                    'data'  => [
+                        $args['userId']
+                    ]
+                ]
+            );
 
-            if (!empty($user['failed_authentication']) && ($user['failed_authentication'] + 1) >= $passwordRules['lockAttempts'] && !empty($passwordRules['lockTime'])) {
+            if (
+                !empty($user['failed_authentication'])
+                && ($user['failed_authentication'] + 1) >= $passwordRules['lockAttempts']
+                && !empty($passwordRules['lockTime'])
+            ) {
                 $lockedUntil = time() + 60 * $passwordRules['lockTime'];
                 UserModel::update([
                     'set'   => ['locked_until' => date('Y-m-d H:i:s', $lockedUntil)],
@@ -298,15 +408,21 @@ class AuthenticationController
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
      * @throws Exception
      */
-    public function authenticate(Request $request, Response $response)
+    public function authenticate(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if (in_array($loggingMethod['id'], ['standard', 'ldap'])) {
-            if (!Validator::stringType()->notEmpty()->validate($body['login'] ?? null) || !Validator::stringType()->notEmpty()->validate($body['password'])) {
+            if (
+                !Validator::stringType()->notEmpty()->validate($body['login'] ?? null)
+                || !Validator::stringType()->notEmpty()->validate($body['password'])
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
             }
         }
@@ -316,9 +432,19 @@ class AuthenticationController
             if (!AuthenticationController::isUserAuthorized(['login' => $login])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Authentication Failed']);
             }
-            $authenticated = AuthenticationController::standardConnection(['login' => $login, 'password' => $body['password']]);
+            $authenticated = AuthenticationController::standardConnection(
+                [
+                    'login'    => $login,
+                    'password' => $body['password']
+                ]
+            );
             if (!empty($authenticated['date'])) {
-                return $response->withStatus(401)->withJson(['errors' => $authenticated['errors'], 'date' => $authenticated['date']]);
+                return $response->withStatus(401)->withJson(
+                    [
+                        'errors' => $authenticated['errors'],
+                        'date'   => $authenticated['date']
+                    ]
+                );
             } elseif (!empty($authenticated['errors'])) {
                 return $response->withStatus(401)->withJson(['errors' => $authenticated['errors']]);
             }
@@ -327,7 +453,12 @@ class AuthenticationController
             if (!AuthenticationController::isUserAuthorized(['login' => $login])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Authentication Failed']);
             }
-            $authenticated = AuthenticationController::ldapConnection(['login' => $login, 'password' => $body['password']]);
+            $authenticated = AuthenticationController::ldapConnection(
+                [
+                    'login'    => $login,
+                    'password' => $body['password']
+                ]
+            );
             if (!empty($authenticated['errors'])) {
                 return $response->withStatus(401)->withJson(['errors' => $authenticated['errors']]);
             }
@@ -403,7 +534,12 @@ class AuthenticationController
         $refreshToken = AuthenticationController::getRefreshJWT();
         $user['refresh_token'][] = $refreshToken;
         UserModel::update([
-            'set'   => ['reset_token' => null, 'refresh_token' => json_encode($user['refresh_token']), 'failed_authentication' => 0, 'locked_until' => null],
+            'set'   => [
+                'reset_token'           => null,
+                'refresh_token'         => json_encode($user['refresh_token']),
+                'failed_authentication' => 0,
+                'locked_until'          => null
+            ],
             'where' => ['id = ?'],
             'data'  => [$user['id']]
         ]);
@@ -423,6 +559,12 @@ class AuthenticationController
         return $response->withStatus(204);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
     public function logout(Request $request, Response $response): Response
     {
         $loggingMethod = CoreConfigModel::getLoggingMethod();
@@ -452,9 +594,11 @@ class AuthenticationController
     }
 
     /**
+     * @param array $args
+     * @return array|string[]|true
      * @throws Exception
      */
-    private static function standardConnection(array $args)
+    private static function standardConnection(array $args): array|bool
     {
         $login = $args['login'];
         $password = $args['password'];
@@ -472,7 +616,12 @@ class AuthenticationController
         return true;
     }
 
-    private static function ldapConnection(array $args)
+    /**
+     * @param array $args
+     * @return array|bool
+     * @throws Exception
+     */
+    private static function ldapConnection(array $args): array|bool
     {
         $login = $args['login'];
         $password = $args['password'];
@@ -535,6 +684,10 @@ class AuthenticationController
         return true;
     }
 
+    /**
+     * @return array|string[]
+     * @throws Exception
+     */
     private static function casConnection(): array
     {
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
@@ -586,6 +739,10 @@ class AuthenticationController
         return ['login' => $login];
     }
 
+    /**
+     * @return array|string[]
+     * @throws Exception
+     */
     private static function casDisconnection(): array
     {
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
@@ -623,6 +780,9 @@ class AuthenticationController
         return ['logoutUrl' => $logoutUrl];
     }
 
+    /**
+     * @return array|string[]
+     */
     private static function ssoConnection(): array
     {
         $ssoConfiguration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_sso', 'select' => ['value']]);
@@ -658,11 +818,23 @@ class AuthenticationController
         return ['login' => $login];
     }
 
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws Exception
+     */
     private static function keycloakConnection(array $args): array
     {
         $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
 
-        if (empty($keycloakConfig) || empty($keycloakConfig['authServerUrl']) || empty($keycloakConfig['realm']) || empty($keycloakConfig['clientId']) || empty($keycloakConfig['clientSecret']) || empty($keycloakConfig['redirectUri'])) {
+        if (
+            empty($keycloakConfig)
+            || empty($keycloakConfig['authServerUrl'])
+            || empty($keycloakConfig['realm'])
+            || empty($keycloakConfig['clientId'])
+            || empty($keycloakConfig['clientSecret'])
+            || empty($keycloakConfig['redirectUri'])
+        ) {
             return ['errors' => 'Keycloak not configured'];
         }
 
@@ -698,6 +870,10 @@ class AuthenticationController
         }
     }
 
+    /**
+     * @return array
+     * @throws Exception
+     */
     private static function keycloakDisconnection(): array
     {
         $keycloakConfig = CoreConfigModel::getKeycloakConfiguration();
@@ -719,11 +895,19 @@ class AuthenticationController
         return ['logoutUrl' => $url];
     }
 
+    /**
+     * @return array|string[]
+     * @throws Exception
+     */
     private static function openAMConnection(): array
     {
         $configuration = CoreConfigModel::getJsonLoaded(['path' => 'config/openAM.json']);
 
-        if (empty($configuration['attributeUrl']) || empty($configuration['cookieName']) || empty($configuration['attributeName'])) {
+        if (
+            empty($configuration['attributeUrl'])
+            || empty($configuration['cookieName'])
+            || empty($configuration['attributeName'])
+        ) {
             return ['errors' => 'OpenAM configuration missing'];
         }
 
@@ -731,7 +915,9 @@ class AuthenticationController
             return ['errors' => 'Authentication Failed : User cookie is not set'];
         }
         $curlResponse = CurlModel::exec([
-            'url'    => "{$configuration['attributeUrl']}?subjectid={$_COOKIE[$configuration['cookieName']]}&attributenames={$configuration['attributeName']}",
+            'url'    => "{$configuration['attributeUrl']}
+            ?subjectid={$_COOKIE[$configuration['cookieName']]}
+            &attributenames={$configuration['attributeName']}",
             'method' => 'GET',
         ]);
 
@@ -744,6 +930,9 @@ class AuthenticationController
         return ['login' => $login];
     }
 
+    /**
+     * @return array|string[]
+     */
     private static function azureSamlConnection(): array
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -752,7 +941,7 @@ class AuthenticationController
         }
 
         require_once($libDir . 'simplesamlphp/lib/_autoload.php');
-        $as = new \SimpleSAML\Auth\Simple('default-sp');
+        $as = new Simple('default-sp');
         $as->requireAuth([
             'ReturnTo'        => UrlController::getCoreUrl(),
             'skipRedirection' => true
@@ -767,6 +956,9 @@ class AuthenticationController
         return ['login' => $login];
     }
 
+    /**
+     * @return array|string[]
+     */
     private static function azureSamlDisconnection(): array
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
@@ -775,13 +967,18 @@ class AuthenticationController
         }
 
         require_once($libDir . 'simplesamlphp/lib/_autoload.php');
-        $as = new \SimpleSAML\Auth\Simple('default-sp');
+        $as = new Simple('default-sp');
         $url = $as->getLogoutURL();
 
         return ['logoutUrl' => $url];
     }
 
-    public function getRefreshedToken(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getRefreshedToken(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -810,6 +1007,10 @@ class AuthenticationController
         return $response->withJson(['token' => AuthenticationController::getJWT()]);
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public static function getJWT(): string
     {
         $sessionTime = AuthenticationController::MAX_DURATION_TOKEN;
@@ -823,15 +1024,30 @@ class AuthenticationController
             }
         }
         if ($file['config']['newInternalParaph'] ?? null) {
-            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login', 'external_id']]);
+            $user = UserModel::getById(
+                [
+                    'id'     => $GLOBALS['id'],
+                    'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login', 'external_id']
+                ]
+            );
             $externalId = json_decode($user['external_id'], true);
             if ($externalId['maarchParapheur'] ?? null) {
                 $user['external_id'] = $externalId['maarchParapheur'];
             } else {
-                $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+                $user = UserModel::getById(
+                    [
+                        'id'     => $GLOBALS['id'],
+                        'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']
+                    ]
+                );
             }
         } else {
-            $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']]);
+            $user = UserModel::getById(
+                [
+                    'id'     => $GLOBALS['id'],
+                    'select' => ['id', 'firstname', 'lastname', 'status', 'user_id as login']
+                ]
+            );
         }
 
         $token = [
@@ -842,6 +1058,10 @@ class AuthenticationController
         return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
+    /**
+     * @return string
+     * @throws Exception
+     */
     public static function getRefreshJWT(): string
     {
         $sessionTime = AuthenticationController::MAX_DURATION_TOKEN;
@@ -861,7 +1081,11 @@ class AuthenticationController
         return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
-    public static function getResetJWT($args = []): string
+    /**
+     * @param array $args
+     * @return string
+     */
+    public static function getResetJWT(array $args = []): string
     {
         $token = [
             'exp'  => time() + $args['expirationTime'],
@@ -873,14 +1097,34 @@ class AuthenticationController
         return JWT::encode($token, CoreConfigModel::getEncryptKey());
     }
 
+    /**
+     * @param array $args
+     * @return bool
+     */
     public static function sendAccountActivationNotification(array $args): bool
     {
-        $resetToken = AuthenticationController::getResetJWT(['id' => $args['userId'], 'expirationTime' => 1209600]); // 14 days
-        UserModel::update(['set' => ['reset_token' => $resetToken], 'where' => ['id = ?'], 'data' => [$args['userId']]]);
+        $resetToken = AuthenticationController::getResetJWT(
+            [
+                'id'             => $args['userId'],
+                'expirationTime' => 1209600
+            ]
+        ); // 14 days
+        UserModel::update(
+            [
+                'set'   => ['reset_token' => $resetToken],
+                'where' => ['id = ?'],
+                'data'  => [$args['userId']]
+            ]
+        );
 
         $url = UrlController::getCoreUrl() . 'dist/index.html#/reset-password?token=' . $resetToken;
 
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_email_server', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege(
+            [
+                'privilege' => 'admin_email_server',
+                'select'    => ['value']
+            ]
+        );
         $configuration = json_decode($configuration['value'], true);
         if (!empty($configuration['from'])) {
             $sender = $configuration['from'];
@@ -894,7 +1138,16 @@ class AuthenticationController
                 'sender'     => ['email' => $sender],
                 'recipients' => [$args['userEmail']],
                 'object'     => _NOTIFICATIONS_USER_CREATION_SUBJECT,
-                'body'       => _NOTIFICATIONS_USER_CREATION_BODY . '<a href="' . $url . '">' . $url . '</a><br/><br/>' . _YOUR_ID . ' ' . $user['user_id'] . _NOTIFICATIONS_USER_CREATION_FOOTER,
+                'body'       => _NOTIFICATIONS_USER_CREATION_BODY
+                    . '<a href="'
+                    . $url
+                    . '">'
+                    . $url
+                    . '</a><br/><br/>'
+                    . _YOUR_ID
+                    . ' '
+                    . $user['user_id']
+                    . _NOTIFICATIONS_USER_CREATION_FOOTER,
                 'isHtml'     => true,
                 'status'     => 'WAITING'
             ]
@@ -903,6 +1156,10 @@ class AuthenticationController
         return true;
     }
 
+    /**
+     * @param array $args
+     * @return bool
+     */
     private static function isUserAuthorized(array $args): bool
     {
         $user = UserModel::getByLowerLogin(['login' => $args['login'], 'select' => ['mode', 'status']]);
@@ -913,12 +1170,25 @@ class AuthenticationController
         return true;
     }
 
+    /**
+     * @param array $args
+     * @return bool
+     */
     public static function canAccessInstallerWithoutAuthentication(array $args): bool
     {
         $installerRoutes = [
-            'GET/installer/prerequisites', 'GET/installer/databaseConnection', 'GET/installer/sqlDataFiles', 'GET/installer/docservers', 'GET/installer/custom',
-            'GET/installer/customs', 'POST/installer/custom', 'POST/installer/database', 'POST/installer/docservers', 'POST/installer/customization',
-            'PUT/installer/administrator', 'DELETE/installer/lock'
+            'GET/installer/prerequisites',
+            'GET/installer/databaseConnection',
+            'GET/installer/sqlDataFiles',
+            'GET/installer/docservers',
+            'GET/installer/custom',
+            'GET/installer/customs',
+            'POST/installer/custom',
+            'POST/installer/database',
+            'POST/installer/docservers',
+            'POST/installer/customization',
+            'PUT/installer/administrator',
+            'DELETE/installer/lock'
         ];
         $expectedNames = [
             '.',

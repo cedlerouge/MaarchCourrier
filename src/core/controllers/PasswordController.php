@@ -161,7 +161,13 @@ class PasswordController
             $encryptKeyHash  = openssl_digest($encryptKey, 'sha256');
 
             $initialisationVector = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipherMethod));
-            $encrypted = openssl_encrypt($args['dataToEncrypt'], $cipherMethod, $encryptKeyHash, OPENSSL_RAW_DATA, $initialisationVector);
+            $encrypted = openssl_encrypt(
+                $args['dataToEncrypt'],
+                $cipherMethod,
+                $encryptKeyHash,
+                OPENSSL_RAW_DATA,
+                $initialisationVector
+            );
 
             if ($encrypted === false) {
                 LogsController::add([
@@ -215,9 +221,17 @@ class PasswordController
                     'moduleId'  => 'Encryption/Decryption',
                     'level'     => 'ERROR',
                     'eventType' => 'Decrypt',
-                    'eventId'   => 'Decryption failed: data length ' . strlen($encryptedData) . ' is less than iv length ' . $initialisationVectorLength
+                    'eventId'   => 'Decryption failed: data length '
+                        . strlen($encryptedData)
+                        . ' is less than iv length '
+                        . $initialisationVectorLength
                 ]);
-                throw new Exception('Decryption failed: data length ' . strlen($encryptedData) . ' is less than iv length ' . $initialisationVectorLength);
+                throw new Exception(
+                    'Decryption failed: data length '
+                    . strlen($encryptedData)
+                    . ' is less than iv length '
+                    . $initialisationVectorLength
+                );
             }
 
             // Extract the initialisation vector and encrypted data
@@ -225,7 +239,13 @@ class PasswordController
             $encryptedData          = substr($encryptedData, $initialisationVectorLength);
             $encryptKeyHash         = openssl_digest($encryptKey, 'sha256');
 
-            $decryptedResult = openssl_decrypt($encryptedData, $cipherMethod, $encryptKeyHash, OPENSSL_RAW_DATA, $initialisationVector);
+            $decryptedResult = openssl_decrypt(
+                $encryptedData,
+                $cipherMethod,
+                $encryptKeyHash,
+                OPENSSL_RAW_DATA,
+                $initialisationVector
+            );
 
             if ($decryptedResult === false) {
                 LogsController::add([

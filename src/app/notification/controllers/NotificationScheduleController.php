@@ -25,7 +25,13 @@ use SrcCore\models\CoreConfigModel;
 
 class NotificationScheduleController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -38,7 +44,13 @@ class NotificationScheduleController
     }
 
     // Save Crontab
-    public function create(Request $request, Response $response)
+
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -55,7 +67,10 @@ class NotificationScheduleController
                     $errors[] = $key . ' is empty';
                 }
 
-                if ($key != 'cmd' && $key != 'state' && $key != 'description' && !preg_match('#^[0-9\/*][0-9]?[,\/-]?([0-9]?){2}#', $value)) {
+                if (
+                    $key != 'cmd' && $key != 'state' && $key != 'description' &&
+                    !preg_match('#^[0-9\/*][0-9]?[,\/-]?([0-9]?){2}#', $value)
+                ) {
                     $errors[] = 'wrong format for ' . $key;
                 }
             }
@@ -69,12 +84,22 @@ class NotificationScheduleController
         return $response->withJson(true);
     }
 
+    /**
+     * @return array
+     * @throws Exception
+     */
     protected static function getAuthorizedNotifications(): array
     {
-        $aNotification = NotificationModel::getEnableNotifications(['select' => ['notification_id', 'notification_sid', 'description']]);
+        $aNotification = NotificationModel::getEnableNotifications([
+            'select' => ['notification_id', 'notification_sid', 'description']
+        ]);
         $notificationsArray = [];
         $customId = CoreConfigModel::getCustomId();
-        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace(
+            'custom/' . $customId . '/src/app/notification/controllers',
+            '',
+            __DIR__
+        );
         $corePath = str_replace('src/app/notification/controllers', '', $corePath);
 
         foreach ($aNotification as $result) {
@@ -99,20 +124,34 @@ class NotificationScheduleController
         return $notificationsArray;
     }
 
+    /**
+     * @param $crontabToSave
+     * @return bool
+     */
     protected static function checkCrontab($crontabToSave): bool
     {
         $customId = CoreConfigModel::getCustomId();
         $crontabBeforeSave = NotificationScheduleModel::getCrontab();
-        $corePath = str_replace('custom/' . $customId . '/src/app/notification/controllers', '', __DIR__);
+        $corePath = str_replace(
+            'custom/' . $customId . '/src/app/notification/controllers',
+            '',
+            __DIR__
+        );
         $corePath = str_replace('src/app/notification/controllers', '', $corePath);
 
         $returnValue = false;
         foreach ($crontabToSave as $id => $cronValue) {
             $crontabBeforeSave[$id] = $crontabBeforeSave[$id] ?? null;
-            if ($cronValue['state'] != 'hidden' && $crontabBeforeSave[$id] != null && $crontabBeforeSave[$id]['state'] == 'hidden') {
+            if (
+                $cronValue['state'] != 'hidden' && $crontabBeforeSave[$id] != null &&
+                $crontabBeforeSave[$id]['state'] == 'hidden'
+            ) {
                 $returnValue = false;
                 break;
-            } elseif ($cronValue['state'] == 'hidden' && $crontabBeforeSave[$id] != null && $crontabBeforeSave[$id]['state'] != 'hidden') {
+            } elseif (
+                $cronValue['state'] == 'hidden' && $crontabBeforeSave[$id] != null &&
+                $crontabBeforeSave[$id]['state'] != 'hidden'
+            ) {
                 $returnValue = false;
                 break;
             } elseif ($cronValue['state'] == 'new' || $cronValue['state'] == 'normal') {
@@ -122,7 +161,7 @@ class NotificationScheduleController
                     $pathToFollow = $corePath;
                 }
                 $returnValue = true;
-                if (strpos($cronValue['cmd'], $pathToFollow . 'bin/notification/scripts/') !== 0) {
+                if (!str_starts_with($cronValue['cmd'], $pathToFollow . 'bin/notification/scripts/')) {
                     $returnValue = false;
                     break;
                 }
@@ -135,9 +174,12 @@ class NotificationScheduleController
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
      * @throws Exception
      */
-    public function createScriptNotification(Request $request, Response $response)
+    public function createScriptNotification(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_notif', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -164,7 +206,9 @@ class NotificationScheduleController
         $notification_id = $data['notification_id'];
         $event_id = $data['event_id'];
 
-        NotificationScheduleModel::createScriptNotification(['notification_sid' => $notification_sid, 'event_id' => $event_id, 'notification_id' => $notification_id]);
+        NotificationScheduleModel::createScriptNotification(
+            ['notification_sid' => $notification_sid, 'event_id' => $event_id, 'notification_id' => $notification_id]
+        );
 
         return $response->withJson(true);
     }
