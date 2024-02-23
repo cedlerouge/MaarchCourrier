@@ -5,23 +5,20 @@ import { HeaderService } from './header.service';
 import { DatePipe } from '@angular/common';
 import { environment } from '../environments/environment';
 
-
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class FunctionsService {
-
     constructor(
         public translate: TranslateService,
         private headerService: HeaderService,
         private latinisePipe: LatinisePipe,
         private datePipe: DatePipe
-    ) { }
+    ) {}
 
     empty(value: any): boolean {
         if (value === null || value === undefined) {
             return true;
-
         } else if (Array.isArray(value)) {
             if (value.length > 0) {
                 return false;
@@ -40,8 +37,8 @@ export class FunctionsService {
     }
 
     isNumber(evt: any): boolean {
-        evt = (evt) ? evt : window.event;
-        const charCode = (evt.which) ? evt.which : evt.keyCode;
+        evt = evt ? evt : window.event;
+        const charCode = evt.which ? evt.which : evt.keyCode;
         if (charCode > 31 && (charCode < 48 || charCode > 57)) {
             return false;
         }
@@ -87,7 +84,7 @@ export class FunctionsService {
     formatDateObjectToDateString(date: Date, limitMode: boolean = false, format: string = 'dd-mm-yyyy') {
         if (date !== null) {
             const formatDate: any[] = [];
-            const regex = /[^a-zA-Z0-9]/g ;
+            const regex = /[^a-zA-Z0-9]/g;
             const delimiter: string = format.trim().match(regex)[0];
             format.split(delimiter).forEach((element: any) => {
                 if (element === 'dd') {
@@ -171,7 +168,7 @@ export class FunctionsService {
      * Sanitizes HTML content to remove all script elements, event attributes, and external script URLs.
      * @param {string} html - The HTML content to be sanitized.
      * @returns {string} - The sanitized HTML content without any scripts or related elements.
-    */
+     */
     sanitizeHtml(html: string): string {
         // Parse the input HTML string into a DOM object
         const domParser = new DOMParser().parseFromString(html, 'text/html');
@@ -184,7 +181,7 @@ export class FunctionsService {
 
         // Remove event attributes (such as onclick, onerror, etc.) from all elements
         const elementsWithEventAttributes = domParser.querySelectorAll('*');
-        elementsWithEventAttributes.forEach(element => {
+        elementsWithEventAttributes.forEach((element) => {
             element.removeAttribute('onabort');
             element.removeAttribute('onblur');
             element.removeAttribute('onchange');

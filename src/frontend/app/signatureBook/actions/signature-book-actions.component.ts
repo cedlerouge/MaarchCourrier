@@ -24,10 +24,10 @@ export class SignatureBookActionsComponent implements OnInit {
 
     subscription: Subscription;
 
-    documentDatas: {resId: number, title: string, encodedDocument: Blob } = {
+    documentDatas: { resId: number; title: string; encodedDocument: Blob } = {
         resId: null,
         title: '',
-        encodedDocument: null
+        encodedDocument: null,
     };
 
     loading: boolean = true;
@@ -42,21 +42,24 @@ export class SignatureBookActionsComponent implements OnInit {
         private actionsService: ActionsService,
         private router: Router
     ) {
-        this.subscription = this.actionsService.catchActionWithData().pipe(
-            tap((res: MessageActionInterface) => {
-                if (res.id === 'documentToCreate') {
-                    this.documentDatas = res.data;
-                    this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: any) => {
-                        this.documentDatas.encodedDocument = value;
-                    });
-                }
-            })
-        ).subscribe();
+        this.subscription = this.actionsService
+            .catchActionWithData()
+            .pipe(
+                tap((res: MessageActionInterface) => {
+                    if (res.id === 'documentToCreate') {
+                        this.documentDatas = res.data;
+                        this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: any) => {
+                            this.documentDatas.encodedDocument = value;
+                        });
+                    }
+                })
+            )
+            .subscribe();
     }
 
     async ngOnInit(): Promise<void> {
         await this.loadActions();
-        this.loading = false; 
+        this.loading = false;
     }
 
     openSignaturesList() {
@@ -65,7 +68,8 @@ export class SignatureBookActionsComponent implements OnInit {
 
     loadActions() {
         return new Promise((resolve) => {
-            this.actionsService.getActions(this.userId, this.groupId, this.basketId, this.resId)
+            this.actionsService
+                .getActions(this.userId, this.groupId, this.basketId, this.resId)
                 .pipe(
                     tap((actions: Action[]) => {
                         this.leftActions = [actions[1]];
@@ -116,8 +120,7 @@ export class SignatureBookActionsComponent implements OnInit {
     signWithStamp(stamp: StampInterface) {
         this.actionsService.emitActionWithData({
             id: 'selectedStamp',
-            data: stamp
+            data: stamp,
         });
     }
-
 }

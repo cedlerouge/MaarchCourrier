@@ -155,8 +155,8 @@ export class ActionsService implements OnDestroy {
 
             return true;
         } else {
-            console.log('Bad informations: ');
-            console.log({ 'action': action }, { 'userId': userId }, { 'groupId': groupId }, { 'basketId': basketId }, { 'resIds': resIds });
+            console.debug('Bad informations: ');
+            console.debug({ 'action': action }, { 'userId': userId }, { 'groupId': groupId }, { 'basketId': basketId }, { 'resIds': resIds });
 
             this.notify.error('Une erreur est survenue');
             return false;
@@ -195,8 +195,8 @@ export class ActionsService implements OnDestroy {
             try {
                 this[action.component]();
             } catch (error) {
-                console.log(error);
-                console.log(action.component);
+                console.debug(error);
+                console.debug(action.component);
                 alert(this.translate.instant('lang.actionNotExist'));
             }
         }
@@ -213,14 +213,14 @@ export class ActionsService implements OnDestroy {
                 const res: any = await this.canExecuteAction(resIds);
                 if (res === true) {
                     if (['viewDoc', 'documentDetails', 'signatureBookAction', 'processDocument', 'noConfirmAction'].indexOf(action.component) > -1) {
-                        this[action.component](action.data);
+                        this[action.component]();
                     } else {
                         try {
                             this.lockResource();
-                            this[action.component](action.data);
+                            this[action.component]();
                         } catch (error) {
-                            console.log(error);
-                            console.log(action);
+                            console.debug(error);
+                            console.debug(action);
                             this.unlockResourceAfterActionModal([]);
                             alert(this.translate.instant('lang.actionNotExist'));
                         }
@@ -230,8 +230,8 @@ export class ActionsService implements OnDestroy {
                 try {
                     this[action.component]();
                 } catch (error) {
-                    console.log(error);
-                    console.log(action);
+                    console.debug(error);
+                    console.debug(action);
                     alert(this.translate.instant('lang.actionNotExist'));
                 }
             }
@@ -407,7 +407,7 @@ export class ActionsService implements OnDestroy {
     }
 
     /* OPEN SPECIFIC ACTION */
-    confirmAction(options: any = null) {
+    confirmAction() {
 
         const dialogRef = this.dialog.open(ConfirmActionComponent, {
             panelClass: 'maarch-modal',
@@ -432,7 +432,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    closeMailAction(options: any = null) {
+    closeMailAction() {
         const dialogRef = this.dialog.open(CloseMailActionComponent, {
             disableClose: true,
             width: '500px',
@@ -455,7 +455,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    closeAndIndexAction(options: any = null) {
+    closeAndIndexAction() {
         const dialogRef = this.dialog.open(CloseAndIndexActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -478,7 +478,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    redirectInitiatorEntityAction(options: any = null) {
+    redirectInitiatorEntityAction() {
         const dialogRef = this.dialog.open(RedirectInitiatorEntityActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -501,7 +501,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    closeMailWithAttachmentsOrNotesAction(options: any = null) {
+    closeMailWithAttachmentsOrNotesAction() {
         const dialogRef = this.dialog.open(closeMailWithAttachmentsOrNotesActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -524,7 +524,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    updateAcknowledgementSendDateAction(options: any = null) {
+    updateAcknowledgementSendDateAction() {
         const dialogRef = this.dialog.open(UpdateAcknowledgementSendDateActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -547,7 +547,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    createAcknowledgementReceiptsAction(options: any = null) {
+    createAcknowledgementReceiptsAction() {
         const dialogRef = this.dialog.open(CreateAcknowledgementReceiptActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -570,7 +570,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    updateDepartureDateAction(options: any = null) {
+    updateDepartureDateAction() {
         const dialogRef = this.dialog.open(UpdateDepartureDateActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -593,7 +593,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    disabledBasketPersistenceAction(options: any = null) {
+    disabledBasketPersistenceAction() {
         const dialogRef = this.dialog.open(DisabledBasketPersistenceActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -616,7 +616,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    enabledBasketPersistenceAction(options: any = null) {
+    enabledBasketPersistenceAction() {
         const dialogRef = this.dialog.open(EnabledBasketPersistenceActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -639,7 +639,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    resMarkAsReadAction(options: any = null) {
+    resMarkAsReadAction() {
         const dialogRef = this.dialog.open(ResMarkAsReadActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -662,14 +662,14 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    viewDoc(options: any = null) {
+    viewDoc() {
         this.dialog.open(ViewDocActionComponent, {
             panelClass: ['maarch-full-height-modal', 'maarch-doc-modal'],
             data: this.setDatasActionToSend()
         });
     }
 
-    sendExternalSignatoryBookAction(options: any = null) {
+    sendExternalSignatoryBookAction() {
         const dialogRef = this.dialog.open(SendExternalSignatoryBookActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -705,7 +705,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendExternalNoteBookAction(options: any = null) {
+    sendExternalNoteBookAction() {
         const dialogRef = this.dialog.open(SendExternalNoteBookActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -728,7 +728,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    redirectAction(options: any = null) {
+    redirectAction() {
         const dialogRef = this.dialog.open(RedirectActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -750,7 +750,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendShippingAction(options: any = null) {
+    sendShippingAction() {
         const dialogRef = this.dialog.open(SendShippingActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -773,7 +773,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendSignatureBookAction(options: any = null) {
+    sendSignatureBookAction() {
         const dialogRef = this.dialog.open(SendSignatureBookActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -796,7 +796,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    continueVisaCircuitAction(options: any = null) {
+    continueVisaCircuitAction() {
         const dialogRef = this.dialog.open(ContinueVisaCircuitActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -820,7 +820,7 @@ export class ActionsService implements OnDestroy {
     }
 
 
-    noConfirmAction(options: any = null) {
+    noConfirmAction() {
         const dataActionToSend = this.setDatasActionToSend();
         if (dataActionToSend.resIds.length === 0) {
             this.http.post('../rest/resources', dataActionToSend.resource).pipe(
@@ -853,19 +853,19 @@ export class ActionsService implements OnDestroy {
         }
     }
 
-    processDocument(options: any = null) {
+    processDocument() {
         this.router.navigate([`/process/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resId/${this.currentResIds}`]);
     }
 
-    signatureBookAction(options: any = null) {
+    signatureBookAction() {
         this.router.navigate([`/signatureBook/users/${this.currentUserId}/groups/${this.currentGroupId}/baskets/${this.currentBasketId}/resources/${this.currentResIds}`]);
     }
 
-    documentDetails(options: any = null) {
+    documentDetails() {
         this.router.navigate([`/resources/${this.currentResIds}`]);
     }
 
-    rejectVisaBackToPreviousAction(options: any = null) {
+    rejectVisaBackToPreviousAction() {
         const dialogRef = this.dialog.open(RejectVisaBackToPrevousActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -888,7 +888,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    resetVisaAction(options: any = null) {
+    resetVisaAction() {
         const dialogRef = this.dialog.open(ResetVisaActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -911,7 +911,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    interruptVisaAction(options: any = null) {
+    interruptVisaAction() {
         const dialogRef = this.dialog.open(InterruptVisaActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -934,7 +934,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendToOpinionCircuitAction(options: any = null) {
+    sendToOpinionCircuitAction() {
         const dialogRef = this.dialog.open(SendAvisWorkflowComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -957,7 +957,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendToParallelOpinion(options: any = null) {
+    sendToParallelOpinion() {
         const dialogRef = this.dialog.open(SendAvisParallelComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -980,7 +980,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    continueOpinionCircuitAction(options: any = null) {
+    continueOpinionCircuitAction() {
         const dialogRef = this.dialog.open(ContinueAvisCircuitActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1003,7 +1003,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    giveOpinionParallelAction(options: any = null) {
+    giveOpinionParallelAction() {
         const dialogRef = this.dialog.open(GiveAvisParallelActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1026,7 +1026,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    validateParallelOpinionDiffusionAction(options: any = null) {
+    validateParallelOpinionDiffusionAction() {
         const dialogRef = this.dialog.open(ValidateAvisParallelComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1049,7 +1049,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    reconcileAction(options: any = null) {
+    reconcileAction() {
         const dialogRef = this.dialog.open(ReconcileActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1072,7 +1072,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendAlfrescoAction(options: any = null) {
+    sendAlfrescoAction() {
         const dialogRef = this.dialog.open(SendAlfrescoActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1095,7 +1095,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendMultigestAction(options: any = null) {
+    sendMultigestAction() {
         const dialogRef = this.dialog.open(SendMultigestActionComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1118,7 +1118,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    saveRegisteredMailAction(options: any = null) {
+    saveRegisteredMailAction() {
 
         const dialogRef = this.dialog.open(SaveRegisteredMailActionComponent, {
             panelClass: 'maarch-modal',
@@ -1143,7 +1143,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    saveAndPrintRegisteredMailAction(options: any = null) {
+    saveAndPrintRegisteredMailAction() {
 
         const dialogRef = this.dialog.open(SaveAndPrintRegisteredMailActionComponent, {
             panelClass: 'maarch-modal',
@@ -1168,7 +1168,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    saveAndIndexRegisteredMailAction(options: any = null) {
+    saveAndIndexRegisteredMailAction() {
         const dialogRef = this.dialog.open(SaveAndIndexRegisteredMailActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -1191,7 +1191,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    printRegisteredMailAction(options: any = null) {
+    printRegisteredMailAction() {
 
         const dialogRef = this.dialog.open(PrintRegisteredMailActionComponent, {
             panelClass: 'maarch-modal',
@@ -1216,7 +1216,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    printDepositListAction(options: any = null) {
+    printDepositListAction() {
         const dialogRef = this.dialog.open(PrintDepositListActionComponent, {
             panelClass: 'maarch-modal',
             disableClose: true,
@@ -1240,7 +1240,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    sendToRecordManagementAction(options: any = null) {
+    sendToRecordManagementAction() {
         const dialogRef = this.dialog.open(SendToRecordManagementComponent, {
             panelClass: 'maarch-modal',
             maxWidth: '100%',
@@ -1265,7 +1265,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    checkReplyRecordManagementAction(options: any = null) {
+    checkReplyRecordManagementAction() {
         const dialogRef = this.dialog.open(CheckReplyRecordManagementComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1288,7 +1288,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    resetRecordManagementAction(options: any = null) {
+    resetRecordManagementAction() {
         const dialogRef = this.dialog.open(ResetRecordManagementComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
@@ -1311,7 +1311,7 @@ export class ActionsService implements OnDestroy {
         ).subscribe();
     }
 
-    checkAcknowledgmentRecordManagementAction(options: any = null) {
+    checkAcknowledgmentRecordManagementAction() {
         const dialogRef = this.dialog.open(CheckAcknowledgmentRecordManagementComponent, {
             panelClass: 'maarch-modal',
             autoFocus: false,
