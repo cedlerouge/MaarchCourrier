@@ -11,6 +11,7 @@ import { LocalStorageService } from '@service/local-storage.service';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare function $j(selector: any): any;
 
 @Component({
