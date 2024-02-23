@@ -49,7 +49,7 @@ export class SignatureBookActionsComponent implements OnInit {
                     if (res.id === 'documentToCreate') {
                         this.documentDatas = res.data;
                         this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: any) => {
-                            this.documentDatas.encodedDocument = value;
+                            this.documentDatas.encodedDocument = value.split(',')[1];
                         });
                     }
                 })
