@@ -136,7 +136,7 @@ export class MaarchSbContentComponent implements OnDestroy {
                 .get(contentUrl, { responseType: 'blob' })
                 .pipe(
                     tap(async (res: Blob) => {
-                        resolve(await this.blobToBase64(res));
+                        resolve(await this.functionsService.blobToBase64(res));
                     }),
                     catchError((err: any) => {
                         this.notificationService.handleSoftErrors(err.error.errors);
@@ -145,14 +145,6 @@ export class MaarchSbContentComponent implements OnDestroy {
                     })
                 )
                 .subscribe();
-        });
-    }
-
-    blobToBase64(blob: Blob) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
         });
     }
 }
