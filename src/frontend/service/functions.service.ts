@@ -213,7 +213,7 @@ export class FunctionsService {
         return domParser.body.innerHTML;
     }
 
-    blobToBase64(blob: Blob) {
+    blobToBase64(blob: Blob): Promise<string> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
