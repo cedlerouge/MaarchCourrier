@@ -14,8 +14,8 @@
     </div>
     <ng-container #myPlugin></ng-container>
     <iframe
-        *ngIf="!pluginInstance && documentData"
-        [src]="documentContent"
+        *ngIf="!pluginInstance && documentData && !loading"
+        [src]="documentContent | safeBlob"
     ></iframe>
     <div class="empty-doc" *ngIf="!documentData && !loading">
         <i class="fa-solid fa-file-signature"></i>

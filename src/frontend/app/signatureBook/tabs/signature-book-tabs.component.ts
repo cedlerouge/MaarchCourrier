@@ -10,30 +10,33 @@ import { FunctionsService } from '@service/functions.service';
     styleUrls: ['signature-book-tabs.component.scss'],
 })
 export class MaarchSbTabsComponent implements OnInit {
-
     @Input() documents: Attachment[];
-    @Input() signable: boolean = false;
+    @Input() position: 'left' | 'right' = 'right';
 
     selectedId: number = 0;
 
-    constructor(
-        public functionsService: FunctionsService,
-        private actionsService: ActionsService
-    ) {}
+    constructor(public functionsService: FunctionsService, private actionsService: ActionsService) {}
 
     ngOnInit(): void {
         if (this.documents.length > 0) {
-            this.actionsService.emitActionWithData({ id: 'attachmentToSign', data: this.documents[0] })
+            this.actionsService.emitActionWithData({
+                id: 'attachmentSelected',
+                data: {
+                    attachment: this.documents[0],
+                    position: this.position,
+                },
+            });
         }
     }
 
     selectDocument(i: number, attachment: AttachmentInterface): void {
         this.selectedId = i;
-        if (this.signable) {
-            this.actionsService.emitActionWithData({
-                id: 'attachmentToSign',
-                data: attachment
-            });
-        }
+        this.actionsService.emitActionWithData({
+            id: 'attachmentSelected',
+            data: {
+                attachment: attachment,
+                position: this.position,
+            },
+        });
     }
 }
