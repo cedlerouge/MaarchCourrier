@@ -13,7 +13,7 @@
  */
 
 use MaarchCourrier\Core\Infrastructure\Error\ErrorHandler;
-use MaarchCourrier\SignatureBook\Infrastructure\Controllers\RetrieveConfigController;
+use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveConfigController;
 
 require '../vendor/autoload.php';
 
