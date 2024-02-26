@@ -20,7 +20,7 @@ class SignatureBookConfigRepository implements SignatureBookConfigInterface
         if (isset($config['config']['newInternalParaph'])) {
             $signatureBookConfig->setIsNewInternalParaph($config['config']['newInternalParaph'] ?? false);
 
-            if (isset($config['signatureBook']['url'])) {
+            if (isset($config['signatureBook']['url']) && $config['config']['newInternalParaph'] === true) {
                 $signatureBookConfig->setUrl($config['signatureBook']['url'] ?? '');
             }
         }
