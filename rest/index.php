@@ -643,7 +643,7 @@ $app->delete('/users/{id}/redirectedBaskets', \User\controllers\UserController::
 $app->put('/users/{id}/baskets', \User\controllers\UserController::class . ':updateBasketsDisplay');
 $app->put('/users/{id}/accountActivationNotification', \User\controllers\UserController::class . ':sendAccountActivationNotification');
 $app->put('/users/{id}/absence', \User\controllers\UserController::class . ':setAbsenceRange');
-$app->get('/users/{id}/visaSignatures', \MaarchCourrier\SignatureBook\Infrastructure\Controllers\RetrieveUserStampsController::class . ':getUserSignatureStamps');
+$app->get('/users/{id}/visaSignatures', \MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveUserStampsController::class . ':getUserSignatureStamps');
 
 $app->post('/password', \User\controllers\UserController::class . ':forgotPassword');
 $app->put('/password', \User\controllers\UserController::class . ':passwordInitialization');
