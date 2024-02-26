@@ -49,4 +49,9 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
     {
         return $this->resourceAlreadySigned;
     }
+
+    public function isAttachementSigned(int $resId): bool
+    {
+        return $this->resourceAlreadySigned;
+    }
 }

@@ -20,6 +20,7 @@ use Slim\Psr7\Factory\StreamFactory;
 use Slim\Psr7\Headers;
 use Slim\Psr7\Request;
 use Slim\Psr7\Uri;
+use SrcCore\controllers\AuthenticationController;
 use User\models\UserModel;
 
 class CourrierTestCase extends TestCase
@@ -37,6 +38,8 @@ class CourrierTestCase extends TestCase
         $GLOBALS['login'] = $login;
         $userInfo = UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
         $GLOBALS['id'] = $userInfo['id'];
+
+        $GLOBALS['token'] = AuthenticationController::getJWT();
     }
 
     public function changeCustom(string $customId)

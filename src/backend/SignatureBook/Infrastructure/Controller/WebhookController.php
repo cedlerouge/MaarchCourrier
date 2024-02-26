@@ -17,6 +17,8 @@ namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
@@ -33,10 +35,12 @@ class WebhookController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws AttachmentOutOfPerimeterProblem
      * @throws CurlRequestErrorProblem
      * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws AttachmentOutOfPerimeterProblem
      * @throws StoreResourceProblem
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws ResourceAlreadySignProblem
      */
     public function fetchAndStoreSignedDocumentOnWebhookTrigger(Request $request, Response $response, array $args): Response
     {

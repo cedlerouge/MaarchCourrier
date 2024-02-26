@@ -154,9 +154,22 @@ class RetrieveSignedResourceTest extends TestCase
     {
         $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
 
+        $signedResource = new SignedResource();
+        $signedResource->setResIdSigned(10);
+        $signedResource->setStatus("VAL");
+        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
+
+        $this->expectException(ResourceAlreadySignProblem::class);
+        $newId = $this->retrieveSignedResource->store($signedResource);
+    }
+
+    public function testCannotStoreSignedVersionOfAttachmentIfAttachmentAlreadyHaveASignedVersion(): void
+    {
+        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
 
         $signedResource = new SignedResource();
         $signedResource->setResIdSigned(10);
+        $signedResource->setResIdMaster(100);
         $signedResource->setStatus("VAL");
         $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 

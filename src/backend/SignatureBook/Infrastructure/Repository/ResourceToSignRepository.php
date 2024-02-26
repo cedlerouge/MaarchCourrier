@@ -24,7 +24,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     {
         return AttachmentModel::getById([
             'id' => $resId,
-            'select' => ['res_id_master', 'title', 'typist', 'identifier', 'recipient_id', 'recipient_type', 'format']
+            'select' => ['res_id_master', 'title', 'typist', 'identifier', 'recipient_id', 'recipient_type', 'format', 'status']
         ]);
     }
 
@@ -73,5 +73,14 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
         ]);
 
         return (!empty($signedDocument));
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function isAttachementSigned(int $resId): bool
+    {
+        $infos = $this->getAttachmentInformations($resId);
+        return ($infos['status'] === 'SIGN');
     }
 }

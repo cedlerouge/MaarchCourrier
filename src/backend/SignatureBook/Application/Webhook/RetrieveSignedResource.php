@@ -52,8 +52,8 @@ class RetrieveSignedResource
 
         $curlRequest = new CurlRequest();
         $curlRequest = $curlRequest->createFromArray([
-            'url'    => $body['retrieveDocUri'],
-            'method' => 'GET',
+            'url'        => $body['retrieveDocUri'],
+            'method'     => 'GET',
             'authBearer' => $accessToken
         ]);
 
@@ -93,6 +93,9 @@ class RetrieveSignedResource
             if (empty($attachment)) {
                 throw new AttachmentOutOfPerimeterProblem();
             } else {
+                if ($this->resourceToSignRepository->isAttachementSigned($signedResource->getResIdSigned())) {
+                    throw new ResourceAlreadySignProblem();
+                }
                 $id = $this->storeSignedResourceService->storeAttachement($signedResource, $attachment);
                 $this->resourceToSignRepository->updateAttachementStatus($signedResource->getResIdSigned());
             }
@@ -105,7 +108,10 @@ class RetrieveSignedResource
             if (!empty($storeResource['errors'])) {
                 throw new StoreResourceProblem($storeResource['errors']);
             } else {
-                $this->resourceToSignRepository->createSignVersionForResource($signedResource->getResIdSigned(), $storeResource);
+                $this->resourceToSignRepository->createSignVersionForResource(
+                    $signedResource->getResIdSigned(),
+                    $storeResource
+                );
                 $id = $signedResource->getResIdSigned();
             }
         }
