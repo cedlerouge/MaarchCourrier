@@ -12,20 +12,16 @@ class SignatureBookConfigRepository implements SignatureBookConfigInterface
     /**
      * @throws Exception
      */
-    public function getConfig(): ?SignatureBookConfig
+    public function getConfig(): SignatureBookConfig
     {
-        $signatureBookConfig = null;
+        $signatureBookConfig = new SignatureBookConfig();
         $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
 
-        if (!empty($config['signatureBook'])) {
-            $config = $config['signatureBook'];
-            $signatureBookConfig = new SignatureBookConfig();
+        if (isset($config['config']['newInternalParaph'])) {
+            $signatureBookConfig->setIsNewInternalParaph($config['config']['newInternalParaph'] ?? false);
 
-            $config['newInternalParaph'] = $config['newInternalParaph'] ?? false;
-            $signatureBookConfig->setIsNewInternalParaph($config['newInternalParaph']);
-
-            if ($config['newInternalParaph'] === true) {
-                $signatureBookConfig->setUrl($config['url'] ?? '');
+            if (isset($config['signatureBook']['url'])) {
+                $signatureBookConfig->setUrl($config['signatureBook']['url'] ?? '');
             }
         }
 

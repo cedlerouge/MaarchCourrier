@@ -13,9 +13,9 @@ class RetrieveConfig
     }
 
     /**
-     * @return SignatureBookConfig|null
+     * @return SignatureBookConfig
      */
-    public function getConfig(): ?SignatureBookConfig
+    public function getConfig(): SignatureBookConfig
     {
         return $this->config->getConfig();
     }

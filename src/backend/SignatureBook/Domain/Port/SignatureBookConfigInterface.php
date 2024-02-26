@@ -7,7 +7,7 @@ use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
 interface SignatureBookConfigInterface
 {
     /**
-     * @return SignatureBookConfig|null
+     * @return SignatureBookConfig
      */
-    public function getConfig(): ?SignatureBookConfig;
+    public function getConfig(): SignatureBookConfig;
 }

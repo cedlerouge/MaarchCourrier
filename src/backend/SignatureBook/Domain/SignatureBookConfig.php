@@ -9,6 +9,13 @@ class SignatureBookConfig implements JsonSerializable
     private bool $isNewInternalParaph;
     private string $url;
 
+
+    public function __construct()
+    {
+        $this->isNewInternalParaph = false;
+        $this->url = '';
+    }
+
     /**
      * @param array $array
      *
