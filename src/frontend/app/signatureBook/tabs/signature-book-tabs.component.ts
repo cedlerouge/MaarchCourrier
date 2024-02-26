@@ -10,7 +10,7 @@ import { FunctionsService } from '@service/functions.service';
     styleUrls: ['signature-book-tabs.component.scss'],
 })
 export class MaarchSbTabsComponent implements OnInit {
-    @Input() documents: Attachment[];
+    @Input() documents: Attachment[] = [];
     @Input() position: 'left' | 'right' = 'right';
 
     selectedId: number = 0;
