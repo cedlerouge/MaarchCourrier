@@ -14,6 +14,7 @@ import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
+import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -50,6 +51,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
     async ngOnInit(): Promise<void> {
         this.loading = true;
         await this.checkSignatureBook();
+        this.data.resource.signatureBookConfig.url = (this.data.resource.signatureBookConfig as SignatureBookInterface)?.url?.replace(/\/$/, '')
         this.loading = false;
         const data: any = {
             functions: this.functions,
@@ -59,8 +61,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
             additionalInfo: {
                 resource: this.data.resource.documentToCreate,
                 sender: `${this.headerService.user.firstname} ${this.headerService.user.lastname}`,
-                externalSignatoryBookUrl: (this.authService.externalSignatoryBook.url as string).replace(/\/$/, ''),
                 externalUserId: this.headerService.user.externalId,
+                signatureBookConfig: (this.data.resource.signatureBookConfig as SignatureBookInterface)
             },
         };
         this.componentInstance = await this.pluginManagerService.initPlugin(
@@ -120,7 +122,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         const realResSelected: number[] = this.data.resIds.filter(
             (resId: any) => this.resourcesErrors.map((resErr) => resErr.res_id).indexOf(resId) === -1
         );
-        if (this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
+        if ((this.data.resource.signatureBookConfig as SignatureBookInterface).isNewInternalParaph && this.componentInstance?.maarchFortifyService?.signatureMode === 'rgs_2stars') {
             this.componentInstance
                 .open()
                 .pipe(

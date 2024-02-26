@@ -7,6 +7,7 @@ import { StampInterface } from '@models/signature-book.model';
 import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Subscription, catchError, of, tap } from 'rxjs';
+import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -35,12 +36,15 @@ export class SignatureBookActionsComponent implements OnInit {
     leftActions: Action[] = [];
     rightActions: Action[] = [];
 
+    signatureBookConfig = new SignatureBookConfig();
+
     constructor(
         public http: HttpClient,
         public functions: FunctionsService,
         private notify: NotificationService,
         private actionsService: ActionsService,
-        private router: Router
+        private router: Router,
+        private signatureBookService: SignatureBookService
     ) {
         this.subscription = this.actionsService
             .catchActionWithData()
@@ -85,7 +89,8 @@ export class SignatureBookActionsComponent implements OnInit {
         });
     }
 
-    processAction(action: any) {
+    async processAction(action: any) {
+        this.signatureBookConfig = await this.signatureBookService.getInternalSignatureBookConfig();
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -96,7 +101,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        { ...data, documentToCreate: this.documentDatas },
+                        { ...data, documentToCreate: this.documentDatas, signatureBookConfig: this.signatureBookConfig },
                         false
                     );
                 }),
