@@ -9,7 +9,7 @@ use SrcCore\http\Response;
 
 class RetrieveConfigController
 {
-    public function getConfig(Request $request, Response $response, array $args): Response
+    public function getConfig(Request $request, Response $response): Response
     {
         $retrieveConfig = new RetrieveConfig(new SignatureBookConfigRepository());
         return $response->withJson($retrieveConfig->getConfig());
