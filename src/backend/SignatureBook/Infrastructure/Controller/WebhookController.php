@@ -25,6 +25,7 @@ use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
+use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 
@@ -44,6 +45,19 @@ class WebhookController
      */
     public function fetchAndStoreSignedDocumentOnWebhookTrigger(Request $request, Response $response, array $args): Response
     {
+        $body = $request->getParsedBody();
+        if (!Validator::notEmpty()->intVal()->validate($body['payload']['res_id'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'res_id is not set in payload']);
+        }
+
+        if (!Validator::notEmpty()->intVal()->validate($body['payload']['idParapheur'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'idParapheur is not set in payload']);
+        }
+
+        if (!Validator::notEmpty()->stringVal()->validate($body['retrieveDocUri'])) {
+            return $response->withStatus(400)->withJson(['errors' => 'retrieveDocUri is not set']);
+        }
+
         $resourceToSignRepository = new ResourceToSignRepository();
         $storeSignedResourceService = new StoreSignedResourceService();
         $currentUserInformations = new CurrentUserInformations();

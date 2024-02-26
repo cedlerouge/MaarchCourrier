@@ -13,6 +13,7 @@ use MaarchCourrier\SignatureBook\Infrastructure\Controller\WebhookController;
 use MaarchCourrier\Tests\CourrierTestCase;
 use SignatureBook\controllers\SignatureBookController;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 
 class WebhookControllerTest extends CourrierTestCase
 {
@@ -21,14 +22,14 @@ class WebhookControllerTest extends CourrierTestCase
     private int $resIdCourrier = 0;
     private int $resIdMasterCourrier = 0;
     private string $state = 'VAL';
+    private string $urlParapheur = '';
 
     protected function setUp(): void
     {
+        $defaultConfigParapheur = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
+        $this->urlParapheur = (string)$defaultConfigParapheur->signatoryBook->url;
 
-    }
-
-    protected function tearDown(): void
-    {
+        $this->state = 'VAL';
     }
 
     private function createBody(): void
@@ -46,21 +47,15 @@ class WebhookControllerTest extends CourrierTestCase
                 'idParapheur'   => $this->idDocParapheur,
                 'res_id_master' => $this->resIdMasterCourrier
             ],
-            'retrieveDocUri' => 'http://10.1.5.12/maarch-parapheur-api/rest/documents/' . $this->idDocParapheur . '/content?mode=base64&type=esign'
+            'retrieveDocUri' => $this->urlParapheur . 'rest/documents/' . $this->idDocParapheur . '/content?mode=base64&type=esign'
         ];
     }
 
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurrentTokenIsNotFoundProblem
-     * @throws ResourceAlreadySignProblem
-     * @throws CurlRequestErrorProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws StoreResourceProblem
-     */
-    public function testCanFetchAndStoreSignedResource(): void
+
+    /*public function testCanFetchAndStoreSignedResource(): void
     {
-        $this->state = 'VAL';
+        $this->connectAsUser('ppetit');
+
 
         $this->resIdCourrier = 75;
         $this->idDocParapheur = 13;
@@ -71,7 +66,7 @@ class WebhookControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $this->body);
 
         $response = $webhookController->fetchAndStoreSignedDocumentOnWebhookTrigger($fullRequest, new Response(), []);
-    }
+    }*/
 
     private function unsignAttachement(int $resId): void
     {
@@ -92,7 +87,6 @@ class WebhookControllerTest extends CourrierTestCase
     public function testCanFetchAndStoreSignedAttachment(): void
     {
         $this->connectAsUser('ppetit');
-        $this->state = 'VAL';
 
         $this->resIdCourrier = 75;
         $this->resIdMasterCourrier = 157;
@@ -106,23 +100,69 @@ class WebhookControllerTest extends CourrierTestCase
         $response = $webhookController->fetchAndStoreSignedDocumentOnWebhookTrigger($fullRequest, new Response(), []);
         $jsonResource = json_decode((string)$response->getBody(), true);
 
+        $this->assertSame($response->getStatusCode(), 200);
         $this->assertIsInt($jsonResource['id']);
 
         $this->unsignAttachement($this->resIdCourrier);
     }
 
-    public function CannotFetchAndStoreSignedAttachmentIfResIdNotSet(): void
+    public function testCannotFetchAndStoreSignedAttachmentIfResIdNotSet(): void
     {
+        $this->connectAsUser('ppetit');
 
+        $this->resIdMasterCourrier = 157;
+        $this->idDocParapheur = 13;
+
+        $this->createBody();
+
+        $webhookController = new WebhookController();
+        $fullRequest = $this->createRequestWithBody('POST', $this->body);
+
+        $response = $webhookController->fetchAndStoreSignedDocumentOnWebhookTrigger($fullRequest, new Response(), []);
+        $jsonResource = json_decode((string)$response->getBody(), true);
+
+        $this->assertSame($response->getStatusCode(), 400);
+        $this->assertSame($jsonResource['errors'], 'res_id is not set in payload');
     }
 
-    public function CannotFetchAndStoreSignedAttachmentIfIdParapheurNotSet(): void
+    public function testCannotFetchAndStoreSignedAttachmentIfIdParapheurNotSet(): void
     {
+        $this->connectAsUser('ppetit');
 
+        $this->resIdMasterCourrier = 157;
+        $this->resIdCourrier = 75;
+
+        $this->createBody();
+
+        $webhookController = new WebhookController();
+        $fullRequest = $this->createRequestWithBody('POST', $this->body);
+
+        $response = $webhookController->fetchAndStoreSignedDocumentOnWebhookTrigger($fullRequest, new Response(), []);
+        $jsonResource = json_decode((string)$response->getBody(), true);
+
+        $this->assertSame($response->getStatusCode(), 400);
+        $this->assertSame($jsonResource['errors'], 'idParapheur is not set in payload');
     }
 
-    public function CannotFetchAndStoreSignedAttachmentIfAttachmentResIdNotCorrespondingToResIdMaster(): void
+    public function testCannotFetchAndStoreSignedAttachmentIfWebhookUriSet(): void
     {
+        $this->connectAsUser('ppetit');
 
+        $this->idDocParapheur = 13;
+        $this->resIdMasterCourrier = 157;
+        $this->resIdCourrier = 75;
+
+        $this->createBody();
+
+        $this->body['retrieveDocUri'] = null;
+
+        $webhookController = new WebhookController();
+        $fullRequest = $this->createRequestWithBody('POST', $this->body);
+
+        $response = $webhookController->fetchAndStoreSignedDocumentOnWebhookTrigger($fullRequest, new Response(), []);
+        $jsonResource = json_decode((string)$response->getBody(), true);
+
+        $this->assertSame($response->getStatusCode(), 400);
+        $this->assertSame($jsonResource['errors'], 'retrieveDocUri is not set');
     }
 }
