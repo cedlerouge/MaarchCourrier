@@ -11,6 +11,7 @@ import { LatinisePipe } from 'ngx-pipes';
 import { SortPipe } from '@plugins/sorting.pipe';
 import { HighlightPipe } from '@plugins/highlight.pipe';
 import { SplitLoginPwdPipe } from '@plugins/splitLoginPwd.pipe';
+import { SafeBlobPipe } from '@plugins/safeBlob.pipe';
 
 @NgModule({
     imports: [
@@ -20,6 +21,7 @@ import { SplitLoginPwdPipe } from '@plugins/splitLoginPwd.pipe';
         FilterListPipe,
         FullDatePipe,
         SafeHtmlPipe,
+        SafeBlobPipe,
         SecureUrlPipe,
         SortPipe,
         TimeAgoPipe,
@@ -32,6 +34,7 @@ import { SplitLoginPwdPipe } from '@plugins/splitLoginPwd.pipe';
         FilterListPipe,
         FullDatePipe,
         SafeHtmlPipe,
+        SafeBlobPipe,
         SecureUrlPipe,
         SortPipe,
         TimeAgoPipe,
