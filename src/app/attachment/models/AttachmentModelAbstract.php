@@ -44,10 +44,10 @@ abstract class AttachmentModelAbstract
 
     /**
      * @param array $aArgs
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getById(array $aArgs)
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -69,13 +69,19 @@ abstract class AttachmentModelAbstract
 
     /**
      * @param array $args
-     * @return int|mixed
+     * @return int
      * @throws Exception
      */
-    public static function create(array $args)
+    public static function create(array $args): int
     {
-        ValidatorModel::notEmpty($args, ['format', 'typist', 'creation_date', 'docserver_id', 'path', 'filename', 'fingerprint', 'filesize', 'status', 'relation']);
-        ValidatorModel::stringType($args, ['format', 'creation_date', 'docserver_id', 'path', 'filename', 'fingerprint', 'status']);
+        ValidatorModel::notEmpty($args, [
+            'format', 'typist', 'creation_date', 'docserver_id', 'path',
+            'filename', 'fingerprint', 'filesize', 'status', 'relation'
+        ]);
+        ValidatorModel::stringType($args, [
+            'format', 'creation_date', 'docserver_id', 'path',
+            'filename', 'fingerprint', 'status'
+        ]);
         ValidatorModel::intVal($args, ['filesize', 'relation', 'typist']);
 
         if (empty($args['res_id'])) {
@@ -227,10 +233,10 @@ abstract class AttachmentModelAbstract
     /**
      * @param int $resIdMaster
      * @param int $originId
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getLastVersionByOriginId(int $resIdMaster, int $originId)
+    public static function getLastVersionByOriginId(int $resIdMaster, int $originId): array
     {
         $attachment = DatabaseModel::select([
             'select'   => ['res_id_master', 'origin_id', 'status', 'res_id'],

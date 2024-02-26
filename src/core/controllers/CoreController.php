@@ -14,6 +14,7 @@
 
 namespace SrcCore\controllers;
 
+use Exception;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
 use Slim\Psr7\Request;
@@ -24,16 +25,37 @@ use User\models\UserModel;
 
 class CoreController
 {
-    public function getHeader(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getHeader(Request $request, Response $response): Response
     {
-        $user             = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname']]);
-        $user['groups']   = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
-        $user['entities'] = UserModel::getEntitiesById(['id' => $GLOBALS['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity']]);
+        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname']]);
+        $user['groups'] = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
+        $user['entities'] = UserModel::getEntitiesById(
+            [
+                'id'     => $GLOBALS['id'],
+                'select' => [
+                    'entities.id',
+                    'users_entities.entity_id',
+                    'entities.entity_label',
+                    'users_entities.user_role',
+                    'users_entities.primary_entity'
+                ]
+            ]
+        );
 
         return $response->withJson(['user' => $user]);
     }
 
-    public function getGitCommitInformation(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getGitCommitInformation(Request $request, Response $response): Response
     {
         $head = file_get_contents('.git/HEAD');
 
@@ -60,17 +82,28 @@ class CoreController
         return $response->withJson(['hash' => $hash]);
     }
 
-    public static function setGlobals(array $args)
+    /**
+     * @param array $args
+     * @return void
+     * @throws Exception
+     */
+    public static function setGlobals(array $args): void
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
 
-        $user             = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
+        $user = UserModel::getById(['id' => $args['userId'], 'select' => ['user_id']]);
         $GLOBALS['login'] = $user['user_id'];
-        $GLOBALS['id']    = $args['userId'];
+        $GLOBALS['id'] = $args['userId'];
     }
 
-    public function externalConnectionsEnabled(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function externalConnectionsEnabled(Request $request, Response $response): Response
     {
         $connections = [];
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
@@ -86,7 +119,12 @@ class CoreController
         return $response->withJson(['connection' => $connections]);
     }
 
-    public function getImages(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getImages(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -136,22 +174,30 @@ class CoreController
         $pathInfo = pathinfo($path);
 
         $response->write($fileContent);
-        $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.{$pathInfo['extension']}");
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            "inline; filename=maarch.{$pathInfo['extension']}"
+        );
 
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    public static function getMaximumAllowedSizeFromPhpIni()
+    /**
+     * @return mixed
+     */
+    public static function getMaximumAllowedSizeFromPhpIni(): mixed
     {
         $uploadMaxFilesize = ini_get('upload_max_filesize');
         $uploadMaxFilesize = StoreController::getBytesSizeFromPhpIni(['size' => $uploadMaxFilesize]);
-        $postMaxSize       = ini_get('post_max_size');
-        $postMaxSize       = $postMaxSize == 0 ? $uploadMaxFilesize : StoreController::getBytesSizeFromPhpIni(['size' => $postMaxSize]);
-        $memoryLimit       = ini_get('memory_limit');
-        $memoryLimit       = $memoryLimit < 1 ? $uploadMaxFilesize : StoreController::getBytesSizeFromPhpIni(['size' => $memoryLimit]);
-        $maximumSize       = min($uploadMaxFilesize, $postMaxSize, $memoryLimit);
-
-        return $maximumSize;
+        $postMaxSize = ini_get('post_max_size');
+        $postMaxSize = $postMaxSize == 0 ? $uploadMaxFilesize : StoreController::getBytesSizeFromPhpIni(
+            ['size' => $postMaxSize]
+        );
+        $memoryLimit = ini_get('memory_limit');
+        $memoryLimit = $memoryLimit < 1 ? $uploadMaxFilesize : StoreController::getBytesSizeFromPhpIni(
+            ['size' => $memoryLimit]
+        );
+        return min($uploadMaxFilesize, $postMaxSize, $memoryLimit);
     }
 
     /**
@@ -159,8 +205,9 @@ class CoreController
      *
      * @param array $args with either an 'encodedFile' (base64 string), or a 'path' (file path as string)
      * @return array with 'mime' and 'size' entries or array with 'errors' entry
+     * @throws Exception
      */
-    public static function getMimeTypeAndFileSize(array $args)
+    public static function getMimeTypeAndFileSize(array $args): array
     {
         ValidatorModel::stringType($args, ['encodedFile', 'path']);
         if (empty($args['encodedFile']) && empty($args['path'])) {
@@ -171,7 +218,11 @@ class CoreController
         $size = null;
         if (!empty($args['encodedFile'])) {
             $resource = fopen('php://temp', 'r+');
-            $streamFilterBase64 = stream_filter_append($resource, 'convert.base64-decode', STREAM_FILTER_WRITE);
+            $streamFilterBase64 = stream_filter_append(
+                $resource,
+                'convert.base64-decode',
+                STREAM_FILTER_WRITE
+            );
             stream_set_chunk_size($resource, 1024 * 1024);
             $size = fwrite($resource, $args['encodedFile']);
             stream_filter_remove($streamFilterBase64);
@@ -200,7 +251,7 @@ class CoreController
 
 
     /**
-     * get MASK param erorr_reporting
+     * get MASK param error_reporting
      *
      * 1       E_ERROR
      * 2       E_WARNING
@@ -217,8 +268,10 @@ class CoreController
      * 4096    E_RECOVERABLE_ERROR
      * 8192    E_DEPRECATED
      * 16384   E_USER_DEPRECATED
+     *
+     * @return array
      */
-    public static function getErrorReportingFromPhpIni()
+    public static function getErrorReportingFromPhpIni(): array
     {
         $bits = ini_get('error_reporting');
 
@@ -235,7 +288,12 @@ class CoreController
         return $errorReporting;
     }
 
-    public function generateLang(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function generateLang(Request $request, Response $response): Response
     {
         if (!is_file('dist/main-es5.js') && !is_file('dist/main-es2015.js') && !is_file('dist/main.js')) {
             return $response->withStatus(403)->withJson(['errors' => 'Route forbidden']);
@@ -247,7 +305,10 @@ class CoreController
             return $response->withStatus(400)->withJson(['errors' => 'Body langId is empty or not a string']);
         }
 
-        $content = json_encode($body['jsonContent'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $content = json_encode(
+            $body['jsonContent'],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
 
         $fp = @fopen("src/lang/lang-{$body['langId']}.json", 'w');
         if ($fp !== false) {
@@ -255,18 +316,25 @@ class CoreController
             fclose($fp);
             return $response->withStatus(204);
         } else {
-            return $response->withStatus(400)->withJson(['errors' => "Cannot open file : src/lang/lang-{$body['langId']}.json"]);
+            return $response->withStatus(400)->withJson(
+                ['errors' => "Cannot open file : src/lang/lang-{$body['langId']}.json"]
+            );
         }
     }
 
-    public function getAvailableCoreLanguages(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getAvailableCoreLanguages(Request $request, Response $response): Response
     {
         $files = array_diff(scandir('src/lang'), ['..', '.']);
         $arrLanguages = [];
         foreach ($files as $value) {
-            $file        = str_replace('.json', '', $value) ;
-            $langName    = explode('-', $file)[1];
-            $path        = 'src/lang/' . $file . '.json';
+            $file = str_replace('.json', '', $value);
+            $langName = explode('-', $file)[1];
+            $path = 'src/lang/' . $file . '.json';
             $fileContent = file_get_contents($path);
             $fileContent = json_decode($fileContent);
             $arrLanguages[$langName] = $fileContent;
