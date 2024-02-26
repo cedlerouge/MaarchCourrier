@@ -14,6 +14,7 @@
 
 namespace Notification\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use Entity\models\EntityModel;
 use Group\models\GroupModel;
@@ -23,24 +24,32 @@ use SrcCore\models\CoreConfigModel;
 
 abstract class NotificationModelAbstract
 {
-    public static function get(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'orderBy']);
         ValidatorModel::intType($aArgs, ['limit']);
 
-        $aNotifications = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['notifications'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
-            'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
+        return DatabaseModel::select([
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['notifications'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
+            'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
-
-        return $aNotifications;
     }
 
-    public static function getById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getById(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['notification_sid']);
 
@@ -58,7 +67,12 @@ abstract class NotificationModelAbstract
         return $aNotification[0];
     }
 
-    public static function getByNotificationId(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getByNotificationId(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['notificationId']);
 
@@ -76,7 +90,12 @@ abstract class NotificationModelAbstract
         return $aNotification[0];
     }
 
-    public static function delete(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function delete(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['notification_sid']);
         ValidatorModel::intVal($aArgs, ['notification_sid']);
@@ -90,15 +109,31 @@ abstract class NotificationModelAbstract
         return true;
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function create(array $aArgs): bool
     {
-        ValidatorModel::notEmpty($aArgs, ['notification_id', 'description', 'is_enabled', 'event_id', 'notification_mode', 'template_id', 'diffusion_type']);
+        ValidatorModel::notEmpty(
+            $aArgs,
+            [
+                'notification_id',
+                'description',
+                'is_enabled',
+                'event_id',
+                'notification_mode',
+                'template_id',
+                'diffusion_type'
+            ]
+        );
         ValidatorModel::intVal($aArgs, ['template_id']);
         ValidatorModel::boolType($aArgs, ['send_as_recap']);
         ValidatorModel::stringType($aArgs, ['notification_id', 'description', 'is_enabled', 'notification_mode']);
 
         DatabaseModel::insert([
-            'table' => 'notifications',
+            'table'         => 'notifications',
             'columnsValues' => [
                 'notification_id'      => $aArgs['notification_id'],
                 'description'          => $aArgs['description'],
@@ -117,7 +152,12 @@ abstract class NotificationModelAbstract
         return true;
     }
 
-    public static function update(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function update(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['notification_sid']);
         ValidatorModel::intVal($aArgs, ['notification_sid']);
@@ -126,17 +166,19 @@ abstract class NotificationModelAbstract
         unset($aArgs['data']);
         unset($aArgs['notification_sid']);
 
-        $aReturn = DatabaseModel::update([
+        return DatabaseModel::update([
             'table' => 'notifications',
             'set'   => $aArgs,
             'where' => ['notification_sid = ?'],
             'data'  => [$notificationSid],
         ]);
-
-        return $aReturn;
     }
 
-    public static function getEvents()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getEvents(): array
     {
         $events = DatabaseModel::select([
             'select' => ['id, label_action'],
@@ -159,19 +201,24 @@ abstract class NotificationModelAbstract
         return $events;
     }
 
-    public static function getTemplate()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getTemplate(): array
     {
-        $tabTemplate = DatabaseModel::select([
+        return DatabaseModel::select([
             'select' => ['template_id, template_label'],
             'table'  => ['templates'],
             'where'  => ['template_target = ?'],
             'data'   => ['notifications'],
         ]);
-
-        return $tabTemplate;
     }
 
-    public static function getDiffusionType()
+    /**
+     * @return array
+     */
+    public static function getDiffusionType(): array
     {
         $diffusionTypes = [];
 
@@ -235,14 +282,19 @@ abstract class NotificationModelAbstract
         return $diffusionTypes;
     }
 
-    public static function getDiffusionTypeGroups()
+    /**
+     * @return array
+     */
+    public static function getDiffusionTypeGroups(): array
     {
-        $groups = GroupModel::get(['orderBy' => ['group_desc']]);
-
-        return $groups;
+        return GroupModel::get(['orderBy' => ['group_desc']]);
     }
 
-    public static function getDiffusionTypesUsers()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getDiffusionTypesUsers(): array
     {
         $users = DatabaseModel::select([
             'select' => ["id, concat(firstname,' ',lastname) as label"],
@@ -256,31 +308,36 @@ abstract class NotificationModelAbstract
         return $users;
     }
 
-    public static function getDiffusionTypeEntities()
+    /**
+     * @return array
+     */
+    public static function getDiffusionTypeEntities(): array
     {
-        $entities = EntityModel::get();
-
-        return $entities;
+        return EntityModel::get();
     }
 
-    public static function getDiffusionTypeStatus()
+    /**
+     * @return array
+     */
+    public static function getDiffusionTypeStatus(): array
     {
-        $status = StatusModel::get();
-
-        return $status;
+        return StatusModel::get();
     }
 
-    public static function getEnableNotifications(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getEnableNotifications(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select']);
 
-        $aReturn = DatabaseModel::select([
+        return DatabaseModel::select([
             'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'  => ['notifications'],
             'where'  => ['is_enabled = ?'],
             'data'   => ['Y'],
         ]);
-
-        return $aReturn;
     }
 }

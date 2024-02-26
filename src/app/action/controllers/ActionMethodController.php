@@ -18,6 +18,7 @@ use Action\models\ResMarkAsReadModel;
 use Alfresco\controllers\AlfrescoController;
 use DateTime;
 use Exception;
+use MaarchCourrier\SignatureBook\Infrastructure\Factory\ContinueCircuitActionFactory;
 use Multigest\controllers\MultigestController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
@@ -512,10 +513,20 @@ class ActionMethodController
     /**
      * @throws Exception
      */
-    public static function continueVisaCircuit(array $args)
+    public static function continueVisaCircuit(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
+
+        $continueCircuitAction = ContinueCircuitActionFactory::create();
+        if (empty($args['data']['cookieSession'])) {
+            $args['data']['cookieSession'] = $_COOKIE['PHPSSID'] ?? null;
+        }
+        try {
+            $continueCircuitAction->execute($args['resId'], $args['data'], $args['note']);
+        } catch (\Throwable $th) {
+            return ['errors' => [$th->getMessage()]];
+        }
 
         $listInstance = ListInstanceModel::get([
             'select'  => ['listinstance_id', 'item_id'],

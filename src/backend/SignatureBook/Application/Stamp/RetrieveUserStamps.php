@@ -14,21 +14,25 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Stamp;
 
-use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
-use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
-use MaarchCourrier\SignatureBook\Domain\Ports\SignatureRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\Problems\CannotAccessOtherUsersSignaturesProblem;
+use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\CannotAccessOtherUsersSignaturesProblem;
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
+use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class RetrieveUserStamps
 {
     /**
      * @param UserRepositoryInterface $user
      * @param SignatureRepositoryInterface $signatureService
+     * @param CurrentUserInformations $currentUserInformations
      */
     public function __construct(
         private readonly UserRepositoryInterface $user,
-        private readonly SignatureRepositoryInterface $signatureService
+        private readonly SignatureRepositoryInterface $signatureService,
+        private readonly CurrentUserInterface $currentUserInformations
     ) {
     }
 
@@ -44,8 +48,7 @@ class RetrieveUserStamps
             throw new UserDoesNotExistProblem();
         }
 
-        // TODO see with Nicolas later
-        if ($GLOBALS['id'] !== $user->getId()) {
+        if ($this->currentUserInformations->getCurrentUserId() !== $user->getId()) {
             throw new CannotAccessOtherUsersSignaturesProblem();
         }
 

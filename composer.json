@@ -51,7 +51,8 @@
     "psr-4": {
       "MaarchCourrier\\Tests\\": "test/unitTests/",
       "MaarchCourrier\\AcceptanceTests\\": "test/acceptanceTests/",
-      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/"
+      "MaarchCourrier\\Tests\\Functional\\": "test/Functional/",
+      "MaarchCourrier\\Tests\\Unit\\": "test/Unit/"
     }
   },
   "config": {
@@ -81,14 +82,11 @@
     "jasig/phpcas": "1.5.0",
     "php-ews/php-ews": "^1.0",
     "monolog/monolog": "^2.6",
-    "guzzlehttp/guzzle": "^7.4",
-    "http-interop/http-factory-guzzle": "^1.2",
-    "symfony/options-resolver": "v5.4.11",
-    "symfony/deprecation-contracts": "v2.5.2",
     "psr/log": "3.0.0",
     "psr/cache": "3.0.0",
     "slim/psr7": "^1.6",
-    "smalot/pdfparser": "^2.3"
+    "smalot/pdfparser": "^2.3",
+    "ext-openssl": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
