@@ -3,6 +3,7 @@
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook;
 
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
+use MaarchCourrier\SignatureBook\Domain\CurlResponse;
 use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
 
 class CurlServiceMock implements CurlServiceInterface
@@ -24,8 +25,8 @@ class CurlServiceMock implements CurlServiceInterface
             ];
         }
 
-        $curlRequest->setHttpCode($this->httpCode);
-        $curlRequest->setContentReturn($returnFromParapheur);
+        $curlResponse = new CurlResponse($this->httpCode, $returnFromParapheur);
+        $curlRequest->setCurlResponse($curlResponse);
 
         return $curlRequest;
     }

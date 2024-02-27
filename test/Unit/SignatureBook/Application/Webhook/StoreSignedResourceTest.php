@@ -42,7 +42,8 @@ class StoreSignedResourceTest extends TestCase
     public function testCanStoreSignedVersionOfResource(): void
     {
         $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
+        $signedResource->setResIdSigned(100);
+        $signedResource->setResIdMaster(null);
         $signedResource->setStatus("VAL");
         $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
 
@@ -51,41 +52,9 @@ class StoreSignedResourceTest extends TestCase
         $this->assertTrue($this->resourceToSignRepositoryMock->signedVersionCreate);
     }
 
-
     /**
      * @throws StoreResourceProblem
      */
-    public function testCannotStoreSignedVersionOfResourceIfResourceAlreadyHaveASignedVersion(): void
-    {
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $newId = $this->storeSignedResource->store($signedResource);
-    }
-
-    /**
-     * @throws StoreResourceProblem
-     */
-    public function testCannotStoreSignedVersionOfAttachmentIfAttachmentAlreadyHaveASignedVersion(): void
-    {
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setResIdMaster(100);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $newId = $this->storeSignedResource->store($signedResource);
-    }
-
-
     public function testCannotStoreSignedVersionOfResourceIfStorageFunctionError(): void
     {
         $this->storeSignedResourceServiceMock->errorStorage = true;
@@ -119,20 +88,4 @@ class StoreSignedResourceTest extends TestCase
     }
 
 
-    /**
-     * @throws StoreResourceProblem
-     */
-    public function testCannotStoreSignedVersionOfAttachmentIfNotInPerimeter(): void
-    {
-        $this->resourceToSignRepositoryMock->attachmentNotExists = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(100);
-        $signedResource->setResIdMaster(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(AttachmentOutOfPerimeterProblem::class);
-        $newId = $this->storeSignedResource->store($signedResource);
-    }
 }

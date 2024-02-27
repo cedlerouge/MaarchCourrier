@@ -11,8 +11,10 @@ use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use PHPUnit\Framework\TestCase;
+
 class WebhookValidationTest extends TestCase
 {
+    private ResourceToSignRepositoryMock $resourceToSignRepositoryMock;
     private WebhookValidation $webhookValidation;
     private array $bodySentByMP = [
         'identifier'     => 'TDy3w2zAOM41M216',
@@ -32,8 +34,8 @@ class WebhookValidationTest extends TestCase
 
     protected function setUp(): void
     {
-        $resourceToSignRepositoryMock = new ResourceToSignRepositoryMock();
-        $this->webhookValidation = new WebhookValidation($resourceToSignRepositoryMock);
+        $this->resourceToSignRepositoryMock = new ResourceToSignRepositoryMock();
+        $this->webhookValidation = new WebhookValidation($this->resourceToSignRepositoryMock);
     }
 
     protected function tearDown(): void
@@ -53,6 +55,10 @@ class WebhookValidationTest extends TestCase
             ],
             'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
         ];
+
+        $this->resourceToSignRepositoryMock->attachmentNotExists = false;
+        $this->resourceToSignRepositoryMock->resourceAlreadySigned = false;
+        $this->resourceToSignRepositoryMock->resIdConcordingWithResIdMaster = true;
     }
 
 
@@ -72,6 +78,13 @@ class WebhookValidationTest extends TestCase
         $this->assertSame($signedResource->getStatus(), $this->bodySentByMP['signatureState']['state']);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     */
     public function testValidationErrorIfRetrieveUrlIsEmpty(): void
     {
         $this->bodySentByMP['retrieveDocUri'] = '';
@@ -79,33 +92,79 @@ class WebhookValidationTest extends TestCase
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     */
     public function testValidationErrorIfResIdIsMissing(): void
     {
+        unset($this->bodySentByMP['payload']['res_id']);
         $this->expectException(ResourceIdEmptyProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     */
     public function testValidationErrorIfResIdNotCorrespondingToResIdMaster(): void
     {
-        $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
+        $this->resourceToSignRepositoryMock->resIdConcordingWithResIdMaster = false;
+
+        $this->expectException(ResourceIdMasterNotCorrespondingProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     */
     public function testValidationErrorIfResourceIsAlreadySigned(): void
     {
-        $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
+        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
+
+        unset($this->bodySentByMP['payload']['res_id_master']);
+
+        $this->expectException(ResourceAlreadySignProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     */
     public function testValidationErrorIfAttachmentAlreadySigned(): void
     {
-        $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
+        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
+
+        $this->expectException(ResourceAlreadySignProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     */
     public function testValidationErrorIfAttachmentNotInPerimeter(): void
     {
-        $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
+        $this->resourceToSignRepositoryMock->attachmentNotExists = true;
+
+        $this->expectException(AttachmentOutOfPerimeterProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP);
     }
 }

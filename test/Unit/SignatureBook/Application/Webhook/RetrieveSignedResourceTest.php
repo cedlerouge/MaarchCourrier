@@ -36,6 +36,8 @@ class RetrieveSignedResourceTest extends TestCase
             $this->curlServiceMock
         );
 
+        $this->signedResource = new SignedResource();
+
         $this->signedResource->setResIdSigned(10);
         $this->signedResource->setResIdMaster(100);
         $this->signedResource->setStatus('VAL');
@@ -62,6 +64,7 @@ class RetrieveSignedResourceTest extends TestCase
 
     /**
      * @throws CurlRequestErrorProblem
+     * @throws CurrentTokenIsNotFoundProblem
      */
     public function testCannotRetrieveSignedResourceIfUserTokenNotFound(): void
     {
@@ -72,6 +75,7 @@ class RetrieveSignedResourceTest extends TestCase
 
     /**
      * @throws CurrentTokenIsNotFoundProblem
+     * @throws CurlRequestErrorProblem
      */
     public function testCannotRetrieveSignedResourceOnBadCurlRequest(): void
     {
