@@ -41,7 +41,7 @@
                         </li>
                     </ul>
                 </div>
-                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow.getFirstVisaUser() != '' && appVisaWorkflow.visaWorkflow.items[0].requested_signature"
+                <div *ngIf="resourcesMailing.length > 0 && appVisaWorkflow.getFirstVisaUser() !== '' && appVisaWorkflow.visaWorkflow.items[0].requested_signature"
                     class="alert-message alert-message-info" role="alert">
                     <p>{{'lang.mailingActionInformations' | translate}}</p>
                     <ul>
@@ -51,7 +51,7 @@
                     </ul>
                 </div>
                 <app-visa-workflow *ngIf="!noResourceToProcess"
-                       [adminMode]="true" (workflowUpdated)="checkWorkflowParameters($event)" #appVisaWorkflow [lockVisaCircuit] = "lockVisaCircuit">
+                       [adminMode]="true" [visaWorkflowFromAction]="visaWorkflowClone" (workflowUpdated)="checkWorkflowParameters($event)" #appVisaWorkflow [lockVisaCircuit] = "lockVisaCircuit">
                 </app-visa-workflow>
                 <div *ngIf="!noResourceToProcess" style="padding-top: 10px;">
                     <app-note-editor #noteEditor [resIds]="data.resIds"></app-note-editor>

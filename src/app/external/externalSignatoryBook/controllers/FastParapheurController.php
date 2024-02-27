@@ -995,8 +995,8 @@ class FastParapheurController
         }
         $zip->addFile($attachmentFilePath, $attachmentFileName);
 
-        if (!empty($args['annexes']['letterbox'][0]['filepath'])) {
-                $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
+        if (!empty($args['annexes']['letterbox'][0]['filePath'])) {
+            $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
         }
 
         if (isset($args['annexes']['attachments'])) {
