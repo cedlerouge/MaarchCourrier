@@ -17,8 +17,8 @@ import { FastParaphComponent } from './fast-paraph/fast-paraph.component';
 import { AuthService } from '@service/auth.service';
 import { AppService } from '@service/app.service';
 import { AttachmentsListComponent } from '@appRoot/attachments/attachments-list.component';
-import { UntypedFormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Component({
     templateUrl: 'send-external-signatory-book-action.component.html',
@@ -37,6 +37,8 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
     @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
 
     @Output() sidenavStateChanged = new EventEmitter<boolean>();
+
+    visaWorkflowClone: UserWorkflow[];
 
     loading: boolean = false;
 
@@ -206,6 +208,9 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
                 }
                 await this.checkExternalSignatureBook();
                 this.changeDetectorRef.detectChanges();
+                if (!this.functions.empty(this.externalSignatoryBook.signatoryBookEnabled) && this.authService.externalSignatoryBook.integratedWorkflow) {
+                    this.externalSignatoryBookComponent.appExternalVisaWorkflow.visaWorkflow.items = this.visaWorkflowClone;
+                }
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -266,7 +271,7 @@ export class SendExternalSignatoryBookActionComponent implements OnInit {
         return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook && attachment.status === 'A_TRA').length;
     }
 
-    onSidenavStateChanged(): void {        
+    onSidenavStateChanged(): void {
         this.snav2?.toggle();
         this.sidenavStateChanged.emit(this.snav2?.opened);
     }
