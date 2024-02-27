@@ -57,9 +57,11 @@ export class MaarchSbContentComponent implements OnInit, OnDestroy {
                     this.documentData = res.data.attachment;
                     this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                     setTimeout(async () => {
-                        await this.loadContent();
-                        if (this.position == 'right') {
+                        if (this.position === 'right') {
+                            await this.loadContent();
                             this.initPlugin();
+                        } else {
+                            this.loading = false;
                         }
                     }, 1000);
                 }

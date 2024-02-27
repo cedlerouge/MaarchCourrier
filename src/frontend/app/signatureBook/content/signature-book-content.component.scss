@@ -56,3 +56,10 @@ iframe {
         font-size: 250px;
     }
 }
+
+.docViewerClass {
+    display: block;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}

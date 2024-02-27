@@ -13,10 +13,16 @@
         <mat-spinner style="margin:auto;"></mat-spinner>
     </div>
     <ng-container #myPlugin></ng-container>
-    <iframe
-        *ngIf="!pluginInstance && documentData && !loading"
-        [src]="documentContent | safeBlob"
-    ></iframe>
+
+    <app-document-viewer
+        *ngIf="!pluginInstance && documentData && position === 'left' && !loading"
+        class="docViewerClass"
+        [editMode]="false"
+        [resId]="documentData.resId"
+        [mode]="documentType === 'attachments' ? 'attachment' : 'mainDocument'"
+        [title]="documentData?.chrono ? documentData.chrono + ' - ' + documentData.title : documentData.title">
+    </app-document-viewer>
+
     <div class="empty-doc" *ngIf="!documentData && !loading">
         <i class="fa-solid fa-file-signature"></i>
         <div>{{ 'lang.noDocumentToSign' | translate }}</div>
