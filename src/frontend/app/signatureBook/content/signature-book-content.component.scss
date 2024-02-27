@@ -3,6 +3,10 @@
     align-items: center;
     flex: 1;
     position: relative;
+
+    ::ng-deep .no-view {
+        display: contents;
+    }
 }
 
 .title-container {
