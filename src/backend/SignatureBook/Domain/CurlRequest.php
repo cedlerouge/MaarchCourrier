@@ -10,8 +10,7 @@ class CurlRequest implements JsonSerializable
     private string $method = "";
     private ?string $authBearer = null;
     private array $body = [];
-    private ?int $httpCode = null;
-    private ?array $contentReturn = null;
+    private ?CurlResponse $curlResponse;
 
     public function createFromArray(array $array = []): CurlRequest
     {
@@ -55,26 +54,6 @@ class CurlRequest implements JsonSerializable
         $this->body = $body;
     }
 
-    public function getHttpCode(): ?int
-    {
-        return $this->httpCode;
-    }
-
-    public function setHttpCode(?int $httpCode): void
-    {
-        $this->httpCode = $httpCode;
-    }
-
-    public function getContentReturn(): ?array
-    {
-        return $this->contentReturn;
-    }
-
-    public function setContentReturn(?array $contentReturn): void
-    {
-        $this->contentReturn = $contentReturn;
-    }
-
     public function getAuthBearer(): ?string
     {
         return $this->authBearer;
@@ -85,6 +64,17 @@ class CurlRequest implements JsonSerializable
         $this->authBearer = $authBearer;
     }
 
+
+    public function getCurlResponse(): ?CurlResponse
+    {
+        return $this->curlResponse;
+    }
+
+    public function setCurlResponse(?CurlResponse $curlResponse): void
+    {
+        $this->curlResponse = $curlResponse;
+    }
+
     public function jsonSerialize(): array
     {
         return [
@@ -92,7 +82,9 @@ class CurlRequest implements JsonSerializable
             'method'   => $this->getMethod(),
             'body'     => $this->getBody(),
             'httpCode' => $this->getHttpCode(),
-            'content'  => $this->getContentReturn()
+            'content'  => $this->getContentReturn(),
+            'response' => $this->getCurlResponse()
         ];
     }
+
 }

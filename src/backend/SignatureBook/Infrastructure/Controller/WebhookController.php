@@ -14,18 +14,13 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
-use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
+use MaarchCourrier\SignatureBook\Application\Webhook\UseCase\WebhookCall;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
-use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
-use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
-use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
-use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
-use Respect\Validation\Validator;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 
@@ -38,38 +33,17 @@ class WebhookController
      * @return Response
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurlRequestErrorProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws StoreResourceProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws StoreResourceProblem
      */
     public function fetchAndStoreSignedDocumentOnWebhookTrigger(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
-        if (!Validator::notEmpty()->intVal()->validate($body['payload']['res_id'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'res_id is not set in payload']);
-        }
 
-        if (!Validator::notEmpty()->intVal()->validate($body['payload']['idParapheur'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'idParapheur is not set in payload']);
-        }
-
-        if (!Validator::notEmpty()->stringVal()->validate($body['retrieveDocUri'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'retrieveDocUri is not set']);
-        }
-
-        $resourceToSignRepository = new ResourceToSignRepository();
-        $storeSignedResourceService = new StoreSignedResourceService();
-        $currentUserInformations = new CurrentUserInformations();
-
-        $body = $request->getParsedBody();
-        $curlService = new CurlService();
-
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $resourceToSignRepository, $storeSignedResourceService, $curlService);
-        $signedResource = $retrieveSignedResource->retrieve($body);
-
-        $id = $retrieveSignedResource->store($signedResource);
-
+        $webhookCall = new WebhookCall();
+        $id = $webhookCall->execute($body);
         return $response->withJson(['id' => $id]);
     }
 }

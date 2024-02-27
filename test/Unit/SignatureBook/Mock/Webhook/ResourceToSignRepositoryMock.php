@@ -10,6 +10,7 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
     public bool $attachmentUpdated = false;
     public bool $attachmentNotExists = false;
     public bool $resourceAlreadySigned = false;
+    public bool $resIdConcordingWithResIdMaster = true;
 
     public function getResourceInformations(int $resId): array
     {
@@ -53,5 +54,10 @@ class ResourceToSignRepositoryMock implements ResourceToSignRepositoryInterface
     public function isAttachementSigned(int $resId): bool
     {
         return $this->resourceAlreadySigned;
+    }
+
+    public function checkConcordanceResIdAndResIdMaster(int $resId, int $resIdMaster): bool
+    {
+        return $this->resIdConcordingWithResIdMaster;
     }
 }

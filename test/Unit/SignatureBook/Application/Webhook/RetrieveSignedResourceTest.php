@@ -19,218 +19,65 @@ use PHPUnit\Framework\TestCase;
 class RetrieveSignedResourceTest extends TestCase
 {
     private CurrentUserInformationsMock $currentUserRepositoryMock;
-    private ResourceToSignRepositoryMock $resourceToSignRepositoryMock;
-    private StoreSignedResourceServiceMock $storeSignedResourceServiceMock;
+
     private CurlServiceMock $curlServiceMock;
     private RetrieveSignedResource $retrieveSignedResource;
 
-    private array $data = [
-        'identifier'     => 'TDy3w2zAOM41M216',
-        'signatureState' => [
-            'error'       => '',
-            'state'       => 'VAL',
-            'message'     => '',
-            'updatedDate' => null
-        ],
-        'payload'        => [
-            'res_id'        => 10,
-            'idParapheur'   => 10,
-            'res_id_master' => 100
-        ],
-        'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
-    ];
-
-    private array $returnFromCurlRequestParapheur = [];
+    private SignedResource $signedResource;
+    private string $retrieveDocUri = "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign";
 
     protected function setUp(): void
     {
         $this->currentUserRepositoryMock = new CurrentUserInformationsMock();
-        $this->resourceToSignRepositoryMock = new ResourceToSignRepositoryMock();
-        $this->storeSignedResourceServiceMock = new StoreSignedResourceServiceMock();
         $this->curlServiceMock = new CurlServiceMock();
 
         $this->retrieveSignedResource = new RetrieveSignedResource(
             $this->currentUserRepositoryMock,
-            $this->resourceToSignRepositoryMock,
-            $this->storeSignedResourceServiceMock,
             $this->curlServiceMock
         );
 
-        $this->returnFromCurlRequestParapheur = [
-            'encodedDocument' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
-            'mimetype' => "application/pdf",
-            'filename' => "PDF_signature.pdf"
-        ];
+        $this->signedResource->setResIdSigned(10);
+        $this->signedResource->setResIdMaster(100);
+        $this->signedResource->setStatus('VAL');
     }
 
     protected function tearDown(): void
     {
-        $this->data = [
-            'identifier'     => 'TDy3w2zAOM41M216',
-            'signatureState' => [
-                'error'       => '',
-                'state'       => 'VAL',
-                'message'     => '',
-                'updatedDate' => null
-            ],
-            'payload'        => [
-                'res_id'        => 10,
-                'idParapheur'   => 10,
-                'res_id_master' => 100
-            ],
-            'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
-        ];
+        $this->signedResource->setResIdSigned(10);
+        $this->signedResource->setResIdMaster(100);
+        $this->signedResource->setStatus('VAL');
     }
 
     /**
      * @throws CurrentTokenIsNotFoundProblem
      * @throws CurlRequestErrorProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
      */
     public function testCanRetrieveSignedResource(): void
     {
-        $signedResource = $this->retrieveSignedResource->retrieve($this->data);
-        $this->assertSame($signedResource->getResIdSigned(), $this->data['payload']['res_id']);
-        $this->assertSame($signedResource->getResIdMaster(), $this->data['payload']['res_id_master']);
+        $signedResource = $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
+        $this->assertSame($signedResource->getResIdSigned(), $this->signedResource->getResIdSigned());
+        $this->assertSame($signedResource->getResIdMaster(), $this->signedResource->getResIdMaster());
         $this->assertNotNull($signedResource->getEncodedContent());
     }
 
     /**
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws CurlRequestErrorProblem
-     */
-    public function testCannotRetrieveSignedResourceIfUrlIsEmpty(): void
-    {
-        $this->data['retrieveDocUri'] = "";
-        $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
-        $this->retrieveSignedResource->retrieve($this->data);
-    }
-
-    /**
-     * @throws CurlRequestErrorProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
      */
     public function testCannotRetrieveSignedResourceIfUserTokenNotFound(): void
     {
         $this->currentUserRepositoryMock->token = '';
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->retrieveSignedResource->retrieve($this->data);
+        $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
     }
 
     /**
      * @throws CurrentTokenIsNotFoundProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
      */
     public function testCannotRetrieveSignedResourceOnBadCurlRequest(): void
     {
         $this->curlServiceMock->badRequest = true;
         $this->curlServiceMock->httpCode = 403;
         $this->expectException(CurlRequestErrorProblem::class);
-        $this->retrieveSignedResource->retrieve($this->data);
-    }
-
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws ResourceAlreadySignProblem
-     * @throws StoreResourceProblem
-     */
-    public function testCanStoreSignedVersionOfResource(): void
-    {
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $newId = $this->retrieveSignedResource->store($signedResource);
-        $this->assertSame($newId, $signedResource->getResIdSigned());
-        $this->assertTrue($this->resourceToSignRepositoryMock->signedVersionCreate);
-    }
-
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws StoreResourceProblem
-     */
-    public function testCannotStoreSignedVersionOfResourceIfResourceAlreadyHaveASignedVersion(): void
-    {
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $newId = $this->retrieveSignedResource->store($signedResource);
-    }
-
-    public function testCannotStoreSignedVersionOfAttachmentIfAttachmentAlreadyHaveASignedVersion(): void
-    {
-        $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setResIdMaster(100);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(ResourceAlreadySignProblem::class);
-        $newId = $this->retrieveSignedResource->store($signedResource);
-    }
-
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws ResourceAlreadySignProblem
-     */
-    public function testCannotStoreSignedVersionOfResourceIfStorageFunctionError(): void
-    {
-        $this->storeSignedResourceServiceMock->errorStorage = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(10);
-        $signedResource->setResIdMaster(null);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(StoreResourceProblem::class);
-        $newId = $this->retrieveSignedResource->store($signedResource);
-    }
-
-
-    /**
-     * @throws AttachmentOutOfPerimeterProblem
-     * @throws ResourceAlreadySignProblem
-     * @throws StoreResourceProblem
-     */
-    public function testCanStoreSignedVersionOfAttachment(): void
-    {
-        $this->storeSignedResourceServiceMock->resIdNewSignedDoc = 1;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(100);
-        $signedResource->setResIdMaster(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $newId = $this->retrieveSignedResource->store($signedResource);
-        $this->assertSame($newId, $this->storeSignedResourceServiceMock->resIdNewSignedDoc);
-        $this->assertTrue($this->resourceToSignRepositoryMock->attachmentUpdated);
-    }
-
-    /**
-     * @throws ResourceAlreadySignProblem
-     * @throws StoreResourceProblem
-     */
-    public function testCannotStoreSignedVersionOfAttachmentIfNotInPerimeter(): void
-    {
-        $this->resourceToSignRepositoryMock->attachmentNotExists = true;
-
-        $signedResource = new SignedResource();
-        $signedResource->setResIdSigned(100);
-        $signedResource->setResIdMaster(10);
-        $signedResource->setStatus("VAL");
-        $signedResource->setEncodedContent($this->returnFromCurlRequestParapheur['encodedDocument']);
-
-        $this->expectException(AttachmentOutOfPerimeterProblem::class);
-        $newId = $this->retrieveSignedResource->store($signedResource);
+        $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
     }
 }

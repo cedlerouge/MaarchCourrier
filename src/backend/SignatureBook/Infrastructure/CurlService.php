@@ -3,6 +3,7 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
+use MaarchCourrier\SignatureBook\Domain\CurlResponse;
 use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
 use SrcCore\models\CurlModel;
 
@@ -10,7 +11,7 @@ class CurlService implements CurlServiceInterface
 {
     public function call(CurlRequest $curlRequest): CurlRequest
     {
-        $curlResponse = CurlModel::exec([
+        $response = CurlModel::exec([
             'url'    => $curlRequest->getUrl(),
             'method' => $curlRequest->getMethod(),
             'bearerAuth'     => ['token' => $curlRequest->getAuthBearer()],
@@ -21,8 +22,8 @@ class CurlService implements CurlServiceInterface
             'body'   => http_build_query($curlRequest->getBody())
         ]);
 
-        $curlRequest->setHttpCode($curlResponse['code']);
-        $curlRequest->setContentReturn($curlResponse['response']);
+        $curlResponse = new CurlResponse($response['code'], $response['response']);
+        $curlRequest->setCurlResponse($curlResponse);
 
         return $curlRequest;
     }

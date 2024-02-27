@@ -83,4 +83,13 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
         $infos = $this->getAttachmentInformations($resId);
         return ($infos['status'] === 'SIGN');
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function checkConcordanceResIdAndResIdMaster(int $resId, int $resIdMaster): bool
+    {
+        $infos = $this->getAttachmentInformations($resId);
+        return ($infos['res_id_master'] === $resIdMaster);
+    }
 }
