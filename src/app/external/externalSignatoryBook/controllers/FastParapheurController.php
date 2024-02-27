@@ -1331,7 +1331,7 @@ class FastParapheurController
             }
         }
 
-        if (!empty($otpInfoXML['content'])) {
+        if (empty($otpInfoXML['content'] ?? null)) {
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
             $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
                 'docResId' => $args['resIdMaster'],
