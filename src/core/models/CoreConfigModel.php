@@ -499,4 +499,10 @@ class CoreConfigModel
         $betaEncryptCheck = CoreConfigModel::getJsonLoaded(['path' => CoreConfigModel::getConfigPath()]);
         return $betaEncryptCheck['config']['enableDocserverEncryption'] ?? false;
     }
+
+    public static function getApplicationUrl(): ?string
+    {
+        $customConfig = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        return $customConfig['config']['maarchUrl'] ?? null;
+    }
 }

@@ -11,11 +11,9 @@ services:
     image: local/courrier:main-dev
     build:
       context: .
-    cap_add:
-      - ALL
     volumes:
-#      - ${APP_ROOT_PATH}:/var/www/html/MaarchCourrier
-      - ./container/default-vhost.conf:/etc/apache2/sites-available/000-default.conf # TODO remove after rebuild
+      - ${APP_ROOT_PATH}:/var/www/html/MaarchCourrier
+      #- ./container/default-vhost.conf:/etc/apache2/sites-available/000-default.conf # Uncomment to debug vhost
     environment:
       XDEBUG_MODE: ${XDEBUG_MODE}
       XDEBUG_CONFIG: "client_host=${DOCKER_HOST_IP}"
