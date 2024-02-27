@@ -34,6 +34,7 @@ COPY composer.json composer.lock /app/
 
 COPY src/app /app/src/app
 COPY src/core /app/src/core
+COPY src/backend /app/src/backend
 
 RUN composer install --ignore-platform-reqs --no-scripts --no-dev \
     && composer dump-autoload --classmap-authoritative
@@ -62,10 +63,23 @@ RUN npm run build-prod \
 FROM base_app as app
 
 # Copy built vendor + dist folders
-COPY --chown=root:www-data --from=composer /app/vendor ./vendor/
-COPY --chown=root:www-data --from=front /app/dist ./dist/
-COPY --chown=root:www-data --from=front /app/tinymce ./node_modules/tinymce
-COPY --chown=root:www-data --from=front /app/tinymce-i18n ./node_modules/tinymce-i18n
+COPY --chown=www-data:www-data --from=composer /app/vendor ./vendor/
+COPY --chown=www-data:www-data --from=front /app/dist ./dist/
+COPY --chown=www-data:www-data --from=front /app/tinymce ./node_modules/tinymce
+COPY --chown=www-data:www-data --from=front /app/tinymce-i18n ./node_modules/tinymce-i18n
+
+# Set default entrypoint
+COPY --chown=root:www-data container/entrypoint.sh /bin/entrypoint.sh
+ENTRYPOINT ["/bin/entrypoint.sh"]
+
+# Correct permissions
+RUN find /var/www/html/MaarchCourrier -type d -exec chmod 700 {} + \
+    & find /var/www/html/MaarchCourrier -type f -exec chmod 600 {} + \
+    & chmod 700 /opt/maarch/docservers \
+    & chmod 444 /usr/local/etc/php/php.ini \
+    & chmod 500 /bin/entrypoint.sh \
+    & wait
+
 
 CMD ["/usr/local/bin/apache2-foreground"]
 

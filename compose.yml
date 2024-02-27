@@ -14,13 +14,6 @@ services:
   app:
     image: local/courrier:main-dev
     restart: unless-stopped
-    cap_drop:
-      - ALL
-    cap_add:
-      - net_bind_service
-      - chown
-      - setuid
-      - setgid
     healthcheck:
       test: [ "CMD", "healthcheck.sh" ]
       interval: 10s
@@ -37,3 +30,4 @@ services:
     environment:
       LIBRARIES_DIR: /app/librairies
       MAARCH_TMP_DIR: ${MAARCH_TMP_DIR}
+

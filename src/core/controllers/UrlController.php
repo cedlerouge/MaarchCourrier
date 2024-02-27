@@ -13,9 +13,11 @@
 
 namespace SrcCore\controllers;
 
+use SrcCore\models\CoreConfigModel;
+
 class UrlController
 {
-    private static function getPath()
+    private static function getPath(): string
     {
 
         if (!empty($_SERVER['HTTP_X_FORWARDED_SCRIPT_NAME'])) {
@@ -29,7 +31,7 @@ class UrlController
         return '/' . $baseUri;
     }
 
-    private static function getHost()
+    private static function getHost(): string
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_HOST'])) {
             return $_SERVER['HTTP_X_FORWARDED_HOST'];
@@ -40,7 +42,7 @@ class UrlController
         return $rawHost[0];
     }
 
-    private static function getPort()
+    private static function getPort(): string
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_PORT'])) {
             return $_SERVER['HTTP_X_FORWARDED_PORT'];
@@ -49,7 +51,7 @@ class UrlController
         return $_SERVER['SERVER_PORT'];
     }
 
-    private static function getProto()
+    private static function getProto(): string
     {
         if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
             return $_SERVER['HTTP_X_FORWARDED_PROTO'];
@@ -62,8 +64,13 @@ class UrlController
         return 'http';
     }
 
-    public static function getCoreUrl()
+    public static function getCoreUrl(): string
     {
+        $appUrl = CoreConfigModel::getApplicationUrl();
+        if (!empty($appUrl)) {
+            return $appUrl;
+        }
+
         $url = UrlController::getProto();
         $url .= '://';
         $url .= UrlController::getHost();
