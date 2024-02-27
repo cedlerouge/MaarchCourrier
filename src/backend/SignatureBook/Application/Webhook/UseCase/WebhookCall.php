@@ -20,19 +20,12 @@ use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 
 class WebhookCall
 {
-    private WebhookValidation $webhookValidation;
-    private RetrieveSignedResource $retrieveSignedResource;
-    private StoreSignedResource $storeSignedResource;
-    public function __construct()
+    public function __construct(
+        private readonly WebhookValidation $webhookValidation,
+        private readonly RetrieveSignedResource $retrieveSignedResource,
+        private readonly StoreSignedResource $storeSignedResource
+    )
     {
-        $currentUserInformations = new CurrentUserInformations();
-        $curlService = new CurlService();
-        $resourceToSignRepository = new ResourceToSignRepository();
-        $storeSignedResourceService = new StoreSignedResourceService();
-
-        $this->webhookValidation = new WebhookValidation($resourceToSignRepository);
-        $this->retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
-        $this->storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
     }
 
     /**
