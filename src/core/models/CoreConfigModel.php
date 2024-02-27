@@ -17,11 +17,15 @@ namespace SrcCore\models;
 
 use Configuration\models\ConfigurationModel;
 use Exception;
+use SimpleXMLElement;
 
 class CoreConfigModel
 {
     protected static $customId;
 
+    /**
+     * @return mixed|string
+     */
     public static function getCustomId()
     {
         // Use for script
@@ -49,7 +53,8 @@ class CoreConfigModel
             if (!empty($value['path']) && $value['path'] == $path) {
                 self::$customId = $value['id'];
                 return self::$customId;
-            } elseif ($value['uri'] == $_SERVER['HTTP_HOST'] || ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])) {
+            } elseif ($value['uri'] == $_SERVER['HTTP_HOST'] ||
+                ($_SERVER['HTTP_HOST'] == $_SERVER['SERVER_ADDR'] && $value['uri'] == $_SERVER['SERVER_ADDR'])) {
                 self::$customId = $value['id'];
                 return self::$customId;
             }
@@ -59,6 +64,9 @@ class CoreConfigModel
         return self::$customId;
     }
 
+    /**
+     * @return string
+     */
     public static function getConfigPath(): string
     {
         $customId = CoreConfigModel::getCustomId();
@@ -72,6 +80,7 @@ class CoreConfigModel
     }
 
     /**
+     * @return mixed|string
      * @throws Exception
      */
     public static function getApplicationName()
@@ -93,6 +102,9 @@ class CoreConfigModel
         return $applicationName;
     }
 
+    /**
+     * @return mixed
+     */
     public static function getApplicationVersion()
     {
         $file = file_get_contents('package.json');
@@ -102,6 +114,7 @@ class CoreConfigModel
     }
 
     /**
+     * @return mixed|string
      * @throws Exception
      */
     public static function getLanguage()
@@ -120,7 +133,11 @@ class CoreConfigModel
         return 'fr';
     }
 
-    public static function getCustomLanguage($aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return mixed|string
+     */
+    public static function getCustomLanguage(array $aArgs = [])
     {
         $customId = CoreConfigModel::getCustomId();
         if (file_exists('custom/' . $customId . '/lang/lang-' . $aArgs['lang'] . '.ts')) {
@@ -247,10 +264,14 @@ class CoreConfigModel
     {
         $encryptKey = CoreConfigModel::getEncryptKey();
 
-        return $encryptKey !== "Security Key Maarch Courrier #2008" && $encryptKey !== "Security Key Maarch Courrier 2008";
+        return $encryptKey !== "Security Key Maarch Courrier #2008" &&
+            $encryptKey !== "Security Key Maarch Courrier 2008";
     }
 
-    public static function getLibrariesDirectory()
+    /**
+     * @return string|null
+     */
+    public static function getLibrariesDirectory(): ?string
     {
         if (isset($_SERVER['LIBRARIES_DIR'])) {
             $librariesDirectory = rtrim($_SERVER['LIBRARIES_DIR'], '/') . '/';
@@ -263,7 +284,10 @@ class CoreConfigModel
         return $librariesDirectory;
     }
 
-    public static function getSetaPdfFormFillerLibrary()
+    /**
+     * @return string|null
+     */
+    public static function getSetaPdfFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -274,7 +298,10 @@ class CoreConfigModel
         return $libPath;
     }
 
-    public static function getFpdiPdfParserLibrary()
+    /**
+     * @return string|null
+     */
+    public static function getFpdiPdfParserLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -285,7 +312,10 @@ class CoreConfigModel
         return $libPath;
     }
 
-    public static function getSetaSignFormFillerLibrary()
+    /**
+     * @return string|null
+     */
+    public static function getSetaSignFormFillerLibrary(): ?string
     {
         $libDir = CoreConfigModel::getLibrariesDirectory();
         $libPath = null;
@@ -294,7 +324,7 @@ class CoreConfigModel
             // old way (before use internal source)
             if (is_file($libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php')) {
                 $libPath = $libDir . 'SetaPDF-FormFiller-Full/library/SetaPDF/Autoload.php';
-            } else if (is_file($libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php')) {
+            } elseif (is_file($libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php')) {
                 $libPath = $libDir . 'setapdf-formfiller-full/library/SetaPDF/Autoload.php';
             }
         }
@@ -321,6 +351,9 @@ class CoreConfigModel
         return $loggingMethod;
     }
 
+    /**
+     * @return false[]
+     */
     public static function getMailevaConfiguration(): array
     {
         $mailevaConfig = ['enabled' => false];
@@ -338,8 +371,8 @@ class CoreConfigModel
                 $mailevaConfig['clientSecret'] = 'caae36511f324acb9a3419b94ce9cbc6';
             }
             if (!empty($mailevaConfig['uri']) && $mailevaConfig['uri'] == 'https://api.sandbox.maileva.net') {
-                $mailevaConfig['clientId'] = 'c42ca6698b5e4008b8ebf84e465ae216';
-                $mailevaConfig['clientSecret'] = 'e49ab08848f543678287b5c8f7f79812';
+                $mailevaConfig['clientId'] = 'MAARCH-sandbox';
+                $mailevaConfig['clientSecret'] = 'mWHPb3KDMvgHtuDJYCMgadxzi9i2PzDh';
             }
         }
 
@@ -371,6 +404,8 @@ class CoreConfigModel
     }
 
     /**
+     * @param array $args
+     * @return mixed|null
      * @throws Exception
      */
     public static function getJsonLoaded(array $args)

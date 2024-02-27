@@ -211,7 +211,7 @@ trait ShippingTrait
         }
 
         $curlAuth = CurlModel::exec([
-            'url'         => $mailevaConfig['connectionUri'] . '/authentication/oauth2/token',
+            'url'         => $mailevaConfig['connectionUri'] . '/auth/realms/services/protocol/openid-connect/token',
             'basicAuth'   => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
             'headers'     => ['Content-Type: application/x-www-form-urlencoded'],
             'method'      => 'POST',
@@ -252,7 +252,7 @@ trait ShippingTrait
                 ];
             }
             $createSending = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'POST',
@@ -318,7 +318,7 @@ trait ShippingTrait
             }
 
             $createDocument = CurlModel::exec([
-                'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/documents",
+                'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/documents",
                 'bearerAuth'    => ['token' => $token],
                 'method'        => 'POST',
                 'multipartBody' => [
@@ -327,7 +327,7 @@ trait ShippingTrait
                         'filename' => $convertedDocument['filename'],
                         'content'  => file_get_contents($pathToDocument)
                     ],
-                    'metadata' => json_encode(['priority' => 0, 'name' => $resource['title']])
+                    'metadata' => json_encode(['priority' => 1, 'name' => $resource['title']])
                 ]
             ]);
             if ($createDocument['code'] != 201) {
@@ -338,7 +338,7 @@ trait ShippingTrait
             $recipients = [];
             if ($resource['type'] == 'attachment') {
                 $createRecipient = CurlModel::exec([
-                    'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/recipients",
+                    'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
                     'bearerAuth' => ['token' => $token],
                     'headers'    => ['Content-Type: application/json'],
                     'method'     => 'POST',
@@ -364,7 +364,7 @@ trait ShippingTrait
             } else {
                 foreach ($contacts[$key] as $contact) {
                     $createRecipient = CurlModel::exec([
-                        'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/recipients",
+                        'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
                         'bearerAuth' => ['token' => $token],
                         'headers'    => ['Content-Type: application/json'],
                         'method'     => 'POST',
@@ -400,7 +400,7 @@ trait ShippingTrait
                 $body['postage_type'] = strtoupper($shippingTemplate['options']['sendMode']);
             }
             $setOptions = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'PATCH',
@@ -412,7 +412,7 @@ trait ShippingTrait
             }
 
             $submit = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/submit",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/submit",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'POST'
