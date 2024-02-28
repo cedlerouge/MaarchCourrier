@@ -59,7 +59,14 @@ class FastParapheurController
     const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
     const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
 
-    public function getWorkflowDetails(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function getWorkflowDetails(Request $request, Response $response): Response
     {
         $config = FastParapheurController::getConfig();
         if (!empty($config['errors'])) {
@@ -77,17 +84,27 @@ class FastParapheurController
         }
 
         return $response->withJson([
-            'workflowTypes'  => $config['workflowTypes']['type'],
-            'otpStatus'      => $optionOtp,
+            'workflowTypes' => $config['workflowTypes']['type'],
+            'otpStatus' => $optionOtp,
             'signatureModes' => $signatureModes['signatureModes']
         ]);
     }
 
-    public function linkUserToFastParapheur(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function linkUserToFastParapheur(Request $request, Response $response, array $args): Response
     {
         $body = $request->getParsedBody();
         if (!Validator::notEmpty()->email()->validate($body['fastParapheurUserEmail'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'body fastParapheurUserEmail is not a valid email address']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'body fastParapheurUserEmail is not a valid email address']
+            );
         }
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'args id is not an integer']);
@@ -101,14 +118,21 @@ class FastParapheurController
 
         $alreadyLinked = UserModel::get([
             'select' => [1],
-            'where'  => ['external_id->>\'fastParapheur\' = ?'],
-            'data'   => [$body['fastParapheurUserEmail']]
+            'where' => ['external_id->>\'fastParapheur\' = ?'],
+            'data' => [$body['fastParapheurUserEmail']]
         ]);
         if (!empty($alreadyLinked)) {
-            return $response->withStatus(403)->withJson(['errors' => 'FastParapheur user email can only be linked to a single MaarchCourrier user', 'lang' => 'fastParapheurUserAlreadyLinked']);
+            return $response->withStatus(403)->withJson(
+                [
+                    'errors' => 'FastParapheur user email can only be linked to a single MaarchCourrier user',
+                    'lang' => 'fastParapheurUserAlreadyLinked'
+                ]
+            );
         }
 
-        $check = FastParapheurController::checkUserExistanceInFastParapheur(['fastParapheurUserEmail' => $body['fastParapheurUserEmail']]);
+        $check = FastParapheurController::checkUserExistanceInFastParapheur(
+            ['fastParapheurUserEmail' => $body['fastParapheurUserEmail']]
+        );
         if (!empty($check['errors'])) {
             return $response->withStatus($check['code'])->withJson(['errors' => $check['errors']]);
         }
@@ -121,16 +145,23 @@ class FastParapheurController
 
         HistoryController::add([
             'tableName' => 'users',
-            'recordId'  => $GLOBALS['id'],
+            'recordId' => $GLOBALS['id'],
             'eventType' => 'UP',
-            'eventId'   => 'userModification',
-            'info'      => _USER_LINKED_TO_FASTPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
+            'eventId' => 'userModification',
+            'info' => _USER_LINKED_TO_FASTPARAPHEUR . " : {$userInfo['firstname']} {$userInfo['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function unlinkUserToFastParapheur(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     */
+    public function unlinkUserToFastParapheur(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'args id is not an integer']);
@@ -150,28 +181,40 @@ class FastParapheurController
 
         HistoryController::add([
             'tableName' => 'users',
-            'recordId'  => $GLOBALS['id'],
+            'recordId' => $GLOBALS['id'],
             'eventType' => 'UP',
-            'eventId'   => 'userModification',
-            'info'      => _USER_UNLINKED_TO_FASTPARAPHEUR . " : {$user['firstname']} {$user['lastname']}"
+            'eventId' => 'userModification',
+            'info' => _USER_UNLINKED_TO_FASTPARAPHEUR . " : {$user['firstname']} {$user['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function userStatusInFastParapheur(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function userStatusInFastParapheur(Request $request, Response $response, array $args): Response
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if ($loadedXml->signatoryBookEnabled != 'fastParapheur') {
             return $response->withStatus(403)->withJson(['errors' => 'fastParapheur is not enabled']);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurId"']]);
+        $user = UserModel::getById(
+            ['id' => $args['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurId"']]
+        );
         if (empty($user['fastParapheurId'])) {
             return $response->withStatus(403)->withJson(['errors' => 'user does not have a Fast Parapheur email']);
         }
 
-        $check = FastParapheurController::checkUserExistanceInFastParapheur(['fastParapheurUserEmail' => $user['fastParapheurId']]);
+        $check = FastParapheurController::checkUserExistanceInFastParapheur(
+            ['fastParapheurUserEmail' => $user['fastParapheurId']]
+        );
         if (!empty($check['errors'])) {
             return $response->withStatus($check['code'])->withJson(['errors' => $check['errors']]);
         }
@@ -180,9 +223,14 @@ class FastParapheurController
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return \Slim\Psr7\Response|Response
      * @throws Exception
      */
-    public function getWorkflow(Request $request, Response $response, array $args)
+    public function getWorkflow(Request $request, Response $response, array $args): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -196,11 +244,15 @@ class FastParapheurController
             }
             $resource['resourceType'] = 'letterbox_coll';
         } else {
-            $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'external_id', 'external_state']]);
+            $resource = AttachmentModel::getById(
+                ['id' => $args['id'], 'select' => ['res_id_master', 'external_id', 'external_state']]
+            );
             if (empty($resource)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
             }
-            if (!ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])) {
+            if (
+                !ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
             $resource['resourceType'] = 'attachments_coll';
@@ -215,7 +267,10 @@ class FastParapheurController
         $fetchDate = new DateTimeImmutable($externalState['signatureBookWorkflow']['fetchDate']);
         $timeAgo = new DateTimeImmutable('-30 minutes');
 
-        if (!empty($externalState['signatureBookWorkflow']['fetchDate']) && $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()) {
+        if (
+            !empty($externalState['signatureBookWorkflow']['fetchDate']) &&
+            $fetchDate->getTimestamp() >= $timeAgo->getTimestamp()
+        ) {
             return $response->withJson($externalState['signatureBookWorkflow']['data']);
         }
 
@@ -235,12 +290,12 @@ class FastParapheurController
         $subscriberId = (string)$fastParapheurBlock->subscriberId;
 
         $curlReturn = CurlModel::exec([
-            'url'     => $url . '/documents/v2/' . $externalId['signatureBookId'] . '/history',
-            'method'  => 'GET',
+            'url' => $url . '/documents/v2/' . $externalId['signatureBookId'] . '/history',
+            'method' => 'GET',
             'options' => [
-                CURLOPT_SSLCERT       => $certPath,
+                CURLOPT_SSLCERT => $certPath,
                 CURLOPT_SSLCERTPASSWD => $certPass,
-                CURLOPT_SSLCERTTYPE   => $certType
+                CURLOPT_SSLCERTTYPE => $certType
             ]
         ]);
 
@@ -249,13 +304,15 @@ class FastParapheurController
         }
 
         if (!empty($curlReturn)) {
-            $fastParapheurUsers = FastParapheurController::getUsers(['config' => [
-                'subscriberId' => $subscriberId,
-                'url'          => $url,
-                'certPath'     => $certPath,
-                'certPass'     => $certPass,
-                'certType'     => $certType
-            ]]);
+            $fastParapheurUsers = FastParapheurController::getUsers([
+                'config' => [
+                    'subscriberId' => $subscriberId,
+                    'url' => $url,
+                    'certPath' => $certPath,
+                    'certPass' => $certPass,
+                    'certType' => $certType
+                ]
+            ]);
             $fastParapheurUsers = array_column($fastParapheurUsers, 'email', 'idToDisplay');
         }
 
@@ -276,9 +333,9 @@ class FastParapheurController
                     'id',
                     'concat(firstname, \' \', lastname) as name',
                 ],
-                'where'  => ['external_id->>\'fastParapheur\' = ?'],
-                'data'   => [$fastParapheurUsers[$step['userFullname']]],
-                'limit'  => 1
+                'where' => ['external_id->>\'fastParapheur\' = ?'],
+                'data' => [$fastParapheurUsers[$step['userFullname']]],
+                'limit' => 1
             ]);
             if (empty($user)) {
                 $user = ['id' => null, 'name' => '-'];
@@ -287,10 +344,10 @@ class FastParapheurController
             }
             $processDate = new DateTimeImmutable($step['date']);
             $externalWorkflow[] = [
-                'userId'       => $user['id'],
-                'userDisplay'  => $step['userFullname'] . ' (' . $user['name'] . ')',
-                'mode'         => $mode,
-                'order'        => $order,
+                'userId' => $user['id'],
+                'userDisplay' => $step['userFullname'] . ' (' . $user['name'] . ')',
+                'mode' => $mode,
+                'order' => $order,
                 'process_date' => $processDate->format('d-m-Y H:i')
             ];
         }
@@ -300,18 +357,20 @@ class FastParapheurController
         $externalState['signatureBookWorkflow']['data'] = $externalWorkflow;
         if ($resource['resourceType'] == 'letterbox_coll') {
             ResModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$args['id']],
+                'where' => ['res_id = ?'],
+                'data' => [$args['id']],
                 'postSet' => [
-                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                 ]
             ]);
         } else {
             AttachmentModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$args['id']],
+                'where' => ['res_id = ?'],
+                'data' => [$args['id']],
                 'postSet' => [
-                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                 ]
             ]);
         }
@@ -320,20 +379,26 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
      * @throws Exception
      */
-    public static function retrieveSignedMails(array $args)
+    public static function retrieveSignedMails(array $args): array
     {
         $version = $args['version'];
 
         $fastUsers = [];
-        if (!empty($args['config']['data']['integratedWorkflow']) && $args['config']['data']['integratedWorkflow'] == 'true') {
+        if (
+            !empty($args['config']['data']['integratedWorkflow']) &&
+            $args['config']['data']['integratedWorkflow'] == 'true'
+        ) {
             // Get all fast users, format them to have the email and name (as formatted in fast's /history route)
             $fastUsers = FastParapheurController::getUsers(['config' => $args['config']['data'], 'noFormat' => true]);
             $fastUsers = array_map(function ($user) {
                 return [
                     'email' => $user['email'],
-                    'name'  => $user['nom'] . ' ' . $user['prenom']
+                    'name' => $user['nom'] . ' ' . $user['prenom']
                 ];
             }, $fastUsers);
             $fastUsers = array_column($fastUsers, 'name', 'email');
@@ -342,21 +407,21 @@ class FastParapheurController
         foreach ($args['idsToRetrieve'][$version] as $resId => $value) {
             if (empty($value['res_id_master'])) {
                 LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => $GLOBALS['moduleId'],
-                    'level'     => 'INFO',
+                    'isTech' => true,
+                    'moduleId' => $GLOBALS['moduleId'],
+                    'level' => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve main document resId: $resId"
+                    'eventId' => "Retrieve main document resId: $resId"
                 ]);
             } else {
                 LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => $GLOBALS['moduleId'],
-                    'level'     => 'INFO',
+                    'isTech' => true,
+                    'moduleId' => $GLOBALS['moduleId'],
+                    'level' => 'INFO',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "Retrieve attachment resId: $resId"
+                    'eventId' => "Retrieve attachment resId: $resId"
                 ]);
             }
             if (empty(trim($value['external_id']))) {
@@ -364,6 +429,7 @@ class FastParapheurController
                 continue;
             }
 
+            /*
             if (!empty($value['external_state_fetch_date'])) {
                 $fetchDate = new DateTimeImmutable($value['external_state_fetch_date']);
                 $timeAgo = new DateTimeImmutable('-30 minutes');
@@ -372,34 +438,37 @@ class FastParapheurController
                     $newDate = $fetchDate->modify('+30 minutes');
 
                     LogsController::add([
-                        'isTech'    => true,
-                        'moduleId'  => $GLOBALS['moduleId'],
-                        'level'     => 'INFO',
+                        'isTech' => true,
+                        'moduleId' => $GLOBALS['moduleId'],
+                        'level' => 'INFO',
                         'tableName' => $GLOBALS['batchName'],
                         'eventType' => 'script',
-                        'eventId'   => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"
+                        'eventId' => "Time limit reached ! Next retrieve time : {$newDate->format('d-m-Y H:i')}"
                     ]);
 
                     unset($args['idsToRetrieve'][$version][$resId]);
                     continue;
                 }
             }
+            */
 
-            $historyResponse = FastParapheurController::getDocumentHistory(['config' => $args['config'], 'documentId' => $value['external_id']]);
+            $historyResponse = FastParapheurController::getDocumentHistory(
+                ['config' => $args['config'], 'documentId' => $value['external_id']]
+            );
 
             // Update external_state_fetch_date event if $historyResponse return an error. To avoid spamming the API endpoint.
             $updateHistoryFetchDate = FastParapheurController::updateFetchHistoryDateByExternalId([
-                'type'  => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
+                'type' => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
                 'resId' => $value['res_id']
             ]);
             if (!empty($updateHistoryFetchDate['errors'])) {
                 LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => $GLOBALS['moduleId'],
-                    'level'     => 'ERROR',
+                    'isTech' => true,
+                    'moduleId' => $GLOBALS['moduleId'],
+                    'level' => 'ERROR',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "{$updateHistoryFetchDate['errors']}"
+                    'eventId' => "{$updateHistoryFetchDate['errors']}"
                 ]);
                 unset($args['idsToRetrieve'][$version][$resId]);
                 continue;
@@ -408,12 +477,12 @@ class FastParapheurController
             // Check for $historyResponse error
             if (!empty($historyResponse['errors'])) {
                 LogsController::add([
-                    'isTech'    => true,
-                    'moduleId'  => $GLOBALS['moduleId'],
-                    'level'     => 'ERROR',
+                    'isTech' => true,
+                    'moduleId' => $GLOBALS['moduleId'],
+                    'level' => 'ERROR',
                     'tableName' => $GLOBALS['batchName'],
                     'eventType' => 'script',
-                    'eventId'   => "[fastParapheur api] {$historyResponse['errors']}"
+                    'eventId' => "[fastParapheur api] {$historyResponse['errors']}"
                 ]);
 
                 if (
@@ -422,35 +491,35 @@ class FastParapheurController
                 ) {
                     $documentLink = DocumentLinkFactory::createDocumentLink();
                     try {
-                        $type  = $version == 'resLetterbox' ? 'resource' : 'attachment';
+                        $type = $version == 'resLetterbox' ? 'resource' : 'attachment';
                         $title = $version == 'resLetterbox' ? $value['subject'] : $value['title'];
                         $documentLink->removeExternalLink($value['res_id'], $title, $type, $value['external_id']);
                     } catch (Throwable $th) {
                         $info = "[SCRIPT] Failed to remove document link: MaarchCourrier docId {$value['res_id']}, document type $type, parapheur docId {$value['external_id']}";
                         LogsController::add([
-                            'isTech'    => true,
-                            'moduleId'  => $GLOBALS['moduleId'],
-                            'level'     => 'ERROR',
+                            'isTech' => true,
+                            'moduleId' => $GLOBALS['moduleId'],
+                            'level' => 'ERROR',
                             'tableName' => $GLOBALS['batchName'],
                             'eventType' => 'script',
-                            'eventId'   => "$info. Error: {$th->getMessage()}."
+                            'eventId' => "$info. Error: {$th->getMessage()}."
                         ]);
                     }
                 } else {
                     $userId = UserModel::get([
                         'select' => ['id'],
-                        'where'  => ['mode = ? OR mode = ?'],
-                        'data'   => ['root_visible', 'root_invisible'],
-                        'limit'  => 1
+                        'where' => ['mode = ? OR mode = ?'],
+                        'data' => ['root_visible', 'root_invisible'],
+                        'limit' => 1
                     ])[0]['id'];
 
                     HistoryController::add([
                         'tableName' => 'res_letterbox',
-                        'recordId'  => $value['res_id_master'] ?? $value['res_id'],
+                        'recordId' => $value['res_id_master'] ?? $value['res_id'],
                         'eventType' => 'ACTION#1',
-                        'eventId'   => '1',
-                        'userId'    => $userId,
-                        'info'      => "[fastParapheur api] {$historyResponse['errors']}"
+                        'eventId' => '1',
+                        'userId' => $userId,
+                        'info' => "[fastParapheur api] {$historyResponse['errors']}"
                     ]);
                 }
 
@@ -458,16 +527,19 @@ class FastParapheurController
                 continue;
             }
 
-            if (!empty($args['config']['data']['integratedWorkflow']) && $args['config']['data']['integratedWorkflow'] == 'true') {
+            if (
+                !empty($args['config']['data']['integratedWorkflow']) &&
+                $args['config']['data']['integratedWorkflow'] == 'true'
+            ) {
                 if (empty($value['res_id_master'])) {
                     $resource = ResModel::getById([
                         'select' => ['external_state'],
-                        'resId'  => $resId
+                        'resId' => $resId
                     ]);
                 } else {
                     $resource = AttachmentModel::getById([
                         'select' => ['external_state'],
-                        'id'     => $resId
+                        'id' => $resId
                     ]);
                 }
                 $externalState = json_decode($resource['external_state'] ?? '{}', true);
@@ -480,7 +552,11 @@ class FastParapheurController
                     return $step;
                 }, $externalState['signatureBookWorkflow']['workflow'] ?? []);
 
-                $lastFastWorkflowAction = FastParapheurController::getLastFastWorkflowAction($historyResponse['response'], $knownWorkflow, $args['config']['data']);
+                $lastFastWorkflowAction = FastParapheurController::getLastFastWorkflowAction(
+                    $historyResponse['response'],
+                    $knownWorkflow,
+                    $args['config']['data']
+                );
                 if (empty($lastFastWorkflowAction)) {
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'waiting';
                     continue;
@@ -496,21 +572,26 @@ class FastParapheurController
             $refusedVisaState = $args['config']['data']['refusedVisaState'] ?? null;
             foreach ($historyResponse['response'] as $valueResponse) {    // Loop on all steps of the documents (prepared, send to signature, signed etc...)
                 $signatoryInfo = FastParapheurController::getSignatoryUserInfo([
-                    'config'        => $args['config'],
+                    'config' => $args['config'],
                     'valueResponse' => $valueResponse,
-                    'resId'         => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ?? $args['idsToRetrieve'][$version][$resId]['res_id']
+                    'resId' => $args['idsToRetrieve'][$version][$resId]['res_id_master'] ??
+                        $args['idsToRetrieve'][$version][$resId]['res_id']
                 ]);
 
-                if ($valueResponse['stateName'] == $validatedState || $valueResponse['stateName'] == $validatedVisaState) {
+                if (
+                    $valueResponse['stateName'] == $validatedState || $valueResponse['stateName'] == $validatedVisaState
+                ) {
                     LogsController::add([
-                        'isTech'    => true,
-                        'moduleId'  => $GLOBALS['moduleId'],
-                        'level'     => 'INFO',
+                        'isTech' => true,
+                        'moduleId' => $GLOBALS['moduleId'],
+                        'level' => 'INFO',
                         'tableName' => $GLOBALS['batchName'],
                         'eventType' => 'script',
-                        'eventId'   => "Circuit ended ! Retrieve file from fastParapheur"
+                        'eventId' => "Circuit ended ! Retrieve file from fastParapheur"
                     ]);
-                    $response = FastParapheurController::download(['config' => $args['config'], 'documentId' => $value['external_id']]);
+                    $response = FastParapheurController::download(
+                        ['config' => $args['config'], 'documentId' => $value['external_id']]
+                    );
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'validated';
                     $args['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
 
@@ -518,38 +599,43 @@ class FastParapheurController
                     $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
 
                     $proofDocument = FastParapheurController::makeHistoryProof([
-                        'documentId'      => $value['external_id'],
-                        'config'          => $args['config'],
-                        'historyData'     => $historyResponse['response'],
-                        'filename'        => ($args['idsToRetrieve'][$version][$resId]['title'] ?? $args['idsToRetrieve'][$version][$resId]['subject']) . '.pdf',
+                        'documentId' => $value['external_id'],
+                        'config' => $args['config'],
+                        'historyData' => $historyResponse['response'],
+                        'filename' => ($args['idsToRetrieve'][$version][$resId]['title'] ??
+                                $args['idsToRetrieve'][$version][$resId]['subject']) . '.pdf',
                         'signEncodedFile' => $response['b64FileContent']
                     ]);
                     if (!empty($proofDocument['errors'])) {
                         LogsController::add([
-                            'isTech'    => true,
-                            'moduleId'  => $GLOBALS['moduleId'],
-                            'level'     => 'ERROR',
+                            'isTech' => true,
+                            'moduleId' => $GLOBALS['moduleId'],
+                            'level' => 'ERROR',
                             'tableName' => $GLOBALS['batchName'],
                             'eventType' => 'script',
-                            'eventId'   => "{$proofDocument['errors']}"
+                            'eventId' => "{$proofDocument['errors']}"
                         ]);
                         continue;
                     } elseif (!empty($proofDocument['encodedProofDocument'])) {
                         LogsController::add([
-                            'isTech'    => true,
-                            'moduleId'  => $GLOBALS['moduleId'],
-                            'level'     => 'INFO',
+                            'isTech' => true,
+                            'moduleId' => $GLOBALS['moduleId'],
+                            'level' => 'INFO',
                             'tableName' => $GLOBALS['batchName'],
                             'eventType' => 'script',
-                            'eventId'   => "Retrieve proof from fastParapheur"
+                            'eventId' => "Retrieve proof from fastParapheur"
                         ]);
                         $args['idsToRetrieve'][$version][$resId]['log'] = $proofDocument['encodedProofDocument'];
                         $args['idsToRetrieve'][$version][$resId]['logFormat'] = $proofDocument['format'];
                         $args['idsToRetrieve'][$version][$resId]['logTitle'] = '[Faisceau de preuve]';
                     }
 
-                    if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
-                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'] ?? null;
+                    if (
+                        empty($args['config']['data']['integratedWorkflow']) ||
+                        $args['config']['data']['integratedWorkflow'] == 'false'
+                    ) {
+                        $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'] ??
+                            null;
                     } elseif (!empty($valueResponse['userFastId'] ?? null) && $signatoryInfo['id']) {
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryInfo['id'];
                         $args['idsToRetrieve'][$version][$resId]['typist'] = $signatoryInfo['id'];
@@ -557,44 +643,56 @@ class FastParapheurController
                         $args['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = null;
                         $args['idsToRetrieve'][$version][$resId]['typist'] = null;
                         FastParapheurController::updateDocumentExternalStateSignatoryUser([
-                            'id'            => $resId,
-                            'type'          => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
+                            'id' => $resId,
+                            'type' => ($version == 'resLetterbox' ? 'resource' : 'attachment'),
                             'signatoryUser' => $signatoryInfo['name'] ?? $valueResponse['userFullname']
                         ]);
                     }
                     LogsController::add([
-                        'isTech'    => true,
-                        'moduleId'  => $GLOBALS['moduleId'],
-                        'level'     => 'INFO',
+                        'isTech' => true,
+                        'moduleId' => $GLOBALS['moduleId'],
+                        'level' => 'INFO',
                         'tableName' => $GLOBALS['batchName'],
                         'eventType' => 'script',
-                        'eventId'   => "Done!"
+                        'eventId' => "Done!"
                     ]);
                     break;
-                } elseif ($valueResponse['stateName'] == $refusedState || $valueResponse['stateName'] == $refusedVisaState) {
+                } elseif (
+                    $valueResponse['stateName'] == $refusedState || $valueResponse['stateName'] == $refusedVisaState
+                ) {
                     $response = FastParapheurController::getRefusalMessage([
-                        'config'     => $args['config'],
+                        'config' => $args['config'],
                         'documentId' => $value['external_id'],
-                        'res_id'     => $resId,
-                        'version'    => $version
+                        'res_id' => $resId,
+                        'version' => $version
                     ]);
                     $args['idsToRetrieve'][$version][$resId]['status'] = 'refused';
-                    if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
-                        $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' . $response];
+                    if (
+                        empty($args['config']['data']['integratedWorkflow']) ||
+                        $args['config']['data']['integratedWorkflow'] == 'false'
+                    ) {
+                        $args['idsToRetrieve'][$version][$resId]['notes'][] = [
+                            'content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' .
+                                $response
+                        ];
                     } else {
                         if ($signatoryInfo['id']) {
-                            $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $signatoryInfo['name'] . ' : ' . $response];
+                            $args['idsToRetrieve'][$version][$resId]['notes'][] = [
+                                'content' => $signatoryInfo['name'] . ' : ' . $response
+                            ];
                         } else {
-                            $args['idsToRetrieve'][$version][$resId]['notes'][] = ['content' => $valueResponse['userFullname'] . ' : ' . $response];
+                            $args['idsToRetrieve'][$version][$resId]['notes'][] = [
+                                'content' => $valueResponse['userFullname'] . ' : ' . $response
+                            ];
                         }
                     }
                     LogsController::add([
-                        'isTech'    => true,
-                        'moduleId'  => $GLOBALS['moduleId'],
-                        'level'     => 'INFO',
+                        'isTech' => true,
+                        'moduleId' => $GLOBALS['moduleId'],
+                        'level' => 'INFO',
                         'tableName' => $GLOBALS['batchName'],
                         'eventType' => 'script',
-                        'eventId'   => "Done!"
+                        'eventId' => "Done!"
                     ]);
                     break;
                 } else {
@@ -607,9 +705,12 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return void
      * @throws Exception
      */
-    public static function updateDocumentExternalStateSignatoryUser(array $args)
+    public static function updateDocumentExternalStateSignatoryUser(array $args): void
     {
         ValidatorModel::notEmpty($args, ['id', 'type', 'signatoryUser']);
         ValidatorModel::intType($args, ['id']);
@@ -619,16 +720,16 @@ class FastParapheurController
 
         if ($args['type'] == 'resource') {
             ResModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$args['id']],
+                'where' => ['res_id = ?'],
+                'data' => [$args['id']],
                 'postSet' => [
                     'external_state' => "jsonb_set(external_state::jsonb, '{signatoryUser}', '\"$signatoryUser\"')"
                 ]
             ]);
         } else {
             AttachmentModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$args['id']],
+                'where' => ['res_id = ?'],
+                'data' => [$args['id']],
                 'postSet' => [
                     'external_state' => "jsonb_set(external_state::jsonb, '{signatoryUser}', '\"$signatoryUser\"')"
                 ]
@@ -670,7 +771,7 @@ class FastParapheurController
         if (file_exists($signDocumentPath) && filesize($signDocumentPath) > 0) {
             $proof = [
                 'signedDocument' => [
-                    'filename'     => $filename,
+                    'filename' => $filename,
                     'filenameSize' => filesize($signDocumentPath)
                 ]
             ];
@@ -686,7 +787,7 @@ class FastParapheurController
 
         $documentPathToZip[] = ['path' => $fdcPath, 'filename' => 'ficheDeCirculation.pdf'];
         $proof['proof'] = [
-            'filename'     => 'ficheDeCirculation.pdf',
+            'filename' => 'ficheDeCirculation.pdf',
             'filenameSize' => filesize($fdcPath)
         ];
         $proof['history'] = $args['historyData'];
@@ -726,6 +827,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
      * @throws Exception
      */
     public static function getProof(array $args): array
@@ -735,12 +839,12 @@ class FastParapheurController
         ValidatorModel::arrayType($args, ['config']);
 
         $curlReturn = CurlModel::exec([
-            'url'          => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/getFdc',
-            'method'       => 'GET',
-            'options'      => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+            'url' => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/getFdc',
+            'method' => 'GET',
+            'options' => [
+                CURLOPT_SSLCERT => $args['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['data']['certType']
             ],
             'fileResponse' => true
         ]);
@@ -754,32 +858,41 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
      * @throws Exception
      */
-    public static function getSignatoryUserInfo(array $args = [])
+    public static function getSignatoryUserInfo(array $args = []): array
     {
         ValidatorModel::notEmpty($args, ['resId', 'config']);
 
-        $signatoryInfo = null;
+        $signatoryInfo = [];
 
-        if (empty($args['config']['data']['integratedWorkflow']) || $args['config']['data']['integratedWorkflow'] == 'false') {
+        if (
+            empty($args['config']['data']['integratedWorkflow']) ||
+            $args['config']['data']['integratedWorkflow'] == 'false'
+        ) {
             $user = DatabaseModel::select([
-                'select'    => ['firstname', 'lastname', 'users.id'],
-                'table'     => ['listinstance', 'users'],
+                'select' => ['firstname', 'lastname', 'users.id'],
+                'table' => ['listinstance', 'users'],
                 'left_join' => ['listinstance.item_id = users.id'],
-                'where'     => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
-                'data'      => [$args['resId'], 'VISA_CIRCUIT']
+                'where' => ['res_id = ?', 'process_date is null', 'difflist_type = ?'],
+                'data' => [$args['resId'], 'VISA_CIRCUIT']
             ]);
-            if(!empty($user[0])) {
+            if (!empty($user[0])) {
                 $signatoryInfo = $user[0];
             }
         } else {
             if (!empty($args['valueResponse']['userFastId'] ?? null)) {
-                $signatoryInfo = UserModel::get([
+                $user = UserModel::get([
                     'select' => ['id', "CONCAT(firstname, ' ', lastname) as name"],
-                    'where'  => ['external_id->>\'fastParapheur\' = ?'],
-                    'data'   => [$args['valueResponse']['userFastId']]
-                ])[0];
+                    'where' => ['external_id->>\'fastParapheur\' = ?'],
+                    'data' => [$args['valueResponse']['userFastId']]
+                ]);
+                if (!empty($user[0])) {
+                    $signatoryInfo = $user[0];
+                }
             } elseif (!empty($args['valueResponse']['userFullname'])) {
                 $search = $args['valueResponse']['userFullname'];
                 $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
@@ -787,10 +900,10 @@ class FastParapheurController
                 $fpUsers = FastParapheurController::getUsers([
                     'config' => [
                         'subscriberId' => $args['config']['data']['subscriberId'],
-                        'url'          => $args['config']['data']['url'],
-                        'certPath'     => $args['config']['data']['certPath'],
-                        'certPass'     => $args['config']['data']['certPass'],
-                        'certType'     => $args['config']['data']['certType']
+                        'url' => $args['config']['data']['url'],
+                        'certPath' => $args['config']['data']['certPath'],
+                        'certPass' => $args['config']['data']['certPass'],
+                        'certType' => $args['config']['data']['certType']
                     ]
                 ]);
                 if (!empty($fpUsers['errors'])) {
@@ -803,7 +916,8 @@ class FastParapheurController
                 $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
                     return mb_stripos($fpUser['email'], $search) > -1 ||
                         mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
-                        mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) > -1;
+                        mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) >
+                        -1;
                 });
 
                 if (!empty($fpUser)) {
@@ -814,12 +928,13 @@ class FastParapheurController
                             'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
                             'trim(concat(firstname, \' \', lastname)) as name'
                         ],
-                        'where'  => ['external_id->>\'fastParapheur\' is not null']
+                        'where' => ['external_id->>\'fastParapheur\' is not null']
                     ]);
 
                     foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
                         if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
-                            $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' . $alreadyLinkedUser['fastParapheurEmail'] . ')';
+                            $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' .
+                                $alreadyLinkedUser['fastParapheurEmail'] . ')';
                             break;
                         }
                     }
@@ -831,18 +946,23 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return void
      * @throws Exception
      */
-    public static function processVisaWorkflow(array $args = [])
+    public static function processVisaWorkflow(array $args = []): void
     {
         $resIdMaster = $args['res_id_master'] ?? $args['res_id'];
 
-        $attachments = AttachmentModel::get(['select' => ['count(1)'], 'where' => ['res_id_master = ?', 'status = ?'], 'data' => [$resIdMaster, 'FRZ']]);
+        $attachments = AttachmentModel::get(
+            ['select' => ['count(1)'], 'where' => ['res_id_master = ?', 'status = ?'], 'data' => [$resIdMaster, 'FRZ']]
+        );
         if ((count($attachments) < 2 && $args['processSignatory']) || !$args['processSignatory']) {
             $visaWorkflow = ListInstanceModel::get([
-                'select'  => ['listinstance_id', 'requested_signature'],
-                'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date IS NULL'],
-                'data'    => [$resIdMaster, 'VISA_CIRCUIT'],
+                'select' => ['listinstance_id', 'requested_signature'],
+                'where' => ['res_id = ?', 'difflist_type = ?', 'process_date IS NULL'],
+                'data' => [$resIdMaster, 'VISA_CIRCUIT'],
                 'orderBY' => ['ORDER BY listinstance_id ASC']
             ]);
 
@@ -851,17 +971,32 @@ class FastParapheurController
                     if ($listInstance['requested_signature']) {
                         // Stop to the first signatory user
                         if ($args['processSignatory']) {
-                            ListInstanceModel::update(['set' => ['signatory' => 'true', 'process_date' => 'CURRENT_TIMESTAMP'], 'where' => ['listinstance_id = ?'], 'data' => [$listInstance['listinstance_id']]]);
+                            ListInstanceModel::update(
+                                [
+                                    'set' => ['signatory' => 'true', 'process_date' => 'CURRENT_TIMESTAMP'],
+                                    'where' => ['listinstance_id = ?'],
+                                    'data' => [$listInstance['listinstance_id']]
+                                ]
+                            );
                         }
                         break;
                     }
-                    ListInstanceModel::update(['set' => ['process_date' => 'CURRENT_TIMESTAMP'], 'where' => ['listinstance_id = ?'], 'data' => [$listInstance['listinstance_id']]]);
+                    ListInstanceModel::update(
+                        [
+                            'set' => ['process_date' => 'CURRENT_TIMESTAMP'],
+                            'where' => ['listinstance_id = ?'],
+                            'data' => [$listInstance['listinstance_id']]
+                        ]
+                    );
                 }
             }
         }
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|array[]|string[]
      * @throws Exception
      */
     public static function upload(array $args): array
@@ -876,34 +1011,68 @@ class FastParapheurController
         // Retrieve the annexes of the attachemnt to sign (other attachment and the original document)
         $annexes = [];
         $annexes['letterbox'] = ResModel::get([
-            'select' => ['res_id', 'subject', 'path', 'filename', 'docserver_id', 'format', 'category_id', 'external_id', 'integrations'],
-            'where'  => ['res_id = ?'],
-            'data'   => [$args['resIdMaster']]
+            'select' => [
+                'res_id',
+                'subject',
+                'path',
+                'filename',
+                'docserver_id',
+                'format',
+                'category_id',
+                'external_id',
+                'integrations'
+            ],
+            'where' => ['res_id = ?'],
+            'data' => [$args['resIdMaster']]
         ]);
 
         if (!empty($annexes['letterbox'][0]['docserver_id'])) {
-            $adrMainInfo = ConvertPdfController::getConvertedPdfById(['resId' => $args['resIdMaster'], 'collId' => 'letterbox_coll']);
-            $letterboxPath = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]);
-            $annexes['letterbox'][0]['filePath'] = $letterboxPath['path_template'] . str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
+            $adrMainInfo = ConvertPdfController::getConvertedPdfById(
+                ['resId' => $args['resIdMaster'], 'collId' => 'letterbox_coll']
+            );
+            $letterboxPath = DocserverModel::getByDocserverId(
+                ['docserverId' => $adrMainInfo['docserver_id'], 'select' => ['path_template']]
+            );
+            $annexes['letterbox'][0]['filePath'] = $letterboxPath['path_template'] .
+                str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
         }
 
         $attachments = AttachmentModel::get([
             'select' => [
-                'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint'
+                'res_id',
+                'title',
+                'docserver_id',
+                'path',
+                'filename',
+                'format',
+                'attachment_type',
+                'fingerprint'
             ],
-            'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')", "in_signature_book = 'true'"],
-            'data'   => [$args['resIdMaster'], ['signed_response']]
+            'where' => [
+                "res_id_master = ?",
+                "attachment_type not in (?)",
+                "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS')",
+                "in_signature_book = 'true'"
+            ],
+            'data' => [$args['resIdMaster'], ['signed_response']]
         ]);
 
         $attachmentTypes = AttachmentTypeModel::get(['select' => ['type_id', 'signable']]);
         $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
         foreach ($attachments as $key => $value) {
             if (!$attachmentTypes[$value['attachment_type']]) {
-                $annexeAttachmentPath = DocserverModel::getByDocserverId(['docserverId' => $value['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-                $value['filePath'] = $annexeAttachmentPath['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $value['path']) . $value['filename'];
+                $annexeAttachmentPath = DocserverModel::getByDocserverId(
+                    ['docserverId' => $value['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+                );
+                $value['filePath'] = $annexeAttachmentPath['path_template'] .
+                    str_replace('#', DIRECTORY_SEPARATOR, $value['path']) . $value['filename'];
 
-                $docserverType = DocserverTypeModel::getById(['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint = StoreController::getFingerPrint(['filePath' => $value['filePath'], 'mode' => $docserverType['fingerprint_mode']]);
+                $docserverType = DocserverTypeModel::getById(
+                    ['id' => $annexeAttachmentPath['docserver_type_id'], 'select' => ['fingerprint_mode']]
+                );
+                $fingerprint = StoreController::getFingerPrint(
+                    ['filePath' => $value['filePath'], 'mode' => $docserverType['fingerprint_mode']]
+                );
                 if ($value['fingerprint'] != $fingerprint) {
                     return ['error' => 'Fingerprints do not match'];
                 }
@@ -920,15 +1089,15 @@ class FastParapheurController
             $collId = 'attachments_coll';
 
             $response = FastParapheurController::uploadFile([
-                'resId'        => $resId,
-                'title'        => $attachment['title'],
-                'collId'       => $collId,
-                'resIdMaster'  => $args['resIdMaster'],
-                'annexes'      => $annexes,
-                'circuitId'    => $circuitId,
-                'label'        => $label,
+                'resId' => $resId,
+                'title' => $attachment['title'],
+                'collId' => $collId,
+                'resIdMaster' => $args['resIdMaster'],
+                'annexes' => $annexes,
+                'circuitId' => $circuitId,
+                'label' => $label,
                 'subscriberId' => $subscriberId,
-                'config'       => $args['config']
+                'config' => $args['config']
             ]);
 
             if (!empty($response['error'])) {
@@ -949,15 +1118,15 @@ class FastParapheurController
                 unset($annexes['letterbox']);
 
                 $response = FastParapheurController::uploadFile([
-                    'resId'        => $resId,
-                    'title'        => $subject,
-                    'collId'       => $collId,
-                    'resIdMaster'  => $args['resIdMaster'],
-                    'annexes'      => $annexes,
-                    'circuitId'    => $circuitId,
-                    'label'        => $label,
+                    'resId' => $resId,
+                    'title' => $subject,
+                    'collId' => $collId,
+                    'resIdMaster' => $args['resIdMaster'],
+                    'annexes' => $annexes,
+                    'circuitId' => $circuitId,
+                    'label' => $label,
                     'subscriberId' => $subscriberId,
-                    'config'       => $args['config']
+                    'config' => $args['config']
                 ]);
 
                 if (!empty($response['error'])) {
@@ -972,23 +1141,32 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|string[]
      * @throws Exception
      */
     public static function uploadFile(array $args): array
     {
         $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $args['resId'], 'collId' => $args['collId']]);
-        if (empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+        if (
+            empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf'
+        ) {
             return ['error' => 'Document ' . $args['resIdMaster'] . ' is not converted in pdf'];
         }
-        $attachmentPath = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]);
-        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+        $attachmentPath = DocserverModel::getByDocserverId(
+            ['docserverId' => $adrInfo['docserver_id'], 'select' => ['path_template']]
+        );
+        $attachmentFilePath = $attachmentPath['path_template'] . str_replace('#', '/', $adrInfo['path']) .
+            $adrInfo['filename'];
         $title = TextFormatModel::formatFilename(['filename' => str_replace(' ', '_', $args['title'])]);
         $attachmentFileName = $title . '_' . $args['resIdMaster'] . '_' . rand(0001, 9999) . '.pdf';
 
         $zip = new ZipArchive();
         $tmpPath = CoreConfigModel::getTmpPath();
         $zipFilePath = $tmpPath . DIRECTORY_SEPARATOR
-            . $attachmentFileName . '.zip';  // The zip file need to have the same name as the attachment we want to sign
+            . $attachmentFileName .
+            '.zip';  // The zip file need to have the same name as the attachment we want to sign
 
         if ($zip->open($zipFilePath, ZipArchive::CREATE) !== true) {
             return ['error' => "Can not open file : <$zipFilePath>\n"];
@@ -996,7 +1174,10 @@ class FastParapheurController
         $zip->addFile($attachmentFilePath, $attachmentFileName);
 
         if (!empty($args['annexes']['letterbox'][0]['filePath'])) {
-            $zip->addFile($args['annexes']['letterbox'][0]['filePath'], 'document_principal.' . $args['annexes']['letterbox'][0]['format']) ?? null;
+                $zip->addFile(
+                    $args['annexes']['letterbox'][0]['filePath'],
+                    'document_principal.' . $args['annexes']['letterbox'][0]['format']
+                ) ?? null;
         }
 
         if (isset($args['annexes']['attachments'])) {
@@ -1011,29 +1192,33 @@ class FastParapheurController
         $zip->close();
 
         $result = FastParapheurController::uploadFileToFast([
-            'config'        => $args['config'],
-            'circuitId'     => str_replace('.', '-', $args['circuitId']),
-            'fileName'      => $attachmentFileName . '.zip',
+            'config' => $args['config'],
+            'circuitId' => str_replace('.', '-', $args['circuitId']),
+            'fileName' => $attachmentFileName . '.zip',
             'b64Attachment' => file_get_contents($zipFilePath),
-            'label'         => $args['label']
+            'label' => $args['label']
         ]);
         if (!empty($result['error'])) {
             return ['error' => $result['error'], 'code' => $result['code']];
         }
 
-        FastParapheurController::processVisaWorkflow(['res_id_master' => $args['resIdMaster'], 'processSignatory' => false]);
+        FastParapheurController::processVisaWorkflow(
+            ['res_id_master' => $args['resIdMaster'], 'processSignatory' => false]
+        );
         $documentId = $result['response'];
         return ['success' => (string)$documentId];
     }
 
     /**
      * Function to send files to FastParapheur only
+     *
      * @param array $args :
      *                      - config
      *                      - circuitId
      *                      - fileName
      *                      - circuib64AttachmenttId
      *                      - label
+     *
      * @throws Exception
      */
     public static function uploadFileToFast(array $args): array
@@ -1043,16 +1228,17 @@ class FastParapheurController
         ValidatorModel::stringType($args, ['circuitId']);
 
         $curlReturn = CurlModel::exec([
-            'url'           => $args['config']['data']['url'] . '/documents/v2/' . $args['config']['data']['subscriberId'] . '/' . $args['circuitId'] . '/upload',
-            'method'        => 'POST',
-            'options'       => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+            'url' => $args['config']['data']['url'] . '/documents/v2/' . $args['config']['data']['subscriberId'] . '/' .
+                $args['circuitId'] . '/upload',
+            'method' => 'POST',
+            'options' => [
+                CURLOPT_SSLCERT => $args['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['data']['certType']
             ],
             'multipartBody' => [
                 'content' => ['isFile' => true, 'filename' => $args['fileName'], 'content' => $args['b64Attachment']],
-                'label'   => $args['label'],
+                'label' => $args['label'],
                 'comment' => ""
             ]
         ]);
@@ -1094,7 +1280,7 @@ class FastParapheurController
      *   ]
      * @throws Exception
      */
-    public static function uploadWithSteps(array $args)
+    public static function uploadWithSteps(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config', 'workflowType']);
         ValidatorModel::intType($args, ['resIdMaster']);
@@ -1117,7 +1303,7 @@ class FastParapheurController
         $signatureModes = array_column($signatureModes['signatureModes'], 'id');
 
         $circuit = [
-            'type'  => $args['workflowType'],
+            'type' => $args['workflowType'],
             'steps' => []
         ];
 
@@ -1127,27 +1313,31 @@ class FastParapheurController
 
             if (in_array($stepMode, $signatureModes) && !empty($step['type']) && !empty($step['id'])) {
                 if ($step['type'] == 'maarchCourrierUserId') {
-                    $user = UserModel::getById(['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]);
+                    $user = UserModel::getById(
+                        ['id' => $step['id'], 'select' => ['external_id->>\'fastParapheur\' as "fastParapheurEmail"']]
+                    );
                     if (empty($user['fastParapheurEmail'])) {
                         return ['errors' => 'no FastParapheurEmail for user ' . $step['id'], 'code' => 400];
                     }
                     $circuit['steps'][] = [
-                        'step'    => $stepMode,
+                        'step' => $stepMode,
                         'members' => [$user['fastParapheurEmail']]
                     ];
                 } elseif ($step['type'] == 'fastParapheurUserEmail') {
                     $circuit['steps'][] = [
-                        'step'    => $stepMode,
+                        'step' => $stepMode,
                         'members' => [$step['id']]
                     ];
                 }
-            } elseif ($step['type'] == 'externalOTP'
+            } elseif (
+                $step['type'] == 'externalOTP'
                 && Validator::notEmpty()->phone()->validate($step['phone'])
                 && Validator::notEmpty()->email()->validate($step['email'])
                 && Validator::notEmpty()->stringType()->validate($step['firstname'])
-                && Validator::notEmpty()->stringType()->validate($step['lastname'])) {
+                && Validator::notEmpty()->stringType()->validate($step['lastname'])
+            ) {
                 $circuit['steps'][] = [
-                    'step'    => 'OTPSignature',
+                    'step' => 'OTPSignature',
                     'members' => [$step['email']]
                 ];
                 $otpInfo['OTP_firstname_' . $index] = $step['firstname'];
@@ -1173,7 +1363,7 @@ class FastParapheurController
         if (!empty($otpInfo)) {
             $otpInfoXML = FastParapheurController::generateOtpXml([
                 'prettyPrint' => true,
-                'otpInfo'     => $otpInfo
+                'otpInfo' => $otpInfo
             ]);
             if (!empty($otpInfoXML['errors'])) {
                 return ['error' => $otpInfoXML['errors']];
@@ -1181,8 +1371,20 @@ class FastParapheurController
         }
 
         $resource = ResModel::getById([
-            'resId'  => $args['resIdMaster'],
-            'select' => ['res_id', 'subject', 'typist', 'integrations', 'docserver_id', 'path', 'filename', 'category_id', 'format', 'external_id', 'external_state']
+            'resId' => $args['resIdMaster'],
+            'select' => [
+                'res_id',
+                'subject',
+                'typist',
+                'integrations',
+                'docserver_id',
+                'path',
+                'filename',
+                'category_id',
+                'format',
+                'external_id',
+                'external_state'
+            ]
         ]);
         if (empty($resource)) {
             return ['error' => 'resource does not exist', 'code' => 400];
@@ -1190,7 +1392,9 @@ class FastParapheurController
         $resource['external_id'] = json_decode($resource['external_id'], true);
 
         if ($resource['format'] != 'pdf' && !empty($resource['docserver_id'])) {
-            $convertedDocument = ConvertPdfController::getConvertedPdfById(['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]);
+            $convertedDocument = ConvertPdfController::getConvertedPdfById(
+                ['collId' => 'letterbox_coll', 'resId' => $args['resIdMaster']]
+            );
             if (!empty($convertedDocument['errors'])) {
                 return ['error' => 'unable to convert main document'];
             }
@@ -1208,32 +1412,47 @@ class FastParapheurController
 
         $mainDocumentSigned = AdrModel::getConvertedDocumentById([
             'select' => [1],
-            'resId'  => $args['resIdMaster'],
+            'resId' => $args['resIdMaster'],
             'collId' => 'letterbox_coll',
-            'type'   => 'SIGN'
+            'type' => 'SIGN'
         ]);
 
         if (!empty($docservers[$resource['docserver_id']])) {
             $resource['integrations'] = json_decode($resource['integrations'], true);
             if (!empty($resource['integrations']['inSignatureBook'])) {
                 $sentMainDocument = [
-                    'comment'  => $resource['subject'],
+                    'comment' => $resource['subject'],
                     'signable' => empty($mainDocumentSigned),
-                    'path'     => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
+                    'path' => $docservers[$resource['docserver_id']] . $resource['path'] . $resource['filename']
                 ];
             }
         }
 
         $attachments = AttachmentModel::get([
             'select' => [
-                'res_id', 'title', 'docserver_id', 'path', 'filename', 'format', 'attachment_type', 'fingerprint', 'external_state'
+                'res_id',
+                'title',
+                'docserver_id',
+                'path',
+                'filename',
+                'format',
+                'attachment_type',
+                'fingerprint',
+                'external_state'
             ],
-            'where'  => ['res_id_master = ?', 'attachment_type not in (?)', 'status not in (\'DEL\', \'OBS\', \'FRZ\', \'TMP\', \'SEND_MASS\')', 'in_signature_book is true'],
-            'data'   => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
+            'where' => [
+                'res_id_master = ?',
+                'attachment_type not in (?)',
+                'status not in (\'DEL\', \'OBS\', \'FRZ\', \'TMP\', \'SEND_MASS\')',
+                'in_signature_book is true'
+            ],
+            'data' => [$args['resIdMaster'], AttachmentTypeController::UNLISTED_ATTACHMENT_TYPES]
         ]);
         foreach ($attachments as $attachment) {
             if ($attachment['format'] != 'pdf') {
-                $convertedAttachment = ConvertPdfController::getConvertedPdfById(['collId' => 'attachments_coll', 'resId' => $attachment['res_id']]);
+                $convertedAttachment = ConvertPdfController::getConvertedPdfById(
+                    ['collId' => 'attachments_coll', 'resId' => $attachment['res_id']]
+                );
                 if (!empty($convertedAttachment['errors'])) {
                     continue;
                 }
@@ -1244,10 +1463,10 @@ class FastParapheurController
             }
             $externalState = json_decode($attachment['external_state'] ?? '{}', true);
             $sentAttachments[] = [
-                'comment'       => $attachment['title'],
-                'signable'      => $attachmentTypeSignable[$attachment['attachment_type']] && $attachment['format'] == 'pdf',
-                'path'          => $docservers[$attachment['docserver_id']] . $attachment['path'] . $attachment['filename'],
-                'resId'         => $attachment['res_id'],
+                'comment' => $attachment['title'],
+                'signable' => $attachmentTypeSignable[$attachment['attachment_type']] && $attachment['format'] == 'pdf',
+                'path' => $docservers[$attachment['docserver_id']] . $attachment['path'] . $attachment['filename'],
+                'resId' => $attachment['res_id'],
                 'externalState' => $externalState
             ];
         }
@@ -1257,14 +1476,15 @@ class FastParapheurController
         if (!empty($sentMainDocument) && is_file($sentMainDocument['path'])) {
             if ($sentMainDocument['signable']) {
                 $uploads[] = [
-                    'id'      => [
+                    'id' => [
                         'collId' => 'letterbox_coll',
-                        'resId'  => $args['resIdMaster']
+                        'resId' => $args['resIdMaster']
                     ],
-                    'doc'     => [
-                        'path'     => $sentMainDocument['path'],
+                    'doc' => [
+                        'path' => $sentMainDocument['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
+                            'filename' => $sentMainDocument['comment'] . '.' .
+                                pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
                             'maxLength' => 50
                         ])
                     ],
@@ -1274,18 +1494,20 @@ class FastParapheurController
                 $externalState = json_decode($resource['external_state'] ?? '{}', true);
                 $externalState['signatureBookWorkflow']['workflow'] = $args['steps'];
                 ResModel::update([
-                    'where'   => ['res_id = ?'],
-                    'data'    => [$args['resIdMaster']],
+                    'where' => ['res_id = ?'],
+                    'data' => [$args['resIdMaster']],
                     'postSet' => [
-                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                            json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                     ]
                 ]);
             } else {
                 $appendices[] = [
-                    'isFile'   => true,
-                    'content'  => file_get_contents($sentMainDocument['path']),
+                    'isFile' => true,
+                    'content' => file_get_contents($sentMainDocument['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentMainDocument['comment'] . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
+                        'filename' => $sentMainDocument['comment'] . '.' .
+                            pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
                         'maxLength' => 50
                     ])
                 ];
@@ -1297,14 +1519,15 @@ class FastParapheurController
             }
             if ($sentAttachment['signable']) {
                 $uploads[] = [
-                    'id'      => [
+                    'id' => [
                         'collId' => 'attachments_coll',
-                        'resId'  => $sentAttachment['resId']
+                        'resId' => $sentAttachment['resId']
                     ],
-                    'doc'     => [
-                        'path'     => $sentAttachment['path'],
+                    'doc' => [
+                        'path' => $sentAttachment['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
+                            'filename' => $sentAttachment['comment'] . '.' .
+                                pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
                             'maxLength' => 50
                         ])
                     ],
@@ -1313,18 +1536,20 @@ class FastParapheurController
                 $externalState = $sentAttachment['externalState'];
                 $externalState['signatureBookWorkflow']['workflow'] = $args['steps'];
                 AttachmentModel::update([
-                    'where'   => ['res_id = ?'],
-                    'data'    => [$sentAttachment['resId']],
+                    'where' => ['res_id = ?'],
+                    'data' => [$sentAttachment['resId']],
                     'postSet' => [
-                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                        'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                            json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                     ]
                 ]);
             } else {
                 $appendices[] = [
-                    'isFile'   => true,
-                    'content'  => file_get_contents($sentAttachment['path']),
+                    'isFile' => true,
+                    'content' => file_get_contents($sentAttachment['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentAttachment['comment'] . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
+                        'filename' => $sentAttachment['comment'] . '.' .
+                            pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
                         'maxLength' => 50
                     ])
                 ];
@@ -1335,13 +1560,13 @@ class FastParapheurController
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
             $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
                 'docResId' => $args['resIdMaster'],
-                'login'    => $user['user_id']
+                'login' => $user['user_id']
             ]);
             $appendices[] = [
-                'isFile'   => true,
-                'content'  => file_get_contents($summarySheetFilePath),
+                'isFile' => true,
+                'content' => file_get_contents($summarySheetFilePath),
                 'filename' => TextFormatModel::formatFilename([
-                    'filename'  => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
+                    'filename' => 'Fiche-De-Liaison.' . pathinfo($summarySheetFilePath, PATHINFO_EXTENSION),
                     'maxLength' => 50
                 ])
             ];
@@ -1355,11 +1580,10 @@ class FastParapheurController
         $returnIds = ['sended' => ['letterbox_coll' => [], 'attachments_coll' => []]];
 
         foreach ($uploads as $upload) {
-
             $result = FastParapheurController::onDemandUploadFilesToFast([
-                'config'     => $args['config'],
-                'upload'     => $upload,
-                'circuit'    => $circuit,
+                'config' => $args['config'],
+                'upload' => $upload,
+                'circuit' => $circuit,
                 'appendices' => $appendices
             ]);
             if (!empty($result['error'])) {
@@ -1368,15 +1592,19 @@ class FastParapheurController
 
             if (!empty($otpInfoXML['content'])) {
                 $curlReturn = CurlModel::exec([
-                    'method'        => 'PUT',
-                    'url'           => $args['config']['url'] . '/documents/v2/otp/' . $result['response'] . '/metadata/define',
-                    'options'       => [
-                        CURLOPT_SSLCERT       => $args['config']['certPath'],
+                    'method' => 'PUT',
+                    'url' => $args['config']['url'] . '/documents/v2/otp/' . $result['response'] . '/metadata/define',
+                    'options' => [
+                        CURLOPT_SSLCERT => $args['config']['certPath'],
                         CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
-                        CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+                        CURLOPT_SSLCERTTYPE => $args['config']['certType']
                     ],
                     'multipartBody' => [
-                        'otpinformation' => ['isFile' => true, 'filename' => 'METAS_API.xml', 'content' => $otpInfoXML['content']]
+                        'otpinformation' => [
+                            'isFile' => true,
+                            'filename' => 'METAS_API.xml',
+                            'content' => $otpInfoXML['content']
+                        ]
                     ]
                 ]);
                 if ($curlReturn['code'] != 200) {
@@ -1385,13 +1613,15 @@ class FastParapheurController
             }
 
             $returnIds['sended'][$upload['id']['collId']][$upload['id']['resId']] = (string)$result['response'];
-
         }
 
         return $returnIds;
     }
 
     /**
+     * @param array $args
+     *
+     * @return array
      * @throws Exception
      */
     public static function onDemandUploadFilesToFast(array $args): array
@@ -1400,16 +1630,20 @@ class FastParapheurController
         ValidatorModel::arrayType($args, ['config', 'upload', 'circuit', 'appendices']);
 
         $curlReturn = CurlModel::exec([
-            'method'        => 'POST',
-            'url'           => $args['config']['url'] . '/documents/ondemand/' . $args['config']['subscriberId'] . '/upload',
-            'options'       => [
-                CURLOPT_SSLCERT       => $args['config']['certPath'],
+            'method' => 'POST',
+            'url' => $args['config']['url'] . '/documents/ondemand/' . $args['config']['subscriberId'] . '/upload',
+            'options' => [
+                CURLOPT_SSLCERT => $args['config']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['certType']
             ],
             'multipartBody' => [
                 'comment' => $args['upload']['comment'],
-                'doc'     => ['isFile' => true, 'filename' => $args['upload']['doc']['filename'], 'content' => file_get_contents($args['upload']['doc']['path'])],
+                'doc' => [
+                    'isFile' => true,
+                    'filename' => $args['upload']['doc']['filename'],
+                    'content' => file_get_contents($args['upload']['doc']['path'])
+                ],
                 'annexes' => ['subvalues' => $args['appendices']],
                 'circuit' => json_encode($args['circuit'])
             ]
@@ -1425,15 +1659,20 @@ class FastParapheurController
         return ['response' => $curlReturn['response']];
     }
 
+    /**
+     * @param array $args
+     *
+     * @return array|false
+     */
     public static function download(array $args)
     {
         $curlReturn = CurlModel::exec([
-            'url'          => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/download',
-            'method'       => 'GET',
-            'options'      => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+            'url' => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/download',
+            'method' => 'GET',
+            'options' => [
+                CURLOPT_SSLCERT => $args['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType'],
+                CURLOPT_SSLCERTTYPE => $args['config']['data']['certType'],
             ],
             'fileResponse' => true
         ]);
@@ -1450,6 +1689,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|array[]|bool|mixed|string[]
      * @throws Exception
      */
     public static function sendDatas(array $args)
@@ -1474,19 +1716,19 @@ class FastParapheurController
                 }
                 if (!empty($step['externalInformations'])) {
                     $steps[$step['sequence']] = [
-                        'mode'      => $step['signatureMode'],
-                        'type'      => 'externalOTP',
-                        'phone'     => $step['externalInformations']['phone'] ?? null,
-                        'email'     => $step['externalInformations']['email'] ?? null,
+                        'mode' => $step['signatureMode'],
+                        'type' => 'externalOTP',
+                        'phone' => $step['externalInformations']['phone'] ?? null,
+                        'email' => $step['externalInformations']['email'] ?? null,
                         'firstname' => $step['externalInformations']['firstname'] ?? null,
-                        'lastname'  => $step['externalInformations']['lastname'] ?? null
+                        'lastname' => $step['externalInformations']['lastname'] ?? null
                     ];
                     $areWeUsingOTP = true;
                 } else {
                     $steps[$step['sequence']] = [
                         'mode' => $step['signatureMode'],
                         'type' => 'fastParapheurUserEmail',
-                        'id'   => $step['externalId']
+                        'id' => $step['externalId']
                     ];
                 }
             }
@@ -1499,29 +1741,32 @@ class FastParapheurController
             }
 
             return FastParapheurController::uploadWithSteps([
-                'config'       => $config['data'],
-                'resIdMaster'  => $args['resIdMaster'],
-                'steps'        => $steps,
+                'config' => $config['data'],
+                'resIdMaster' => $args['resIdMaster'],
+                'steps' => $steps,
                 'workflowType' => $args['workflowType']
             ]);
         } else {
             // We need the SIRET field and the user_id of the signatory user's primary entity
             $signatory = DatabaseModel::select([
-                'select'    => ['user_id', 'external_id', 'entities.entity_label'],
-                'table'     => ['listinstance', 'users_entities', 'entities'],
+                'select' => ['user_id', 'external_id', 'entities.entity_label'],
+                'table' => ['listinstance', 'users_entities', 'entities'],
                 'left_join' => ['item_id = user_id', 'users_entities.entity_id = entities.entity_id'],
-                'where'     => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
-                'data'      => [$args['resIdMaster'], 'sign']
+                'where' => ['res_id = ?', 'item_mode = ?', 'process_date is null'],
+                'data' => [$args['resIdMaster'], 'sign']
             ])[0] ?? null;
             $redactor = DatabaseModel::select([
-                'select'    => ['short_label'],
-                'table'     => ['res_view_letterbox', 'users_entities', 'entities'],
+                'select' => ['short_label'],
+                'table' => ['res_view_letterbox', 'users_entities', 'entities'],
                 'left_join' => ['dest_user = user_id', 'users_entities.entity_id = entities.entity_id'],
-                'where'     => ['res_id = ?'],
-                'data'      => [$args['resIdMaster']]
+                'where' => ['res_id = ?'],
+                'data' => [$args['resIdMaster']]
             ])[0] ?? null;
 
-            $signatory['business_id'] = json_decode($signatory['external_id'] ?? null, true)['fastParapheurSubscriberId'] ?? null;
+            $signatory['business_id'] = json_decode(
+                $signatory['external_id'] ?? null,
+                true
+            )['fastParapheurSubscriberId'] ?? null;
             if (empty($signatory['business_id']) || substr($signatory['business_id'], 0, 3) == 'org') {
                 $signatory['business_id'] = $config['data']['subscriberId'];
             }
@@ -1549,11 +1794,11 @@ class FastParapheurController
             }
 
             return FastParapheurController::upload([
-                'config'      => $config,
+                'config' => $config,
                 'resIdMaster' => $args['resIdMaster'],
-                'businessId'  => $signatory['business_id'],
-                'circuitId'   => $user['user_id'],
-                'label'       => $redactor['short_label']
+                'businessId' => $signatory['business_id'],
+                'circuitId' => $user['user_id'],
+                'label' => $redactor['short_label']
             ]);
         }
     }
@@ -1576,12 +1821,12 @@ class FastParapheurController
         }
 
         $curlReturn = CurlModel::exec([
-            'url'     => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/history',
-            'method'  => 'GET',
+            'url' => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/history',
+            'method' => 'GET',
             'options' => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERT => $args['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['data']['certType']
             ]
         ]);
 
@@ -1598,6 +1843,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return string[]|true
      * @throws Exception
      */
     public static function updateFetchHistoryDateByExternalId(array $args)
@@ -1613,8 +1861,8 @@ class FastParapheurController
         if (!empty($args['type']) && $args['type'] == 'resource') {
             $resource = ResModel::get([
                 'select' => ['res_id', 'external_id', 'external_state'],
-                'where'  => ["res_id = ?"],
-                'data'   => [$args['resId']]
+                'where' => ["res_id = ?"],
+                'data' => [$args['resId']]
             ]);
             if (empty($resource)) {
                 return ['errors' => $tag . 'Resource (' . $args['resId'] . ') does not exist'];
@@ -1622,8 +1870,8 @@ class FastParapheurController
         } else {
             $resource = AttachmentModel::get([
                 'select' => ['res_id', 'res_id_master', 'external_id', 'external_state'],
-                'where'  => ["res_id = ?"],
-                'data'   => [$args['resId']]
+                'where' => ["res_id = ?"],
+                'data' => [$args['resId']]
             ]);
             if (empty($resource)) {
                 return ['errors' => $tag . 'Attachment (' . $args['resId'] . ') does not exist'];
@@ -1643,18 +1891,20 @@ class FastParapheurController
         $externalState['signatureBookWorkflow']['fetchDate'] = $currentDate->format('c');
         if (!empty($args['type']) && $args['type'] == 'resource') {
             ResModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$resource['res_id']],
+                'where' => ['res_id = ?'],
+                'data' => [$resource['res_id']],
                 'postSet' => [
-                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                 ]
             ]);
         } else {
             AttachmentModel::update([
-                'where'   => ['res_id = ?'],
-                'data'    => [$resource['res_id']],
+                'where' => ['res_id = ?'],
+                'data' => [$resource['res_id']],
                 'postSet' => [
-                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' . json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
+                    'external_state' => 'jsonb_set(external_state, \'{signatureBookWorkflow}\', \'' .
+                        json_encode($externalState['signatureBookWorkflow']) . '\'::jsonb)'
                 ]
             ]);
         }
@@ -1663,17 +1913,20 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return string
      * @throws Exception
      */
     public static function getRefusalMessage(array $args): string
     {
         $curlReturn = CurlModel::exec([
-            'url'     => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/comments/refusal',
-            'method'  => 'GET',
+            'url' => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/comments/refusal',
+            'method' => 'GET',
             'options' => [
-                CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
+                CURLOPT_SSLCERT => $args['config']['data']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['data']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['data']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['data']['certType']
             ]
         ]);
 
@@ -1683,41 +1936,45 @@ class FastParapheurController
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
             $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . implode('.', $str);
-
         } elseif (!empty($curlReturn['response']['developerMessage'])) {
             $str = explode(':', $curlReturn['response']['developerMessage']);
             unset($str[0]);
             $response = _FOR_MAIN_DOC . ". " . implode('.', $str);
-
         } elseif (!empty($curlReturn['response']['comment']) && $args['version'] == 'noVersion') {
             $attachmentName = AttachmentModel::getById(['select' => ['title'], 'id' => $args['res_id']]);
             $response = _FOR_ATTACHMENT . " \"{$attachmentName['title']}\". " . $curlReturn['response']['comment'];
-
         } elseif (!empty($curlReturn['response']['comment'])) {
             $response = _FOR_MAIN_DOC . ". " . $curlReturn['response']['comment'];
         }
         return $response;
     }
 
-    public static function getUsers(array $args)
+    /**
+     * @param array $args
+     *
+     * @return array
+     */
+    public static function getUsers(array $args): array
     {
         $subscriberId = $args['subscriberId'] ?? $args['config']['subscriberId'] ?? null;
         if (empty($subscriberId)) {
             return ['code' => 400, 'errors' => 'no subscriber id provided'];
         }
         $curlReturn = CurlModel::exec([
-            'url'     => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($subscriberId),
-            'method'  => 'GET',
+            'url' => $args['config']['url'] . '/exportUsersData?siren=' . urlencode($subscriberId),
+            'method' => 'GET',
             'options' => [
-                CURLOPT_SSLCERT       => $args['config']['certPath'],
+                CURLOPT_SSLCERT => $args['config']['certPath'],
                 CURLOPT_SSLCERTPASSWD => $args['config']['certPass'],
-                CURLOPT_SSLCERTTYPE   => $args['config']['certType']
+                CURLOPT_SSLCERTTYPE => $args['config']['certType']
             ]
         ]);
         if (!empty($curlReturn['errors'])) {
             return ['code' => $curlReturn['code'], 'errors' => $curlReturn['errors']];
-        } else if (empty($curlReturn['response']['users'])) {
-            return [];
+        } else {
+            if (empty($curlReturn['response']['users'])) {
+                return [];
+            }
         }
 
         if (!empty($args['noFormat'])) {
@@ -1728,7 +1985,7 @@ class FastParapheurController
         foreach ($curlReturn['response']['users'] as $user) {
             $users[] = [
                 'idToDisplay' => trim($user['prenom'] . ' ' . $user['nom']),
-                'email'       => trim($user['email'])
+                'email' => trim($user['email'])
             ];
         }
 
@@ -1736,6 +1993,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|true
      * @throws Exception
      */
     public static function checkUserExistanceInFastParapheur(array $args)
@@ -1751,16 +2011,18 @@ class FastParapheurController
         $fpUsers = FastParapheurController::getUsers([
             'config' => [
                 'subscriberId' => $config['subscriberId'],
-                'url'          => $config['url'],
-                'certPath'     => $config['certPath'],
-                'certPass'     => $config['certPass'],
-                'certType'     => $config['certType']
+                'url' => $config['url'],
+                'certPath' => $config['certPath'],
+                'certPass' => $config['certPass'],
+                'certType' => $config['certType']
             ]
         ]);
         if (!empty($fpUsers['errors'])) {
             return ['code' => $fpUsers['code'], 'errors' => $fpUsers['errors']];
-        } else if (empty($fpUsers)) {
-            return ['code' => 400, 'errors' => "FastParapheur users not found!"];
+        } else {
+            if (empty($fpUsers)) {
+                return ['code' => 400, 'errors' => "FastParapheur users not found!"];
+            }
         }
         $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
 
@@ -1771,7 +2033,11 @@ class FastParapheurController
         return true;
     }
 
-    public static function getConfig()
+    /**
+     * @return array
+     * @throws Exception
+     */
+    public static function getConfig(): array
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
@@ -1814,6 +2080,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return string|string[]
      * @throws Exception
      */
     public static function getSummarySheetFile(array $args)
@@ -1823,8 +2092,8 @@ class FastParapheurController
 
         $mainResource = ResModel::getOnView([
             'select' => ['*'],
-            'where'  => ['res_id = ?'],
-            'data'   => [$args['docResId']]
+            'where' => ['res_id = ?'],
+            'data' => [$args['docResId']]
         ]);
         if (empty($mainResource)) {
             return ['error' => 'Mail does not exist'];
@@ -1845,10 +2114,11 @@ class FastParapheurController
         foreach ($units as $unit) {
             if ($unit['unit'] == 'notes') {
                 $data['notes'] = NoteModel::get([
-                    'select'   => ['id', 'note_text', 'user_id', 'creation_date', 'identifier'],
-                    'where'    => ['identifier in (?)'],
-                    'data'     => [$tmpIds],
-                    'order_by' => ['identifier']]);
+                    'select' => ['id', 'note_text', 'user_id', 'creation_date', 'identifier'],
+                    'where' => ['identifier in (?)'],
+                    'data' => [$tmpIds],
+                    'order_by' => ['identifier']
+                ]);
 
                 $userEntities = EntityModel::getByUserId(['userId' => $GLOBALS['id'], 'select' => ['entity_id']]);
                 $data['userEntities'] = [];
@@ -1857,23 +2127,23 @@ class FastParapheurController
                 }
             } elseif ($unit['unit'] == 'opinionWorkflow') {
                 $data['listInstancesOpinion'] = ListInstanceModel::get([
-                    'select'  => ['item_id', 'process_date', 'res_id'],
-                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
-                    'data'    => ['AVIS_CIRCUIT', $tmpIds],
+                    'select' => ['item_id', 'process_date', 'res_id'],
+                    'where' => ['difflist_type = ?', 'res_id in (?)'],
+                    'data' => ['AVIS_CIRCUIT', $tmpIds],
                     'orderBy' => ['listinstance_id']
                 ]);
             } elseif ($unit['unit'] == 'visaWorkflow') {
                 $data['listInstancesVisa'] = ListInstanceModel::get([
-                    'select'  => ['item_id', 'requested_signature', 'process_date', 'res_id'],
-                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
-                    'data'    => ['VISA_CIRCUIT', $tmpIds],
+                    'select' => ['item_id', 'requested_signature', 'process_date', 'res_id'],
+                    'where' => ['difflist_type = ?', 'res_id in (?)'],
+                    'data' => ['VISA_CIRCUIT', $tmpIds],
                     'orderBy' => ['listinstance_id']
                 ]);
             } elseif ($unit['unit'] == 'diffusionList') {
                 $data['listInstances'] = ListInstanceModel::get([
-                    'select'  => ['item_id', 'item_type', 'item_mode', 'res_id'],
-                    'where'   => ['difflist_type = ?', 'res_id in (?)'],
-                    'data'    => ['entity_id', $tmpIds],
+                    'select' => ['item_id', 'item_type', 'item_mode', 'res_id'],
+                    'where' => ['difflist_type = ?', 'res_id in (?)'],
+                    'data' => ['entity_id', $tmpIds],
                     'orderBy' => ['listinstance_id']
                 ]);
             }
@@ -1881,12 +2151,12 @@ class FastParapheurController
 
         $modelId = ResModel::getById([
             'select' => ['model_id'],
-            'resId'  => $mainResource[0]['res_id']
+            'resId' => $mainResource[0]['res_id']
         ]);
         $indexingFields = IndexingModelFieldModel::get([
             'select' => ['identifier', 'unit'],
-            'where'  => ['model_id = ?'],
-            'data'   => [$modelId['model_id']]
+            'where' => ['model_id = ?'],
+            'data' => [$modelId['model_id']]
         ]);
         $fieldsIdentifier = array_column($indexingFields, 'identifier');
 
@@ -1894,21 +2164,25 @@ class FastParapheurController
         $pdf->setPrintHeader(false);
 
         SummarySheetController::createSummarySheet($pdf, [
-            'resource'         => $mainResource[0],
-            'units'            => $units,
-            'login'            => $args['login'],
-            'data'             => $data,
+            'resource' => $mainResource[0],
+            'units' => $units,
+            'login' => $args['login'],
+            'data' => $data,
             'fieldsIdentifier' => $fieldsIdentifier
         ]);
 
         $tmpPath = CoreConfigModel::getTmpPath();
-        $summarySheetFilePath = $tmpPath . "summarySheet_" . $args['docResId'] . "_" . $args['login'] . "_" . rand() . ".pdf";
+        $summarySheetFilePath = $tmpPath . "summarySheet_" . $args['docResId'] . "_" . $args['login'] . "_" . rand() .
+            ".pdf";
         $pdf->Output($summarySheetFilePath, 'F');
 
         return $summarySheetFilePath;
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|array[]
      * @throws Exception
      */
     public static function getSignatureModes(array $args): array
@@ -1938,14 +2212,17 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return string
      * @throws Exception
      */
-    public static function getSignatureModeById(array $args)
+    public static function getSignatureModeById(array $args): string
     {
         ValidatorModel::notEmpty($args, ['signatureModeId']);
         ValidatorModel::stringType($args, ['signatureModeId']);
 
-        $signatureModeId = null;
+        $signatureModeId = "";
         switch ($args['signatureModeId']) {
             case 'sign':
                 $signatureModeId = 'signature';
@@ -2103,12 +2380,19 @@ class FastParapheurController
     */
 
     /**
+     * @param array $documentHistory
+     * @param array $knownWorkflow
+     * @param array $config
+     *
+     * @return array
      * @throws Exception
      */
     public static function getLastFastWorkflowAction(array $documentHistory, array $knownWorkflow, array $config): array
     {
         ValidatorModel::notEmpty($config, ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']);
-        ValidatorModel::stringType($config, ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']);
+        ValidatorModel::stringType($config,
+            ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']
+        );
 
         if (empty($knownWorkflow) || empty($documentHistory)) {
             return [];
@@ -2144,6 +2428,9 @@ class FastParapheurController
     }
 
     /**
+     * @param array $args
+     *
+     * @return array|string[]
      * @throws Exception
      */
     public static function generateOtpXml(array $args): array
@@ -2154,7 +2441,9 @@ class FastParapheurController
 
         $xmlData = null;
         try {
-            $otpInfoXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>');
+            $otpInfoXML = new SimpleXMLElement(
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?> <meta-data-list></meta-data-list>'
+            );
             foreach ($args['otpInfo'] as $name => $value) {
                 $metaDataElement = $otpInfoXML->addChild('meta-data');
                 $metaDataElement->addAttribute('name', $name);
@@ -2174,6 +2463,10 @@ class FastParapheurController
         return ['content' => $xmlData];
     }
 
+    /**
+     * @return array|false[]|true[]
+     * @throws Exception
+     */
     public static function isOtpActive(): array
     {
         $config = FastParapheurController::getConfig();
