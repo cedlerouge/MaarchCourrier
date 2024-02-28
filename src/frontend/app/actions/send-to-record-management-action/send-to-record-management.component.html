@@ -110,7 +110,7 @@
                         <ng-container matColumnDef="expandedDetail">
                             <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length" style="border-bottom: none;padding:0px;">
                                 <div class="example-element-detail"
-                                    [@detailExpand]="element === archives ? 'expanded' : 'collapsed'">
+                                    [@detailExpand]="element == archives ? 'expanded' : 'collapsed'">
                                     <div  style="padding-bottom: 10px;">
                                         <span class="label label-primary">
                                             <i class="fa fa-file"></i>&nbsp;{{element.doctype}}
