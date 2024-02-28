@@ -74,6 +74,11 @@ class WebhookCall
                 break;
         }
 
-        return ['message' => 'Status of signature is ' . $signedResource->getStatus()];
+        $result = ['message' => 'Status of signature is ' . $signedResource->getStatus()];
+
+        if (!empty($signedResource->getMessageStatus())){
+            $result['message'] .= " : " . $signedResource->getMessageStatus();
+        }
+        return $result;
     }
 }

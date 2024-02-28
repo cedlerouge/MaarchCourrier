@@ -39,6 +39,18 @@ class WebhookValidation
 
         $signedResource->setStatus($body['signatureState']['state']);
 
+        if (!empty($body['signatureState']['message'])) {
+            $signedResource->setMessageStatus(
+                $body['signatureState']['message']
+            );
+        }
+
+        if (!empty($body['signatureState']['error'])) {
+            $signedResource->setMessageStatus(
+                $body['signatureState']['error']
+            );
+        }
+
         if ($body['signatureState']['updatedDate'] !== null) {
             $signedResource->setSignatureDate($body['signatureState']['updatedDate']);
         }

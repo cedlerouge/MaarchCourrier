@@ -13,6 +13,8 @@ class SignedResource implements JsonSerializable
     private int $resIdSigned = -1;
     private ?int $resIdMaster = null;
     private string $status = "";
+    private ?string $messageStatus = null;
+
     private ?DateTimeInterface $signatureDate = null;
     private ?string $encodedContent = null;
 
@@ -49,6 +51,16 @@ class SignedResource implements JsonSerializable
     public function getSignatureDate(): DateTimeInterface|null
     {
         return $this->signatureDate;
+    }
+
+    public function getMessageStatus(): ?string
+    {
+        return $this->messageStatus;
+    }
+
+    public function setMessageStatus(?string $messageStatus): void
+    {
+        $this->messageStatus = $messageStatus;
     }
 
     public function setSignatureDate(?DateTimeInterface $signatureDate): void

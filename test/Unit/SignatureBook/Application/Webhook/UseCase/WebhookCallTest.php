@@ -93,11 +93,15 @@ class WebhookCallTest extends TestCase
     public function testWebhookCallRefusState(): void
     {
         $this->bodySentByMP['signatureState']['state'] = 'REF';
+        $this->bodySentByMP['signatureState']['message'] = 'Tout est ok';
 
         $return = $this->webhookCall->execute($this->bodySentByMP);
         $this->assertTrue($this->historyService->addedInHistoryRefus);
         $this->assertIsArray($return);
-        $this->assertSame($return['message'], 'Status of signature is ' . $this->bodySentByMP['signatureState']['state']);
+        $this->assertSame(
+            $return['message'],
+            'Status of signature is ' . $this->bodySentByMP['signatureState']['state'] . " : " . $this->bodySentByMP['signatureState']['message']
+        );
     }
 
     /**
@@ -118,6 +122,9 @@ class WebhookCallTest extends TestCase
         $return = $this->webhookCall->execute($this->bodySentByMP);
         $this->assertTrue($this->historyService->addedInHistoryError);
         $this->assertIsArray($return);
-        $this->assertSame($return['message'], 'Status of signature is ' . $this->bodySentByMP['signatureState']['state']);
+        $this->assertSame(
+            $return['message'],
+            'Status of signature is ' . $this->bodySentByMP['signatureState']['state'] . " : " . $this->bodySentByMP['signatureState']['error']
+        );
     }
 }
