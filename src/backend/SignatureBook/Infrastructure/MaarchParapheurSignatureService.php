@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
-use Exception;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use SrcCore\controllers\UrlController;
@@ -41,8 +40,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
      * @param string $accessToken
      * @param string $cookieSession
      * @param array $resourceToSign
-     * @param array|null $webhook
-     * @throws Exception
+     * @return array|bool
      */
     public function applySignature(
         int $documentId,
