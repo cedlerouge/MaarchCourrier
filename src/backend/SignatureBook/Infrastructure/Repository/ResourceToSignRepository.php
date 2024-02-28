@@ -68,7 +68,7 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
         $signedDocument = AdrModel::getDocuments([
             'select'  => ['id'],
             'where'   => ['res_id = ?', 'type = ?'],
-            'data'    => [$resId, ['PDF', 'SIGN']],
+            'data'    => [$resId, 'SIGN'],
             'limit'   => 1
         ]);
 
