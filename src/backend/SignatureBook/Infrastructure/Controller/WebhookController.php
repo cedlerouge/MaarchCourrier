@@ -28,6 +28,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
+use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use Slim\Psr7\Request;
@@ -49,8 +50,11 @@ class WebhookController
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
      */
-    public function fetchAndStoreSignedDocumentOnWebhookTrigger(Request $request, Response $response, array $args): Response
-    {
+    public function fetchAndStoreSignedDocumentOnWebhookTrigger(
+        Request $request,
+        Response $response,
+        array $args
+    ): Response {
         $body = $request->getParsedBody();
 
         //Initialisation
@@ -58,12 +62,19 @@ class WebhookController
         $curlService = new CurlService();
         $resourceToSignRepository = new ResourceToSignRepository();
         $storeSignedResourceService = new StoreSignedResourceService();
+        $signatureHistoryService = new SignatureHistoryService();
 
         $webhookValidation = new WebhookValidation($resourceToSignRepository);
         $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
-        $webhookCall = new WebhookCall($webhookValidation, $retrieveSignedResource, $storeSignedResource);
+        $webhookCall = new WebhookCall(
+            $webhookValidation,
+            $retrieveSignedResource,
+            $storeSignedResource,
+            $signatureHistoryService
+        );
+
         $id = $webhookCall->execute($body);
         return $response->withJson(['id' => $id]);
     }

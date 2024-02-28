@@ -38,7 +38,7 @@ class ContinueCircuitAction
      */
     public function execute(int $resId, array $data, array $note): bool
     {
-        $data['documentId'] = intval($data['documentId'] ?? 0) ;
+        $data['documentId'] = intval($data['documentId'] ?? 0);
 
         if (!$this->isNewSignatureBookEnabled) {
             return true;
@@ -71,6 +71,11 @@ class ContinueCircuitAction
         if (!empty($missingData)) {
             throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
         }
+
+        $resourceToSign = [
+            'res_id' => $resId
+        ];
+
         $applySuccess = $this->signatureService
             ->setConfig($signatureBook)
             ->applySignature(
@@ -82,7 +87,8 @@ class ContinueCircuitAction
                 $data['signatureFieldName'],
                 $data['tmpUniqueId'] ?? null,
                 $accessToken,
-                $data['cookieSession']
+                $data['cookieSession'],
+                $resourceToSign
             );
         if (is_array($applySuccess)) {
             throw new SignatureNotAppliedProblem($applySuccess['errors']);

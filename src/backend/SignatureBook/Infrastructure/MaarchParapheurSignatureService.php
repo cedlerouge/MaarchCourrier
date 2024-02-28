@@ -17,6 +17,7 @@ namespace MaarchCourrier\SignatureBook\Infrastructure;
 use Exception;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
+use SrcCore\controllers\UrlController;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurSignatureService implements SignatureServiceInterface
@@ -30,6 +31,17 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
     }
 
     /**
+     * @param int $documentId
+     * @param string $hashSignature
+     * @param array $signatures
+     * @param string $certificate
+     * @param string $signatureContentLength
+     * @param string $signatureFieldName
+     * @param string|null $tmpUniqueId
+     * @param string $accessToken
+     * @param string $cookieSession
+     * @param array $resourceToSign
+     * @param array|null $webhook
      * @throws Exception
      */
     public function applySignature(
@@ -41,8 +53,15 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $signatureFieldName,
         ?string $tmpUniqueId,
         string $accessToken,
-        string $cookieSession
+        string $cookieSession,
+        array $resourceToSign
     ): array|bool {
+
+        $webhook = [
+            'url' => UrlController::getCoreUrl() . '/signatureBook/webhook',
+            'payload' => $resourceToSign
+        ];
+
         $response = CurlModel::exec([
                 'url'  => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $documentId . '/actions/1',
                 'bearerAuth'     => ['token' => $accessToken],
@@ -58,7 +77,8 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                     'certificate'            => $certificate,
                     'signatureContentLength' => $signatureContentLength,
                     'signatureFieldName'     => $signatureFieldName,
-                    'tmpUniqueId'            => $tmpUniqueId
+                    'tmpUniqueId'            => $tmpUniqueId/*,
+                    'webhook'                => $webhook*/
                 ]),
             ]);
         if ($response['code'] > 200) {

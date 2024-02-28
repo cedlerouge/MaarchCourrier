@@ -17,12 +17,15 @@ use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\CurlServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\SignatureHistoryServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\StoreSignedResourceServiceMock;
 use PHPUnit\Framework\TestCase;
 
 class WebhookCallTest extends TestCase
 {
     private WebhookCall $webhookCall;
+
+    private SignatureHistoryServiceMock $historyService;
 
     private array $bodySentByMP = [
         'identifier'     => 'TDy3w2zAOM41M216',
@@ -46,12 +49,18 @@ class WebhookCallTest extends TestCase
         $curlService = new CurlServiceMock();
         $resourceToSignRepository = new ResourceToSignRepositoryMock();
         $storeSignedResourceService = new StoreSignedResourceServiceMock();
+        $this->historyService = new SignatureHistoryServiceMock();
 
         $webhookValidation = new WebhookValidation($resourceToSignRepository);
         $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
-        $this->webhookCall = new WebhookCall($webhookValidation, $retrieveSignedResource, $storeSignedResource);
+        $this->webhookCall = new WebhookCall(
+            $webhookValidation,
+            $retrieveSignedResource,
+            $storeSignedResource,
+            $this->historyService
+        );
     }
 
     /**
@@ -66,7 +75,49 @@ class WebhookCallTest extends TestCase
      */
     public function testWebhookCallSuccess(): void
     {
-        $id = $this->webhookCall->execute($this->bodySentByMP);
-        $this->assertIsInt($id);
+        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $this->assertTrue($this->historyService->addedInHistoryValidation);
+        $this->assertIsInt($return);
+    }
+
+    /**
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws CurlRequestErrorProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws StoreResourceProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws ResourceAlreadySignProblem
+     * @throws ResourceIdEmptyProblem
+     */
+    public function testWebhookCallRefusState(): void
+    {
+        $this->bodySentByMP['signatureState']['state'] = 'REF';
+
+        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $this->assertTrue($this->historyService->addedInHistoryRefus);
+        $this->assertIsArray($return);
+        $this->assertSame($return['message'], 'Status of signature is ' . $this->bodySentByMP['signatureState']['state']);
+    }
+
+    /**
+     * @throws CurrentTokenIsNotFoundProblem
+     * @throws AttachmentOutOfPerimeterProblem
+     * @throws CurlRequestErrorProblem
+     * @throws StoreResourceProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws ResourceIdEmptyProblem
+     * @throws ResourceAlreadySignProblem
+     */
+    public function testWebhookCallErrorState(): void
+    {
+        $this->bodySentByMP['signatureState']['state'] = 'ERROR';
+        $this->bodySentByMP['signatureState']['error'] = 'Error during signature';
+
+        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $this->assertTrue($this->historyService->addedInHistoryError);
+        $this->assertIsArray($return);
+        $this->assertSame($return['message'], 'Status of signature is ' . $this->bodySentByMP['signatureState']['state']);
     }
 }

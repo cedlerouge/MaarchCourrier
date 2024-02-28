@@ -31,12 +31,11 @@ class WebhookValidation
             throw new RetrieveDocumentUrlEmptyProblem();
         }
 
-        if (!isset($body['payload']['res_id']) || $body['payload']['res_id'] === null) {
+        if (!isset($body['payload']['res_id'])) {
             throw new ResourceIdEmptyProblem();
         }
 
         $signedResource = new SignedResource();
-
 
         $signedResource->setStatus($body['signatureState']['state']);
 
@@ -44,7 +43,7 @@ class WebhookValidation
             $signedResource->setSignatureDate($body['signatureState']['updatedDate']);
         }
 
-        if (isset($body['payload']['res_id_master']) && $body['payload']['res_id_master'] !== null) {
+        if (isset($body['payload']['res_id_master'])) {
             if (!$this->resourceToSignRepository->checkConcordanceResIdAndResIdMaster(
                 $body['payload']['res_id'],
                 $body['payload']['res_id_master']
