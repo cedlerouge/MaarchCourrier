@@ -46,6 +46,7 @@
               { "glob": "**/*", "input": "node_modules/tinymce", "output": "/tinymce/" },
               { "glob": "**/*", "input": "node_modules/tinymce-i18n/langs", "output": "/tinymce-i18n/langs/"},
               { "glob": "pdf.worker.min.js", "input": "node_modules/pdfjs-dist/build", "output": "/pdfjs/" },
+              { "glob": "**/*", "input": "src/frontend/plugins/tinymce/maarch_b64image", "output": "/tinymce/maarch_b64image" },
               { "glob": ".htaccess", "input": "./src/frontend", "output": "/" }
             ],
             "aot": false,

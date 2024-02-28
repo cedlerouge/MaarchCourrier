@@ -581,7 +581,7 @@ export class MailEditorComponent implements OnInit, OnDestroy {
             ],
             extended_valid_elements: 'script[src|async|defer|type|charset]', // disables script execution in TinyMCE
             external_plugins: {
-                'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
+                'maarch_b64image': '../dist/tinymce/maarch_b64image/plugin.min.js'
             },
             toolbar_sticky: true,
             toolbar_mode: 'floating',
