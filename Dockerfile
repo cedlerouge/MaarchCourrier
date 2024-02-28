@@ -36,9 +36,7 @@ COPY src/app /app/src/app
 COPY src/core /app/src/core
 COPY src/backend /app/src/backend
 
-RUN composer install --ignore-platform-reqs --no-scripts --no-dev \
-    && composer dump-autoload --classmap-authoritative
-
+RUN composer install --ignore-platform-reqs --no-scripts --no-dev
 #
 # Front build
 # TODO addin
