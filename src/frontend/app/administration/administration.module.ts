@@ -80,12 +80,13 @@ import { SsoAdministrationComponent } from './connection/sso/sso-administration.
 import { LifeCycleComponent } from './parameter/lifeCycle/life-cycle.component';
 import { AttachmentTypesAdministrationComponent } from './attachment/attachment-types-administration.component';
 import { AttachmentTypeAdministrationComponent } from './attachment/attachment-type-administration.component';
-import { VisaParametersComponent } from '@appRoot/administration/parameter/visa/visa-parameters.component';
+import { VisaParametersComponent } from '@appRoot/administration/parameter/workflow/visa/visa-parameters.component';
 import { OtherParametersComponent } from '@appRoot/administration/parameter/other/other-parameters.component';
 import { MaarchToMaarchParametersComponent } from '@appRoot/administration/parameter/maarchToMaarch/maarch-to-maarch-parameters.component';
 import { MultigestAdministrationComponent } from './multigest/multigest-administration.component';
 import { MultigestListAdministrationComponent } from './multigest/multigest-list-administration.component';
 import { HistoryExportComponent } from './history/export/history-export.component';
+import { AvisParametersComponent } from '@appRoot/administration/parameter/workflow/avis/avis-parameters.component';
 
 //modules LAD
 import { LadAdministrationComponent } from './mercure/lad-administration.component';
@@ -95,6 +96,7 @@ import { MwsAdministrationComponent } from './mercure/webservice/mws-administrat
 import { MwsListDocsComponent } from './mercure/webservice/mws-list-docs.component';
 import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.component';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { WorkflowParametersComponent } from './parameter/workflow/workflow-parameters.component';
 
 @NgModule({
     imports: [
@@ -195,7 +197,9 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
         MwsAdministrationComponent,
         MwsListDocsComponent,
         MwsMonitoringComponent,
-        LadAdministrationMenuComponent
+        LadAdministrationMenuComponent,
+        AvisParametersComponent,
+        WorkflowParametersComponent
     ],
     providers: [
         AdministrationService

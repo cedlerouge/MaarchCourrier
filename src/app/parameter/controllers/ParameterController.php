@@ -75,7 +75,7 @@ class ParameterController
 
     public function getById(Request $request, Response $response, array $aArgs)
     {
-        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago', 'noteVisibilityOffAction', 'noteVisibilityOnAction'])
+        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago', 'noteVisibilityOffAction', 'noteVisibilityOnAction', 'allowMultipleAvisAssignment'])
             && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
