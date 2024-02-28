@@ -567,13 +567,13 @@ export class MailEditorComponent implements OnInit, OnDestroy {
                 });
             },
             selector: 'textarea#emailSignature',
-            base_url: '../node_modules/tinymce/',
+            base_url: '../dist/tinymce/',
             convert_urls: false,
             readonly: this.readonly,
             height: '400',
             suffix: '.min',
             language: this.translate.instant('lang.langISO').replace('-', '_'),
-            language_url: `../node_modules/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
+            language_url: `../dist/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
             menubar: false,
             statusbar: false,
             plugins: [

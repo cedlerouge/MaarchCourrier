@@ -146,12 +146,12 @@ export class CustomizationComponent implements OnInit {
     initMce(readonly = false) {
         tinymce.init({
             selector: 'textarea',
-            base_url: '../node_modules/tinymce/',
+            base_url: '../dist/tinymce/',
             convert_urls: false,
             height: '150',
             suffix: '.min',
             language: this.translate.instant('lang.langISO').replace('-', '_'),
-            language_url: `../node_modules/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
+            language_url: `../dist/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
             menubar: false,
             statusbar: false,
             readonly: readonly,
