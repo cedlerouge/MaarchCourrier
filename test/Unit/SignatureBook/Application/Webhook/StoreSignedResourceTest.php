@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief   StoreSignedResource test
+ * @author  dev@maarch.org
+ */
+
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
@@ -30,9 +42,11 @@ class StoreSignedResourceTest extends TestCase
         );
 
         $this->returnFromCurlRequestParapheur = [
-            'encodedDocument' => base64_encode(file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")),
-            'mimetype' => "application/pdf",
-            'filename' => "PDF_signature.pdf"
+            'encodedDocument' => base64_encode(
+                file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")
+            ),
+            'mimetype'        => "application/pdf",
+            'filename'        => "PDF_signature.pdf"
         ];
     }
 
@@ -86,6 +100,4 @@ class StoreSignedResourceTest extends TestCase
         $this->assertSame($newId, $this->storeSignedResourceServiceMock->resIdNewSignedDoc);
         $this->assertTrue($this->resourceToSignRepositoryMock->attachmentUpdated);
     }
-
-
 }

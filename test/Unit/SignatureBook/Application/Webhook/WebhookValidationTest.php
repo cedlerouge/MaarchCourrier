@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief   WebhookValidation test
+ * @author  dev@maarch.org
+ */
+
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;

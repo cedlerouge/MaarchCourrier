@@ -1,4 +1,15 @@
 <?php
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief WebhookCall class
+ * @author dev@maarch.org
+ */
 
 namespace MaarchCourrier\SignatureBook\Application\Webhook\UseCase;
 
@@ -76,7 +87,7 @@ class WebhookCall
 
         $result = ['message' => 'Status of signature is ' . $signedResource->getStatus()];
 
-        if (!empty($signedResource->getMessageStatus())){
+        if (!empty($signedResource->getMessageStatus())) {
             $result['message'] .= " : " . $signedResource->getMessageStatus();
         }
         return $result;

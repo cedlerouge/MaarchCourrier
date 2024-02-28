@@ -1,5 +1,17 @@
 <?php
 
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
+
+/**
+ * @brief StoreSignedResourceService class
+ * @author dev@maarch.org
+ */
+
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Docserver\controllers\DocserverController;
@@ -12,10 +24,10 @@ class StoreSignedResourceService implements StoreSignedResourceServiceInterface
     public function storeResource(SignedResource $signedResource): array
     {
         return DocserverController::storeResourceOnDocServer([
-            'collId'            => 'letterbox_coll',
-            'docserverTypeId'   => 'DOC',
-            'encodedResource'   => $signedResource->getEncodedContent(),
-            'format'            => 'pdf'
+            'collId'          => 'letterbox_coll',
+            'docserverTypeId' => 'DOC',
+            'encodedResource' => $signedResource->getEncodedContent(),
+            'format'          => 'pdf'
         ]);
     }
 
