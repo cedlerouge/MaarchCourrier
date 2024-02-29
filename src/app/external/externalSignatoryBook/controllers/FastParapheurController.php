@@ -56,8 +56,8 @@ use ZipArchive;
  */
 class FastParapheurController
 {
-    const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
-    const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
+    public const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+    public const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
 
     /**
      * @param Request $request
@@ -75,7 +75,7 @@ class FastParapheurController
 
         $signatureModes = FastParapheurController::getSignatureModes(['mapping' => true]);
         if (!empty($signatureModes['errors'])) {
-            return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
+            return $response->withStatus((int)$signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
         }
 
         $optionOtp = false;
@@ -227,7 +227,7 @@ class FastParapheurController
      * @param Response $response
      * @param array $args
      *
-     * @return \Slim\Psr7\Response|Response
+     * @return Response
      * @throws Exception
      */
     public function getWorkflow(Request $request, Response $response, array $args): Response
@@ -429,7 +429,6 @@ class FastParapheurController
                 continue;
             }
 
-            /*
             if (!empty($value['external_state_fetch_date'])) {
                 $fetchDate = new DateTimeImmutable($value['external_state_fetch_date']);
                 $timeAgo = new DateTimeImmutable('-30 minutes');
@@ -450,7 +449,6 @@ class FastParapheurController
                     continue;
                 }
             }
-            */
 
             $historyResponse = FastParapheurController::getDocumentHistory(
                 ['config' => $args['config'], 'documentId' => $value['external_id']]
@@ -675,16 +673,14 @@ class FastParapheurController
                             'content' => $signatoryInfo['lastname'] . ' ' . $signatoryInfo['firstname'] . ' : ' .
                                 $response
                         ];
+                    } elseif ($signatoryInfo['id']) {
+                        $args['idsToRetrieve'][$version][$resId]['notes'][] = [
+                            'content' => $signatoryInfo['name'] . ' : ' . $response
+                        ];
                     } else {
-                        if ($signatoryInfo['id']) {
-                            $args['idsToRetrieve'][$version][$resId]['notes'][] = [
-                                'content' => $signatoryInfo['name'] . ' : ' . $response
-                            ];
-                        } else {
-                            $args['idsToRetrieve'][$version][$resId]['notes'][] = [
-                                'content' => $valueResponse['userFullname'] . ' : ' . $response
-                            ];
-                        }
+                        $args['idsToRetrieve'][$version][$resId]['notes'][] = [
+                            'content' => $valueResponse['userFullname'] . ' : ' . $response
+                        ];
                     }
                     LogsController::add([
                         'isTech' => true,
@@ -741,6 +737,8 @@ class FastParapheurController
      * Create proof from history data, get proof from fast (Fiche de Circulation)
      *
      * @param array $args documentId, config, historyData, filename, signEncodedFile
+     *
+     * @throws Exception
      */
     public static function makeHistoryProof(array $args): array
     {
@@ -883,60 +881,58 @@ class FastParapheurController
             if (!empty($user[0])) {
                 $signatoryInfo = $user[0];
             }
-        } else {
-            if (!empty($args['valueResponse']['userFastId'] ?? null)) {
-                $user = UserModel::get([
-                    'select' => ['id', "CONCAT(firstname, ' ', lastname) as name"],
-                    'where' => ['external_id->>\'fastParapheur\' = ?'],
-                    'data' => [$args['valueResponse']['userFastId']]
+        } elseif (!empty($args['valueResponse']['userFastId'] ?? null)) {
+            $user = UserModel::get([
+                'select' => ['id', "CONCAT(firstname, ' ', lastname) as name"],
+                'where' => ['external_id->>\'fastParapheur\' = ?'],
+                'data' => [$args['valueResponse']['userFastId']]
+            ]);
+            if (!empty($user[0])) {
+                $signatoryInfo = $user[0];
+            }
+        } elseif (!empty($args['valueResponse']['userFullname'])) {
+            $search = $args['valueResponse']['userFullname'];
+            $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
+
+            $fpUsers = FastParapheurController::getUsers([
+                'config' => [
+                    'subscriberId' => $args['config']['data']['subscriberId'],
+                    'url' => $args['config']['data']['url'],
+                    'certPath' => $args['config']['data']['certPath'],
+                    'certPass' => $args['config']['data']['certPass'],
+                    'certType' => $args['config']['data']['certType']
+                ]
+            ]);
+            if (!empty($fpUsers['errors'])) {
+                return $signatoryInfo;
+            }
+            if (empty($fpUsers)) {
+                return $signatoryInfo;
+            }
+
+            $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
+                return mb_stripos($fpUser['email'], $search) > -1 ||
+                    mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
+                    mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) >
+                    -1;
+            });
+
+            if (!empty($fpUser)) {
+                $fpUser = array_values($fpUser)[0];
+
+                $alreadyLinkedUsers = UserModel::get([
+                    'select' => [
+                        'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
+                        'trim(concat(firstname, \' \', lastname)) as name'
+                    ],
+                    'where' => ['external_id->>\'fastParapheur\' is not null']
                 ]);
-                if (!empty($user[0])) {
-                    $signatoryInfo = $user[0];
-                }
-            } elseif (!empty($args['valueResponse']['userFullname'])) {
-                $search = $args['valueResponse']['userFullname'];
-                $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
 
-                $fpUsers = FastParapheurController::getUsers([
-                    'config' => [
-                        'subscriberId' => $args['config']['data']['subscriberId'],
-                        'url' => $args['config']['data']['url'],
-                        'certPath' => $args['config']['data']['certPath'],
-                        'certPass' => $args['config']['data']['certPass'],
-                        'certType' => $args['config']['data']['certType']
-                    ]
-                ]);
-                if (!empty($fpUsers['errors'])) {
-                    return $signatoryInfo;
-                }
-                if (empty($fpUsers)) {
-                    return $signatoryInfo;
-                }
-
-                $fpUser = array_filter($fpUsers, function ($fpUser) use ($search) {
-                    return mb_stripos($fpUser['email'], $search) > -1 ||
-                        mb_stripos($fpUser['idToDisplay'], $search) > -1 ||
-                        mb_stripos($fpUser['idToDisplay'], explode(' ', $search)[1] . ' ' . explode(' ', $search)[0]) >
-                        -1;
-                });
-
-                if (!empty($fpUser)) {
-                    $fpUser = array_values($fpUser)[0];
-
-                    $alreadyLinkedUsers = UserModel::get([
-                        'select' => [
-                            'external_id->>\'fastParapheur\' as "fastParapheurEmail"',
-                            'trim(concat(firstname, \' \', lastname)) as name'
-                        ],
-                        'where' => ['external_id->>\'fastParapheur\' is not null']
-                    ]);
-
-                    foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
-                        if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
-                            $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' .
-                                $alreadyLinkedUser['fastParapheurEmail'] . ')';
-                            break;
-                        }
+                foreach ($alreadyLinkedUsers as $alreadyLinkedUser) {
+                    if ($fpUser['email'] == $alreadyLinkedUser['fastParapheurEmail']) {
+                        $signatoryInfo['name'] = $alreadyLinkedUser['name'] . ' (' .
+                            $alreadyLinkedUser['fastParapheurEmail'] . ')';
+                        break;
                     }
                 }
             }
@@ -1691,10 +1687,10 @@ class FastParapheurController
     /**
      * @param array $args
      *
-     * @return array|array[]|bool|mixed|string[]
+     * @return array
      * @throws Exception
      */
-    public static function sendDatas(array $args)
+    public static function sendDatas(array $args): array
     {
         $config = $args['config'];
 
@@ -1971,11 +1967,10 @@ class FastParapheurController
         ]);
         if (!empty($curlReturn['errors'])) {
             return ['code' => $curlReturn['code'], 'errors' => $curlReturn['errors']];
-        } else {
-            if (empty($curlReturn['response']['users'])) {
-                return [];
-            }
+        } elseif (empty($curlReturn['response']['users'])) {
+            return [];
         }
+
 
         if (!empty($args['noFormat'])) {
             return $curlReturn['response']['users'];
@@ -2019,10 +2014,8 @@ class FastParapheurController
         ]);
         if (!empty($fpUsers['errors'])) {
             return ['code' => $fpUsers['code'], 'errors' => $fpUsers['errors']];
-        } else {
-            if (empty($fpUsers)) {
-                return ['code' => 400, 'errors' => "FastParapheur users not found!"];
-            }
+        } elseif (empty($fpUsers)) {
+            return ['code' => 400, 'errors' => "FastParapheur users not found!"];
         }
         $fpUsersEmails = array_values(array_unique(array_column($fpUsers, 'email')));
 
@@ -2464,7 +2457,7 @@ class FastParapheurController
     }
 
     /**
-     * @return array|false[]|true[]
+     * @return array[]|false[]|true[]
      * @throws Exception
      */
     public static function isOtpActive(): array
