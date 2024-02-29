@@ -168,8 +168,7 @@ export class FastParapheurService {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createExternalSignatoryBookAccount(id: number, login: string) {
+    createExternalSignatoryBookAccount() {
         // STAND BY: the creation of a user in FAST PARAPHEUR is not possible
     }
 
