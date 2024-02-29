@@ -107,8 +107,8 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.unlinkSignatoryBookAccount(serialId);
     }
 
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
-        return this.serviceInjected?.createExternalSignatoryBookAccount(id, login, serialId);
+    createExternalSignatoryBookAccount(id: number, login: string) {
+        return this.serviceInjected?.createExternalSignatoryBookAccount(id, login);
     }
 
     checkInfoExternalSignatoryBookAccount(serialId: number) {

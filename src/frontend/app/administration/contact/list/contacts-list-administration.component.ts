@@ -420,7 +420,7 @@ export class ContactListHttpDao {
     templateUrl: 'contacts-list-administration-redirect-modal.component.html',
     styleUrls: [],
 })
-export class ContactsListAdministrationRedirectModalComponent implements OnInit {
+export class ContactsListAdministrationRedirectModalComponent {
 
     modalTitle: string = this.translate.instant('lang.confirmAction');
     redirectContact: number;
@@ -433,9 +433,6 @@ export class ContactsListAdministrationRedirectModalComponent implements OnInit 
         public dialogRef: MatDialogRef<ContactsListAdministrationRedirectModalComponent>,
         private notify: NotificationService) {
     }
-
-    // eslint-disable-next-line @angular-eslint/no-empty-lifecycle-method
-    ngOnInit(): void {}
 
     setRedirectUser(contact: any) {
         this.redirectContact = contact.id;

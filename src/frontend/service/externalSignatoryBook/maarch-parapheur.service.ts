@@ -162,8 +162,7 @@ export class MaarchParapheurService {
         });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number): Promise<any> {
+    createExternalSignatoryBookAccount(id: number, login: string): Promise<any> {
         return new Promise((resolve) => {
             this.http.put(`../rest/users/${id}/createInMaarchParapheur`, { login: login }).pipe(
                 tap((data: any) => {

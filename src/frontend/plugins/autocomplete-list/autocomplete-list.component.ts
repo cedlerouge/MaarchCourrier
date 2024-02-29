@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { Input, EventEmitter, Output, ViewChild, ElementRef } from '@angular/core';
 import { map, startWith } from 'rxjs/operators';
@@ -16,7 +16,7 @@ import { Observable } from 'rxjs';
     templateUrl: 'autocomplete-list.component.html',
     styleUrls: ['autocomplete-list.component.scss'],
 })
-export class AutocompleteListComponent implements OnInit {
+export class AutocompleteListComponent {
 
     /**
      * Appearance of input
@@ -79,11 +79,6 @@ export class AutocompleteListComponent implements OnInit {
         public dialog: MatDialog,
         private latinisePipe: LatinisePipe
     ) { }
-
-    // eslint-disable-next-line @angular-eslint/no-empty-lifecycle-method
-    ngOnInit() {
-        // this.initAutocompleteData();
-    }
 
     getLabel(option: any) {
         if (this.options.length > 0 && Object.keys(this.options[0].length === 2)) {

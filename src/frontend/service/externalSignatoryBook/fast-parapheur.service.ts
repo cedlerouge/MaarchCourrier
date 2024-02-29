@@ -169,7 +169,7 @@ export class FastParapheurService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+    createExternalSignatoryBookAccount(id: number, login: string) {
         // STAND BY: the creation of a user in FAST PARAPHEUR is not possible
     }
 
@@ -215,6 +215,7 @@ export class FastParapheurService {
         return additionalsInfos.attachments.map((e: any) => e.res_id);
     }
 
+    // this same function is used in the maarchParapheur service and uses the resourcesToSign parameter
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
         return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0 && this.workflowTypes.length > 0 && this.signatureModes.length > 0;

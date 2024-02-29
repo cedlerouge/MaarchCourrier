@@ -176,8 +176,7 @@ export class InactivityInterceptor implements HttpInterceptor {
         // Check if the URL contains query parameters
         if (url.indexOf('?') !== -1) {
             // Split the URL into two parts: the base URL and the query parameters
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const [baseUrl, queryParams] = url.split('?');
+            const [baseUrl] = url.split('?');
             // Replace the URL with query parameters with the base URL
             url = baseUrl;
         }

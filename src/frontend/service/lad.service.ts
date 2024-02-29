@@ -59,8 +59,8 @@ export class LadService {
                 tap((data: any) => {
                     resolve(data.enabled);
                 }),
-                catchError((err: any) => {
-                    this.notificationService.handleSoftErrors(err);
+                catchError(() => {
+                    resolve(false);
                     return of(false);
                 })
             ).subscribe();
