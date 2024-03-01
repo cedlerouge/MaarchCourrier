@@ -209,21 +209,21 @@ export class TemplateAdministrationComponent implements OnInit, OnDestroy {
         setTimeout(() => {
             tinymce.remove('textarea');
             // LOAD EDITOR TINYMCE for MAIL SIGN
-            tinymce.baseURL = '../node_modules/tinymce';
+            tinymce.baseURL = '../dist/tinymce';
             tinymce.suffix = '.min';
             tinymce.init({
                 selector: selectorId,
                 convert_urls: false,
                 statusbar: false,
                 language: this.translate.instant('lang.langISO').replace('-', '_'),
-                language_url: `../node_modules/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
+                language_url: `../dist/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
                 height: '200',
                 plugins: [
                     'autoresize',
                     'code'
                 ],
                 external_plugins: {
-                    'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
+                    'maarch_b64image': '../tinymce/maarch_b64image/plugin.min.js'
                 },
                 menubar: false,
                 toolbar: 'undo | bold italic underline | alignleft aligncenter alignright | maarch_b64image | forecolor | code',
