@@ -16,7 +16,7 @@
 
     <app-document-viewer
         *ngIf="!pluginInstance && documentData && position === 'left' && !loading"
-        class="docViewerClass"
+        class="doc-viewer-class"
         [editMode]="false"
         [resId]="documentData.resId"
         [mode]="documentType === 'attachments' ? 'attachment' : 'mainDocument'"

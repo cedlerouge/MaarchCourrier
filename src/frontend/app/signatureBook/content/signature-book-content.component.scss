@@ -5,7 +5,7 @@
     position: relative;
 
     ::ng-deep .no-view {
-        display: contents;
+        text-align:center
     }
 }
 
@@ -61,7 +61,7 @@ iframe {
     }
 }
 
-.docViewerClass {
+.doc-viewer-class {
     display: block;
     height: 100%;
     width: 100%;
