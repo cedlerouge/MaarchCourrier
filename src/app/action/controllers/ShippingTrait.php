@@ -170,10 +170,14 @@ trait ShippingTrait
             $resourcesList[] = $resource;
         }
 
-        $urlComplement = 'mail';
+        $urlComplement = 'mail/v2';
+        //$urlComplement = 'mail';
         $isRegisteredMail = false;
+        //$urlAuth = '/authentication/oauth2/token';
+        $urlAuth = 'auth/realms/services/protocol/openid-connect/token';
         if (strpos($shippingTemplate['options']['sendMode'], 'digital_registered_mail') !== false) {
-            $urlComplement = 'registered_mail';
+            $urlComplement = 'registered_mail/v4';
+            //$urlComplement = 'registered_mail';
             $isRegisteredMail = true;
             $addressEntity = UserModel::getPrimaryEntityById([
                 'id'     => $GLOBALS['id'],
@@ -209,19 +213,29 @@ trait ShippingTrait
                 return ['errors' => ['User primary entity address is not filled enough']];
             }
         }
+        $data = [
+            'grant_type' => 'password',
+            'username'   => $shippingTemplate['account']['id'],
+            'password'   => PasswordController::decrypt(
+                ['encryptedData' => $shippingTemplate['account']['password']]
+            )
+        ];
+
+        $body = http_build_query($data);
 
         $curlAuth = CurlModel::exec([
-            'url'         => $mailevaConfig['connectionUri'] . '/auth/realms/services/protocol/openid-connect/token',
-            'basicAuth'   => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
-            'headers'     => ['Content-Type: application/x-www-form-urlencoded'],
-            'method'      => 'POST',
-            'queryParams' => [
+            'url'       => "{$mailevaConfig['connectionUri']}/{$urlAuth}",
+            'basicAuth' => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
+            'headers'   => ['Content-Type: application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+            /*'queryParams' => [
                 'grant_type' => 'password',
                 'username'   => $shippingTemplate['account']['id'],
                 'password'   => PasswordController::decrypt(
                     ['encryptedData' => $shippingTemplate['account']['password']]
                 )
-            ]
+            ]*/
+            'body'      => $body
         ]);
         if ($curlAuth['code'] != 200) {
             return ['errors' => ['Maileva authentication failed']];
@@ -252,7 +266,10 @@ trait ShippingTrait
                 ];
             }
             $createSending = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'POST',
@@ -318,7 +335,10 @@ trait ShippingTrait
             }
 
             $createDocument = CurlModel::exec([
-                'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/documents",
+                //'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/documents",
+                //'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/documents",
+                //'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/documents",
+                'url'           => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/documents",
                 'bearerAuth'    => ['token' => $token],
                 'method'        => 'POST',
                 'multipartBody' => [
@@ -338,7 +358,10 @@ trait ShippingTrait
             $recipients = [];
             if ($resource['type'] == 'attachment') {
                 $createRecipient = CurlModel::exec([
-                    'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
+                    //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/recipients",
+                    //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/recipients",
+                    //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
+                    'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/recipients",
                     'bearerAuth' => ['token' => $token],
                     'headers'    => ['Content-Type: application/json'],
                     'method'     => 'POST',
@@ -364,7 +387,10 @@ trait ShippingTrait
             } else {
                 foreach ($contacts[$key] as $contact) {
                     $createRecipient = CurlModel::exec([
-                        'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
+                        //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/recipients",
+                        //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/recipients",
+                        //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/recipients",
+                        'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/recipients",
                         'bearerAuth' => ['token' => $token],
                         'headers'    => ['Content-Type: application/json'],
                         'method'     => 'POST',
@@ -390,17 +416,26 @@ trait ShippingTrait
 
             $body = [
                 'color_printing'         => in_array(
-                    'color', $shippingTemplate['options']['shapingOptions']),
+                    'color',
+                    $shippingTemplate['options']['shapingOptions']
+                ),
                 'duplex_printing'        => in_array(
-                    'duplexPrinting', $shippingTemplate['options']['shapingOptions']),
+                    'duplexPrinting',
+                    $shippingTemplate['options']['shapingOptions']
+                ),
                 'optional_address_sheet' => in_array(
-                    'addressPage', $shippingTemplate['options']['shapingOptions'])
+                    'addressPage',
+                    $shippingTemplate['options']['shapingOptions']
+                )
             ];
             if (!$isRegisteredMail) {
                 $body['postage_type'] = strtoupper($shippingTemplate['options']['sendMode']);
             }
             $setOptions = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'PATCH',
@@ -412,7 +447,10 @@ trait ShippingTrait
             }
 
             $submit = CurlModel::exec([
-                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/submit",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/submit",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v2/sendings/{$sendingId}/submit",
+                //'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/v4/sendings/{$sendingId}/submit",
+                'url'        => "{$mailevaConfig['uri']}/{$urlComplement}/sendings/{$sendingId}/submit",
                 'bearerAuth' => ['token' => $token],
                 'headers'    => ['Content-Type: application/json'],
                 'method'     => 'POST'
