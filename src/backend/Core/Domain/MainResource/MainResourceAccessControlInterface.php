@@ -14,6 +14,7 @@
 
 namespace MaarchCourrier\Core\Domain\MainResource;
 
+use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 interface MainResourceAccessControlInterface
@@ -22,9 +23,9 @@ interface MainResourceAccessControlInterface
      * Check if user has rights over the resource
      *
      * @param   int $resId Resource id
-     * @param   UserInterface $user User
+     * @param   UserInterface|CurrentUserInterface $user User
      *
      * @return  bool
      */
-    public function hasRightByResId(int $resId, UserInterface $user): bool;
+    public function hasRightByResId(int $resId, UserInterface|CurrentUserInterface $user): bool;
 }
