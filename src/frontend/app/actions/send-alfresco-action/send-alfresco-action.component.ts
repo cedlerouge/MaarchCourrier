@@ -82,7 +82,7 @@ export class SendAlfrescoActionComponent implements OnInit {
     checkAlfresco() {
         this.resourcesErrors = [];
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/actions/' + this.data.action.id + '/checkSendAlfresco', { resources: this.data.resIds })
                 .pipe(
                     tap((data: any) => {
@@ -114,7 +114,7 @@ export class SendAlfrescoActionComponent implements OnInit {
     }
 
     getRootFolders() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/alfresco/rootFolders').pipe(
                 tap((data: any) => {
                     this.alfrescoFolders = data;

@@ -154,8 +154,8 @@ export class ActionsService implements OnDestroy {
 
             return true;
         } else {
-            console.log('Bad informations: ');
-            console.log({ 'action': action }, { 'userId': userId }, { 'groupId': groupId }, { 'basketId': basketId }, { 'resIds': resIds });
+            console.debug('Bad informations: ');
+            console.debug({ 'action': action }, { 'userId': userId }, { 'groupId': groupId }, { 'basketId': basketId }, { 'resIds': resIds });
 
             this.notify.error('Une erreur est survenue');
             return false;
@@ -194,8 +194,8 @@ export class ActionsService implements OnDestroy {
             try {
                 this[action.component]();
             } catch (error) {
-                console.log(error);
-                console.log(action.component);
+                console.debug(error);
+                console.debug(action.component);
                 alert(this.translate.instant('lang.actionNotExist'));
             }
         }
@@ -218,8 +218,8 @@ export class ActionsService implements OnDestroy {
                             this.lockResource();
                             this[action.component](action.data);
                         } catch (error) {
-                            console.log(error);
-                            console.log(action);
+                            console.debug(error);
+                            console.debug(action);
                             this.unlockResourceAfterActionModal([]);
                             alert(this.translate.instant('lang.actionNotExist'));
                         }
@@ -229,8 +229,8 @@ export class ActionsService implements OnDestroy {
                 try {
                     this[action.component]();
                 } catch (error) {
-                    console.log(error);
-                    console.log(action);
+                    console.debug(error);
+                    console.debug(action.component);
                     alert(this.translate.instant('lang.actionNotExist'));
                 }
             }
@@ -677,7 +677,7 @@ export class ActionsService implements OnDestroy {
             data: this.setDatasActionToSend()
         });
         // Subscribe to the sidenavStateChanged event of the SendExternalSignatoryBookActionComponent instance
-        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {            
+        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {
             // Check if the sidenav is closed/opened
             if (!isSidenavOpened) {
                 // If closed, update the size of the dialog to a fixed width
@@ -817,7 +817,6 @@ export class ActionsService implements OnDestroy {
             })
         ).subscribe();
     }
-
 
     noConfirmAction(options: any = null) {
         const dataActionToSend = this.setDatasActionToSend();

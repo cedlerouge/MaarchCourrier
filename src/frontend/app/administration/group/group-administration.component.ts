@@ -15,7 +15,6 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ConfirmComponent } from '../../../plugins/modal/confirm.component';
 import { of } from 'rxjs';
 import { AuthService } from '@service/auth.service';
-import { log } from 'console';
 import { FunctionsService } from '@service/functions.service';
 
 @Component({

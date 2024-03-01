@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChildren, QueryList } from '@angular/core';
+import { Component, Inject, ViewChildren, QueryList } from '@angular/core';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HeaderService } from '@service/header.service';
 import { HttpClient } from '@angular/common/http';
@@ -14,7 +14,7 @@ import { NotificationService } from '@service/notification/notification.service'
     templateUrl: './manage-duplicate.component.html',
     styleUrls: ['./manage-duplicate.component.scss']
 })
-export class ManageDuplicateComponent implements OnInit {
+export class ManageDuplicateComponent {
 
     @ViewChildren('appContactDetail') appContactDetail: QueryList<ContactDetailComponent>;
 
@@ -32,8 +32,6 @@ export class ManageDuplicateComponent implements OnInit {
         public headerService: HeaderService,
         private functionsService: FunctionsService) {
     }
-
-    ngOnInit(): void { }
 
     mergeContact(selectedContact: any = this.appContactDetail.toArray()[this.contactSelected].contact, index: any = this.contactSelected) {
         this.appContactDetail.toArray()[index].resetContact();
@@ -85,7 +83,7 @@ export class ManageDuplicateComponent implements OnInit {
     onSubmit() {
         this.loading = true;
         const masterContact: number = this.data.duplicate.filter((contact: any, index: number) => index === this.contactSelected).map((contact: any) => contact.id)[0];
-        const slaveContacts: number[] = this.data.duplicate.filter((contact: any, index: number) => index !== this.contactSelected).filter((contact: any, index: number) => this.contactsExcluded.indexOf(contact.id) === -1).map((contact: any) => contact.id);
+        const slaveContacts: number[] = this.data.duplicate.filter((contact: any, index: number) => index !== this.contactSelected).filter((contact: any) => this.contactsExcluded.indexOf(contact.id) === -1).map((contact: any) => contact.id);
 
         this.http.put(`../rest/contacts/${masterContact}/merge`, { duplicates : slaveContacts }).pipe(
             tap(() => {

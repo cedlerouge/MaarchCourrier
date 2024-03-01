@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Inject, ViewChild, AfterViewInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -108,7 +108,7 @@ export class SendAvisParallelComponent implements AfterViewInit {
 
 
     indexDocument() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/resources', this.data.resource).pipe(
                 tap((data: any) => {
                     this.data.resIds = [data.resId];

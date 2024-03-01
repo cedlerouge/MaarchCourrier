@@ -123,7 +123,7 @@ export class ContactsCustomFieldsAdministrationComponent implements OnInit {
                     values: []
                 };
             }),
-            exhaustMap((data) => this.http.post('../rest/contactsCustomFields', newCustomField)),
+            exhaustMap(() => this.http.post('../rest/contactsCustomFields', newCustomField)),
             tap((data: any) => {
                 newCustomField.id = data.id;
                 this.customFields.push(newCustomField);

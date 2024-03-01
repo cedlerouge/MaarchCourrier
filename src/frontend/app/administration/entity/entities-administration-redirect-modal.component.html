@@ -44,6 +44,6 @@
     <mat-dialog-actions>
         <button mat-raised-button color="warn" type="submit" class="btn btn-danger"
             (click)="dialogRef.close(data.entity)"
-            [disabled]="data.entity.redirectEntity === undefined || data.entity.redirectEntity == data.entity.entity_id">{{'lang.delete' | translate}}</button>
+            [disabled]="data.entity.redirectEntity === undefined || data.entity.redirectEntity === data.entity.entity_id">{{'lang.delete' | translate}}</button>
     </mat-dialog-actions>
 </div>

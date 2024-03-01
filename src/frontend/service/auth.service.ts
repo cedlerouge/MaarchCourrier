@@ -5,7 +5,7 @@ import { LocalStorageService } from './local-storage.service';
 import { NotificationService } from './notification/notification.service';
 import { HeaderService } from './header.service';
 import { Observable, of, Subject, Subscription, timer } from 'rxjs';
-import { catchError, finalize, map, switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { PrivilegeService } from './privileges.service';
 import { AlertComponent } from '@plugins/modal/alert.component';
 import { FunctionsService } from './functions.service';
@@ -127,7 +127,7 @@ export class AuthService {
                     // Update user info
                     this.updateUserInfo(data.token);
                 }),
-                catchError((error) => {
+                catchError(() => {
                     this.logout(false, true);
                     this.notify.error(this.translate.instant('lang.sessionExpired'));
                     return of(false);

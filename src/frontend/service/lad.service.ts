@@ -59,7 +59,8 @@ export class LadService {
                 tap((data: any) => {
                     resolve(data.enabled);
                 }),
-                catchError((err: any) => {
+                catchError(() => {
+                    resolve(false);
                     return of(false);
                 })
             ).subscribe();

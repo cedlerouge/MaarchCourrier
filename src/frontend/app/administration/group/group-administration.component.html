@@ -62,7 +62,7 @@
                                             *ngFor="let menu of privilegeService.getMenus() | sortBy: 'label'">
                                             <mat-slide-toggle color="primary" name="{{menu.label}}"
                                                 [checked]="group.privileges.indexOf(menu.id) > -1"
-                                                [disabled]="menu.id == 'create_custom' && group.lockAdvancedPrivileges"
+                                                [disabled]="menu.id === 'create_custom' && group.lockAdvancedPrivileges"
                                                 (change)="toggleService($event,menu)"
                                                 matTooltip="{{menu.comment | translate}}">
                                                 {{menu.label | translate}}</mat-slide-toggle>
@@ -85,7 +85,7 @@
                                         <mat-slide-toggle color="primary" name="{{administration.label}}"
                                             [(ngModel)]="administration.checked" [checked]="administration.checked"
                                             (change)="toggleService($event,administration)"
-                                            [disabled]="(administration.id == 'admin_update_control' && group.lockAdvancedPrivileges) || (administration.id == 'admin_password_rules' && authService.authMode !== 'standard')"
+                                            [disabled]="(administration.id === 'admin_update_control' && group.lockAdvancedPrivileges) || (administration.id === 'admin_password_rules' && authService.authMode !== 'standard')"
                                             matTooltip="{{administration.comment | translate}}">
                                             {{administration.label | translate}}
                                         </mat-slide-toggle>
@@ -109,7 +109,7 @@
                                         </button>
                                     </mat-form-field>
                                     <mat-expansion-panel *ngFor="let unit of unitPrivileges | sortBy: 'label'" expanded
-                                        [class.emptyExpansionPanel]="(unit.services | filterList:listFilter.value:'label').length == 0">
+                                        [class.emptyExpansionPanel]="(unit.services | filterList:listFilter.value:'label').length === 0">
                                         <mat-expansion-panel-header>
                                             <mat-panel-title>
                                                 {{unit.label}}

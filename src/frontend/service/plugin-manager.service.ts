@@ -44,7 +44,7 @@ export class PluginManagerService {
             const remoteComponent: any = containerRef.createComponent(
                 this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]
             );
-            extraData = {...extraData, pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins'}
+            extraData = { ...extraData, pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins' }
             remoteComponent.instance.init({ ...this, ...extraData });
             return remoteComponent.instance;
         } catch (error) {

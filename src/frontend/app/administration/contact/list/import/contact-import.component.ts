@@ -246,8 +246,8 @@ export class ContactImportComponent implements OnInit {
             this.countAdd = this.csvData.filter((data: any, index: number) => index > 0 && this.functionsService.empty(data[this.associatedColmuns['id']])).length;
             this.countUp = this.csvData.filter((data: any, index: number) => index > 0 && !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
         } else {
-            this.countAdd = this.csvData.filter((data: any, index: number) => this.functionsService.empty(data[this.associatedColmuns['id']])).length;
-            this.countUp = this.csvData.filter((data: any, index: number) => !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
+            this.countAdd = this.csvData.filter((data: any) => this.functionsService.empty(data[this.associatedColmuns['id']])).length;
+            this.countUp = this.csvData.filter((data: any) => !this.functionsService.empty(data[this.associatedColmuns['id']])).length;
         }
         this.initData();
     }
@@ -258,7 +258,7 @@ export class ContactImportComponent implements OnInit {
             const data = this.csvData[index];
             const objContact = {};
 
-            this.contactColumns.forEach((key, indexCol) => {
+            this.contactColumns.forEach((key) => {
                 const indexCsvCol = this.csvColumns.indexOf(key.label);
                 this.associatedColmuns[key.id] = indexCsvCol > -1 ? this.csvColumns[indexCsvCol] : '';
                 objContact[key.id] = indexCsvCol > -1 ? data[this.csvColumns[indexCsvCol]] : '';

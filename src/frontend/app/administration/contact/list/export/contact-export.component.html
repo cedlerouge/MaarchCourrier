@@ -5,7 +5,7 @@
             <mat-spinner></mat-spinner>
         </div>
         <div class="row">
-            <div [class.col-md-12]="exportModel.format != 'csv'" [class.col-md-3]="exportModel.format == 'csv'">
+            <div [class.col-md-12]="exportModel.format !== 'csv'" [class.col-md-3]="exportModel.format === 'csv'">
                 <mat-form-field appearance="outline">
                     <mat-label>{{'lang.format' | translate}}</mat-label>
                     <mat-select placeholder="{{'lang.format' | translate}}" [(ngModel)]="exportModel.format">
@@ -15,11 +15,11 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-            <div class="col-md-9" *ngIf="exportModel.format == 'csv'">
+            <div class="col-md-9" *ngIf="exportModel.format === 'csv'">
                 <mat-form-field appearance="outline">
                     <mat-label>{{'lang.delimiter' | translate}}</mat-label>
                     <mat-select placeholder="{{'lang.delimiter' | translate}}" [(ngModel)]="exportModel.delimiter"
-                        [disabled]="exportModel.format != 'csv'">
+                        [disabled]="exportModel.format !== 'csv'">
                         <mat-option *ngFor="let delimiter of delimiters" [value]="delimiter">
                             {{delimiter}}
                         </mat-option>
@@ -54,7 +54,7 @@
                                 *ngFor="let item of dataAvailable | sortBy: 'label' | filterList:listFilter.value:'label'"
                                 cdkDrag id="{{item.value}}">{{item.label}} <i class="fa fa-plus" color="primary"
                                     style="cursor:pointer;" (click)="addData(item)"></i></div>
-                            <div *ngIf="dataAvailable.length == 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
+                            <div *ngIf="dataAvailable.length === 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
                         </div>
                     </div>
                     <div style="display: flex;align-items: center;">
@@ -70,7 +70,7 @@
                             <div class="columns" *ngFor="let item of exportModel.data;let i = index" cdkDrag
                                 id="{{item.value}}">{{item.label}} <i class="fa fa-minus" color="warn"
                                     style="cursor:pointer;" (click)="removeData(i)"></i></div>
-                            <div *ngIf="exportModel.data.length == 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
+                            <div *ngIf="exportModel.data.length === 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
                         </div>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
     </div>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">
-        <button mat-raised-button mat-button color="primary" [disabled]="exportModel.data.length == 0"
+        <button mat-raised-button mat-button color="primary" [disabled]="exportModel.data.length === 0"
             (click)="exportData();">{{'lang.toExport' | translate}}</button>
         <button mat-raised-button mat-button [mat-dialog-close]="">{{'lang.cancel' | translate}}</button>
     </div>

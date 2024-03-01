@@ -527,7 +527,7 @@ export class BasketAdministrationSettingsModalComponent implements OnInit {
         });
         $('#jstree2')
             // listen for event
-            .on('loaded.jstree', (e: any, data: any) => {
+            .on('loaded.jstree', () => {
                 if (this.data.action.redirects.find((tag: any) => tag.keyword === 'AUTO_REDIRECT_TO_USER') !== undefined) {
                     this.allEntities.forEach((element: any) => {
                         if (element.id !== 'AUTO_REDIRECT_TO_USER') {

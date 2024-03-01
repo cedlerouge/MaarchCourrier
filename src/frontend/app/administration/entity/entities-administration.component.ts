@@ -147,7 +147,7 @@ export class EntitiesAdministrationComponent implements OnInit {
                     },
                     'multiple': false,
                     'data': this.entities,
-                    'check_callback': function (operation: any, node: any, node_parent: any, node_position: any, more: any) {
+                    'check_callback': function (operation: any, node: any, node_parent: any) {
                         if (operation === 'move_node') {
                             if (node_parent.id === '#') {
                                 return false;
@@ -202,7 +202,7 @@ export class EntitiesAdministrationComponent implements OnInit {
                         }
                     }
 
-                }).on('deselect_node.jstree', (e: any, data: any) => {
+                }).on('deselect_node.jstree', () => {
 
                     this.sidenavRight.close();
 
@@ -224,7 +224,7 @@ export class EntitiesAdministrationComponent implements OnInit {
     }
 
     getEntityTypes() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/entityTypes').pipe(
                 tap((data: any) => {
                     this.entityTypeList = data['types'];
@@ -239,7 +239,7 @@ export class EntitiesAdministrationComponent implements OnInit {
     }
 
     getRoles() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/listTemplates/types/entity_id/roles').pipe(
                 tap((data: any) => {
                     this.listTemplateRoles = data['roles'];
@@ -255,7 +255,7 @@ export class EntitiesAdministrationComponent implements OnInit {
     }
 
     getEntities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/entities').pipe(
                 tap((data: any) => {
                     this.entities = data['entities'];
@@ -382,7 +382,7 @@ export class EntitiesAdministrationComponent implements OnInit {
                     $('#jstree').jstree(true).settings.core.data = this.entities;
                     // $('#jstree').jstree(true).settings.select_node = this.currentEntity;
                     $('#jstree').jstree(true).refresh();
-                    $('#jstree').on('refresh.jstree', (e: any) => {
+                    $('#jstree').on('refresh.jstree', () => {
                         $('#jstree').jstree('deselect_all');
                         $('#jstree').jstree('select_node', this.currentEntity.entity_id);
                     });
@@ -580,12 +580,15 @@ export class EntitiesAdministrationComponent implements OnInit {
     }
 
     updateStatus(entity: any, method: string) {
-        this.http.put('../rest/entities/' + entity['entity_id'] + '/status', { 'method': method })
-            .subscribe((data: any) => {
+        this.http.put('../rest/entities/' + entity['entity_id'] + '/status', { 'method': method }).pipe(
+            tap(() => {
                 this.notify.success('');
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     saveDiffList() {
@@ -801,8 +804,8 @@ export class EntitiesAdministrationComponent implements OnInit {
             'role': ''
         };
 
-        this.http.post('../rest/users/' + newUser.id + '/entities', entity)
-            .subscribe((data: any) => {
+        this.http.post('../rest/users/' + newUser.id + '/entities', entity).pipe(
+            tap(() => {
                 const displayName = newUser.idToDisplay.split(' ');
                 const user = {
                     id: newUser.id,
@@ -815,9 +818,12 @@ export class EntitiesAdministrationComponent implements OnInit {
                 this.dataSourceUsers.paginator = this.paginatorUsers;
                 this.dataSourceUsers.sort = this.sortUsers;
                 this.notify.success(this.translate.instant('lang.userAdded'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     showTemplate(templateId: any) {

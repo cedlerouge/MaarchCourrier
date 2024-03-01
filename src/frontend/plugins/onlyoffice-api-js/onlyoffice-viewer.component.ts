@@ -1,7 +1,6 @@
 import {
     Component,
     OnInit,
-    AfterViewInit,
     Input,
     EventEmitter,
     Output,
@@ -29,7 +28,7 @@ declare let DocsAPI: any;
     templateUrl: 'onlyoffice-viewer.component.html',
     styleUrls: ['onlyoffice-viewer.component.scss'],
 })
-export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class EcplOnlyofficeViewerComponent implements OnInit, OnDestroy {
 
     @Input() editMode: boolean = false;
     @Input() file: any = {};
@@ -179,6 +178,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
             this.loading = false;
         };
         scriptElement.onerror = () => {
+            // eslint-disable-next-line no-console
             console.log('Could not load the onlyoffice API Script!');
             this.triggerCloseEditor.emit();
         };
@@ -195,7 +195,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     }
 
     getServerConfiguration() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/onlyOffice/configuration').pipe(
                 tap((data: any) => {
                     if (data.enabled) {
@@ -226,7 +226,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
 
 
     checkServerStatus() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const regex = /127\.0\.0\.1/g;
             const regex2 = /localhost/g;
             if (this.appUrl.match(regex) !== null || this.appUrl.match(regex2) !== null) {
@@ -253,7 +253,7 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
     }
 
     getMergedFileTemplate() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post(`../${this.params.docUrl}`, { objectId: this.params.objectId, objectType: this.params.objectType, format: this.file.format, onlyOfficeKey: this.key, data: this.params.dataToMerge }).pipe(
                 tap((data: any) => {
                     this.tmpFilename = data.filename;
@@ -287,16 +287,12 @@ export class EcplOnlyofficeViewerComponent implements OnInit, AfterViewInit, OnD
         return result;
     }
 
-    ngAfterViewInit() {
-
-    }
-
     initOfficeEditor() {
         this.docEditor = new DocsAPI.DocEditor('placeholder', this.editorConfig, this.onlyOfficeUrl);
     }
 
     getTokenOOServer() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/onlyOffice/token', { config: this.editorConfig }).pipe(
                 tap((data: any) => {
                     if (data !== null) {

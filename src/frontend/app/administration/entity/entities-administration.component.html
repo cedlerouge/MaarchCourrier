@@ -19,7 +19,7 @@
         <mat-nav-list>
             <h3 mat-subheader>{{'lang.additionalRoles' | translate}}</h3>
             <ng-container *ngFor="let role of listTemplateRoles">
-                <a mat-list-item disableRipple="true" *ngIf="role.id != 'dest' && role.id != 'cc'">
+                <a mat-list-item disableRipple="true" *ngIf="role.id !== 'dest' && role.id !== 'cc'">
                     <mat-icon color="primary" mat-list-icon>
                         <mat-slide-toggle [checked]="role.available" color="primary" (click)="toggleRole(role);false">
                         </mat-slide-toggle>
@@ -91,7 +91,7 @@
                                         </mat-option>
                                         <ng-container *ngFor="let entity of entities | sortBy : 'entity_label'">
                                             <mat-option [value]="entity.entity_id"
-                                                *ngIf="(!entity.state.disabled && entity.entity_id != currentEntity.entity_id) || currentEntity.parent_entity_id == entity.entity_id">
+                                                *ngIf="(!entity.state.disabled && entity.entity_id !== currentEntity.entity_id) || currentEntity.parent_entity_id === entity.entity_id">
                                                 {{entity.entity_label}}
                                             </mat-option>
                                         </ng-container>

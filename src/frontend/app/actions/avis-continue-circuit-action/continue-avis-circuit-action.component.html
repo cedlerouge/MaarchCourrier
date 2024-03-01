@@ -10,22 +10,22 @@
                     {{'lang.makeActionOn' | translate}}
                     <b *ngIf="data.resIds.length === 0" color="primary"
                         class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                    <b *ngIf="data.resIds.length == 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                    <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
                     <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                         {{'lang.elements' | translate}}</b> ?
                 </div>
-                <div class="alert-message alert-message-info" *ngIf="data.resIds.length == 1  && !noResourceToProcess"
+                <div class="alert-message alert-message-info" *ngIf="data.resIds.length === 1  && !noResourceToProcess"
                     role="alert" style="margin-top: 30px;"
                     [innerHTML]="'<b>' + ownerOpinion + '</b> '+ ('lang.askOpinionUser' | translate) + ' :<br/><br/>' + opinionContent">
                 </div>
                 <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length == 1 && appAvisWorkflow !== undefined && appAvisWorkflow.getNextAvisUser() !== ''"
+                    *ngIf="data.resIds.length === 1 && appAvisWorkflow !== undefined && appAvisWorkflow.getNextAvisUser() !== ''"
                     role="alert" style="margin-top: 30px;"
                     [innerHTML]="('lang.sendToDocTo' | translate) + ' <b>' + appAvisWorkflow.getNextAvisUser().labelToDisplay + '</b>'">
                 </div>
 
                 <div class="alert-message alert-message-info"
-                    *ngIf="data.resIds.length == 1 && appAvisWorkflow !== undefined && appAvisWorkflow.getNextAvisUser() === '' && !noResourceToProcess"
+                    *ngIf="data.resIds.length === 1 && appAvisWorkflow !== undefined && appAvisWorkflow.getNextAvisUser() === '' && !noResourceToProcess"
                     role="alert" style="margin-top: 30px;" [innerHTML]="'lang.endWorkflow' | translate"></div>
 
                 <div *ngIf="resourcesErrors.length > 0" class="alert-message alert-message-danger mailList"
@@ -55,7 +55,7 @@
 
                 <app-note-editor #noteEditor [title]="'lang.addOpinion' | translate" [resIds]="data.resIds"
                     [disableRestriction]="true"></app-note-editor>
-                <app-avis-workflow *ngIf="data.resIds.length == 1" [adminMode]="false" [resId]="data.resIds[0]"
+                <app-avis-workflow *ngIf="data.resIds.length === 1" [adminMode]="false" [resId]="data.resIds[0]"
                     #appAvisWorkflow>
                 </app-avis-workflow>
                 <div *ngIf="showToggle" class="row" style="margin: 10px 0px 10px 0px;">

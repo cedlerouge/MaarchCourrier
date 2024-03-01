@@ -279,7 +279,7 @@ export class UserAdministrationComponent implements OnInit {
     }
 
     async createExternalSignatoryBookAccount(result: any, login: string) {
-        const data: any = await this.externalSignatoryBook.createExternalSignatoryBookAccount(result.id, login, this.serialId);
+        const data: any = await this.externalSignatoryBook.createExternalSignatoryBookAccount(result.id, login);
         if (data) {
             this.user.canLinkToExternalSignatoryBook = false;
             this.user.external_id[this.externalSignatoryBook.signatoryBookEnabled] = data.externalId;

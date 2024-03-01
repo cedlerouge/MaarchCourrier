@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -11,7 +11,7 @@ import { of } from 'rxjs';
     templateUrl: 'close-and-index-action.component.html',
     styleUrls: ['../close-mail-action/close-mail-action.component.scss'],
 })
-export class CloseAndIndexActionComponent implements OnInit {
+export class CloseAndIndexActionComponent{
 
     @ViewChild('noteEditor', { static: true }) noteEditor: NoteEditorComponent;
 
@@ -24,8 +24,6 @@ export class CloseAndIndexActionComponent implements OnInit {
         public dialogRef: MatDialogRef<CloseAndIndexActionComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) { }
-
-    ngOnInit(): void { }
 
     onSubmit() {
         this.loading = true;

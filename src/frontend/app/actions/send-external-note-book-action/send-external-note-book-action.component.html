@@ -11,22 +11,22 @@
                         {{'lang.makeActionOn' | translate}}
                         <b *ngIf="data.resIds.length === 0" color="primary"
                             class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                        <b *ngIf="data.resIds.length == 1" color="primary"
+                        <b *ngIf="data.resIds.length === 1" color="primary"
                             class="highlight">{{data.resource.chrono}}</b>
                         <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                             {{'lang.elements' | translate}}</b> ?
                     </div>
                     <div>
-                        <div class="col-md-12" style="padding-top: 10px;" *ngIf="additionalsInfos.users.length != 0">
+                        <div class="col-md-12" style="padding-top: 10px;" *ngIf="additionalsInfos.users.length !== 0">
                             <app-plugin-autocomplete [labelPlaceholder]="'lang.userMaarchParapheur' | translate"
                                 [datas]="additionalsInfos.users" [targetSearchKey]="'displayName'" [subInfoKey]="'email'"
                                 (triggerEvent)="setVal($event)" [singleMode]="true" appearance="outline">
                             </app-plugin-autocomplete>
                         </div>
-                        <div class="col-md-12" *ngIf="additionalsInfos.users.length == 0">
+                        <div class="col-md-12" *ngIf="additionalsInfos.users.length === 0">
                             {{'lang.noUserDefinedInMaarchParapheur' | translate}}
                         </div>
-                        <div class="col-md-12" *ngIf="additionalsInfos.noMail.length != 0">
+                        <div class="col-md-12" *ngIf="additionalsInfos.noMail.length !== 0">
                             <div>
                                 <div class="alert-message alert-message-danger mailList" role="alert">
                                     <p>

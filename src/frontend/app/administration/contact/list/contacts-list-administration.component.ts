@@ -214,7 +214,7 @@ export class ContactsListAdministrationComponent implements OnInit {
             dialogRef.afterClosed().pipe(
                 filter((data: string) => data === 'ok'),
                 exhaustMap(() => this.http.delete(`../rest/contacts/${contact.id}`)),
-                tap((data: any) => {
+                tap(() => {
                     this.refreshDao();
                     this.notify.success(this.translate.instant('lang.contactDeleted'));
                 }),
@@ -232,7 +232,7 @@ export class ContactsListAdministrationComponent implements OnInit {
         dialogRef.afterClosed().pipe(
             filter((data: string) => data === 'ok'),
             exhaustMap(() => this.http.put(`../rest/contacts/${contact.id}/activation`, { enabled: !contact.enabled })),
-            tap((data: any) => {
+            tap(() => {
                 this.refreshDao();
                 if (!contact.enabled === true) {
                     this.notify.success(this.translate.instant('lang.contactEnabled'));
@@ -346,7 +346,7 @@ export class ContactsListAdministrationComponent implements OnInit {
         });
         dialogRef.afterClosed().pipe(
             filter((data: any) => !this.functions.empty(data)),
-            tap(async (res: any) => {
+            tap(async () => {
                 this.refreshDao();
             }),
             catchError((err: any) => {
@@ -420,7 +420,7 @@ export class ContactListHttpDao {
     templateUrl: 'contacts-list-administration-redirect-modal.component.html',
     styleUrls: [],
 })
-export class ContactsListAdministrationRedirectModalComponent implements OnInit {
+export class ContactsListAdministrationRedirectModalComponent {
 
     modalTitle: string = this.translate.instant('lang.confirmAction');
     redirectContact: number;
@@ -433,8 +433,6 @@ export class ContactsListAdministrationRedirectModalComponent implements OnInit 
         public dialogRef: MatDialogRef<ContactsListAdministrationRedirectModalComponent>,
         private notify: NotificationService) {
     }
-
-    ngOnInit(): void {}
 
     setRedirectUser(contact: any) {
         this.redirectContact = contact.id;
