@@ -17,7 +17,6 @@ namespace SrcCore\models;
 
 use Configuration\models\ConfigurationModel;
 use Exception;
-use SimpleXMLElement;
 
 class CoreConfigModel
 {
