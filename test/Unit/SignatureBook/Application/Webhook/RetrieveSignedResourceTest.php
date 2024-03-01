@@ -30,8 +30,6 @@ use PHPUnit\Framework\TestCase;
 
 class RetrieveSignedResourceTest extends TestCase
 {
-    private CurrentUserInformationsMock $currentUserRepositoryMock;
-
     private CurlServiceMock $curlServiceMock;
     private RetrieveSignedResource $retrieveSignedResource;
 
@@ -40,11 +38,11 @@ class RetrieveSignedResourceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->currentUserRepositoryMock = new CurrentUserInformationsMock();
+        $currentUserRepositoryMock = new CurrentUserInformationsMock();
         $this->curlServiceMock = new CurlServiceMock();
 
         $this->retrieveSignedResource = new RetrieveSignedResource(
-            $this->currentUserRepositoryMock,
+            $currentUserRepositoryMock,
             $this->curlServiceMock
         );
 
@@ -63,7 +61,6 @@ class RetrieveSignedResourceTest extends TestCase
     }
 
     /**
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws CurlRequestErrorProblem
      */
     public function testCanRetrieveSignedResource(): void
@@ -75,18 +72,6 @@ class RetrieveSignedResourceTest extends TestCase
     }
 
     /**
-     * @throws CurlRequestErrorProblem
-     * @throws CurrentTokenIsNotFoundProblem
-     */
-    public function testCannotRetrieveSignedResourceIfUserTokenNotFound(): void
-    {
-        $this->currentUserRepositoryMock->token = '';
-        $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
-    }
-
-    /**
-     * @throws CurrentTokenIsNotFoundProblem
      * @throws CurlRequestErrorProblem
      */
     public function testCannotRetrieveSignedResourceOnBadCurlRequest(): void

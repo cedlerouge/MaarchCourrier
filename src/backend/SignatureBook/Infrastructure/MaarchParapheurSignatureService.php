@@ -14,9 +14,11 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
+use Firebase\JWT\JWT;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use SrcCore\controllers\UrlController;
+use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
 
 class MaarchParapheurSignatureService implements SignatureServiceInterface
@@ -54,31 +56,33 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         string $cookieSession,
         array $resourceToSign
     ): array|bool {
+        $payloadToken = $resourceToSign;
+        $payloadToken['userId'] = $GLOBALS['id'];
 
         $webhook = [
-            'url' => UrlController::getCoreUrl() . '/signatureBook/webhook',
-            'payload' => $resourceToSign
+            'url'     => UrlController::getCoreUrl() . '/signatureBook/webhook',
+            'token'   => JWT::encode($payloadToken, CoreConfigModel::getEncryptKey())
         ];
 
         $response = CurlModel::exec([
-                'url'  => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $documentId . '/actions/1',
-                'bearerAuth'     => ['token' => $accessToken],
-                'headers'       => [
-                    'content-type: application/json',
-                    'Accept: application/json',
-                    'cookie: PHPSESSID=' . $cookieSession
-                ],
-                'method'        => 'PUT',
-                'body'      => json_encode([
-                    'hashSignature'          => $hashSignature,
-                    'signatures'             => $signatures,
-                    'certificate'            => $certificate,
-                    'signatureContentLength' => $signatureContentLength,
-                    'signatureFieldName'     => $signatureFieldName,
-                    'tmpUniqueId'            => $tmpUniqueId/*,
-                    'webhook'                => $webhook*/
-                ]),
-            ]);
+            'url'        => rtrim($this->config->getUrl(), '/') . '/rest/documents/' . $documentId . '/actions/1',
+            'bearerAuth' => ['token' => $accessToken],
+            'headers'    => [
+                'content-type: application/json',
+                'Accept: application/json',
+                'cookie: PHPSESSID=' . $cookieSession
+            ],
+            'method'     => 'PUT',
+            'body'       => json_encode([
+                'hashSignature'          => $hashSignature,
+                'signatures'             => $signatures,
+                'certificate'            => $certificate,
+                'signatureContentLength' => $signatureContentLength,
+                'signatureFieldName'     => $signatureFieldName,
+                'tmpUniqueId'            => $tmpUniqueId,
+                'webhook'                => $webhook
+            ]),
+        ]);
         if ($response['code'] > 200) {
             return $response['response'];
         }

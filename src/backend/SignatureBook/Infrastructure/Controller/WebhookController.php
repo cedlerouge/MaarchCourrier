@@ -14,6 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
+use Firebase\JWT\JWT;
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\StoreSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\UseCase\WebhookCall;
@@ -31,8 +32,10 @@ use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignReposit
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
+use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
+use SrcCore\models\CoreConfigModel;
 
 class WebhookController
 {
@@ -57,14 +60,21 @@ class WebhookController
     ): Response {
         $body = $request->getParsedBody();
 
+        $decodedToken = (!empty($body['token'])) ? (array)JWT::decode(
+            $body['token'],
+            CoreConfigModel::getEncryptKey(),
+            ['HS256']
+        ) : [];
+
         //Initialisation
         $currentUserInformations = new CurrentUserInformations();
         $curlService = new CurlService();
         $resourceToSignRepository = new ResourceToSignRepository();
         $storeSignedResourceService = new StoreSignedResourceService();
         $signatureHistoryService = new SignatureHistoryService();
+        $userRepository = new UserRepository();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository);
+        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository);
         $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
@@ -75,7 +85,7 @@ class WebhookController
             $signatureHistoryService
         );
 
-        $id = $webhookCall->execute($body);
+        $id = $webhookCall->execute($body, $decodedToken);
         return $response->withJson(['id' => $id]);
     }
 }

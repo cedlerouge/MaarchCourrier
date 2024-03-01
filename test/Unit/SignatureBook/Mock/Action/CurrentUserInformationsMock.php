@@ -35,4 +35,9 @@ class CurrentUserInformationsMock implements CurrentUserInterface
     {
         return $this->token;
     }
+
+    public function generateNewToken(): string
+    {
+        return $this->token;
+    }
 }

@@ -19,4 +19,5 @@ interface CurrentUserInterface
     public function getCurrentUserId(): int;
     public function getCurrentUserLogin(): string;
     public function getCurrentUserToken(): string;
+    public function generateNewToken(): string;
 }

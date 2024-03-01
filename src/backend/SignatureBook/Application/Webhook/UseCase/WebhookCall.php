@@ -25,6 +25,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
 
 class WebhookCall
 {
@@ -39,6 +40,7 @@ class WebhookCall
 
     /**
      * @param array $body
+     * @param $decodedToken
      * @return int|array
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurlRequestErrorProblem
@@ -48,10 +50,11 @@ class WebhookCall
      * @throws ResourceIdMasterNotCorrespondingProblem
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws StoreResourceProblem
+     * @throws UserDoesNotExistProblem
      */
-    public function execute(array $body): int|array
+    public function execute(array $body, $decodedToken): int|array
     {
-        $signedResource = $this->webhookValidation->validate($body);
+        $signedResource = $this->webhookValidation->validate($body, $decodedToken);
 
         $signedResource = $this->retrieveSignedResource->retrieve($signedResource, $body['retrieveDocUri']);
 

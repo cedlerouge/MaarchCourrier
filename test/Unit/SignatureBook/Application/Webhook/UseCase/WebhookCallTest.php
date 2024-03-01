@@ -27,6 +27,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorresponding
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\CurlServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\SignatureHistoryServiceMock;
@@ -47,12 +48,13 @@ class WebhookCallTest extends TestCase
             'message'     => '',
             'updatedDate' => null
         ],
-        'payload'        => [
-            'res_id'        => 10,
-            'idParapheur'   => 10,
-            'res_id_master' => 100
-        ],
+        'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQiOjE1OSwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
         'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
+    ];
+
+    private array $decodedToken = [
+        'res_id' => 159,
+        'userId' => 10
     ];
 
     protected function setUp(): void
@@ -62,8 +64,9 @@ class WebhookCallTest extends TestCase
         $resourceToSignRepository = new ResourceToSignRepositoryMock();
         $storeSignedResourceService = new StoreSignedResourceServiceMock();
         $this->historyService = new SignatureHistoryServiceMock();
+        $userRepository = new UserRepositoryMock();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository);
+        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository);
         $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
@@ -87,7 +90,7 @@ class WebhookCallTest extends TestCase
      */
     public function testWebhookCallSuccess(): void
     {
-        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $return = $this->webhookCall->execute($this->bodySentByMP, $this->decodedToken);
         $this->assertTrue($this->historyService->addedInHistoryValidation);
         $this->assertIsInt($return);
     }
@@ -107,7 +110,7 @@ class WebhookCallTest extends TestCase
         $this->bodySentByMP['signatureState']['state'] = 'REF';
         $this->bodySentByMP['signatureState']['message'] = 'Tout est ok';
 
-        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $return = $this->webhookCall->execute($this->bodySentByMP, $this->decodedToken);
         $this->assertTrue($this->historyService->addedInHistoryRefus);
         $this->assertIsArray($return);
         $this->assertSame(
@@ -131,7 +134,7 @@ class WebhookCallTest extends TestCase
         $this->bodySentByMP['signatureState']['state'] = 'ERROR';
         $this->bodySentByMP['signatureState']['error'] = 'Error during signature';
 
-        $return = $this->webhookCall->execute($this->bodySentByMP);
+        $return = $this->webhookCall->execute($this->bodySentByMP, $this->decodedToken);
         $this->assertTrue($this->historyService->addedInHistoryError);
         $this->assertIsArray($return);
         $this->assertSame(

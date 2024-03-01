@@ -10,6 +10,7 @@
  * @brief StoreSignedResource class
  * @author dev@maarch.org
  */
+
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
@@ -22,8 +23,7 @@ class StoreSignedResource
     public function __construct(
         private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
         private readonly StoreSignedResourceServiceInterface $storeSignedResourceService
-    )
-    {
+    ) {
     }
 
     public function store(SignedResource $signedResource): int

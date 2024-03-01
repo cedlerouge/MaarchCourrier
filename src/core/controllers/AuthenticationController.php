@@ -41,7 +41,7 @@ class AuthenticationController
         'GET/authenticationInformations', 'PUT/versionsUpdateSQL', 'GET/validUrl', 'GET/authenticate/token', 'GET/images', 'POST/password', 'PUT/password', 'GET/passwordRules',
         'GET/jnlp/{jnlpUniqueId}', 'GET/onlyOffice/mergedFile', 'POST/onlyOfficeCallback', 'POST/authenticate',
         'GET/wopi/files/{id}', 'GET/wopi/files/{id}/contents', 'POST/wopi/files/{id}/contents', 'GET/onlyOffice/content', 'GET/languages/{lang}', 'GET/languages',
-        'POST/administration/shippings/{id}/notifications'
+        'POST/administration/shippings/{id}/notifications', 'POST/signatureBook/webhook'
     ];
 
     public function getInformations(Request $request, Response $response)

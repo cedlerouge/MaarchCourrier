@@ -10,6 +10,7 @@
  * @brief RetrieveSignedResource class
  * @author dev@maarch.org
  */
+
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
@@ -32,14 +33,10 @@ class RetrieveSignedResource
      * @param string $urlRetrieveDoc
      * @return SignedResource
      * @throws CurlRequestErrorProblem
-     * @throws CurrentTokenIsNotFoundProblem
      */
     public function retrieve(SignedResource $signedResource, string $urlRetrieveDoc): SignedResource
     {
-        $accessToken = $this->currentUser->getCurrentUserToken();
-        if (empty($accessToken)) {
-            throw new CurrentTokenIsNotFoundProblem();
-        }
+        $accessToken = $this->currentUser->generateNewToken();
 
         $curlRequest = new CurlRequest();
         $curlRequest = $curlRequest->createFromArray([
@@ -64,7 +61,6 @@ class RetrieveSignedResource
         }
 
         $signedResource->setUserSerialId($this->currentUser->getCurrentUserId());
-
 
         return $signedResource;
     }
