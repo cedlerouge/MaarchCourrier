@@ -98,5 +98,4 @@ class CurlRequest implements JsonSerializable
             'response' => $this->getCurlResponse()
         ];
     }
-
 }

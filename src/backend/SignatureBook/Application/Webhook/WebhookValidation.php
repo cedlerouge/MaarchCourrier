@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
@@ -87,10 +88,12 @@ class WebhookValidation
         }
 
         if (isset($decodedToken['res_id_master'])) {
-            if (!$this->resourceToSignRepository->checkConcordanceResIdAndResIdMaster(
-                $decodedToken['res_id'],
-                $decodedToken['res_id_master']
-            )) {
+            if (
+                !$this->resourceToSignRepository->checkConcordanceResIdAndResIdMaster(
+                    $decodedToken['res_id'],
+                    $decodedToken['res_id_master']
+                )
+            ) {
                 throw new ResourceIdMasterNotCorrespondingProblem(
                     $decodedToken['res_id'],
                     $decodedToken['res_id_master']
