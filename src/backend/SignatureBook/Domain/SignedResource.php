@@ -14,7 +14,6 @@
 
 namespace MaarchCourrier\SignatureBook\Domain;
 
-use DateTime;
 use DateTimeInterface;
 use JsonSerializable;
 

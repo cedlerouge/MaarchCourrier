@@ -17,7 +17,6 @@ use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\CurlRequest;
 use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource

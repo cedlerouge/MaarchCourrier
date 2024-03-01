@@ -24,7 +24,6 @@ use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
 use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
-use Respect\Validation\Rules\Date;
 
 class WebhookValidation
 {
