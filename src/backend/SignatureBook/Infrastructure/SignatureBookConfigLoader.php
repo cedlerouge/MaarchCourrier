@@ -1,13 +1,13 @@
 <?php
 
-namespace MaarchCourrier\SignatureBook\Infrastructure\Repository;
+namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Exception;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookConfigInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookConfig;
 use SrcCore\models\CoreConfigModel;
 
-class SignatureBookConfigRepository implements SignatureBookConfigInterface
+class SignatureBookConfigLoader implements SignatureBookConfigInterface
 {
     /**
      * @throws Exception
