@@ -24,7 +24,14 @@
     </app-document-viewer>
 
     <div class="empty-doc" *ngIf="!documentData && !loading">
-        <i class="fa-solid fa-file-signature"></i>
-        <div>{{ 'lang.noDocumentToSign' | translate }}</div>
+        <ng-container *ngIf="position === 'right'">
+            <i class="fa-solid fa-file-signature"></i>
+            <div>{{ 'lang.noDocumentToSign' | translate }}</div>
+        </ng-container>
+        <ng-container *ngIf="position === 'left'">
+            <i class="far fa-times-circle"></i>
+            <div>{{'lang.noAnnex' | translate}}
+            </div>
+        </ng-container>
     </div>
 </div>
