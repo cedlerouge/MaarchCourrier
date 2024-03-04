@@ -2845,5 +2845,6 @@
     "myStamps": "Mes griffes",
     "applyStamp": "Apposer la griffe sur le document",
     "noStamp": "Aucune griffe",
-    "noDocumentToSign": "Aucun document à viser / signer"
+    "noDocumentToSign": "Aucun document à viser / signer",
+    "noAnnex": "Aucune pièce jointe en annexe"
 }

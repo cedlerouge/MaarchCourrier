@@ -3,6 +3,10 @@
     align-items: center;
     flex: 1;
     position: relative;
+
+    ::ng-deep .no-view {
+        text-align:center
+    }
 }
 
 .title-container {
@@ -55,4 +59,11 @@ iframe {
         opacity: 0.3;
         font-size: 250px;
     }
+}
+
+.doc-viewer-class {
+    display: block;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
 }
