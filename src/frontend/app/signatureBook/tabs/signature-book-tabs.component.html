@@ -8,8 +8,8 @@
         [class.book-mark-item-to-right]="position === 'right'"
         [ngClass]="{
             'book-mark-item-selected': selectedId === i,
-            'book-mark-item-selected-to-left': selectedId === i && position === 'right',
-            'book-mark-item-selected-to-right': selectedId === i && position === 'left'
+            'book-mark-item-selected-to-left': selectedId === i && position === 'left',
+            'book-mark-item-selected-to-right': selectedId === i && position === 'right'
         }"
         (click)="selectDocument(i, document)"
         >
