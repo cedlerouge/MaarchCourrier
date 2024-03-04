@@ -15,7 +15,9 @@
 namespace MaarchCourrier\SignatureBook\Application;
 
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterException;
-use MaarchCourrier\Core\Domain\MainResource\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 
@@ -23,19 +25,29 @@ class RetrieveSignatureBook
 {
     public function __construct(
         public CurrentUserInterface $currentUser,
-        public MainResourceAccessControlInterface $mainResourceAccessControl
+        public MainResourceAccessControlInterface $mainResourceAccessControl,
+        public MainResourceRepositoryInterface $mainResourceRepository
     ) {
 
     }
 
     /**
      * @throws MainResourceOutOfPerimeterException
+     * @throws ResourceDoesNotExistProblem
      */
-    public function getSignatureBook(int $userId, int $basketId, int $resId): array
+    public function getSignatureBook(int $userId, int $basketId, int $resId): SignatureBook
     {
         if (!$this->mainResourceAccessControl->hasRightByResId($resId, $this->currentUser)) {
             throw new MainResourceOutOfPerimeterException();
         }
-        return [];
+
+        $resource = $this->mainResourceRepository->getMainResourceData($resId);
+        if ($resource === null) {
+            throw new ResourceDoesNotExistProblem();
+        }
+
+        $signatureBook = new SignatureBook();
+
+        return $signatureBook;
     }
 }
