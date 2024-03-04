@@ -7,8 +7,8 @@ use JsonSerializable;
 class ResourcesToSign implements JsonSerializable
 {
     private int $resId;
-    private int $title;
-    private int $chrono;
+    private string $title;
+    private string $chrono;
     private int $signedResId;
     private int $resType;
 
@@ -29,33 +29,33 @@ class ResourcesToSign implements JsonSerializable
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getTitle(): int
+    public function getTitle(): string
     {
         return $this->title;
     }
 
     /**
-     * @param int $title
+     * @param string $title
      */
-    public function setTitle(int $title): void
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getChrono(): int
+    public function getChrono(): string
     {
         return $this->chrono;
     }
 
     /**
-     * @param int $chrono
+     * @param string $chrono
      */
-    public function setChrono(int $chrono): void
+    public function setChrono(string $chrono): void
     {
         $this->chrono = $chrono;
     }

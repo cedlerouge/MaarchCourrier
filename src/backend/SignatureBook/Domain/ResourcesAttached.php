@@ -7,7 +7,7 @@ use JsonSerializable;
 class ResourcesAttached implements JsonSerializable
 {
     private int $resId;
-    private int $title;
+    private string $title;
     private int $signedResId;
     private int $resType;
 
@@ -29,17 +29,17 @@ class ResourcesAttached implements JsonSerializable
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getTitle(): int
+    public function getTitle(): string
     {
         return $this->title;
     }
 
     /**
-     * @param int $title
+     * @param string $title
      */
-    public function setTitle(int $title): void
+    public function setTitle(string $title): void
     {
         $this->title = $title;
     }
