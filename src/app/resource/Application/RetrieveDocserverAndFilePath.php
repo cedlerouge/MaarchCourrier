@@ -2,20 +2,20 @@
 
 namespace Resource\Application;
 
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 use Resource\Domain\HasDocserverFileInterface;
-use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceDocserverAndFilePath;
 
 class RetrieveDocserverAndFilePath
 {
-    private ResourceDataInterface $resourceData;
+    private MainResourceRepositoryInterface $resourceData;
     private ResourceFileInterface $resourceFile;
 
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
+        MainResourceRepositoryInterface $resourceDataInterface,
         ResourceFileInterface $resourceFileInterface
     ) {
         $this->resourceData = $resourceDataInterface;

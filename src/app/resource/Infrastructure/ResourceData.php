@@ -17,15 +17,15 @@ namespace Resource\Infrastructure;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use Resource\controllers\ResController;
 use Resource\Domain\Docserver;
 use Resource\Domain\Resource;
 use Resource\Domain\ResourceConverted;
-use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\models\ResModel;
 use SrcCore\models\TextFormatModel;
 
-class ResourceData implements ResourceDataInterface
+class ResourceData implements MainResourceRepositoryInterface
 {
     public function getMainResourceData(int $resId): ?Resource
     {

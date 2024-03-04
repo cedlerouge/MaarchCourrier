@@ -14,6 +14,7 @@
 
 namespace Resource\Application;
 
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
 use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
@@ -24,7 +25,6 @@ use Resource\Domain\Exceptions\ResourceOutOfPerimeterException;
 use Resource\Domain\Exceptions\ResourcePageNotFoundException;
 use Resource\Domain\Exceptions\ThumbnailNotFoundInDocserverOrNotReadableException;
 use Resource\Domain\Exceptions\SetaPdfResultException;
-use Resource\Domain\Ports\ResourceDataInterface;
 use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\Ports\ResourceLogInterface;
@@ -33,16 +33,16 @@ use Throwable;
 
 class RetrieveThumbnailResourceByPage
 {
-    private ResourceDataInterface $resourceData;
+    private MainResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private ResourceLogInterface $resourceLog;
 
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
+        MainResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         ResourceLogInterface $resourceLog
     ) {
-        $this->resourceData = $resourceDataInterface;
+        $this->resourceRepository = $resourceRepositoryInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->resourceLog  = $resourceLog;
     }
@@ -74,12 +74,12 @@ class RetrieveThumbnailResourceByPage
             throw new ParameterMustBeGreaterThanZeroException('page');
         }
 
-        $document = $this->resourceData->getMainResourceData($resId);
+        $document = $this->resourceRepository->getMainResourceData($resId);
         if ($document == null) {
             throw new ResourceDoesNotExistException();
         }
 
-        if (!$this->resourceData->hasRightByResId($resId, $GLOBALS['id'])) {
+        if (!$this->resourceRepository->hasRightByResId($resId, $GLOBALS['id'])) {
             throw new ResourceOutOfPerimeterException();
         }
 
@@ -101,10 +101,10 @@ class RetrieveThumbnailResourceByPage
             throw new ResourcePageNotFoundException();
         }
 
-        $filename = $this->resourceData->formatFilename($document->getSubject());
+        $filename = $this->resourceRepository->formatFilename($document->getSubject());
 
         // Get latest pdf version before to get the page count
-        $document = $this->resourceData->getLatestResourceVersion($resId, 'PDF');
+        $document = $this->resourceRepository->getLatestResourceVersion($resId, 'PDF');
 
         list($adrDocserver, $pathToPdfDocument) = $this->buildFilePath($document);
 
@@ -135,11 +135,11 @@ class RetrieveThumbnailResourceByPage
     private function getResourceVersionThumbnailByPage(int $resId, string $type, int $version): ?ResourceConverted
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) || (!in_array($type, $this->resourceData::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
-            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceData::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
+        if (empty($type) || (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
+            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceRepository::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
         }
 
-        $document = $this->resourceData->getResourceVersion($resId, $type, $version);
+        $document = $this->resourceRepository->getResourceVersion($resId, $type, $version);
 
         if ($document == null) {
             return null;
@@ -171,7 +171,7 @@ class RetrieveThumbnailResourceByPage
             throw new ResourceDoesNotExistException();
         }
 
-        $adrDocserver = $this->resourceData->getDocserverDataByDocserverId($resourceConverted->getDocserverId());
+        $adrDocserver = $this->resourceRepository->getDocserverDataByDocserverId($resourceConverted->getDocserverId());
         if ($adrDocserver == null || !$this->resourceFile->folderExists($adrDocserver->getPathTemplate())) {
             throw new ResourceDocserverDoesNotExistException();
         }

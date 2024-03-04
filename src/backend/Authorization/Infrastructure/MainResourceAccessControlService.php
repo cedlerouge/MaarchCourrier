@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\Authorization\Infrastructure;
 
-use MaarchCourrier\Core\Domain\MainResource\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use Resource\controllers\ResController;
