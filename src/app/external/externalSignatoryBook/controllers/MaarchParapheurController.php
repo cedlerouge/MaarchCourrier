@@ -19,10 +19,12 @@ use Attachment\models\AttachmentTypeModel;
 use Contact\controllers\ContactController;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
+use DateTime;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use History\controllers\HistoryController;
 use IndexingModel\models\IndexingModelFieldModel;
 use Note\models\NoteModel;
@@ -32,6 +34,11 @@ use Resource\controllers\StoreController;
 use Resource\controllers\SummarySheetController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\Filter\FilterException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\controllers\LogsController;
@@ -42,10 +49,16 @@ use SrcCore\models\ValidatorModel;
 use User\controllers\UserController;
 use User\models\UserModel;
 use User\models\UserSignatureModel;
+use ZipArchive;
 
 class MaarchParapheurController
 {
-    public static function getInitializeDatas(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getInitializeDatas(array $aArgs): array
     {
         $rawResponse['users'] = MaarchParapheurController::getUsers(['config' => $aArgs['config']]);
         if (!empty($rawResponse['users']['error'])) {
@@ -54,11 +67,19 @@ class MaarchParapheurController
         return $rawResponse;
     }
 
-    public static function getUsers(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getUsers(array $args): array
     {
         $response = CurlModel::exec([
             'url'       => rtrim($args['config']['data']['url'], '/') . '/rest/users',
-            'basicAuth' => ['user' => $args['config']['data']['userId'], 'password' => $args['config']['data']['password']],
+            'basicAuth' => [
+                'user'     => $args['config']['data']['userId'],
+                'password' => $args['config']['data']['password']
+            ],
             'method'    => 'GET'
         ]);
 
@@ -69,12 +90,37 @@ class MaarchParapheurController
         return $response['response']['users'];
     }
 
-    public static function sendDatas(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|string[]
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfTypeException
+     * @throws PdfReaderException
+     * @throws Exception
+     */
+    public static function sendDatas(array $aArgs): array
     {
         $attachmentToFreeze = [];
 
         $mainResource = ResModel::getOnView([
-            'select' => ['process_limit_date', 'status', 'alt_identifier', 'subject', 'priority', 'res_id', 'admission_date', 'creation_date', 'doc_date', 'initiator', 'typist', 'type_label', 'destination', 'filename'],
+            'select' => [
+                'process_limit_date',
+                'status',
+                'alt_identifier',
+                'subject',
+                'priority',
+                'res_id',
+                'admission_date',
+                'creation_date',
+                'doc_date',
+                'initiator',
+                'typist',
+                'type_label',
+                'destination',
+                'filename'
+            ],
             'where'  => ['res_id = ?'],
             'data'   => [$aArgs['resIdMaster']]
         ]);
@@ -82,17 +128,25 @@ class MaarchParapheurController
             return ['error' => 'Mail does not exist'];
         }
         if (!empty($mainResource[0]['filename'])) {
-            $adrMainInfo = ConvertPdfController::getConvertedPdfById(['resId' => $aArgs['resIdMaster'], 'collId' => 'letterbox_coll']);
-            if (empty($adrMainInfo['docserver_id']) || strtolower(pathinfo($adrMainInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+            $adrMainInfo = ConvertPdfController::getConvertedPdfById(
+                ['resId' => $aArgs['resIdMaster'], 'collId' => 'letterbox_coll']
+            );
+            if (
+                empty($adrMainInfo['docserver_id']) ||
+                strtolower(pathinfo($adrMainInfo['filename'], PATHINFO_EXTENSION)) != 'pdf'
+            ) {
                 return ['error' => 'Document ' . $aArgs['resIdMaster'] . ' is not converted in pdf'];
             }
             $docserverMainInfo = DocserverModel::getByDocserverId(['docserverId' => $adrMainInfo['docserver_id']]);
             if (empty($docserverMainInfo['path_template'])) {
                 return ['error' => 'Docserver does not exist ' . $adrMainInfo['docserver_id']];
             }
-            $arrivedMailMainfilePath = $docserverMainInfo['path_template'] . str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
+            $arrivedMailMainfilePath = $docserverMainInfo['path_template'] .
+                str_replace('#', '/', $adrMainInfo['path']) . $adrMainInfo['filename'];
         }
-        $recipients = ContactController::getFormattedContacts(['resId' => $mainResource[0]['res_id'], 'mode' => 'recipient']);
+        $recipients = ContactController::getFormattedContacts(
+            ['resId' => $mainResource[0]['res_id'], 'mode' => 'recipient']
+        );
 
         $units = [];
         $units[] = ['unit' => 'primaryInformations'];
@@ -112,7 +166,8 @@ class MaarchParapheurController
                     'select'   => ['id', 'note_text', 'user_id', 'creation_date', 'identifier'],
                     'where'    => ['identifier in (?)'],
                     'data'     => [$tmpIds],
-                    'order_by' => ['identifier']]);
+                    'order_by' => ['identifier']
+                ]);
 
                 $userEntities = EntityModel::getByUserId(['userId' => $GLOBALS['id'], 'select' => ['entity_id']]);
                 $data['userEntities'] = [];
@@ -170,7 +225,8 @@ class MaarchParapheurController
         ]);
 
         $tmpPath = CoreConfigModel::getTmpPath();
-        $summarySheetFilePath = $tmpPath . "summarySheet_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" . rand() . ".pdf";
+        $summarySheetFilePath = $tmpPath . "summarySheet_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" .
+            rand() . ".pdf";
         $pdf->Output($summarySheetFilePath, 'F');
 
         $concatPdf = new Fpdi('P', 'pt');
@@ -192,17 +248,25 @@ class MaarchParapheurController
             }
 
             unlink($summarySheetFilePath);
-            $concatFilename = $tmpPath . "concatPdf_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" . rand() . ".pdf";
+            $concatFilename = $tmpPath . "concatPdf_" . $aArgs['resIdMaster'] . "_" . $aArgs['userId'] . "_" . rand() .
+                ".pdf";
             $concatPdf->Output($concatFilename, 'F');
             $arrivedMailMainfilePath = $concatFilename;
         }
 
         if (!empty($arrivedMailMainfilePath)) {
-            $encodedMainZipFile = MaarchParapheurController::createZip(['filepath' => $arrivedMailMainfilePath, 'filename' => 'courrier_arrivee.pdf']);
+            $encodedMainZipFile = MaarchParapheurController::createZip(
+                ['filepath' => $arrivedMailMainfilePath, 'filename' => 'courrier_arrivee.pdf']
+            );
         }
 
         if (empty($mainResource[0]['process_limit_date'])) {
-            $processLimitDate = date('Y-m-d H:i:s', strtotime(date("Y-m-d H:i:s") . ' + 14 days'));
+            $processLimitDate = date(
+                'Y-m-d H:i:s',
+                strtotime(
+                    date("Y-m-d H:i:s") . ' + 14 days'
+                )
+            );
         } else {
             $processLimitDate = $mainResource[0]['process_limit_date'];
         }
@@ -213,7 +277,9 @@ class MaarchParapheurController
             $priority = PriorityModel::getById(['select' => ['label'], 'id' => $mainResource[0]['priority']]);
         }
         $sender = UserModel::getByLogin(['select' => ['id', 'firstname', 'lastname'], 'login' => $aArgs['userId']]);
-        $senderPrimaryEntity = UserModel::getPrimaryEntityById(['id' => $sender['id'], 'select' => ['entities.entity_label']]);
+        $senderPrimaryEntity = UserModel::getPrimaryEntityById(
+            ['id' => $sender['id'], 'select' => ['entities.entity_label']]
+        );
 
         if ($aArgs['objectSent'] == 'attachment') {
             if (empty($aArgs['steps'])) {
@@ -224,16 +290,36 @@ class MaarchParapheurController
 
             $attachments = AttachmentModel::get([
                 'select' => [
-                    'res_id', 'title', 'identifier', 'attachment_type',
-                    'status', 'typist', 'docserver_id', 'path', 'filename', 'creation_date',
-                    'validation_date', 'relation', 'origin_id', 'res_id_master'
+                    'res_id',
+                    'title',
+                    'identifier',
+                    'attachment_type',
+                    'status',
+                    'typist',
+                    'docserver_id',
+                    'path',
+                    'filename',
+                    'creation_date',
+                    'validation_date',
+                    'relation',
+                    'origin_id',
+                    'res_id_master'
                 ],
-                'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS', 'SIGN')", "in_signature_book = 'true'"],
+                'where'  => [
+                    "res_id_master = ?",
+                    "attachment_type not in (?)",
+                    "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SEND_MASS', 'SIGN')",
+                    "in_signature_book = 'true'"
+                ],
                 'data'   => [$aArgs['resIdMaster'], $excludeAttachmentTypes]
             ]);
             foreach ($attachments as $keyAttachment => $attachment) {
-                if (strpos($attachment['identifier'], '-') != false) {
-                    $mailingIdentifier = substr($attachment['identifier'], 0, strripos($attachment['identifier'], '-'));
+                if (strpos($attachment['identifier'], '-')) {
+                    $mailingIdentifier = substr(
+                        $attachment['identifier'],
+                        0,
+                        strripos($attachment['identifier'], '-')
+                    );
                     $mailingAttachment = AttachmentModel::get([
                         'select'  => ['res_id'],
                         'where'   => ['identifier = ?'],
@@ -249,7 +335,11 @@ class MaarchParapheurController
 
             $integratedResource = ResModel::get([
                 'select' => ['res_id', 'docserver_id', 'path', 'filename'],
-                'where'  => ['integrations->>\'inSignatureBook\' = \'true\'', 'external_id->>\'signatureBookId\' is null', 'res_id = ?'],
+                'where'  => [
+                    'integrations->>\'inSignatureBook\' = \'true\'',
+                    'external_id->>\'signatureBookId\' is null',
+                    'res_id = ?'
+                ],
                 'data'   => [$aArgs['resIdMaster']]
             ]);
             $mainDocumentSigned = AdrModel::getConvertedDocumentById([
@@ -270,22 +360,38 @@ class MaarchParapheurController
                 $attachmentTypes = array_column($attachmentTypes, 'signable', 'type_id');
                 foreach ($attachments as $key => $value) {
                     if (!$attachmentTypes[$value['attachment_type']]) {
-                        $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $value['res_id'], 'collId' => 'attachments_coll']);
-                        if (empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+                        $adrInfo = ConvertPdfController::getConvertedPdfById(
+                            ['resId' => $value['res_id'], 'collId' => 'attachments_coll']
+                        );
+                        if (
+                            empty($adrInfo['docserver_id']) ||
+                            strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf'
+                        ) {
                             return ['error' => 'Attachment ' . $value['res_id'] . ' is not converted in pdf'];
                         }
                         $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
                         if (empty($docserverInfo['path_template'])) {
                             return ['error' => 'Docserver does not exist ' . $adrInfo['docserver_id']];
                         }
-                        $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
-                        $docserverType = DocserverTypeModel::getById(['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                        $fingerprint = StoreController::getFingerPrint(['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]);
+                        $filePath = $docserverInfo['path_template'] . str_replace(
+                            '#',
+                            '/',
+                            $adrInfo['path']
+                        ) .
+                            $adrInfo['filename'];
+                        $docserverType = DocserverTypeModel::getById(
+                            ['id' => $docserverInfo['docserver_type_id'], 'select' => ['fingerprint_mode']]
+                        );
+                        $fingerprint = StoreController::getFingerPrint(
+                            ['filePath' => $filePath, 'mode' => $docserverType['fingerprint_mode']]
+                        );
                         if ($adrInfo['fingerprint'] != $fingerprint) {
                             return ['error' => 'Fingerprints do not match'];
                         }
 
-                        $encodedZipDocument = MaarchParapheurController::createZip(['filepath' => $filePath, 'filename' => $adrInfo['filename']]);
+                        $encodedZipDocument = MaarchParapheurController::createZip(
+                            ['filepath' => $filePath, 'filename' => $adrInfo['filename']]
+                        );
 
                         $nonSignableAttachments[] = [
                             'encodedDocument' => $encodedZipDocument,
@@ -320,26 +426,40 @@ class MaarchParapheurController
                     if (empty($adrInfo)) {
                         $adrInfo = ConvertPdfController::getConvertedPdfById(['resId' => $resId, 'collId' => $collId]);
                     }
-                    if (empty($adrInfo['docserver_id']) || strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf') {
+                    if (
+                        empty($adrInfo['docserver_id']) ||
+                        strtolower(pathinfo($adrInfo['filename'], PATHINFO_EXTENSION)) != 'pdf'
+                    ) {
                         return ['error' => 'Attachment ' . $resId . ' is not converted in pdf'];
                     }
                     $docserverInfo = DocserverModel::getByDocserverId(['docserverId' => $adrInfo['docserver_id']]);
                     if (empty($docserverInfo['path_template'])) {
                         return ['error' => 'Docserver does not exist ' . $adrInfo['docserver_id']];
                     }
-                    $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) . $adrInfo['filename'];
+                    $filePath = $docserverInfo['path_template'] . str_replace(
+                        '#',
+                        '/',
+                        $adrInfo['path']
+                    ) .
+                        $adrInfo['filename'];
 
-                    $encodedZipDocument = MaarchParapheurController::createZip(['filepath' => $filePath, 'filename' => $adrInfo['filename']]);
+                    $encodedZipDocument = MaarchParapheurController::createZip(
+                        ['filepath' => $filePath, 'filename' => $adrInfo['filename']]
+                    );
 
                     $attachmentsData = [];
                     if (!empty($encodedMainZipFile)) {
-                        $attachmentsData = [[
-                            'encodedDocument' => $encodedMainZipFile,
-                            'title'           => $mainResource[0]['subject'],
-                            'reference'       => $mainResource[0]['alt_identifier'] ?? ""
-                        ]];
+                        $attachmentsData = [
+                            [
+                                'encodedDocument' => $encodedMainZipFile,
+                                'title'           => $mainResource[0]['subject'],
+                                'reference'       => $mainResource[0]['alt_identifier'] ?? ""
+                            ]
+                        ];
                     }
-                    $summarySheetEncodedZip = MaarchParapheurController::createZip(['filepath' => $summarySheetFilePath, 'filename' => "summarySheet.pdf"]);
+                    $summarySheetEncodedZip = MaarchParapheurController::createZip(
+                        ['filepath' => $summarySheetFilePath, 'filename' => "summarySheet.pdf"]
+                    );
                     $attachmentsData[] = [
                         'encodedDocument' => $summarySheetEncodedZip,
                         'title'           => "summarySheet.pdf",
@@ -347,11 +467,20 @@ class MaarchParapheurController
                     ];
 
                     $attachmentsData = array_merge($nonSignableAttachments, $attachmentsData);
-                    $metadata = MaarchParapheurController::setMetadata(['priority' => $priority['label'], 'primaryEntity' => $senderPrimaryEntity['entity_label'], 'recipient' => $recipients]);
+                    $metadata = MaarchParapheurController::setMetadata(
+                        [
+                            'priority'      => $priority['label'],
+                            'primaryEntity' => $senderPrimaryEntity['entity_label'],
+                            'recipient'     => $recipients
+                        ]
+                    );
 
                     $workflow = [];
                     foreach ($aArgs['steps'] as $step) {
-                        if (!$step['mainDocument'] && ($step['resId'] == $resId || (!empty($value['mailingResId']) && $step['resId'] == $value['mailingResId']))) {
+                        if (
+                            !$step['mainDocument'] && ($step['resId'] == $resId ||
+                                (!empty($value['mailingResId']) && $step['resId'] == $value['mailingResId']))
+                        ) {
                             if (!empty($value['mailingResId']) && empty($mailingIds[$value['mailingResId']])) {
                                 $mailingIds[$value['mailingResId']] = CoreConfigModel::uniqueId();
                             }
@@ -359,7 +488,10 @@ class MaarchParapheurController
                             if (!empty($step['signaturePositions']) && is_array($step['signaturePositions'])) {
                                 $valid = true;
                                 foreach ($step['signaturePositions'] as $signaturePosition) {
-                                    if (empty($signaturePosition['positionX']) || empty($signaturePosition['positionY']) || empty($signaturePosition['page'])) {
+                                    if (
+                                        empty($signaturePosition['positionX']) ||
+                                        empty($signaturePosition['positionY']) || empty($signaturePosition['page'])
+                                    ) {
                                         $valid = false;
                                     }
                                 }
@@ -371,9 +503,15 @@ class MaarchParapheurController
                             if (!empty($step['datePositions']) && is_array($step['datePositions'])) {
                                 $valid = true;
                                 foreach ($step['datePositions'] as $datePosition) {
-                                    if (empty($datePosition['positionX']) || empty($datePosition['positionY']) || empty($datePosition['page'])) {
+                                    if (
+                                        empty($datePosition['positionX']) || empty($datePosition['positionY']) ||
+                                        empty($datePosition['page'])
+                                    ) {
                                         $valid = false;
-                                    } elseif (empty($datePosition['color']) || empty($datePosition['font']) || empty($datePosition['format']) || empty($datePosition['width'])) {
+                                    } elseif (
+                                        empty($datePosition['color']) || empty($datePosition['font']) ||
+                                        empty($datePosition['format']) || empty($datePosition['width'])
+                                    ) {
                                         $valid = false;
                                     }
                                 }
@@ -405,16 +543,23 @@ class MaarchParapheurController
                         'mailingId'       => empty($value['mailingResId']) ? null : $mailingIds[$value['mailingResId']]
                     ];
                     if (!empty($aArgs['note'])) {
-                        $noteCreationDate = new \DateTime();
+                        $noteCreationDate = new DateTime();
                         $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                        $bodyData['notes'] = [
+                            'creator'      => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                            'creationDate' => $noteCreationDate,
+                            'value'        => $aArgs['note']
+                        ];
                     }
 
                     $bodyData['linkId'] = $value['res_id_master'];
 
                     $response = CurlModel::exec([
                         'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/documents',
-                        'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
+                        'basicAuth' => [
+                            'user'     => $aArgs['config']['data']['userId'],
+                            'password' => $aArgs['config']['data']['password']
+                        ],
                         'method'    => 'POST',
                         'body'      => json_encode($bodyData),
                         'headers'   => [
@@ -424,14 +569,19 @@ class MaarchParapheurController
                     ]);
 
                     if (!empty($response['response']['errors']) || !empty($response['errors'])) {
-                        return ['error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors'] ?? $response['errors']];
+                        return [
+                            'error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors']
+                                ?? $response['errors']
+                        ];
                     }
 
                     $attachmentToFreeze[$collId][$resId] = $response['response']['id'];
                 }
                 if (!empty($integratedResource)) {
                     $attachmentsData = [];
-                    $summarySheetEncodedZip = MaarchParapheurController::createZip(['filepath' => $summarySheetFilePath, 'filename' => "summarySheet.pdf"]);
+                    $summarySheetEncodedZip = MaarchParapheurController::createZip(
+                        ['filepath' => $summarySheetFilePath, 'filename' => "summarySheet.pdf"]
+                    );
                     $attachmentsData[] = [
                         'encodedDocument' => $summarySheetEncodedZip,
                         'title'           => "summarySheet.pdf",
@@ -439,7 +589,13 @@ class MaarchParapheurController
                     ];
 
                     $attachmentsData = array_merge($nonSignableAttachments, $attachmentsData);
-                    $metadata = MaarchParapheurController::setMetadata(['priority' => $priority['label'], 'primaryEntity' => $senderPrimaryEntity['entity_label'], 'recipient' => $recipients]);
+                    $metadata = MaarchParapheurController::setMetadata(
+                        [
+                            'priority'      => $priority['label'],
+                            'primaryEntity' => $senderPrimaryEntity['entity_label'],
+                            'recipient'     => $recipients
+                        ]
+                    );
 
                     $workflow = [];
                     foreach ($aArgs['steps'] as $step) {
@@ -448,7 +604,10 @@ class MaarchParapheurController
                             if (!empty($step['signaturePositions']) && is_array($step['signaturePositions'])) {
                                 $valid = true;
                                 foreach ($step['signaturePositions'] as $signaturePosition) {
-                                    if (empty($signaturePosition['positionX']) || empty($signaturePosition['positionY']) || empty($signaturePosition['page'])) {
+                                    if (
+                                        empty($signaturePosition['positionX']) ||
+                                        empty($signaturePosition['positionY']) || empty($signaturePosition['page'])
+                                    ) {
                                         $valid = false;
                                     }
                                 }
@@ -460,9 +619,15 @@ class MaarchParapheurController
                             if (!empty($step['datePositions']) && is_array($step['datePositions'])) {
                                 $valid = true;
                                 foreach ($step['datePositions'] as $datePosition) {
-                                    if (empty($datePosition['positionX']) || empty($datePosition['positionY']) || empty($datePosition['page'])) {
+                                    if (
+                                        empty($datePosition['positionX']) || empty($datePosition['positionY']) ||
+                                        empty($datePosition['page'])
+                                    ) {
                                         $valid = false;
-                                    } elseif (empty($datePosition['color']) || empty($datePosition['font']) || empty($datePosition['format']) || empty($datePosition['width'])) {
+                                    } elseif (
+                                        empty($datePosition['color']) || empty($datePosition['font']) ||
+                                        empty($datePosition['format']) || empty($datePosition['width'])
+                                    ) {
                                         $valid = false;
                                     }
                                 }
@@ -492,16 +657,23 @@ class MaarchParapheurController
                         'metadata'        => $metadata
                     ];
                     if (!empty($aArgs['note'])) {
-                        $noteCreationDate = new \DateTime();
+                        $noteCreationDate = new DateTime();
                         $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                        $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                        $bodyData['notes'] = [
+                            'creator'      => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                            'creationDate' => $noteCreationDate,
+                            'value'        => $aArgs['note']
+                        ];
                     }
 
                     $bodyData['linkId'] = $aArgs['resIdMaster'];
 
                     $response = CurlModel::exec([
                         'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/documents',
-                        'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
+                        'basicAuth' => [
+                            'user'     => $aArgs['config']['data']['userId'],
+                            'password' => $aArgs['config']['data']['password']
+                        ],
                         'method'    => 'POST',
                         'body'      => json_encode($bodyData),
                         'headers'   => [
@@ -511,14 +683,23 @@ class MaarchParapheurController
                     ]);
 
                     if (!empty($response['response']['errors']) || !empty($response['errors'])) {
-                        return ['error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors'] ?? $response['errors']];
+                        return [
+                            'error' => 'Error during processing in MaarchParapheur : ' . $response['response']['errors']
+                                ?? $response['errors']
+                        ];
                     }
 
                     $attachmentToFreeze['letterbox_coll'][$integratedResource[0]['res_id']] = $response['response']['id'];
                 }
             }
         } elseif ($aArgs['objectSent'] == 'mail') {
-            $metadata = MaarchParapheurController::setMetadata(['priority' => $priority['label'], 'primaryEntity' => $senderPrimaryEntity['entity_label'], 'recipient' => $recipients]);
+            $metadata = MaarchParapheurController::setMetadata(
+                [
+                    'priority'      => $priority['label'],
+                    'primaryEntity' => $senderPrimaryEntity['entity_label'],
+                    'recipient'     => $recipients
+                ]
+            );
 
             $workflow = [['userId' => $processingUser, 'mode' => 'note']];
             $bodyData = [
@@ -531,14 +712,21 @@ class MaarchParapheurController
                 'metadata'        => $metadata
             ];
             if (!empty($aArgs['note'])) {
-                $noteCreationDate = new \DateTime();
+                $noteCreationDate = new DateTime();
                 $noteCreationDate = $noteCreationDate->format('Y-m-d');
-                $bodyData['notes'] = ['creator' => trim($sender['firstname'] . ' ' . $sender['lastname']), 'creationDate' => $noteCreationDate, 'value' => $aArgs['note']];
+                $bodyData['notes'] = [
+                    'creator'      => trim($sender['firstname'] . ' ' . $sender['lastname']),
+                    'creationDate' => $noteCreationDate,
+                    'value'        => $aArgs['note']
+                ];
             }
 
             $response = CurlModel::exec([
                 'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/documents',
-                'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
+                'basicAuth' => [
+                    'user'     => $aArgs['config']['data']['userId'],
+                    'password' => $aArgs['config']['data']['password']
+                ],
                 'method'    => 'POST',
                 'body'      => json_encode($bodyData),
                 'headers'   => [
@@ -557,8 +745,14 @@ class MaarchParapheurController
                 $userInfos['lastname'] = $value['externalInformations']['lastname'];
             } else {
                 $curlResponse = CurlModel::exec([
-                    'url'       => rtrim($aArgs['config']['data']['url'], '/') . '/rest/users/' . $value['userId'],
-                    'basicAuth' => ['user' => $aArgs['config']['data']['userId'], 'password' => $aArgs['config']['data']['password']],
+                    'url'       => rtrim(
+                        $aArgs['config']['data']['url'],
+                        '/'
+                    ) . '/rest/users/' . $value['userId'],
+                    'basicAuth' => [
+                        'user'     => $aArgs['config']['data']['userId'],
+                        'password' => $aArgs['config']['data']['password']
+                    ],
                     'headers'   => ['content-type:application/json'],
                     'method'    => 'GET'
                 ]);
@@ -581,7 +775,11 @@ class MaarchParapheurController
         return ['sended' => $attachmentToFreeze, 'historyInfos' => $historyInfos];
     }
 
-    public static function setMetadata($args = [])
+    /**
+     * @param array $args
+     * @return array
+     */
+    public static function setMetadata(array $args = []): array
     {
         $metadata = [];
         if (!empty($args['priority'])) {
@@ -601,15 +799,19 @@ class MaarchParapheurController
         return $metadata;
     }
 
-    public static function createZip(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return string
+     */
+    public static function createZip(array $aArgs): string
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
 
         $pathInfo = pathinfo($aArgs['filepath'], PATHINFO_FILENAME);
         $tmpPath = CoreConfigModel::getTmpPath();
         $zipFilename = $tmpPath . $pathInfo . "_" . rand() . ".zip";
 
-        if ($zip->open($zipFilename, \ZipArchive::CREATE) === true) {
+        if ($zip->open($zipFilename, ZipArchive::CREATE) === true) {
             $zip->addFile($aArgs['filepath'], $aArgs['filename']);
 
             $zip->close();
@@ -623,25 +825,40 @@ class MaarchParapheurController
         }
     }
 
-    public static function getUserById(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getUserById(array $args): array
     {
         $response = CurlModel::exec([
             'url'       => rtrim($args['config']['data']['url'], '/') . '/rest/users/' . $args['id'],
-            'basicAuth' => ['user' => $args['config']['data']['userId'], 'password' => $args['config']['data']['password']],
+            'basicAuth' => [
+                'user'     => $args['config']['data']['userId'],
+                'password' => $args['config']['data']['password']
+            ],
             'method'    => 'GET'
         ]);
 
         return $response['response']['user'];
     }
 
-    public static function retrieveSignedMails(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function retrieveSignedMails(array $aArgs): array
     {
         $version = $aArgs['version'];
         foreach ($aArgs['idsToRetrieve'][$version] as $resId => $value) {
             if (!is_numeric($value['external_id'])) {
                 continue;
             }
-            $documentWorkflow = MaarchParapheurController::getDocumentWorkflow(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
+            $documentWorkflow = MaarchParapheurController::getDocumentWorkflow(
+                ['config' => $aArgs['config'], 'documentId' => $value['external_id']]
+            );
             if (!is_array($documentWorkflow) || empty($documentWorkflow)) {
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
                 continue;
@@ -680,12 +897,16 @@ class MaarchParapheurController
             $state = MaarchParapheurController::getState(['workflow' => $documentWorkflow]);
 
             if (in_array($state['status'], ['validated', 'refused'])) {
-                $signedDocument = MaarchParapheurController::getDocument(['config' => $aArgs['config'], 'documentId' => $value['external_id'], 'status' => $state['status']]);
+                $signedDocument = MaarchParapheurController::getDocument(
+                    ['config' => $aArgs['config'], 'documentId' => $value['external_id'], 'status' => $state['status']]
+                );
                 $aArgs['idsToRetrieve'][$version][$resId]['format'] = 'pdf';
                 $aArgs['idsToRetrieve'][$version][$resId]['encodedFile'] = $signedDocument['encodedDocument'];
                 if ($state['status'] == 'validated' && in_array($state['mode'], ['sign', 'visa'])) {
                     $aArgs['idsToRetrieve'][$version][$resId]['status'] = 'validated';
-                    $signedProofDocument = MaarchParapheurController::getDocumentProof(['config' => $aArgs['config'], 'documentId' => $value['external_id']]);
+                    $signedProofDocument = MaarchParapheurController::getDocumentProof(
+                        ['config' => $aArgs['config'], 'documentId' => $value['external_id']]
+                    );
                     if (!empty($signedProofDocument['encodedProofDocument'])) {
                         $aArgs['idsToRetrieve'][$version][$resId]['log'] = $signedProofDocument['encodedProofDocument'];
                         $aArgs['idsToRetrieve'][$version][$resId]['logFormat'] = $signedProofDocument['format'];
@@ -727,7 +948,10 @@ class MaarchParapheurController
                         $aArgs['idsToRetrieve'][$version][$resId]['signatory_user_serial_id'] = $signatoryUser['id'];
                     }
                 }
-                $aArgs['idsToRetrieve'][$version][$resId]['workflowInfo'] = implode(", ", $state['workflowInfo']);
+                $aArgs['idsToRetrieve'][$version][$resId]['workflowInfo'] = implode(
+                    ", ",
+                    $state['workflowInfo']
+                );
             } else {
                 unset($aArgs['idsToRetrieve'][$version][$resId]);
             }
@@ -737,11 +961,23 @@ class MaarchParapheurController
         return $aArgs['idsToRetrieve'];
     }
 
-    public static function getDocumentWorkflow(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getDocumentWorkflow(array $args): array
     {
         $response = CurlModel::exec([
-            'url'       => rtrim($args['config']['data']['url'], '/') . '/rest/documents/' . $args['documentId'] . '/workflow',
-            'basicAuth' => ['user' => $args['config']['data']['userId'], 'password' => $args['config']['data']['password']],
+            'url'       => rtrim(
+                $args['config']['data']['url'],
+                '/'
+            ) . '/rest/documents/' . $args['documentId'] .
+                '/workflow',
+            'basicAuth' => [
+                'user'     => $args['config']['data']['userId'],
+                'password' => $args['config']['data']['password']
+            ],
             'method'    => 'GET'
         ]);
 
@@ -752,30 +988,58 @@ class MaarchParapheurController
         return $response['response']['workflow'];
     }
 
-    public static function getDocumentProof(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getDocumentProof(array $args): array
     {
         $response = CurlModel::exec([
-            'url'       => rtrim($args['config']['data']['url'], '/') . '/rest/documents/' . $args['documentId'] . '/proof?onlyProof=true',
-            'basicAuth' => ['user' => $args['config']['data']['userId'], 'password' => $args['config']['data']['password']],
+            'url'       => rtrim(
+                $args['config']['data']['url'],
+                '/'
+            ) . '/rest/documents/' . $args['documentId'] .
+                '/proof?onlyProof=true',
+            'basicAuth' => [
+                'user'     => $args['config']['data']['userId'],
+                'password' => $args['config']['data']['password']
+            ],
             'method'    => 'GET'
         ]);
 
         return $response['response'];
     }
 
-    public static function getDocument(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getDocument(array $args): array
     {
         $type = $args['status'] == 'validated' ? '?type=esign' : '';
         $response = CurlModel::exec([
-            'url'       => rtrim($args['config']['data']['url'], '/') . '/rest/documents/' . $args['documentId'] . '/content' . $type,
-            'basicAuth' => ['user' => $args['config']['data']['userId'], 'password' => $args['config']['data']['password']],
+            'url'       => rtrim(
+                $args['config']['data']['url'],
+                '/'
+            ) . '/rest/documents/' . $args['documentId'] .
+                '/content' . $type,
+            'basicAuth' => [
+                'user'     => $args['config']['data']['userId'],
+                'password' => $args['config']['data']['password']
+            ],
             'method'    => 'GET'
         ]);
 
         return $response['response'];
     }
 
-    public static function getState($aArgs)
+    /**
+     * @param $aArgs
+     * @return array
+     */
+    public static function getState($aArgs): array
     {
         $state['status'] = 'validated';
         $state['workflowInfo'] = [];
@@ -812,7 +1076,14 @@ class MaarchParapheurController
         return $state;
     }
 
-    public static function getUserPicture(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public static function getUserPicture(Request $request, Response $response, array $aArgs): Response
     {
         $check = Validator::intVal()->validate($aArgs['id']);
         if (!$check) {
@@ -845,7 +1116,7 @@ class MaarchParapheurController
                     $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
-                    $errors = 'An error occured. Please check your configuration file.';
+                    $errors = 'An error occurred. Please check your configuration file.';
                 }
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }
@@ -856,10 +1127,18 @@ class MaarchParapheurController
         return $response->withJson(['picture' => $curlResponse['response']['picture']]);
     }
 
-    public static function sendUserToMaarchParapheur(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public static function sendUserToMaarchParapheur(Request $request, Response $response, array $aArgs): Response
     {
         $body = $request->getParsedBody();
-        $check = Validator::stringType()->notEmpty()->validate($body['login']) && preg_match("/^[\w.@-]*$/", $body['login']);
+        $check = Validator::stringType()->notEmpty()->validate($body['login']) &&
+            preg_match("/^[\w.@-]*$/", $body['login']);
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'login is empty or wrong format']);
         }
@@ -873,7 +1152,9 @@ class MaarchParapheurController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
 
         if ($loadedXml->signatoryBookEnabled == 'maarchParapheur') {
-            $userInfo = UserModel::getById(['select' => ['firstname', 'lastname', 'mail', 'external_id'], 'id' => $aArgs['id']]);
+            $userInfo = UserModel::getById(
+                ['select' => ['firstname', 'lastname', 'mail', 'external_id'], 'id' => $aArgs['id']]
+            );
 
             $bodyData = [
                 "lastname"  => $userInfo['lastname'],
@@ -906,7 +1187,7 @@ class MaarchParapheurController
                     $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
-                    $errors = 'An error occured. Please check your configuration file.';
+                    $errors = 'An error occurred. Please check your configuration file.';
                 }
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }
@@ -930,12 +1211,21 @@ class MaarchParapheurController
         return $response->withJson(['externalId' => $curlResponse['response']['id']]);
     }
 
-    public static function linkUserToMaarchParapheur(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public static function linkUserToMaarchParapheur(Request $request, Response $response, array $aArgs): Response
     {
         $body = $request->getParsedBody();
         $check = Validator::intType()->notEmpty()->validate($body['maarchParapheurUserId']);
         if (!$check) {
-            return $response->withStatus(400)->withJson(['errors' => 'maarchParapheurUserId is empty or not an integer']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'maarchParapheurUserId is empty or not an integer']
+            );
         }
 
         $userController = new UserController();
@@ -970,13 +1260,15 @@ class MaarchParapheurController
                     $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
-                    $errors = 'An error occured. Please check your configuration file.';
+                    $errors = 'An error occurred. Please check your configuration file.';
                 }
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }
 
             if (empty($curlResponse['response']['user'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'User does not exist in Maarch Parapheur']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'User does not exist in Maarch Parapheur']
+                );
             }
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
@@ -989,7 +1281,9 @@ class MaarchParapheurController
         ]);
 
         if (!empty($userInfos)) {
-            return $response->withStatus(403)->withJson(['errors' => 'This maarch parapheur user is already linked to someone. Choose another one.']);
+            return $response->withStatus(403)->withJson(
+                ['errors' => 'This maarch parapheur user is already linked to someone. Choose another one.']
+            );
         }
 
         $userInfo = UserModel::getById(['select' => ['external_id', 'firstname', 'lastname'], 'id' => $aArgs['id']]);
@@ -1010,7 +1304,13 @@ class MaarchParapheurController
         return $response->withJson(['success' => 'success']);
     }
 
-    public static function unlinkUserToMaarchParapheur(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public static function unlinkUserToMaarchParapheur(Request $request, Response $response, array $aArgs): Response
     {
         $userController = new UserController();
         $error = $userController->hasUsersRights(['id' => $aArgs['id']]);
@@ -1036,7 +1336,14 @@ class MaarchParapheurController
         return $response->withJson(['success' => 'success']);
     }
 
-    public static function userStatusInMaarchParapheur(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public static function userStatusInMaarchParapheur(Request $request, Response $response, array $aArgs): Response
     {
         $userController = new UserController();
         $error = $userController->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
@@ -1061,14 +1368,18 @@ class MaarchParapheurController
             }
 
             if (empty($url) || empty($userId) || empty($password)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Could not get remote signatory book configuration. Please check your configuration file.']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Could not get remote signatory book configuration. Please check your configuration file.']
+                );
             }
 
             $userInfo = UserModel::getById(['select' => ['external_id'], 'id' => $aArgs['id']]);
             $userExternalIds = json_decode($userInfo['external_id'] ?? '{}', true);
 
             if (empty($userExternalIds['maarchParapheur'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'User does not have Maarch Parapheur Id']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'User does not have Maarch Parapheur Id']
+                );
             }
 
             $curlResponse = CurlModel::exec([
@@ -1086,12 +1397,14 @@ class MaarchParapheurController
                     $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
-                    $errors = 'An error occured. Please check your configuration file.';
+                    $errors = 'An error occurred. Please check your configuration file.';
                 }
             }
 
             if (empty($curlResponse['response']['user'])) {
-                return $response->withStatus(400)->withJson(['errors' => $errors, 'lang' => 'maarchParapheurLinkbroken']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => $errors, 'lang' => 'maarchParapheurLinkbroken']
+                );
             }
         } else {
             return $response->withStatus(403)->withJson(['errors' => 'maarchParapheur is not enabled']);
@@ -1100,7 +1413,14 @@ class MaarchParapheurController
         return $response->withJson(['link' => $curlResponse['response']['user']['login'], 'errors' => '']);
     }
 
-    public static function sendSignaturesToMaarchParapheur(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public static function sendSignaturesToMaarchParapheur(Request $request, Response $response, array $aArgs): Response
     {
         $userController = new UserController();
         $error = $userController->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
@@ -1124,22 +1444,33 @@ class MaarchParapheurController
                     return $response->withStatus(400)->withJson(['errors' => 'User has no signature']);
                 }
 
-                $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
+                $docserver = DocserverModel::getCurrentDocserver(
+                    ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+                );
                 if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Path for signature docserver does not exists']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Path for signature docserver does not exists']
+                    );
                 }
 
                 $signatures = [];
                 $signaturesId = [];
                 foreach ($userSignatures as $value) {
-                    $pathToSignature = $docserver['path_template'] . str_replace('#', '/', $value['signature_path']) . $value['signature_file_name'];
+                    $pathToSignature = $docserver['path_template'] . str_replace(
+                        '#',
+                        '/',
+                        $value['signature_path']
+                    ) .
+                        $value['signature_file_name'];
                     if (is_file($pathToSignature)) {
                         $base64 = base64_encode(file_get_contents($pathToSignature));
                         $format = pathinfo($pathToSignature, PATHINFO_EXTENSION);
                         $signatures[] = ['encodedSignature' => $base64, 'format' => $format];
                         $signaturesId[] = $value['id'];
                     } else {
-                        return $response->withStatus(403)->withJson(['errors' => 'File does not exists : ' . $pathToSignature]);
+                        return $response->withStatus(403)->withJson(
+                            ['errors' => 'File does not exists : ' . $pathToSignature]
+                        );
                     }
                 }
 
@@ -1158,14 +1489,17 @@ class MaarchParapheurController
                 }
 
                 $curlResponse = CurlModel::exec([
-                    'url'       => rtrim($url, '/') . '/rest/users/' . $externalId['maarchParapheur'] . '/externalSignatures',
+                    'url'       => rtrim($url, '/') . '/rest/users/' . $externalId['maarchParapheur'] .
+                        '/externalSignatures',
                     'basicAuth' => ['user' => $userId, 'password' => $password],
                     'headers'   => ['content-type:application/json'],
                     'method'    => 'PUT',
                     'body'      => json_encode($bodyData)
                 ]);
             } else {
-                return $response->withStatus(403)->withJson(['errors' => 'user does not exists in maarch Parapheur']);
+                return $response->withStatus(403)->withJson(
+                    ['errors' => 'user does not exists in maarch Parapheur']
+                );
             }
 
             if ($curlResponse['code'] != '204') {
@@ -1175,7 +1509,7 @@ class MaarchParapheurController
                     $errors = $curlResponse['errors'];
                 }
                 if (empty($errors)) {
-                    $errors = 'An error occured. Please check your configuration file.';
+                    $errors = 'An error occurred. Please check your configuration file.';
                 }
                 return $response->withStatus(400)->withJson(['errors' => $errors]);
             }
@@ -1194,7 +1528,14 @@ class MaarchParapheurController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getWorkflow(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getWorkflow(Request $request, Response $response, array $args): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -1207,23 +1548,31 @@ class MaarchParapheurController
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
         } else {
-            $resource = AttachmentModel::getById(['id' => $args['id'], 'select' => ['res_id_master', 'status', 'external_id']]);
+            $resource = AttachmentModel::getById(
+                ['id' => $args['id'], 'select' => ['res_id_master', 'status', 'external_id']]
+            );
             if (empty($resource)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Attachment does not exist']);
             }
-            if (!ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])) {
+            if (
+                !ResController::hasRightByResId(['resId' => [$resource['res_id_master']], 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Resource does not exist']);
             }
         }
 
         $externalId = json_decode($resource['external_id'], true);
         if (empty($externalId['signatureBookId'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Resource is not linked to Maarch Parapheur']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Resource is not linked to Maarch Parapheur']
+            );
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'SignatoryBooks configuration file missing']
+            );
         }
 
         $url = '';
@@ -1256,7 +1605,7 @@ class MaarchParapheurController
                 $errors = $curlResponse['errors'];
             }
             if (empty($errors)) {
-                $errors = 'An error occured. Please check your configuration file.';
+                $errors = 'An error occurred. Please check your configuration file.';
             }
             return $response->withStatus(400)->withJson(['errors' => $errors]);
         }
@@ -1264,11 +1613,20 @@ class MaarchParapheurController
         return $response->withJson($curlResponse['response']);
     }
 
-    public function getOtpList(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getOtpList(Request $request, Response $response, array $args): Response
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'SignatoryBooks configuration file missing']
+            );
         }
 
         $url = '';
@@ -1304,7 +1662,7 @@ class MaarchParapheurController
                 $errors = $curlResponse['errors'];
             }
             if (empty($errors)) {
-                $errors = 'An error occured. Please check your configuration file.';
+                $errors = 'An error occurred. Please check your configuration file.';
             }
             return $response->withStatus(400)->withJson(['errors' => $errors]);
         }
@@ -1312,7 +1670,12 @@ class MaarchParapheurController
         return $response->withJson($curlResponse['response']);
     }
 
-    public static function userExists($args)
+    /**
+     * @param $args
+     * @return false|array
+     * @throws Exception
+     */
+    public static function userExists($args): bool|array
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
