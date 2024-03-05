@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief MaarchParapheurSignatureService class
+ * @brief Main Resource Access Control Service class
  * @author dev@maarch.org
  */
 

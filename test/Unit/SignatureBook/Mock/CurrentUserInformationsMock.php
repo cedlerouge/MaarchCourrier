@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 

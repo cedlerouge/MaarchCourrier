@@ -8,15 +8,15 @@
  */
 
 /**
- * @brief ResourceOutOfPerimeterException class
+ * @brief Main Resource Out Of Perimeter Problem class
  * @author dev@maarch.org
  */
 
 namespace MaarchCourrier\Authorization\Domain\Problem;
 
-use Exception;
+use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class MainResourceOutOfPerimeterException extends Exception
+class MainResourceOutOfPerimeterProblem extends Problem
 {
     public function __construct()
     {
