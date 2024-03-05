@@ -62,7 +62,7 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                 ]),
             ]);
         if ($response['code'] >= 400) {
-            return $response['response'] ?? ['errors' => 'Error occurred while applying the signature'];
+            return $response['errors'] ?? ['errors' => 'Error occurred while applying the signature'];
         }
         return true;
     }
