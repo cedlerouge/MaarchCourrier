@@ -5,6 +5,7 @@ namespace Group\controllers;
 use Action\models\ActionModel;
 use Basket\models\GroupBasketModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\models\PrivilegeModel;
 use Group\models\GroupModel;
 use Respect\Validation\Validator;
@@ -30,23 +31,38 @@ class GroupController
         'saveAndIndexRegisteredMailAction'
     ];
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
-        $hasPrivilege = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']]);
+        $hasPrivilege = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']]
+        );
 
         $select = $hasPrivilege ? ['*'] : ['id', 'group_desc'];
         $groups = GroupModel::get(['select' => $select, 'orderBy' => ['group_desc']]);
 
         if ($hasPrivilege) {
             foreach ($groups as $key => $value) {
-                $groups[$key]['users'] = GroupModel::getUsersById(['id' => $value['id'], 'select' => ['users.user_id', 'users.firstname', 'users.lastname']]);
+                $groups[$key]['users'] = GroupModel::getUsersById(
+                    ['id' => $value['id'], 'select' => ['users.user_id', 'users.firstname', 'users.lastname']]
+                );
             }
         }
 
         return $response->withJson(['groups' => $groups]);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -60,7 +76,12 @@ class GroupController
         return $response->withJson(['group' => $group]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -68,7 +89,8 @@ class GroupController
 
         $data = $request->getParsedBody();
 
-        $check = Validator::stringType()->notEmpty()->validate($data['group_id']) && preg_match("/^[\w-]*$/", $data['group_id']) && (strlen($data['group_id']) < 33);
+        $check = Validator::stringType()->notEmpty()->validate($data['group_id']) &&
+            preg_match("/^[\w-]*$/", $data['group_id']) && (strlen($data['group_id']) < 33);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['group_desc']);
         $check = $check && Validator::stringType()->notEmpty()->validate($data['security']['where_clause']);
         if (!$check) {
@@ -80,11 +102,22 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => _ID . ' ' . _ALREADY_EXISTS]);
         }
 
-        if (!PreparedClauseController::isRequestValid(['clause' => $data['security']['where_clause'], 'userId' => $GLOBALS['login'], 'limit' => 1])) {
+        if (
+            !PreparedClauseController::isRequestValid(
+                ['clause' => $data['security']['where_clause'], 'userId' => $GLOBALS['login'], 'limit' => 1]
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => _INVALID_CLAUSE]);
         }
 
-        GroupModel::create(['groupId' => $data['group_id'], 'description' => $data['group_desc'], 'clause' => $data['security']['where_clause'], 'comment' => $data['security']['maarch_comment'] ?? null]);
+        GroupModel::create(
+            [
+                'groupId'     => $data['group_id'],
+                'description' => $data['group_desc'],
+                'clause'      => $data['security']['where_clause'],
+                'comment'     => $data['security']['maarch_comment'] ?? null
+            ]
+        );
 
         $group = GroupModel::getByGroupId(['groupId' => $data['group_id'], 'select' => ['id']]);
         if (empty($group)) {
@@ -94,7 +127,13 @@ class GroupController
         return $response->withJson(['group' => $group['id']]);
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -112,7 +151,11 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        if (!PreparedClauseController::isRequestValid(['clause' => $data['security']['where_clause'], 'userId' => $GLOBALS['login'], 'limit' => 1])) {
+        if (
+            !PreparedClauseController::isRequestValid(
+                ['clause' => $data['security']['where_clause'], 'userId' => $GLOBALS['login'], 'limit' => 1]
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => _INVALID_CLAUSE]);
         }
 
@@ -122,7 +165,10 @@ class GroupController
             'data'  => [$aArgs['id']]
         ]);
         GroupModel::updateSecurity([
-            'set'   => ['where_clause' => $data['security']['where_clause'], 'maarch_comment' => $data['security']['maarch_comment']],
+            'set'   => [
+                'where_clause'   => $data['security']['where_clause'],
+                'maarch_comment' => $data['security']['maarch_comment']
+            ],
             'where' => ['group_id = ?'],
             'data'  => [$group['group_id']]
         ]);
@@ -130,7 +176,13 @@ class GroupController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function delete(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function delete(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -151,7 +203,13 @@ class GroupController
         return $response->withJson(['groups' => $groups]);
     }
 
-    public function getDetailledById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getDetailledById(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -162,13 +220,27 @@ class GroupController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        $group['security']                  = GroupModel::getSecurityByGroupId(['groupId' => $group['group_id']]);
-        $group['users']                     = GroupModel::getUsersById(['id' => $args['id'], 'select' => ['users.id', 'users.user_id', 'users.firstname', 'users.lastname', 'users.status']]);
-        $group['baskets']                   = GroupBasketModel::getBasketsByGroupId(['select' => ['baskets.basket_id', 'baskets.basket_name', 'baskets.basket_desc'], 'groupId' => $group['group_id']]);
-        $group['canAdminUsers']             = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]);
-        $group['canAdminBaskets']           = PrivilegeController::hasPrivilege(['privilegeId' => 'admin_baskets', 'userId' => $GLOBALS['id']]);
-        $group['privileges']                = PrivilegeModel::getPrivilegesByGroupId(['groupId' => $args['id']]);
-        $group['lockAdvancedPrivileges']    = PrivilegeController::isAdvancedPrivilegesLocked();
+        $group['security'] = GroupModel::getSecurityByGroupId(['groupId' => $group['group_id']]);
+        $group['users'] = GroupModel::getUsersById(
+            [
+                'id'     => $args['id'],
+                'select' => ['users.id', 'users.user_id', 'users.firstname', 'users.lastname', 'users.status']
+            ]
+        );
+        $group['baskets'] = GroupBasketModel::getBasketsByGroupId(
+            [
+                'select'  => ['baskets.basket_id', 'baskets.basket_name', 'baskets.basket_desc'],
+                'groupId' => $group['group_id']
+            ]
+        );
+        $group['canAdminUsers'] = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]
+        );
+        $group['canAdminBaskets'] = PrivilegeController::hasPrivilege(
+            ['privilegeId' => 'admin_baskets', 'userId' => $GLOBALS['id']]
+        );
+        $group['privileges'] = PrivilegeModel::getPrivilegesByGroupId(['groupId' => $args['id']]);
+        $group['lockAdvancedPrivileges'] = PrivilegeController::isAdvancedPrivilegesLocked();
 
         $allowedUsers = [];
         $isRoot = UserController::isRoot(['id' => $GLOBALS['id']]);
@@ -177,9 +249,9 @@ class GroupController
             $entities = EntityModel::getAllEntitiesByUserId(['userId' => $GLOBALS['id']]);
             if (!empty($entities) && !empty($users)) {
                 $allowedUsers = UserEntityModel::getWithUsers([
-                    'select'    => ['DISTINCT users.id'],
-                    'where'     => ['users_entities.entity_id in (?)', 'status != ?', 'users.id in (?)'],
-                    'data'      => [$entities, 'DEL', $users]
+                    'select' => ['DISTINCT users.id'],
+                    'where'  => ['users_entities.entity_id in (?)', 'status != ?', 'users.id in (?)'],
+                    'data'   => [$entities, 'DEL', $users]
                 ]);
             }
             $usersNoEntities = UserEntityModel::getUsersWithoutEntities(['select' => ['id']]);
@@ -194,7 +266,13 @@ class GroupController
         return $response->withJson(['group' => $group]);
     }
 
-    public function reassignUsers(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function reassignUsers(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -239,7 +317,14 @@ class GroupController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getIndexingInformationsById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getIndexingInformationsById(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -254,7 +339,13 @@ class GroupController
         $group['indexationParameters'] = json_decode($group['indexation_parameters'], true);
         unset($group['can_index'], $group['indexation_parameters']);
 
-        $allActions = ActionModel::get(['select' => ['id', 'label_action'], 'where' => ['component in (?)'], 'data' => [GroupController::INDEXING_ACTIONS]]);
+        $allActions = ActionModel::get(
+            [
+                'select' => ['id', 'label_action'],
+                'where'  => ['component in (?)'],
+                'data'   => [GroupController::INDEXING_ACTIONS]
+            ]
+        );
 
         $allEntities = EntityModel::get([
             'select'    => ['e1.id', 'e1.entity_id', 'e1.entity_label', 'e1.parent_entity_id', 'e2.id as parent_id'],
@@ -269,10 +360,10 @@ class GroupController
             $allEntities[$key]['id'] = $value['id'];
             if (empty($value['parent_id'])) {
                 $allEntities[$key]['parent'] = '#';
-                $allEntities[$key]['icon']   = "fa fa-building";
+                $allEntities[$key]['icon'] = "fa fa-building";
             } else {
                 $allEntities[$key]['parent'] = $value['parent_id'];
-                $allEntities[$key]['icon']   = "fa fa-sitemap";
+                $allEntities[$key]['icon'] = "fa fa-sitemap";
             }
             $allEntities[$key]['state']['opened'] = true;
             if (in_array($value['id'], $group['indexationParameters']['entities'])) {
@@ -285,7 +376,14 @@ class GroupController
         return $response->withJson(['group' => $group, 'actions' => $allActions, 'entities' => $allEntities]);
     }
 
-    public function updateIndexingInformations(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function updateIndexingInformations(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -309,9 +407,13 @@ class GroupController
         }
         if (isset($body['actions']) && is_array($body['actions'])) {
             if (!empty($body['actions'])) {
-                $countActions = ActionModel::get(['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['actions']]]);
+                $countActions = ActionModel::get(
+                    ['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['actions']]]
+                );
                 if ($countActions[0]['count'] != count($body['actions'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body actions contains invalid actions']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body actions contains invalid actions']
+                    );
                 }
                 foreach ($body['actions'] as $key => $action) {
                     $body['actions'][$key] = (string)$action;
@@ -321,9 +423,13 @@ class GroupController
         }
         if (isset($body['entities']) && is_array($body['entities'])) {
             if (!empty($body['entities'])) {
-                $countEntities = EntityModel::get(['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['entities']]]);
+                $countEntities = EntityModel::get(
+                    ['select' => ['count(1)'], 'where' => ['id in (?)'], 'data' => [$body['entities']]]
+                );
                 if ($countEntities[0]['count'] != count($body['entities'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body entities contains invalid entities']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body entities contains invalid entities']
+                    );
                 }
                 foreach ($body['entities'] as $key => $entity) {
                     $body['entities'][$key] = (string)$entity;
@@ -345,7 +451,12 @@ class GroupController
         return $response->withStatus(204);
     }
 
-    public static function getGroupsClause(array $args)
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    public static function getGroupsClause(array $args): string
     {
         ValidatorModel::notEmpty($args, ['userId', 'userId']);
 
@@ -353,7 +464,9 @@ class GroupController
         $groupsClause = '';
         foreach ($groups as $key => $group) {
             if (!empty($group['where_clause'])) {
-                $groupClause = PreparedClauseController::getPreparedClause(['clause' => $group['where_clause'], 'userId' => $args['userId']]);
+                $groupClause = PreparedClauseController::getPreparedClause(
+                    ['clause' => $group['where_clause'], 'userId' => $args['userId']]
+                );
                 if ($key > 0) {
                     $groupsClause .= ' or ';
                 }
