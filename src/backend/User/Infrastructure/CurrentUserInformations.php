@@ -16,6 +16,7 @@ namespace MaarchCourrier\User\Infrastructure;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use SrcCore\controllers\AuthenticationController;
+use SrcCore\controllers\CoreController;
 
 class CurrentUserInformations implements CurrentUserInterface
 {
@@ -40,5 +41,10 @@ class CurrentUserInformations implements CurrentUserInterface
     public function generateNewToken(): string
     {
         return AuthenticationController::getJWT();
+    }
+
+    public function setCurrentUser(int $userId): void
+    {
+        CoreController::setGlobals(['userId' => $userId]);
     }
 }

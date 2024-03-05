@@ -20,4 +20,5 @@ interface CurrentUserInterface
     public function getCurrentUserLogin(): string;
     public function getCurrentUserToken(): string;
     public function generateNewToken(): string;
+    public function setCurrentUser(int $userId): void;
 }

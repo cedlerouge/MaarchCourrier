@@ -63,7 +63,7 @@ class ContinueCircuitAction
         $missingData = [];
 
         $resourceToSign = [
-            'res_id' => $resId
+            'resId' => $resId
         ];
 
         /*$payloadToken = $resourceToSign;

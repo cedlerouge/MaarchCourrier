@@ -14,10 +14,7 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 
-use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\StoreSignedResource;
-use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
@@ -42,9 +39,7 @@ class StoreSignedResourceTest extends TestCase
         );
 
         $this->returnFromCurlRequestParapheur = [
-            'encodedDocument' => base64_encode(
-                file_get_contents("install/samples/attachments/2021/03/0001/0003_1072724674.pdf")
-            ),
+            'encodedDocument' => 'ContenuDunNouveauFichier',
             'mimetype'        => "application/pdf",
             'filename'        => "PDF_signature.pdf"
         ];

@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain;
+namespace MaarchCourrier\Core\Domain\Curl;
 
 use JsonSerializable;
 
@@ -93,8 +93,6 @@ class CurlRequest implements JsonSerializable
             'url'      => $this->getUrl(),
             'method'   => $this->getMethod(),
             'body'     => $this->getBody(),
-            'httpCode' => $this->getHttpCode(),
-            'content'  => $this->getContentReturn(),
             'response' => $this->getCurlResponse()
         ];
     }

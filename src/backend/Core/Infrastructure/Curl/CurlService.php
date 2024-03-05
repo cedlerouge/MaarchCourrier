@@ -12,10 +12,10 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Infrastructure;
+namespace MaarchCourrier\Core\Infrastructure\Curl;
 
-use MaarchCourrier\SignatureBook\Domain\CurlRequest;
-use MaarchCourrier\SignatureBook\Domain\CurlResponse;
+use MaarchCourrier\Core\Domain\Curl\CurlRequest;
+use MaarchCourrier\Core\Domain\Curl\CurlResponse;
 use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
 use SrcCore\models\CurlModel;
 

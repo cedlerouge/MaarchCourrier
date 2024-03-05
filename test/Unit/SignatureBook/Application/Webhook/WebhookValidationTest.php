@@ -22,6 +22,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
@@ -45,7 +46,7 @@ class WebhookValidationTest extends TestCase
     ];
 
     private array $decodedToken = [
-        'res_id' => 159,
+        'resId'  => 159,
         'userId' => 10
     ];
 
@@ -53,8 +54,10 @@ class WebhookValidationTest extends TestCase
     {
         $this->resourceToSignRepositoryMock = new ResourceToSignRepositoryMock();
         $this->userRepositoryMock = new UserRepositoryMock();
+        $currentUserInformationsMock = new CurrentUserInformationsMock();
+
         $this->webhookValidation = new WebhookValidation(
-            $this->resourceToSignRepositoryMock, $this->userRepositoryMock
+            $this->resourceToSignRepositoryMock, $this->userRepositoryMock, $currentUserInformationsMock
         );
     }
 
@@ -87,17 +90,17 @@ class WebhookValidationTest extends TestCase
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws UserDoesNotExistProblem
      */
-    public function testValidationSuccess(): void
+    public function testValidationSuccessIfAllParametersAreSetAndValid(): void
     {
         $this->decodedToken = [
-            'res_id'        => 159,
-            'res_id_master' => 75,
-            'userId'        => 10
+            'resId'       => 159,
+            'resIdMaster' => 75,
+            'userId'      => 10
         ];
         $signedResource = $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
         $this->assertInstanceOf(SignedResource::class, $signedResource);
-        $this->assertSame($signedResource->getResIdSigned(), $this->decodedToken['res_id']);
-        $this->assertSame($signedResource->getResIdMaster(), $this->decodedToken['res_id_master']);
+        $this->assertSame($signedResource->getResIdSigned(), $this->decodedToken['resId']);
+        $this->assertSame($signedResource->getResIdMaster(), $this->decodedToken['resIdMaster']);
         $this->assertSame($signedResource->getStatus(), $this->bodySentByMP['signatureState']['state']);
     }
 
@@ -128,7 +131,7 @@ class WebhookValidationTest extends TestCase
      */
     public function testValidationErrorIfResIdIsMissing(): void
     {
-        unset($this->decodedToken['res_id']);
+        unset($this->decodedToken['resId']);
         $this->expectException(ResourceIdEmptyProblem::class);
         $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
     }
@@ -145,9 +148,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfResIdNotCorrespondingToResIdMaster(): void
     {
         $this->decodedToken = [
-            'res_id'        => 159,
-            'res_id_master' => 75,
-            'userId'        => 10
+            'resId'       => 159,
+            'resIdMaster' => 75,
+            'userId'      => 10
         ];
 
         $this->resourceToSignRepositoryMock->resIdConcordingWithResIdMaster = false;
@@ -185,9 +188,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfAttachmentAlreadySigned(): void
     {
         $this->decodedToken = [
-            'res_id'        => 159,
-            'res_id_master' => 75,
-            'userId'        => 10
+            'resId'       => 159,
+            'resIdMaster' => 75,
+            'userId'      => 10
         ];
 
         $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
@@ -207,9 +210,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfAttachmentNotInPerimeter(): void
     {
         $this->decodedToken = [
-            'res_id'        => 159,
-            'res_id_master' => 75,
-            'userId'        => 10
+            'resId'       => 159,
+            'resIdMaster' => 75,
+            'userId'      => 10
         ];
 
         $this->resourceToSignRepositoryMock->attachmentNotExists = true;

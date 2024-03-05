@@ -20,6 +20,7 @@ class CurrentUserInformationsMock implements CurrentUserInterface
 {
     private int $userId = 13;
     public string $token = 'Bearer token test';
+    public bool $newUserChanged = false;
 
     public function getCurrentUserId(): int
     {
@@ -39,5 +40,11 @@ class CurrentUserInformationsMock implements CurrentUserInterface
     public function generateNewToken(): string
     {
         return $this->token;
+    }
+
+    public function setCurrentUser(int $userId): void
+    {
+        $this->newUserChanged = true;
+        $this->userId = $userId;
     }
 }

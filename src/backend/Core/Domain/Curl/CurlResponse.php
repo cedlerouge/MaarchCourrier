@@ -12,7 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain;
+namespace MaarchCourrier\Core\Domain\Curl;
 
 use JsonSerializable;
 
@@ -42,7 +42,7 @@ class CurlResponse implements JsonSerializable
         $this->contentReturn = $contentReturn;
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return [
             'httpCode'      => $this->httpCode,

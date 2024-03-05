@@ -41,7 +41,7 @@ class WebhookCall
 
     /**
      * @param array $body
-     * @param $decodedToken
+     * @param array $decodedToken
      * @return int|array
      * @throws AttachmentOutOfPerimeterProblem
      * @throws CurlRequestErrorProblem
@@ -53,7 +53,7 @@ class WebhookCall
      * @throws StoreResourceProblem
      * @throws UserDoesNotExistProblem
      */
-    public function execute(array $body, $decodedToken): int|array
+    public function execute(array $body, array $decodedToken): int|array
     {
         $signedResource = $this->webhookValidation->validate($body, $decodedToken);
 

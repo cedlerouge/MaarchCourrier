@@ -16,7 +16,7 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook;
 
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureHistoryServiceInterface;
 
-class SignatureHistoryServiceMock implements SignatureHistoryServiceInterface
+class SignatureHistoryServiceSpy implements SignatureHistoryServiceInterface
 {
     public bool $addedInHistoryValidation = false;
     public bool $addedInHistoryRefus = false;

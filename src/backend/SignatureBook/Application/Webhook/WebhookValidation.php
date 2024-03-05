@@ -15,6 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use DateTime;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
@@ -30,7 +31,8 @@ class WebhookValidation
 {
     public function __construct(
         private readonly ResourceToSignRepositoryInterface $resourceToSignRepository,
-        private readonly UserRepositoryInterface $userRepository
+        private readonly UserRepositoryInterface $userRepository,
+        private readonly CurrentUserInterface $currentUser
     ) {
     }
 
@@ -61,9 +63,9 @@ class WebhookValidation
             throw new UserDoesNotExistProblem();
         }
 
-        $GLOBALS['id'] = $decodedToken['userId'];
+        $this->currentUser->setCurrentUser($decodedToken['userId']);
 
-        if (!isset($decodedToken['res_id'])) {
+        if (!isset($decodedToken['resId'])) {
             throw new ResourceIdEmptyProblem();
         }
 
@@ -87,37 +89,37 @@ class WebhookValidation
             $signedResource->setSignatureDate(new DateTime($body['signatureState']['updatedDate']));
         }
 
-        if (isset($decodedToken['res_id_master'])) {
+        if (isset($decodedToken['resIdMaster'])) {
             if (
                 !$this->resourceToSignRepository->checkConcordanceResIdAndResIdMaster(
-                    $decodedToken['res_id'],
-                    $decodedToken['res_id_master']
+                    $decodedToken['resId'],
+                    $decodedToken['resIdMaster']
                 )
             ) {
                 throw new ResourceIdMasterNotCorrespondingProblem(
-                    $decodedToken['res_id'],
-                    $decodedToken['res_id_master']
+                    $decodedToken['resId'],
+                    $decodedToken['resIdMaster']
                 );
             }
 
-            $infosAttachment = $this->resourceToSignRepository->getAttachmentInformations($decodedToken['res_id']);
+            $infosAttachment = $this->resourceToSignRepository->getAttachmentInformations($decodedToken['resId']);
 
             if (empty($infosAttachment)) {
                 throw new AttachmentOutOfPerimeterProblem();
             }
 
-            if ($this->resourceToSignRepository->isAttachementSigned($decodedToken['res_id'])) {
+            if ($this->resourceToSignRepository->isAttachementSigned($decodedToken['resId'])) {
                 throw new ResourceAlreadySignProblem();
             }
 
-            $signedResource->setResIdMaster($decodedToken['res_id_master']);
+            $signedResource->setResIdMaster($decodedToken['resIdMaster']);
         } else {
-            if ($this->resourceToSignRepository->isResourceSigned($decodedToken['res_id'])) {
+            if ($this->resourceToSignRepository->isResourceSigned($decodedToken['resId'])) {
                 throw new ResourceAlreadySignProblem();
             }
         }
 
-        $signedResource->setResIdSigned($decodedToken['res_id']);
+        $signedResource->setResIdSigned($decodedToken['resId']);
 
         return $signedResource;
     }

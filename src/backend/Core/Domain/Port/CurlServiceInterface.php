@@ -12,9 +12,10 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\SignatureBook\Domain\Port;
+namespace MaarchCourrier\Core\Domain\Port;
 
-use MaarchCourrier\SignatureBook\Domain\CurlRequest;
+
+use MaarchCourrier\Core\Domain\Curl\CurlRequest;
 
 interface CurlServiceInterface
 {

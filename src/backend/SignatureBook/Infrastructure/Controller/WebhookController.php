@@ -31,6 +31,7 @@ use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
+use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
@@ -48,10 +49,11 @@ class WebhookController
      * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
-     * @throws RetrieveDocumentUrlEmptyProblem
-     * @throws StoreResourceProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
+     * @throws RetrieveDocumentUrlEmptyProblem
+     * @throws StoreResourceProblem
+     * @throws UserDoesNotExistProblem
      */
     public function fetchAndStoreSignedDocumentOnWebhookTrigger(
         Request $request,
@@ -74,7 +76,7 @@ class WebhookController
         $signatureHistoryService = new SignatureHistoryService();
         $userRepository = new UserRepository();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository);
+        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
         $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
@@ -85,7 +87,7 @@ class WebhookController
             $signatureHistoryService
         );
 
-        $id = $webhookCall->execute($body, $decodedToken);
-        return $response->withJson(['id' => $id]);
+        $result = $webhookCall->execute($body, $decodedToken);
+        return $response->withJson((is_int($result)) ? ['id' => $result] : $result);
     }
 }

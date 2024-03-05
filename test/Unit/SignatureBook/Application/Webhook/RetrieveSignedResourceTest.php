@@ -15,17 +15,10 @@
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
-use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\CurlServiceMock;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\StoreSignedResourceServiceMock;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveSignedResourceTest extends TestCase

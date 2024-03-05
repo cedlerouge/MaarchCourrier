@@ -14,9 +14,9 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook;
 
-use MaarchCourrier\SignatureBook\Domain\CurlRequest;
-use MaarchCourrier\SignatureBook\Domain\CurlResponse;
-use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
+use MaarchCourrier\Core\Domain\Curl\CurlRequest;
+use MaarchCourrier\Core\Domain\Curl\CurlResponse;
+use MaarchCourrier\Core\Domain\Port\CurlServiceInterface;
 
 class CurlServiceMock implements CurlServiceInterface
 {
