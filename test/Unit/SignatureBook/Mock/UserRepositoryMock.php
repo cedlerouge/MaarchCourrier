@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief   User Signature
+ * @brief   UserRepositoryMock
  * @author  dev@maarch.org
  */
 
