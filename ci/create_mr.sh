@@ -53,7 +53,7 @@ else
     MR_TITLE="Draft: [$US] $SUBJECT"
 
 
-    MR_DESCRIPTION=$(awk 'BEGIN{RS="\n";ORS="\\n"}1' .gitlab/merge_request_templates/mr_template.md | sed -e "s/{US_ID}/$US/g" | sed -e "s/{US_TITLE}/$SUBJECT/g")
+    MR_DESCRIPTION=$(awk 'BEGIN{RS="\n";ORS="\\n"}1' .gitlab/merge_request_templates/mr_template.md | sed -e "s~{US_ID}~$US~g" | sed -e "s~{US_TITLE}~$SUBJECT~g")
     # Replace all " by \"
     MR_DESCRIPTION=${MR_DESCRIPTION//\"/\\\"}
 
