@@ -139,7 +139,7 @@ export class CreateExternalUserComponent implements OnInit {
                     this.userOTP.firstname = data.firstname;
                     this.userOTP.lastname = data.lastname;
                     this.userOTP.email = data.mail;
-                    this.userOTP.phone = phone !== undefined ? phone.replace(/( |\.|\-)/g, '').replace('0', '+33') : '';
+                    this.userOTP.phone = phone !== undefined ? phone.replace(/( |\.|-)/g, '').replace('0', '+33') : '';
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -153,7 +153,7 @@ export class CreateExternalUserComponent implements OnInit {
                     this.userOTP.firstname = data.firstname;
                     this.userOTP.lastname = data.lastname;
                     this.userOTP.email = data.email;
-                    this.userOTP.phone = !this.functions.empty(phone) ? phone.replace(/( |\.|\-)/g, '').replace('0', '+33') : '';
+                    this.userOTP.phone = !this.functions.empty(phone) ? phone.replace(/( |\.|-)/g, '').replace('0', '+33') : '';
                 }),
                 catchError((err: any) => {
                     this.notify.handleSoftErrors(err);
@@ -200,7 +200,7 @@ export class CreateExternalUserComponent implements OnInit {
                         firstname: data.firstname,
                         lastname: data.lastname,
                         email: data.mail,
-                        phone: !this.functions.empty(data.phone) ? data.phone.replace(/( |\.|\-)/g, '').replace('0', '+33') : ''
+                        phone: !this.functions.empty(data.phone) ? data.phone.replace(/( |\.|-)/g, '').replace('0', '+33') : ''
                     };
                     this.correspondentShorcuts.push(objCorr);
                 }),
@@ -218,7 +218,7 @@ export class CreateExternalUserComponent implements OnInit {
                         firstname: data.firstname,
                         lastname: data.lastname,
                         email: data.email,
-                        phone: !this.functions.empty(data.phone) ? data.phone.replace(/( |\.|\-)/g, '').replace('0', '+33') : ''
+                        phone: !this.functions.empty(data.phone) ? data.phone.replace(/( |\.|-)/g, '').replace('0', '+33') : ''
                     };
                     this.correspondentShorcuts.push(objCorr);
                 }),
@@ -254,9 +254,9 @@ export class CreateExternalUserComponent implements OnInit {
         const regex = Object.keys(phonesMap).reduce((phoneFormats: any [], countryCode: any) => {
             const numberLength = phonesMap[countryCode];
             if (Array.isArray(numberLength)) {
-                phoneFormats.push('(\\+' + countryCode + `[0-9]\{${numberLength[0]},${numberLength[1]}\})`);
+                phoneFormats.push('(\\+' + countryCode + `[0-9]{${numberLength[0]},${numberLength[1]}})`);
             } else {
-                phoneFormats.push('(\\+' + countryCode + `[0-9]\{${numberLength}\})`);
+                phoneFormats.push('(\\+' + countryCode + `[0-9]{${numberLength}})`);
             }
             return phoneFormats;
         }, []).join('|');

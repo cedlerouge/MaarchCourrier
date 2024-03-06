@@ -1,4 +1,4 @@
-export interface UserWorkflow {
+export interface UserWorkflowInterface {
     /**
      * User identifier in the external signatory book
      */
@@ -66,12 +66,12 @@ export interface UserWorkflow {
     /**
      * External identifier
      */
-    externalId?: {};
+    externalId?: object;
 
     /**
      * other external information
      */
-    externalInformations?: {};
+    externalInformations?: object;
 
     /**
      * Available roles: 'visa', 'sign', 'inca_card', 'rgs_2stars', .
@@ -114,29 +114,33 @@ export interface UserWorkflow {
     signatureModes?: string[];
 }
 
-export class UserWorkflow implements UserWorkflow {
-    constructor() {
-        this.id = null;
-        this.item_id = null;
-        this.listinstance_id = null;
-        this.delegatedBy = null;
-        this.item_type = 'user';
-        this.item_entity = '';
-        this.labelToDisplay = '';
-        this.role = '';
-        this.process_date = '';
-        this.picture = '';
-        this.status = '';
-        this.difflist_type = 'VISA_CIRCUIT';
-        this.signatory = false;
-        this.hasPrivilege = false;
-        this.isValid = false;
-        this.requested_signature = false;
-        this.externalId = {};
-        this.externalInformations = {};
-        this.availableRoles = [];
-        this.signaturePositions = [];
-        this.datePositions = [];
-        this.signatureModes = ['visa', 'sign'];
+export class UserWorkflow implements UserWorkflowInterface {
+    id = null;
+    item_id = null;
+    listinstance_id = null;
+    delegatedBy = null;
+    item_type = 'user';
+    item_entity = '';
+    labelToDisplay = '';
+    role = '';
+    process_date = '';
+    picture = '';
+    status = '';
+    difflist_type = 'VISA_CIRCUIT';
+    signatory = false;
+    hasPrivilege = false;
+    isValid = false;
+    requested_signature = false;
+    externalId = {};
+    externalInformations = {};
+    availableRoles = [];
+    signaturePositions = [];
+    datePositions = [];
+    signatureModes = ['visa', 'sign'];
+
+    constructor(json: any = null) {
+        if (json) {
+            Object.assign(this, json);
+        }
     }
 }

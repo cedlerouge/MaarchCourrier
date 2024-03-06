@@ -1,4 +1,4 @@
-export interface ResourceStep {
+export interface ResourceStepInterface {
     /**
      * Resource id
     */
@@ -42,19 +42,23 @@ export interface ResourceStep {
     /**
      * Information related to OTP users
      */
-    externalInformations: Object;
+    externalInformations: object;
 }
 
-export class ResourceStep implements ResourceStep {
-    constructor() {
-        this.resId = null;
-        this.mainDocument = false;
-        this.externalId = null;
-        this.sequence = null;
-        this.action = '';
-        this.signatureMode = '';
-        this.signaturePositions = [];
-        this.datePositions = [];
-        this.externalInformations = {};
+export class ResourceStep implements ResourceStepInterface {
+    resId = null;
+    mainDocument = false;
+    externalId = null;
+    sequence = null;
+    action = '';
+    signatureMode = '';
+    signaturePositions = [];
+    datePositions = [];
+    externalInformations = {};
+
+    constructor(json: any = null) {
+        if (json) {
+            Object.assign(this, json);
+        }
     }
 }

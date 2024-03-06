@@ -111,7 +111,7 @@ export class NotificationService {
     }
 
     handleBlobErrors(err: any) {
-        console.log(err);
+        console.debug(err);
         const blob = err.error, reader = new FileReader();
         reader.onload = (res) => {
             const msg = JSON.parse(res.target.result as string);

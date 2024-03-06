@@ -144,7 +144,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     loadVisaSignUsersList() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/autocomplete/users/circuit').pipe(
                 map((data: any) => {
                     data = data.map((user: any) => ({
@@ -181,7 +181,7 @@ export class VisaWorkflowComponent implements OnInit {
             await this.loadDefaultModel();
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/availableCircuits?circuit=visa').pipe(
                 tap((data: any) => {
                     this.visaTemplates.public = this.visaTemplates.public.concat(data.circuits.filter((item: any) => !item.private).map((item: any) => ({
@@ -216,7 +216,7 @@ export class VisaWorkflowComponent implements OnInit {
     loadDefaultModel() {
         this.visaTemplates.public = [];
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/defaultCircuit?circuit=visa`).pipe(
                 filter((data: any) => !this.functions.empty(data.circuit)),
                 tap((data: any) => {
@@ -380,7 +380,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     saveVisaWorkflow(resIds: number[] = [this.resId]) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.visaWorkflow.items.length === 0) {
                 this.http.delete(`../rest/resources/${resIds[0]}/circuits/visaCircuit`).pipe(
                     tap(() => {
@@ -401,7 +401,7 @@ export class VisaWorkflowComponent implements OnInit {
                     listInstances: this.visaWorkflow.items
                 }));
                 this.http.put('../rest/circuits/visaCircuit', { resources: arrVisa }).pipe(
-                    tap((data: any) => {
+                    tap(() => {
                         this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
                         this.notify.success(this.translate.instant('lang.visaWorkflowUpdated'));
                         this.refreshActionsList.emit(true);
@@ -421,7 +421,7 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     addItemToWorkflow(item: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (item.type === 'user') {
                 const requestedSignature = !this.functions.empty(item.requested_signature) ? item.requested_signature : false;
                 this.visaWorkflow.items.push({

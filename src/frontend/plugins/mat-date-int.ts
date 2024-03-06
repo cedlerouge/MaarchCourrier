@@ -16,7 +16,7 @@ export class AppDateAdapter extends NativeDateAdapter {
         return isNaN(timestamp) ? null : new Date(timestamp);
     }
 
-    format(date: Date, displayFormat: Object): string {
+    format(date: Date, displayFormat: any): string {
         if (displayFormat === 'input') {
             const day = date.getDate();
             const month = date.getMonth() + 1;

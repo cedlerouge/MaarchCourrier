@@ -7,15 +7,6 @@ import { tap, debounceTime } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { FunctionsService } from '@service/functions.service';
 
-
-/** Flat node with expandable and level information */
-interface ExampleFlatNode {
-    expandable: boolean;
-    item: string;
-    parent_id: string;
-    level: number;
-}
-
 /**
  * @title Tree with flat nodes
  */

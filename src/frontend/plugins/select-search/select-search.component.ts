@@ -120,7 +120,11 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
         private sortPipe: SortPipe
     ) { }
 
+    // TODO : REWORK THIS BEHAVIOR
+    // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars
     onChange: Function = (_: any) => { };
+    // TODO : REWORK THIS BEHAVIOR
+    // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-unused-vars
     onTouched: Function = (_: any) => { };
 
     ngOnInit() {
@@ -295,10 +299,13 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
         this.onTouched();
     }
 
+    // TODO : REWORK THIS BEHAVIOR
+    // eslint-disable-next-line @typescript-eslint/ban-types
     registerOnChange(fn: Function) {
         this.onChange = fn;
     }
-
+    // TODO : REWORK THIS BEHAVIOR
+    // eslint-disable-next-line @typescript-eslint/ban-types
     registerOnTouched(fn: Function) {
         this.onTouched = fn;
     }
@@ -322,10 +329,9 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
 
     /**
      * Resets the current search value
-     * @param {boolean} focus whether to focus after resetting
      * @private
      */
-    public _reset(focus?: boolean) {
+    public _reset() {
 
         this.formControlSearch.reset();
 
@@ -445,7 +451,7 @@ export class PluginSelectSearchComponent implements OnInit, OnDestroy, AfterView
             });
     }
 
-    private _filter(value: string, showSelectedValues: boolean = false): string[] {
+    private _filter(value: string): string[] {
         if (value === '__SELECTED') {
             return this.returnValue === 'id' ? this.datas.filter((option: any) => this.formControlSelect.value.indexOf(option['id']) > -1) : this.datas.filter((option: any) => this.formControlSelect.value.map((val: any) => val.id).indexOf(option['id']) > -1);
         } else if (typeof value === 'string' && value !== '') {

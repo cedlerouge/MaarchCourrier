@@ -12,7 +12,7 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CreateExternalUserComponent } from './createExternalUser/create-external-user.component';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryBook/external-signatory-book-manager.service';
-import { UserWorkflow } from '@models/user-workflow.model';
+import { UserWorkflow, UserWorkflowInterface } from '@models/user-workflow.model';
 import { AuthService } from '@service/auth.service';
 
 @Component({
@@ -156,7 +156,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
         const data: any = await this.externalSignatoryBookManagerService?.loadWorkflow(attachmentId, type);
         if (!this.functions.empty(data.workflow)) {
             data.workflow.forEach((element: any, key: any) => {
-                const user: UserWorkflow = {
+                const user: UserWorkflowInterface = {
                     listinstance_id: key,
                     id: element.userId,
                     labelToDisplay: element.userDisplay,
@@ -233,11 +233,11 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 
     getUserOtpsWorkflow(): string[] {
-        return this.visaWorkflow.items.filter((item: any) => this.functions.empty(item.externalId) && item.hasOwnProperty('externalInformations') !== undefined).map((item: any) => item.labelToDisplay);
+        return this.visaWorkflow.items.filter((item: any) => this.functions.empty(item.externalId) && item?.externalInformations !== undefined).map((item: any) => item.labelToDisplay);
     }
 
     saveVisaWorkflow(resIds: number[] = [this.resId]) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.visaWorkflow.items.length === 0) {
                 this.http.delete(`../rest/resources/${resIds[0]}/circuits/visaCircuit`).pipe(
                     tap(() => {
@@ -257,7 +257,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
                     listInstances: this.visaWorkflow.items
                 }));
                 this.http.put('../rest/circuits/visaCircuit', { resources: arrVisa }).pipe(
-                    tap((data: any) => {
+                    tap(() => {
                         this.visaWorkflowClone = JSON.parse(JSON.stringify(this.visaWorkflow.items));
                         this.notify.success(this.translate.instant('lang.visaWorkflowUpdated'));
                         resolve(true);
@@ -277,8 +277,8 @@ export class ExternalVisaWorkflowComponent implements OnInit {
 
     addItemToWorkflow(item: any) {
         item = this.externalSignatoryBookManagerService.setExternalInformation(item);
-        return new Promise((resolve, reject) => {
-            const user: UserWorkflow = {
+        return new Promise((resolve) => {
+            const user: UserWorkflowInterface = {
                 item_id: item.id,
                 item_type: 'user',
                 item_entity: item.email,
@@ -380,7 +380,7 @@ export class ExternalVisaWorkflowComponent implements OnInit {
             dialogRef.afterClosed().pipe(
                 tap(async (data: any) => {
                     if (data) {
-                        const user: UserWorkflow = {
+                        const user: UserWorkflowInterface = {
                             item_id: null,
                             item_type: 'userOtp',
                             labelToDisplay: `${data.otp.firstname} ${data.otp.lastname}`,
@@ -508,16 +508,20 @@ export class ExternalVisaWorkflowComponent implements OnInit {
     }
 }
 
-export interface VisaWorkflow {
+export interface VisaWorkflowInterface {
     type: string;
     roles: string[];
     items: UserWorkflow[];
 }
 
-export class VisaWorkflow implements VisaWorkflow {
-    constructor() {
-        this.type = null;
-        this.roles = ['visa', 'sign'];
-        this.items = [];
+export class VisaWorkflow implements VisaWorkflowInterface {
+    type = null;
+    roles = ['visa', 'sign'];
+    items = [];
+
+    constructor(json: any = null) {
+        if (json) {
+            Object.assign(this, json);
+        }
     }
 }

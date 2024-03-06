@@ -950,20 +950,18 @@ export class MailEditorComponent implements OnInit, OnDestroy {
         });
     }
 
-    saveDraft() {
-        return new Promise(async (resolve) => {
-            if (!this.readonly && !this.functions.empty(tinymce.get('emailSignature').getContent())) {
-                this.emailStatus = 'DRAFT';
-                if (this.emailId === null) {
-                    await this.createEmail();
-                } else {
-                    await this.updateEmail();
-                }
-                resolve(true);
+    async saveDraft(): Promise<boolean> {
+        if (!this.readonly && !this.functions.empty(tinymce.get('emailSignature').getContent())) {
+            this.emailStatus = 'DRAFT';
+            if (this.emailId === null) {
+                await this.createEmail();
             } else {
-                resolve(false);
+                await this.updateEmail();
             }
-        });
+            return true;
+        } else {
+            return true;
+        }
     }
 
     async createEmail() {
