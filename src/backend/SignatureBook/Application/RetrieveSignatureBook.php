@@ -19,6 +19,7 @@ use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterf
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 
 class RetrieveSignatureBook
@@ -26,9 +27,9 @@ class RetrieveSignatureBook
     public function __construct(
         public CurrentUserInterface $currentUser,
         public MainResourceAccessControlInterface $mainResourceAccessControl,
-        public MainResourceRepositoryInterface $mainResourceRepository
+        public MainResourceRepositoryInterface $mainResourceRepository,
+        public SignatureBookRepositoryInterface $signatureBookRepository
     ) {
-
     }
 
     /**
@@ -46,7 +47,16 @@ class RetrieveSignatureBook
             throw new ResourceDoesNotExistProblem();
         }
 
+        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource);
+        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource);
+        $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($resource, $this->currentUser);
+        $hasActiveWorkflow = $this->signatureBookRepository->doesMainResourceHasActiveWorkflow($resource);
+
         $signatureBook = new SignatureBook();
+        $signatureBook->setResourcesToSign($resourcesToSign)
+            ->setResourcesAttached($resourcesAttached)
+            ->setCanUpdateResources($canUpdateDocuments)
+            ->setHasWorkflow($hasActiveWorkflow);
 
         return $signatureBook;
     }

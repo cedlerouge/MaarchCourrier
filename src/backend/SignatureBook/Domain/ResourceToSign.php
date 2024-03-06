@@ -4,12 +4,12 @@ namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
 
-class ResourcesToSign implements JsonSerializable
+class ResourceToSign implements JsonSerializable
 {
     private int $resId;
     private string $title;
     private string $chrono;
-    private int $signedResId;
+    private ?int $signedResId;
     private int $resType;
 
     /**
@@ -22,10 +22,13 @@ class ResourcesToSign implements JsonSerializable
 
     /**
      * @param int $resId
+     *
+     * @return ResourceToSign
      */
-    public function setResId(int $resId): void
+    public function setResId(int $resId): self
     {
         $this->resId = $resId;
+        return $this;
     }
 
     /**
@@ -38,10 +41,13 @@ class ResourcesToSign implements JsonSerializable
 
     /**
      * @param string $title
+     *
+     * @return ResourceToSign
      */
-    public function setTitle(string $title): void
+    public function setTitle(string $title): self
     {
         $this->title = $title;
+        return $this;
     }
 
     /**
@@ -54,26 +60,32 @@ class ResourcesToSign implements JsonSerializable
 
     /**
      * @param string $chrono
+     *
+     * @return ResourceToSign
      */
-    public function setChrono(string $chrono): void
+    public function setChrono(string $chrono): self
     {
         $this->chrono = $chrono;
+        return $this;
     }
 
     /**
-     * @return int
+     * @return ?int
      */
-    public function getSignedResId(): int
+    public function getSignedResId(): ?int
     {
         return $this->signedResId;
     }
 
     /**
-     * @param int $signedResId
+     * @param ?int $signedResId
+     *
+     * @return ResourceToSign
      */
-    public function setSignedResId(int $signedResId): void
+    public function setSignedResId(?int $signedResId): self
     {
         $this->signedResId = $signedResId;
+        return $this;
     }
 
     /**
@@ -86,10 +98,13 @@ class ResourcesToSign implements JsonSerializable
 
     /**
      * @param int $resType
+     *
+     * @return ResourceToSign
      */
-    public function setResType(int $resType): void
+    public function setResType(int $resType): self
     {
         $this->resType = $resType;
+        return $this;
     }
 
     public function jsonSerialize(): array

@@ -16,6 +16,7 @@ namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
 use MaarchCourrier\Authorization\Infrastructure\MainResourceAccessControlService;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
+use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureBookRepository;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use Resource\Infrastructure\ResourceData;
 use SignatureBook\controllers\SignatureBookController;
@@ -40,7 +41,8 @@ class RetrieveSignatureBookController
         $retrieve = new RetrieveSignatureBook(
             new CurrentUserInformations(),
             new MainResourceAccessControlService(),
-            new ResourceData()
+            new ResourceData(),
+            new SignatureBookRepository()
         );
         return $response->withJson([$retrieve->getSignatureBook($args['userId'], $args['basketId'], $args['resId'])]);
     }
