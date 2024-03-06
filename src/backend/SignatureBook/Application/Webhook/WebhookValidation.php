@@ -54,16 +54,16 @@ class WebhookValidation
             throw new RetrieveDocumentUrlEmptyProblem();
         }
 
-        if (empty($body['token']) || !isset($decodedToken['userId'])) {
+        if (empty($body['token']) || !isset($decodedToken['userSerialId'])) {
             throw new CurrentTokenIsNotFoundProblem();
         }
 
-        $currentUser = $this->userRepository->getUserById($decodedToken['userId']);
+        $currentUser = $this->userRepository->getUserById($decodedToken['userSerialId']);
         if ($currentUser === null) {
             throw new UserDoesNotExistProblem();
         }
 
-        $this->currentUser->setCurrentUser($decodedToken['userId']);
+        $this->currentUser->setCurrentUser($decodedToken['userSerialId']);
 
         if (!isset($decodedToken['resId'])) {
             throw new ResourceIdEmptyProblem();
