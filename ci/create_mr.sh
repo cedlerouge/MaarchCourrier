@@ -48,9 +48,9 @@ else
     curl -H "X-Redmine-API-Key: ${REDMINE_API_KEY}" -H 'Content-Type: application/json' -X GET https://forge.maarch.org/issues/$US.json > issue_$US.json
 
     SUBJECT=$(< issue_"$US".json jq -r '.issue.subject')
-    MR_TITLE="Draft: [$US] $SUBJECT"
     # Replace all " by \"
-    MR_TITLE=${MR_TITLE//\"/\\\"}
+    SUBJECT=${SUBJECT//\"/\\\"}
+    MR_TITLE="Draft: [$US] $SUBJECT"
 
 
     MR_DESCRIPTION=$(awk 'BEGIN{RS="\n";ORS="\\n"}1' .gitlab/merge_request_templates/mr_template.md | sed -e "s/{US_ID}/$US/g" | sed -e "s/{US_TITLE}/$SUBJECT/g")
