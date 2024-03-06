@@ -14,18 +14,17 @@
 
 namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
-use MaarchCourrier\Core\Domain\Curl\CurlRequest;
-use MaarchCourrier\Core\Domain\Port\CurlServiceInterface;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 
-use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 
 class RetrieveSignedResource
 {
     public function __construct(
         private readonly CurrentUserInterface $currentUser,
-        private readonly CurlServiceInterface $curlService
+        private readonly SignatureServiceInterface $maarchParapheurSignatureService,
     ) {
     }
 
@@ -33,32 +32,17 @@ class RetrieveSignedResource
      * @param SignedResource $signedResource
      * @param string $urlRetrieveDoc
      * @return SignedResource
-     * @throws CurlRequestErrorProblem
      */
-    public function retrieve(SignedResource $signedResource, string $urlRetrieveDoc): SignedResource
+    public function retrieveSignedResourceContent(SignedResource $signedResource, string $urlRetrieveDoc): SignedResource
     {
         $accessToken = $this->currentUser->generateNewToken();
 
-        $curlRequest = new CurlRequest();
-        $curlRequest = $curlRequest->createFromArray([
-            'url'        => $urlRetrieveDoc,
-            'method'     => 'GET',
-            'authBearer' => $accessToken
-        ]);
+        $curlResponseContent = $this->maarchParapheurSignatureService->retrieveDocumentSign($accessToken, $urlRetrieveDoc);
 
-        $curlRequest = $this->curlService->call($curlRequest);
-
-        if ($curlRequest->getCurlResponse()->getHttpCode() >= 300) {
-            throw new CurlRequestErrorProblem(
-                $curlRequest->getCurlResponse()->getHttpCode(),
-                $curlRequest->getCurlResponse()->getContentReturn()
-            );
-        }
-
-        $curlResponseContent = $curlRequest->getCurlResponse()->getContentReturn();
-
-        if (!empty($curlResponseContent['encodedDocument'])) {
-            $signedResource->setEncodedContent($curlResponseContent['encodedDocument']);
+        if (!empty($curlResponseContent['response']['encodedDocument'])) {
+            $signedResource->setEncodedContent($curlResponseContent['response']['encodedDocument']);
+        } else {
+            throw new NoEncodedContentRetrievedProblem();
         }
 
         $signedResource->setUserSerialId($this->currentUser->getCurrentUserId());

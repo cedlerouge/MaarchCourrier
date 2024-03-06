@@ -48,7 +48,7 @@ class WebhookValidation
      * @throws UserDoesNotExistProblem
      * @throws \Exception
      */
-    public function validate(array $body, array $decodedToken): SignedResource
+    public function validateAndCreateResource(array $body, array $decodedToken): SignedResource
     {
         if (empty($body['retrieveDocUri'])) {
             throw new RetrieveDocumentUrlEmptyProblem();

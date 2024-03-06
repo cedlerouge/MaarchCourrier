@@ -97,7 +97,7 @@ class WebhookValidationTest extends TestCase
             'resIdMaster' => 75,
             'userId'      => 10
         ];
-        $signedResource = $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $signedResource = $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
         $this->assertInstanceOf(SignedResource::class, $signedResource);
         $this->assertSame($signedResource->getResIdSigned(), $this->decodedToken['resId']);
         $this->assertSame($signedResource->getResIdMaster(), $this->decodedToken['resIdMaster']);
@@ -117,7 +117,7 @@ class WebhookValidationTest extends TestCase
     {
         $this->bodySentByMP['retrieveDocUri'] = '';
         $this->expectException(RetrieveDocumentUrlEmptyProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -133,7 +133,7 @@ class WebhookValidationTest extends TestCase
     {
         unset($this->decodedToken['resId']);
         $this->expectException(ResourceIdEmptyProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -156,7 +156,7 @@ class WebhookValidationTest extends TestCase
         $this->resourceToSignRepositoryMock->resIdConcordingWithResIdMaster = false;
 
         $this->expectException(ResourceIdMasterNotCorrespondingProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -173,7 +173,7 @@ class WebhookValidationTest extends TestCase
         $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
 
         $this->expectException(ResourceAlreadySignProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -196,7 +196,7 @@ class WebhookValidationTest extends TestCase
         $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
 
         $this->expectException(ResourceAlreadySignProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -218,7 +218,7 @@ class WebhookValidationTest extends TestCase
         $this->resourceToSignRepositoryMock->attachmentNotExists = true;
 
         $this->expectException(AttachmentOutOfPerimeterProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -233,7 +233,7 @@ class WebhookValidationTest extends TestCase
     {
         $this->userRepositoryMock->doesUserExist = false;
         $this->expectException(UserDoesNotExistProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 
     /**
@@ -248,6 +248,6 @@ class WebhookValidationTest extends TestCase
     {
         unset($this->bodySentByMP['token']);
         $this->expectException(CurrentTokenIsNotFoundProblem::class);
-        $this->webhookValidation->validate($this->bodySentByMP, $this->decodedToken);
+        $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
     }
 }

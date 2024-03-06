@@ -55,9 +55,9 @@ class WebhookCall
      */
     public function execute(array $body, array $decodedToken): int|array
     {
-        $signedResource = $this->webhookValidation->validate($body, $decodedToken);
+        $signedResource = $this->webhookValidation->validateAndCreateResource($body, $decodedToken);
 
-        $signedResource = $this->retrieveSignedResource->retrieve($signedResource, $body['retrieveDocUri']);
+        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent($signedResource, $body['retrieveDocUri']);
 
         switch ($signedResource->getStatus()) {
             case 'VAL':

@@ -30,4 +30,6 @@ interface SignatureServiceInterface
         string $cookieSession,
         array $resourceToSign
     ): array|bool;
+
+    public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array;
 }

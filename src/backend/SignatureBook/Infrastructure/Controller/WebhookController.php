@@ -28,6 +28,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorresponding
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
+use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurSignatureService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
@@ -70,14 +71,14 @@ class WebhookController
 
         //Initialisation
         $currentUserInformations = new CurrentUserInformations();
-        $curlService = new CurlService();
         $resourceToSignRepository = new ResourceToSignRepository();
         $storeSignedResourceService = new StoreSignedResourceService();
         $signatureHistoryService = new SignatureHistoryService();
         $userRepository = new UserRepository();
+        $maarchParapheurSignatureService = new MaarchParapheurSignatureService();
 
         $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
+        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $maarchParapheurSignatureService);
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
         $webhookCall = new WebhookCall(

@@ -15,28 +15,27 @@
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\CurlServiceMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveSignedResourceTest extends TestCase
 {
-    private CurlServiceMock $curlServiceMock;
     private RetrieveSignedResource $retrieveSignedResource;
-
+    private MaarchParapheurSignatureServiceMock $maarchParapheurSignatureService;
     private SignedResource $signedResource;
     private string $retrieveDocUri = "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign";
 
     protected function setUp(): void
     {
         $currentUserRepositoryMock = new CurrentUserInformationsMock();
-        $this->curlServiceMock = new CurlServiceMock();
+        $this->maarchParapheurSignatureService = new MaarchParapheurSignatureServiceMock();
 
         $this->retrieveSignedResource = new RetrieveSignedResource(
             $currentUserRepositoryMock,
-            $this->curlServiceMock
+            $this->maarchParapheurSignatureService
         );
 
         $this->signedResource = new SignedResource();
@@ -54,24 +53,20 @@ class RetrieveSignedResourceTest extends TestCase
     }
 
     /**
-     * @throws CurlRequestErrorProblem
+     * @throws NoEncodedContentRetrievedProblem
      */
-    public function testCanRetrieveSignedResource(): void
+    public function testCanRetrieveSignedResourceIfEncodedContentIsSet(): void
     {
-        $signedResource = $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
+        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent($this->signedResource, $this->retrieveDocUri);
         $this->assertSame($signedResource->getResIdSigned(), $this->signedResource->getResIdSigned());
         $this->assertSame($signedResource->getResIdMaster(), $this->signedResource->getResIdMaster());
         $this->assertNotNull($signedResource->getEncodedContent());
     }
 
-    /**
-     * @throws CurlRequestErrorProblem
-     */
-    public function testCannotRetrieveSignedResourceOnBadCurlRequest(): void
+    public function testCannotRetrieveSignedResourceIfEncodedContentIsEmpty(): void
     {
-        $this->curlServiceMock->badRequest = true;
-        $this->curlServiceMock->httpCode = 403;
-        $this->expectException(CurlRequestErrorProblem::class);
-        $this->retrieveSignedResource->retrieve($this->signedResource, $this->retrieveDocUri);
+        $this->maarchParapheurSignatureService->returnFromParapheur['encodedDocument'] = null;
+        $this->expectException(NoEncodedContentRetrievedProblem::class);
+        $this->retrieveSignedResource->retrieveSignedResourceContent($this->signedResource, $this->retrieveDocUri);
     }
 }

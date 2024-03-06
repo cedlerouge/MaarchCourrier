@@ -16,7 +16,7 @@ namespace MaarchCourrier\Core\Infrastructure\Curl;
 
 use MaarchCourrier\Core\Domain\Curl\CurlRequest;
 use MaarchCourrier\Core\Domain\Curl\CurlResponse;
-use MaarchCourrier\SignatureBook\Domain\Port\CurlServiceInterface;
+use MaarchCourrier\Core\Domain\Port\CurlServiceInterface;
 use SrcCore\models\CurlModel;
 
 class CurlService implements CurlServiceInterface

@@ -21,6 +21,13 @@ class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
 {
     private SignatureServiceConfig $config;
     public array|bool $applySignature = true;
+
+    public array $returnFromParapheur = [
+        'encodedDocument' => 'Contenu du fichier',
+        'mimetype'        => "application/pdf",
+        'filename'        => "PDF_signature.pdf"
+    ];
+
     public function setConfig(SignatureServiceConfig $config): SignatureServiceInterface
     {
         $this->config = $config;
@@ -40,5 +47,10 @@ class MaarchParapheurSignatureServiceMock implements SignatureServiceInterface
         array $resourceToSign
     ): array|bool {
         return $this->applySignature;
+    }
+
+    public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array
+    {
+        return ['response' => $this->returnFromParapheur];
     }
 }

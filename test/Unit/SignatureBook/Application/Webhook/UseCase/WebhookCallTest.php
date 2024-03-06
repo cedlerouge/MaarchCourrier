@@ -27,8 +27,8 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorresponding
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\CurlServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\SignatureHistoryServiceSpy;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\StoreSignedResourceServiceMock;
@@ -54,21 +54,25 @@ class WebhookCallTest extends TestCase
     ];
 
     private array $decodedToken = [
-        'resId' => 159,
+        'resId'  => 159,
         'userId' => 10
     ];
 
     protected function setUp(): void
     {
         $currentUserInformations = new CurrentUserInformationsMock();
-        $curlService = new CurlServiceMock();
         $resourceToSignRepository = new ResourceToSignRepositoryMock();
         $storeSignedResourceService = new StoreSignedResourceServiceMock();
         $this->historyService = new SignatureHistoryServiceSpy();
         $userRepository = new UserRepositoryMock();
+        $maarchParapheurSignatureService = new MaarchParapheurSignatureServiceMock();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $curlService);
+        $webhookValidation = new WebhookValidation(
+            $resourceToSignRepository, $userRepository, $currentUserInformations
+        );
+        $retrieveSignedResource = new RetrieveSignedResource(
+            $currentUserInformations, $maarchParapheurSignatureService
+        );
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
         $this->webhookCall = new WebhookCall(

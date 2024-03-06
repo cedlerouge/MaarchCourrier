@@ -15,8 +15,11 @@
 namespace MaarchCourrier\SignatureBook\Infrastructure;
 
 use Firebase\JWT\JWT;
+use MaarchCourrier\Core\Domain\Curl\CurlRequest;
+use MaarchCourrier\Core\Infrastructure\Curl\CurlService;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfig;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
+use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use SrcCore\controllers\UrlController;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\CurlModel;
@@ -87,5 +90,28 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
             return $response['response'];
         }
         return true;
+    }
+
+    public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array
+    {
+        $curlRequest = new CurlRequest();
+        $curlRequest = $curlRequest->createFromArray([
+            'url'        => $urlRetrieveDoc,
+            'method'     => 'GET',
+            'authBearer' => $accessToken
+        ]);
+
+        $curlService = new CurlService();
+        $curlRequest = $curlService->call($curlRequest);
+        if ($curlRequest->getCurlResponse()->getHttpCode() >= 300) {
+            throw new CurlRequestErrorProblem(
+                $curlRequest->getCurlResponse()->getHttpCode(),
+                $curlRequest->getCurlResponse()->getContentReturn()
+            );
+        }
+
+        $curlResponseContent = $curlRequest->getCurlResponse()->getContentReturn();
+
+        return ['response' => $curlResponseContent];
     }
 }
