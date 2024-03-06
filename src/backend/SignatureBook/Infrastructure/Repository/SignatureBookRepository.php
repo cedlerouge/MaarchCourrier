@@ -4,11 +4,10 @@
  * Copyright Maarch since 2008 under licence GPLv3.
  * See LICENCE.txt file at the root folder for more details.
  * This file is part of Maarch software.
- *
  */
 
 /**
- * @brief SignatureBookRepository class
+ * @brief  SignatureBookRepository class
  * @author dev@maarch.org
  */
 
@@ -52,12 +51,11 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
         $incomingMailAttachments = AttachmentModel::get([
             'select' => ['res_id', 'title', 'identifier', 'relation', 'attachment_type'],
-            'where' => ['res_id_master = ?', 'attachment_type = ?', "status not in ('DEL', 'TMP', 'OBS')"],
-            'data' => [$resource->getResId(), 'incoming_mail_attachment']
+            'where'  => ['res_id_master = ?', 'attachment_type = ?', "status not in ('DEL', 'TMP', 'OBS')"],
+            'data'   => [$resource->getResId(), 'incoming_mail_attachment']
         ]);
 
         foreach ($incomingMailAttachments as $value) {
-
             $resourceToSign = new ResourceToSign();
             $resourceToSign->setResId($value['res_id'])
                 ->setTitle($value['title'])
@@ -140,8 +138,8 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
     ): bool {
 
         $check = DatabaseModel::select([
-           'select'     => ['true'],
-            'table'      => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc'],
+            'select'    => ['true'],
+            'table'     => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc'],
             'left_join' => ['gb.group_id = ug.group_id', 'ug.id = uc.group_id'],
             'where'     => ['uc.user_id = ?', 'gb.list_event = ?', "gb.list_event_data->>'canUpdateDocuments' = ?"],
             'data'      => [$currentUser->getCurrentUserId(), 'signatureBookAction', 'true']
