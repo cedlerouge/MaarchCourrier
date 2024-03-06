@@ -27,7 +27,6 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\StoreResourceProblem;
-use MaarchCourrier\SignatureBook\Infrastructure\CurlService;
 use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurSignatureService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
