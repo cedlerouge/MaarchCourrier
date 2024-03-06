@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief Retrieve User Stamps Controller
+ * @brief Retrieve Signature Book Controller
  * @author dev@maarch.org
  */
 
