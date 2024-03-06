@@ -46,8 +46,8 @@ class WebhookValidationTest extends TestCase
     ];
 
     private array $decodedToken = [
-        'resId'  => 159,
-        'userId' => 10
+        'resId'        => 159,
+        'userSerialId' => 10
     ];
 
     protected function setUp(): void
@@ -93,9 +93,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationSuccessIfAllParametersAreSetAndValid(): void
     {
         $this->decodedToken = [
-            'resId'       => 159,
-            'resIdMaster' => 75,
-            'userId'      => 10
+            'resId'        => 159,
+            'resIdMaster'  => 75,
+            'userSerialId' => 10
         ];
         $signedResource = $this->webhookValidation->validateAndCreateResource($this->bodySentByMP, $this->decodedToken);
         $this->assertInstanceOf(SignedResource::class, $signedResource);
@@ -148,9 +148,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfResIdNotCorrespondingToResIdMaster(): void
     {
         $this->decodedToken = [
-            'resId'       => 159,
-            'resIdMaster' => 75,
-            'userId'      => 10
+            'resId'        => 159,
+            'resIdMaster'  => 75,
+            'userSerialId' => 10
         ];
 
         $this->resourceToSignRepositoryMock->resIdConcordingWithResIdMaster = false;
@@ -188,9 +188,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfAttachmentAlreadySigned(): void
     {
         $this->decodedToken = [
-            'resId'       => 159,
-            'resIdMaster' => 75,
-            'userId'      => 10
+            'resId'        => 159,
+            'resIdMaster'  => 75,
+            'userSerialId' => 10
         ];
 
         $this->resourceToSignRepositoryMock->resourceAlreadySigned = true;
@@ -210,9 +210,9 @@ class WebhookValidationTest extends TestCase
     public function testValidationErrorIfAttachmentNotInPerimeter(): void
     {
         $this->decodedToken = [
-            'resId'       => 159,
-            'resIdMaster' => 75,
-            'userId'      => 10
+            'resId'        => 159,
+            'resIdMaster'  => 75,
+            'userSerialId' => 10
         ];
 
         $this->resourceToSignRepositoryMock->attachmentNotExists = true;

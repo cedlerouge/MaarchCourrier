@@ -21,6 +21,7 @@ use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
@@ -54,8 +55,8 @@ class WebhookCallTest extends TestCase
     ];
 
     private array $decodedToken = [
-        'resId'  => 159,
-        'userId' => 10
+        'resId'        => 159,
+        'userSerialId' => 10
     ];
 
     protected function setUp(): void
@@ -85,7 +86,6 @@ class WebhookCallTest extends TestCase
 
     /**
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
@@ -93,6 +93,7 @@ class WebhookCallTest extends TestCase
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws StoreResourceProblem
      * @throws UserDoesNotExistProblem
+     * @throws NoEncodedContentRetrievedProblem
      */
     public function testWebhookCallSuccess(): void
     {
@@ -103,8 +104,8 @@ class WebhookCallTest extends TestCase
 
     /**
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
+     * @throws NoEncodedContentRetrievedProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem
@@ -128,8 +129,8 @@ class WebhookCallTest extends TestCase
 
     /**
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
+     * @throws NoEncodedContentRetrievedProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
      * @throws ResourceIdMasterNotCorrespondingProblem

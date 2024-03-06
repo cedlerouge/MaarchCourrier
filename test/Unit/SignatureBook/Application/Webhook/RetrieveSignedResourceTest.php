@@ -57,7 +57,10 @@ class RetrieveSignedResourceTest extends TestCase
      */
     public function testCanRetrieveSignedResourceIfEncodedContentIsSet(): void
     {
-        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent($this->signedResource, $this->retrieveDocUri);
+        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent(
+            $this->signedResource,
+            $this->retrieveDocUri
+        );
         $this->assertSame($signedResource->getResIdSigned(), $this->signedResource->getResIdSigned());
         $this->assertSame($signedResource->getResIdMaster(), $this->signedResource->getResIdMaster());
         $this->assertNotNull($signedResource->getEncodedContent());

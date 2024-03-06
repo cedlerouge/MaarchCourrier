@@ -21,6 +21,7 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureHistoryServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
@@ -44,7 +45,6 @@ class WebhookCall
      * @param array $decodedToken
      * @return int|array
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
@@ -52,12 +52,16 @@ class WebhookCall
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws StoreResourceProblem
      * @throws UserDoesNotExistProblem
+     * @throws NoEncodedContentRetrievedProblem
      */
     public function execute(array $body, array $decodedToken): int|array
     {
         $signedResource = $this->webhookValidation->validateAndCreateResource($body, $decodedToken);
 
-        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent($signedResource, $body['retrieveDocUri']);
+        $signedResource = $this->retrieveSignedResource->retrieveSignedResourceContent(
+            $signedResource,
+            $body['retrieveDocUri']
+        );
 
         switch ($signedResource->getStatus()) {
             case 'VAL':

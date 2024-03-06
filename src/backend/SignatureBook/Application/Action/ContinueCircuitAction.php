@@ -66,8 +66,8 @@ class ContinueCircuitAction
             'resId' => $resId
         ];
 
-        /*$payloadToken = $resourceToSign;
-        $payloadToken['userId'] = $GLOBALS['id'];
+        /* $payloadToken = $resourceToSign;
+        $payloadToken['userSerialId'] = $GLOBALS['id'];
 
         $webhook = [
             'url'     => UrlController::getCoreUrl() . '/signatureBook/webhook',

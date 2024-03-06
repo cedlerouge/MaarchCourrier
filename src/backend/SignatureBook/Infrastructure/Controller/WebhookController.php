@@ -22,6 +22,7 @@ use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
+use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
@@ -46,7 +47,6 @@ class WebhookController
      * @param array $args
      * @return Response
      * @throws AttachmentOutOfPerimeterProblem
-     * @throws CurlRequestErrorProblem
      * @throws CurrentTokenIsNotFoundProblem
      * @throws ResourceAlreadySignProblem
      * @throws ResourceIdEmptyProblem
@@ -54,6 +54,7 @@ class WebhookController
      * @throws RetrieveDocumentUrlEmptyProblem
      * @throws StoreResourceProblem
      * @throws UserDoesNotExistProblem
+     * @throws NoEncodedContentRetrievedProblem
      */
     public function fetchAndStoreSignedDocumentOnWebhookTrigger(
         Request $request,
@@ -76,8 +77,12 @@ class WebhookController
         $userRepository = new UserRepository();
         $maarchParapheurSignatureService = new MaarchParapheurSignatureService();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $maarchParapheurSignatureService);
+        $webhookValidation = new WebhookValidation(
+            $resourceToSignRepository, $userRepository, $currentUserInformations
+        );
+        $retrieveSignedResource = new RetrieveSignedResource(
+            $currentUserInformations, $maarchParapheurSignatureService
+        );
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
         $webhookCall = new WebhookCall(
