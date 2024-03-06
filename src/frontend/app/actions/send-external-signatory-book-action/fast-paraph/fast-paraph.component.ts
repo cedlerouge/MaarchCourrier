@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -7,7 +7,7 @@ import { HttpClient } from '@angular/common/http';
     templateUrl: 'fast-paraph.component.html',
     styleUrls: ['fast-paraph.component.scss'],
 })
-export class FastParaphComponent implements OnInit {
+export class FastParaphComponent {
 
     @Input() additionalsInfos: any;
     @Input() externalSignatoryBookDatas: any;
@@ -24,8 +24,6 @@ export class FastParaphComponent implements OnInit {
 
     constructor(public translate: TranslateService, public http: HttpClient) { }
 
-    ngOnInit(): void {
-    }
 
     isValidParaph() {
         if (this.additionalsInfos.attachments.length === 0) {

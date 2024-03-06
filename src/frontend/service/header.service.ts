@@ -46,7 +46,7 @@ export class HeaderService {
     ) { }
 
     loadHeader() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/header').pipe(
                 tap((data: any) => {
                     this.setUser(data.user);
@@ -63,7 +63,7 @@ export class HeaderService {
     }
 
     resfreshCurrentUser() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/currentUser/profile')
                 .pipe(
                     map((data: any) => {
@@ -146,19 +146,20 @@ export class HeaderService {
                 this.appRef,
                 this.injector
             );
-    
+
             // Create a template portal
             const templatePortal = new TemplatePortal(
                 template,
                 viewContainerRef
             );
-    
+
             // Attach portal to host
             this.portalHost.attach(templatePortal);
         }
-        
+
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     initTemplate(template: TemplateRef<any>, viewContainerRef: ViewContainerRef, id: string = 'adminMenu', mode: string = '') {
         // Create a portalHost from a DOM element
         this.portalHost = new DomPortalOutlet(

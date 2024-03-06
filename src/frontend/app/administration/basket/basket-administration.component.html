@@ -111,12 +111,12 @@
                                             </mat-form-field>
                                         </div>
                                         <div class="col-md-2 col-xs-2 text-left">
-                                            <button [disabled]="orderColumnsSelected.length==1" color="warn"
+                                            <button [disabled]="orderColumnsSelected.length === 1" color="warn"
                                                 mat-icon-button type="button" (click)="removeLine(i)">
                                                 <mat-icon class='fa fa-minus-square fa-2x'></mat-icon>
                                             </button>
-                                            <button *ngIf="orderColumnsSelected.length==(i+1)"
-                                                [disabled]="orderColumnsSelected.length==2" color="primary"
+                                            <button *ngIf="orderColumnsSelected.length === (i+1)"
+                                                [disabled]="orderColumnsSelected.length === 2" color="primary"
                                                 mat-icon-button type="button" (click)="addLine()">
                                                 <mat-icon class='fa fa-plus-square fa-2x'></mat-icon>
                                             </button>
@@ -125,7 +125,7 @@
                                 </div>
                                 <div class="col-md-12 text-center" style="padding:10px;">
                                     <button mat-raised-button
-                                        [disabled]="!basketForm.form.valid || orderColumnsSelected.length == 0"
+                                        [disabled]="!basketForm.form.valid || orderColumnsSelected.length === 0"
                                         color="primary">{{'lang.save' | translate}}</button>
                                 </div>
                             </form>
@@ -145,19 +145,19 @@
                                                 style="width:100%;">
                                                 <mat-chip color="primary" (click)="openSettings(group,action)"
                                                     matTooltip="id : {{action.id}}"
-                                                    [ngStyle]="{'font-weight': action.default_action_list == true ? 'bold' : ''}"
+                                                    [ngStyle]="{'font-weight': action.default_action_list === true ? 'bold' : ''}"
                                                     style="cursor:pointer;margin:5px;border-radius:0px;display:flex;"
-                                                    *ngIf="action.checked == true" selectable="true" removable="true"
+                                                    *ngIf="action.checked === true" selectable="true" removable="true"
                                                     (removed)="unlinkAction(group,action)">
                                                     &nbsp;
                                                     <span>{{action.label_action}}</span>&nbsp;
                                                     <small
-                                                        *ngIf="action.default_action_list == true">({{'lang.default' | translate}})</small>
+                                                        *ngIf="action.default_action_list === true">({{'lang.default' | translate}})</small>
                                                     <span style="flex: 1 1 auto;"></span>
                                                     <button mat-raised-button [disabled]="action.default_action_list"
                                                         (click)="$event.stopPropagation();setDefaultAction(group,action)">{{'lang.setByDefault' | translate}}</button>
                                                     <mat-icon matTooltip="{{'lang.delete' | translate}}" matChipRemove color="warn"
-                                                        *ngIf="action.default_action_list != true" class="fa fa-times"
+                                                        *ngIf="action.default_action_list !== true" class="fa fa-times"
                                                         (click)="$event.stopPropagation();"></mat-icon>
                                                 </mat-chip>
                                             </span>
@@ -175,7 +175,7 @@
                                                     <mat-form-field>
                                                         <input matInput #filterAction (keyup)="applyFilter($event.target.value)"
                                                             placeholder="{{'lang.filterBy' | translate}}">
-                                                        <button mat-button *ngIf="filterAction.value" matSuffix mat-icon-button 
+                                                        <button mat-button *ngIf="filterAction.value" matSuffix mat-icon-button
                                                             aria-label="Clear" (click)="applyFilter(''); filterAction.value = ''"
                                                             [title]="'lang.clearFilter' | translate">
                                                             <mat-icon class="fas fa-times" style="color:#B3B3B3"></mat-icon>
@@ -187,7 +187,7 @@
                                                             <mat-cell *matCellDef="let element" style="flex:6;"
                                                                 matTooltip="id : {{element.id}}">
                                                                 <mat-checkbox color="primary"
-                                                                    [disabled]="element.default_action_list==true"
+                                                                    [disabled]="element.default_action_list === true"
                                                                     (change)="addAction(group)"
                                                                     [(ngModel)]="element.checked">
                                                                     <span>{{element.label_action}}</span></mat-checkbox>
@@ -203,7 +203,7 @@
                                                                 </button>
                                                                 <mat-menu #menu="matMenu">
                                                                     <button mat-menu-item
-                                                                        [disabled]="element.default_action_list==true"
+                                                                        [disabled]="element.default_action_list === true"
                                                                         (click)="setDefaultAction(group,element)">
                                                                         <mat-icon class="fa fa-check-circle"></mat-icon>
                                                                         <span>{{'lang.defaultAction' | translate}}</span>

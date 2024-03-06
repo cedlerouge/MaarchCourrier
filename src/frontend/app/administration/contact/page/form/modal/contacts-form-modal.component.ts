@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { FunctionsService } from '@service/functions.service';
 import { ContactsFormComponent } from '../contacts-form.component';
@@ -7,7 +7,7 @@ import { ContactsFormComponent } from '../contacts-form.component';
     templateUrl: 'contacts-form-modal.component.html',
     styleUrls: ['contacts-form-modal.component.scss'],
 })
-export class ContactsFormModalComponent implements OnInit {
+export class ContactsFormModalComponent {
 
     @ViewChild('appContactForm', { static: false }) appContactForm: ContactsFormComponent;
 
@@ -16,8 +16,6 @@ export class ContactsFormModalComponent implements OnInit {
         public dialogRef: MatDialogRef<ContactsFormModalComponent>,
         private functionsService: FunctionsService) {
     }
-
-    ngOnInit(): void { }
 
     onSubmit() {
         this.appContactForm.onSubmit();

@@ -26,9 +26,6 @@ export class SecureUrlPipe implements PipeTransform {
             observer.next('data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
 
             if (url !== undefined) {
-                // The next and error callbacks from the observer
-                const { next, error } = observer;
-
                 this.http.get(url, { headers: headers, responseType: 'blob' }).pipe(
                     tap((response) => {
                         const reader = new FileReader();

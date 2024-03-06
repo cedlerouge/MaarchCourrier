@@ -27,13 +27,12 @@ export class ContactsGroupMergeModalComponent implements OnInit {
 
     ngOnInit(): void {
         this.itemsToMerge = this.data.itemsToMerge;
-        console.log(this.itemsToMerge);
     }
 
     onSubmit() {
         this.loading = true;
         this.http.put('../rest/contactsGroups/merge', this.formatData()).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.notify.success(this.translate.instant('lang.contactsGroupMerged'));
                 this.dialogRef.close('success');
             }),

@@ -91,7 +91,7 @@
                                 <button mat-menu-item (click)="addContactsToCorrespondentsGroup(group.id)">{{group.label}}
                                 </button>
                             </ng-container>
-                            <div *ngIf="correspondentsGroups.length == 0">
+                            <div *ngIf="correspondentsGroups.length === 0">
                                 <span [title]="'lang.noData' | translate" class="noData">{{'lang.noData' | translate}}</span>
                             </div>
                         </mat-menu>

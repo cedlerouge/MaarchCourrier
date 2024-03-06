@@ -88,15 +88,15 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
     initMce(id: string = '') {
         tinymce.remove('textarea#emailSignature' + id);
         // LOAD EDITOR TINYMCE for MAIL SIGN
-        tinymce.baseURL = '../node_modules/tinymce';
+        tinymce.baseURL = '../dist/tinymce';
         tinymce.suffix = '.min';
         tinymce.init({
             selector: 'textarea#emailSignature' + id,
             statusbar: false,
             language: this.translate.instant('lang.langISO').replace('-', '_'),
-            language_url: `../node_modules/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
+            language_url: `../dist/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
             external_plugins: {
-                'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
+                'maarch_b64image': '../tinymce/maarch_b64image/plugin.min.js'
             },
             menubar: false,
             toolbar: 'undo | bold italic underline | alignleft aligncenter alignright | maarch_b64image | forecolor',

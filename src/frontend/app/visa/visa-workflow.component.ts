@@ -14,6 +14,7 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { ActivatedRoute } from '@angular/router';
 import { PrivilegeService } from '@service/privileges.service';
 import { HeaderService } from '@service/header.service';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Component({
     selector: 'app-visa-workflow',
@@ -31,6 +32,8 @@ export class VisaWorkflowComponent implements OnInit {
 
     @Input() showListModels: boolean = true;
     @Input() showComment: boolean = true;
+
+    @Input() visaWorkflowFromAction: UserWorkflow[] = [];
 
     @Output() workflowUpdated = new EventEmitter<any>();
     @Output() refreshActionsList = new EventEmitter<boolean>();
@@ -94,6 +97,9 @@ export class VisaWorkflowComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        if (!this.functions.empty(this.visaWorkflowFromAction)) {
+            this.visaWorkflow.items = this.visaWorkflowFromAction;
+        }
         this.checkWorkflowSignatoryRole();
         if (!this.functions.empty(this.resId) && !this.loadedInConstructor) {
             // this.initFilterVisaModelList();
@@ -116,8 +122,6 @@ export class VisaWorkflowComponent implements OnInit {
 
     loadListModel(entityId: number) {
         this.loading = true;
-
-        this.visaWorkflow.items = [];
 
         const route = `../rest/listTemplates/entities/${entityId}?type=visaCircuit`;
 
@@ -251,7 +255,6 @@ export class VisaWorkflowComponent implements OnInit {
     loadWorkflow(resId: number) {
         this.resId = resId;
         this.loading = true;
-        this.visaWorkflow.items = [];
         return new Promise((resolve) => {
             this.http.get('../rest/resources/' + resId + '/visaCircuit').pipe(
                 tap((data: any) => {
@@ -456,9 +459,9 @@ export class VisaWorkflowComponent implements OnInit {
                                 currentRole: itemTemplate.item_mode
                             }))
                         );
-                        this.searchVisaSignUser.reset();
                         this.searchVisaSignUserInput.nativeElement.blur();
                         this.workflowUpdated.emit(this.visaWorkflow.items);
+                        this.searchVisaSignUser.reset();
                         resolve(true);
                     })
                 ).subscribe();

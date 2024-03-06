@@ -23,7 +23,7 @@ use User\models\UserModel;
 
 class PrivilegeController
 {
-    public static function addPrivilege(Request $request, Response $response, array $args)
+    public static function addPrivilege(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -54,7 +54,9 @@ class PrivilegeController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        if (PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])) {
+        if (
+            PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])
+        ) {
             return $response->withStatus(204);
         }
 
@@ -66,13 +68,17 @@ class PrivilegeController
 
             $parameters = json_encode(['groups' => $groups]);
 
-            PrivilegeModel::updateParameters(['groupId' => $group['group_id'], 'privilegeId' => $args['privilegeId'], 'parameters' => $parameters]);
+            PrivilegeModel::updateParameters([
+                'groupId' => $group['group_id'],
+                'privilegeId' => $args['privilegeId'],
+                'parameters' => $parameters
+            ]);
         }
 
         return $response->withStatus(204);
     }
 
-    public static function removePrivilege(Request $request, Response $response, array $args)
+    public static function removePrivilege(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -90,16 +96,21 @@ class PrivilegeController
             return $response->withStatus(400)->withJson(['errors' => 'Group not found']);
         }
 
-        if (!PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])) {
+        if (
+            !PrivilegeModel::groupHasPrivilege(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']])
+        ) {
             return $response->withStatus(204);
         }
 
-        PrivilegeModel::removePrivilegeToGroup(['privilegeId' => $args['privilegeId'], 'groupId' => $group['group_id']]);
+        PrivilegeModel::removePrivilegeToGroup([
+            'privilegeId' => $args['privilegeId'],
+            'groupId' => $group['group_id']
+        ]);
 
         return $response->withStatus(204);
     }
 
-    public static function updateParameters(Request $request, Response $response, array $args)
+    public static function updateParameters(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_groups', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -125,12 +136,16 @@ class PrivilegeController
 
         $parameters = json_encode($data['parameters']);
 
-        PrivilegeModel::updateParameters(['groupId' => $group['group_id'], 'privilegeId' => $args['privilegeId'], 'parameters' => $parameters]);
+        PrivilegeModel::updateParameters([
+            'groupId' => $group['group_id'],
+            'privilegeId' => $args['privilegeId'],
+            'parameters' => $parameters
+        ]);
 
         return $response->withStatus(204);
     }
 
-    public static function getParameters(Request $request, Response $response, array $args)
+    public static function getParameters(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route id is empty or not an integer']);
@@ -146,7 +161,10 @@ class PrivilegeController
 
         $queryParams = $request->getQueryParams();
 
-        $parameters = PrivilegeModel::getParametersFromGroupPrivilege(['groupId' => $group['group_id'], 'privilegeId' => $args['privilegeId']]);
+        $parameters = PrivilegeModel::getParametersFromGroupPrivilege([
+            'groupId' => $group['group_id'],
+            'privilegeId' => $args['privilegeId']
+        ]);
 
         if (!empty($queryParams['parameter'])) {
             if (!isset($parameters[$queryParams['parameter']])) {
@@ -159,7 +177,7 @@ class PrivilegeController
         return $response->withJson($parameters);
     }
 
-    public static function hasPrivilege(array $args)
+    public static function hasPrivilege(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['privilegeId', 'userId']);
         ValidatorModel::stringType($args, ['privilegeId']);
@@ -182,21 +200,21 @@ class PrivilegeController
         }
 
         $hasPrivilege = DatabaseModel::select([
-            'select'    => [1],
-            'table'     => ['usergroup_content, usergroups_services, usergroups'],
-            'where'     => [
+            'select' => [1],
+            'table' => ['usergroup_content, usergroups_services, usergroups'],
+            'where' => [
                 'usergroup_content.group_id = usergroups.id',
                 'usergroups.group_id = usergroups_services.group_id',
                 'usergroup_content.user_id = ?',
                 'usergroups_services.service_id = ?'
             ],
-            'data'      => [$args['userId'], $args['privilegeId']]
+            'data' => [$args['userId'], $args['privilegeId']]
         ]);
 
         return !empty($hasPrivilege);
     }
 
-    public static function getPrivilegesByUser(array $args)
+    public static function getPrivilegesByUser(array $args): array
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
@@ -208,7 +226,7 @@ class PrivilegeController
         $privilegesStoredInDB = PrivilegeModel::getByUser(['id' => $args['userId']]);
         $privilegesStoredInDB = array_column($privilegesStoredInDB, 'service_id');
 
-        $file   = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
         $isLock = !empty($file['config']['lockAdvancedPrivileges']);
         foreach (['create_custom', 'admin_update_control'] as $advancedPrivilege) {
             $key = array_search($advancedPrivilege, $privilegesStoredInDB);
@@ -228,7 +246,7 @@ class PrivilegeController
         return $privilegesStoredInDB;
     }
 
-    public static function getAssignableGroups(array $args)
+    public static function getAssignableGroups(array $args): array
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
@@ -238,7 +256,9 @@ class PrivilegeController
 
         $assignable = [];
         foreach ($userGroups as $userGroup) {
-            $groups = PrivilegeModel::getParametersFromGroupPrivilege(['groupId' => $userGroup, 'privilegeId' => 'admin_users']);
+            $groups = PrivilegeModel::getParametersFromGroupPrivilege(
+                ['groupId' => $userGroup, 'privilegeId' => 'admin_users']
+            );
             if (!empty($groups)) {
                 $groups = $groups['groups'];
                 $assignable = array_merge($assignable, $groups);
@@ -252,7 +272,7 @@ class PrivilegeController
         return $assignable;
     }
 
-    public static function canAssignGroup(array $args)
+    public static function canAssignGroup(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['userId', 'groupId']);
         ValidatorModel::intVal($args, ['userId', 'groupId']);
@@ -261,7 +281,9 @@ class PrivilegeController
             return true;
         }
 
-        $privileges = PrivilegeModel::getByUserAndPrivilege(['userId' => $args['userId'], 'privilegeId' => 'admin_users']);
+        $privileges = PrivilegeModel::getByUserAndPrivilege(
+            ['userId' => $args['userId'], 'privilegeId' => 'admin_users']
+        );
         $privileges = array_column($privileges, 'parameters');
 
         if (empty($privileges)) {
@@ -284,29 +306,29 @@ class PrivilegeController
         return in_array($args['groupId'], $assignable);
     }
 
-    public static function canIndex(array $args)
+    public static function canIndex(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['userId']);
         ValidatorModel::intVal($args, ['userId']);
 
         $where = ['usergroup_content.user_id = ?', 'usergroups.can_index = ?'];
-        $data  = [$args['userId'], true];
+        $data = [$args['userId'], true];
 
         if (!empty($args['groupId'])) {
             $where[] = 'usergroups.id = ?';
-            $data[]  = $args['groupId'];
+            $data[] = $args['groupId'];
         }
 
         $canIndex = UserGroupModel::getWithGroups([
-            'select'    => [1],
-            'where'     => $where,
-            'data'      => $data
+            'select' => [1],
+            'where' => $where,
+            'data' => $data
         ]);
 
         return !empty($canIndex);
     }
 
-    public static function canUpdateResource(array $args)
+    public static function canUpdateResource(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['userId', 'resId']);
         ValidatorModel::intVal($args, ['userId', 'resId']);
@@ -315,13 +337,17 @@ class PrivilegeController
             return ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $args['userId']]);
         }
 
-        $canUpdateInProcess = PrivilegeController::isResourceInProcess(['userId' => $args['userId'], 'resId' => $args['resId'], 'canUpdateData' => true]);
-        $canUpdateInSignatureBook = SignatureBookController::isResourceInSignatureBook(['userId' => $args['userId'], 'resId' => $args['resId'], 'canUpdateDocuments' => true]);
+        $canUpdateInProcess = PrivilegeController::isResourceInProcess(
+            ['userId' => $args['userId'], 'resId' => $args['resId'], 'canUpdateData' => true]
+        );
+        $canUpdateInSignatureBook = SignatureBookController::isResourceInSignatureBook(
+            ['userId' => $args['userId'], 'resId' => $args['resId'], 'canUpdateDocuments' => true]
+        );
 
         return $canUpdateInProcess || $canUpdateInSignatureBook;
     }
 
-    public static function isResourceInProcess(array $args)
+    public static function isResourceInProcess(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
@@ -330,7 +356,9 @@ class PrivilegeController
 
         $basketsClause = '';
 
-        $groups = UserGroupModel::get(['select' => ['group_id'], 'where' => ['user_id = ?'], 'data' => [$currentUser['id']]]);
+        $groups = UserGroupModel::get(
+            ['select' => ['group_id'], 'where' => ['user_id = ?'], 'data' => [$currentUser['id']]]
+        );
         $groups = array_column($groups, 'group_id');
         if (!empty($groups)) {
             $groups = GroupModel::get(['select' => ['group_id'], 'where' => ['id in (?)'], 'data' => [$groups]]);
@@ -349,10 +377,14 @@ class PrivilegeController
             $baskets = GroupBasketModel::get(['select' => ['basket_id'], 'where' => $where, 'data' => $data]);
             $baskets = array_column($baskets, 'basket_id');
             if (!empty($baskets)) {
-                $clauses = BasketModel::get(['select' => ['basket_clause'], 'where' => ['basket_id in (?)'], 'data' => [$baskets]]);
+                $clauses = BasketModel::get(
+                    ['select' => ['basket_clause'], 'where' => ['basket_id in (?)'], 'data' => [$baskets]]
+                );
 
                 foreach ($clauses as $clause) {
-                    $basketClause = PreparedClauseController::getPreparedClause(['clause' => $clause['basket_clause'], 'userId' => $args['userId']]);
+                    $basketClause = PreparedClauseController::getPreparedClause(
+                        ['clause' => $clause['basket_clause'], 'userId' => $args['userId']]
+                    );
                     if (!empty($basketsClause)) {
                         $basketsClause .= ' or ';
                     }
@@ -375,7 +407,9 @@ class PrivilegeController
             }
             $hasSB = GroupBasketModel::get(['select' => [1], 'where' => $where, 'data' => $data]);
             if (!empty($hasSB)) {
-                $basketClause = PreparedClauseController::getPreparedClause(['clause' => $basket['basket_clause'], 'userId' => $basket['owner_user_id']]);
+                $basketClause = PreparedClauseController::getPreparedClause(
+                    ['clause' => $basket['basket_clause'], 'userId' => $basket['owner_user_id']]
+                );
                 if (!empty($basketsClause)) {
                     $basketsClause .= ' or ';
                 }
@@ -384,7 +418,9 @@ class PrivilegeController
         }
 
         try {
-            $res = ResModel::getOnView(['select' => [1], 'where' => ['res_id = ?', "({$basketsClause})"], 'data' => [$args['resId']]]);
+            $res = ResModel::getOnView(
+                ['select' => [1], 'where' => ['res_id = ?', "({$basketsClause})"], 'data' => [$args['resId']]]
+            );
             if (empty($res)) {
                 return false;
             }
@@ -395,7 +431,7 @@ class PrivilegeController
         return true;
     }
 
-    public static function isAdvancedPrivilegesLocked()
+    public static function isAdvancedPrivilegesLocked(): bool
     {
         $file = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
 

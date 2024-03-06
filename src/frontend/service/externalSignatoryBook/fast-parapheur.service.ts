@@ -60,7 +60,7 @@ export class FastParapheurService {
         });
     }
 
-    getUserAvatar(externalId: any = null): Promise<any> {
+    getUserAvatar(): Promise<any> {
         return new Promise((resolve) => {
             this.http.get('assets/fast.png', { responseType: 'blob' }).pipe(
                 tap((response: any) => {
@@ -168,7 +168,7 @@ export class FastParapheurService {
         });
     }
 
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
+    createExternalSignatoryBookAccount() {
         // STAND BY: the creation of a user in FAST PARAPHEUR is not possible
     }
 
@@ -214,6 +214,8 @@ export class FastParapheurService {
         return additionalsInfos.attachments.map((e: any) => e.res_id);
     }
 
+    // this same function is used in the maarchParapheur service and uses the resourcesToSign parameter
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isValidParaph(additionalsInfos: any = null, workflow: any[] = [], resourcesToSign = [], userOtps = []) {
         return (additionalsInfos.attachments.length > 0 && workflow.length > 0) && userOtps.length === 0 && this.workflowTypes.length > 0 && this.signatureModes.length > 0;
     }
@@ -228,6 +230,7 @@ export class FastParapheurService {
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     synchronizeSignatures(data: any) {
         /**
          * Synchronize signatures

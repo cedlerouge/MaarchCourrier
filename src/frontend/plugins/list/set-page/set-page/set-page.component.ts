@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { FunctionsService } from '@service/functions.service';
@@ -8,7 +8,7 @@ import { FunctionsService } from '@service/functions.service';
     templateUrl: './set-page.component.html',
     styleUrls: ['./set-page.component.scss']
 })
-export class SetPageComponent implements OnInit {
+export class SetPageComponent {
 
     @Input() paginator: MatPaginator;
     @Input() pageLength: number = 0;
@@ -19,8 +19,6 @@ export class SetPageComponent implements OnInit {
     constructor(
         public functions: FunctionsService
     ) { }
-
-    ngOnInit(): void {}
 
     goToPage(page: number = this.currentPage.value) {
         this.hasError = false;

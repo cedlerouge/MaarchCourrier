@@ -34,7 +34,7 @@ export class CriteriaSearchService {
 
         const crit = JSON.parse(sessionStorage.getItem('criteriaSearch_' + userId));
 
-        if (crit !== null) {
+        if (crit !== null) {
             this.listsProperties = JSON.parse(sessionStorage.getItem('criteriaSearch_' + userId));
         } else {
             this.listsProperties = {

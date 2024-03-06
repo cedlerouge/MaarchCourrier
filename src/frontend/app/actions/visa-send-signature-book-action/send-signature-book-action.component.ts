@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Inject, ViewChild, AfterViewInit, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -11,6 +11,7 @@ import { VisaWorkflowComponent } from '../../visa/visa-workflow.component';
 import { ActionsService } from '../actions.service';
 import { Router } from '@angular/router';
 import { SessionStorageService } from '@service/session-storage.service';
+import { UserWorkflow } from '@models/user-workflow.model';
 
 @Component({
     templateUrl: 'send-signature-book-action.component.html',
@@ -45,6 +46,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     lastOneMustBeSignatory: boolean = false;
     workflowSignatoryRole: string = '';
     lockVisaCircuit: boolean;
+    visaWorkflowClone: UserWorkflow[];
 
     canGoToNextRes: boolean = false;
     showToggle: boolean = false;
@@ -210,7 +212,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         } else {
             // issue component undefined ??
             setTimeout(async () => {
-                if (this.appVisaWorkflow.emptyWorkflow()) {
+                if (this.appVisaWorkflow?.emptyWorkflow()) {
                     await this.appVisaWorkflow.loadDefaultWorkflow(this.data.resIds[0]);
                 }
             }, 100);
@@ -262,7 +264,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
                 await this.checkSignatureBook();
                 setTimeout(async () => {
-                    if (this.appVisaWorkflow.emptyWorkflow()) {
+                    if (this.appVisaWorkflow?.emptyWorkflow()) {
                         await this.appVisaWorkflow.loadWorkflow(this.data.resIds[0]);
                     }
                     this.loadWorkflowEntity();
@@ -290,6 +292,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     checkWorkflowParameters(items: any[]) {
         let nbVisaRole = 0;
         let nbSignRole = 0;
+        this.visaWorkflowClone = JSON.parse(JSON.stringify(items));
         items.forEach(item => {
             if (this.functions.empty(item.process_date)) {
                 if (item.requested_signature) {

@@ -121,7 +121,7 @@ export class AlfrescoAdministrationComponent implements OnInit {
     }
 
     getAvailableEntities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/alfresco/availableEntities').pipe(
                 tap((data: any) => {
                     this.availableEntities = data['availableEntities'];
@@ -136,7 +136,7 @@ export class AlfrescoAdministrationComponent implements OnInit {
     }
 
     getEntities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/entities').pipe(
                 map((data: any) => {
                     data.entities = data.entities.map((entity: any) => ({
@@ -163,7 +163,7 @@ export class AlfrescoAdministrationComponent implements OnInit {
     }
 
     initAccount() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.creationMode) {
                 this.http.get('../rest/entities').pipe(
                     map((data: any) => {

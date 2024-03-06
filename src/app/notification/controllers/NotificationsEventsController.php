@@ -1,25 +1,31 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Notifications Events Controller
-* @author dev@maarch.org
-*/
+ * @brief Notifications Events Controller
+ * @author dev@maarch.org
+ */
 
 namespace Notification\controllers;
 
+use Exception;
 use Notification\models\NotificationsEventsModel;
 use Notification\models\NotificationModel;
 
 class NotificationsEventsController
 {
-    public static function fillEventStack(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return void
+     * @throws Exception
+     */
+    public static function fillEventStack(array $aArgs): void
     {
         if ($aArgs['recordId'] == '') {
             return;
@@ -35,7 +41,10 @@ class NotificationsEventsController
 
             if (
                 $aArgs['eventId'] == $notification['event_id']
-                || NotificationsEventsController::wildcardMatch(["pattern" => $notification['event_id'], "str" => $aArgs['eventId']])
+                || NotificationsEventsController::wildcardMatch([
+                    "pattern" => $notification['event_id'],
+                    "str"     => $aArgs['eventId']
+                ])
                 || in_array($aArgs['eventId'], $event_ids)
             ) {
                 NotificationsEventsModel::create([
@@ -49,10 +58,17 @@ class NotificationsEventsController
         }
     }
 
-    public static function wildcardMatch(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return false|int
+     */
+    public static function wildcardMatch(array $aArgs): bool|int
     {
-        $pattern = '/^' . str_replace(array('%', '\*', '\?', '\[', '\]'), array('.*', '.*', '.', '[', ']+'), preg_quote($aArgs['pattern'])) . '$/is';
-        $result = preg_match($pattern, $aArgs['str']);
-        return $result;
+        $pattern = '/^' . str_replace(
+            array('%', '\*', '\?', '\[', '\]'),
+            array('.*', '.*', '.', '[', ']+'),
+            preg_quote($aArgs['pattern'])
+        ) . '$/is';
+        return preg_match($pattern, $aArgs['str']);
     }
 }

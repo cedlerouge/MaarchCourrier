@@ -56,12 +56,12 @@ export class MaarchFlatTreeComponent implements OnInit {
         private latinisePipe: LatinisePipe,
     ) { }
 
-    @HostListener('document:keydown.Shift', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+    @HostListener('document:keydown.Shift', ['$event']) onKeydownHandler() {
         if (this.selectionPropagation) {
             this.holdShift = true;
         }
     }
-    @HostListener('document:keyup.Shift', ['$event']) onKeyupHandler(event: KeyboardEvent) {
+    @HostListener('document:keyup.Shift', ['$event']) onKeyupHandler() {
         this.holdShift = false;
     }
 

@@ -95,7 +95,7 @@ export class RedirectActionComponent implements OnInit {
     }
 
     getEntities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resourcesList/users/${this.data.userId}/groups/${this.data.groupId}/baskets/${this.data.basketId}/actions/${this.data.action.id}/getRedirect`).pipe(
                 tap((data: any) => {
                     this.userListRedirect = data.users;
@@ -107,7 +107,7 @@ export class RedirectActionComponent implements OnInit {
                     /**
                      * browse the array of entities to check if entity_parent_id of children is defined
                      */
-                    this.entities.forEach((entity: any, index: number) => {
+                    this.entities.forEach((entity: any) => {
                         if (!this.functionsService.empty(entity.parent_entity_id) && this.functionsService.empty(this.entities.find((item: any) => item.entity_id === entity.parent_entity_id))) {
                             this.orphanEntitySerialIds.push(entity.entity_id);
                             this.getEntityChildren(entity.entity_id);
@@ -142,7 +142,7 @@ export class RedirectActionComponent implements OnInit {
     }
 
     getDefaultEntity() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.data.resIds.length === 1) {
                 this.http.get(`../rest/resources/${this.data.resIds[0]}/fields/destination?alt=true`).pipe(
                     tap((data: any) => {
@@ -210,7 +210,7 @@ export class RedirectActionComponent implements OnInit {
             });
             $('#jstree')
                 // listen for event
-                .on('loaded.jstree', (e: any, data: any) => {
+                .on('loaded.jstree', () => {
                     if (this.currentEntity.serialId > 0) {
                         $('#jstree').jstree('select_node', this.currentEntity);
                         this.selectEntity(this.currentEntity, true);

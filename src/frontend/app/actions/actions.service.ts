@@ -231,7 +231,7 @@ export class ActionsService implements OnDestroy {
                     this[action.component]();
                 } catch (error) {
                     console.debug(error);
-                    console.debug(action);
+                    console.debug(action.component);
                     alert(this.translate.instant('lang.actionNotExist'));
                 }
             }
@@ -678,7 +678,7 @@ export class ActionsService implements OnDestroy {
             data: this.setDatasActionToSend()
         });
         // Subscribe to the sidenavStateChanged event of the SendExternalSignatoryBookActionComponent instance
-        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {            
+        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {
             // Check if the sidenav is closed/opened
             if (!isSidenavOpened) {
                 // If closed, update the size of the dialog to a fixed width
@@ -818,7 +818,6 @@ export class ActionsService implements OnDestroy {
             })
         ).subscribe();
     }
-
 
     noConfirmAction() {
         const dataActionToSend = this.setDatasActionToSend();

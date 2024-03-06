@@ -8,6 +8,7 @@ import { MatSort } from '@angular/material/sort';
 import { HeaderService } from '@service/header.service';
 import { AppService } from '@service/app.service';
 import { FunctionsService } from '@service/functions.service';
+import { catchError, of, tap } from 'rxjs';
 
 @Component({
     templateUrl: 'docserver-administration.component.html'
@@ -91,12 +92,15 @@ export class DocserverAdministrationComponent implements OnInit {
 
     onSubmit(docserver: any) {
         docserver.size_limit_number = docserver.limitSizeFormatted * 1000000000;
-        this.http.post('../rest/docservers', docserver)
-            .subscribe((data: any) => {
+        this.http.post('../rest/docservers', docserver).pipe(
+            tap(() => {
                 this.notify.success(this.translate.instant('lang.docserverAdded'));
                 this.router.navigate(['/administration/docservers/']);
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }

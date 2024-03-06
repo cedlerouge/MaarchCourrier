@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -18,7 +18,7 @@ import { of } from 'rxjs';
     templateUrl: 'actions-list.component.html',
     styleUrls: ['actions-list.component.scss']
 })
-export class ActionsListComponent implements OnInit {
+export class ActionsListComponent {
 
     @ViewChild(MatMenuTrigger, { static: false }) contextMenu: MatMenuTrigger;
     @Output() triggerEvent = new EventEmitter<string>();
@@ -63,8 +63,6 @@ export class ActionsListComponent implements OnInit {
         private functionService: FunctionsService,
         public privilegeService: PrivilegeService,
     ) { }
-
-    ngOnInit(): void { }
 
     open(x: number, y: number, row: any) {
         this.loadActionList();

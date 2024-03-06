@@ -72,7 +72,7 @@ export class ContactExportComponent implements OnInit {
     }
 
     getContactFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/contactsParameters').pipe(
                 map((data: any) => {
                     const regex = /contactCustomField_[.]*/g;

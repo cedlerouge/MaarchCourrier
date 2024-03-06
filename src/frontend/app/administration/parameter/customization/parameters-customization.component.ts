@@ -109,12 +109,12 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
                     this.stepFormGroup.controls[e.target.id].setValue(tinymce.get(e.target.id).getContent());
                 });
             },
-            base_url: '../node_modules/tinymce/',
+            base_url: '../dist/tinymce/',
             convert_urls: false,
             height: '200',
             suffix: '.min',
             language: this.translate.instant('lang.langISO').replace('-', '_'),
-            language_url: `../node_modules/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
+            language_url: `../dist/tinymce-i18n/langs/${this.translate.instant('lang.langISO').replace('-', '_')}.js`,
             menubar: false,
             statusbar: false,
             readonly: readonly,
@@ -123,7 +123,7 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             ],
             extended_valid_elements: 'script[src|async|defer|type|charset]', // disables script execution in TinyMCE
             external_plugins: {
-                'maarch_b64image': '../../src/frontend/plugins/tinymce/maarch_b64image/plugin.min.js'
+                'maarch_b64image': '../tinymce/maarch_b64image/plugin.min.js'
             },
             table_toolbar: '',
             table_sizing_mode: 'relative',
@@ -132,7 +132,6 @@ export class ParametersCustomizationComponent implements OnInit, OnDestroy {
             toolbar_mode: 'floating',
             table_style_by_css: true,
             content_style: 'table td { padding: 1px; vertical-align: top; }',
-            forced_root_block : false,
             toolbar: !readonly ? 'undo redo | fontselect fontsizeselect | bold italic underline strikethrough forecolor | table maarch_b64image | \
         alignleft aligncenter alignright alignjustify \
         bullist numlist outdent indent | removeformat' : ''

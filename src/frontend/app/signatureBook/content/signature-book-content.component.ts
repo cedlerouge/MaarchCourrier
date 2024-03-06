@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { SafeResourceUrl } from '@angular/platform-browser';
+import { Component, Input, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
 import { Attachment } from '@models/attachment.model';
@@ -19,6 +18,8 @@ import { Subscription, catchError, finalize, of, tap } from 'rxjs';
 export class MaarchSbContentComponent implements OnDestroy {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
 
+    @Input() position: 'left' | 'right' = 'right';
+
     subscription: Subscription;
 
     subscriptionDocument: Subscription;
@@ -27,7 +28,7 @@ export class MaarchSbContentComponent implements OnDestroy {
 
     documentType: 'attachments' | 'resources';
 
-    documentContent: SafeResourceUrl = null;
+    documentContent: Blob = null;
 
     loading: boolean = false;
 
@@ -51,16 +52,18 @@ export class MaarchSbContentComponent implements OnDestroy {
                             const signContent = await this.getSignatureContent(res.data.contentUrl);
                             this.pluginInstance.addStamp(signContent);
                         }
-                    } else if (res.id === 'attachmentToSign') {
+                    } else if (res.id === 'attachmentSelected' && this.position === res.data.position) {
                         this.loading = true;
                         this.subscriptionDocument?.unsubscribe();
-                        this.documentData = res.data;
-                        this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster)
-                            ? 'attachments'
-                            : 'resources';
+                        this.documentData = res.data.attachment;
+                        this.documentType = !this.functionsService.empty(this.documentData?.resIdMaster) ? 'attachments' : 'resources';
                         setTimeout(async () => {
-                            await this.loadContent();
-                            this.initPlugin();
+                            if (this.position === 'right') {
+                                await this.loadContent();
+                                this.initPlugin();
+                            } else {
+                                this.loading = false;
+                            }
                         }, 1000);
                     }
                 }),

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, tap } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -14,7 +14,7 @@ import { of, Subject } from 'rxjs';
         'office365-sharepoint-viewer.component.scss'
     ],
 })
-export class Office365SharepointViewerComponent implements OnInit, AfterViewInit, OnDestroy {
+export class Office365SharepointViewerComponent implements OnInit, OnDestroy {
 
     @Input() editMode: boolean = false;
     @Input() file: any = {};
@@ -139,10 +139,6 @@ export class Office365SharepointViewerComponent implements OnInit, AfterViewInit
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return parseInt(result, 10);
-    }
-
-    ngAfterViewInit() {
-
     }
 
     sendDocument() {

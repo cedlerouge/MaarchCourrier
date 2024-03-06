@@ -20,4 +20,3 @@ export class IconService {
         this.matIconRegistry.addSvgIcon('multigest', this.domSanitizer.bypassSecurityTrustResourceUrl('assets/multigest.svg'));
     }
 }
-  
