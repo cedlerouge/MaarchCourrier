@@ -20,7 +20,6 @@ use MaarchCourrier\SignatureBook\Application\Webhook\StoreSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\UseCase\WebhookCall;
 use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
