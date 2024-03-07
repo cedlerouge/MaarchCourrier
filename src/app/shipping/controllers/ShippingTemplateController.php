@@ -1131,17 +1131,23 @@ class ShippingTemplateController
      */
     private static function getMailevaAuthToken(array $mailevaConfig, array $shippingTemplateAccount)
     {
+        $urlAuth = 'auth/realms/services/protocol/openid-connect/token';
+        $data = [
+            'grant_type' => 'password',
+            'username'   => $shippingTemplateAccount['id'],
+            'password'   => PasswordController::decrypt(['encryptedData' => $shippingTemplateAccount['password']])
+        ];
+
+        $body = http_build_query($data);
+
         $curlAuth = CurlModel::exec([
-            'url'         => $mailevaConfig['connectionUri'] . '/authentication/oauth2/token',
-            'basicAuth'   => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
-            'headers'     => ['Content-Type: application/x-www-form-urlencoded'],
-            'method'      => 'POST',
-            'queryParams' => [
-                'grant_type' => 'password',
-                'username'   => $shippingTemplateAccount['id'],
-                'password'   => PasswordController::decrypt(['encryptedData' => $shippingTemplateAccount['password']])
-            ]
+            'url'       => "{$mailevaConfig['connectionUri']}/{$urlAuth}",
+            'basicAuth' => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
+            'headers'   => ['Content-Type: application/x-www-form-urlencoded'],
+            'method'    => 'POST',
+            'body'      => $body
         ]);
+
         if ($curlAuth['code'] != 200) {
             return ['errors' => 'Maileva authentication failed'];
         }
