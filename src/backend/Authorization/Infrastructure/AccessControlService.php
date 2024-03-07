@@ -8,26 +8,26 @@
  */
 
 /**
- * @brief Main Resource Access Control Service class
+ * @brief Access Control Service
  * @author dev@maarch.org
  */
 
 namespace MaarchCourrier\Authorization\Infrastructure;
 
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
+use Group\controllers\PrivilegeController;
+use MaarchCourrier\Authorization\Domain\Port\AccessControlServiceInterface;
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
-use Resource\controllers\ResController;
 
-class MainResourceAccessControlService implements MainResourceAccessControlInterface
+class AccessControlService implements AccessControlServiceInterface
 {
     /**
-     * @param int $resId
-     * @param UserInterface|CurrentUserInterface $user
+     * @param string $privilegeId
+     * @param CurrentUserInterface|UserInterface $user
      *
      * @return bool
      */
-    public function hasRightByResId(int $resId, UserInterface|CurrentUserInterface $user): bool
+    public function hasPrivilege(string $privilegeId, CurrentUserInterface|UserInterface $user): bool
     {
         $userId = null;
         if ($user instanceof UserInterface) {
@@ -35,6 +35,7 @@ class MainResourceAccessControlService implements MainResourceAccessControlInter
         } else {
             $userId = $user->getCurrentUserId();
         }
-        return ResController::hasRightByResId(['resId' => [$resId], 'userId' => $userId]);
+
+        return PrivilegeController::hasPrivilege(['privilegeId' => $privilegeId, 'userId' => $userId]);
     }
 }

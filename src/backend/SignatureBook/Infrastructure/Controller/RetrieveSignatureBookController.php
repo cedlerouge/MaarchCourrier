@@ -14,7 +14,10 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
+use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
+use MaarchCourrier\Authorization\Infrastructure\AccessControlService;
 use MaarchCourrier\Authorization\Infrastructure\MainResourceAccessControlService;
+use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureBookRepository;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
@@ -26,6 +29,15 @@ use SrcCore\models\CoreConfigModel;
 
 class RetrieveSignatureBookController
 {
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     *
+     * @return Response
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
     public function getSignatureBook(Request $request, Response $response, array $args): Response
     {
         #region Todo : refacto when SignatureBookConfigRepository is ready
@@ -40,6 +52,7 @@ class RetrieveSignatureBookController
 
         $retrieve = new RetrieveSignatureBook(
             new CurrentUserInformations(),
+            new AccessControlService(),
             new MainResourceAccessControlService(),
             new ResourceData(),
             new SignatureBookRepository()

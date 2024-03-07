@@ -113,9 +113,10 @@ class SignatureBook implements JsonSerializable
     /**
      * @param bool $canSignResources
      */
-    public function setCanSignResources(bool $canSignResources): void
+    public function setCanSignResources(bool $canSignResources): self
     {
         $this->canSignResources = $canSignResources;
+        return $this;
     }
 
     /**

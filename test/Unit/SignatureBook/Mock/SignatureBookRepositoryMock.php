@@ -25,6 +25,8 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
     public bool $hasActiveWorkflow = true;
     public bool $isUpdateResourcesInSignatureBookBasket = true;
     public bool $isUpdateResourcesInSignatureBookRedirectBasket = true;
+    public int $workflowUserId = 19;
+    public bool $isCurrentWorkflowUser = true;
 
     /**
      * @param Resource $resource
@@ -81,5 +83,13 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
     public function doesMainResourceHasActiveWorkflow(Resource $resource): bool
     {
         return $this->hasActiveWorkflow;
+    }
+
+    public function getWorkflowUserIdByCurrentStep(Resource $resource): ?int
+    {
+        if ($this->isCurrentWorkflowUser) {
+            return $this->workflowUserId;
+        }
+        return 2;
     }
 }

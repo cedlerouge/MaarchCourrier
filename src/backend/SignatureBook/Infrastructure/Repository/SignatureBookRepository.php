@@ -184,4 +184,15 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
         return ((int)$listInstances[0]['count'] > 0);
     }
+
+    /**
+     * @param Resource $resource
+     *
+     * @return ?int
+     */
+    public function getWorkflowUserIdByCurrentStep(Resource $resource): ?int
+    {
+        $currentStep = ListInstanceModel::getCurrentStepByResId(['resId' => $resource->getResId()]);
+        return $currentStep['item_id'] ?? null;
+    }
 }

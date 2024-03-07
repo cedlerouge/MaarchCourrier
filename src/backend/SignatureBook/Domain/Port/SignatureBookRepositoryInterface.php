@@ -43,4 +43,11 @@ interface SignatureBookRepositoryInterface
      * @return bool
      */
     public function doesMainResourceHasActiveWorkflow(Resource $resource): bool;
+
+    /**
+     * @param Resource $resource
+     *
+     * @return ?int
+     */
+    public function getWorkflowUserIdByCurrentStep(Resource $resource): ?int;
 }

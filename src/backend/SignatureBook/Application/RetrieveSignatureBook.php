@@ -14,6 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Application;
 
+use MaarchCourrier\Authorization\Domain\Port\AccessControlServiceInterface;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
@@ -26,6 +27,7 @@ class RetrieveSignatureBook
 {
     public function __construct(
         public CurrentUserInterface $currentUser,
+        public AccessControlServiceInterface $accessControlService,
         public MainResourceAccessControlInterface $mainResourceAccessControl,
         public MainResourceRepositoryInterface $mainResourceRepository,
         public SignatureBookRepositoryInterface $signatureBookRepository
@@ -33,6 +35,11 @@ class RetrieveSignatureBook
     }
 
     /**
+     * @param int $userId
+     * @param int $basketId
+     * @param int $resId
+     *
+     * @return SignatureBook
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -49,14 +56,18 @@ class RetrieveSignatureBook
 
         $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource);
         $resourcesAttached = $this->signatureBookRepository->getAttachments($resource);
+        $canSignResources = $this->accessControlService->hasPrivilege('sign_document', $this->currentUser);
         $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($resource, $this->currentUser);
         $hasActiveWorkflow = $this->signatureBookRepository->doesMainResourceHasActiveWorkflow($resource);
+        $workflowUserId = $this->signatureBookRepository->getWorkflowUserIdByCurrentStep($resource);
 
         $signatureBook = new SignatureBook();
         $signatureBook->setResourcesToSign($resourcesToSign)
             ->setResourcesAttached($resourcesAttached)
+            ->setCanSignResources($canSignResources)
             ->setCanUpdateResources($canUpdateDocuments)
-            ->setHasWorkflow($hasActiveWorkflow);
+            ->setHasWorkflow($hasActiveWorkflow)
+            ->setIsCurrentWorkflowUser($workflowUserId == $this->currentUser->getCurrentUserId());
 
         return $signatureBook;
     }
