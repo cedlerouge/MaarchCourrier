@@ -11,8 +11,9 @@ export class PluginManagerService {
     plugins: any = {};
     constructor(
         private httpClient: HttpClient,
-        private authService : AuthService,
-        private notificationService: NotificationService) {}
+        private authService: AuthService,
+        private notificationService: NotificationService
+    ) {}
 
     get http(): HttpClient {
         return this.httpClient;
@@ -44,7 +45,10 @@ export class PluginManagerService {
             const remoteComponent: any = containerRef.createComponent(
                 this.plugins[pluginName][Object.keys(this.plugins[pluginName])[0]]
             );
-            extraData = { ...extraData, pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/maarch-plugins' }
+            extraData = {
+                ...extraData,
+                pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/' + pluginName,
+            };
             remoteComponent.instance.init({ ...this, ...extraData });
             return remoteComponent.instance;
         } catch (error) {
@@ -57,9 +61,8 @@ export class PluginManagerService {
     loadRemotePlugin(pluginName: string): Promise<any> {
         return loadRemoteModule({
             type: 'module',
-            remoteEntry: '../plugins/maarch-plugins/remoteEntry.js',
+            remoteEntry: `../plugins/${pluginName}/remoteEntry.js`,
             exposedModule: `./${pluginName}`,
         });
     }
 }
-
