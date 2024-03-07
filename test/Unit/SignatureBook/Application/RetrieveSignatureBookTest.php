@@ -114,7 +114,7 @@ class RetrieveSignatureBookTest extends TestCase
 
         $this->assertIsBool($signatureBook->isCanSignResources());
         $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertIsBool($signatureBook->isHasWorkflow());
+        $this->assertIsBool($signatureBook->isHasActiveWorkflow());
         $this->assertIsBool($signatureBook->isCurrentWorkflowUser());
     }
 }

@@ -66,7 +66,7 @@ class RetrieveSignatureBook
             ->setResourcesAttached($resourcesAttached)
             ->setCanSignResources($canSignResources)
             ->setCanUpdateResources($canUpdateDocuments)
-            ->setHasWorkflow($hasActiveWorkflow)
+            ->setHasActiveWorkflow($hasActiveWorkflow)
             ->setIsCurrentWorkflowUser($workflowUserId == $this->currentUser->getCurrentUserId());
 
         return $signatureBook;

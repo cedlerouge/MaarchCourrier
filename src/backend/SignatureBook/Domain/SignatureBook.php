@@ -28,7 +28,7 @@ class SignatureBook implements JsonSerializable
     private array $resourcesAttached;
     private bool $canSignResources;
     private bool $canUpdateResources;
-    private bool $hasWorkflow;
+    private bool $hasActiveWorkflow;
     private bool $isCurrentWorkflowUser;
 
     public function __construct()
@@ -37,7 +37,7 @@ class SignatureBook implements JsonSerializable
         $this->resourcesAttached = [];
         $this->canSignResources = false;
         $this->canUpdateResources = false;
-        $this->hasWorkflow = false;
+        $this->hasActiveWorkflow = false;
         $this->isCurrentWorkflowUser = false;
     }
 
@@ -141,19 +141,19 @@ class SignatureBook implements JsonSerializable
     /**
      * @return bool
      */
-    public function isHasWorkflow(): bool
+    public function isHasActiveWorkflow(): bool
     {
-        return $this->hasWorkflow;
+        return $this->hasActiveWorkflow;
     }
 
     /**
-     * @param bool $hasWorkflow
+     * @param bool $hasActiveWorkflow
      *
      * @return SignatureBook
      */
-    public function setHasWorkflow(bool $hasWorkflow): self
+    public function setHasActiveWorkflow(bool $hasActiveWorkflow): self
     {
-        $this->hasWorkflow = $hasWorkflow;
+        $this->hasActiveWorkflow = $hasActiveWorkflow;
         return $this;
     }
 
@@ -193,7 +193,7 @@ class SignatureBook implements JsonSerializable
         return array_merge($array, [
             'canSignResources' => $this->isCanSignResources(),
             'canUpdateResources' => $this->isCanUpdateResources(),
-            'hasWorkflow' => $this->isHasWorkflow(),
+            'hasActiveWorkflow' => $this->isHasActiveWorkflow(),
             'isCurrentWorkflowUser' => $this->isCurrentWorkflowUser(),
         ]);
     }
