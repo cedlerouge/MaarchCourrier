@@ -34,7 +34,12 @@ class CurlService implements CurlServiceInterface
             'body'       => http_build_query($curlRequest->getBody())
         ]);
 
-        $curlResponse = new CurlResponse($response['code'], $response['response']);
+        $responseContent = $response['response'];
+        if (empty($response['response']) && !empty($response['errors'])) {
+            $responseContent = ['errors' => $response['errors']];
+        }
+
+        $curlResponse = new CurlResponse($response['code'], $responseContent);
         $curlRequest->setCurlResponse($curlResponse);
 
         return $curlRequest;
