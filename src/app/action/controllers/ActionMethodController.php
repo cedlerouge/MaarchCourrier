@@ -873,7 +873,14 @@ class ActionMethodController
                 }
             }
 
-            if (in_array($instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'], $listinstanceCtrl)) {
+            // vérification du paramètre
+            $allowMultipleAvisAssignment = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'allowMultipleAvisAssignment']);
+            $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
+
+            if (
+                $allowMultipleAvisAssignment === 0 &&
+                in_array($instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'], $listinstanceCtrl)
+            ) {
                 return ['errors' => ["Some users/entities are present at least twice with the same role"]];
             } else {
                 $listinstanceCtrl[] = $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'];
