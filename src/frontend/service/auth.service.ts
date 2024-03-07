@@ -14,10 +14,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { AdministrationService } from '@appRoot/administration/administration.service';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class AuthService {
-
     lang: string = '';
     applicationName: string = '';
     loginMessage: string = '';
@@ -39,7 +38,8 @@ export class AuthService {
 
     private eventAction = new Subject<any>();
 
-    constructor(public http: HttpClient,
+    constructor(
+        public http: HttpClient,
         private router: Router,
         private headerService: HeaderService,
         private notify: NotificationService,
@@ -48,8 +48,8 @@ export class AuthService {
         private functionsService: FunctionsService,
         public dialog: MatDialog,
         public translate: TranslateService,
-        public adminService: AdministrationService,
-    ) { }
+        public adminService: AdministrationService
+    ) {}
 
     catchEvent(): Observable<any> {
         return this.eventAction.asObservable();
@@ -160,12 +160,15 @@ export class AuthService {
     }
 
     SsoLogout(cleanUrl: boolean = true) {
-        this.http.get('../rest/authenticate/logout').pipe(
-            tap(async (data: any) => {
-                this.redirectAfterLogout(cleanUrl);
-                window.location.href = data.logoutUrl;
-            })
-        ).subscribe();
+        this.http
+            .get('../rest/authenticate/logout')
+            .pipe(
+                tap(async (data: any) => {
+                    this.redirectAfterLogout(cleanUrl);
+                    window.location.href = data.logoutUrl;
+                })
+            )
+            .subscribe();
     }
 
     redirectAfterLogout(cleanUrl: boolean = true) {
@@ -194,20 +197,22 @@ export class AuthService {
     }
 
     updateUserInfoWithTokenRefresh() {
-        this.http.get('../rest/authenticate/token', {
-            params: {
-                refreshToken: this.getRefreshToken()
-            }
-        }).subscribe({
-            next: (data: any) => {
-                this.setToken(data.token);
+        this.http
+            .get('../rest/authenticate/token', {
+                params: {
+                    refreshToken: this.getRefreshToken(),
+                },
+            })
+            .subscribe({
+                next: (data: any) => {
+                    this.setToken(data.token);
 
-                this.updateUserInfo(this.getToken());
-            },
-            error: err => {
-                this.notify.handleSoftErrors(err);
-            }
-        });
+                    this.updateUserInfo(this.getToken());
+                },
+                error: (err) => {
+                    this.notify.handleSoftErrors(err);
+                },
+            });
     }
 
     setUser(value: any) {
@@ -228,8 +233,12 @@ export class AuthService {
                     entities: data.entities,
                     groups: data.groups,
                     preferences: data.preferences,
-                    privileges: data.privileges[0] === 'ALL_PRIVILEGES' ? this.privilegeService.getAllPrivileges(!data.lockAdvancedPrivileges, this.authMode) : data.privileges,
-                    featureTour: data.featureTour
+                    privileges:
+                        data.privileges[0] === 'ALL_PRIVILEGES'
+                            ? this.privilegeService.getAllPrivileges(!data.lockAdvancedPrivileges, this.authMode)
+                            : data.privileges,
+                    featureTour: data.featureTour,
+                    externalId: data.external_id,
                 };
                 this.headerService.nbResourcesFollowed = data.nbFollowedResources;
                 this.privilegeService.resfreshUserShortcuts();
@@ -243,12 +252,14 @@ export class AuthService {
     }
 
     canLogOut(): boolean {
-        return ['sso', 'azure_saml'].indexOf(this.authMode) > -1 && this.functionsService.empty(this.authUri) ? false : true;
+        return ['sso', 'azure_saml'].indexOf(this.authMode) > -1 && this.functionsService.empty(this.authUri)
+            ? false
+            : true;
     }
 
     resetTimer() {
         this.inactivityTime = this.idleTime * 60 * 1000; // convert to milliseconds
-        this.warningTime = (this.idleTime * 60 * 1000) - (10 * 1000); // subtract 10 seconds from the remaining time
+        this.warningTime = this.idleTime * 60 * 1000 - 10 * 1000; // subtract 10 seconds from the remaining time
         if (this.userActivitySubscription) {
             this.userActivitySubscription.unsubscribe();
         }
@@ -265,21 +276,23 @@ export class AuthService {
                     title: this.translate.instant('lang.warning') + ' !',
                     isCounter: true,
                     buttonValidate: this.translate.instant('lang.keepLogin'),
-                }
+                },
             });
 
-            dialogRef.afterClosed().pipe(
-                tap((data: any) => {
-                    if (data === 'resetTimer') {
-                        this.inactivitySubscription.unsubscribe();
-                        this.resetTimer();
-                    }
-                })
-            ).subscribe();
+            dialogRef
+                .afterClosed()
+                .pipe(
+                    tap((data: any) => {
+                        if (data === 'resetTimer') {
+                            this.inactivitySubscription.unsubscribe();
+                            this.resetTimer();
+                        }
+                    })
+                )
+                .subscribe();
         });
         this.inactivitySubscription = timer(this.inactivityTime)
-            .pipe(
-                switchMap(() => this.logout()),
-            ).subscribe();
+            .pipe(switchMap(() => this.logout()))
+            .subscribe();
     }
 }

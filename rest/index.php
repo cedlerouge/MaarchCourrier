@@ -13,6 +13,7 @@
  */
 
 use MaarchCourrier\Core\Infrastructure\Error\ErrorHandler;
+use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveConfigController;
 
 require '../vendor/autoload.php';
 
@@ -560,6 +561,7 @@ $app->get('/shippings/{shippingId}/attachments', \Shipping\controllers\ShippingC
 $app->get('/shippings/{shippingId}/history', \Shipping\controllers\ShippingController::class . ':getHistory');
 
 //SignatureBook
+$app->get('/signatureBook/config', RetrieveConfigController::class . ':getConfig');
 $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources', \SignatureBook\controllers\SignatureBookController::class . ':getResources');
 $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources/{resId}', \SignatureBook\controllers\SignatureBookController::class . ':getSignatureBook');
 $app->get('/signatureBook/{resId}/attachments', \SignatureBook\controllers\SignatureBookController::class . ':getAttachmentsById');

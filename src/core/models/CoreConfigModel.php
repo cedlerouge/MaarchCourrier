@@ -380,7 +380,7 @@ class CoreConfigModel
     /**
      * @throws Exception
      */
-    public static function getJsonLoaded(array $args)
+    public static function getJsonLoaded(array $args): array|null
     {
         ValidatorModel::notEmpty($args, ['path']);
         ValidatorModel::stringType($args, ['path']);

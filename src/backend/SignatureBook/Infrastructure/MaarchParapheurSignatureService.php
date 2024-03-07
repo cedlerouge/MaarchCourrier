@@ -61,8 +61,8 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
                     'tmpUniqueId'            => $tmpUniqueId
                 ]),
             ]);
-        if ($response['code'] > 200) {
-            return $response['response'];
+        if ($response['code'] >= 400) {
+            return $response['errors'] ?? ['errors' => 'Error occurred while applying the signature'];
         }
         return true;
     }
