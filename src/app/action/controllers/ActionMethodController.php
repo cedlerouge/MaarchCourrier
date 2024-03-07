@@ -1031,7 +1031,7 @@ class ActionMethodController
 
         $currentStep = ListInstanceModel::get([
             'select' => ['listinstance_id', 'item_id'],
-            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
+            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)', 'process_date is null'],
             'data'   => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
             'limit'  => 1
         ]);
