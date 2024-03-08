@@ -15,7 +15,7 @@
             <input id="searchSelectInput" [formControl]="formControlSearch" class="mat-select-search-input"
                 #searchSelectInput (keydown)="_handleKeydown($event)" (input)="onInputChange($event.target.value)"
                 (blur)="onBlur($event.target.value)" [placeholder]="'lang.filterBy' | translate" />
-            <button mat-button *ngIf="formControlSearch.value" mat-icon-button aria-label="Clear" (click)="_reset(true)"
+            <button mat-button *ngIf="formControlSearch.value" mat-icon-button aria-label="Clear" (click)="_reset()"
                 class="mat-select-search-clear">
                 <mat-icon class="fa fa-times"></mat-icon>
             </button>
