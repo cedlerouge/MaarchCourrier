@@ -60,10 +60,10 @@ class MaarchParapheurSignatureService implements SignatureServiceInterface
         array $resourceToSign
     ): array|bool {
         $payloadToken = $resourceToSign;
-        $payloadToken['userId'] = $GLOBALS['id'];
+        $payloadToken['userSerialId'] = $GLOBALS['id'];
 
         $webhook = [
-            'url'     => UrlController::getCoreUrl() . '/signatureBook/webhook',
+            'url'     => UrlController::getCoreUrl() . '/rest/signatureBook/webhook',
             'token'   => JWT::encode($payloadToken, CoreConfigModel::getEncryptKey())
         ];
 
