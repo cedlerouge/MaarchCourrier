@@ -17,6 +17,8 @@ namespace ContentManagement\controllers;
 use Attachment\models\AttachmentModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use DOMException;
+use Exception;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
@@ -29,14 +31,21 @@ use Template\models\TemplateModel;
 
 class JnlpController
 {
-    public function generateJnlp(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws DOMException
+     * @throws Exception
+     */
+    public function generateJnlp(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
-        $coreUrl         = str_replace('rest/', '', UrlController::getCoreUrl());
-        $tmpPath         = CoreConfigModel::getTmpPath();
-        $jnlpUniqueId    = CoreConfigModel::uniqueId();
-        $jnlpFileName    = $GLOBALS['id'] . '_maarchCM_' . $jnlpUniqueId;
+        $coreUrl = str_replace('rest/', '', UrlController::getCoreUrl());
+        $tmpPath = CoreConfigModel::getTmpPath();
+        $jnlpUniqueId = CoreConfigModel::uniqueId();
+        $jnlpFileName = $GLOBALS['id'] . '_maarchCM_' . $jnlpUniqueId;
         $jnlpFileNameExt = $jnlpFileName . '.jnlp';
 
         $allCookies = '';
@@ -79,13 +88,13 @@ class JnlpController
         $tagJnlp->appendChild($newAttribute);
 
         $tagInformation = $jnlpDocument->createElement('information');
-        $tagTitle       = $jnlpDocument->createElement('title', 'Editeur de modèle de document');
-        $tagVendor      = $jnlpDocument->createElement('vendor', 'MAARCH');
-        $tagOffline     = $jnlpDocument->createElement('offline-allowed');
-        $tagSecurity    = $jnlpDocument->createElement('security');
+        $tagTitle = $jnlpDocument->createElement('title', 'Editeur de modèle de document');
+        $tagVendor = $jnlpDocument->createElement('vendor', 'MAARCH');
+        $tagOffline = $jnlpDocument->createElement('offline-allowed');
+        $tagSecurity = $jnlpDocument->createElement('security');
         $tagPermissions = $jnlpDocument->createElement('all-permissions');
-        $tagResources   = $jnlpDocument->createElement('resources');
-        $tagJ2se        = $jnlpDocument->createElement('j2se');
+        $tagResources = $jnlpDocument->createElement('resources');
+        $tagJ2se = $jnlpDocument->createElement('j2se');
 
         $newAttribute = $jnlpDocument->createAttribute('version');
         $newAttribute->value = '1.6+';
@@ -194,7 +203,13 @@ class JnlpController
         return $response->withJson(['generatedJnlp' => $jnlpFileNameExt, 'jnlpUniqueId' => $jnlpUniqueId]);
     }
 
-    public function renderJnlp(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function renderJnlp(Request $request, Response $response, array $aArgs): Response
     {
         if (strtoupper(pathinfo($aArgs['jnlpUniqueId'], PATHINFO_EXTENSION)) != 'JNLP') {
             return $response->withStatus(403)->withJson(['errors' => 'File extension forbidden']);
@@ -211,7 +226,14 @@ class JnlpController
         return $response->withHeader('Content-Type', 'application/x-java-jnlp-file');
     }
 
-    public function processJnlp(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function processJnlp(Request $request, Response $response, array $args): Response
     {
         $queryParams = $request->getQueryParams();
         $body = $request->getParsedBody();
@@ -230,34 +252,62 @@ class JnlpController
                 } else {
                     $stylesPath = 'modules/templates/templates/styles/';
                 }
-                if (strpos($queryParams['objectId'], $stylesPath) !== 0 || substr_count($queryParams['objectId'], '.') != 1) {
+                if (
+                    !str_starts_with($queryParams['objectId'], $stylesPath) ||
+                    substr_count($queryParams['objectId'], '.') != 1
+                ) {
                     return $response->withStatus(400)->withJson(['errors' => 'Template path is not valid']);
                 }
 
                 $pathToCopy = $queryParams['objectId'];
             } elseif ($queryParams['objectType'] == 'templateModification') {
-                $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
-                $template = TemplateModel::getById(['id' => $queryParams['objectId'], 'select' => ['template_path', 'template_file_name']]);
+                $docserver = DocserverModel::getCurrentDocserver(
+                    ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+                );
+                $template = TemplateModel::getById(
+                    ['id' => $queryParams['objectId'], 'select' => ['template_path', 'template_file_name']]
+                );
                 if (empty($template)) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Template does not exist"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Template does not exist"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $pathToCopy = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
-                $extension  = pathinfo($pathToCopy, PATHINFO_EXTENSION);
+                $pathToCopy = $docserver['path_template'] .
+                    str_replace(
+                        '#',
+                        DIRECTORY_SEPARATOR,
+                        $template['template_path']
+                    ) . $template['template_file_name'];
+                $extension = pathinfo($pathToCopy, PATHINFO_EXTENSION);
                 $newFileOnTmp = "tmp_file_{$GLOBALS['id']}_{$args['jnlpUniqueId']}.{$extension}";
-            } elseif ($queryParams['objectType'] == 'resourceCreation' || $queryParams['objectType'] == 'attachmentCreation') {
-                $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
-                $template = TemplateModel::getById(['id' => $queryParams['objectId'], 'select' => ['template_path', 'template_file_name']]);
+            } elseif (
+                $queryParams['objectType'] == 'resourceCreation' ||
+                $queryParams['objectType'] == 'attachmentCreation'
+            ) {
+                $docserver = DocserverModel::getCurrentDocserver(
+                    ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+                );
+                $template = TemplateModel::getById(
+                    ['id' => $queryParams['objectId'], 'select' => ['template_path', 'template_file_name']]
+                );
                 if (empty($template)) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Template does not exist"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Template does not exist"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $pathToCopy = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name'];
-                $extension  = pathinfo($pathToCopy, PATHINFO_EXTENSION);
+                $pathToCopy = $docserver['path_template'] .
+                    str_replace(
+                        '#',
+                        DIRECTORY_SEPARATOR,
+                        $template['template_path']
+                    ) . $template['template_file_name'];
+                $extension = pathinfo($pathToCopy, PATHINFO_EXTENSION);
                 $newFileOnTmp = "tmp_file_{$GLOBALS['id']}_{$args['jnlpUniqueId']}.{$extension}";
 
                 $dataToMerge = ['userId' => $GLOBALS['id']];
@@ -275,75 +325,144 @@ class JnlpController
                 file_put_contents($tmpPath . $newFileOnTmp, base64_decode($mergedDocument['encodedDocument']));
                 $pathToCopy = $tmpPath . $newFileOnTmp;
             } elseif ($queryParams['objectType'] == 'resourceModification') {
-                if (!ResController::hasRightByResId(['resId' => [$queryParams['objectId']], 'userId' => $GLOBALS['id']])) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Resource out of perimeter"]]);
+                if (
+                    !ResController::hasRightByResId(['resId' => [$queryParams['objectId']], 'userId' => $GLOBALS['id']])
+                ) {
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Resource out of perimeter"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
-                $resource = ResModel::getById(['resId' => $queryParams['objectId'], 'select' => ['docserver_id', 'path', 'filename', 'fingerprint']]);
+                $resource = ResModel::getById(
+                    [
+                        'resId'  => $queryParams['objectId'],
+                        'select' => ['docserver_id', 'path', 'filename', 'fingerprint']
+                    ]
+                );
                 if (empty($resource['filename'])) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Resource has no file"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Resource has no file"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $docserver  = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-                $pathToCopy = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+                $docserver = DocserverModel::getByDocserverId(
+                    ['docserverId' => $resource['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+                );
+                $pathToCopy = $docserver['path_template'] . str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $resource['path']
+                ) .
+                    $resource['filename'];
 
-                $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToCopy, 'mode' => $docserverType['fingerprint_mode']]);
+                $docserverType = DocserverTypeModel::getById(
+                    ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+                );
+                $fingerprint = StoreController::getFingerPrint(
+                    ['filePath' => $pathToCopy, 'mode' => $docserverType['fingerprint_mode']]
+                );
                 if (empty($resource['fingerprint'])) {
-                    ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$queryParams['objectId']]]);
+                    ResModel::update(
+                        [
+                            'set'   => ['fingerprint' => $fingerprint],
+                            'where' => ['res_id = ?'],
+                            'data'  => [$queryParams['objectId']]
+                        ]
+                    );
                     $resource['fingerprint'] = $fingerprint;
                 }
 
                 if ($resource['fingerprint'] != $fingerprint) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Fingerprints do not match"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Fingerprints do not match"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $extension  = pathinfo($pathToCopy, PATHINFO_EXTENSION);
+                $extension = pathinfo($pathToCopy, PATHINFO_EXTENSION);
                 $newFileOnTmp = "tmp_file_{$GLOBALS['id']}_{$args['jnlpUniqueId']}.{$extension}";
             } elseif ($queryParams['objectType'] == 'attachmentModification') {
-                $attachment = AttachmentModel::getById(['id' => $queryParams['objectId'], 'select' => ['docserver_id', 'path', 'filename', 'res_id_master', 'fingerprint']]);
+                $attachment = AttachmentModel::getById(
+                    [
+                        'id'     => $queryParams['objectId'],
+                        'select' => ['docserver_id', 'path', 'filename', 'res_id_master', 'fingerprint']
+                    ]
+                );
                 if (empty($attachment)) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Attachment does not exist"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Attachment does not exist"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
-                if (!ResController::hasRightByResId(['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']])) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Attachment out of perimeter"]]);
+                if (
+                    !ResController::hasRightByResId(
+                        ['resId' => [$attachment['res_id_master']], 'userId' => $GLOBALS['id']]
+                    )
+                ) {
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Attachment out of perimeter"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $docserver  = DocserverModel::getByDocserverId(['docserverId' => $attachment['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
-                $pathToCopy = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $attachment['path']) . $attachment['filename'];
+                $docserver = DocserverModel::getByDocserverId(
+                    ['docserverId' => $attachment['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+                );
+                $pathToCopy = $docserver['path_template'] . str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $attachment['path']
+                ) .
+                    $attachment['filename'];
 
-                $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToCopy, 'mode' => $docserverType['fingerprint_mode']]);
+                $docserverType = DocserverTypeModel::getById(
+                    ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+                );
+                $fingerprint = StoreController::getFingerPrint(
+                    ['filePath' => $pathToCopy, 'mode' => $docserverType['fingerprint_mode']]
+                );
                 if (empty($attachment['fingerprint'])) {
-                    AttachmentModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$queryParams['objectId']]]);
+                    AttachmentModel::update(
+                        [
+                            'set'   => ['fingerprint' => $fingerprint],
+                            'where' => ['res_id = ?'],
+                            'data'  => [$queryParams['objectId']]
+                        ]
+                    );
                     $attachment['fingerprint'] = $fingerprint;
                 }
 
                 if ($attachment['fingerprint'] != $fingerprint) {
-                    $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Fingerprints do not match"]]);
+                    $xmlResponse = JnlpController::generateResponse(
+                        ['type' => 'ERROR', 'data' => ['ERROR' => "Fingerprints do not match"]]
+                    );
                     $response->write($xmlResponse);
                     return $response->withHeader('Content-Type', 'application/xml');
                 }
 
-                $extension  = pathinfo($pathToCopy, PATHINFO_EXTENSION);
+                $extension = pathinfo($pathToCopy, PATHINFO_EXTENSION);
                 $newFileOnTmp = "tmp_file_{$GLOBALS['id']}_{$args['jnlpUniqueId']}.{$extension}";
             } else {
-                $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => 'Wrong objectType']]);
+                $xmlResponse = JnlpController::generateResponse(
+                    ['type' => 'ERROR', 'data' => ['ERROR' => 'Wrong objectType']]
+                );
                 $response->write($xmlResponse);
                 return $response->withHeader('Content-Type', 'application/xml');
             }
 
-            if (($pathToCopy != $tmpPath . $newFileOnTmp) && (!file_exists($pathToCopy) || !copy($pathToCopy, $tmpPath . $newFileOnTmp))) {
-                $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => "Failed to copy on {$tmpPath} : {$pathToCopy}"]]);
+            if (
+                ($pathToCopy != $tmpPath . $newFileOnTmp) &&
+                (!file_exists($pathToCopy) || !copy($pathToCopy, $tmpPath . $newFileOnTmp))
+            ) {
+                $xmlResponse = JnlpController::generateResponse(
+                    ['type' => 'ERROR', 'data' => ['ERROR' => "Failed to copy on {$tmpPath} : {$pathToCopy}"]]
+                );
                 $response->write($xmlResponse);
                 return $response->withHeader('Content-Type', 'application/xml');
             }
@@ -351,21 +470,23 @@ class JnlpController
             $fileContent = file_get_contents($tmpPath . $newFileOnTmp);
 
             $result = [
-                'STATUS'            => 'ok',
-                'OBJECT_TYPE'       => $queryParams['objectType'],
-                'OBJECT_TABLE'      => $queryParams['objectTable'],
-                'OBJECT_ID'         => $queryParams['objectId'],
-                'UNIQUE_ID'         => $queryParams['uniqueId'],
-                'APP_PATH'          => 'start',
-                'FILE_CONTENT'      => base64_encode($fileContent),
-                'FILE_EXTENSION'    => $extension,
-                'ERROR'             => '',
-                'END_MESSAGE'       => ''
+                'STATUS'         => 'ok',
+                'OBJECT_TYPE'    => $queryParams['objectType'],
+                'OBJECT_TABLE'   => $queryParams['objectTable'],
+                'OBJECT_ID'      => $queryParams['objectId'],
+                'UNIQUE_ID'      => $queryParams['uniqueId'],
+                'APP_PATH'       => 'start',
+                'FILE_CONTENT'   => base64_encode($fileContent),
+                'FILE_EXTENSION' => $extension,
+                'ERROR'          => '',
+                'END_MESSAGE'    => ''
             ];
             $xmlResponse = JnlpController::generateResponse(['type' => 'SUCCESS', 'data' => $result]);
         } elseif ($queryParams['action'] == 'saveObject') {
             if (empty($body['fileContent']) || empty($body['fileExtension'])) {
-                $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => ['ERROR' => 'File content or file extension empty']]);
+                $xmlResponse = JnlpController::generateResponse(
+                    ['type' => 'ERROR', 'data' => ['ERROR' => 'File content or file extension empty']]
+                );
                 $response->write($xmlResponse);
                 return $response->withHeader('Content-Type', 'application/xml');
             }
@@ -388,7 +509,9 @@ class JnlpController
                 }
             }
 
-            $xmlResponse = JnlpController::generateResponse(['type' => 'SUCCESS', 'data' => ['END_MESSAGE' => 'Update ok']]);
+            $xmlResponse = JnlpController::generateResponse(
+                ['type' => 'SUCCESS', 'data' => ['END_MESSAGE' => 'Update ok']]
+            );
         } elseif ($queryParams['action'] == 'terminate') {
             if (file_exists("{$tmpPath}{$GLOBALS['id']}_maarchCM_{$args['jnlpUniqueId']}.lck")) {
                 unlink("{$tmpPath}{$GLOBALS['id']}_maarchCM_{$args['jnlpUniqueId']}.lck");
@@ -397,19 +520,21 @@ class JnlpController
                 unlink("{$tmpPath}{$GLOBALS['id']}_maarchCM_{$args['jnlpUniqueId']}.jnlp");
             }
 
-            $xmlResponse = JnlpController::generateResponse(['type' => 'SUCCESS', 'data' => ['END_MESSAGE' => 'Terminate ok']]);
+            $xmlResponse = JnlpController::generateResponse(
+                ['type' => 'SUCCESS', 'data' => ['END_MESSAGE' => 'Terminate ok']]
+            );
         } else {
             $result = [
-                'STATUS' => 'ko',
-                'OBJECT_TYPE'       => $queryParams['objectType'],
-                'OBJECT_TABLE'      => $queryParams['objectTable'],
-                'OBJECT_ID'         => $queryParams['objectId'],
-                'UNIQUE_ID'         => $queryParams['uniqueId'],
-                'APP_PATH'          => 'start',
-                'FILE_CONTENT'      => '',
-                'FILE_EXTENSION'    => '',
-                'ERROR'             => 'Missing parameters',
-                'END_MESSAGE'       => ''
+                'STATUS'         => 'ko',
+                'OBJECT_TYPE'    => $queryParams['objectType'],
+                'OBJECT_TABLE'   => $queryParams['objectTable'],
+                'OBJECT_ID'      => $queryParams['objectId'],
+                'UNIQUE_ID'      => $queryParams['uniqueId'],
+                'APP_PATH'       => 'start',
+                'FILE_CONTENT'   => '',
+                'FILE_EXTENSION' => '',
+                'ERROR'          => 'Missing parameters',
+                'END_MESSAGE'    => ''
             ];
             $xmlResponse = JnlpController::generateResponse(['type' => 'ERROR', 'data' => $result]);
         }
@@ -419,7 +544,13 @@ class JnlpController
         return $response->withHeader('Content-Type', 'application/xml');
     }
 
-    public function isLockFileExisting(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function isLockFileExisting(Request $request, Response $response, array $aArgs): Response
     {
         $tmpPath = CoreConfigModel::getTmpPath();
         $fileTrunk = "tmp_file_{$GLOBALS['id']}_{$aArgs['jnlpUniqueId']}";
@@ -433,7 +564,13 @@ class JnlpController
         return $response->withJson(['lockFileFound' => $fileFound, 'fileTrunk' => $fileTrunk]);
     }
 
-    private static function generateResponse(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return false|string
+     * @throws DOMException
+     * @throws Exception
+     */
+    private static function generateResponse(array $aArgs): bool|string
     {
         ValidatorModel::notEmpty($aArgs, ['type', 'data']);
         ValidatorModel::stringType($aArgs, ['type']);

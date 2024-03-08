@@ -76,7 +76,7 @@ export class SendToRecordManagementComponent implements OnInit {
             tap((data: any) => {
                 this.resourcesErrors = data.errors;
 
-                Object.keys(data.success).forEach((resId: any, index: number) => {
+                Object.keys(data.success).forEach((resId: any) => {
                     if (Object.keys(data.success).length === 1) {
                         this.linkedResources = data.success[resId].additionalData.linkedResources;
                         this.folders = data.success[resId].additionalData.folders;

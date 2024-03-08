@@ -83,7 +83,11 @@ abstract class NotificationScheduleModelAbstract
         $lines = explode("\n", $crontab);
         $data = [];
         $customId = CoreConfigModel::getCustomId();
-        $corePath = str_replace('custom/' . $customId . '/src/app/notification/models', '', __DIR__);
+        $corePath = str_replace(
+            'custom/' . $customId . '/src/app/notification/models',
+            '',
+            __DIR__
+        );
         $corePath = str_replace('src/app/notification/models', '', $corePath);
 
         $emptyLine = [
@@ -122,7 +126,7 @@ abstract class NotificationScheduleModelAbstract
             }
 
             $state = 'normal';
-            if (strpos($cmd, $pathToFolow . 'bin/notification/scripts/') !== 0 && $aArgs['setHiddenValue']) {
+            if (!str_starts_with($cmd, $pathToFolow . 'bin/notification/scripts/') && $aArgs['setHiddenValue']) {
                 $cmd = 'hidden';
                 $state = 'hidden';
             }
@@ -165,7 +169,11 @@ abstract class NotificationScheduleModelAbstract
         }
         $filename .= '_' . $notification_id . '.sh';
 
-        $corePath = str_replace('custom/' . $customId . '/src/app/notification/models', '', __DIR__);
+        $corePath = str_replace(
+            'custom/' . $customId . '/src/app/notification/models',
+            '',
+            __DIR__
+        );
         $corePath = str_replace('src/app/notification/models', '', $corePath);
 
         $ConfigNotif = $corePath . CoreConfigModel::getConfigPath();
@@ -189,7 +197,10 @@ abstract class NotificationScheduleModelAbstract
         fwrite($file_open, "\n");
         if ($event_id == 'baskets') {
             fwrite($file_open, 'php \'basket_event_stack.php\' -c ' . $ConfigNotif . ' -n ' . $notification_id);
-        } elseif ($notification_id == 'RELANCE1' || $notification_id == 'RELANCE2' || $event_id == 'alert1' || $event_id == 'alert2') {
+        } elseif (
+            $notification_id == 'RELANCE1' || $notification_id == 'RELANCE2' || $event_id == 'alert1' ||
+            $event_id == 'alert2'
+        ) {
             fwrite($file_open, 'php \'stack_letterbox_alerts.php\' -c ' . $ConfigNotif);
             fwrite($file_open, "\n");
             fwrite($file_open, 'php \'process_event_stack.php\' -c ' . $ConfigNotif . ' -n ' . $notification_id);

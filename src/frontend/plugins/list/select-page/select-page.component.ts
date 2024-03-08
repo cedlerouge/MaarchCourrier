@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 
 @Component({
@@ -6,13 +6,11 @@ import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-pag
     templateUrl: 'select-page.component.html',
     styleUrls: ['select-page.component.scss'],
 })
-export class SelectPageComponent implements OnInit {
+export class SelectPageComponent {
 
     @Input() paginator: MatPaginator;
 
     constructor() { }
-
-    ngOnInit() { }
 
     counter(i: number) {
         return new Array(i);

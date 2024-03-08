@@ -271,7 +271,7 @@ export class ContactsGroupFormComponent implements OnInit, AfterViewInit {
                 debounceTime(300),
                 filter(value => value.length > 2),
                 distinctUntilChanged(),
-                tap((data) => {
+                tap(() => {
                     this.paginatorLinkedCorrespondents.pageIndex = 0;
                     this.refreshDao();
                 }),
@@ -318,7 +318,7 @@ export class ContactsGroupFormComponent implements OnInit, AfterViewInit {
     saveContactsList(cGroupId: number = this.contactsGroup.id): void {
         this.savingCorrespondents = true;
         this.http.post('../rest/contactsGroups/' + cGroupId + '/correspondents', { 'correspondents': this.formatCorrespondents() })
-            .subscribe((data: any) => {
+            .subscribe(() => {
                 this.notify.success(this.translate.instant('lang.correspondentAdded'));
                 this.selection.clear();
                 this.savingCorrespondents = false;

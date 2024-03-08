@@ -161,7 +161,7 @@ export class DoctypesAdministrationComponent implements OnInit {
     }
 
     getRules() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/archival/retentionRules').pipe(
                 tap((data: any) => {
                     if (data.retentionRules.length !== 0) {

@@ -1,26 +1,33 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Acknowledgement Receipt Controller
-* @author dev@maarch.org
-*/
+ * @brief Acknowledgement Receipt Controller
+ * @author dev@maarch.org
+ */
 
 namespace AcknowledgementReceipt\controllers;
 
 use AcknowledgementReceipt\models\AcknowledgementReceiptModel;
 use Contact\models\ContactModel;
 use Docserver\models\DocserverModel;
+use Exception;
+use finfo;
 use History\controllers\HistoryController;
 use Resource\controllers\ResController;
 use Resource\controllers\StoreController;
 use Respect\Validation\Validator;
+use setasign\Fpdi\PdfParser\CrossReference\CrossReferenceException;
+use setasign\Fpdi\PdfParser\Filter\FilterException;
+use setasign\Fpdi\PdfParser\PdfParserException;
+use setasign\Fpdi\PdfParser\Type\PdfTypeException;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use setasign\Fpdi\Tcpdf\Fpdi;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
@@ -29,14 +36,35 @@ use User\models\UserModel;
 
 class AcknowledgementReceiptController
 {
-    public function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getByResId(Request $request, Response $response, array $args): Response
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
         $acknowledgementReceiptsModel = AcknowledgementReceiptModel::get([
-            'select' => ['id', 'res_id', 'type', 'format', 'user_id', 'creation_date', 'send_date', 'contact_id', 'cc', 'cci'],
+            'select' => [
+                'id',
+                'res_id',
+                'type',
+                'format',
+                'user_id',
+                'creation_date',
+                'send_date',
+                'contact_id',
+                'cc',
+                'cci'
+            ],
             'where'  => ['res_id = ?'],
             'data'   => [$args['resId']]
         ]);
@@ -44,7 +72,12 @@ class AcknowledgementReceiptController
         $acknowledgementReceipts = [];
 
         foreach ($acknowledgementReceiptsModel as $acknowledgementReceipt) {
-            $contact = ContactModel::getById(['id' => $acknowledgementReceipt['contact_id'], 'select' => ['firstname', 'lastname', 'company', 'email']]);
+            $contact = ContactModel::getById(
+                [
+                    'id'     => $acknowledgementReceipt['contact_id'],
+                    'select' => ['firstname', 'lastname', 'company', 'email']
+                ]
+            );
 
             $userLabel = UserModel::getLabelledUserById(['id' => $acknowledgementReceipt['user_id']]);
 
@@ -66,15 +99,33 @@ class AcknowledgementReceiptController
         return $response->withJson($acknowledgementReceipts);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route param id is not an integer']);
         }
 
         $acknowledgementReceipt = AcknowledgementReceiptModel::getByIds([
-            'select'  => ['id', 'res_id', 'type', 'format', 'user_id', 'creation_date', 'send_date', 'contact_id', 'cc', 'cci'],
-            'ids'     => [$args['id']]
+            'select' => [
+                'id',
+                'res_id',
+                'type',
+                'format',
+                'user_id',
+                'creation_date',
+                'send_date',
+                'contact_id',
+                'cc',
+                'cci'
+            ],
+            'ids'    => [$args['id']]
         ]);
 
         if (empty($acknowledgementReceipt[0])) {
@@ -82,11 +133,19 @@ class AcknowledgementReceiptController
         }
         $acknowledgementReceipt = $acknowledgementReceipt[0];
 
-        if (!Validator::intVal()->validate($acknowledgementReceipt['res_id']) || !ResController::hasRightByResId(['resId' => [$acknowledgementReceipt['res_id']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($acknowledgementReceipt['res_id']) ||
+            !ResController::hasRightByResId([
+                'resId'  => [$acknowledgementReceipt['res_id']],
+                'userId' => $GLOBALS['id']
+            ])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $contact = ContactModel::getById(['id' => $acknowledgementReceipt['contact_id'], 'select' => ['firstname', 'lastname', 'company', 'email']]);
+        $contact = ContactModel::getById(
+            ['id' => $acknowledgementReceipt['contact_id'], 'select' => ['firstname', 'lastname', 'company', 'email']]
+        );
 
         $userLabel = UserModel::getLabelledUserById(['id' => $acknowledgementReceipt['user_id']]);
 
@@ -107,7 +166,18 @@ class AcknowledgementReceiptController
         return $response->withJson(['acknowledgementReceipt' => $acknowledgementReceipt]);
     }
 
-    public function createPaperAcknowledgement(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws CrossReferenceException
+     * @throws FilterException
+     * @throws PdfParserException
+     * @throws PdfTypeException
+     * @throws PdfReaderException
+     * @throws Exception
+     */
+    public function createPaperAcknowledgement(Request $request, Response $response): Response
     {
         $bodyData = $request->getParsedBody();
 
@@ -125,7 +195,10 @@ class AcknowledgementReceiptController
 
         $resourcesInBasket = array_column($acknowledgements, 'res_id');
 
-        if (empty($resourcesInBasket) || !ResController::hasRightByResId(['resId' => $resourcesInBasket, 'userId' => $GLOBALS['id']])) {
+        if (
+            empty($resourcesInBasket) ||
+            !ResController::hasRightByResId(['resId' => $resourcesInBasket, 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Documents out of perimeter']);
         }
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
@@ -138,11 +211,17 @@ class AcknowledgementReceiptController
 
         foreach ($acknowledgements as $value) {
             if (empty($value['send_date']) && $value['format'] == 'pdf') {
-                $docserver = DocserverModel::getByDocserverId(['docserverId' => $value['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+                $docserver = DocserverModel::getByDocserverId(
+                    ['docserverId' => $value['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+                );
                 if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                     return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
                 }
-                $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $value['path']) . $value['filename'];
+                $pathToDocument = $docserver['path_template'] . str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $value['path']
+                ) . $value['filename'];
                 if (!file_exists($pathToDocument)) {
                     return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
                 }
@@ -163,8 +242,8 @@ class AcknowledgementReceiptController
         }
 
         $fileContent = $pdf->Output('', 'S');
-        $finfo       = new \finfo(FILEINFO_MIME_TYPE);
-        $mimeType    = $finfo->buffer($fileContent);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->buffer($fileContent);
 
         $response->write($fileContent);
         $response = $response->withAddedHeader('Content-Disposition', "inline; filename=maarch.pdf");
@@ -172,11 +251,18 @@ class AcknowledgementReceiptController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    public function getAcknowledgementReceipt(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getAcknowledgementReceipt(Request $request, Response $response, array $args): Response
     {
         $document = AcknowledgementReceiptModel::getByIds([
-            'select'  => ['docserver_id', 'path', 'filename', 'fingerprint', 'res_id', 'format'],
-            'ids'     => [$args['id']]
+            'select' => ['docserver_id', 'path', 'filename', 'fingerprint', 'res_id', 'format'],
+            'ids'    => [$args['id']]
         ]);
 
         if (empty($document[0])) {
@@ -184,16 +270,25 @@ class AcknowledgementReceiptController
         }
         $document = $document[0];
 
-        if (!Validator::intVal()->validate($document['res_id']) || !ResController::hasRightByResId(['resId' => [$document['res_id']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($document['res_id']) ||
+            !ResController::hasRightByResId(['resId' => [$document['res_id']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !is_dir($docserver['path_template'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace(
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) . $document['filename'];
 
         if (!is_file($pathToDocument)) {
             return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);

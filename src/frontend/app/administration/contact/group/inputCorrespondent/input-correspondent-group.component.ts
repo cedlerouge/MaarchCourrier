@@ -66,7 +66,7 @@ export class InputCorrespondentGroupComponent implements OnInit {
     }
 
     getAllCorrespondentsGroups() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/contactsGroups').pipe(
                 tap((data: any) => {
                     this.allCorrespondentGroups = data.contactsGroups.map((grp: any) => ({ id: grp.id, label: grp.label, canUpdateCorrespondents: grp.canUpdateCorrespondents }));
@@ -82,7 +82,7 @@ export class InputCorrespondentGroupComponent implements OnInit {
 
     getCorrespondentsGroup() {
         this.correspondentGroups = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/contactsGroupsCorrespondents', { params: { 'correspondentId': this.id, 'correspondentType': this.type } }).pipe(
                 tap((data: any) => {
                     data.contactsGroups.forEach((grp: any) => {
@@ -151,14 +151,17 @@ export class InputCorrespondentGroupComponent implements OnInit {
     }
 
     linkGrp(groupId: number, notification: boolean = true) {
-        this.http.post('../rest/contactsGroups/' + groupId + '/correspondents', { 'correspondents': this.formatCorrespondents() })
-            .subscribe((data: any) => {
+        this.http.post('../rest/contactsGroups/' + groupId + '/correspondents', { 'correspondents': this.formatCorrespondents() }).pipe(
+            tap(() => {
                 if (notification) {
                     this.notify.success(this.translate.instant('lang.correspondentAdded'));
                 }
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 
     unlinkGrp(groupId: number) {

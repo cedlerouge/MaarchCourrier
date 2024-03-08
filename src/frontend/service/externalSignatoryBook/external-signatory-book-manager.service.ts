@@ -107,8 +107,8 @@ export class ExternalSignatoryBookManagerService {
         return this.serviceInjected?.unlinkSignatoryBookAccount(serialId);
     }
 
-    createExternalSignatoryBookAccount(id: number, login: string, serialId: number) {
-        return this.serviceInjected?.createExternalSignatoryBookAccount(id, login, serialId);
+    createExternalSignatoryBookAccount(id: number, login: string) {
+        return this.serviceInjected?.createExternalSignatoryBookAccount(id, login);
     }
 
     checkInfoExternalSignatoryBookAccount(serialId: number) {
@@ -140,7 +140,7 @@ export class ExternalSignatoryBookManagerService {
                     'signatureMode': element.role,
                     'signaturePositions': element.signaturePositions !== undefined ? this.formatPositions(element.signaturePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
                     'datePositions': element.datePositions !== undefined ? this.formatPositions(element.datePositions.filter((pos: any) => pos.resId === resource.resId && pos.mainDocument === resource.mainDocument)) : [],
-                    'externalInformations': element.hasOwnProperty('externalInformations') ? element.externalInformations : null
+                    'externalInformations': !this.functions.empty(element?.externalInformations) ? element.externalInformations : null
                 };
                 formatedData['steps'].push(step);
             });

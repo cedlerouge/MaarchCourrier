@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HttpClient } from '@angular/common/http';
@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
     templateUrl: 'i-paraph.component.html',
     styleUrls: ['i-paraph.component.scss'],
 })
-export class IParaphComponent implements OnInit {
+export class IParaphComponent {
 
     @Input() additionalsInfos: any;
     @Input() externalSignatoryBookDatas: any;
@@ -24,9 +24,6 @@ export class IParaphComponent implements OnInit {
     };
 
     constructor(public translate: TranslateService, public http: HttpClient, private notify: NotificationService) { }
-
-    ngOnInit(): void {
-    }
 
     isValidParaph() {
         if (this.additionalsInfos.attachments.length === 0) {

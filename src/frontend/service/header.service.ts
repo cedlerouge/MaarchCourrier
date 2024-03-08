@@ -30,7 +30,7 @@ export class HeaderService {
     headerMessageIcon: string = '';
     headerMessage: string = '';
     subHeaderMessage: string = '';
-    user: any = { firstname: '', lastname: '', groups: [], privileges: [], preferences: [], featureTour: [] };
+    user: any = { firstname: '', lastname: '', groups: [], privileges: [], preferences: [], featureTour: [], externalId: null };
     nbResourcesFollowed: number = 0;
     base64: string = null;
 
@@ -46,7 +46,7 @@ export class HeaderService {
     ) { }
 
     loadHeader() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/header').pipe(
                 tap((data: any) => {
                     this.setUser(data.user);
@@ -63,7 +63,7 @@ export class HeaderService {
     }
 
     resfreshCurrentUser() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/currentUser/profile')
                 .pipe(
                     map((data: any) => {
@@ -78,7 +78,8 @@ export class HeaderService {
                             groups: data.groups,
                             preferences: data.preferences,
                             privileges: data.privileges[0] === 'ALL_PRIVILEGES' ? this.user.privileges : data.privileges,
-                            featureTour: data.featureTour
+                            featureTour: data.featureTour,
+                            externalId: data.external_id
                         };
                         this.nbResourcesFollowed = data.nbFollowedResources;
                         resolve(data);
@@ -145,19 +146,20 @@ export class HeaderService {
                 this.appRef,
                 this.injector
             );
-    
+
             // Create a template portal
             const templatePortal = new TemplatePortal(
                 template,
                 viewContainerRef
             );
-    
+
             // Attach portal to host
             this.portalHost.attach(templatePortal);
         }
-        
+
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     initTemplate(template: TemplateRef<any>, viewContainerRef: ViewContainerRef, id: string = 'adminMenu', mode: string = '') {
         // Create a portalHost from a DOM element
         this.portalHost = new DomPortalOutlet(

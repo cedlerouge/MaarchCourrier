@@ -36,7 +36,8 @@
 }
 
 .book-mark-item-to-left {
-    align-self: flex-end;
+    align-self: flex-start;
+    rotate: -180deg;
     border-left: solid 1px var(--maarch-color-primary);
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
@@ -45,7 +46,8 @@
 }
 
 .book-mark-item-to-right {
-    align-self: flex-start;
+    align-self: flex-end;
+    rotate: 180deg;
     border-right: solid 1px var(--maarch-color-primary);
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
@@ -62,7 +64,8 @@
 }
 
 .book-mark-item-selected-to-left {
-    align-self: flex-start;
+    align-self: flex-end;
+    rotate: 180deg;
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     border-top-left-radius: 0px;
@@ -70,7 +73,7 @@
 }
 
 .book-mark-item-selected-to-right {
-    align-self: flex-end;
+    align-self: flex-start;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     border-top-right-radius: 0px;

@@ -71,7 +71,7 @@ export class ContactDuplicateComponent implements OnInit {
 
 
     getContactFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/contactsParameters').pipe(
                 map((data: any) => {
                     const regex = /contactCustomField_[.]*/g;
@@ -122,7 +122,7 @@ export class ContactDuplicateComponent implements OnInit {
     }
 
     removeCriteria(field: any) {
-        this.contactFields.forEach((contact: any, index: number) => {
+        this.contactFields.forEach((contact: any) => {
             if (contact.id === field.id) {
                 this.currentFieldsSearch = this.currentFieldsSearch.filter((currField: any) => currField.id !== field.id);
                 contact.disabled = false;

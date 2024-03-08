@@ -3,7 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
-import { tap, exhaustMap, finalize, catchError, filter } from 'rxjs/operators';
+import { tap, exhaustMap, finalize, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { FunctionsService } from '@service/functions.service';
 import { NoteEditorComponent } from '@appRoot/notes/note-editor.component';

@@ -11,8 +11,6 @@ import { LocalStorageService } from '@service/local-storage.service';
 import { HeaderService } from '@service/header.service';
 import { FunctionsService } from '@service/functions.service';
 
-declare function $j(selector: any): any;
-
 @Component({
     templateUrl: 'history-export.component.html',
     styleUrls: ['history-export.component.scss'],

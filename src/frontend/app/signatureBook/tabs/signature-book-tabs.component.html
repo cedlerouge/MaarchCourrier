@@ -4,12 +4,12 @@
         mat-button
         class="book-mark-item"
         [title]="document.title"
-        [class.book-mark-item-to-left]="signable"
-        [class.book-mark-item-to-right]="!signable"
+        [class.book-mark-item-to-left]="position === 'left'"
+        [class.book-mark-item-to-right]="position === 'right'"
         [ngClass]="{
             'book-mark-item-selected': selectedId === i,
-            'book-mark-item-selected-to-left': selectedId === i && signable,
-            'book-mark-item-selected-to-right': selectedId === i && !signable
+            'book-mark-item-selected-to-left': selectedId === i && position === 'left',
+            'book-mark-item-selected-to-right': selectedId === i && position === 'right'
         }"
         (click)="selectDocument(i, document)"
         >

@@ -104,6 +104,8 @@ class ActionMethodController
     ];
 
     /**
+     * @param array $args
+     * @return bool
      * @throws Exception
      */
     public static function terminateAction(array $args): bool
@@ -115,18 +117,19 @@ class ActionMethodController
 
         $set = ['locker_user_id' => null, 'locker_time' => null, 'modification_date' => 'CURRENT_TIMESTAMP'];
 
-        $action = ActionModel::getById(['id' => $args['id'], 'select' => ['label_action', 'id_status', 'history', 'parameters']]);
+        $action = ActionModel::getById(
+            ['id' => $args['id'], 'select' => ['label_action', 'id_status', 'history', 'parameters']]
+        );
         $action['parameters'] = json_decode($action['parameters'], true);
 
         if (empty($args['finishInScript'])) {
-            $status = !empty($action['parameters']['successStatus']) ? $action['parameters']['successStatus'] : $action['id_status'];
+            $status = !empty($action['parameters']['successStatus'])
+                ? $action['parameters']['successStatus'] : $action['id_status'];
             if (!empty($status) && $status != '_NOSTATUS_') {
                 $set['status'] = $status;
             }
-        } else {
-            if (!empty($action['id_status']) && $action['id_status'] != '_NOSTATUS_') {
-                $set['status'] = $action['id_status'];
-            }
+        } elseif (!empty($action['id_status']) && $action['id_status'] != '_NOSTATUS_') {
+            $set['status'] = $action['id_status'];
         }
 
         ResModel::update([
@@ -189,7 +192,13 @@ class ActionMethodController
                     'eventId'   => $args['id']
                 ]);
 
-                MessageExchangeReviewController::sendMessageExchangeReview(['resource' => $resLetterboxData[$resource], 'action_id' => $args['id'], 'userId' => $GLOBALS['login']]);
+                MessageExchangeReviewController::sendMessageExchangeReview(
+                    [
+                        'resource'  => $resLetterboxData[$resource],
+                        'action_id' => $args['id'],
+                        'userId'    => $GLOBALS['login']
+                    ]
+                );
             }
         }
 
@@ -197,6 +206,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return bool
      * @throws Exception
      */
     public static function closeMailAction(array $args): bool
@@ -204,15 +215,23 @@ class ActionMethodController
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
-        ResModel::update(['set' => ['closing_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'closing_date is null'], 'data' => [$args['resId']]]);
+        ResModel::update(
+            [
+                'set'   => ['closing_date' => 'CURRENT_TIMESTAMP'],
+                'where' => ['res_id = ?', 'closing_date is null'],
+                'data'  => [$args['resId']]
+            ]
+        );
 
         return true;
     }
 
     /**
+     * @param array $aArgs
+     * @return array[]|bool
      * @throws Exception
      */
-    public static function closeMailWithAttachmentsOrNotesAction(array $aArgs)
+    public static function closeMailWithAttachmentsOrNotesAction(array $aArgs): array|bool
     {
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
@@ -224,7 +243,9 @@ class ActionMethodController
             'data'   => [$aArgs['resId'], 'DEL'],
         ]);
 
-        $notes = NoteModel::getByUserIdForResource(['select' => ['user_id', 'id'], 'resId' => $aArgs['resId'], 'userId' => $GLOBALS['id']]);
+        $notes = NoteModel::getByUserIdForResource(
+            ['select' => ['user_id', 'id'], 'resId' => $aArgs['resId'], 'userId' => $GLOBALS['id']]
+        );
 
         if (empty($attachments) && empty($notes) && empty($aArgs['note']['content'])) {
             return ['errors' => ['No attachments or notes']];
@@ -234,6 +255,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $aArgs
+     * @return bool
      * @throws Exception
      */
     public static function updateAcknowledgementSendDateAction(array $aArgs): bool
@@ -241,12 +264,16 @@ class ActionMethodController
         ValidatorModel::notEmpty($aArgs, ['resId', 'data']);
         ValidatorModel::intVal($aArgs, ['resId']);
 
-        AcknowledgementReceiptModel::updateSendDate(['send_date' => date('Y-m-d H:i:s', $aArgs['data']['send_date']), 'res_id' => $aArgs['resId']]);
+        AcknowledgementReceiptModel::updateSendDate(
+            ['send_date' => date('Y-m-d H:i:s', $aArgs['data']['send_date']), 'res_id' => $aArgs['resId']]
+        );
 
         return true;
     }
 
     /**
+     * @param array $aArgs
+     * @return bool
      * @throws Exception
      */
     public static function updateDepartureDateAction(array $aArgs): bool
@@ -254,12 +281,20 @@ class ActionMethodController
         ValidatorModel::notEmpty($aArgs, ['resId']);
         ValidatorModel::intVal($aArgs, ['resId']);
 
-        ResModel::update(['set' => ['departure_date' => 'CURRENT_TIMESTAMP'], 'where' => ['res_id = ?', 'departure_date is null'], 'data' => [$aArgs['resId']]]);
+        ResModel::update(
+            [
+                'set'   => ['departure_date' => 'CURRENT_TIMESTAMP'],
+                'where' => ['res_id = ?', 'departure_date is null'],
+                'data'  => [$aArgs['resId']]
+            ]
+        );
 
         return true;
     }
 
     /**
+     * @param array $aArgs
+     * @return bool
      * @throws Exception
      */
     public static function disabledBasketPersistenceAction(array $aArgs): bool
@@ -282,6 +317,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $aArgs
+     * @return bool
      * @throws Exception
      */
     public static function enabledBasketPersistenceAction(array $aArgs): bool
@@ -304,6 +341,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return bool
      * @throws Exception
      */
     public static function resMarkAsReadAction(array $args): bool
@@ -335,9 +374,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function redirect(array $args)
+    public static function redirect(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
         ValidatorModel::intVal($args, ['resId']);
@@ -346,13 +387,25 @@ class ActionMethodController
         $listInstances = [];
         if (!empty($args['data']['onlyRedirectDest'])) {
             if (count($args['data']['listInstances']) == 1) {
-                $listInstances = ListInstanceModel::get(['select' => ['*'], 'where' => ['res_id = ?', 'difflist_type = ?', 'item_mode != ?'], 'data' => [$args['resId'], 'entity_id', 'dest']]);
+                $listInstances = ListInstanceModel::get(
+                    [
+                        'select' => ['*'],
+                        'where'  => ['res_id = ?', 'difflist_type = ?', 'item_mode != ?'],
+                        'data'   => [$args['resId'], 'entity_id', 'dest']
+                    ]
+                );
             }
         }
 
         $listInstances = array_merge($listInstances, $args['data']['listInstances']);
         $controller = ListInstanceController::updateListInstance([
-            'data'      => [['resId' => $args['resId'], 'listInstances' => $listInstances, 'destination' => $args['data']['destination']]],
+            'data'      => [
+                [
+                    'resId'         => $args['resId'],
+                    'listInstances' => $listInstances,
+                    'destination'   => $args['data']['destination']
+                ]
+            ],
             'userId'    => $GLOBALS['id'],
             'fullRight' => true
         ]);
@@ -364,6 +417,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return bool
      * @throws Exception
      */
     public static function redirectInitiatorEntityAction(array $args): bool
@@ -376,7 +431,12 @@ class ActionMethodController
         if (!empty($resource)) {
             $entityInfo = EntityModel::getByEntityId(['entityId' => $resource['initiator'], 'select' => ['id']]);
             if (!empty($entityInfo)) {
-                $destUser = ListTemplateModel::getWithItems(['where' => ['entity_id = ?', 'item_mode = ?', 'type = ?'], 'data' => [$entityInfo['id'], 'dest', 'diffusionList']]);
+                $destUser = ListTemplateModel::getWithItems(
+                    [
+                        'where' => ['entity_id = ?', 'item_mode = ?', 'type = ?'],
+                        'data'  => [$entityInfo['id'], 'dest', 'diffusionList']
+                    ]
+                );
                 if (!empty($destUser)) {
                     ListInstanceModel::update([
                         'set'   => [
@@ -412,9 +472,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array|true
      * @throws Exception
      */
-    public static function sendSignatureBook(array $args)
+    public static function sendSignatureBook(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -431,7 +493,9 @@ class ActionMethodController
 
         $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
         $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-        $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
+        $workflowSignatoryRole = ParameterModel::getById(
+            ['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']
+        );
 
         $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
         $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
@@ -443,7 +507,8 @@ class ActionMethodController
         $nbVisaRole = 0;
         $nbSignRole = 0;
         foreach ($circuit as $listInstance) {
-            $isSign = $listInstance['signatory'] || ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
+            $isSign = $listInstance['signatory'] ||
+                ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
             if ($isSign) {
                 $nbSignRole++;
             } else {
@@ -501,7 +566,12 @@ class ActionMethodController
                     ];
                 }
 
-                $massData['resources'][] = ['resId' => $args['resId'], 'data' => $args['data'], 'note' => $args['note'], 'inSignatureBook' => true];
+                $massData['resources'][] = [
+                    'resId'           => $args['resId'],
+                    'data'            => $args['data'],
+                    'note'            => $args['note'],
+                    'inSignatureBook' => true
+                ];
 
                 return ['postscript' => 'src/app/action/scripts/MailingScript.php', 'args' => $massData];
             }
@@ -511,6 +581,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return bool|array
      * @throws Exception
      */
     public static function continueVisaCircuit(array $args): bool|array
@@ -605,7 +677,12 @@ class ActionMethodController
                     ];
                 }
 
-                $massData['resources'][] = ['resId' => $args['resId'], 'data' => $args['data'], 'note' => $args['note'], 'inSignatureBook' => true];
+                $massData['resources'][] = [
+                    'resId'           => $args['resId'],
+                    'data'            => $args['data'],
+                    'note'            => $args['note'],
+                    'inSignatureBook' => true
+                ];
 
                 return ['postscript' => 'src/app/action/scripts/MailingScript.php', 'args' => $massData];
             }
@@ -615,6 +692,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]
      * @throws Exception
      */
     public static function sendExternalNoteBookAction(array $args): array
@@ -636,7 +715,9 @@ class ActionMethodController
                 }
             }
 
-            $processingUserInfo = MaarchParapheurController::getUserById(['config' => $config, 'id' => $args['data']['processingUser']]);
+            $processingUserInfo = MaarchParapheurController::getUserById(
+                ['config' => $config, 'id' => $args['data']['processingUser']]
+            );
             $sentInfo = MaarchParapheurController::sendDatas([
                 'config'         => $config,
                 'resIdMaster'    => $args['resId'],
@@ -666,9 +747,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function rejectVisaBackToPrevious(array $args)
+    public static function rejectVisaBackToPrevious(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -683,7 +766,13 @@ class ActionMethodController
 
         $listInstancesIdsToReset = [];
         if (empty($listInstances[0])) {
-            $hasCircuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'VISA_CIRCUIT']]);
+            $hasCircuit = ListInstanceModel::get(
+                [
+                    'select' => [1],
+                    'where'  => ['res_id = ?', 'difflist_type = ?'],
+                    'data'   => [$args['resId'], 'VISA_CIRCUIT']
+                ]
+            );
             if (!empty($hasCircuit)) {
                 return ['errors' => ['Workflow has ended']];
             } else {
@@ -725,9 +814,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function resetVisa(array $args)
+    public static function resetVisa(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -740,7 +831,13 @@ class ActionMethodController
             'limit'   => 1
         ]);
         if (empty($inCircuit[0])) {
-            $hasCircuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'VISA_CIRCUIT']]);
+            $hasCircuit = ListInstanceModel::get(
+                [
+                    'select' => [1],
+                    'where'  => ['res_id = ?', 'difflist_type = ?'],
+                    'data'   => [$args['resId'], 'VISA_CIRCUIT']
+                ]
+            );
             if (!empty($hasCircuit)) {
                 return ['errors' => ['Workflow has ended']];
             } else {
@@ -758,9 +855,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function interruptVisa(array $args)
+    public static function interruptVisa(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -777,7 +876,11 @@ class ActionMethodController
         if (!empty($listInstances[0])) {
             $listInstances = $listInstances[0];
 
-            $set = ['process_date' => 'CURRENT_TIMESTAMP', 'process_comment' => _HAS_INTERRUPTED_WORKFLOW . ' (' . _VIA_ACTION . ' "' . $args['action']['label_action'] . '")'];
+            $set = [
+                'process_date'    => 'CURRENT_TIMESTAMP',
+                'process_comment' => _HAS_INTERRUPTED_WORKFLOW . ' (' . _VIA_ACTION . ' "' .
+                    $args['action']['label_action'] . '")'
+            ];
             if ($listInstances['item_id'] != $GLOBALS['id']) {
                 $set['delegate'] = $GLOBALS['id'];
             }
@@ -787,7 +890,13 @@ class ActionMethodController
                 'data'  => [$listInstances['listinstance_id']]
             ]);
         } else {
-            $hasCircuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'VISA_CIRCUIT']]);
+            $hasCircuit = ListInstanceModel::get(
+                [
+                    'select' => [1],
+                    'where'  => ['res_id = ?', 'difflist_type = ?'],
+                    'data'   => [$args['resId'], 'VISA_CIRCUIT']
+                ]
+            );
             if (!empty($hasCircuit)) {
                 return ['errors' => ['Workflow has ended']];
             } else {
@@ -808,9 +917,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function sendToOpinionCircuit(array $args)
+    public static function sendToOpinionCircuit(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -845,15 +956,20 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function sendToParallelOpinion(array $args)
+    public static function sendToParallelOpinion(array $args): array|bool
     {
         if (empty($args['resId'])) {
             return ['errors' => ['resId is empty']];
         }
 
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return ['errors' => ['Document out of perimeter']];
         }
 
@@ -884,10 +1000,16 @@ class ActionMethodController
                 }
             }
 
-            if (in_array($instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'], $listinstanceCtrl)) {
+            if (
+                in_array(
+                    $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'],
+                    $listinstanceCtrl
+                )
+            ) {
                 return ['errors' => ["Some users/entities are present at least twice with the same role"]];
             } else {
-                $listinstanceCtrl[] = $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'];
+                $listinstanceCtrl[] = $instance['item_mode'] . '#' . $instance['item_type'] . '#' .
+                    $instance['item_id'];
             }
         }
 
@@ -937,9 +1059,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function continueOpinionCircuit(array $args)
+    public static function continueOpinionCircuit(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -1026,9 +1150,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function giveOpinionParallel(array $args)
+    public static function giveOpinionParallel(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId', 'userId']);
         ValidatorModel::intVal($args, ['resId', 'userId']);
@@ -1060,9 +1186,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function validateParallelOpinionDiffusion(array $args)
+    public static function validateParallelOpinionDiffusion(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -1104,7 +1232,8 @@ class ActionMethodController
             ]);
         } else {
             $user = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $GLOBALS['id']]);
-            $newNote = $latestNote['note_text'] . '← ' . _VALIDATE_BY . ' ' . $user['firstname'] . ' ' . $user['lastname'];
+            $newNote = $latestNote['note_text'] . '← ' . _VALIDATE_BY . ' ' . $user['firstname'] . ' ' .
+                $user['lastname'];
 
             NoteModel::update([
                 'set'   => [
@@ -1177,6 +1306,8 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array|array[]
      * @throws Exception
      */
     public static function sendResourceAlfresco(array $args): array
@@ -1184,7 +1315,14 @@ class ActionMethodController
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
 
-        $sent = AlfrescoController::sendResource(['resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'folderId' => $args['data']['folderId'], 'folderName' => $args['data']['folderName']]);
+        $sent = AlfrescoController::sendResource(
+            [
+                'resId'      => $args['resId'],
+                'userId'     => $GLOBALS['id'],
+                'folderId'   => $args['data']['folderId'],
+                'folderName' => $args['data']['folderName']
+            ]
+        );
         if (!empty($sent['errors'])) {
             LogsController::add([
                 'isTech'    => true,
@@ -1203,9 +1341,11 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function sendResourceMultigest(array $args)
+    public static function sendResourceMultigest(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -1229,28 +1369,37 @@ class ActionMethodController
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function reconcile(array $args)
+    public static function reconcile(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId', 'data']);
         ValidatorModel::intVal($args, ['resId']);
         ValidatorModel::arrayType($args, ['data']);
 
-        $resource = ResModel::getById(['select' => ['docserver_id', 'path', 'filename', 'format', 'subject'], 'resId' => $args['resId']]);
+        $resource = ResModel::getById(
+            ['select' => ['docserver_id', 'path', 'filename', 'format', 'subject'], 'resId' => $args['resId']]
+        );
         if (empty($resource['filename'])) {
             return ['errors' => ['Document has no file']];
         }
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $resource['docserver_id'], 'select' => ['path_template']]
+        );
         if (empty($docserver['path_template'])) {
             return ['errors' => ['Docserver does not exist']];
         }
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) .
+            $resource['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => ['Document not found on docserver']];
         }
 
-        $targetResource = ResModel::getById(['select' => ['category_id', 'filename', 'version'], 'resId' => $args['data']['resId']]);
+        $targetResource = ResModel::getById(
+            ['select' => ['category_id', 'filename', 'version'], 'resId' => $args['data']['resId']]
+        );
         if (empty($targetResource)) {
             return ['errors' => ['Target resource does not exist']];
         } elseif ($targetResource['category_id'] == 'outgoing' && empty($targetResource['filename'])) {
@@ -1268,7 +1417,12 @@ class ActionMethodController
                 return ['errors' => ["[storeResourceOnDocServer] {$storeResult['errors']}"]];
             }
 
-            AdrModel::deleteDocumentAdr(['where' => ['res_id = ?', 'type in (?)', 'version = ?'], 'data' => [$args['data']['resId'], ['SIGN', 'TNL'], $targetResource['version']]]);
+            AdrModel::deleteDocumentAdr(
+                [
+                    'where' => ['res_id = ?', 'type in (?)', 'version = ?'],
+                    'data'  => [$args['data']['resId'], ['SIGN', 'TNL'], $targetResource['version']]
+                ]
+            );
             AdrModel::createDocumentAdr([
                 'resId'       => $args['data']['resId'],
                 'type'        => 'SIGN',

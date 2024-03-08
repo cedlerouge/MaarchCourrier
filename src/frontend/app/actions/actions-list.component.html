@@ -5,11 +5,11 @@
     [style.left]="contextMenuPosition.x" [style.top]="contextMenuPosition.y"></span>
 
 <mat-menu #menu="matMenu" [class]="'actionListMenu'">
-    <div *ngIf="contextMode && this.selectedRes.length == 1"
+    <div *ngIf="contextMode && this.selectedRes.length === 1"
         style="text-align: center;font-size: 10px;color: white;background: #135F7F;padding: 5px;font-weight: bold;">
         {{this.contextMenuTitle}}
     </div>
-    <button *ngFor="let action of actionsList" [disabled]="action.component == '' || this.selectedRes.length == 0"
+    <button *ngFor="let action of actionsList" [disabled]="action.component === '' || this.selectedRes.length === 0"
         mat-menu-item (click)="launchEvent(action);">
         <span>{{action.label}}</span>
     </button>
@@ -23,17 +23,17 @@
         <mat-icon class="fas fa-star fa-2x"></mat-icon>
         <span>{{'lang.trackThisMail' | translate}}</span>
     </button>
- 
-    <button *ngIf="!contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="this.selectedRes.length == 0">
+
+    <button *ngIf="!contextMode && ((!currentResource.mailTracking && selectedRes.length > 1) || currentResource.mailTracking )" mat-menu-item class="followAction" (click)="unFollow()" [disabled]="this.selectedRes.length === 0">
         <mat-icon class="far fa-star fa-2x"></mat-icon>
         <span>{{'lang.untrackThisMail' | translate}}</span>
     </button>
-    <button *ngIf="!contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()" [disabled]="this.selectedRes.length == 0">
+    <button *ngIf="!contextMode && ((currentResource.mailTracking && selectedRes.length > 1) || !currentResource.mailTracking)" mat-menu-item class="followAction" (click)="follow()" [disabled]="this.selectedRes.length === 0">
         <mat-icon class="fas fa-star fa-2x"></mat-icon>
         <span>{{'lang.trackThisMail' | translate}}</span>
     </button>
 
-    
+
     <mat-divider></mat-divider>
     <button *ngIf="privilegeService.hasCurrentUserPrivilege('freeze_retention_rule')" mat-menu-item
         [matMenuTriggerFor]="freezeRentalRule" [disabled]="selectedRes.length === 0"

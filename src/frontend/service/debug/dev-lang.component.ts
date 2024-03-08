@@ -70,7 +70,7 @@ export class DevLangComponent implements OnInit {
         mergedLang = { ...mergedLang, ...newLang };
 
         this.http.put('../rest/languages', { langId: this.currentLang, jsonContent: mergedLang }).pipe(
-            tap((data: any) => {
+            tap(() => {
                 Object.keys(newLang).forEach(keyLang => {
                     delete this.allLang[this.currentLang][keyLang];
 
@@ -81,7 +81,6 @@ export class DevLangComponent implements OnInit {
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
-                console.log(err);
                 return of(false);
             })
         ).subscribe();

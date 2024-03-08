@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { HttpClient } from '@angular/common/http';
@@ -16,7 +16,7 @@ declare let $: any;
     templateUrl: 'x-paraph.component.html',
     styleUrls: ['x-paraph.component.scss'],
 })
-export class XParaphComponent implements OnInit {
+export class XParaphComponent {
 
     @Input() additionalsInfos: any;
     @Input() externalSignatoryBookDatas: any;
@@ -39,8 +39,6 @@ export class XParaphComponent implements OnInit {
         private notify: NotificationService,
         public dialog: MatDialog
     ) { }
-
-    ngOnInit(): void { }
 
     drop(event: CdkDragDrop<string[]>) {
         if (event.previousContainer === event.container) {
@@ -133,8 +131,8 @@ export class XParaphComponent implements OnInit {
     addNewAccount() {
         this.loading = true;
 
-        this.http.post('../rest/xParaphAccount', { login: this.newAccount.login, siret: this.newAccount.siret })
-            .subscribe((data: any) => {
+        this.http.post('../rest/xParaphAccount', { login: this.newAccount.login, siret: this.newAccount.siret }).pipe(
+            tap(() => {
                 this.additionalsInfos.accounts.push({
                     'login': this.newAccount.login,
                     'siret': this.newAccount.siret,
@@ -144,10 +142,13 @@ export class XParaphComponent implements OnInit {
                 this.addAccountMode = false;
 
                 this.notify.success(this.translate.instant('lang.accountAdded'));
-            }, (err: any) => {
+            }),
+            catchError((err: any) => {
                 this.notify.handleErrors(err);
                 this.loading = false;
-            });
+                return of(false);
+            })
+        ).subscribe();
     }
 
     removeAccount(index: number) {

@@ -1,6 +1,6 @@
 {
   "name": "maarchcourrier",
-  "version": "2301.3.4",
+  "version": "2301.3.5",
   "description": "MaarchCourrier",
   "engines": {
     "npm": ">=10.1.0",
@@ -81,7 +81,6 @@
     "@typescript-eslint/parser": "^6.21.0",
     "bootstrap": "^3.4.1",
     "chosen-js": "^1.8.7",
-    "codelyzer": "^6.0.2",
     "cypress": "^6.9.1",
     "cypress-file-upload": "^5.0.8",
     "eslint": "^8.56.0",

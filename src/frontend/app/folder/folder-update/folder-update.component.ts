@@ -42,10 +42,10 @@ export class FolderUpdateComponent implements OnInit {
         @Inject(MAT_DIALOG_DATA) public data: any
     ) { }
 
-    @HostListener('document:keydown.Shift', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+    @HostListener('document:keydown.Shift', ['$event']) onKeydownHandler() {
         this.holdShift = true;
     }
-    @HostListener('document:keyup', ['$event']) onKeyupHandler(event: KeyboardEvent) {
+    @HostListener('document:keyup', ['$event']) onKeyupHandler() {
         this.holdShift = false;
     }
 

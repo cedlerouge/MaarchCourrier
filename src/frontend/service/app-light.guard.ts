@@ -30,7 +30,7 @@ export class AppLightGuard  {
         }
 
         console.debug('GUARD: waiting for core loading...');
-        
+
 
         return this.appService.catchEvent().pipe(
             map(() => {

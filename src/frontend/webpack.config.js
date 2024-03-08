@@ -3,7 +3,8 @@ const { shareAll, withModuleFederationPlugin } = require('@angular-architects/mo
 module.exports = withModuleFederationPlugin({
   name: "maarch-plugins",
   remotes: {
-    "maarch-plugins": "../../plugins/maarch-plugins/remoteEntry.js",
+    "maarch-plugins-pdftron": "../../plugins/maarch-plugins-pdftron/remoteEntry.js",
+    "maarch-plugins-fortify": "../../plugins/maarch-plugins-fortify/remoteEntry.js",
   },
   shared: {
     ...shareAll({ singleton: true, strictVersion: false, requiredVersion: 'auto' }),

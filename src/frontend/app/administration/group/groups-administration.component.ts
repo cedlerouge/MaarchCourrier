@@ -92,12 +92,15 @@ export class GroupsAdministrationComponent implements OnInit {
                     if (result === '_NO_REPLACEMENT') {
                         this.deleteGroup(group);
                     } else {
-                        this.http.put('../rest/groups/' + group.id + '/reassign/' + result, {})
-                            .subscribe((data: any) => {
+                        this.http.put('../rest/groups/' + group.id + '/reassign/' + result, {}).pipe(
+                            tap(() => {
                                 this.deleteGroup(group);
-                            }, (err) => {
-                                this.notify.error(err.error.errors);
-                            });
+                            }),
+                            catchError((err: any) => {
+                                this.notify.handleSoftErrors(err);
+                                return of(false);
+                            })
+                        ).subscribe();
                     }
                 }
                 this.dialogRef = null;
@@ -107,17 +110,19 @@ export class GroupsAdministrationComponent implements OnInit {
     }
 
     deleteGroup(group: any) {
-        this.http.delete('../rest/groups/' + group['id'])
-            .subscribe((data: any) => {
+        this.http.delete('../rest/groups/' + group['id']).pipe(
+            tap((data: any) => {
                 setTimeout(() => {
                     this.groups = data['groups'];
                     this.adminService.setDataSource('admin_groups', this.groups, this.sort, this.paginator, this.filterColumns);
                 }, 0);
                 this.notify.success(this.translate.instant('lang.groupDeleted'));
-
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }
 

@@ -9,7 +9,7 @@
                 {{'lang.makeActionOn' | translate}}
                 <b *ngIf="data.resIds.length === 0" color="primary"
                     class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                <b *ngIf="data.resIds.length == 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
                 <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                     {{'lang.elements' | translate}}</b> ?
                 <app-maarch-message *ngIf="acknowledgement.alreadySend?.number" mode="info">
@@ -35,7 +35,7 @@
                     <div class="acknowledgementList">
                         <ng-container *ngFor="let info of acknowledgement.noSendAR.list | sortBy : 'info'">
                             <div class="chrono">
-                                {{info.alt_identifier != null ? info.alt_identifier : 'lang.undefined' | translate}}
+                                {{info.alt_identifier !== null ? info.alt_identifier : 'lang.undefined' | translate}}
                             </div>
                             <div>
                                 {{info.info}}
@@ -67,7 +67,7 @@
                     [resId]="data.resIds.length === 1 ? data.resIds[0] : null"
                 ></app-mail-editor>
 
-                <div *ngIf="arMode == 'both'">
+                <div *ngIf="arMode === 'both'">
                     <mat-slide-toggle [(ngModel)]="manualAR" color="primary" (change)="toggleArManual($event.checked)" style="margin-top: 12px;">
                         {{'lang.editAcknowledgementReceipt' | translate}}</mat-slide-toggle>
                 </div>

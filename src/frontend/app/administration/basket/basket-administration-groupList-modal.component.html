@@ -3,7 +3,7 @@
     <mat-dialog-content>
         <mat-nav-list>
             <span *ngFor="let group of data.groups">
-                <mat-list-item *ngIf="group.isUsed == false" (click)="validateForm(group);">
+                <mat-list-item *ngIf="group.isUsed === false" (click)="validateForm(group);">
                     {{group.group_desc}}
                 </mat-list-item>
             </span>

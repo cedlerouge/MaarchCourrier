@@ -36,33 +36,13 @@
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" [documents]="attachments" [signable]="false"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" position="left" [documents]="attachments"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content">
-                        <div
-                            title="MAARCH/2023D/34: VOTRE DEMANDE D'INTERVENTION (Projet de réponse)"
-                            style="
-                                font-size: 20px;
-                                font-weight: bold;
-                                color: var(--maarch-color-primary);
-                                display: flex;
-                                gap: 10px;
-                                align-items: center;
-                                padding: 10px;
-                            "
-                        >
-                            <i
-                                class="far fa-plus-square"
-                                [title]="'lang.showInformationsBlock' | translate"
-                                style="cursor: pointer"
-                            ></i>
-                            <span>annexe 2</span>
-                            <small class="subSubject">Pièce jointe</small>
-                        </div>
-                        <iframe
-                            style="height: 100%; width: 100%"
-                            src="assets/sample/test.pdf"
-                        ></iframe>
+                        <app-maarch-sb-content
+                            position="left"
+                            style="display: contents;"
+                        ></app-maarch-sb-content>
                     </div>
                 </div>
                 <div class="signatorybook-content">
@@ -73,6 +53,7 @@
                             </mat-drawer>
                             <mat-drawer-content style="display: flex; flex-direction: column">
                                 <app-maarch-sb-content
+                                    position="right"
                                     style="display: contents;"
                                 ></app-maarch-sb-content>
                                 <app-maarch-sb-actions
@@ -88,7 +69,7 @@
                         </mat-drawer-container>
                     </div>
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" [documents]="docsToSign" [signable]="true"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingDocsToSign" position="right" [documents]="docsToSign"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                 </div>
             </div>

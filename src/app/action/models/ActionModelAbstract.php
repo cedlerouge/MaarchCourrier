@@ -8,35 +8,44 @@
  */
 
 /**
-* @brief   Action Model Abstract
-* @author  dev@maarch.org
-*/
+ * @brief   Action Model Abstract
+ * @author  dev@maarch.org
+ */
 
 namespace Action\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 abstract class ActionModelAbstract
 {
-    public static function get(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($aArgs, ['limit']);
 
-        $actions = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['actions'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
-            'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
+        return DatabaseModel::select([
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['actions'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
+            'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
-
-        return $actions;
     }
 
-    public static function getById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -56,7 +65,12 @@ abstract class ActionModelAbstract
         return $action[0];
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $aArgs): int
     {
         $nextSequenceId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'actions_id_seq']);
 
@@ -70,7 +84,12 @@ abstract class ActionModelAbstract
         return $nextSequenceId;
     }
 
-    public static function update(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -86,7 +105,12 @@ abstract class ActionModelAbstract
         return true;
     }
 
-    public static function delete(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -105,22 +129,30 @@ abstract class ActionModelAbstract
         return true;
     }
 
-    public static function getCategoriesById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getCategoriesById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
 
-        $categories = DatabaseModel::select([
+        return DatabaseModel::select([
             'select' => ['category_id'],
             'table'  => ['actions_categories'],
             'where'  => ['action_id = ?'],
             'data'   => [$aArgs['id']]
         ]);
-
-        return $categories;
     }
 
-    public static function createCategories(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function createCategories(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id', 'categories']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -130,7 +162,7 @@ abstract class ActionModelAbstract
             DatabaseModel::insert([
                 'table'         => 'actions_categories',
                 'columnsValues' => [
-                    'action_id' => $aArgs['id'],
+                    'action_id'   => $aArgs['id'],
                     'category_id' => $category,
                 ]
             ]);
@@ -139,7 +171,12 @@ abstract class ActionModelAbstract
         return true;
     }
 
-    public static function deleteCategories(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function deleteCategories(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -153,16 +190,24 @@ abstract class ActionModelAbstract
         return true;
     }
 
-    public static function getKeywords()
+    /**
+     * @return array
+     */
+    public static function getKeywords(): array
     {
-        $tabKeyword   = [];
+        $tabKeyword = [];
         $tabKeyword[] = ['value' => '', 'label' => _NO_KEYWORD];
         $tabKeyword[] = ['value' => 'redirect', 'label' => _REDIRECTION, 'desc' => _KEYWORD_REDIRECT_DESC];
 
         return $tabKeyword;
     }
 
-    public static function getActionPageById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return mixed|string
+     * @throws Exception
+     */
+    public static function getActionPageById(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -181,19 +226,27 @@ abstract class ActionModelAbstract
         return $action[0]['action_page'];
     }
 
-    public static function getForBasketPage(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getForBasketPage(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['basketId', 'groupId']);
         ValidatorModel::stringType($aArgs, ['basketId', 'groupId']);
 
-        $actions = DatabaseModel::select([
-            'select'    => ['id_action', 'where_clause', 'default_action_list', 'actions.label_action'],
-            'table'     => ['actions_groupbaskets, actions'],
-            'where'     => ['basket_id = ?', 'group_id = ?', 'used_in_action_page = ?', 'actions_groupbaskets.id_action = actions.id'],
-            'data'      => [$aArgs['basketId'], $aArgs['groupId'], 'Y'],
-            'order_by'  => ['default_action_list DESC']
+        return DatabaseModel::select([
+            'select'   => ['id_action', 'where_clause', 'default_action_list', 'actions.label_action'],
+            'table'    => ['actions_groupbaskets, actions'],
+            'where'    => [
+                'basket_id = ?',
+                'group_id = ?',
+                'used_in_action_page = ?',
+                'actions_groupbaskets.id_action = actions.id'
+            ],
+            'data'     => [$aArgs['basketId'], $aArgs['groupId'], 'Y'],
+            'order_by' => ['default_action_list DESC']
         ]);
-
-        return $actions;
     }
 }

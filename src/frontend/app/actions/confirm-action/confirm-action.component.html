@@ -19,9 +19,9 @@
                 </div>
             </div>
             <div class="col-md-12">
-                {{'lang.makeActionOn' | translate}} 
+                {{'lang.makeActionOn' | translate}}
                 <b *ngIf="data.resIds.length === 0" color="primary" class="highlight">{{'lang.currentIndexingMail' | translate}}</b>
-                <b *ngIf="data.resIds.length == 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
+                <b *ngIf="data.resIds.length === 1" color="primary" class="highlight">{{data.resource.chrono}}</b>
                 <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}} {{'lang.elements' | translate}}</b> ?
             </div>
             <div class="col-md-12">

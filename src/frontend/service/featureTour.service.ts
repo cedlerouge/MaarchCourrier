@@ -135,9 +135,6 @@ export class FeatureTourService {
                         }
                     }, 10);
                 },
-                error => {
-                    /* handle error*/
-                },
                 () => {
                     if (this.currentTour === null) {
                         this.router.navigate(['/home']);

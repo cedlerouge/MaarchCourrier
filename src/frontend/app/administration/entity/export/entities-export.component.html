@@ -15,11 +15,11 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-            <div class="col-md-6" *ngIf="exportModel.format == 'csv'">
+            <div class="col-md-6" *ngIf="exportModel.format === 'csv'">
                 <mat-form-field appearance="outline">
                     <mat-label>{{'lang.delimiter' | translate}}</mat-label>
                     <mat-select placeholder="{{'lang.delimiter' | translate}}" [(ngModel)]="exportModel.delimiter"
-                        [disabled]="exportModel.format != 'csv'">
+                        [disabled]="exportModel.format !== 'csv'">
                         <mat-option *ngFor="let delimiter of delimiters" [value]="delimiter">
                             {{delimiter}}
                         </mat-option>
@@ -70,18 +70,18 @@
                                         *ngFor="let item of dataAvailable | sortBy: 'label' | filterList:listFilter.value:'label'"
                                         cdkDrag id="{{item.value}}">{{item.label}} <i class="fa fa-plus" color="primary"
                                             style="cursor:pointer;" (click)="addData(item)"></i></div>
-                                    <div *ngIf="dataAvailable.length == 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
+                                    <div *ngIf="dataAvailable.length === 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
                                 </div>
                             </div>
                             <div style="display: flex;align-items: center;">
                                 <i class="fas fa-arrow-right"></i>
                             </div>
-        
+
                             <div class="col-md-6 active-data">
                                 <h2>
                                     <span class="title">{{'lang.chosenDatas' | translate}}</span> <i class="fa fa-minus-circle removeAllDatas"
                                         color="warn" [title]="'lang.removeAllDatas' | translate"
-                                        [class.disabledIcon]="exportModel.data.length === 0" 
+                                        [class.disabledIcon]="exportModel.data.length === 0"
                                         (click)="removeAllData()"></i>
                                 </h2>
                                 <div id="selectedElements" cdkDropList #dataExportList="cdkDropList"
@@ -90,7 +90,7 @@
                                     <div class="columns" *ngFor="let item of exportModel.data;let i = index" cdkDrag
                                         id="{{item.value}}">{{item.label}} <i class="fa fa-minus" color="warn"
                                             style="cursor:pointer;" (click)="removeData(i)"></i></div>
-                                    <div *ngIf="exportModel.data.length == 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
+                                    <div *ngIf="exportModel.data.length === 0" class="noData">{{'lang.noDataAvailable' | translate}}</div>
                                 </div>
                             </div>
                         </div>

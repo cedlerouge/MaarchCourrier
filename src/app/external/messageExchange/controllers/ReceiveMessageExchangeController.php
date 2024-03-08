@@ -263,19 +263,19 @@ class ReceiveMessageExchangeController
         if (empty($storeResource['errors'])) {
             if (!empty($dataValue['encodedFile'])) {
                 ConvertPdfController::convert([
-                    'resId'     => $storeResource,
+                    'resId'     => $storeResource['resId'],
                     'collId'    => 'letterbox_coll',
                     'version'   => 1
                 ]);
 
                 $customId = CoreConfigModel::getCustomId();
                 $customId = empty($customId) ? 'null' : $customId;
-                exec("php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$storeResource} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &");
+                exec("php src/app/convert/scripts/FullTextScript.php --customId {$customId} --resId {$storeResource['resId']} --collId letterbox_coll --userId {$GLOBALS['id']} > /dev/null &");
             }
-            ResourceContactModel::create(['res_id' => $storeResource, 'item_id' => $aArgs['contact']['id'], 'type' => 'contact', 'mode' => 'sender']);
+            ResourceContactModel::create(['res_id' => $storeResource['resId'], 'item_id' => $aArgs['contact']['id'], 'type' => 'contact', 'mode' => 'sender']);
         }
 
-        return $storeResource;
+        return $storeResource['resId'];
     }
 
     protected static function saveContact($aArgs = [])

@@ -16,7 +16,7 @@ declare let $: any;
     styleUrls: ['list-administration.component.scss'],
 })
 export class ListAdministrationComponent implements OnInit {
-    @Input('currentBasketGroup') private basketGroup: any;
+    @Input() private currentBasketGroup: any;
     @Output() refreshBasketGroup = new EventEmitter<any>();
 
     loading: boolean = false;
@@ -284,10 +284,10 @@ export class ListAdministrationComponent implements OnInit {
 
         this.availableDataClone = JSON.parse(JSON.stringify(this.availableData));
         this.displayedSecondaryData = [];
-        this.selectedTemplateDisplayedSecondaryData = this.basketGroup.list_display.templateColumns;
+        this.selectedTemplateDisplayedSecondaryData = this.currentBasketGroup.list_display.templateColumns;
         this.selectedTemplateDisplayedSecondaryDataClone = this.selectedTemplateDisplayedSecondaryData;
 
-        this.basketGroup.list_display.subInfos.forEach((element: any, index: number) => {
+        this.currentBasketGroup.list_display.subInfos.forEach((element: any, index: number) => {
             if (element !== undefined) {
                 this.addData(element.value);
                 this.displayedSecondaryData[this.displayedSecondaryData.length - 1].cssClasses = element.cssClasses;
@@ -295,17 +295,17 @@ export class ListAdministrationComponent implements OnInit {
             }
         });
 
-        this.selectedListEvent = this.basketGroup.list_event;
+        this.selectedListEvent = this.currentBasketGroup.list_event;
         this.selectedListEventClone = this.selectedListEvent;
 
-        if (this.basketGroup.list_event === 'processDocument') {
-            this.selectedProcessTool.defaultTab = this.basketGroup.list_event_data === null ? 'dashboard' : this.basketGroup.list_event_data.defaultTab;
-            this.selectedProcessTool.canUpdateData = this.basketGroup.list_event_data === null ? false : this.basketGroup.list_event_data.canUpdateData;
-            this.selectedProcessTool.canUpdateModel = this.basketGroup.list_event_data === null ? false : this.basketGroup.list_event_data.canUpdateModel;
-            this.selectedProcessTool.canGoToNextRes = this.basketGroup.list_event_data === null ? false : this.basketGroup.list_event_data.canGoToNextRes;
-        } else if (this.basketGroup.list_event === 'signatureBookAction') {
-            this.selectedProcessTool.canUpdateDocuments = this.basketGroup.list_event_data === null ? false : this.basketGroup.list_event_data.canUpdateDocuments;
-            this.selectedProcessTool.goToNextDocument = this.basketGroup.list_event_data === null ? false : this.basketGroup.list_event_data.goToNextDocument;
+        if (this.currentBasketGroup.list_event === 'processDocument') {
+            this.selectedProcessTool.defaultTab = this.currentBasketGroup.list_event_data === null ? 'dashboard' : this.currentBasketGroup.list_event_data.defaultTab;
+            this.selectedProcessTool.canUpdateData = this.currentBasketGroup.list_event_data === null ? false : this.currentBasketGroup.list_event_data.canUpdateData;
+            this.selectedProcessTool.canUpdateModel = this.currentBasketGroup.list_event_data === null ? false : this.currentBasketGroup.list_event_data.canUpdateModel;
+            this.selectedProcessTool.canGoToNextRes = this.currentBasketGroup.list_event_data === null ? false : this.currentBasketGroup.list_event_data.canGoToNextRes;
+        } else if (this.currentBasketGroup.list_event === 'signatureBookAction') {
+            this.selectedProcessTool.canUpdateDocuments = this.currentBasketGroup.list_event_data === null ? false : this.currentBasketGroup.list_event_data.canUpdateDocuments;
+            this.selectedProcessTool.goToNextDocument = this.currentBasketGroup.list_event_data === null ? false : this.currentBasketGroup.list_event_data.goToNextDocument;
         }
 
         this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
@@ -313,7 +313,7 @@ export class ListAdministrationComponent implements OnInit {
     }
 
     initCustomFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/customFields').pipe(
                 map((data: any) => {
                     data.customFields = data.customFields.map((info: any) => ({
@@ -416,18 +416,18 @@ export class ListAdministrationComponent implements OnInit {
             subInfos: this.displayedSecondaryData
         };
 
-        this.http.put('../rest/baskets/' + this.basketGroup.basket_id + '/groups/' + this.basketGroup.group_id, { 'list_display': objToSend, 'list_event': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
+        this.http.put('../rest/baskets/' + this.currentBasketGroup.basket_id + '/groups/' + this.currentBasketGroup.group_id, { 'list_display': objToSend, 'list_event': this.selectedListEvent, 'list_event_data': this.selectedProcessTool }).pipe(
             tap(() => {
-                this.basketGroup.list_display = objToSend;
-                this.basketGroup.list_event = this.selectedListEvent;
-                this.basketGroup.list_event_data = this.selectedProcessTool;
+                this.currentBasketGroup.list_display = objToSend;
+                this.currentBasketGroup.list_event = this.selectedListEvent;
+                this.currentBasketGroup.list_event_data = this.selectedProcessTool;
                 this.displayedSecondaryDataClone = JSON.parse(JSON.stringify(this.displayedSecondaryData));
                 this.selectedListEventClone = this.selectedListEvent;
                 this.selectedProcessToolClone = JSON.parse(JSON.stringify(this.selectedProcessTool));
                 this.selectedTemplateDisplayedSecondaryDataClone = JSON.parse(JSON.stringify(this.selectedTemplateDisplayedSecondaryData));
 
                 this.notify.success(this.translate.instant('lang.modificationsProcessed'));
-                this.refreshBasketGroup.emit(this.basketGroup);
+                this.refreshBasketGroup.emit(this.currentBasketGroup);
             }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);

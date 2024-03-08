@@ -2,10 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionsService } from '@appRoot/actions/actions.service';
-import { Action } from '@models/actions.model';
+import { Action, MessageActionInterface } from '@models/actions.model';
 import { StampInterface } from '@models/signature-book.model';
+import { FunctionsService } from '@service/functions.service';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, of, tap } from 'rxjs';
+import { Subscription, catchError, of, tap } from 'rxjs';
+import { SignatureBookConfig, SignatureBookService } from '../signature-book.service';
 
 @Component({
     selector: 'app-maarch-sb-actions',
@@ -21,18 +23,47 @@ export class SignatureBookActionsComponent implements OnInit {
 
     @Output() openPanelSignatures = new EventEmitter<true>();
 
+    subscription: Subscription;
+
+    documentDatas: { resId: number; title: string; encodedDocument: Blob } = {
+        resId: null,
+        title: '',
+        encodedDocument: null,
+    };
+
     loading: boolean = true;
 
     leftActions: Action[] = [];
     rightActions: Action[] = [];
 
-    constructor(public http: HttpClient, private notify: NotificationService, private actionsService: ActionsService, private router: Router) {
+    signatureBookConfig = new SignatureBookConfig();
 
+    constructor(
+        public http: HttpClient,
+        public functions: FunctionsService,
+        private notify: NotificationService,
+        private actionsService: ActionsService,
+        private router: Router,
+        private signatureBookService: SignatureBookService
+    ) {
+        this.subscription = this.actionsService
+            .catchActionWithData()
+            .pipe(
+                tap((res: MessageActionInterface) => {
+                    if (res.id === 'documentToCreate') {
+                        this.documentDatas = res.data;
+                        this.functions.blobToBase64(this.documentDatas.encodedDocument).then((value: any) => {
+                            this.documentDatas.encodedDocument = value.split(',')[1];
+                        });
+                    }
+                })
+            )
+            .subscribe();
     }
 
     async ngOnInit(): Promise<void> {
         await this.loadActions();
-        this.loading = false; 
+        this.loading = false;
     }
 
     openSignaturesList() {
@@ -41,7 +72,8 @@ export class SignatureBookActionsComponent implements OnInit {
 
     loadActions() {
         return new Promise((resolve) => {
-            this.actionsService.getActions(this.userId, this.groupId, this.basketId, this.resId)
+            this.actionsService
+                .getActions(this.userId, this.groupId, this.basketId, this.resId)
                 .pipe(
                     tap((actions: Action[]) => {
                         this.leftActions = [actions[1]];
@@ -57,7 +89,8 @@ export class SignatureBookActionsComponent implements OnInit {
         });
     }
 
-    processAction(action: any) {
+    async processAction(action: any) {
+        this.signatureBookConfig = await this.signatureBookService.getInternalSignatureBookConfig();
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
@@ -68,7 +101,7 @@ export class SignatureBookActionsComponent implements OnInit {
                         this.groupId,
                         this.basketId,
                         [this.resId],
-                        data,
+                        { ...data, documentToCreate: this.documentDatas, signatureBookConfig: this.signatureBookConfig },
                         false
                     );
                 }),
@@ -92,8 +125,7 @@ export class SignatureBookActionsComponent implements OnInit {
     signWithStamp(stamp: StampInterface) {
         this.actionsService.emitActionWithData({
             id: 'selectedStamp',
-            data: stamp
+            data: stamp,
         });
     }
-
 }
