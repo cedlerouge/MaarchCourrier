@@ -31,9 +31,6 @@ class CurlService implements CurlServiceInterface
                 'content-type: application/json',
                 'Accept: application/json'
             ],
-            'options'    => [
-                CURLOPT_SSL_VERIFYHOST => false
-            ],
             'body'       => http_build_query($curlRequest->getBody())
         ]);
 
