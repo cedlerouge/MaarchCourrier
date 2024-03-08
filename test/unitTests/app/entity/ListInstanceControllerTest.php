@@ -22,6 +22,29 @@ class ListInstanceControllerTest extends CourrierTestCase
 {
     private static $resourceId = null;
 
+    private static bool $allowMultipleAvisAssignmentHaveToBeCreated = false;
+
+    public static function setUpBeforeClass(): void
+    {
+        $parameter = ParameterModel::getById(['id' => 'allowMultipleAvisAssignment']);
+        if (empty($parameter)) {
+            self::$allowMultipleAvisAssignmentHaveToBeCreated = true;
+            ParameterModel::create(['id' => 'allowMultipleAvisAssignment', 'param_value_int' => 0]);
+        }
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if (self::$allowMultipleAvisAssignmentHaveToBeCreated){
+            ParameterModel::delete(['id' => 'allowMultipleAvisAssignment']);
+        }
+    }
+
+    private function setAllowMultipleAvisAssignment(int $value = 0): void
+    {
+        ParameterModel::update(['id' => 'allowMultipleAvisAssignment', 'param_value_int' => $value]);
+    }
+
     public function testInit()
     {
         $GLOBALS['login'] = 'cchaplin';
@@ -561,12 +584,15 @@ class ListInstanceControllerTest extends CourrierTestCase
         $this->assertSame('listInstances component is empty or not an object', $responseBody['errors']);
     }
 
+
+
+
     public function testCanSetParallelOpinionCircuitWithSameUserAndRoleIfParameterAllowMultipleAvisAssignmentIsTrue()
     {
         $listInstanceController = new ListInstanceController();
 
         // ARRANGE
-        ParameterModel::update(['id' => "allowMultipleAvisAssignment", 'param_value_int' => 1]);
+        $this->setAllowMultipleAvisAssignment(1);
 
         // ACT : Modification d'une liste de diffusion avec 2x la même personne pour avis
 
@@ -620,7 +646,7 @@ class ListInstanceControllerTest extends CourrierTestCase
         $listInstanceController = new ListInstanceController();
 
         // ARRANGE
-        ParameterModel::update(['id' => "allowMultipleAvisAssignment", 'param_value_int' => 0]);
+        $this->setAllowMultipleAvisAssignment(0);
 
         // ACT : Modification d'une liste de diffusion avec 2x la même personne pour avis
 

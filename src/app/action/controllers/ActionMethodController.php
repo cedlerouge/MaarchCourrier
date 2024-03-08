@@ -873,9 +873,12 @@ class ActionMethodController
                 }
             }
 
-            // vérification du paramètre
             $allowMultipleAvisAssignment = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'allowMultipleAvisAssignment']);
-            $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
+            if (empty($allowMultipleAvisAssignment)){
+                $allowMultipleAvisAssignment = 0;
+            } else {
+                $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
+            }
 
             if (
                 $allowMultipleAvisAssignment === 0 &&
