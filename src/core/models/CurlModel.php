@@ -14,31 +14,38 @@
 
 namespace SrcCore\models;
 
+use CURLFile;
+use Exception;
 use SrcCore\controllers\LogsController;
 
 class CurlModel
 {
-    public static function execSOAP(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function execSOAP(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['xmlPostString', 'url']);
         ValidatorModel::stringType($aArgs, ['xmlPostString', 'url', 'soapAction']);
         ValidatorModel::arrayType($aArgs, ['options']);
 
         $opts = [
-            CURLOPT_URL             => $aArgs['url'],
-            CURLOPT_RETURNTRANSFER  => true,
-            CURLOPT_POST            => true,
-            CURLOPT_POSTFIELDS      => $aArgs['xmlPostString'],
-            CURLOPT_HTTPHEADER      => [
+            CURLOPT_URL            => $aArgs['url'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $aArgs['xmlPostString'],
+            CURLOPT_HTTPHEADER     => [
                 'content-type:text/xml;charset="utf-8"',
                 'accept:text/xml',
                 'Cache-Control: no-cache',
                 'Pragma: no-cache',
                 'Content-length: ' . strlen($aArgs['xmlPostString']),
             ],
-            CURLOPT_SSL_VERIFYHOST  => false,
-            CURLOPT_SSL_VERIFYPEER  => false,
-            CURLOPT_CONNECTTIMEOUT  => 10
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_CONNECTTIMEOUT => 10
         ];
 
         if (!empty($aArgs['soapAction'])) {
@@ -72,7 +79,7 @@ class CurlModel
             if (empty($body)) {
                 $body = explode(PHP_EOL, $rawResponse);
                 // we remove the 4 starting item of the array (header)
-                for ($i=0; $i < 5; $i++) {
+                for ($i = 0; $i < 5; $i++) {
                     array_shift($body);
                 }
                 // and the last item (footer)
@@ -105,10 +112,21 @@ class CurlModel
             ]);
         }
 
-        return ['response' => simplexml_load_string($rawResponse), 'infos' => $infos, 'cookies' => $cookies, 'raw' => $rawResponse, 'error' => $error];
+        return [
+            'response' => simplexml_load_string($rawResponse),
+            'infos'    => $infos,
+            'cookies'  => $cookies,
+            'raw'      => $rawResponse,
+            'error'    => $error
+        ];
     }
 
-    public static function exec(array $args)
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function exec(array $args): array
     {
         ValidatorModel::notEmpty($args, ['url', 'method']);
         ValidatorModel::stringType($args, ['url', 'method', 'cookie']);
@@ -117,7 +135,12 @@ class CurlModel
 
         $args['isXml'] = $args['isXml'] ?? false;
 
-        $opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_HEADER => true, CURLOPT_SSL_VERIFYPEER => false, CURLOPT_CONNECTTIMEOUT => 10];
+        $opts = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER         => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_CONNECTTIMEOUT => 10
+        ];
 
         if (!empty($args['followRedirect'])) {
             $opts[CURLOPT_FOLLOWLOCATION] = true;
@@ -131,7 +154,8 @@ class CurlModel
         }
         //Auth
         if (!empty($args['basicAuth'])) {
-            $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Basic ' . base64_encode($args['basicAuth']['user']. ':' .$args['basicAuth']['password']);
+            $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Basic ' .
+                base64_encode($args['basicAuth']['user'] . ':' . $args['basicAuth']['password']);
         }
         if (!empty($args['bearerAuth'])) {
             $opts[CURLOPT_HTTPHEADER][] = 'Authorization: Bearer ' . $args['bearerAuth']['token'];
@@ -186,13 +210,13 @@ class CurlModel
         $curl = curl_init();
         curl_setopt_array($curl, $opts);
         $rawResponse = curl_exec($curl);
-        $code        = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $headerSize  = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
-        $errors      = curl_error($curl);
+        $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $headerSize = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
+        $errors = curl_error($curl);
         curl_close($curl);
 
-        $headers  = substr($rawResponse, 0, $headerSize);
-        $headers  = explode("\r\n", $headers);
+        $headers = substr($rawResponse, 0, $headerSize);
+        $headers = explode("\r\n", $headers);
         $response = substr($rawResponse, $headerSize);
 
         $formatedResponse = $response;
@@ -206,13 +230,13 @@ class CurlModel
             }
         } elseif (in_array('Accept: application/zip', $args['headers'])) {
             $formatedResponse = trim($response);
-        } elseif(empty($args['fileResponse'])) {
+        } elseif (empty($args['fileResponse'])) {
             $formatedResponse = json_decode($response, true);
             if (empty($code) && !empty($formatedResponse["code"])) {
                 $code = $formatedResponse["code"];
             }
             if (empty($errors) && !empty($formatedResponse["error"])) {
-                $errors = $args['url'] . " ". $formatedResponse["error"];
+                $errors = $args['url'] . " " . $formatedResponse["error"];
             }
         }
 
@@ -239,10 +263,21 @@ class CurlModel
             ]);
         }
 
-        return ['raw' => $rawResponse, 'code' => $code, 'headers' => $headers, 'response' => $formatedResponse, 'errors' => $errors];
+        return [
+            'raw'      => $rawResponse,
+            'code'     => $code,
+            'headers'  => $headers,
+            'response' => $formatedResponse,
+            'errors'   => $errors
+        ];
     }
 
-    private static function createMultipartFormData(array $args)
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
+    private static function createMultipartFormData(array $args): string
     {
         ValidatorModel::notEmpty($args, ['boundary', 'body']);
         ValidatorModel::stringType($args, ['boundary']);
@@ -255,7 +290,8 @@ class CurlModel
             if (!empty($value['subvalues']) && is_array($value['subvalues'])) {
                 foreach ($value['subvalues'] as $subvalue) {
                     $postData .= "--{$delimiter}\r\n";
-                    if (is_array($subvalue) && !empty($subvalue['isFile']) && !empty($subvalue['filename']) && !empty($subvalue['content'])) {
+                    if (is_array($subvalue) && !empty($subvalue['isFile']) && !empty($subvalue['filename']) &&
+                        !empty($subvalue['content'])) {
                         $postData .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$subvalue['filename']}\"\r\n";
                         $postData .= "\r\n{$subvalue['content']}\r\n";
                     } else {
@@ -265,9 +301,15 @@ class CurlModel
                 }
             } else {
                 $postData .= "--{$delimiter}\r\n";
-                if (is_array($value) && !empty($value['isFile']) && !empty($value['filename']) && !empty($value['content'])) {
+                if (is_array($value) && !empty($value['isFile']) && !empty($value['filename']) &&
+                    !empty($value['content'])) {
                     $postData .= "Content-Disposition: form-data; name=\"{$key}\"; filename=\"{$value['filename']}\"\r\n";
                     $postData .= "\r\n{$value['content']}\r\n";
+                } elseif (!empty($value['priority']) && !empty($value['name'])) {
+                    $postData .= "Content-Type: application/json\r\n";
+                    $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
+                    $value = json_encode($value);
+                    $postData .= "\r\n{$value}\r\n";
                 } else {
                     $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
                     $postData .= "\r\n{$value}\r\n";
@@ -279,7 +321,12 @@ class CurlModel
         return $postData;
     }
 
-    public static function makeCurlFile(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return CURLFile
+     * @throws Exception
+     */
+    public static function makeCurlFile(array $aArgs): CURLFile
     {
         ValidatorModel::notEmpty($aArgs, ['path']);
         ValidatorModel::stringType($aArgs, ['path', 'name']);
@@ -287,8 +334,6 @@ class CurlModel
         $mime = mime_content_type($aArgs['path']);
         $info = pathinfo($aArgs['path']);
         $name = $aArgs['name'] ?? $info['basename'];
-        $output = new \CURLFile($aArgs['path'], $mime, $name);
-
-        return $output;
+        return new CURLFile($aArgs['path'], $mime, $name);
     }
 }
