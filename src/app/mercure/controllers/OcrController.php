@@ -55,17 +55,19 @@ class OcrController
         if ($body['type'] == 'resource') {
             $collId = 'letterbox_coll';
             $infosDoc = ResModel::getById([
-                'select'      => ['format', 'docserver_id', 'path', 'filename'],
-                'resId'      => $body['resId']
+                'select' => ['format', 'docserver_id', 'path', 'filename'],
+                'resId'  => $body['resId']
             ]);
         } elseif ($body['type'] == 'attachment') {
             $collId = 'attachments_coll';
             $infosDoc = AttachmentModel::getById([
-                'select'      => ['format', 'docserver_id', 'path', 'filename'],
-                'id'          => $body['resId']
+                'select' => ['format', 'docserver_id', 'path', 'filename'],
+                'id'     => $body['resId']
             ]);
         } else {
-            return $response->withStatus(400)->withJson(['message' => "Type de document non valable (resource | attachment)"]);
+            return $response->withStatus(400)->withJson([
+                'message' => "Type de document non valable (resource | attachment)"
+            ]);
         }
 
         //Test OCR file exists in parameters
@@ -80,13 +82,13 @@ class OcrController
             if (!isset($ocrConvert['convertedFile'])) {
                 if ($configuration['mwsOcrPriority']) {
                     $ocrConvert = MwsController::launchOcrMws([
-                        'collId'    => $collId,
-                        'resId'     => $body['resId']
+                        'collId' => $collId,
+                        'resId'  => $body['resId']
                     ]);
                 } else {
                     $ocrConvert = OcrController::launchOcrTesseract([
-                        'collId'    => $collId,
-                        'resId'     => $body['resId']
+                        'collId' => $collId,
+                        'resId'  => $body['resId']
                     ]);
                 }
             }
@@ -96,9 +98,9 @@ class OcrController
 
         if (isset($ocrConvert['errors'])) {
             return $response->withStatus(500)->withJson([
-                'errors'    => $ocrConvert['errors'],
-                'body'      => $ocrConvert['body'] ?? null,
-                'output'    =>  $ocrConvert['output'] ?? null
+                'errors' => $ocrConvert['errors'],
+                'body'   => $ocrConvert['body'] ?? null,
+                'output' => $ocrConvert['output'] ?? null
             ]);
         } elseif (isset($ocrConvert['message'])) {
             return $response->withStatus(200)->withJson(['message' => $ocrConvert['message']]);
@@ -106,10 +108,10 @@ class OcrController
 
         $resource = file_get_contents($ocrConvert['convertedFile']);
         $storeResult = DocserverController::storeResourceOnDocServer([
-            'collId'            => $collId,
-            'docserverTypeId'   => 'CONVERT',
-            'encodedResource'   => base64_encode($resource),
-            'format'            => 'pdf'
+            'collId'          => $collId,
+            'docserverTypeId' => 'CONVERT',
+            'encodedResource' => base64_encode($resource),
+            'format'          => 'pdf'
         ]);
 
         if (!empty($storeResult['errors'])) {
@@ -118,25 +120,27 @@ class OcrController
         if ($collId == 'letterbox_coll') {
             $document = AdrModel::getConvertedDocumentById([
                 'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'resId' => $body['resId'],
+                'resId'  => $body['resId'],
                 'collId' => $collId,
-                'type' => 'PDF'
+                'type'   => 'PDF'
             ]);
-
 
             if (empty($document)) {
                 AdrModel::createDocumentAdr([
-                    'resId' => $body['resId'],
-                    'type' => 'PDF',
+                    'resId'       => $body['resId'],
+                    'type'        => 'PDF',
                     'docserverId' => $storeResult['docserver_id'],
-                    'path' => $storeResult['destination_dir'],
-                    'filename' => $storeResult['file_destination_name'],
-                    'version' => $body['version'] ?? 1,
+                    'path'        => $storeResult['destination_dir'],
+                    'filename'    => $storeResult['file_destination_name'],
+                    'version'     => $body['version'] ?? 1,
                     'fingerprint' => $storeResult['fingerPrint']
                 ]);
             } else {
                 AdrModel::updateDocumentAdr([
-                    'set'   => ['fingerprint' => $storeResult['fingerPrint'], 'filename' => $storeResult['file_destination_name']],
+                    'set'   => [
+                        'fingerprint' => $storeResult['fingerPrint'],
+                        'filename'    => $storeResult['file_destination_name']
+                    ],
                     'where' => ['res_id = ?', 'type = ?', 'version = ?'],
                     'data'  => [$body['resId'], 'PDF', $body['version'] ?? 1]
                 ]);
@@ -144,22 +148,25 @@ class OcrController
         } else {
             $document = AdrModel::getConvertedDocumentById([
                 'select' => ['docserver_id', 'path', 'filename', 'fingerprint'],
-                'resId' => $body['resId'],
+                'resId'  => $body['resId'],
                 'collId' => $collId,
-                'type' => 'PDF'
+                'type'   => 'PDF'
             ]);
             if (empty($document)) {
                 AdrModel::createAttachAdr([
-                    'resId' => $body['resId'],
-                    'type' => 'PDF',
+                    'resId'       => $body['resId'],
+                    'type'        => 'PDF',
                     'docserverId' => $storeResult['docserver_id'],
-                    'path' => $storeResult['destination_dir'],
-                    'filename' => $storeResult['file_destination_name'],
+                    'path'        => $storeResult['destination_dir'],
+                    'filename'    => $storeResult['file_destination_name'],
                     'fingerprint' => $storeResult['fingerPrint']
                 ]);
             } else {
                 AdrModel::updateAttachmentAdr([
-                    'set'   => ['fingerprint' => $storeResult['fingerPrint'], 'filename' => $storeResult['file_destination_name']],
+                    'set'   => [
+                        'fingerprint' => $storeResult['fingerPrint'],
+                        'filename'    => $storeResult['file_destination_name']
+                    ],
                     'where' => ['res_id = ?', 'type = ?'],
                     'data'  => [$body['resId'], 'PDF']
                 ]);
@@ -168,7 +175,12 @@ class OcrController
 
         FullTextController::indexDocument(['resId' => $body['resId'], 'collId' => $collId]);
 
-        return $response->withJson(['docserver_id' => $storeResult['docserver_id'], 'path' => $storeResult['destination_dir'], 'filename' => $storeResult['file_destination_name'], 'fingerprint' => $storeResult['fingerPrint']]);
+        return $response->withJson([
+            'docserver_id' => $storeResult['docserver_id'],
+            'path'         => $storeResult['destination_dir'],
+            'filename'     => $storeResult['file_destination_name'],
+            'fingerprint'  => $storeResult['fingerPrint']
+        ]);
     }
 
     private static function launchOcrTesseract(array $aArgs)
@@ -179,22 +191,32 @@ class OcrController
 
         if ($aArgs['collId'] == 'letterbox_coll') {
             $tablename = 'res_letterbox';
-            $resource = ResModel::getById(['resId' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = ResModel::getById([
+                'resId'  => $aArgs['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         } else {
             $tablename = 'res_attachments';
-            $resource = AttachmentModel::getById(['id' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = AttachmentModel::getById([
+                'id'     => $aArgs['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         }
 
         if (empty($resource['docserver_id']) || empty($resource['path']) || empty($resource['filename'])) {
             return ['errors' => '[OcrController] Resource does not exist'];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template']]);
+        $docserver = DocserverModel::getByDocserverId([
+            'docserverId' => $resource['docserver_id'],
+            'select'      => ['path_template']
+        ]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => '[OcrController] Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => '[OcrController] Converted document not found on docserver'];
         } elseif (!is_readable($pathToDocument)) {
@@ -214,7 +236,8 @@ class OcrController
         } else {
             //Conversion en TIFF
             $tmpFile = CoreConfigModel::getTmpPath() . basename($pathToDocument) . rand() . '.tiff';
-            $cmdConvertTiff = "convert -density 300 " . escapeshellarg($pathToDocument) . " -depth 8 -strip -background white -alpha off " . escapeshellarg($tmpFile);
+            $cmdConvertTiff = "convert -density 300 " . escapeshellarg($pathToDocument) .
+                " -depth 8 -strip -background white -alpha off " . escapeshellarg($tmpFile);
 
             $outputConvert = null;
             $retvalConvert = null;
@@ -235,7 +258,8 @@ class OcrController
             } else {
                 //Conversion OCR
                 $tmpFileOcr = CoreConfigModel::getTmpPath() . basename($pathToDocument, ".pdf") . rand();
-                $cmdConvertOcr = "tesseract " . escapeshellarg($tmpFile) . " " . escapeshellarg($tmpFileOcr) . " -l fra pdf";
+                $cmdConvertOcr = "tesseract " . escapeshellarg($tmpFile) . " " .
+                    escapeshellarg($tmpFileOcr) . " -l fra pdf";
 
                 $outputConvert = null;
                 $retvalConvert = null;
@@ -259,7 +283,6 @@ class OcrController
                 'output' => $outputConvert
             ];
         }
-
 
         LogsController::add([
             'isTech'    => true,
