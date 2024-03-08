@@ -59,7 +59,8 @@ class AuthenticationController
         'GET/onlyOffice/content',
         'GET/languages/{lang}',
         'GET/languages',
-        'POST/administration/shippings/{id}/notifications'
+        'POST/administration/shippings/{id}/notifications',
+        'POST/signatureBook/webhook'
     ];
 
     /**

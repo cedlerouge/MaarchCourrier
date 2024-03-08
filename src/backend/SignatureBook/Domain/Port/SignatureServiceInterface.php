@@ -27,6 +27,9 @@ interface SignatureServiceInterface
         string $signatureFieldName,
         ?string $tmpUniqueId,
         string $accessToken,
-        string $cookieSession
+        string $cookieSession,
+        array $resourceToSign
     ): array|bool;
+
+    public function retrieveDocumentSign(string $accessToken, string $urlRetrieveDoc): array;
 }

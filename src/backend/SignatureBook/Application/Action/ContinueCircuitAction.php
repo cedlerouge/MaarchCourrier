@@ -15,7 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Application\Action;
 
 use Exception;
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceConfigLoaderInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
@@ -38,7 +38,7 @@ class ContinueCircuitAction
      */
     public function execute(int $resId, array $data, array $note): bool
     {
-        $data['documentId'] = intval($data['documentId'] ?? 0) ;
+        $data['documentId'] = intval($data['documentId'] ?? 0);
 
         if (!$this->isNewSignatureBookEnabled) {
             return true;
@@ -62,6 +62,11 @@ class ContinueCircuitAction
         ];
         $missingData = [];
 
+        $resourceToSign = [
+            'resId' => $resId
+        ];
+
+
         foreach ($requiredData as $requiredDatum) {
             if (empty($data[$requiredDatum])) {
                 $missingData[] = $requiredDatum;
@@ -71,6 +76,8 @@ class ContinueCircuitAction
         if (!empty($missingData)) {
             throw new DataToBeSentToTheParapheurAreEmptyProblem($missingData);
         }
+
+
         $applySuccess = $this->signatureService
             ->setConfig($signatureBook)
             ->applySignature(
@@ -82,7 +89,8 @@ class ContinueCircuitAction
                 $data['signatureFieldName'],
                 $data['tmpUniqueId'] ?? null,
                 $accessToken,
-                $data['cookieSession']
+                $data['cookieSession'],
+                $resourceToSign
             );
         if (is_array($applySuccess)) {
             throw new SignatureNotAppliedProblem($applySuccess['errors']);

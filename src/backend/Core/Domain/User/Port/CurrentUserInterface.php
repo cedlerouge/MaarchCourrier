@@ -12,11 +12,13 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\Core\Domain\Port;
+namespace MaarchCourrier\Core\Domain\User\Port;
 
 interface CurrentUserInterface
 {
     public function getCurrentUserId(): int;
     public function getCurrentUserLogin(): string;
     public function getCurrentUserToken(): string;
+    public function generateNewToken(): string;
+    public function setCurrentUser(int $userId): void;
 }
