@@ -1,8 +1,7 @@
 import { Injectable, ComponentFactoryResolver, Injector, ApplicationRef, ViewContainerRef, TemplateRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
-import { tap, catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { MatSidenav } from '@angular/material/sidenav';
 import { FoldersService } from '../app/folder/folders.service';
 import { DomPortalOutlet, TemplatePortal } from '@angular/cdk/portal';
@@ -44,23 +43,6 @@ export class HeaderService {
         private injector: Injector,
         private appRef: ApplicationRef,
     ) { }
-
-    loadHeader() {
-        return new Promise((resolve) => {
-            this.http.get('../rest/header').pipe(
-                tap((data: any) => {
-                    this.setUser(data.user);
-                    resolve(true);
-                }),
-                catchError((err: any) => {
-                    console.log(err);
-                    resolve(false);
-                    return of(false);
-                })
-            ).subscribe();
-        });
-
-    }
 
     resfreshCurrentUser() {
         return new Promise((resolve) => {

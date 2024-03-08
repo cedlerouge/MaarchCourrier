@@ -91,7 +91,7 @@ export class DynamicDataSource implements DataSource<DynamicFlatNode> {
         );
     }
 
-    disconnect(collectionViewer: CollectionViewer): void { }
+    disconnect(): void {}
 
     /** Handle expand/collapse behaviors */
     handleTreeControl(change: SelectionChange<DynamicFlatNode>) {
@@ -145,7 +145,7 @@ export class DynamicDataSource implements DataSource<DynamicFlatNode> {
                                 children: false
                             });*/
 
-                            const folders = this.rawData.map((elem: any) => elem.id);
+                            // const folders = this.rawData.map((elem: any) => elem.id);
 
                             this.rawData.forEach((element: any) => {
                                 const nodeItem = {
@@ -199,7 +199,9 @@ export class DynamicDataSource implements DataSource<DynamicFlatNode> {
                 let i = index + 1;
                 i < this.data.length && this.data[i].level > node.level;
                 i++, count++
-            ) { }
+            ) { 
+                // TODO
+            }
             this.data.splice(index + 1, count);
             // notify the change
             this.dataChange.next(this.data);

@@ -18,8 +18,8 @@ export class TimeLimitPipe implements PipeTransform, OnDestroy {
         const dayNumber = ('0' + d.getDate()).slice(-2);
         const realMonth = d.getMonth() + 1;
         const monthNumber = ('0' + realMonth).slice(-2);
-        const hourNumber = ('0' + d.getHours()).slice(-2);
-        const minuteNumber = ('0' + d.getMinutes()).slice(-2);
+        // const hourNumber = ('0' + d.getHours()).slice(-2);
+        // const minuteNumber = ('0' + d.getMinutes()).slice(-2);
         const now = new Date();
         const month = [];
         month[0] = this.translate.instant('lang.januaryShort');
@@ -48,8 +48,8 @@ export class TimeLimitPipe implements PipeTransform, OnDestroy {
         const minutes = Math.round(Math.abs(seconds / 60));
         const hours = Math.round(Math.abs(minutes / 60));
         const days = Math.round(Math.abs(hours / 24));
-        const months = Math.round(Math.abs(days / 30.416));
-        const years = Math.round(Math.abs(days / 365));
+        // const months = Math.round(Math.abs(days / 30.416));
+        // const years = Math.round(Math.abs(days / 365));
         if (value == null) {
             return '<span>' + this.translate.instant('lang.undefined') + '</span>';
         } else if (now > d) {

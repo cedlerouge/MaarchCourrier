@@ -84,6 +84,7 @@ export class SelectWithFilterComponent implements OnInit, ControlValueAccessor {
         this.errorMessages.set('required', () => `${this.label} <b>${this.translate.instant('lang.isRequired')}</b>.`);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onChangeFn = (_: any) => { };
 
     public onTouchedFn = () => { };
