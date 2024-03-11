@@ -4,7 +4,7 @@ namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
 
-class ResourceToSign implements JsonSerializable
+class ResourceToSign2 extends SignatureBookResource implements JsonSerializable
 {
     private int $resId;
     private string $title;

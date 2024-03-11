@@ -2,13 +2,10 @@
 
 namespace MaarchCourrier\SignatureBook\Domain;
 
-use JsonSerializable;
-
-class ResourceToSign implements JsonSerializable
+class SignatureBookResource
 {
     private int $resId;
     private string $title;
-    private string $chrono;
     private ?int $signedResId;
     private int $resType;
     private string $type;
@@ -24,7 +21,7 @@ class ResourceToSign implements JsonSerializable
     /**
      * @param int $resId
      *
-     * @return ResourceToSign
+     * @return SignatureBookResource
      */
     public function setResId(int $resId): self
     {
@@ -43,30 +40,11 @@ class ResourceToSign implements JsonSerializable
     /**
      * @param string $title
      *
-     * @return ResourceToSign
+     * @return SignatureBookResource
      */
     public function setTitle(string $title): self
     {
         $this->title = $title;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getChrono(): string
-    {
-        return $this->chrono;
-    }
-
-    /**
-     * @param string $chrono
-     *
-     * @return ResourceToSign
-     */
-    public function setChrono(string $chrono): self
-    {
-        $this->chrono = $chrono;
         return $this;
     }
 
@@ -81,7 +59,7 @@ class ResourceToSign implements JsonSerializable
     /**
      * @param ?int $signedResId
      *
-     * @return ResourceToSign
+     * @return SignatureBookResource
      */
     public function setSignedResId(?int $signedResId): self
     {
@@ -100,7 +78,7 @@ class ResourceToSign implements JsonSerializable
     /**
      * @param int $resType
      *
-     * @return ResourceToSign
+     * @return SignatureBookResource
      */
     public function setResType(int $resType): self
     {
@@ -108,14 +86,22 @@ class ResourceToSign implements JsonSerializable
         return $this;
     }
 
-    public function jsonSerialize(): array
+    /**
+     * @return string
+     */
+    public function getType(): string
     {
-        return [
-            'resId' => $this->getResId(),
-            'title' => $this->getTitle(),
-            'chrono' => $this->getChrono(),
-            'signedResId' => $this->getSignedResId(),
-            'resType' => $this->getResType()
-        ];
+        return $this->type;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return SignatureBookResource
+     */
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+        return $this;
     }
 }
