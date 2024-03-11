@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief User Controller
-* @author dev@maarch.org
-*/
+ * @brief User Controller
+ * @author dev@maarch.org
+ */
 
 namespace User\controllers;
 
@@ -22,6 +22,7 @@ use Contact\models\ContactGroupListModel;
 use Contact\models\ContactGroupModel;
 use ContentManagement\controllers\DocumentEditorController;
 use ContentManagement\controllers\MergeController;
+use DateTime;
 use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Email\controllers\EmailController;
@@ -29,6 +30,8 @@ use Entity\models\EntityModel;
 use Entity\models\ListInstanceModel;
 use Entity\models\ListTemplateItemModel;
 use Entity\models\ListTemplateModel;
+use Exception;
+use finfo;
 use Firebase\JWT\JWT;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
@@ -63,7 +66,13 @@ class UserController
 {
     private const ALTERNATIVES_CONNECTIONS_METHODS = ['sso', 'cas', 'ldap', 'keycloak', 'shibboleth', 'azure_saml'];
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -71,38 +80,64 @@ class UserController
 
         if (UserController::isRoot(['id' => $GLOBALS['id']])) {
             $users = UserModel::get([
-                'select'    => ['id', 'user_id', 'firstname', 'lastname', 'status', 'mail', 'mode'],
-                'where'     => ['status != ?'],
-                'data'      => ['DEL']
+                'select' => ['id', 'user_id', 'firstname', 'lastname', 'status', 'mail', 'mode'],
+                'where'  => ['status != ?'],
+                'data'   => ['DEL']
             ]);
         } else {
             $entities = EntityModel::getAllEntitiesByUserId(['userId' => $GLOBALS['id']]);
             $users = [];
             if (!empty($entities)) {
                 $users = UserEntityModel::getWithUsers([
-                    'select'    => ['DISTINCT users.id', 'users.user_id', 'firstname', 'lastname', 'status', 'mail', 'mode'],
-                    'where'     => ['users_entities.entity_id in (?)', 'status != ?'],
-                    'data'      => [$entities, 'DEL']
+                    'select' => [
+                        'DISTINCT users.id',
+                        'users.user_id',
+                        'firstname',
+                        'lastname',
+                        'status',
+                        'mail',
+                        'mode'
+                    ],
+                    'where'  => ['users_entities.entity_id in (?)', 'status != ?'],
+                    'data'   => [$entities, 'DEL']
                 ]);
             }
-            $usersNoEntities = UserEntityModel::getUsersWithoutEntities(['select' => ['id', 'users.user_id', 'firstname', 'lastname', 'status', 'mail', 'mode']]);
+            $usersNoEntities = UserEntityModel::getUsersWithoutEntities(
+                ['select' => ['id', 'users.user_id', 'firstname', 'lastname', 'status', 'mail', 'mode']]
+            );
             $users = array_merge($users, $usersNoEntities);
         }
 
         $quota = [];
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
         if (!empty($userQuota['param_value_int'])) {
-            $activeUser = UserModel::get(['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['OK', 'root_invisible']]);
-            $inactiveUser = UserModel::get(['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['SPD', 'root_invisible']]);
-            $quota = ['actives' => $activeUser[0]['count'], 'inactives' => $inactiveUser[0]['count'], 'userQuota' => $userQuota['param_value_int']];
+            $activeUser = UserModel::get(
+                ['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['OK', 'root_invisible']]
+            );
+            $inactiveUser = UserModel::get(
+                ['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['SPD', 'root_invisible']]
+            );
+            $quota = [
+                'actives'   => $activeUser[0]['count'],
+                'inactives' => $inactiveUser[0]['count'],
+                'userQuota' => $userQuota['param_value_int']
+            ];
         }
 
         return $response->withJson(['users' => $users, 'quota' => $quota]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'mail', 'phone']]);
+        $user = UserModel::getById(
+            ['id' => $args['id'], 'select' => ['id', 'firstname', 'lastname', 'status', 'mail', 'phone']]
+        );
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User does not exist']);
         }
@@ -112,29 +147,60 @@ class UserController
         $primaryEntity = UserModel::getPrimaryEntityById(['id' => $args['id'], 'select' => ['entity_label']]);
         $user['department'] = $primaryEntity['entity_label'];
 
-        if ($GLOBALS['id'] != $args['id'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])) {
+        if (
+            $GLOBALS['id'] != $args['id'] &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])
+        ) {
             unset($user['phone']);
         }
 
         return $response->withJson($user);
     }
 
-    public function getDetailledById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getDetailledById(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id']]);
         if (!empty($error['error'])) {
             return $response->withStatus($error['status'])->withJson(['errors' => $error['error']]);
         }
 
-        $user = UserModel::getById(['id' => $args['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname', 'status', 'phone', 'mail', 'initials', 'mode', 'authorized_api', 'external_id', 'absence']]);
-        $user['external_id']        = json_decode($user['external_id'], true);
-        $user['authorizedApi']      = json_decode($user['authorized_api'], true);
+        $user = UserModel::getById(
+            [
+                'id'     => $args['id'],
+                'select' => [
+                    'id',
+                    'user_id',
+                    'firstname',
+                    'lastname',
+                    'status',
+                    'phone',
+                    'mail',
+                    'initials',
+                    'mode',
+                    'authorized_api',
+                    'external_id',
+                    'absence'
+                ]
+            ]
+        );
+        $user['external_id'] = json_decode($user['external_id'], true);
+        $user['authorizedApi'] = json_decode($user['authorized_api'], true);
         if (!empty($user['absence'])) {
             $user['absence'] = json_decode($user['absence'], true);
         }
         unset($user['authorized_api']);
 
-        if ($GLOBALS['id'] == $args['id'] || PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])) {
+        if (
+            $GLOBALS['id'] == $args['id'] ||
+            PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])
+        ) {
             $user['signatures'] = UserSignatureModel::getByUserSerialId(['userSerialid' => $args['id']]);
             $user['emailSignatures'] = UserEmailSignatureModel::getByUserId(['userId' => $user['id']]);
         } else {
@@ -143,17 +209,41 @@ class UserController
             unset($user['phone']);
         }
 
-        $user['groups']             = UserModel::getGroupsById(['id' => $args['id']]);
-        $user['allGroups']          = GroupModel::getAvailableGroupsByUserId(['userId' => $user['id'], 'administratorId' => $GLOBALS['id']]);
-        $user['entities']           = UserModel::getEntitiesById(['id' => $args['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]);
-        $user['allEntities']        = EntityModel::getAvailableEntitiesForAdministratorByUserId(['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']]);
-        $user['baskets']            = BasketModel::getBasketsByLogin(['login' => $user['user_id']]);
-        $user['assignedBaskets']    = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
-        $user['redirectedBaskets']  = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
-        $user['history']            = HistoryModel::get(['select' => ['record_id', 'event_date', 'info', 'remote_ip'], 'where' => ['user_id = ?'], 'data' => [$args['id']], 'orderBy' => ['event_date DESC'], 'limit' => 500]);
-        $user['canModifyPassword']                      = false;
-        $user['canSendActivationNotification']          = false;
-        $user['canLinkToExternalSignatoryBook']         = false;
+        $user['groups'] = UserModel::getGroupsById(['id' => $args['id']]);
+        $user['allGroups'] = GroupModel::getAvailableGroupsByUserId(
+            ['userId' => $user['id'], 'administratorId' => $GLOBALS['id']]
+        );
+        $user['entities'] = UserModel::getEntitiesById(
+            [
+                'id'      => $args['id'],
+                'select'  => [
+                    'entities.id',
+                    'users_entities.entity_id',
+                    'entities.entity_label',
+                    'users_entities.user_role',
+                    'users_entities.primary_entity'
+                ],
+                'orderBy' => ['users_entities.primary_entity DESC']
+            ]
+        );
+        $user['allEntities'] = EntityModel::getAvailableEntitiesForAdministratorByUserId(
+            ['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']]
+        );
+        $user['baskets'] = BasketModel::getBasketsByLogin(['login' => $user['user_id']]);
+        $user['assignedBaskets'] = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
+        $user['redirectedBaskets'] = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
+        $user['history'] = HistoryModel::get(
+            [
+                'select'  => ['record_id', 'event_date', 'info', 'remote_ip'],
+                'where'   => ['user_id = ?'],
+                'data'    => [$args['id']],
+                'orderBy' => ['event_date DESC'],
+                'limit'   => 500
+            ]
+        );
+        $user['canModifyPassword'] = false;
+        $user['canSendActivationNotification'] = false;
+        $user['canLinkToExternalSignatoryBook'] = false;
 
         if ($user['mode'] == 'rest') {
             $user['canModifyPassword'] = true;
@@ -166,11 +256,19 @@ class UserController
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (!empty($loadedXml)) {
             $signatoryBookEnabled = (string)$loadedXml->signatoryBookEnabled ?? null;
-            if ($user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) && ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')) {
+            if (
+                $user['mode'] != 'rest' && empty($user['external_id'][$signatoryBookEnabled]) &&
+                ($signatoryBookEnabled == 'maarchParapheur' || $signatoryBookEnabled == 'fastParapheur')
+            ) {
                 if ($signatoryBookEnabled == 'fastParapheur') {
-                    $fastParapheurBlock = $loadedXml->xpath('//signatoryBook[id=\'fastParapheur\']')[0] ?? null;
+                    $fastParapheurBlock = $loadedXml->xpath(
+                        '//signatoryBook[id=\'fastParapheur\']'
+                    )[0] ?? null;
                     if (!empty($fastParapheurBlock)) {
-                        $user['canLinkToExternalSignatoryBook'] = filter_var((string)$fastParapheurBlock->integratedWorkflow, FILTER_VALIDATE_BOOLEAN) ?? false;
+                        $user['canLinkToExternalSignatoryBook'] = filter_var(
+                            (string)$fastParapheurBlock->integratedWorkflow,
+                            FILTER_VALIDATE_BOOLEAN
+                        ) ?? false;
                     }
                 } else {
                     $user['canLinkToExternalSignatoryBook'] = true;
@@ -181,7 +279,13 @@ class UserController
         return $response->withJson($user);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -191,17 +295,44 @@ class UserController
 
         if (empty($body)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body is empty']);
-        } elseif (!Validator::stringType()->length(1, 128)->notEmpty()->validate($body['userId'] ?? null) || !preg_match("/^[\w.@-]*$/", $body['userId'])) {
+        } elseif (
+            !Validator::stringType()->length(1, 128)->notEmpty()->validate(
+                $body['userId'] ?? null
+            ) ||
+            !preg_match("/^[\w.@-]*$/", $body['userId'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body userId is empty, not a string or not valid']);
-        } elseif (!Validator::stringType()->length(1, 255)->notEmpty()->validate($body['firstname'] ?? null)) {
+        } elseif (
+            !Validator::stringType()->length(1, 255)->notEmpty()->validate(
+                $body['firstname'] ?? null
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body firstname is empty or not a string']);
-        } elseif (!Validator::stringType()->length(1, 255)->notEmpty()->validate($body['lastname'] ?? null)) {
+        } elseif (
+            !Validator::stringType()->length(1, 255)->notEmpty()->validate(
+                $body['lastname'] ?? null
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body lastname is empty or not a string']);
-        } elseif (!Validator::stringType()->length(0, 32)->validate($body['initials'] ?? '')) {
+        } elseif (
+            !Validator::stringType()->length(0, 32)->validate(
+                $body['initials'] ?? ''
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body initials is too long']);
-        } elseif (!Validator::stringType()->length(1, 255)->notEmpty()->validate($body['mail'] ?? null) || !filter_var($body['mail'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (
+            !Validator::stringType()->length(1, 255)->notEmpty()->validate(
+                $body['mail'] ?? null
+            ) ||
+            !filter_var($body['mail'], FILTER_VALIDATE_EMAIL)
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body mail is empty or not valid']);
-        } elseif (PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]) && !empty($body['phone']) && (!preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $body['phone']) || !Validator::stringType()->length(0, 32)->validate($body['phone'] ?? ''))) {
+        } elseif (
+            PrivilegeController::hasPrivilege(
+                ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+            ) && !empty($body['phone']) && (!preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $body['phone']) ||
+                !Validator::stringType()->length(0, 32)->validate($body['phone'] ?? ''))
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body phone is not valid']);
         }
 
@@ -211,15 +342,17 @@ class UserController
         if (!empty($existingUser) && $existingUser['status'] == 'DEL') {
             UserModel::update([
                 'set'   => [
-                    'status'    => 'OK',
-                    'password'  => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                    'status'   => 'OK',
+                    'password' => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
                 ],
                 'where' => ['id = ?'],
                 'data'  => [$existingUser['id']]
             ]);
 
             if ($loggingMethod['id'] == 'standard') {
-                AuthenticationController::sendAccountActivationNotification(['userId' => $existingUser['id'], 'userEmail' => $existingUser['mail']]);
+                AuthenticationController::sendAccountActivationNotification(
+                    ['userId' => $existingUser['id'], 'userEmail' => $existingUser['mail']]
+                );
             }
 
             return $response->withJson(['id' => $existingUser['id']]);
@@ -236,7 +369,10 @@ class UserController
             $body['mode'] = 'standard';
         }
 
-        if (in_array($body['mode'], ['root_visible', 'root_invisible']) && !UserController::isRoot(['id' => $GLOBALS['id']])) {
+        if (
+            in_array($body['mode'], ['root_visible', 'root_invisible']) &&
+            !UserController::isRoot(['id' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -255,9 +391,19 @@ class UserController
 
         $userQuota = ParameterModel::getById(['id' => 'user_quota', 'select' => ['param_value_int']]);
         if (!empty($userQuota['param_value_int'])) {
-            $activeUser = UserModel::get(['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['OK', 'root_invisible']]);
+            $activeUser = UserModel::get(
+                ['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['OK', 'root_invisible']]
+            );
             if ($activeUser[0]['count'] > $userQuota['param_value_int']) {
-                NotificationsEventsController::fillEventStack(['eventId' => 'user_quota', 'tableName' => 'users', 'recordId' => 'quota_exceed', 'userId' => $GLOBALS['id'], 'info' => _QUOTA_EXCEEDED]);
+                NotificationsEventsController::fillEventStack(
+                    [
+                        'eventId'   => 'user_quota',
+                        'tableName' => 'users',
+                        'recordId'  => 'quota_exceed',
+                        'userId'    => $GLOBALS['id'],
+                        'info'      => _QUOTA_EXCEEDED
+                    ]
+                );
             }
         }
 
@@ -266,17 +412,24 @@ class UserController
         }
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'ADD',
-            'eventId'      => 'userCreation',
-            'info'         => _USER_CREATED . " {$body['userId']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'ADD',
+            'eventId'   => 'userCreation',
+            'info'      => _USER_CREATED . " {$body['userId']}"
         ]);
 
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -291,9 +444,17 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Body lastname is empty or not a string']);
         } elseif (!Validator::stringType()->length(0, 32)->validate($body['initials'] ?? '')) {
             return $response->withStatus(400)->withJson(['errors' => 'Body initials is too long']);
-        } elseif (!empty($body['mail']) && !filter_var($body['mail'], FILTER_VALIDATE_EMAIL) && Validator::stringType()->length(1, 255)->notEmpty()->validate($body['mail'])) {
+        } elseif (
+            !empty($body['mail']) && !filter_var($body['mail'], FILTER_VALIDATE_EMAIL) &&
+            Validator::stringType()->length(1, 255)->notEmpty()->validate($body['mail'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body mail is not correct']);
-        } elseif (PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]) && !empty($body['phone']) && (!preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $body['phone']) || !Validator::stringType()->length(0, 32)->validate($body['phone'] ?? ''))) {
+        } elseif (
+            PrivilegeController::hasPrivilege(
+                ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+            ) && !empty($body['phone']) && (!preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $body['phone']) ||
+                !Validator::stringType()->length(0, 32)->validate($body['phone'] ?? ''))
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body phone is not correct']);
         }
 
@@ -314,7 +475,11 @@ class UserController
             $set['status'] = 'OK';
         }
         if (!empty($body['mode']) && $user['mode'] != $body['mode']) {
-            if ((in_array($body['mode'], ['root_visible', 'root_invisible']) || in_array($user['mode'], ['root_visible', 'root_invisible'])) && !UserController::isRoot(['id' => $GLOBALS['id']])) {
+            if (
+                (in_array($body['mode'], ['root_visible', 'root_invisible']) ||
+                    in_array($user['mode'], ['root_visible', 'root_invisible'])) &&
+                !UserController::isRoot(['id' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
             $set['mode'] = $body['mode'];
@@ -322,8 +487,16 @@ class UserController
 
         if ($body['mode'] == 'rest' && isset($body['authorizedApi']) && is_array($body['authorizedApi'])) {
             foreach ($body['authorizedApi'] as $value) {
-                if (strpos($value, 'GET/') !== 0 && strpos($value, 'POST/') !== 0 && strpos($value, 'PUT/') !== 0 && strpos($value, 'DELETE/') !== 0) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body authorizedApi is not well formatted', 'lang' => 'authorizedRoutesNotWellFormatted']);
+                if (
+                    !str_starts_with($value, 'GET/') && !str_starts_with($value, 'POST/') &&
+                    !str_starts_with($value, 'PUT/') && !str_starts_with($value, 'DELETE/')
+                ) {
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => 'Body authorizedApi is not well formatted',
+                            'lang'   => 'authorizedRoutesNotWellFormatted'
+                        ]
+                    );
                 }
             }
             $set['authorized_api'] = json_encode($body['authorizedApi']);
@@ -339,25 +512,46 @@ class UserController
 
         if (!empty($userQuota['param_value_int'])) {
             if ($user['status'] == 'SPD' && $body['status'] == 'OK') {
-                $activeUser = UserModel::get(['select' => ['count(1)'], 'where' => ['status = ?', 'mode != ?'], 'data' => ['OK', 'root_invisible']]);
+                $activeUser = UserModel::get(
+                    [
+                        'select' => ['count(1)'],
+                        'where'  => ['status = ?', 'mode != ?'],
+                        'data'   => ['OK', 'root_invisible']
+                    ]
+                );
                 if ($activeUser[0]['count'] > $userQuota['param_value_int']) {
-                    NotificationsEventsController::fillEventStack(['eventId' => 'user_quota', 'tableName' => 'users', 'recordId' => 'quota_exceed', 'userId' => $GLOBALS['id'], 'info' => _QUOTA_EXCEEDED]);
+                    NotificationsEventsController::fillEventStack(
+                        [
+                            'eventId'   => 'user_quota',
+                            'tableName' => 'users',
+                            'recordId'  => 'quota_exceed',
+                            'userId'    => $GLOBALS['id'],
+                            'info'      => _QUOTA_EXCEEDED
+                        ]
+                    );
                 }
             }
         }
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_UPDATED . " {$body['firstname']} {$body['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_UPDATED . " {$body['firstname']} {$body['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function isDeletable(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function isDeletable(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id'], 'delete' => true, 'himself' => true]);
         if (!empty($error['error'])) {
@@ -369,7 +563,13 @@ class UserController
 
         $listInstanceEntities = [];
         $listInstanceResIds = [];
-        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(['select' => ['listinstance.res_id', 'res_letterbox.destination'], 'userId' => $aArgs['id'], 'itemMode' => 'dest']);
+        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(
+            [
+                'select'   => ['listinstance.res_id', 'res_letterbox.destination'],
+                'userId'   => $aArgs['id'],
+                'itemMode' => 'dest'
+            ]
+        );
         foreach ($listInstances as $listInstance) {
             if (!ResController::hasRightByResId(['resId' => [$listInstance['res_id']], 'userId' => $GLOBALS['id']])) {
                 $isListInstanceDeletable = false;
@@ -382,13 +582,15 @@ class UserController
 
         $listTemplateEntities = [];
         $listTemplates = ListTemplateModel::getWithItems([
-            'select'    => ['entity_id', 'title'],
-            'where'     => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
-            'data'      => [$aArgs['id'], 'diffusionList', 'dest', 'user']
+            'select' => ['entity_id', 'title'],
+            'where'  => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
+            'data'   => [$aArgs['id'], 'diffusionList', 'dest', 'user']
         ]);
         $allEntities = EntityModel::getAllEntitiesByUserId(['userId' => $GLOBALS['id']]);
         if (!empty($allEntities)) {
-            $allEntities = EntityModel::get(['select' => ['id'], 'where' => ['entity_id in (?)'], 'data' => [$allEntities]]);
+            $allEntities = EntityModel::get(
+                ['select' => ['id'], 'where' => ['entity_id in (?)'], 'data' => [$allEntities]]
+            );
             $allEntities = array_column($allEntities, 'id');
         }
         foreach ($listTemplates as $listTemplate) {
@@ -412,16 +614,22 @@ class UserController
                 $formattedLTEntities[] = $entity['short_label'];
             }
 
-            return $response->withJson(['isDeletable' => false, 'listInstanceEntities' => $formattedLIEntities, 'listTemplateEntities' => $formattedLTEntities]);
+            return $response->withJson(
+                [
+                    'isDeletable'          => false,
+                    'listInstanceEntities' => $formattedLIEntities,
+                    'listTemplateEntities' => $formattedLTEntities
+                ]
+            );
         }
 
         $listInstances = [];
         foreach ($listInstanceResIds as $listInstanceResId) {
             $rawListInstances = ListInstanceModel::get([
-                'select'    => ['*'],
-                'where'     => ['res_id = ?', 'difflist_type = ?'],
-                'data'      => [$listInstanceResId, 'entity_id'],
-                'orderBy'   => ['listinstance_id']
+                'select'  => ['*'],
+                'where'   => ['res_id = ?', 'difflist_type = ?'],
+                'data'    => [$listInstanceResId, 'entity_id'],
+                'orderBy' => ['listinstance_id']
             ]);
             $listInstances[] = [
                 'resId'         => $listInstanceResId,
@@ -430,18 +638,18 @@ class UserController
         }
 
         $rawWorkflowListInstances = ListInstanceModel::get([
-            'select'    => ['res_id'],
-            'where'     => ['item_id = ?', 'difflist_type = ?', 'process_date is null'],
-            'data'      => [$aArgs['id'], 'VISA_CIRCUIT'],
-            'groupBy'   => ['res_id']
+            'select'  => ['res_id'],
+            'where'   => ['item_id = ?', 'difflist_type = ?', 'process_date is null'],
+            'data'    => [$aArgs['id'], 'VISA_CIRCUIT'],
+            'groupBy' => ['res_id']
         ]);
         $workflowListInstances = [];
         foreach ($rawWorkflowListInstances as $rawWorkflowListInstance) {
             $rawListInstances = ListInstanceModel::get([
-                'select'    => ['*'],
-                'where'     => ['res_id = ?', 'difflist_type = ?'],
-                'data'      => [$rawWorkflowListInstance['res_id'], 'VISA_CIRCUIT'],
-                'orderBy'   => ['listinstance_id']
+                'select'  => ['*'],
+                'where'   => ['res_id = ?', 'difflist_type = ?'],
+                'data'    => [$rawWorkflowListInstance['res_id'], 'VISA_CIRCUIT'],
+                'orderBy' => ['listinstance_id']
             ]);
             $workflowListInstances[] = [
                 'resId'         => $rawWorkflowListInstance['res_id'],
@@ -449,10 +657,24 @@ class UserController
             ];
         }
 
-        return $response->withJson(['isDeletable' => true, 'listTemplates' => $listTemplates, 'listInstances' => $listInstances, 'workflowListInstances' => $workflowListInstances]);
+        return $response->withJson(
+            [
+                'isDeletable'           => true,
+                'listTemplates'         => $listTemplates,
+                'listInstances'         => $listInstances,
+                'workflowListInstances' => $workflowListInstances
+            ]
+        );
     }
 
-    public function suspend(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function suspend(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id'], 'delete' => true, 'himself' => true]);
         if (!empty($error['error'])) {
@@ -460,19 +682,24 @@ class UserController
         }
 
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode']]);
-        if (in_array($user['mode'], ['root_visible', 'root_invisible']) && !UserController::isRoot(['id' => $GLOBALS['id']])) {
+        if (
+            in_array($user['mode'], ['root_visible', 'root_invisible']) &&
+            !UserController::isRoot(['id' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(['select' => [1], 'userId' => $args['id'], 'itemMode' => 'dest']);
+        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(
+            ['select' => [1], 'userId' => $args['id'], 'itemMode' => 'dest']
+        );
         if (!empty($listInstances)) {
             return $response->withStatus(403)->withJson(['errors' => 'User is still present in listInstances']);
         }
 
         $listTemplates = ListTemplateModel::getWithItems([
-            'select'    => [1],
-            'where'     => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
-            'data'      => [$args['id'], 'diffusionList', 'dest', 'user']
+            'select' => [1],
+            'where'  => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
+            'data'   => [$args['id'], 'diffusionList', 'dest', 'user']
         ]);
         if (!empty($listTemplates)) {
             return $response->withStatus(403)->withJson(['errors' => 'User is still present in listTemplates']);
@@ -492,34 +719,45 @@ class UserController
         ]);
         ListTemplateModel::deleteNoItemsOnes();
 
-        $contactGroupsToDelete = ContactGroupModel::get(['select' => ['id'], 'where' => ['owner = ?', 'entities = ?'], 'data' => [$args['id'], '{}']]);
+        $contactGroupsToDelete = ContactGroupModel::get(
+            ['select' => ['id'], 'where' => ['owner = ?', 'entities = ?'], 'data' => [$args['id'], '{}']]
+        );
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
             ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
         }
-        ContactGroupListModel::delete(['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]);
+        ContactGroupListModel::delete(
+            ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
+        );
 
         UserModel::update([
             'set'   => [
-                'status'   => 'SPD'
+                'status' => 'SPD'
             ],
             'where' => ['id = ?'],
             'data'  => [$args['id']]
         ]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'DEL',
-            'eventId'      => 'userSuppression',
-            'info'         => _USER_SUSPENDED . " {$user['firstname']} {$user['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'DEL',
+            'eventId'   => 'userSuppression',
+            'info'      => _USER_SUSPENDED . " {$user['firstname']} {$user['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id'], 'delete' => true, 'himself' => true]);
         if (!empty($error['error'])) {
@@ -527,19 +765,24 @@ class UserController
         }
 
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['firstname', 'lastname', 'user_id', 'mode']]);
-        if (in_array($user['mode'], ['root_visible', 'root_invisible']) && !UserController::isRoot(['id' => $GLOBALS['id']])) {
+        if (
+            in_array($user['mode'], ['root_visible', 'root_invisible']) &&
+            !UserController::isRoot(['id' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(['select' => [1], 'userId' => $args['id'], 'itemMode' => 'dest']);
+        $listInstances = ListInstanceModel::getWhenOpenMailsByUserId(
+            ['select' => [1], 'userId' => $args['id'], 'itemMode' => 'dest']
+        );
         if (!empty($listInstances)) {
             return $response->withStatus(403)->withJson(['errors' => 'User is still present in listInstances']);
         }
 
         $listTemplates = ListTemplateModel::getWithItems([
-            'select'    => [1],
-            'where'     => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
-            'data'      => [$args['id'], 'diffusionList', 'dest', 'user']
+            'select' => [1],
+            'where'  => ['item_id = ?', 'type = ?', 'item_mode = ?', 'item_type = ?', 'entity_id is not null'],
+            'data'   => [$args['id'], 'diffusionList', 'dest', 'user']
         ]);
         if (!empty($listTemplates)) {
             return $response->withStatus(403)->withJson(['errors' => 'User is still present in listTemplates']);
@@ -555,13 +798,17 @@ class UserController
         ]);
         ListTemplateModel::deleteNoItemsOnes();
 
-        $contactGroupsToDelete = ContactGroupModel::get(['select' => ['id'], 'where' => ['owner = ?', 'entities = ?'], 'data' => [$args['id'], '{}']]);
+        $contactGroupsToDelete = ContactGroupModel::get(
+            ['select' => ['id'], 'where' => ['owner = ?', 'entities = ?'], 'data' => [$args['id'], '{}']]
+        );
         if (!empty($contactGroupsToDelete)) {
             $contactGroupsToDelete = array_column($contactGroupsToDelete, 'id');
             ContactGroupModel::delete(['where' => ['id in (?)'], 'data' => [$contactGroupsToDelete]]);
             ContactGroupListModel::delete(['where' => ['contacts_groups_id in (?)'], 'data' => [$contactGroupsToDelete]]);
         }
-        ContactGroupListModel::delete(['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]);
+        ContactGroupListModel::delete(
+            ['where' => ['correspondent_id = ?', 'correspondent_type = ?'], 'data' => [$args['id'], 'user']]
+        );
 
         RedirectBasketModel::delete([
             'where' => ['owner_user_id = ? OR actual_user_id = ?'],
@@ -587,35 +834,74 @@ class UserController
         UserModel::delete(['id' => $args['id']]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'DEL',
-            'eventId'      => 'userSuppression',
-            'info'         => _USER_DELETED . " {$user['firstname']} {$user['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'DEL',
+            'eventId'   => 'userSuppression',
+            'info'      => _USER_DELETED . " {$user['firstname']} {$user['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function getProfile(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getProfile(Request $request, Response $response): Response
     {
-        $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['id', 'user_id', 'firstname', 'lastname', 'phone', 'mail', 'initials', 'preferences', 'external_id', 'status', 'mode', 'feature_tour', 'absence']]);
-        $user['external_id']        = json_decode($user['external_id'], true);
-        $user['preferences']        = json_decode($user['preferences'], true);
-        $user['featureTour']        = json_decode($user['feature_tour'], true);
+        $user = UserModel::getById(
+            [
+                'id'     => $GLOBALS['id'],
+                'select' => [
+                    'id',
+                    'user_id',
+                    'firstname',
+                    'lastname',
+                    'phone',
+                    'mail',
+                    'initials',
+                    'preferences',
+                    'external_id',
+                    'status',
+                    'mode',
+                    'feature_tour',
+                    'absence'
+                ]
+            ]
+        );
+        $user['external_id'] = json_decode($user['external_id'], true);
+        $user['preferences'] = json_decode($user['preferences'], true);
+        $user['featureTour'] = json_decode($user['feature_tour'], true);
         unset($user['feature_tour']);
-        $user['signatures']         = UserSignatureModel::getByUserSerialId(['userSerialid' => $user['id']]);
-        $user['groups']             = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
-        $user['entities']           = UserModel::getEntitiesById(['id' => $GLOBALS['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]);
-        $user['baskets']            = BasketModel::getBasketsByLogin(['login' => $user['user_id']]);
-        $user['assignedBaskets']    = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
-        $user['redirectedBaskets']  = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
-        $user['regroupedBaskets']   = BasketModel::getRegroupedBasketsByUserId(['userId' => $user['user_id']]);
-        $user['passwordRules']      = PasswordModel::getEnabledRules();
-        $user['canModifyPassword']  = true;
-        $user['privileges']         = PrivilegeController::getPrivilegesByUser(['userId' => $user['id']]);
+        $user['signatures'] = UserSignatureModel::getByUserSerialId(['userSerialid' => $user['id']]);
+        $user['groups'] = UserModel::getGroupsById(['id' => $GLOBALS['id']]);
+        $user['entities'] = UserModel::getEntitiesById(
+            [
+                'id'      => $GLOBALS['id'],
+                'select'  => [
+                    'entities.id',
+                    'users_entities.entity_id',
+                    'entities.entity_label',
+                    'users_entities.user_role',
+                    'users_entities.primary_entity'
+                ],
+                'orderBy' => ['users_entities.primary_entity DESC']
+            ]
+        );
+        $user['baskets'] = BasketModel::getBasketsByLogin(['login' => $user['user_id']]);
+        $user['assignedBaskets'] = RedirectBasketModel::getAssignedBasketsByUserId(['userId' => $user['id']]);
+        $user['redirectedBaskets'] = RedirectBasketModel::getRedirectedBasketsByUserId(['userId' => $user['id']]);
+        $user['regroupedBaskets'] = BasketModel::getRegroupedBasketsByUserId(['userId' => $user['user_id']]);
+        $user['passwordRules'] = PasswordModel::getEnabledRules();
+        $user['canModifyPassword'] = true;
+        $user['privileges'] = PrivilegeController::getPrivilegesByUser(['userId' => $user['id']]);
         $user['lockAdvancedPrivileges'] = PrivilegeController::isAdvancedPrivilegesLocked();
-        $userFollowed = UserFollowedResourceModel::get(['select' => ['count(1) as nb'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        $userFollowed = UserFollowedResourceModel::get(
+            ['select' => ['count(1) as nb'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]
+        );
         $user['nbFollowedResources'] = $userFollowed[0]['nb'];
         if (!empty($user['absence'])) {
             $user['absence'] = json_decode($user['absence'], true);
@@ -643,7 +929,12 @@ class UserController
         return $response->withJson($user);
     }
 
-    public function updateProfile(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function updateProfile(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -651,7 +942,10 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Body firstname is empty or not a string']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['lastname'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body lastname is empty or not a string']);
-        } elseif (!Validator::stringType()->notEmpty()->validate($body['mail']) || !filter_var($body['mail'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (
+            !Validator::stringType()->notEmpty()->validate($body['mail']) ||
+            !filter_var($body['mail'], FILTER_VALIDATE_EMAIL)
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Body mail is empty or not a valid email']);
         } elseif (!empty($body['phone']) && !preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d/", $body['phone'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body phone is not a valid phone number']);
@@ -659,28 +953,33 @@ class UserController
 
         UserModel::update([
             'set'   => [
-                'firstname'     => $body['firstname'],
-                'lastname'      => $body['lastname'],
-                'mail'          => $body['mail'],
-                'phone'         => $body['phone'],
-                'initials'      => $body['initials']
+                'firstname' => $body['firstname'],
+                'lastname'  => $body['lastname'],
+                'mail'      => $body['mail'],
+                'phone'     => $body['phone'],
+                'initials'  => $body['initials']
             ],
             'where' => ['id = ?'],
             'data'  => [$GLOBALS['id']]
         ]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_UPDATED . " {$body['firstname']} {$body['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_UPDATED . " {$body['firstname']} {$body['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function updateCurrentUserFeatureTour(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function updateCurrentUserFeatureTour(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -698,17 +997,22 @@ class UserController
 
         $userData = UserModel::getLabelledUserById(['id' => $GLOBALS['id'], 'select' => ['firstname', 'lastname']]);
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_FEATURE_TOUR_UPDATED . " " . $userData
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_FEATURE_TOUR_UPDATED . " " . $userData
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function updateCurrentUserPreferences(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function updateCurrentUserPreferences(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -717,7 +1021,9 @@ class UserController
 
         if (!empty($body['documentEdition'])) {
             if (!in_array($body['documentEdition'], DocumentEditorController::DOCUMENT_EDITION_METHODS)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body preferences[documentEdition] is not allowed']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body preferences[documentEdition] is not allowed']
+                );
             }
             $preferences['documentEdition'] = $body['documentEdition'];
         }
@@ -727,24 +1033,31 @@ class UserController
 
         UserModel::update([
             'set'   => [
-                'preferences'   => json_encode($preferences)
+                'preferences' => json_encode($preferences)
             ],
             'where' => ['id = ?'],
             'data'  => [$GLOBALS['id']]
         ]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_PREFERENCE_UPDATED . " {$user['firstname']} {$user['lastname']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_PREFERENCE_UPDATED . " {$user['firstname']} {$user['lastname']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function updatePassword(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updatePassword(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
         if (!empty($error['error'])) {
@@ -767,11 +1080,21 @@ class UserController
 
         if ($body['newPassword'] != $body['reNewPassword']) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
-        } elseif (!AuthenticationModel::authentication(['login' => $user['user_id'], 'password' => $body['currentPassword']])) {
+        } elseif (
+            !AuthenticationModel::authentication(
+                ['login' => $user['user_id'], 'password' => $body['currentPassword']]
+            )
+        ) {
             return $response->withStatus(401)->withJson(['errors' => _WRONG_PSW]);
         } elseif (!PasswordController::isPasswordValid(['password' => $body['newPassword']])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Password does not match security criteria']);
-        } elseif (!PasswordModel::isPasswordHistoryValid(['password' => $body['newPassword'], 'userSerialId' => $aArgs['id']])) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Password does not match security criteria']
+            );
+        } elseif (
+            !PasswordModel::isPasswordHistoryValid(
+                ['password' => $body['newPassword'], 'userSerialId' => $aArgs['id']]
+            )
+        ) {
             return $response->withStatus(400)->withJson(['errors' => _ALREADY_USED_PSW]);
         }
 
@@ -779,17 +1102,24 @@ class UserController
         PasswordModel::setHistoryPassword(['userSerialId' => $aArgs['id'], 'password' => $body['newPassword']]);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $aArgs['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _USER_PASSWORD_UPDATED
+            'tableName' => 'users',
+            'recordId'  => $aArgs['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _USER_PASSWORD_UPDATED
         ]);
 
         return $response->withJson(['success' => 'success']);
     }
 
-    public function setRedirectedBaskets(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function setRedirectedBaskets(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id'], 'himself' => true]);
         if (!empty($error['error'])) {
@@ -798,7 +1128,9 @@ class UserController
 
         $body = $request->getParsedBody();
 
-        $result = UserController::redirectBasket(['redirectedBaskets' => $body, 'userId' => $args['id'], 'login' => $GLOBALS['login']]);
+        $result = UserController::redirectBasket(
+            ['redirectedBaskets' => $body, 'userId' => $args['id'], 'login' => $GLOBALS['login']]
+        );
         if (!empty($result['errors'])) {
             return $response->withStatus(400)->withJson(['errors' => $result['errors']]);
         }
@@ -822,7 +1154,14 @@ class UserController
         ]);
     }
 
-    public function deleteRedirectedBasket(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteRedirectedBasket(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id'], 'himself' => true]);
         if (!empty($error['error'])) {
@@ -835,7 +1174,9 @@ class UserController
 
         if (!Validator::notEmpty()->arrayType()->validate($data['redirectedBasketIds'])) {
             DatabaseModel::rollbackTransaction();
-            return $response->withStatus(400)->withJson(['errors' => 'RedirectedBasketIds is empty or not an array']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'RedirectedBasketIds is empty or not an array']
+            );
         }
 
         $user = UserModel::getById(['id' => $aArgs['id'], 'select' => ['user_id']]);
@@ -845,8 +1186,17 @@ class UserController
         }
 
         foreach ($data['redirectedBasketIds'] as $redirectedBasketId) {
-            $redirectedBasket = RedirectBasketModel::get(['select' => ['actual_user_id', 'owner_user_id', 'basket_id'], 'where' => ['id = ?'], 'data' => [$redirectedBasketId]]);
-            if (empty($redirectedBasket[0]) || ($redirectedBasket[0]['actual_user_id'] != $aArgs['id'] && $redirectedBasket[0]['owner_user_id'] != $aArgs['id'])) {
+            $redirectedBasket = RedirectBasketModel::get(
+                [
+                    'select' => ['actual_user_id', 'owner_user_id', 'basket_id'],
+                    'where'  => ['id = ?'],
+                    'data'   => [$redirectedBasketId]
+                ]
+            );
+            if (
+                empty($redirectedBasket[0]) || ($redirectedBasket[0]['actual_user_id'] != $aArgs['id'] &&
+                    $redirectedBasket[0]['owner_user_id'] != $aArgs['id'])
+            ) {
                 DatabaseModel::rollbackTransaction();
                 return $response->withStatus(403)->withJson(['errors' => 'Redirected basket out of perimeter']);
             }
@@ -854,11 +1204,12 @@ class UserController
             RedirectBasketModel::delete(['where' => ['id = ?'], 'data' => [$redirectedBasketId]]);
 
             HistoryController::add([
-                'tableName'    => 'redirected_baskets',
-                'recordId'     => $GLOBALS['login'],
-                'eventType'    => 'DEL',
-                'eventId'      => 'basketRedirection',
-                'info'         => _BASKET_REDIRECTION_SUPPRESSION . " {$user['user_id']} : " . $redirectedBasket[0]['basket_id']
+                'tableName' => 'redirected_baskets',
+                'recordId'  => $GLOBALS['login'],
+                'eventType' => 'DEL',
+                'eventId'   => 'basketRedirection',
+                'info'      => _BASKET_REDIRECTION_SUPPRESSION . " {$user['user_id']} : " .
+                    $redirectedBasket[0]['basket_id']
             ]);
         }
 
@@ -876,11 +1227,17 @@ class UserController
         }
 
         return $response->withJson([
-            'baskets'   => $userBaskets
+            'baskets' => $userBaskets
         ]);
     }
 
-    public function getStatusByUserId(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function getStatusByUserId(Request $request, Response $response, array $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -895,7 +1252,14 @@ class UserController
         return $response->withJson(['status' => $user['status']]);
     }
 
-    public function updateStatus(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function updateStatus(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id'], 'himself' => true]);
         if (!empty($error['error'])) {
@@ -924,17 +1288,24 @@ class UserController
         $message .= ($body['status'] == 'ABS' ? _GO_ON_VACATION : _BACK_FROM_VACATION);
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $args['id'],
-            'eventType'    => $body['status'] == 'ABS' ? 'ABS' : 'PRE',
-            'eventId'      => 'userabs',
-            'info'         => $message
+            'tableName' => 'users',
+            'recordId'  => $args['id'],
+            'eventType' => $body['status'] == 'ABS' ? 'ABS' : 'PRE',
+            'eventId'   => 'userabs',
+            'info'      => $message
         ]);
 
         return $response->withJson(['user' => UserModel::getById(['id' => $args['id'], 'select' => ['status']])]);
     }
 
-    public function getImageContent(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response|array
+     * @throws Exception
+     */
+    public function getImageContent(Request $request, Response $response, array $aArgs): Response|array
     {
         if (!Validator::intVal()->validate($aArgs['id']) || !Validator::intVal()->validate($aArgs['signatureId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
@@ -953,26 +1324,33 @@ class UserController
         }
 
         $signatures = UserSignatureModel::get([
-            'select'    => ['signature_path', 'signature_file_name'],
-            'where'     => ['user_serial_id = ?', 'id = ?'],
-            'data'      => [$aArgs['id'], $aArgs['signatureId']]
+            'select' => ['signature_path', 'signature_file_name'],
+            'where'  => ['user_serial_id = ?', 'id = ?'],
+            'data'   => [$aArgs['id'], $aArgs['signatureId']]
         ]);
         if (empty($signatures[0])) {
             return $response->withStatus(400)->withJson(['errors' => 'Signature does not exist']);
         }
 
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
+        $docserver = DocserverModel::getCurrentDocserver(
+            ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return [];
         }
 
-        $pathToSignature = $docserver['path_template'] . str_replace('#', '/', $signatures[0]['signature_path']) . $signatures[0]['signature_file_name'];
+        $pathToSignature = $docserver['path_template'] . str_replace(
+            '#',
+            '/',
+            $signatures[0]['signature_path']
+        ) .
+            $signatures[0]['signature_file_name'];
         $image = file_get_contents($pathToSignature);
         if ($image === false) {
             return $response->withStatus(404)->withJson(['errors' => 'Signature not found on docserver']);
         }
 
-        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($image);
 
         $response->write($image);
@@ -980,7 +1358,14 @@ class UserController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    public function addSignature(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function addSignature(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
@@ -1000,16 +1385,16 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
 
-        $file     = base64_decode($data['base64']);
-        $tmpName  = "tmp_file_{$aArgs['id']}_" . rand() . "_{$data['name']}";
+        $file = base64_decode($data['base64']);
+        $tmpName = "tmp_file_{$aArgs['id']}_" . rand() . "_{$data['name']}";
 
-        $finfo    = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $mimeType = $finfo->buffer($file);
-        $size     = strlen($file);
-        $type     = explode('/', $mimeType);
-        $ext      = strtoupper(substr($data['name'], strrpos($data['name'], '.') + 1));
+        $size = strlen($file);
+        $type = explode('/', $mimeType);
+        $ext = strtoupper(substr($data['name'], strrpos($data['name'], '.') + 1));
 
-        $fileAccepted  = StoreController::isFileAllowed(['extension' => $ext, 'type' => $mimeType]);
+        $fileAccepted = StoreController::isFileAllowed(['extension' => $ext, 'type' => $mimeType]);
 
         if (!$fileAccepted || $type[0] != 'image') {
             return $response->withStatus(400)->withJson(['errors' => _WRONG_FILE_TYPE]);
@@ -1020,14 +1405,25 @@ class UserController
         file_put_contents(CoreConfigModel::getTmpPath() . $tmpName, $file);
 
         $storeInfos = DocserverController::storeResourceOnDocServer([
-            'collId'            => 'templates',
-            'docserverTypeId'   => 'TEMPLATES',
-            'encodedResource'   => base64_encode($file),
-            'format'            => $ext
+            'collId'          => 'templates',
+            'docserverTypeId' => 'TEMPLATES',
+            'encodedResource' => base64_encode($file),
+            'format'          => $ext
         ]);
 
-        if (!file_exists($storeInfos['path_template'] . str_replace('#', '/', $storeInfos['destination_dir']) . $storeInfos['file_destination_name'])) {
-            return $response->withStatus(500)->withJson(['errors' => $storeInfos['error'] . ' ' . _PATH_OF_DOCSERVER_UNAPPROACHABLE]);
+        if (
+            !file_exists(
+                $storeInfos['path_template'] . str_replace(
+                    '#',
+                    '/',
+                    $storeInfos['destination_dir']
+                ) .
+                $storeInfos['file_destination_name']
+            )
+        ) {
+            return $response->withStatus(500)->withJson(
+                ['errors' => $storeInfos['error'] . ' ' . _PATH_OF_DOCSERVER_UNAPPROACHABLE]
+            );
         }
 
         UserSignatureModel::create([
@@ -1042,7 +1438,14 @@ class UserController
         ]);
     }
 
-    public function updateSignature(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updateSignature(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
@@ -1063,17 +1466,26 @@ class UserController
         }
 
         UserSignatureModel::update([
-            'signatureId'   => $aArgs['signatureId'],
-            'userSerialId'  => $aArgs['id'],
-            'label'         => $data['label']
+            'signatureId'  => $aArgs['signatureId'],
+            'userSerialId' => $aArgs['id'],
+            'label'        => $data['label']
         ]);
 
         return $response->withJson([
-            'signature' => UserSignatureModel::getById(['id' => $aArgs['signatureId'], 'select' => ['id', 'user_serial_id', 'signature_label']])
+            'signature' => UserSignatureModel::getById(
+                ['id' => $aArgs['signatureId'], 'select' => ['id', 'user_serial_id', 'signature_label']]
+            )
         ]);
     }
 
-    public function deleteSignature(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteSignature(Request $request, Response $response, array $aArgs): Response
     {
         if (
             !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])
@@ -1094,7 +1506,12 @@ class UserController
         ]);
     }
 
-    public function createCurrentUserEmailSignature(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function createCurrentUserEmailSignature(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody();
 
@@ -1103,9 +1520,9 @@ class UserController
         }
 
         UserEmailSignatureModel::create([
-            'userId'    => $GLOBALS['id'],
-            'title'     => $data['title'],
-            'htmlBody'  => $data['htmlBody']
+            'userId'   => $GLOBALS['id'],
+            'title'    => $data['title'],
+            'htmlBody' => $data['htmlBody']
         ]);
 
         return $response->withJson([
@@ -1113,7 +1530,13 @@ class UserController
         ]);
     }
 
-    public function updateCurrentUserEmailSignature(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function updateCurrentUserEmailSignature(Request $request, Response $response, array $aArgs): Response
     {
         $data = $request->getParsedBody();
 
@@ -1122,10 +1545,10 @@ class UserController
         }
 
         UserEmailSignatureModel::update([
-            'id'        => $aArgs['id'],
-            'userId'    => $GLOBALS['id'],
-            'title'     => $data['title'],
-            'htmlBody'  => $data['htmlBody']
+            'id'       => $aArgs['id'],
+            'userId'   => $GLOBALS['id'],
+            'title'    => $data['title'],
+            'htmlBody' => $data['htmlBody']
         ]);
 
         return $response->withJson([
@@ -1133,17 +1556,32 @@ class UserController
         ]);
     }
 
-    public function deleteCurrentUserEmailSignature(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function deleteCurrentUserEmailSignature(Request $request, Response $response, array $aArgs): Response
     {
         UserEmailSignatureModel::delete([
-            'id'        => $aArgs['id'],
-            'userId'    => $GLOBALS['id']
+            'id'     => $aArgs['id'],
+            'userId' => $GLOBALS['id']
         ]);
 
-        return $response->withJson(['emailSignatures' => UserEmailSignatureModel::getByUserId(['userId' => $GLOBALS['id']])]);
+        return $response->withJson(
+            ['emailSignatures' => UserEmailSignatureModel::getByUserId(['userId' => $GLOBALS['id']])]
+        );
     }
 
-    public function addGroup(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function addGroup(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1171,7 +1609,9 @@ class UserController
 
         UserGroupModel::create(['user_id' => $aArgs['id'], 'group_id' => $group['id'], 'role' => $data['role']]);
 
-        $baskets = GroupBasketModel::get(['select' => ['basket_id'], 'where' => ['group_id = ?'], 'data' => [$data['groupId']]]);
+        $baskets = GroupBasketModel::get(
+            ['select' => ['basket_id'], 'where' => ['group_id = ?'], 'data' => [$data['groupId']]]
+        );
         foreach ($baskets as $basket) {
             UserBasketPreferenceModel::create([
                 'userSerialId'  => $aArgs['id'],
@@ -1192,12 +1632,19 @@ class UserController
         ]);
 
         return $response->withJson([
-            'groups'    => UserModel::getGroupsById(['id' => $aArgs['id']]),
-            'baskets'   => BasketModel::getBasketsByLogin(['login' => $user['user_id']])
+            'groups'  => UserModel::getGroupsById(['id' => $aArgs['id']]),
+            'baskets' => BasketModel::getBasketsByLogin(['login' => $user['user_id']])
         ]);
     }
 
-    public function updateGroup(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updateGroup(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1218,7 +1665,13 @@ class UserController
             $data['role'] = '';
         }
 
-        UserGroupModel::update(['set' => ['role' => $data['role']], 'where' => ['user_id = ?', 'group_id = ?'], 'data' => [$aArgs['id'], $group['id']]]);
+        UserGroupModel::update(
+            [
+                'set'   => ['role' => $data['role']],
+                'where' => ['user_id = ?', 'group_id = ?'],
+                'data'  => [$aArgs['id'], $group['id']]
+            ]
+        );
 
         $user = UserModel::getById(['id' => $aArgs['id'], 'select' => ['user_id']]);
         HistoryController::add([
@@ -1233,7 +1686,14 @@ class UserController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function deleteGroup(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteGroup(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1276,19 +1736,44 @@ class UserController
         ]);
     }
 
-    public function getEntities(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getEntities(Request $request, Response $response, array $args): Response
     {
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['user_id']]);
         if (empty($user)) {
             return $response->withStatus(400)->withJson(['errors' => 'User does not exist']);
         }
 
-        $entities = UserModel::getEntitiesById(['id' => $args['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]);
+        $entities = UserModel::getEntitiesById(
+            [
+                'id'      => $args['id'],
+                'select'  => [
+                    'entities.id',
+                    'users_entities.entity_id',
+                    'entities.entity_label',
+                    'users_entities.user_role',
+                    'users_entities.primary_entity'
+                ],
+                'orderBy' => ['users_entities.primary_entity DESC']
+            ]
+        );
 
         return $response->withJson(['entities' => $entities]);
     }
 
-    public function addEntity(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function addEntity(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1314,7 +1799,14 @@ class UserController
             $pEntity = 'Y';
         }
 
-        UserEntityModel::addUserEntity(['id' => $aArgs['id'], 'entityId' => $data['entityId'], 'role' => $data['role'], 'primaryEntity' => $pEntity]);
+        UserEntityModel::addUserEntity(
+            [
+                'id'            => $aArgs['id'],
+                'entityId'      => $data['entityId'],
+                'role'          => $data['role'],
+                'primaryEntity' => $pEntity
+            ]
+        );
         HistoryController::add([
             'tableName' => 'users',
             'recordId'  => $aArgs['id'],
@@ -1325,12 +1817,33 @@ class UserController
         ]);
 
         return $response->withJson([
-            'entities'      => UserModel::getEntitiesById(['id' => $aArgs['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]),
-            'allEntities'   => EntityModel::getAvailableEntitiesForAdministratorByUserId(['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']])
+            'entities'    => UserModel::getEntitiesById(
+                [
+                    'id'      => $aArgs['id'],
+                    'select'  => [
+                        'entities.id',
+                        'users_entities.entity_id',
+                        'entities.entity_label',
+                        'users_entities.user_role',
+                        'users_entities.primary_entity'
+                    ],
+                    'orderBy' => ['users_entities.primary_entity DESC']
+                ]
+            ),
+            'allEntities' => EntityModel::getAvailableEntitiesForAdministratorByUserId(
+                ['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']]
+            )
         ]);
     }
 
-    public function updateEntity(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updateEntity(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1345,7 +1858,9 @@ class UserController
             $data['user_role'] = '';
         }
 
-        UserEntityModel::updateUserEntity(['id' => $aArgs['id'], 'entityId' => $aArgs['entityId'], 'role' => $data['user_role']]);
+        UserEntityModel::updateUserEntity(
+            ['id' => $aArgs['id'], 'entityId' => $aArgs['entityId'], 'role' => $data['user_role']]
+        );
         HistoryController::add([
             'tableName' => 'users',
             'recordId'  => $aArgs['id'],
@@ -1358,7 +1873,14 @@ class UserController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function updatePrimaryEntity(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updatePrimaryEntity(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1370,10 +1892,33 @@ class UserController
 
         UserEntityModel::updateUserPrimaryEntity(['id' => $aArgs['id'], 'entityId' => $aArgs['entityId']]);
 
-        return $response->withJson(['entities' => UserModel::getEntitiesById(['id' => $aArgs['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']])]);
+        return $response->withJson(
+            [
+                'entities' => UserModel::getEntitiesById(
+                    [
+                        'id'      => $aArgs['id'],
+                        'select'  => [
+                            'entities.id',
+                            'users_entities.entity_id',
+                            'entities.entity_label',
+                            'users_entities.user_role',
+                            'users_entities.primary_entity'
+                        ],
+                        'orderBy' => ['users_entities.primary_entity DESC']
+                    ]
+                )
+            ]
+        );
     }
 
-    public function deleteEntity(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteEntity(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1388,15 +1933,21 @@ class UserController
 
         $data = $request->getParsedBody();
         if (!empty($data['mode'])) {
-            $templateLists = ListTemplateModel::get(['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$entityInfo['id']]]);
+            $templateLists = ListTemplateModel::get(
+                ['select' => ['id'], 'where' => ['entity_id = ?'], 'data' => [$entityInfo['id']]]
+            );
             if (!empty($templateLists)) {
                 foreach ($templateLists as $templateList) {
-                    ListTemplateItemModel::delete(['where' => ['list_template_id = ?'], 'data' => [$templateList['id']]]);
+                    ListTemplateItemModel::delete(
+                        ['where' => ['list_template_id = ?'], 'data' => [$templateList['id']]]
+                    );
                 }
             }
 
             if ($data['mode'] == 'reaffect') {
-                $listInstances = ListInstanceModel::getWithConfidentiality(['select' => ['listinstance.res_id'], 'entityId' => $aArgs['entityId'], 'userId' => $aArgs['id']]);
+                $listInstances = ListInstanceModel::getWithConfidentiality(
+                    ['select' => ['listinstance.res_id'], 'entityId' => $aArgs['entityId'], 'userId' => $aArgs['id']]
+                );
                 $resIdsToReplace = array_column($listInstances, 'res_id');
                 if (!empty($resIdsToReplace)) {
                     ListInstanceModel::update([
@@ -1407,15 +1958,22 @@ class UserController
                 }
             } else {
                 $ressources = ResModel::get([
-                    'select'    => ['res_id'],
-                    'where'     => ['confidentiality = ?', 'destination = ?', 'closing_date is null'],
-                    'data'      => ['Y', $aArgs['entityId']]
+                    'select' => ['res_id'],
+                    'where'  => ['confidentiality = ?', 'destination = ?', 'closing_date is null'],
+                    'data'   => ['Y', $aArgs['entityId']]
                 ]);
                 foreach ($ressources as $ressource) {
                     $listInstanceId = ListInstanceModel::get([
-                        'select'    => ['listinstance_id'],
-                        'where'     => ['res_id = ?', 'item_id = ?', 'item_type = ?', 'difflist_type = ?', 'item_mode = ?', 'process_date is null'],
-                        'data'      => [$ressource['res_id'], $aArgs['id'], 'user_id', 'VISA_CIRCUIT', 'sign']
+                        'select' => ['listinstance_id'],
+                        'where'  => [
+                            'res_id = ?',
+                            'item_id = ?',
+                            'item_type = ?',
+                            'difflist_type = ?',
+                            'item_mode = ?',
+                            'process_date is null'
+                        ],
+                        'data'   => [$ressource['res_id'], $aArgs['id'], 'user_id', 'VISA_CIRCUIT', 'sign']
                     ]);
 
                     if (!empty($listInstanceId)) {
@@ -1425,26 +1983,47 @@ class UserController
                             'data'  => [$ressource['res_id'], 'VISA_CIRCUIT', $listInstanceId[0]['listinstance_id'] - 1]
                         ]);
                         $listInstanceMinus = ListInstanceModel::get([
-                            'select'    => ['requested_signature'],
-                            'where'     => ['listinstance_id = ?'],
-                            'data'      => [$listInstanceId[0]['listinstance_id'] - 1]
+                            'select' => ['requested_signature'],
+                            'where'  => ['listinstance_id = ?'],
+                            'data'   => [$listInstanceId[0]['listinstance_id'] - 1]
                         ]);
                         if ($listInstanceMinus[0]['requested_signature']) {
-                            ResModel::update(['set' => ['status' => 'ESIG'], 'where' => ['res_id = ?'], 'data' => [$ressource['res_id']]]);
+                            ResModel::update(
+                                [
+                                    'set'   => ['status' => 'ESIG'],
+                                    'where' => ['res_id = ?'],
+                                    'data'  => [$ressource['res_id']]
+                                ]
+                            );
                         } else {
-                            ResModel::update(['set' => ['status' => 'EVIS'], 'where' => ['res_id = ?'], 'data' => [$ressource['res_id']]]);
+                            ResModel::update(
+                                [
+                                    'set'   => ['status' => 'EVIS'],
+                                    'where' => ['res_id = ?'],
+                                    'data'  => [$ressource['res_id']]
+                                ]
+                            );
                         }
                     }
                 }
 
-                $listInstances = ListInstanceModel::getWithConfidentiality(['select' => ['listinstance.res_id', 'listinstance.difflist_type'], 'entityId' => $aArgs['entityId'], 'userId' => $aArgs['id']]);
+                $listInstances = ListInstanceModel::getWithConfidentiality(
+                    [
+                        'select'   => ['listinstance.res_id', 'listinstance.difflist_type'],
+                        'entityId' => $aArgs['entityId'],
+                        'userId'   => $aArgs['id']
+                    ]
+                );
                 $resIdsToReplace = [];
                 foreach ($listInstances as $listInstance) {
                     $resIdsToReplace[] = $listInstance['res_id'];
                 }
                 if (!empty($resIdsToReplace)) {
                     ListInstanceModel::update([
-                        'set'   => ['process_comment' => '[DEL] supprimé - changement d\'entité', 'process_date' => 'CURRENT_TIMESTAMP'],
+                        'set'   => [
+                            'process_comment' => '[DEL] supprimé - changement d\'entité',
+                            'process_date'    => 'CURRENT_TIMESTAMP'
+                        ],
                         'where' => ['res_id in (?)', 'item_id = ?'],
                         'data'  => [$resIdsToReplace, $aArgs['id']]
                     ]);
@@ -1452,7 +2031,9 @@ class UserController
             }
         }
 
-        $primaryEntity = UserModel::getPrimaryEntityById(['id' => $aArgs['id'], 'select' => ['entities.entity_label', 'entities.entity_id']]);
+        $primaryEntity = UserModel::getPrimaryEntityById(
+            ['id' => $aArgs['id'], 'select' => ['entities.entity_label', 'entities.entity_id']]
+        );
         UserEntityModel::deleteUserEntity(['id' => $aArgs['id'], 'entityId' => $aArgs['entityId']]);
 
         if (!empty($primaryEntity['entity_id']) && $primaryEntity['entity_id'] == $aArgs['entityId']) {
@@ -1469,12 +2050,33 @@ class UserController
         ]);
 
         return $response->withJson([
-            'entities'      => UserModel::getEntitiesById(['id' => $aArgs['id'], 'select' => ['entities.id', 'users_entities.entity_id', 'entities.entity_label', 'users_entities.user_role', 'users_entities.primary_entity'], 'orderBy' => ['users_entities.primary_entity DESC']]),
-            'allEntities'   => EntityModel::getAvailableEntitiesForAdministratorByUserId(['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']])
+            'entities'    => UserModel::getEntitiesById(
+                [
+                    'id'      => $aArgs['id'],
+                    'select'  => [
+                        'entities.id',
+                        'users_entities.entity_id',
+                        'entities.entity_label',
+                        'users_entities.user_role',
+                        'users_entities.primary_entity'
+                    ],
+                    'orderBy' => ['users_entities.primary_entity DESC']
+                ]
+            ),
+            'allEntities' => EntityModel::getAvailableEntitiesForAdministratorByUserId(
+                ['userId' => $user['user_id'], 'administratorUserId' => $GLOBALS['login']]
+            )
         ]);
     }
 
-    public function isEntityDeletable(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function isEntityDeletable(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id']]);
         if (!empty($error['error'])) {
@@ -1485,14 +2087,31 @@ class UserController
             return $response->withStatus(400)->withJson(['errors' => 'Entity does not exist']);
         }
 
-        $listInstances = ListInstanceModel::getWithConfidentiality(['select' => [1], 'entityId' => $args['entityId'], 'userId' => $args['id']]);
+        $listInstances = ListInstanceModel::getWithConfidentiality(
+            ['select' => [1], 'entityId' => $args['entityId'], 'userId' => $args['id']]
+        );
 
-        $listTemplates = ListTemplateModel::getWithItems(['select' => [1], 'where' => ['entity_id = ?', 'item_type = ?', 'item_id = ?'], 'data' => [$entity['id'], 'user', $args['id']]]);
+        $listTemplates = ListTemplateModel::getWithItems(
+            [
+                'select' => [1],
+                'where'  => ['entity_id = ?', 'item_type = ?', 'item_id = ?'],
+                'data'   => [$entity['id'], 'user', $args['id']]
+            ]
+        );
 
-        return $response->withJson(['hasConfidentialityInstances' => !empty($listInstances), 'hasListTemplates' => !empty($listTemplates)]);
+        return $response->withJson(
+            ['hasConfidentialityInstances' => !empty($listInstances), 'hasListTemplates' => !empty($listTemplates)]
+        );
     }
 
-    public function updateBasketsDisplay(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function updateBasketsDisplay(Request $request, Response $response, array $aArgs): Response
     {
         $error = $this->hasUsersRights(['id' => $aArgs['id']]);
         if (!empty($error['error'])) {
@@ -1544,9 +2163,9 @@ class UserController
 
             if ($basketContainer['allowed']) {
                 $preference = UserBasketPreferenceModel::get([
-                    'select'    => [1],
-                    'where'     => ['user_serial_id = ?', 'group_serial_id = ?', 'basket_id = ?'],
-                    'data'      => [$aArgs['id'], $basketContainer['groupSerialId'], $basketContainer['basketId']]
+                    'select' => [1],
+                    'where'  => ['user_serial_id = ?', 'group_serial_id = ?', 'basket_id = ?'],
+                    'data'   => [$aArgs['id'], $basketContainer['groupSerialId'], $basketContainer['basketId']]
                 ]);
                 if (!empty($preference)) {
                     return $response->withStatus(400)->withJson(['errors' => 'Preference already exists']);
@@ -1565,7 +2184,13 @@ class UserController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function getTemplates(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getTemplates(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
@@ -1586,32 +2211,54 @@ class UserController
             $data[] = $queryParams['target'];
         }
         $templates = TemplateModel::getWithAssociation([
-            'select'    => ['DISTINCT(templates.template_id)', 'templates.template_label', 'templates.template_file_name', 'templates.template_path', 'templates.template_target', 'templates.template_attachment_type'],
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => ['templates.template_label']
+            'select'  => [
+                'DISTINCT(templates.template_id)',
+                'templates.template_label',
+                'templates.template_file_name',
+                'templates.template_path',
+                'templates.template_target',
+                'templates.template_attachment_type'
+            ],
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => ['templates.template_label']
         ]);
 
-        $docserver = DocserverModel::getCurrentDocserver(['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]);
+        $docserver = DocserverModel::getCurrentDocserver(
+            ['typeId' => 'TEMPLATES', 'collId' => 'templates', 'select' => ['path_template']]
+        );
         foreach ($templates as $key => $template) {
             $explodeFile = explode('.', $template['template_file_name']);
             $ext = $explodeFile[count($explodeFile) - 1];
-            $exists = is_file($docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $template['template_path']) . $template['template_file_name']);
+            $exists = is_file(
+                $docserver['path_template'] . str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $template['template_path']
+                ) .
+                $template['template_file_name']
+            );
 
             $templates[$key] = [
-                'id'                => $template['template_id'],
-                'label'             => $template['template_label'],
-                'extension'         => $ext,
-                'exists'            => $exists,
-                'target'            => $template['template_target'],
-                'attachmentType'    => $template['template_attachment_type']
+                'id'             => $template['template_id'],
+                'label'          => $template['template_label'],
+                'extension'      => $ext,
+                'exists'         => $exists,
+                'target'         => $template['template_target'],
+                'attachmentType' => $template['template_attachment_type']
             ];
         }
 
         return $response->withJson(['templates' => $templates]);
     }
 
-    public function updateCurrentUserBasketPreferences(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
+    public function updateCurrentUserBasketPreferences(Request $request, Response $response, array $aArgs): Response
     {
         $data = $request->getParsedBody();
 
@@ -1634,7 +2281,14 @@ class UserController
         ]);
     }
 
-    public function sendAccountActivationNotification(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function sendAccountActivationNotification(Request $request, Response $response, array $args): Response
     {
         $control = $this->hasUsersRights(['id' => $args['id']]);
         if (!empty($control['error'])) {
@@ -1643,17 +2297,27 @@ class UserController
 
         $loggingMethod = CoreConfigModel::getLoggingMethod();
         if ($loggingMethod['id'] != 'standard') {
-            return $response->withStatus(403)->withJson(['errors' => 'Cannot send activation notification when not using standard connection']);
+            return $response->withStatus(403)->withJson(
+                ['errors' => 'Cannot send activation notification when not using standard connection']
+            );
         }
 
         $user = UserModel::getById(['id' => $args['id'], 'select' => ['mail']]);
 
-        AuthenticationController::sendAccountActivationNotification(['userId' => $args['id'], 'userEmail' => $user['mail']]);
+        AuthenticationController::sendAccountActivationNotification(
+            ['userId' => $args['id'], 'userEmail' => $user['mail']]
+        );
 
         return $response->withStatus(204);
     }
 
-    public function getExport(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getExport(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -1738,7 +2402,10 @@ class UserController
             }
         } else {
             foreach ($body['data'] as $parameter) {
-                if (!empty($parameter['label']) && is_string($parameter['label']) && !empty($parameter['value']) && is_string($parameter['value'])) {
+                if (
+                    !empty($parameter['label']) && is_string($parameter['label']) && !empty($parameter['value']) &&
+                    is_string($parameter['value'])
+                ) {
                     if (!in_array($parameter['value'], array_keys($allowedFields))) {
                         continue;
                     }
@@ -1760,7 +2427,9 @@ class UserController
             }
         }
         if (empty($select)) {
-            return $response->withStatus(400)->withJson(['errors' => 'no allowed field selected for users export']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'no allowed field selected for users export']
+            );
         }
 
         if (UserController::isRoot(['id' => $GLOBALS['id']])) {
@@ -1772,7 +2441,9 @@ class UserController
             ]);
         } else {
             $viewPersonaldata = false;
-            if (PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])) {
+            if (
+                PrivilegeController::hasPrivilege(['privilegeId' => 'view_personal_data', 'userId' => $GLOBALS['id']])
+            ) {
                 $viewPersonaldata = true;
             }
 
@@ -1790,9 +2461,9 @@ class UserController
             }
             if (!empty($entities)) {
                 $users = UserEntityModel::getWithUsers([
-                    'select'    => $select,
-                    'where'     => ['users_entities.entity_id in (?)', 'status != ?'],
-                    'data'      => [$entities, 'DEL']
+                    'select' => $select,
+                    'where'  => ['users_entities.entity_id in (?)', 'status != ?'],
+                    'data'   => [$entities, 'DEL']
                 ]);
             }
             $usersNoEntities = UserEntityModel::getUsersWithoutEntities(['select' => $select]);
@@ -1814,30 +2485,35 @@ class UserController
         fputcsv($file, $csvHead, $delimiter);
 
         $userAccountTypes = [
-            'standard'          => _STANDARD_,
-            'rest'              => _REST_,
-            'root_visible'      => _ROOT_VISIBLE_,
-            'root_invisible'    => _ROOT_INVISIBLE_
+            'standard'       => _STANDARD_,
+            'rest'           => _REST_,
+            'root_visible'   => _ROOT_VISIBLE_,
+            'root_invisible' => _ROOT_INVISIBLE_
         ];
 
         $userStatus = [
-            'OK'    => _OK_,
-            'SPD'   => _SPD_,
-            'ABS'   => _ABS_
+            'OK'  => _OK_,
+            'SPD' => _SPD_,
+            'ABS' => _ABS_
         ];
 
         foreach ($users as $user) {
             $csvContent = [];
             foreach ($fields as $field) {
                 if ($field['value'] == 'accountType') {
-                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' . $userAccountTypes[$user[$allowedFields[$field['value']]]] . ')';
+                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' .
+                        $userAccountTypes[$user[$allowedFields[$field['value']]]] . ')';
                 }
 
                 if ($field['value'] == 'status') {
-                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' . $userStatus[$user[$allowedFields[$field['value']]]] . ')';
+                    $user[$allowedFields[$field['value']]] = $user[$allowedFields[$field['value']]] . ' (' .
+                        $userStatus[$user[$allowedFields[$field['value']]]] . ')';
                 }
 
-                if ($field['value'] == 'baskets' || $field['value'] == 'redirectedBaskets' || $field['value'] == 'assignedBaskets') {
+                if (
+                    $field['value'] == 'baskets' || $field['value'] == 'redirectedBaskets' ||
+                    $field['value'] == 'assignedBaskets'
+                ) {
                     $array = explode("\n", $user[$allowedFields[$field['value']]]);
                     sort($array);
                     $user[$allowedFields[$field['value']]] = implode("\n", $array);
@@ -1849,8 +2525,8 @@ class UserController
                     $primaryEntity = '';
                     $index = false;
                     foreach ($array as $key => $value) {
-                        if (strpos($value, $searchTerm) !== false) {
-                            $primaryEntity  = $value;
+                        if (str_contains($value, $searchTerm)) {
+                            $primaryEntity = $value;
                             $index = $key;
                             break;
                         }
@@ -1870,14 +2546,23 @@ class UserController
         rewind($file);
 
         $response->write(stream_get_contents($file));
-        $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            'attachment; filename=export_maarch.csv'
+        );
         $contentType = 'application/vnd.ms-excel';
         fclose($file);
 
         return $response->withHeader('Content-Type', $contentType);
     }
 
-    public function setImport(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function setImport(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -1895,9 +2580,9 @@ class UserController
             $allowedUsers = [];
             if (!empty($entities)) {
                 $allowedUsers = UserEntityModel::getWithUsers([
-                    'select'    => ['DISTINCT users.id'],
-                    'where'     => ['users_entities.entity_id in (?)', 'status != ?'],
-                    'data'      => [$entities, 'DEL']
+                    'select' => ['DISTINCT users.id'],
+                    'where'  => ['users_entities.entity_id in (?)', 'status != ?'],
+                    'data'   => [$entities, 'DEL']
                 ]);
             }
             $usersNoEntities = UserEntityModel::getUsersWithoutEntities(['select' => ['id']]);
@@ -1908,73 +2593,148 @@ class UserController
         $warnings = [];
         $errors = [];
         foreach ($body['users'] as $key => $user) {
-            if (!empty($user['firstname']) && (!Validator::stringType()->validate($user['firstname']) || !Validator::length(1, 255)->validate($user['firstname']))) {
-                $errors[] = ['error' => "Argument firstname is not a string for user {$key}", 'index' => $key, 'lang' => 'argumentFirstnameNotString'];
+            if (
+                !empty($user['firstname']) && (!Validator::stringType()->validate($user['firstname']) ||
+                    !Validator::length(1, 255)->validate($user['firstname']))
+            ) {
+                $errors[] = [
+                    'error' => "Argument firstname is not a string for user {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentFirstnameNotString'
+                ];
                 continue;
-            } elseif (!empty($user['lastname']) && (!Validator::stringType()->validate($user['lastname']) || !Validator::length(1, 255)->validate($user['lastname']))) {
-                $errors[] = ['error' => "Argument lastname is not a string for user {$key}", 'index' => $key, 'lang' => 'argumentLastnameNotString'];
+            } elseif (
+                !empty($user['lastname']) && (!Validator::stringType()->validate($user['lastname']) ||
+                    !Validator::length(1, 255)->validate($user['lastname']))
+            ) {
+                $errors[] = [
+                    'error' => "Argument lastname is not a string for user {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentLastnameNotString'
+                ];
                 continue;
-            } elseif (!empty($user['mail']) && (!filter_var($user['mail'], FILTER_VALIDATE_EMAIL) || !Validator::length(1, 255)->validate($user['mail']))) {
-                $errors[] = ['error' => "Argument mail is not correct for user {$key}", 'index' => $key, 'lang' => 'argumentMailNotCorrect'];
+            } elseif (
+                !empty($user['mail']) && (!filter_var($user['mail'], FILTER_VALIDATE_EMAIL) ||
+                    !Validator::length(1, 255)->validate($user['mail']))
+            ) {
+                $errors[] = [
+                    'error' => "Argument mail is not correct for user {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentMailNotCorrect'
+                ];
                 continue;
-            } elseif (!empty($user['phone']) && (!preg_match("/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/", $user['phone']) || !Validator::length(1, 32)->validate($user['phone']))) {
-                $errors[] = ['error' => "Argument phone is not correct for user {$key}", 'index' => $key, 'lang' => 'argumentPhoneNotCorrect'];
+            } elseif (
+                !empty($user['phone']) && (!preg_match(
+                    "/\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/",
+                    $user['phone']
+                ) ||
+                    !Validator::length(1, 32)->validate($user['phone']))
+            ) {
+                $errors[] = [
+                    'error' => "Argument phone is not correct for user {$key}",
+                    'index' => $key,
+                    'lang'  => 'argumentPhoneNotCorrect'
+                ];
                 continue;
             }
             if (empty($user['id'])) {
                 if (empty($user['user_id'])) {
-                    $errors[] = ['error' => "Argument user_id is empty for user {$key}", 'index' => $key, 'lang' => 'argumentUserIdEmpty'];
+                    $errors[] = [
+                        'error' => "Argument user_id is empty for user {$key}",
+                        'index' => $key,
+                        'lang'  => 'argumentUserIdEmpty'
+                    ];
                     continue;
                 } elseif (empty($user['firstname'])) {
-                    $errors[] = ['error' => "Argument firstname is empty for user {$key}", 'index' => $key, 'lang' => 'argumentFirstnameEmpty'];
+                    $errors[] = [
+                        'error' => "Argument firstname is empty for user {$key}",
+                        'index' => $key,
+                        'lang'  => 'argumentFirstnameEmpty'
+                    ];
                     continue;
                 } elseif (empty($user['lastname'])) {
-                    $errors[] = ['error' => "Argument lastname is empty for user {$key}", 'index' => $key, 'lang' => 'argumentLastnameEmpty'];
+                    $errors[] = [
+                        'error' => "Argument lastname is empty for user {$key}",
+                        'index' => $key,
+                        'lang'  => 'argumentLastnameEmpty'
+                    ];
                     continue;
                 } elseif (empty($user['mail'])) {
-                    $errors[] = ['error' => "Argument mail is empty for user {$key}", 'index' => $key, 'lang' => 'argumentMailEmpty'];
+                    $errors[] = [
+                        'error' => "Argument mail is empty for user {$key}",
+                        'index' => $key,
+                        'lang'  => 'argumentMailEmpty'
+                    ];
                     continue;
                 }
 
-                $existingUser = UserModel::getByLogin(['login' => strtolower($user['user_id']), 'select' => ['id', 'status']]);
+                $existingUser = UserModel::getByLogin(
+                    ['login' => strtolower($user['user_id']), 'select' => ['id', 'status']]
+                );
                 if (!empty($existingUser) && $existingUser['status'] != 'DEL') {
-                    $errors[] = ['error' => "User already exists with login {$user['user_id']}", 'index' => $key, 'lang' => 'userLoginAlreadyExists'];
+                    $errors[] = [
+                        'error' => "User already exists with login {$user['user_id']}",
+                        'index' => $key,
+                        'lang'  => 'userLoginAlreadyExists'
+                    ];
                     continue;
                 } elseif (!empty($existingUser) && $existingUser['status'] == 'DEL') {
                     UserModel::update([
                         'set'   => [
-                            'status'    => 'OK',
-                            'mail'      => $user['mail'],
-                            'password'  => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
+                            'status'   => 'OK',
+                            'mail'     => $user['mail'],
+                            'password' => AuthenticationModel::getPasswordHash(AuthenticationModel::generatePassword()),
                         ],
                         'where' => ['id = ?'],
                         'data'  => [$existingUser['id']]
                     ]);
                     $id = $existingUser['id'];
-                    $warnings[] = ['warning' => "User {$user['user_id']} was deleted and is now reactivated", 'index' => $key, 'lang' => 'userDeletedNowActivated'];
+                    $warnings[] = [
+                        'warning' => "User {$user['user_id']} was deleted and is now reactivated",
+                        'index'   => $key,
+                        'lang'    => 'userDeletedNowActivated'
+                    ];
                 } else {
                     $userToCreate = [
-                        'userId'        => $user['user_id'],
-                        'firstname'     => $user['firstname'],
-                        'lastname'      => $user['lastname'],
-                        'mail'          => $user['mail'],
-                        'preferences'   => json_encode(['documentEdition' => 'java'])
+                        'userId'      => $user['user_id'],
+                        'firstname'   => $user['firstname'],
+                        'lastname'    => $user['lastname'],
+                        'mail'        => $user['mail'],
+                        'preferences' => json_encode(['documentEdition' => 'java'])
                     ];
-                    if (!empty($user['phone']) && PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
+                    if (
+                        !empty($user['phone']) && PrivilegeController::hasPrivilege(
+                            ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+                        )
+                    ) {
                         $userToCreate['phone'] = $user['phone'];
-                    } elseif (!empty($user['phone']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
-                        $warnings[] = ['warning' => "Phone is not allowed to be modified", 'index' => $key, 'lang' => 'phoneModificationNotAllowed'];
+                    } elseif (
+                        !empty($user['phone']) && !PrivilegeController::hasPrivilege(
+                            ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+                        )
+                    ) {
+                        $warnings[] = [
+                            'warning' => "Phone is not allowed to be modified",
+                            'index'   => $key,
+                            'lang'    => 'phoneModificationNotAllowed'
+                        ];
                     }
                     $id = UserModel::create(['user' => $userToCreate]);
                 }
 
                 $loggingMethod = CoreConfigModel::getLoggingMethod();
                 if ($loggingMethod['id'] == 'standard') {
-                    AuthenticationController::sendAccountActivationNotification(['userId' => $id, 'userEmail' => $user['mail']]);
+                    AuthenticationController::sendAccountActivationNotification(
+                        ['userId' => $id, 'userEmail' => $user['mail']]
+                    );
                 }
             } else {
                 if (!$isRoot && !in_array($user['id'], $allowedUsers)) {
-                    $errors[] = ['error' => "User is not allowed to be modified {$user['user_id']}", 'index' => $key, 'lang' => 'userModificationNotAllowed'];
+                    $errors[] = [
+                        'error' => "User is not allowed to be modified {$user['user_id']}",
+                        'index' => $key,
+                        'lang'  => 'userModificationNotAllowed'
+                    ];
                     continue;
                 }
 
@@ -1988,10 +2748,22 @@ class UserController
                 if (!empty($user['mail'])) {
                     $set['mail'] = $user['mail'];
                 }
-                if (!empty($user['phone']) && PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
+                if (
+                    !empty($user['phone']) && PrivilegeController::hasPrivilege(
+                        ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+                    )
+                ) {
                     $set['phone'] = $user['phone'];
-                } elseif (!empty($user['phone']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']])) {
-                    $warnings[] = ['warning' => "Phone is not allowed to be modified", 'index' => $key, 'lang' => 'phoneModificationNotAllowed'];
+                } elseif (
+                    !empty($user['phone']) && !PrivilegeController::hasPrivilege(
+                        ['privilegeId' => 'manage_personal_data', 'userId' => $GLOBALS['id']]
+                    )
+                ) {
+                    $warnings[] = [
+                        'warning' => "Phone is not allowed to be modified",
+                        'index'   => $key,
+                        'lang'    => 'phoneModificationNotAllowed'
+                    ];
                 }
 
                 if (!empty($set)) {
@@ -2005,21 +2777,26 @@ class UserController
         }
 
         $return = [
-            'success'   => count($body['users']) - count($warnings) - count($errors),
-            'warnings'  => [
-                'count'     => count($warnings),
-                'details'   => $warnings
+            'success'  => count($body['users']) - count($warnings) - count($errors),
+            'warnings' => [
+                'count'   => count($warnings),
+                'details' => $warnings
             ],
-            'errors'    => [
-                'count'     => count($errors),
-                'details'   => $errors
+            'errors'   => [
+                'count'   => count($errors),
+                'details' => $errors
             ]
         ];
 
         return $response->withJson($return);
     }
 
-    public function hasUsersRights(array $args)
+    /**
+     * @param array $args
+     * @return array|true
+     * @throws Exception
+     */
+    public function hasUsersRights(array $args): bool|array
     {
         if (!is_numeric($args['id'])) {
             return ['status' => 400, 'error' => 'id must be an integer'];
@@ -2040,9 +2817,9 @@ class UserController
                 $entities = EntityModel::getAllEntitiesByUserId(['userId' => $GLOBALS['id']]);
                 if (!empty($entities)) {
                     $users = UserEntityModel::getWithUsers([
-                        'select'    => ['users.id'],
-                        'where'     => ['users_entities.entity_id in (?)', 'status != ?'],
-                        'data'      => [$entities, 'DEL']
+                        'select' => ['users.id'],
+                        'where'  => ['users_entities.entity_id in (?)', 'status != ?'],
+                        'data'   => [$entities, 'DEL']
                     ]);
                 }
                 $usersNoEntities = UserEntityModel::getUsersWithoutEntities(['select' => ['id']]);
@@ -2064,7 +2841,11 @@ class UserController
         return true;
     }
 
-    private function checkNeededParameters(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     */
+    private function checkNeededParameters(array $aArgs): bool
     {
         foreach ($aArgs['needed'] as $value) {
             if (empty($aArgs['data'][$value])) {
@@ -2075,7 +2856,12 @@ class UserController
         return true;
     }
 
-    public function forgotPassword(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function forgotPassword(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -2103,14 +2889,15 @@ class UserController
             $sender = $user['mail'];
         }
         $email = EmailController::createEmail([
-            'userId'    => $user['id'],
-            'data'      => [
-                'sender'        => ['email' => $sender],
-                'recipients'    => [$user['mail']],
-                'object'        => _NOTIFICATIONS_FORGOT_PASSWORD_SUBJECT,
-                'body'          => _NOTIFICATIONS_FORGOT_PASSWORD_BODY . '<a href="' . $url . '">' . _CLICK_HERE . '</a>' . _NOTIFICATIONS_FORGOT_PASSWORD_FOOTER,
-                'isHtml'        => true,
-                'status'        => 'WAITING'
+            'userId' => $user['id'],
+            'data'   => [
+                'sender'     => ['email' => $sender],
+                'recipients' => [$user['mail']],
+                'object'     => _NOTIFICATIONS_FORGOT_PASSWORD_SUBJECT,
+                'body'       => _NOTIFICATIONS_FORGOT_PASSWORD_BODY . '<a href="' . $url . '">' . _CLICK_HERE . '</a>' .
+                    _NOTIFICATIONS_FORGOT_PASSWORD_FOOTER,
+                'isHtml'     => true,
+                'status'     => 'WAITING'
             ]
         ]);
 
@@ -2120,17 +2907,22 @@ class UserController
             $historyMessage = _PASSWORD_REINIT_SENT;
         }
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'RESETPSW',
-            'eventId'      => 'userModification',
-            'info'         => $historyMessage
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'RESETPSW',
+            'eventId'   => 'userModification',
+            'info'      => $historyMessage
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function passwordInitialization(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function passwordInitialization(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -2142,7 +2934,7 @@ class UserController
 
         try {
             $jwt = JWT::decode($body['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $response->withStatus(403)->withJson(['errors' => 'Invalid token', 'lang' => 'invalidToken']);
         }
 
@@ -2156,40 +2948,56 @@ class UserController
         }
 
         if (!PasswordController::isPasswordValid(['password' => $body['password']])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Password does not match security criteria']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Password does not match security criteria']
+            );
         }
 
-        UserModel::resetPassword(['password' => $body['password'], 'id'  => $user['id']]);
+        UserModel::resetPassword(['password' => $body['password'], 'id' => $user['id']]);
 
         $GLOBALS['id'] = $user['id'];
         $GLOBALS['login'] = $user['user_id'];
 
         HistoryController::add([
-            'tableName'    => 'users',
-            'recordId'     => $GLOBALS['id'],
-            'eventType'    => 'UP',
-            'eventId'      => 'userModification',
-            'info'         => _PASSWORD_REINIT . " {$body['login']}"
+            'tableName' => 'users',
+            'recordId'  => $GLOBALS['id'],
+            'eventType' => 'UP',
+            'eventId'   => 'userModification',
+            'info'      => _PASSWORD_REINIT . " {$body['login']}"
         ]);
 
         return $response->withStatus(204);
     }
 
-    public function getCurrentUserEmailSignatures(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getCurrentUserEmailSignatures(Request $request, Response $response): Response
     {
         $signatures = UserController::getSignatures(['withContent' => true]);
 
         return $response->withJson(['emailSignatures' => $signatures['signatures']]);
     }
 
-    public function getCurrentUserEmailSignaturesList(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getCurrentUserEmailSignaturesList(Request $request, Response $response): Response
     {
         $signatures = UserController::getSignatures(['withContent' => false]);
 
         return $response->withJson(['emailSignatures' => $signatures['signatures']]);
     }
 
-    public static function getSignatures($args = [])
+    /**
+     * @param array $args
+     * @return array[]
+     */
+    public static function getSignatures(array $args = []): array
     {
         $signatures = [];
 
@@ -2208,7 +3016,9 @@ class UserController
             $signatures[] = $signatureTmp;
         }
 
-        $globalEmailSignatures = ConfigurationModel::getByPrivilege(['privilege' => 'admin_organization_email_signatures', 'select' => ['value']]);
+        $globalEmailSignatures = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_organization_email_signatures', 'select' => ['value']]
+        );
         $value = json_decode($globalEmailSignatures['value'], true);
         if (!empty($value['signatures'])) {
             foreach ($value['signatures'] as $key => $globalEmailSignature) {
@@ -2219,7 +3029,9 @@ class UserController
                 ];
 
                 if ($args['withContent']) {
-                    $signatureTmp['content'] = MergeController::mergeGlobalEmailSignature(['content' => $globalEmailSignature['content']]);
+                    $signatureTmp['content'] = MergeController::mergeGlobalEmailSignature(
+                        ['content' => $globalEmailSignature['content']]
+                    );
                 }
 
                 $signatures[] = $signatureTmp;
@@ -2229,26 +3041,42 @@ class UserController
         return ['signatures' => $signatures];
     }
 
-    public function getGlobalEmailSignatureById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getGlobalEmailSignatureById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body param id is empty or not an integer']);
         }
 
-        $globalEmailSignatures = ConfigurationModel::getByPrivilege(['privilege' => 'admin_organization_email_signatures', 'select' => ['value']]);
+        $globalEmailSignatures = ConfigurationModel::getByPrivilege(
+            ['privilege' => 'admin_organization_email_signatures', 'select' => ['value']]
+        );
         $value = json_decode($globalEmailSignatures['value'], true);
         if (!empty($value['signatures'])) {
             $signature = [
                 'id'      => $args['id'],
                 'label'   => $value['signatures'][$args['id']]['label'],
-                'content' => MergeController::mergeGlobalEmailSignature(['content' => $value['signatures'][$args['id']]['content']])
+                'content' => MergeController::mergeGlobalEmailSignature(
+                    ['content' => $value['signatures'][$args['id']]['content']]
+                )
             ];
         }
 
         return $response->withJson(['emailSignature' => $signature]);
     }
 
-    public function getCurrentUserEmailSignatureById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getCurrentUserEmailSignatureById(Request $request, Response $response, array $args): Response
     {
         if (!Validator::notEmpty()->intVal()->validate($args['id'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body param id is empty or not an integer']);
@@ -2268,7 +3096,12 @@ class UserController
         return $response->withJson(['emailSignature' => $signature]);
     }
 
-    public static function isRoot(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function isRoot(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::intVal($args, ['id']);
@@ -2280,7 +3113,14 @@ class UserController
         return $isRoot;
     }
 
-    public function setAbsenceRange(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function setAbsenceRange(Request $request, Response $response, array $args): Response
     {
         $error = $this->hasUsersRights(['id' => $args['id'], 'himself' => true]);
         if (!empty($error['error'])) {
@@ -2293,10 +3133,13 @@ class UserController
         if (!empty($userAbsence['absence'])) {
             $userAbsence = json_decode($userAbsence['absence'], true);
             if (!empty($userAbsence['absenceDate']['startDate'])) {
-                $absenceStartDate = new \DateTime($userAbsence['absenceDate']['startDate']);
-                $today = new \DateTime();
+                $absenceStartDate = new DateTime($userAbsence['absenceDate']['startDate']);
+                $today = new DateTime();
 
-                if ($today < $absenceStartDate && empty($body['absenceDate']['startDate']) && empty($body['absenceDate']['endDate']) && empty($body['redirectedBaskets'])) {
+                if (
+                    $today < $absenceStartDate && empty($body['absenceDate']['startDate']) &&
+                    empty($body['absenceDate']['endDate']) && empty($body['redirectedBaskets'])
+                ) {
                     UserModel::update(['set' => ['absence' => null], 'where' => ['id = ?'], 'data' => [$args['id']]]);
                     return $response->withStatus(204);
                 }
@@ -2307,16 +3150,24 @@ class UserController
         if (!Validator::arrayType()->notEmpty()->validate($body['absenceDate'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Body absenceDate is empty or not an array']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['absenceDate']['endDate'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body absence[endDate] is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body absence[endDate] is empty or not a string']
+            );
         }
 
         foreach ($body['redirectedBaskets'] as $key => $value) {
             if (!Validator::intType()->notEmpty()->validate($value['actual_user_id'])) {
-                return $response->withStatus(400)->withJson(['errors' => "Body redirectedBaskets[$key][actual_user_id] is empty or not an integer"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body redirectedBaskets[$key][actual_user_id] is empty or not an integer"]
+                );
             } elseif (!Validator::intType()->notEmpty()->validate($value['group_id'])) {
-                return $response->withStatus(400)->withJson(['errors' => "Body redirectedBaskets[$key][group_id] is empty or not an integer"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body redirectedBaskets[$key][group_id] is empty or not an integer"]
+                );
             } elseif (!Validator::stringType()->notEmpty()->validate($value['basket_id'])) {
-                return $response->withStatus(400)->withJson(['errors' => "Body redirectedBaskets[$key][basket_id] is empty or not an integer"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body redirectedBaskets[$key][basket_id] is empty or not an integer"]
+                );
             }
 
             $check = UserModel::getById(['id' => $value['actual_user_id'], 'select' => ['1']]);
@@ -2329,10 +3180,12 @@ class UserController
             $body['redirectedBaskets'] = [];
         }
         $absence = ['absenceDate' => $body['absenceDate'], 'redirectedBaskets' => $body['redirectedBaskets']];
-        UserModel::update(['set' => ['absence' => json_encode($absence)], 'where' => ['id = ?'], 'data' => [$args['id']]]);
+        UserModel::update(
+            ['set' => ['absence' => json_encode($absence)], 'where' => ['id = ?'], 'data' => [$args['id']]]
+        );
 
-        $absenceStartDate = new \DateTime($body['absenceDate']['startDate']);
-        $today = new \DateTime();
+        $absenceStartDate = new DateTime($body['absenceDate']['startDate']);
+        $today = new DateTime();
         if ($absenceStartDate <= $today) {
             UserController::setAbsences();
         }
@@ -2340,20 +3193,41 @@ class UserController
         return $response->withStatus(204);
     }
 
-    public static function setAbsences()
+    /**
+     * @return void
+     * @throws Exception
+     */
+    public static function setAbsences(): void
     {
-        $absentUsers = UserModel::get(['select' => ['id', 'absence', 'user_id'], 'where' => ['absence is not null', 'status = ?'], 'data' => ['ABS']]);
+        $absentUsers = UserModel::get(
+            [
+                'select' => ['id', 'absence', 'user_id'],
+                'where'  => ['absence is not null', 'status = ?'],
+                'data'   => ['ABS']
+            ]
+        );
         foreach ($absentUsers as $absentUser) {
             $absentUser['absence'] = json_decode($absentUser['absence'], true);
-            $absenceEndDate = new \DateTime($absentUser['absence']['absenceDate']['endDate']);
-            $today = new \DateTime();
+            $absenceEndDate = new DateTime($absentUser['absence']['absenceDate']['endDate']);
+            $today = new DateTime();
             if ($today > $absenceEndDate) {
-                UserModel::update(['set' => ['absence' => null, 'status' => 'OK'], 'where' => ['id = ?'], 'data' => [$absentUser['id']]]);
+                UserModel::update(
+                    [
+                        'set'   => ['absence' => null, 'status' => 'OK'],
+                        'where' => ['id = ?'],
+                        'data'  => [$absentUser['id']]
+                    ]
+                );
 
                 foreach ($absentUser['absence']['redirectedBaskets'] as $redirectedBasket) {
                     RedirectBasketModel::delete([
                         'where' => ['actual_user_id = ?', 'basket_id = ?', 'group_id = ?', 'owner_user_id = ?'],
-                        'data'  => [$redirectedBasket['actual_user_id'], $redirectedBasket['basket_id'], $redirectedBasket['group_id'], $absentUser['id']]
+                        'data'  => [
+                            $redirectedBasket['actual_user_id'],
+                            $redirectedBasket['basket_id'],
+                            $redirectedBasket['group_id'],
+                            $absentUser['id']
+                        ]
                     ]);
 
                     HistoryController::add([
@@ -2361,7 +3235,8 @@ class UserController
                         'recordId'  => $absentUser['user_id'],
                         'eventType' => 'DEL',
                         'eventId'   => 'basketRedirection',
-                        'info'      => _BASKET_REDIRECTION_SUPPRESSION . " {$absentUser['user_id']} : " . $redirectedBasket['basket_id'],
+                        'info'      => _BASKET_REDIRECTION_SUPPRESSION . " {$absentUser['user_id']} : " .
+                            $redirectedBasket['basket_id'],
                         'userId'    => !empty($GLOBALS['id']) ? $GLOBALS['id'] : $absentUser['id']
                     ]);
                 }
@@ -2375,10 +3250,12 @@ class UserController
         ]);
         foreach ($futureAbsentUsers as $absentUser) {
             $absentUser['absence'] = json_decode($absentUser['absence'], true);
-            $absenceStartDate = new \DateTime($absentUser['absence']['absenceDate']['startDate']);
-            $today = new \DateTime();
+            $absenceStartDate = new DateTime($absentUser['absence']['absenceDate']['startDate']);
+            $today = new DateTime();
             if ($today > $absenceStartDate) {
-                UserModel::update(['set' => ['status' => 'ABS'], 'where' => ['id = ?'], 'data' => [$absentUser['id']]]);
+                UserModel::update(
+                    ['set' => ['status' => 'ABS'], 'where' => ['id = ?'], 'data' => [$absentUser['id']]]
+                );
                 RedirectBasketModel::delete([
                     'where' => ['owner_user_id = ?'],
                     'data'  => [$absentUser['id']]
@@ -2395,7 +3272,12 @@ class UserController
         }
     }
 
-    private static function redirectBasket(array $args)
+    /**
+     * @param array $args
+     * @return array|true
+     * @throws Exception
+     */
+    private static function redirectBasket(array $args): array|bool
     {
         ValidatorModel::notEmpty($args, ['redirectedBaskets', 'userId', 'login']);
         ValidatorModel::arrayType($args, ['redirectedBaskets']);
@@ -2473,7 +3355,8 @@ class UserController
                     'recordId'  => $args['login'],
                     'eventType' => 'UP',
                     'eventId'   => 'basketRedirection',
-                    'info'      => _BASKET_REDIRECTION . " {$value['basket_id']} {$args['userId']} => {$value['actual_user_id']}",
+                    'info'      => _BASKET_REDIRECTION .
+                        " {$value['basket_id']} {$args['userId']} => {$value['actual_user_id']}",
                     'userId'    => !empty($GLOBALS['id']) ? $GLOBALS['id'] : $args['userId']
                 ]);
             }

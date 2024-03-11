@@ -33,26 +33,26 @@ class MwsController
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         if (empty($configuration)) {
             return [
-                'code'    => 400,
-                'errors'  => 'Mercure configuration is not enabled'
+                'code'   => 400,
+                'errors' => 'Mercure configuration is not enabled'
             ];
         }
 
         $configuration = json_decode($configuration['value'], true);
         if (empty($configuration['mws']['url'])) {
             return [
-                'code'    => 400,
-                'errors'  => 'Mercure configuration URI is empty',
-                'config'  => $configuration
+                'code'   => 400,
+                'errors' => 'Mercure configuration URI is empty',
+                'config' => $configuration
             ];
         }
         $mwsUri = rtrim($configuration['mws']['url'], '/');
 
         return [
-            'url'      => $mwsUri,
-            'login'    => $configuration['mws']['login'],
-            'password' => $configuration['mws']['password'],
-            'loginMaarch' => $configuration['mws']['loginMaarch'],
+            'url'            => $mwsUri,
+            'login'          => $configuration['mws']['login'],
+            'password'       => $configuration['mws']['password'],
+            'loginMaarch'    => $configuration['mws']['loginMaarch'],
             'passwordMaarch' => $configuration['mws']['passwordMaarch']
         ];
     }
@@ -65,33 +65,38 @@ class MwsController
 
         $mwsConfig = MwsController::getMwsConfiguration();
         if (isset($mwsConfig['errors'])) {
-            return $response->withStatus($mwsConfig['code'])->withJson(['errors' => $mwsConfig['errors'], 'mwsConfig' => $mwsConfig]);
+            return $response->withStatus($mwsConfig['code'])->withJson([
+                'errors' => $mwsConfig['errors'],
+                'mwsConfig' => $mwsConfig
+            ]);
         }
 
-        $body = (object) [
+        $body = (object)[
             'username' => $mwsConfig['login'],
             'password' => $mwsConfig['password']
         ];
 
         $curlResponse = CurlModel::exec([
-            'url'           => "{$mwsConfig['url']}/api/login_check",
-            'headers'       => ['content-type:application/json'],
-            'method'        => 'GET',
-            'body'          => json_encode($body)
+            'url'     => "{$mwsConfig['url']}/api/login_check",
+            'headers' => ['content-type:application/json'],
+            'method'  => 'GET',
+            'body'    => json_encode($body)
         ]);
 
         if ($curlResponse['code'] != 200) {
             if ($curlResponse['code'] == 404) {
                 return $response->withStatus(404)->withJson(['errors' => 'Page not found', 'lang' => 'pageNotFound']);
             } elseif ($curlResponse['code'] == 400) {
-                return $response->withStatus(400)->withJson(['errors' => 'Identifiants invalides', 'lang' => 'invalidCredentials']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Identifiants invalides',
+                    'lang'   => 'invalidCredentials'
+                ]);
             } elseif (!empty($curlResponse['response'])) {
                 return $response->withStatus(400)->withJson(['errors' => json_encode($curlResponse['response'])]);
             } else {
                 return $response->withStatus(400)->withJson(['errors' => $curlResponse['errors']]);
             }
         }
-
 
         return $response->withJson(['token' => $curlResponse['response']['token'], 'username' => $mwsConfig['login']]);
     }
@@ -108,17 +113,20 @@ class MwsController
         }
 
         $curlResponse = CurlModel::exec([
-            'url'           => "{$mwsConfig['url']}/api/depots",
-            'headers'       => ['content-type:application/json', 'Authorization:Bearer ' . $aArgs['token']],
-            'method'        => 'GET',
-            'queryParams'   => [
-                'pagination'            => 'false',
-                'userId.username'       => $mwsConfig['login'],
-                'order[createdAt]'      => 'desc'
+            'url'         => "{$mwsConfig['url']}/api/depots",
+            'headers'     => ['content-type:application/json', 'Authorization:Bearer ' . $aArgs['token']],
+            'method'      => 'GET',
+            'queryParams' => [
+                'pagination'       => 'false',
+                'userId.username'  => $mwsConfig['login'],
+                'order[createdAt]' => 'desc'
             ]
         ]);
 
-        return $response->withJson(['docs' => $curlResponse['response']['hydra:member'], 'nbTotal' => $curlResponse['response']['hydra:totalItems']]);
+        return $response->withJson([
+            'docs'    => $curlResponse['response']['hydra:member'],
+            'nbTotal' => $curlResponse['response']['hydra:totalItems']
+        ]);
     }
 
     public static function launchOcrMws(array $aArgs)
@@ -129,37 +137,51 @@ class MwsController
 
         if ($aArgs['collId'] == 'letterbox_coll') {
             $tablename = 'res_letterbox';
-            $resource = ResModel::getById(['resId' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = ResModel::getById([
+                'resId'  => $aArgs['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         } else {
             $tablename = 'res_attachments';
-            $resource = AttachmentModel::getById(['id' => $aArgs['resId'], 'select' => ['docserver_id', 'path', 'filename', 'format']]);
+            $resource = AttachmentModel::getById([
+                'id'     => $aArgs['resId'],
+                'select' => ['docserver_id', 'path', 'filename', 'format']
+            ]);
         }
 
         if (empty($resource['docserver_id']) || empty($resource['path']) || empty($resource['filename'])) {
             return ['errors' => '[MwsController] Resource does not exist'];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $resource['docserver_id'], 'select' => ['path_template']]);
+        $docserver = DocserverModel::getByDocserverId([
+            'docserverId' => $resource['docserver_id'],
+            'select'      => ['path_template']
+        ]);
+
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => '[MwsController] Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) . $resource['filename'];
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
-        $body = (object) [
+        $body = (object)[
             'encodedFile' => base64_encode(file_get_contents($pathToDocument)),
-            'filename' => basename($pathToDocument),
-            'method' => 'CONVERT'
+            'filename'    => basename($pathToDocument),
+            'method'      => 'CONVERT'
         ];
 
         $curlResponse = CurlModel::exec([
-            'url'           => "{$configuration['mws']['url']}api/newFile",
-            'headers'       => ['content-type:application/json', 'Authorization:Bearer ' . $configuration['mws']['tokenMws']],
-            'method'        => 'POST',
-            'body'          => json_encode($body)
+            'url'     => "{$configuration['mws']['url']}api/newFile",
+            'headers' => [
+                'content-type:application/json',
+                'Authorization:Bearer ' . $configuration['mws']['tokenMws']
+            ],
+            'method'  => 'POST',
+            'body'    => json_encode($body)
         ]);
 
         $tmpFileOcr = CoreConfigModel::getTmpPath() . basename($pathToDocument, ".pdf") . rand() . ".pdf";
@@ -179,8 +201,8 @@ class MwsController
 
             return [
                 'errors' => '[MwsController] Error during fileTmp creation',
-                'body'  => $body,
-                'output'  => $curlResponse
+                'body'   => $body,
+                'output' => $curlResponse
             ];
         }
 
@@ -205,11 +227,11 @@ class MwsController
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_mercure']);
         $configuration = json_decode($configuration['value'], true);
 
-        $body = (object) [
+        $body = (object)[
             'encodedFile' => $aArgs['encodedResource'],
-            'filename' => $aArgs['filename'],
-            'method' => 'EXTRACT_LAD_VALUES',
-            'type' => 'COURRIER'
+            'filename'    => $aArgs['filename'],
+            'method'      => 'EXTRACT_LAD_VALUES',
+            'type'        => 'COURRIER'
         ];
 
         LogsController::add([
@@ -223,10 +245,13 @@ class MwsController
         ]);
 
         $curlResponse = CurlModel::exec([
-            'url'           => "{$configuration['mws']['url']}api/newFile",
-            'headers'       => ['content-type:application/json', 'Authorization:Bearer ' . $configuration['mws']['tokenMws']],
-            'method'        => 'POST',
-            'body'          => json_encode($body)
+            'url'     => "{$configuration['mws']['url']}api/newFile",
+            'headers' => [
+                'content-type:application/json',
+                'Authorization:Bearer ' . $configuration['mws']['tokenMws']
+            ],
+            'method'  => 'POST',
+            'body'    => json_encode($body)
         ]);
 
         $ladConfiguration = CoreConfigModel::getJsonLoaded(['path' => 'config/ladConfiguration.json']);
@@ -246,7 +271,10 @@ class MwsController
                     $disabledField = $mappingMercure[$nameField]['disabled'];
                 }
 
-                if (!$disabledField && (!array_key_exists($returnNameAttribute, $aReturn) || empty($aReturn[$returnNameAttribute]))) {
+                if (
+                    !$disabledField &&
+                    (!array_key_exists($returnNameAttribute, $aReturn) || empty($aReturn[$returnNameAttribute]))
+                ) {
                     $aReturn[$returnNameAttribute] = $valueField;
                 }
             }
@@ -279,13 +307,16 @@ class MwsController
         $configuration = json_decode($configuration['value'], true);
 
         $curlResponse = CurlModel::exec([
-            'url'           => "{$configuration['mws']['url']}api/subscribe/status",
-            'headers'       => ['content-type:application/json', 'Authorization:Bearer ' . $configuration['mws']['tokenMws']],
-            'method'        => 'GET'
+            'url'     => "{$configuration['mws']['url']}api/subscribe/status",
+            'headers' => [
+                'content-type:application/json',
+                'Authorization:Bearer ' . $configuration['mws']['tokenMws']
+            ],
+            'method'  => 'GET'
         ]);
 
         if ($curlResponse['code'] == 204) {
-            return $response->withStatus(204)->withJson(['errors'  => 'Aucun abonnement pour cet utilisateur']);
+            return $response->withStatus(204)->withJson(['errors' => 'Aucun abonnement pour cet utilisateur']);
         }
         return $response->withJson($curlResponse['response']);
     }
