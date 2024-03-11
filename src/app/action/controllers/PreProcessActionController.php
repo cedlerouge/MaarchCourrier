@@ -1512,7 +1512,7 @@ class PreProcessActionController
                 'select'   => ['user_id', 'note_text'],
                 'where'    => ['identifier = ?', "note_text like ?"],
                 'data'     => [$resId, '[' . _TO_AVIS . ']%'],
-                'order_by' => ['creation_date desc'],
+                'orderBy' => ['creation_date desc'],
                 'limit'    => 1
             ]);
 
