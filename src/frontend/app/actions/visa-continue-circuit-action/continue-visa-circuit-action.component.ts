@@ -15,6 +15,7 @@ import { PluginManagerService } from '@service/plugin-manager.service';
 import { AuthService } from '@service/auth.service';
 import { HeaderService } from '@service/header.service';
 import { SignatureBookInterface } from '@appRoot/signatureBook/signature-book.service';
+import { Router } from '@angular/router';
 
 @Component({
     templateUrl: 'continue-visa-circuit-action.component.html',
@@ -45,7 +46,8 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
         public functions: FunctionsService,
         private pluginManagerService: PluginManagerService,
         private authService: AuthService,
-        private headerService: HeaderService
+        private headerService: HeaderService,
+        private router: Router
     ) {}
 
     async ngOnInit(): Promise<void> {
@@ -131,6 +133,7 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                             this.executeAction(realResSelected, data);
                         }
                     }),
+                    finalize(() => this.backToBasket()),
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err);
                         return of(false);
@@ -170,5 +173,10 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
 
     isValidAction() {
         return !this.noResourceToProcess;
+    }
+
+    backToBasket(): void {
+        const path = '/basketList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId;
+        this.router.navigate([path]);
     }
 }
