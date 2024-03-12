@@ -1483,10 +1483,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentMainDocument['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentMainDocument['comment'] . '.' .
-                                pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
-                            'maxLength' => 50
-                        ])
+                            'filename'  => $sentMainDocument['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentMainDocument['comment']
                 ];
@@ -1506,10 +1505,9 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentMainDocument['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentMainDocument['comment'] . '.' .
-                            pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                        'filename'  => $sentMainDocument['comment'],
+                        'maxLength' => 251
+                    ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
@@ -1526,10 +1524,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentAttachment['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentAttachment['comment'] . '.' .
-                                pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
-                            'maxLength' => 50
-                        ])
+                            'filename'  => $sentAttachment['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentAttachment['comment']
                 ];
@@ -1548,10 +1545,9 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentAttachment['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentAttachment['comment'] . '.' .
-                            pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                        'filename'  => $sentAttachment['comment'],
+                        'maxLength' => 251
+                    ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
