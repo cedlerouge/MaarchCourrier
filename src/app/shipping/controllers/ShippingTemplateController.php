@@ -337,6 +337,7 @@ class ShippingTemplateController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
@@ -832,11 +833,11 @@ class ShippingTemplateController
     }
 
     /**
-     * @param $args
-     * @param $mode
+     * @param array $args
+     * @param string $mode
      * @return array
      */
-    private static function checkData($args, $mode): array
+    private static function checkData(array $args, string $mode): array
     {
         $errors = [];
 
@@ -937,11 +938,11 @@ class ShippingTemplateController
     }
 
     /**
-     * @param $args
+     * @param array $args
      * @return array
      * @throws Exception
      */
-    private static function generateToken($args): array
+    private static function generateToken(array $args): array
     {
         ValidatorModel::notEmpty($args, ['mailevaUri', 'shippingTemplateId']);
         ValidatorModel::stringType($args, ['mailevaUri']);
@@ -967,11 +968,11 @@ class ShippingTemplateController
     }
 
     /**
-     * @param $args
+     * @param array $args
      * @return array|string[]
      * @throws Exception
      */
-    private static function checkToken($args): array
+    private static function checkToken(array $args): array
     {
         ValidatorModel::notEmpty($args, ['shippingTemplateId', 'shippingApiDomainName', 'minIAT']);
         ValidatorModel::stringType($args, ['token', 'mailevaUri']);
