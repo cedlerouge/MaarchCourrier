@@ -1,22 +1,25 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   ShippingTemplateController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ShippingTemplateController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Shipping\controllers;
 
 use Convert\controllers\ConvertPdfController;
+use DateTime;
 use Docserver\models\DocserverModel;
 use Entity\models\EntityModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
+use Imagick;
+use ImagickException;
 use Respect\Validation\Validator;
 use SrcCore\models\CurlModel;
 use Resource\models\ResModel;
@@ -38,21 +41,21 @@ use Firebase\JWT\JWT;
 class ShippingTemplateController
 {
     private const MAILEVA_EVENT_RESOURCES = [
-        'ON_STATUS_ACCEPTED' => [
+        'ON_STATUS_ACCEPTED'        => [
             'mail/v2/sendings',
             'registered_mail/v2/sendings',
             'simple_registered_mail/v1/sendings',
             'lel/v2/sendings',
             'lrc/v1/sendings'
         ],
-        'ON_STATUS_REJECTED' => [
+        'ON_STATUS_REJECTED'        => [
             'mail/v2/sendings',
             'registered_mail/v2/sendings',
             'simple_registered_mail/v1/sendings',
             'lel/v2/sendings',
             'lrc/v1/sending'
         ],
-        'ON_STATUS_PROCESSED' => [
+        'ON_STATUS_PROCESSED'       => [
             'mail/v2/sendings',
             'registered_mail/v2/sendings',
             'simple_registered_mail/v1/sendings',
@@ -62,7 +65,7 @@ class ShippingTemplateController
         'ON_DEPOSIT_PROOF_RECEIVED' => [
             'registered_mail/v2/sendings'
         ],
-        'ON_STATUS_ARCHIVED' => [
+        'ON_STATUS_ARCHIVED'        => [
             'mail/v2/sendings',
             'registered_mail/v2/sendings',
             'simple_registered_mail/v1/sendings',
@@ -70,19 +73,41 @@ class ShippingTemplateController
         ]
     ];
 
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        return $response->withJson(['shippings' => ShippingTemplateModel::get(
-            ['select' => ['id', 'label', 'description', 'options', 'fee', 'entities', "account->>'id' as accountid"]]
-        )
+        return $response->withJson([
+            'shippings' => ShippingTemplateModel::get(
+                [
+                    'select' => [
+                        'id',
+                        'label',
+                        'description',
+                        'options',
+                        'fee',
+                        'entities',
+                        "account->>'id' as accountid"
+                    ]
+                ]
+            )
         ]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -99,8 +124,8 @@ class ShippingTemplateController
 
         $shippingInfo['account'] = json_decode($shippingInfo['account'], true);
         $shippingInfo['account']['password'] = '';
-        $shippingInfo['options']  = json_decode($shippingInfo['options'], true);
-        $shippingInfo['fee']      = json_decode($shippingInfo['fee'], true);
+        $shippingInfo['options'] = json_decode($shippingInfo['options'], true);
+        $shippingInfo['fee'] = json_decode($shippingInfo['fee'], true);
         $shippingInfo['entities'] = !empty($shippingInfo['entities']) ?
             json_decode($shippingInfo['entities'], true) : [];
 
@@ -123,15 +148,15 @@ class ShippingTemplateController
             $allEntities[$key]['id'] = $value['id'];
             if (empty($value['parent_id'])) {
                 $allEntities[$key]['parent'] = '#';
-                $allEntities[$key]['icon']   = "fa fa-building";
+                $allEntities[$key]['icon'] = "fa fa-building";
             } else {
                 $allEntities[$key]['parent'] = $value['parent_id'];
-                $allEntities[$key]['icon']   = "fa fa-sitemap";
+                $allEntities[$key]['icon'] = "fa fa-sitemap";
             }
             $allEntities[$key]['state']['opened'] = false;
-            $allEntities[$key]['allowed']         = true;
+            $allEntities[$key]['allowed'] = true;
             if (!empty($shippingInfo['entities']) && in_array($value['id'], $shippingInfo['entities'])) {
-                $allEntities[$key]['state']['opened']   = true;
+                $allEntities[$key]['state']['opened'] = true;
                 $allEntities[$key]['state']['selected'] = true;
             }
             $allEntities[$key]['text'] = $value['entity_label'];
@@ -140,7 +165,13 @@ class ShippingTemplateController
         return $response->withJson(['shipping' => $shippingInfo, 'entities' => $allEntities]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -159,13 +190,13 @@ class ShippingTemplateController
             );
         }
 
-        $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
-        $body['fee']      = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
+        $body['options'] = !empty($body['options']) ? json_encode($body['options']) : '{}';
+        $body['fee'] = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
         foreach ($body['entities'] as $key => $entity) {
             $body['entities'][$key] = (string)$entity;
         }
         $body['entities'] = !empty($body['entities']) ? json_encode($body['entities']) : '[]';
-        $account          = !empty($body['account']) ? json_encode($body['account']) : '[]';
+        $account = !empty($body['account']) ? json_encode($body['account']) : '[]';
 
         $id = ShippingTemplateModel::create([
             'label'       => $body['label'],
@@ -217,7 +248,14 @@ class ShippingTemplateController
         return $response->withJson(['shippingId' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -248,8 +286,8 @@ class ShippingTemplateController
         }
         unset($shippingInfo);
 
-        $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
-        $body['fee']      = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
+        $body['options'] = !empty($body['options']) ? json_encode($body['options']) : '{}';
+        $body['fee'] = !empty($body['fee']) ? json_encode($body['fee']) : '{}';
         $body['entities'] = $body['entities'] ?? [];
         $body['subscribed'] = !empty($body['subscribed']);
         $body['entities'] = array_map(function ($entity) {
@@ -269,13 +307,13 @@ class ShippingTemplateController
                 return $response->withStatus(400)->withJson(['errors' => $subscriptions['errors']]);
             }
             $body['subscriptions'] = $subscriptions['subscriptions'];
-            $body['token_min_iat'] = new \DateTime();
+            $body['token_min_iat'] = new DateTime();
             $body['token_min_iat'] = $body['token_min_iat']->format('c');
         }
         unset($body['subscribed']);
         $body['subscriptions'] = !empty($body['subscriptions']) ? json_encode($body['subscriptions']) : '[]';
         $body['entities'] = !empty($body['entities']) ? json_encode($body['entities']) : '[]';
-        $body['account']  = !empty($body['account']) ? json_encode($body['account']) : '[]';
+        $body['account'] = !empty($body['account']) ? json_encode($body['account']) : '[]';
 
         ShippingTemplateModel::update([
             'where' => ['id = ?'],
@@ -294,7 +332,13 @@ class ShippingTemplateController
         return $response->withJson(['success' => 'success']);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -306,7 +350,7 @@ class ShippingTemplateController
 
         $shippingInfo = ShippingTemplateModel::getById(
             [
-                'id' => $args['id'],
+                'id'     => $args['id'],
                 'select' =>
                     [
                         'label',
@@ -360,7 +404,12 @@ class ShippingTemplateController
         return $response->withJson(['shippings' => $shippings]);
     }
 
-    public function initShipping(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function initShipping(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_shippings', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -378,14 +427,14 @@ class ShippingTemplateController
             $allEntities[$key]['id'] = (string)$value['id'];
             if (empty($value['parent_id'])) {
                 $allEntities[$key]['parent'] = '#';
-                $allEntities[$key]['icon']   = "fa fa-building";
+                $allEntities[$key]['icon'] = "fa fa-building";
             } else {
                 $allEntities[$key]['parent'] = (string)$value['parent_id'];
-                $allEntities[$key]['icon']   = "fa fa-sitemap";
+                $allEntities[$key]['icon'] = "fa fa-sitemap";
             }
 
-            $allEntities[$key]['allowed']           = true;
-            $allEntities[$key]['state']['opened']   = true;
+            $allEntities[$key]['allowed'] = true;
+            $allEntities[$key]['state']['opened'] = true;
 
             $allEntities[$key]['text'] = $value['entity_label'];
         }
@@ -395,7 +444,14 @@ class ShippingTemplateController
         ]);
     }
 
-    public function receiveNotification(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function receiveNotification(Request $request, Response $response, array $args): Response
     {
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
         if (empty($mailevaConfig)) {
@@ -431,7 +487,7 @@ class ShippingTemplateController
             );
         }
         $shippingTemplateAccount = json_decode($shippingTemplate['account'], true);
-        $minIAT = new \DateTime($shippingTemplate['token_min_iat']);
+        $minIAT = new DateTime($shippingTemplate['token_min_iat']);
         $minIAT = $minIAT->format('U');
 
         $authToken = $request->getQueryParams();
@@ -546,9 +602,9 @@ class ShippingTemplateController
             );
         }
         $shipping = $shipping[0];
-        $shipping['recipients']  = json_decode($shipping['recipients'], true);
+        $shipping['recipients'] = json_decode($shipping['recipients'], true);
         $shipping['attachments'] = json_decode($shipping['attachments'], true);
-        $shipping['history']     = json_decode($shipping['history'], true);
+        $shipping['history'] = json_decode($shipping['history'], true);
 
         $resId = $shipping['document_id'];
         if ($shipping['document_type'] == 'attachment') {
@@ -609,9 +665,13 @@ class ShippingTemplateController
          */
         foreach ($actionParameters as $phaseParameters) {
             if (
-                !Validator::each(Validator::in(array_keys(
-                    ShippingTemplateController::MAILEVA_EVENT_RESOURCES
-                )))->validate($phaseParameters['mailevaStatus'])
+                !Validator::each(
+                    Validator::in(
+                        array_keys(
+                            ShippingTemplateController::MAILEVA_EVENT_RESOURCES
+                        )
+                    )
+                )->validate($phaseParameters['mailevaStatus'])
                 || !Validator::stringType()->length(1, 10)->validate($phaseParameters['actionStatus'])
                 || (
                     $phaseParameters['actionStatus'] != '_NOSTATUS_'
@@ -685,10 +745,13 @@ class ShippingTemplateController
 
             // deposit proof
             if (
-                !in_array('shipping_deposit_proof', array_column(
-                    $previousAttachments,
-                    'attachment_type'
-                ))
+                !in_array(
+                    'shipping_deposit_proof',
+                    array_column(
+                        $previousAttachments,
+                        'attachment_type'
+                    )
+                )
             ) {
                 $curlResponse = CurlModel::exec([
                     'method'       => 'GET',
@@ -708,14 +771,14 @@ class ShippingTemplateController
                             [
                                 'maarchShippingId' => $shipping['id'],
                                 'mailevaSendingId' => $body['resourceId'],
-                                'curlResponse' => $curlResponse['response']
+                                'curlResponse'     => $curlResponse['response']
                             ]
                         );
                 } else {
                     $attachmentId = StoreController::storeAttachment([
                         'title'       => _SHIPPING_ATTACH_DEPOSIT_PROOF .
                             '_' .
-                            (new \DateTime($body['eventDate']))->format('d-m-Y'),
+                            (new DateTime($body['eventDate']))->format('d-m-Y'),
                         'resIdMaster' => $resId,
                         'type'        => 'shipping_deposit_proof',
                         'status'      => 'TRA',
@@ -768,7 +831,12 @@ class ShippingTemplateController
         return $response->withStatus(201);
     }
 
-    private static function checkData($args, $mode)
+    /**
+     * @param $args
+     * @param $mode
+     * @return array
+     */
+    private static function checkData($args, $mode): array
     {
         $errors = [];
 
@@ -786,8 +854,8 @@ class ShippingTemplateController
             }
         } elseif (
             !empty($args['account']) && (
-            !Validator::notEmpty()->validate($args['account']['id'])
-            || !Validator::notEmpty()->validate($args['account']['password'])
+                !Validator::notEmpty()->validate($args['account']['id'])
+                || !Validator::notEmpty()->validate($args['account']['password'])
             )
         ) {
             $errors[] = 'account id or password is empty';
@@ -824,7 +892,13 @@ class ShippingTemplateController
         return $errors;
     }
 
-    public static function calculShippingFee(array $args)
+    /**
+     * @param array $args
+     * @return float|int|mixed
+     * @throws ImagickException
+     * @throws Exception
+     */
+    public static function calculShippingFee(array $args): mixed
     {
         $fee = 0;
         foreach ($args['resources'] as $value) {
@@ -834,35 +908,40 @@ class ShippingTemplateController
 
             $convertedResource = ConvertPdfController::getConvertedPdfById(
                 [
-                    'resId' => $resourceId,
+                    'resId'  => $resourceId,
                     'collId' => $collId
                 ]
             );
-            $docserver         = DocserverModel::getByDocserverId(
+            $docserver = DocserverModel::getByDocserverId(
                 [
                     'docserverId' => $convertedResource['docserver_id'],
-                    'select' => ['path_template']
+                    'select'      => ['path_template']
                 ]
             );
-            $pathToDocument    = $docserver['path_template'] .
+            $pathToDocument = $docserver['path_template'] .
                 str_replace(
                     '#',
                     DIRECTORY_SEPARATOR,
                     $convertedResource['path']
                 ) . $convertedResource['filename'];
 
-            $img = new \Imagick();
+            $img = new Imagick();
             $img->pingImage($pathToDocument);
             $pageCount = $img->getNumberImages();
 
-            $attachmentFee = ($pageCount > 1) ? ($pageCount - 1) * $args['fee']['nextPagePrice'] : 0 ;
+            $attachmentFee = ($pageCount > 1) ? ($pageCount - 1) * $args['fee']['nextPagePrice'] : 0;
             $fee = $fee + $attachmentFee + $args['fee']['firstPagePrice'] + $args['fee']['postagePrice'];
         }
 
         return $fee;
     }
 
-    private static function generateToken($args)
+    /**
+     * @param $args
+     * @return array
+     * @throws Exception
+     */
+    private static function generateToken($args): array
     {
         ValidatorModel::notEmpty($args, ['mailevaUri', 'shippingTemplateId']);
         ValidatorModel::stringType($args, ['mailevaUri']);
@@ -875,10 +954,10 @@ class ShippingTemplateController
         $now = time();
 
         $payload = [
-            'iss' => 'MaarchCourrier',
-            'sub' => 'maileva_notifications',
-            'aud' => $shippingApiDomainName,
-            'iat' => $now,
+            'iss'                => 'MaarchCourrier',
+            'sub'                => 'maileva_notifications',
+            'aud'                => $shippingApiDomainName,
+            'iat'                => $now,
             'shippingTemplateId' => $args['shippingTemplateId'],
         ];
 
@@ -887,7 +966,12 @@ class ShippingTemplateController
         return ['jwt' => $jwt, 'iat' => $now];
     }
 
-    private static function checkToken($args)
+    /**
+     * @param $args
+     * @return array|string[]
+     * @throws Exception
+     */
+    private static function checkToken($args): array
     {
         ValidatorModel::notEmpty($args, ['shippingTemplateId', 'shippingApiDomainName', 'minIAT']);
         ValidatorModel::stringType($args, ['token', 'mailevaUri']);
@@ -896,7 +980,7 @@ class ShippingTemplateController
         try {
             $payload = JWT::decode($args['token'], CoreConfigModel::getEncryptKey(), ['HS256']);
             $payload = (array)$payload;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['errors' => 'Authentication failed'];
         }
 
@@ -904,7 +988,11 @@ class ShippingTemplateController
 
         if (!Validator::notEmpty()->stringType()->equals('MaarchCourrier')->validate($payload['iss'])) {
             return ['errors' => 'Authentication failed'];
-        } elseif (!Validator::notEmpty()->stringType()->equals('maileva_notifications')->validate($payload['sub'])) {
+        } elseif (
+            !Validator::notEmpty()->stringType()->equals(
+                'maileva_notifications'
+            )->validate($payload['sub'])
+        ) {
             return ['errors' => 'Authentication failed'];
         } elseif (
             !Validator::notEmpty()->stringType()->equals(
@@ -927,17 +1015,22 @@ class ShippingTemplateController
         }
 
         $payload = [
-            'iss' => $payload['iss'],
-            'sub' => $payload['sub'],
-            'aud' => $payload['aud'],
-            'iat' => $payload['iat'],
+            'iss'                => $payload['iss'],
+            'sub'                => $payload['sub'],
+            'aud'                => $payload['aud'],
+            'iat'                => $payload['iat'],
             'shippingTemplateId' => $payload['shippingTemplateId']
         ];
 
         return $payload;
     }
 
-    private static function isSubscribed(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    private static function isSubscribed(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['accountId']);
         ValidatorModel::stringType($args, ['accountId']);
@@ -952,7 +1045,12 @@ class ShippingTemplateController
         return !empty($result);
     }
 
-    private static function subscribeToNotifications(array $shippingTemplate)
+    /**
+     * @param array $shippingTemplate
+     * @return array|string[]
+     * @throws Exception
+     */
+    private static function subscribeToNotifications(array $shippingTemplate): array
     {
         ValidatorModel::notEmpty($shippingTemplate, ['id', 'account']);
         ValidatorModel::intVal($shippingTemplate, ['id']);
@@ -971,7 +1069,7 @@ class ShippingTemplateController
         }
         $jwtAndIAT = ShippingTemplateController::generateToken(
             [
-                'mailevaUri' => $mailevaConfig['uri'],
+                'mailevaUri'         => $mailevaConfig['uri'],
                 'shippingTemplateId' => $shippingTemplate['id']
             ]
         );
@@ -988,7 +1086,7 @@ class ShippingTemplateController
                     'method'     => 'POST',
                     'url'        => $mailevaConfig['uri'] . '/notification_center/v2/subscriptions',
                     'bearerAuth' => ['token' => $authToken],
-                    'headers'   => [
+                    'headers'    => [
                         'Accept: application/json',
                         'Content-Type: application/json'
                     ],
@@ -1017,14 +1115,26 @@ class ShippingTemplateController
                 }
             }
         }
-        $subscriptions = array_values(array_unique(array_merge((
-            $shippingTemplate['subscriptions'] ?? []
-        ), $subscriptions))) ?? [];
+        $subscriptions = array_values(
+            array_unique(
+                array_merge(
+                    (
+                        $shippingTemplate['subscriptions'] ?? []
+                    ),
+                    $subscriptions
+                )
+            )
+        ) ?? [];
 
         return ['subscriptions' => $subscriptions, 'jwt' => $jwt, 'iat' => $iat];
     }
 
-    private static function unsubscribeFromNotifications(array $shippingTemplate)
+    /**
+     * @param array $shippingTemplate
+     * @return array[]|string[]
+     * @throws Exception
+     */
+    private static function unsubscribeFromNotifications(array $shippingTemplate): array
     {
         ValidatorModel::notEmpty($shippingTemplate, ['id', 'account']);
         ValidatorModel::intVal($shippingTemplate, ['id']);
@@ -1067,19 +1177,21 @@ class ShippingTemplateController
                 'headers'    => ['Accept: application/json']
             ]);
             if ($curlResponse['code'] != 204) {
-                return ['errors' => $curlResponse['response'] ?? (
-                    'Maileva DELETE/subscriptions/' .
-                    $subscriptionId .
-                    ' returned HTTP ' .
-                    $curlResponse['code'])];
+                return [
+                    'errors' => $curlResponse['response'] ?? (
+                            'Maileva DELETE/subscriptions/' .
+                            $subscriptionId .
+                            ' returned HTTP ' .
+                            $curlResponse['code'])
+                ];
             }
         }
         if ($subscribedElsewhere) {
-            $now = new \DateTime();
+            $now = new DateTime();
             ShippingTemplateModel::update([
-                'where'   => ['id = ?'],
-                'data'    => [$shippingTemplate['id']],
-                'set' => [
+                'where' => ['id = ?'],
+                'data'  => [$shippingTemplate['id']],
+                'set'   => [
                     'subscriptions' => '[]',
                     'token_min_iat' => $now->format('c')
                 ]
@@ -1089,7 +1201,14 @@ class ShippingTemplateController
         return ['subscriptions' => []];
     }
 
-    private static function logAndReturnError(Response $response, int $httpStatusCode, string $error)
+    /**
+     * @param Response $response
+     * @param int $httpStatusCode
+     * @param string $error
+     * @return Response
+     * @throws Exception
+     */
+    private static function logAndReturnError(Response $response, int $httpStatusCode, string $error): Response
     {
         LogsController::add([
             'isTech'    => true,
@@ -1103,17 +1222,23 @@ class ShippingTemplateController
         return $response->withStatus($httpStatusCode)->withJson(['errors' => $error]);
     }
 
-    private static function getMailevaAuthToken(array $mailevaConfig, array $shippingTemplateAccount)
+    /**
+     * @param array $mailevaConfig
+     * @param array $shippingTemplateAccount
+     * @return mixed|string[]
+     * @throws Exception
+     */
+    private static function getMailevaAuthToken(array $mailevaConfig, array $shippingTemplateAccount): mixed
     {
         $curlAuth = CurlModel::exec([
-            'url'           => $mailevaConfig['connectionUri'] . '/authentication/oauth2/token',
-            'basicAuth'     => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
-            'headers'       => ['Content-Type: application/x-www-form-urlencoded'],
-            'method'        => 'POST',
-            'queryParams'   => [
-                'grant_type'    => 'password',
-                'username'      => $shippingTemplateAccount['id'],
-                'password'      => PasswordController::decrypt(
+            'url'         => $mailevaConfig['connectionUri'] . '/authentication/oauth2/token',
+            'basicAuth'   => ['user' => $mailevaConfig['clientId'], 'password' => $mailevaConfig['clientSecret']],
+            'headers'     => ['Content-Type: application/x-www-form-urlencoded'],
+            'method'      => 'POST',
+            'queryParams' => [
+                'grant_type' => 'password',
+                'username'   => $shippingTemplateAccount['id'],
+                'password'   => PasswordController::decrypt(
                     [
                         'encryptedData' => $shippingTemplateAccount['password']
                     ]

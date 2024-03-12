@@ -20,11 +20,14 @@ use Attachment\models\AttachmentTypeModel;
 use Contact\controllers\ContactController;
 use Contact\models\ContactModel;
 use Convert\controllers\ConvertPdfController;
+use DateTime;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Doctype\models\DoctypeModel;
 use Email\models\EmailModel;
 use Entity\models\EntityModel;
+use Exception;
+use finfo;
 use IndexingModel\models\IndexingModelFieldModel;
 use Note\models\NoteEntityModel;
 use Note\models\NoteModel;
@@ -39,13 +42,18 @@ use SrcCore\models\CoreConfigModel;
 use SrcCore\models\ValidatorModel;
 use Status\models\StatusModel;
 use User\models\UserModel;
+use ZipArchive;
 
 class FolderPrintController
 {
     /**
-     * generateFile returns one PDF per resource
-     * if 1 resource, sends a single PDF
-     * if several resources, sends one PDF per resource combined into a ZIP archive
+     *  generateFile returns one PDF per resource
+     *  if 1 resource, sends a single PDF
+     *  if several resources, sends one PDF per resource combined into a ZIP archive
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
      */
     public function generateFile(Request $request, Response $response): Response
     {
@@ -57,31 +65,31 @@ class FolderPrintController
 
         $defaultUnits = [
             [
-                "unit" => "qrcode",
+                "unit"  => "qrcode",
                 "label" => ""
             ],
             [
-                "unit" => "primaryInformations",
+                "unit"  => "primaryInformations",
                 "label" => _PRIMARY_INFORMATION
             ],
             [
-                "unit" => "senderRecipientInformations",
+                "unit"  => "senderRecipientInformations",
                 "label" => _DEST_INFORMATION
             ],
             [
-                "unit" => "secondaryInformations",
+                "unit"  => "secondaryInformations",
                 "label" => _SECONDARY_INFORMATION
             ],
             [
-                "unit" => "diffusionList",
+                "unit"  => "diffusionList",
                 "label" => _DIFFUSION_LIST
             ],
             [
-                "unit" => "opinionWorkflow",
+                "unit"  => "opinionWorkflow",
                 "label" => _AVIS_WORKFLOW
             ],
             [
-                "unit" => "visaWorkflow",
+                "unit"  => "visaWorkflow",
                 "label" => _VISA_WORKFLOW
             ]
         ];
@@ -141,11 +149,11 @@ class FolderPrintController
                 }
 
                 $resource['altIdentifier'] = $document['alt_identifier'];
-                $resource['subject']       = $document['subject'];
+                $resource['subject'] = $document['subject'];
 
                 if (empty($document['filename'])) {
                     LogsController::add([
-                        'isTech' => true,
+                        'isTech'    => true,
                         'moduleId'  => 'folderPrint',
                         'level'     => 'DEBUG',
                         'tableName' => '',
@@ -332,16 +340,18 @@ class FolderPrintController
                         $noteEntities = NoteEntityModel::getWithEntityInfo(
                             [
                                 'select' =>
-                                [
-                                    'item_id',
-                                    'short_label'
-                                ], 'where' =>
-                                [
-                                    'note_id = ?'
-                                ], 'data' =>
-                                [
-                                    $attachment['id']
-                                ]
+                                    [
+                                        'item_id',
+                                        'short_label'
+                                    ],
+                                'where'  =>
+                                    [
+                                        'note_id = ?'
+                                    ],
+                                'data'   =>
+                                    [
+                                        $attachment['id']
+                                    ]
                             ]
                         );
                         if (!empty($noteEntities)) {
@@ -349,11 +359,11 @@ class FolderPrintController
                                 $attachment['entities_restriction'][] =
                                     [
                                         'short_label' =>
-                                        $noteEntity['short_label'],
-                                        'item_id' =>
-                                        [
-                                            $noteEntity['item_id']
-                                        ]
+                                            $noteEntity['short_label'],
+                                        'item_id'     =>
+                                            [
+                                                $noteEntity['item_id']
+                                            ]
                                     ];
 
                                 if (in_array($noteEntity['item_id'], $userEntities)) {
@@ -374,9 +384,9 @@ class FolderPrintController
                     }
                 } else {
                     $notes = NoteModel::getByUserIdForResource([
-                        'select'  => ['id', 'identifier', 'user_id', 'note_text', 'creation_date'],
-                        'userId'  => $GLOBALS['id'],
-                        'resId'   => $resource['resId']
+                        'select' => ['id', 'identifier', 'user_id', 'note_text', 'creation_date'],
+                        'userId' => $GLOBALS['id'],
+                        'resId'  => $resource['resId']
                     ]);
                 }
 
@@ -527,7 +537,8 @@ class FolderPrintController
                         ],
                         'where'   =>
                             [
-                                "cast(document->>'id' as INT) = ? ", "(object NOT LIKE '[AR]%' OR object is null)"
+                                "cast(document->>'id' as INT) = ? ",
+                                "(object NOT LIKE '[AR]%' OR object is null)"
                             ],
                         'data'    => [$resource['resId']],
                         'orderBy' => ['creation_date desc']
@@ -538,7 +549,9 @@ class FolderPrintController
                     foreach ($emails as $email) {
                         $emailDocument = json_decode($email['document'], true);
                         if (!empty($emailDocument['id']) && $emailDocument['id'] != $resource['resId']) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Email not linked to resource']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Email not linked to resource']
+                            );
                         }
                         $emailFilePath = FolderPrintController::getEmailFilePath(
                             [
@@ -608,7 +621,7 @@ class FolderPrintController
                 } else {
                     $oLinkedResources = ResModel::getById(
                         [
-                            'resId' => $resource['resId'],
+                            'resId'  => $resource['resId'],
                             'select' => ['linked_resources']
                         ]
                     );
@@ -644,7 +657,7 @@ class FolderPrintController
                 foreach ($attachments as $attachment) {
                     $resourceInfo = ResModel::getById(
                         [
-                            'resId' => $attachment['res_id_master'],
+                            'resId'  => $attachment['res_id_master'],
                             'select' => ['alt_identifier']
                         ]
                     );
@@ -666,7 +679,7 @@ class FolderPrintController
                                 'format',
                                 'docserver_id',
                                 'origin'
-                        ],
+                            ],
                         'where'  => ['origin = ?', 'status not in (?)'],
                         'data'   => [$attachment['res_id'] . ',res_attachments', ['DEL', 'OBS']]
                     ]);
@@ -684,8 +697,8 @@ class FolderPrintController
                         $linkedAttachmentsPath[$attachment['res_id_master']][] =
                             FolderPrintController::getAttachmentSeparator(
                                 [
-                                'attachment'     => $attachment,
-                                'chronoResource' => $chronoResource
+                                    'attachment'     => $attachment,
+                                    'chronoResource' => $chronoResource
                                 ]
                             );
                     }
@@ -693,7 +706,7 @@ class FolderPrintController
                     $path = FolderPrintController::getDocumentFilePath(
                         [
                             'document' => $attachment,
-                            'collId' => 'attachments_coll'
+                            'collId'   => 'attachments_coll'
                         ]
                     );
                     if (!empty($path['errors'])) {
@@ -723,7 +736,7 @@ class FolderPrintController
                     !empty($resource['linkedResources']) &&
                     !ResController::hasRightByResId(
                         [
-                            'resId' => $resource['linkedResources'],
+                            'resId'  => $resource['linkedResources'],
                             'userId' => $GLOBALS['id']
                         ]
                     )
@@ -783,7 +796,7 @@ class FolderPrintController
                     $path = FolderPrintController::getDocumentFilePath(
                         [
                             'document' => $document,
-                            'collId' => 'letterbox_coll'
+                            'collId'   => 'letterbox_coll'
                         ]
                     );
                     if (!empty($path['errors'])) {
@@ -829,16 +842,18 @@ class FolderPrintController
                         'resId'  => $resource['resId']
                     ]);
                     $resource['altIdentifier'] = $document['alt_identifier'];
-                    $resource['subject']       = $document['subject'];
+                    $resource['subject'] = $document['subject'];
                 }
                 if (empty($resource['altIdentifier'] . $resource['subject'])) {
                     $resource['altIdentifier'] = 'MAARCH';
-                    $resource['subject']       = $resource['resId'];
+                    $resource['subject'] = $resource['resId'];
                 }
-                $filePathOnTmp = trim($tmpDir . TextFormatModel::formatFilename([
-                    'filename'  => $resource['altIdentifier'] . '_' . $resource['subject'],
-                    'maxLength' => 100
-                ])) . '.pdf';
+                $filePathOnTmp = trim(
+                    $tmpDir . TextFormatModel::formatFilename([
+                            'filename'  => $resource['altIdentifier'] . '_' . $resource['subject'],
+                            'maxLength' => 100
+                        ])
+                ) . '.pdf';
                 $filePathOnTmp = str_replace('//', '/', $filePathOnTmp);
                 foreach ($documentPaths as $key => $documentPath) {
                     $documentPaths[$key] = TextFormatModel::formatFilename([
@@ -862,11 +877,11 @@ class FolderPrintController
                 // convertedAr_*.pdf and listNotes_*.pdf after merged is complete
                 foreach ($documentPaths as $documentPath) {
                     if (
-                        strpos($documentPath, "email_") !== false ||
-                        strpos($documentPath, "attachment_") !== false ||
-                        strpos($documentPath, "summarySheet_") !== false ||
-                        strpos($documentPath, "convertedAr_") !== false  ||
-                        strpos($documentPath, "listNotes_") !== false
+                        str_contains($documentPath, "email_") ||
+                        str_contains($documentPath, "attachment_") ||
+                        str_contains($documentPath, "summarySheet_") ||
+                        str_contains($documentPath, "convertedAr_") ||
+                        str_contains($documentPath, "listNotes_")
                     ) {
                         unlink($documentPath);
                     }
@@ -879,7 +894,7 @@ class FolderPrintController
             return $response->withStatus(400)->withJson(['errors' => 'No document to merge']);
         }
         if (count($folderPrintPaths) == 1) {
-            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
 
             $fileContent = file_get_contents($folderPrintPaths[0]);
             $mimeType = $finfo->buffer($fileContent);
@@ -895,8 +910,8 @@ class FolderPrintController
             unlink($filePathOnTmp);
         }
 
-        $zip = new \ZipArchive();
-        if ($zip->open($filePathOnTmp, \ZipArchive::CREATE) !== true) {
+        $zip = new ZipArchive();
+        if ($zip->open($filePathOnTmp, ZipArchive::CREATE) !== true) {
             return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
         }
         foreach ($folderPrintPaths as $folderPrintPath) {
@@ -908,7 +923,7 @@ class FolderPrintController
             return $response->withStatus(500)->withJson(['errors' => 'Merged ZIP file not created']);
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
         $fileContent = file_get_contents($filePathOnTmp);
         $mimeType = $finfo->buffer($fileContent);
 
@@ -924,6 +939,11 @@ class FolderPrintController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
+    /**
+     * @param array $args
+     * @return array|string
+     * @throws Exception
+     */
     private static function getDocumentFilePath(array $args): array|string
     {
         ValidatorModel::notEmpty($args, ['document']);
@@ -935,7 +955,7 @@ class FolderPrintController
         if (!empty($args['collId']) && in_array($args['collId'], ['letterbox_coll', 'attachments_coll'])) {
             $document = ConvertPdfController::getConvertedPdfById(
                 [
-                    'resId' => $resourceDocument['res_id'],
+                    'resId'  => $resourceDocument['res_id'],
                     'collId' => $args['collId']
                 ]
             );
@@ -951,7 +971,8 @@ class FolderPrintController
         }
 
         $docserver = DocserverModel::getByDocserverId([
-            'docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']
+            'docserverId' => $document['docserver_id'],
+            'select'      => ['path_template', 'docserver_type_id']
         ]);
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist', 'code' => 400];
@@ -969,14 +990,15 @@ class FolderPrintController
 
         $docserverType = DocserverTypeModel::getById(
             [
-                'id' =>
-                    $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']
+                'id'     =>
+                    $docserver['docserver_type_id'],
+                'select' => ['fingerprint_mode']
             ]
         );
         $fingerprint = StoreController::getFingerPrint(
             [
                 'filePath' => $pathToDocument,
-                'mode' => $docserverType['fingerprint_mode']
+                'mode'     => $docserverType['fingerprint_mode']
             ]
         );
         if ($document['fingerprint'] != $fingerprint) {
@@ -986,6 +1008,11 @@ class FolderPrintController
         return $pathToDocument;
     }
 
+    /**
+     * @param array $args
+     * @return array|string
+     * @throws Exception
+     */
     private static function getNotesFilePath(array $args): array|string
     {
         ValidatorModel::notEmpty($args, ['notes', 'resId']);
@@ -1021,10 +1048,10 @@ class FolderPrintController
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
 
-        $dimensions     = $pdf->getPageDimensions();
+        $dimensions = $pdf->getPageDimensions();
         $widthNoMargins = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
-        $bottomHeight   = $dimensions['h'] - $dimensions['bm'];
-        $widthNotes     = $widthNoMargins / 2;
+        $bottomHeight = $dimensions['h'] - $dimensions['bm'];
+        $widthNotes = $widthNoMargins / 2;
 
         $pdf->SetY($pdf->GetY() + 40);
         if (($pdf->GetY() + 80) > $bottomHeight) {
@@ -1056,6 +1083,11 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
     private static function getAcknowledgementReceiptSeparator(array $args): string
     {
         ValidatorModel::notEmpty($args, ['acknowledgementReceipt']);
@@ -1065,8 +1097,16 @@ class FolderPrintController
 
         $contact = ContactModel::getById([
             'select' => [
-                'id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
-                'address_town', 'address_country', 'company'
+                'id',
+                'firstname',
+                'lastname',
+                'email',
+                'address_number',
+                'address_street',
+                'address_postcode',
+                'address_town',
+                'address_country',
+                'company'
             ],
             'id'     => $acknowledgementReceipt['contact_id']
         ]);
@@ -1081,11 +1121,11 @@ class FolderPrintController
 
         $creator = UserModel::getById(['id' => $acknowledgementReceipt['user_id']]);
 
-        $creationDate = new \DateTime($acknowledgementReceipt['creation_date']);
+        $creationDate = new DateTime($acknowledgementReceipt['creation_date']);
         $creationDate = $creationDate->format('d-m-Y H:i');
 
         if (!empty($acknowledgementReceipt['send_date'])) {
-            $sendDate = new \DateTime($acknowledgementReceipt['send_date']);
+            $sendDate = new DateTime($acknowledgementReceipt['send_date']);
             $sendDate = $sendDate->format('d-m-Y H:i');
         } else {
             $sendDate = _UNDEFINED;
@@ -1099,9 +1139,9 @@ class FolderPrintController
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
 
-        $dimensions     = $pdf->getPageDimensions();
+        $dimensions = $pdf->getPageDimensions();
         $widthNoMargins = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
-        $width          = $widthNoMargins / 2;
+        $width = $widthNoMargins / 2;
 
         $pdf->SetFont('', 'B', 32);
         $pdf->Cell($widthNoMargins, 40, _ACKNOWLEDGEMENT_RECEIPT, 0, 1, 'C', false);
@@ -1271,6 +1311,11 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
     private static function getPathConvertedAcknowledgementReceipt(array $args): string
     {
         ValidatorModel::notEmpty($args, ['acknowledgementReceipt', 'pathHtml']);
@@ -1298,6 +1343,11 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
     private static function getAttachmentSeparator(array $args): string
     {
         ValidatorModel::notEmpty($args, ['attachment']);
@@ -1312,8 +1362,16 @@ class FolderPrintController
         } elseif ($attachment['recipient_type'] == 'contact') {
             $contact = ContactModel::getById([
                 'select' => [
-                    'id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
-                    'address_town', 'address_country', 'company'
+                    'id',
+                    'firstname',
+                    'lastname',
+                    'email',
+                    'address_number',
+                    'address_street',
+                    'address_postcode',
+                    'address_town',
+                    'address_country',
+                    'company'
                 ],
                 'id'     => $attachment['recipient_id']
             ]);
@@ -1332,7 +1390,7 @@ class FolderPrintController
         $attachmentTypes = array_column($attachmentTypes, 'label', 'type_id');
         $attachmentType = $attachmentTypes[$attachment['attachment_type']];
 
-        $creationDate = new \DateTime($attachment['creation_date']);
+        $creationDate = new DateTime($attachment['creation_date']);
         $creationDate = $creationDate->format('d-m-Y H:i');
 
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
@@ -1343,9 +1401,9 @@ class FolderPrintController
         $pdf->setPrintHeader(false);
         $pdf->AddPage();
 
-        $dimensions     = $pdf->getPageDimensions();
+        $dimensions = $pdf->getPageDimensions();
         $widthNoMargins = $dimensions['w'] - $dimensions['rm'] - $dimensions['lm'];
-        $width          = $widthNoMargins / 2;
+        $width = $widthNoMargins / 2;
 
         $pdf->SetFont('', 'B', 32);
         $pdf->Cell($widthNoMargins, 40, _ATTACHMENT, 0, 1, 'C', false);
@@ -1469,8 +1527,7 @@ class FolderPrintController
             true,
             0,
             true
-        )
-        ;
+        );
 
         $pdf->MultiCell(
             $width,
@@ -1596,6 +1653,11 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
     private static function getEmailFilePath(array $args): string
     {
         ValidatorModel::notEmpty($args, ['email', 'resId']);
@@ -1604,7 +1666,7 @@ class FolderPrintController
 
         $email = $args['email'];
 
-        $date = new \DateTime($email['send_date']);
+        $date = new DateTime($email['send_date']);
         $date = $date->format('d-m-Y H:i');
 
         $sentDate = _CREATED . ' ' . $date;
@@ -1700,6 +1762,11 @@ class FolderPrintController
         return $filePathInTmpNoExtension . '.pdf';
     }
 
+    /**
+     * @param array $args
+     * @return string
+     * @throws Exception
+     */
     private static function getSummarySheet(array $args): string
     {
         ValidatorModel::notEmpty($args, ['units', 'resId']);
