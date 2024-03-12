@@ -8,7 +8,6 @@ import { AuthService } from './auth.service';
 import { TranslateService } from '@ngx-translate/core';
 import { AppService } from './app.service';
 import { PrivilegeService } from '@service/privileges.service';
-
 @Injectable({
     providedIn: 'root',
 })
@@ -29,11 +28,27 @@ export class AppGuardAdmin implements CanActivate {
         this.headerService.resetSideNavSelection();
 
         if (this.appService.coreLoaded) {
-            return of(this.handleNavigaton(state));
+
+            if (!this.headerService.user.privileges.includes("admin")) {
+                this.router.navigate(['/home']);
+                return of(false);
+            }
+
+            if (!this.handleNavigaton(state) || !this.hasAdminPrivilege(state)) {
+                this.router.navigate(['/administration']);
+                return of(false);
+            }
+
+            return of(true);
         }
 
         return this.appService.catchEvent().pipe(
             map(() => {
+                if (!this.headerService.user.privileges.includes("admin")) {
+                    this.router.navigate(['/home']);
+                    return false;
+                }
+
                 const isAuth = this.handleNavigaton(state);
                 if (!isAuth || !this.hasAdminPrivilege(state)) {
                     this.router.navigate(['/administration']);
@@ -42,7 +57,6 @@ export class AppGuardAdmin implements CanActivate {
             }),
             catchError(() => {
                 console.debug(`GUARD ADMIN: ${state.url} CANCELED !`);
-                this.router.navigate(['/administration']);
                 return of(false);
             })
         );

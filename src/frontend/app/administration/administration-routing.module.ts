@@ -70,7 +70,7 @@ import { MwsMonitoringComponent } from './mercure/webservice/mws-monitoring.comp
 @NgModule({
     imports: [
         RouterModule.forChild([
-            { path: 'administration', canActivate: [AppGuardAdmin], component: AdministrationComponent },
+            { path: 'administration', canActivate: [AppGuard], component: AdministrationComponent },
             { path: 'administration/users', canActivate: [AppGuardAdmin], component: UsersAdministrationComponent },
             { path: 'administration/users/new', canActivate: [AppGuardAdmin], component: UserAdministrationComponent },
             { path: 'administration/users/:id', canActivate: [AppGuardAdmin], component: UserAdministrationComponent },
