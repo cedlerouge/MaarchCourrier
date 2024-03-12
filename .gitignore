@@ -17,3 +17,5 @@ coverage/
 plugins/maarch-plugins-*/
 
 docker.local.env
+
+docker.local.env
