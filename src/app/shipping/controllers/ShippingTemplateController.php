@@ -76,7 +76,10 @@ class ShippingTemplateController
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        return $response->withJson(['shippings' => ShippingTemplateModel::get(['select' => ['id', 'label', 'description', 'options', 'fee', 'entities', "account->>'id' as accountid"]])]);
+        return $response->withJson(['shippings' => ShippingTemplateModel::get(
+            ['select' => ['id', 'label', 'description', 'options', 'fee', 'entities', "account->>'id' as accountid"]]
+        )
+        ]);
     }
 
     public function getById(Request $request, Response $response, array $args)
@@ -98,10 +101,14 @@ class ShippingTemplateController
         $shippingInfo['account']['password'] = '';
         $shippingInfo['options']  = json_decode($shippingInfo['options'], true);
         $shippingInfo['fee']      = json_decode($shippingInfo['fee'], true);
-        $shippingInfo['entities'] = !empty($shippingInfo['entities']) ? json_decode($shippingInfo['entities'], true) : [];
+        $shippingInfo['entities'] = !empty($shippingInfo['entities']) ?
+            json_decode($shippingInfo['entities'], true) : [];
 
-        $shippingInfo['subscriptions'] = !empty($shippingInfo['subscriptions']) ? json_decode($shippingInfo['subscriptions'], true) : [];
-        $shippingInfo['subscribed'] = !empty($shippingInfo['subscriptions']) || (!empty($shippingInfo['account']['id']) && ShippingTemplateController::isSubscribed(['accountId' => $shippingInfo['account']['id']]));
+        $shippingInfo['subscriptions'] = !empty($shippingInfo['subscriptions']) ?
+            json_decode($shippingInfo['subscriptions'], true) : [];
+        $shippingInfo['subscribed'] = !empty($shippingInfo['subscriptions']) ||
+            (!empty($shippingInfo['account']['id']) &&
+                ShippingTemplateController::isSubscribed(['accountId' => $shippingInfo['account']['id']]));
         unset($shippingInfo['subscriptions']);
 
         $allEntities = EntityModel::get([
@@ -147,7 +154,9 @@ class ShippingTemplateController
         }
 
         if (!empty($body['account']['password'])) {
-            $body['account']['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['account']['password']]);
+            $body['account']['password'] = PasswordController::encrypt(
+                ['dataToEncrypt' => $body['account']['password']]
+            );
         }
 
         $body['options']  = !empty($body['options']) ? json_encode($body['options']) : '{}';
@@ -169,7 +178,9 @@ class ShippingTemplateController
 
         if (!empty($body['subscribed'])) {
             if (empty($body['account']['id']) || !Validator::stringType()->validate($body['account']['id'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Could not subscribe to notifications: body[account][id] is empty or not a string']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Could not subscribe to notifications: body[account][id] is empty or not a string']
+                );
             }
             $alreadySubscribed = ShippingTemplateController::isSubscribed(['accountId' => $body['account']['id']]);
             if (!$alreadySubscribed) {
@@ -179,7 +190,10 @@ class ShippingTemplateController
                     return $response->withStatus(400)->withJson(['errors' => $subscriptions['errors']]);
                 }
                 $body['subscriptions'] = $subscriptions['subscriptions'];
-                $tokenMinIat = date_create_from_format('U', $subscriptions['iat'] - 1); // apply -1 to allow the new notifications but not those before
+                $tokenMinIat = date_create_from_format(
+                    'U',
+                    $subscriptions['iat'] - 1
+                ); // apply -1 to allow the new notifications but not those before
                 $tokenMinIat = date_format($tokenMinIat, 'c');
                 ShippingTemplateModel::update([
                     'set'   => [
@@ -218,7 +232,11 @@ class ShippingTemplateController
         }
 
         if (!empty($body['account']['password'])) {
-            $body['account']['password'] = PasswordController::encrypt(['dataToEncrypt' => $body['account']['password']]);
+            $body['account']['password'] = PasswordController::encrypt(
+                [
+                    'dataToEncrypt' => $body['account']['password']
+                ]
+            );
         } else {
             $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id'], 'select' => ['account']]);
             $shippingInfo['account'] = json_decode($shippingInfo['account'], true);
@@ -286,7 +304,17 @@ class ShippingTemplateController
             return $response->withStatus(400)->withJson(['errors' => 'id is not an integer']);
         }
 
-        $shippingInfo = ShippingTemplateModel::getById(['id' => $args['id'], 'select' => ['label', 'subscriptions', 'account']]);
+        $shippingInfo = ShippingTemplateModel::getById(
+            [
+                'id' => $args['id'],
+                'select' =>
+                    [
+                        'label',
+                        'subscriptions',
+                        'account'
+                    ]
+            ]
+        );
         if (empty($shippingInfo)) {
             return $response->withStatus(400)->withJson(['errors' => 'Shipping does not exist']);
         }
@@ -316,7 +344,19 @@ class ShippingTemplateController
             'info'      => _MAILEVA_DELETED . ' : ' . $shippingInfo['label']
         ]);
 
-        $shippings = ShippingTemplateModel::get(['select' => ['id', 'label', 'description', 'options', 'fee', 'entities']]);
+        $shippings = ShippingTemplateModel::get(
+            [
+                'select' =>
+                    [
+                        'id',
+                        'label',
+                        'description',
+                        'options',
+                        'fee',
+                        'entities'
+                    ]
+            ]
+        );
         return $response->withJson(['shippings' => $shippings]);
     }
 
@@ -359,20 +399,36 @@ class ShippingTemplateController
     {
         $mailevaConfig = CoreConfigModel::getMailevaConfiguration();
         if (empty($mailevaConfig)) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'Maileva configuration does not exist');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'Maileva configuration does not exist'
+            );
         } elseif (!$mailevaConfig['enabled']) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'Maileva configuration is disabled');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'Maileva configuration is disabled'
+            );
         }
         $shippingApiDomainName = $mailevaConfig['uri'];
         $shippingApiDomainName = str_replace(['http://', 'https://'], '', $shippingApiDomainName);
         $shippingApiDomainName = rtrim($shippingApiDomainName, '/');
 
         if (empty($args['id']) || !Validator::intVal()->validate($args['id'])) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'No shipping template id provided');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'No shipping template id provided'
+            );
         }
         $shippingTemplate = ShippingTemplateModel::getById(['id' => $args['id']]);
         if (empty($shippingTemplate)) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'No shipping template found with this id');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'No shipping template found with this id'
+            );
         }
         $shippingTemplateAccount = json_decode($shippingTemplate['account'], true);
         $minIAT = new \DateTime($shippingTemplate['token_min_iat']);
@@ -398,13 +454,25 @@ class ShippingTemplateController
             $error = 'Body user_id is empty, too long, or not a string';
         } elseif (!Validator::stringType()->equals($mailevaConfig['clientId'])->validate($body['client_id'])) {
             $error = 'Body client_id does not match ours';
-        } elseif (!Validator::stringType()->in(array_keys(ShippingTemplateController::MAILEVA_EVENT_RESOURCES))->validate($body['event_type'])) {
+        } elseif (
+            !Validator::stringType()->in(
+                array_keys(ShippingTemplateController::MAILEVA_EVENT_RESOURCES)
+            )->validate($body['event_type'])
+        ) {
             $error = 'Body event_type is not an allowed value';
-        } elseif (!Validator::stringType()->in(ShippingTemplateController::MAILEVA_EVENT_RESOURCES[$body['event_type']])->validate($body['resource_type'])) {
+        } elseif (
+            !Validator::stringType()->in(
+                ShippingTemplateController::MAILEVA_EVENT_RESOURCES[$body['event_type']]
+            )->validate($body['resource_type'])
+        ) {
             $error = 'Body resource_type is not an allowed value';
         } elseif (!Validator::dateTime()->validate($body['event_date'])) {
             $error = 'Body event_date is not a valid date';
-        } elseif (!empty($body['event_location']) && !Validator::equals('FR')->validate($body['event_location'])) {
+        } elseif (
+            !empty($body['event_location']) && !Validator::equals('FR')->validate(
+                $body['event_location']
+            )
+        ) {
             $error = 'Body event_location is not FR';
         } elseif (!Validator::stringType()->length(1, 256)->validate($body['resource_id'])) {
             $error = 'Body resource_id is empty, too long, or not a string';
@@ -412,7 +480,12 @@ class ShippingTemplateController
             $error = 'Body resource_location is not a valid url';
         }
         if (!empty($error)) {
-            return ShippingTemplateController::logAndReturnError($response, 400, $error . ' => ' . json_encode($body));
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                $error . ' => ' .
+                json_encode($body)
+            );
         }
 
         LogsController::add([
@@ -451,12 +524,26 @@ class ShippingTemplateController
         }
 
         $shipping = ShippingModel::get([
-            'select' => ['id', 'sending_id', 'document_id', 'document_type', 'history', 'recipients', 'attachments', 'action_id'],
+            'select' =>
+                [
+                    'id',
+                    'sending_id',
+                    'document_id',
+                    'document_type',
+                    'history',
+                    'recipients',
+                    'attachments',
+                    'action_id'
+                ],
             'where'  => ['sending_id = ?'],
             'data'   => [$body['resourceId']]
         ]);
         if (empty($shipping[0])) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'Body resource_id does not match any shipping');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'Body resource_id does not match any shipping'
+            );
         }
         $shipping = $shipping[0];
         $shipping['recipients']  = json_decode($shipping['recipients'], true);
@@ -470,7 +557,11 @@ class ShippingTemplateController
                 'select' => ['res_id', 'res_id_master']
             ]);
             if (empty($referencedAttachment)) {
-                return ShippingTemplateController::logAndReturnError($response, 400, 'Body document_id does not match any attachment');
+                return ShippingTemplateController::logAndReturnError(
+                    $response,
+                    400,
+                    'Body document_id does not match any attachment'
+                );
             }
             $resId = $referencedAttachment['res_id_master'];
         }
@@ -482,7 +573,11 @@ class ShippingTemplateController
             'limit'  => 1
         ]);
         if (empty($actions)) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'No Maileva action available');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'No Maileva action available'
+            );
         }
         $actionParameters = json_decode($actions[0]['parameters'], true);
         $actionParameters = [
@@ -491,7 +586,11 @@ class ShippingTemplateController
             'finalStatus'        => $actionParameters['finalStatus'] ?? null
         ];
         if (!Validator::each(Validator::arrayType())->validate($actionParameters)) {
-            return ShippingTemplateController::logAndReturnError($response, 400, 'Maileva action parameters are not arrays');
+            return ShippingTemplateController::logAndReturnError(
+                $response,
+                400,
+                'Maileva action parameters are not arrays'
+            );
         }
         /**
          * expected format
@@ -510,14 +609,20 @@ class ShippingTemplateController
          */
         foreach ($actionParameters as $phaseParameters) {
             if (
-                !Validator::each(Validator::in(array_keys(ShippingTemplateController::MAILEVA_EVENT_RESOURCES)))->validate($phaseParameters['mailevaStatus'])
+                !Validator::each(Validator::in(array_keys(
+                    ShippingTemplateController::MAILEVA_EVENT_RESOURCES
+                )))->validate($phaseParameters['mailevaStatus'])
                 || !Validator::stringType()->length(1, 10)->validate($phaseParameters['actionStatus'])
                 || (
                     $phaseParameters['actionStatus'] != '_NOSTATUS_'
                     && empty(StatusModel::getById(['id' => $phaseParameters['actionStatus'], 'select' => [1]]))
                 )
             ) {
-                return ShippingTemplateController::logAndReturnError($response, 400, 'Maileva action parameters are invalid');
+                return ShippingTemplateController::logAndReturnError(
+                    $response,
+                    400,
+                    'Maileva action parameters are invalid'
+                );
             }
         }
 
@@ -553,7 +658,11 @@ class ShippingTemplateController
                 'limit'  => 1
             ]);
             if (empty($typist[0]['id'])) {
-                return ShippingTemplateController::logAndReturnError($response, 500, 'no rest user available');
+                return ShippingTemplateController::logAndReturnError(
+                    $response,
+                    500,
+                    'no rest user available'
+                );
             }
             $typist = $typist[0]['id'];
 
@@ -566,25 +675,47 @@ class ShippingTemplateController
                 ]);
             }
             foreach ($previousAttachments as $key => $previousAttachment) {
-                $previousAttachments[$key]['externalId'] = json_decode($previousAttachment['externalId'], true);
+                $previousAttachments[$key]['externalId'] = json_decode(
+                    $previousAttachment['externalId'],
+                    true
+                );
             }
 
             $attachmentErrors = [];
 
             // deposit proof
-            if (!in_array('shipping_deposit_proof', array_column($previousAttachments, 'attachment_type'))) {
+            if (
+                !in_array('shipping_deposit_proof', array_column(
+                    $previousAttachments,
+                    'attachment_type'
+                ))
+            ) {
                 $curlResponse = CurlModel::exec([
                     'method'       => 'GET',
-                    'url'          => str_replace('\\', '', $body['resourceLocation']) . '/download_deposit_proof',
+                    'url'          => str_replace(
+                        '\\',
+                        '',
+                        $body['resourceLocation']
+                    ) . '/download_deposit_proof',
                     'bearerAuth'   => ['token' => $authToken],
                     'headers'      => ['Accept: */*'],
                     'fileResponse' => true
                 ]);
                 if ($curlResponse['code'] != 200) {
-                    $attachmentErrors[] = 'shipping_deposit_proof:download: deposit proof failed to download for sending ' . json_encode(['maarchShippingId' => $shipping['id'], 'mailevaSendingId' => $body['resourceId'], 'curlResponse' => $curlResponse['response']]);
+                    $attachmentErrors[] =
+                        'shipping_deposit_proof:download: deposit proof failed to download for sending ' .
+                        json_encode(
+                            [
+                                'maarchShippingId' => $shipping['id'],
+                                'mailevaSendingId' => $body['resourceId'],
+                                'curlResponse' => $curlResponse['response']
+                            ]
+                        );
                 } else {
                     $attachmentId = StoreController::storeAttachment([
-                        'title'       => _SHIPPING_ATTACH_DEPOSIT_PROOF . '_' . (new \DateTime($body['eventDate']))->format('d-m-Y'),
+                        'title'       => _SHIPPING_ATTACH_DEPOSIT_PROOF .
+                            '_' .
+                            (new \DateTime($body['eventDate']))->format('d-m-Y'),
                         'resIdMaster' => $resId,
                         'type'        => 'shipping_deposit_proof',
                         'status'      => 'TRA',
@@ -598,7 +729,9 @@ class ShippingTemplateController
                         ]
                     ]);
                     if (!empty($attachmentId['errors'])) {
-                        $attachmentErrors[] = 'shipping_deposit_proof:save: could not save deposit proof to docserver: ' . json_encode($attachmentId['errors']);
+                        $attachmentErrors[] =
+                            'shipping_deposit_proof:save: could not save deposit proof to docserver: ' .
+                            json_encode($attachmentId['errors']);
                     } else {
                         $shipping['attachments'][] = $attachmentId;
                         ShippingModel::update([
@@ -611,7 +744,11 @@ class ShippingTemplateController
             }
 
             if (!empty($attachmentErrors)) {
-                return ShippingTemplateController::logAndReturnError($response, 500, "attachment errors:\n" . json_encode($attachmentErrors, JSON_PRETTY_PRINT));
+                return ShippingTemplateController::logAndReturnError(
+                    $response,
+                    500,
+                    "attachment errors:\n" . json_encode($attachmentErrors, JSON_PRETTY_PRINT)
+                );
             }
         }
 
@@ -676,7 +813,11 @@ class ShippingTemplateController
             }
         }
 
-        if (!empty($args['fee']) && !Validator::each(Validator::floatVal()->greaterThan(-1))->validate($args['fee'])) {
+        if (
+            !empty($args['fee']) && !Validator::each(
+                Validator::floatVal()->greaterThan(-1)
+            )->validate($args['fee'])
+        ) {
             $errors[] = 'fee must be an array with positive values';
         }
 
@@ -691,9 +832,24 @@ class ShippingTemplateController
 
             $collId = $value['type'] == 'attachment' ? 'attachments_coll' : 'letterbox_coll';
 
-            $convertedResource = ConvertPdfController::getConvertedPdfById(['resId' => $resourceId, 'collId' => $collId]);
-            $docserver         = DocserverModel::getByDocserverId(['docserverId' => $convertedResource['docserver_id'], 'select' => ['path_template']]);
-            $pathToDocument    = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedResource['path']) . $convertedResource['filename'];
+            $convertedResource = ConvertPdfController::getConvertedPdfById(
+                [
+                    'resId' => $resourceId,
+                    'collId' => $collId
+                ]
+            );
+            $docserver         = DocserverModel::getByDocserverId(
+                [
+                    'docserverId' => $convertedResource['docserver_id'],
+                    'select' => ['path_template']
+                ]
+            );
+            $pathToDocument    = $docserver['path_template'] .
+                str_replace(
+                    '#',
+                    DIRECTORY_SEPARATOR,
+                    $convertedResource['path']
+                ) . $convertedResource['filename'];
 
             $img = new \Imagick();
             $img->pingImage($pathToDocument);
@@ -750,11 +906,23 @@ class ShippingTemplateController
             return ['errors' => 'Authentication failed'];
         } elseif (!Validator::notEmpty()->stringType()->equals('maileva_notifications')->validate($payload['sub'])) {
             return ['errors' => 'Authentication failed'];
-        } elseif (!Validator::notEmpty()->stringType()->equals($args['shippingApiDomainName'])->validate($payload['aud'])) {
+        } elseif (
+            !Validator::notEmpty()->stringType()->equals(
+                $args['shippingApiDomainName']
+            )->validate($payload['aud'])
+        ) {
             return ['errors' => 'Authentication failed'];
-        } elseif (!Validator::notEmpty()->intVal()->min($args['minIAT'])->max($now)->validate($payload['iat'])) {
+        } elseif (
+            !Validator::notEmpty()->intVal()->min(
+                $args['minIAT']
+            )->max($now)->validate($payload['iat'])
+        ) {
             return ['errors' => 'Authentication failed'];
-        } elseif (!Validator::notEmpty()->intVal()->equals($args['shippingTemplateId'])->validate($payload['shippingTemplateId'])) {
+        } elseif (
+            !Validator::notEmpty()->intVal()->equals(
+                $args['shippingTemplateId']
+            )->validate($payload['shippingTemplateId'])
+        ) {
             return ['errors' => 'Authentication failed'];
         }
 
@@ -801,7 +969,12 @@ class ShippingTemplateController
         if (empty($maarchUrl)) {
             return ['errors' => 'maarchUrl is not configured'];
         }
-        $jwtAndIAT = ShippingTemplateController::generateToken(['mailevaUri' => $mailevaConfig['uri'], 'shippingTemplateId' => $shippingTemplate['id']]);
+        $jwtAndIAT = ShippingTemplateController::generateToken(
+            [
+                'mailevaUri' => $mailevaConfig['uri'],
+                'shippingTemplateId' => $shippingTemplate['id']
+            ]
+        );
         $jwt = $jwtAndIAT['jwt'];
         $iat = $jwtAndIAT['iat'];
         $authToken = ShippingTemplateController::getMailevaAuthToken($mailevaConfig, $shippingTemplate['account']);
@@ -822,11 +995,20 @@ class ShippingTemplateController
                     'body'       => json_encode([
                         'event_type'    => $eventType,
                         'resource_type' => $resourceType,
-                        'callback_url'  => $maarchUrl . '/rest/administration/shippings/' . $shippingTemplate['id'] . '/notifications?auth_token=' . $jwt
+                        'callback_url'  => $maarchUrl .
+                            '/rest/administration/shippings/' .
+                            $shippingTemplate['id'] .
+                            '/notifications?auth_token=' .
+                            $jwt
                     ])
                 ]);
                 if ($curlResponse['code'] != 201) {
-                    return ['errors' => 'Maileva POST/subscriptions returned HTTP ' . $curlResponse['code'] . '; ' . json_encode($curlResponse['response'], true)];
+                    return [
+                        'errors' => 'Maileva POST/subscriptions returned HTTP ' .
+                            $curlResponse['code'] .
+                            '; ' .
+                            json_encode($curlResponse['response'], true)
+                    ];
                 }
 
                 $subscriptionId = $curlResponse['response']['id'] ?? null;
@@ -835,7 +1017,9 @@ class ShippingTemplateController
                 }
             }
         }
-        $subscriptions = array_values(array_unique(array_merge(($shippingTemplate['subscriptions'] ?? []), $subscriptions))) ?? [];
+        $subscriptions = array_values(array_unique(array_merge((
+            $shippingTemplate['subscriptions'] ?? []
+        ), $subscriptions))) ?? [];
 
         return ['subscriptions' => $subscriptions, 'jwt' => $jwt, 'iat' => $iat];
     }
@@ -883,7 +1067,11 @@ class ShippingTemplateController
                 'headers'    => ['Accept: application/json']
             ]);
             if ($curlResponse['code'] != 204) {
-                return ['errors' => $curlResponse['response'] ?? ('Maileva DELETE/subscriptions/' . $subscriptionId . ' returned HTTP ' . $curlResponse['code'])];
+                return ['errors' => $curlResponse['response'] ?? (
+                    'Maileva DELETE/subscriptions/' .
+                    $subscriptionId .
+                    ' returned HTTP ' .
+                    $curlResponse['code'])];
             }
         }
         if ($subscribedElsewhere) {
@@ -925,7 +1113,11 @@ class ShippingTemplateController
             'queryParams'   => [
                 'grant_type'    => 'password',
                 'username'      => $shippingTemplateAccount['id'],
-                'password'      => PasswordController::decrypt(['encryptedData' => $shippingTemplateAccount['password']])
+                'password'      => PasswordController::decrypt(
+                    [
+                        'encryptedData' => $shippingTemplateAccount['password']
+                    ]
+                )
             ]
         ]);
         if ($curlAuth['code'] != 200) {

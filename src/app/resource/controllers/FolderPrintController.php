@@ -117,12 +117,23 @@ class FolderPrintController
                     $units = $unitsSummarySheet;
                 }
 
-                $documentPaths[] = FolderPrintController::getSummarySheet(['units' => $units, 'resId' => $resource['resId']]);
+                $documentPaths[] = FolderPrintController::getSummarySheet(
+                    ['units' => $units, 'resId' => $resource['resId']]
+                );
             }
 
             if (!empty($resource['document'])) {
                 $document = ResModel::getById([
-                    'select' => ['res_id', 'docserver_id', 'path', 'filename', 'fingerprint', 'category_id', 'alt_identifier', 'subject'],
+                    'select' => [
+                        'res_id',
+                        'docserver_id',
+                        'path',
+                        'filename',
+                        'fingerprint',
+                        'category_id',
+                        'alt_identifier',
+                        'subject'
+                    ],
                     'resId'  => $resource['resId']
                 ]);
                 if (empty($document)) {
@@ -143,7 +154,9 @@ class FolderPrintController
                         'eventId'   => 'FolderPrint Error'
                     ]);
                 } else {
-                    $path = FolderPrintController::getDocumentFilePath(['document' => $document, 'collId' => 'letterbox_coll']);
+                    $path = FolderPrintController::getDocumentFilePath(
+                        ['document' => $document, 'collId' => 'letterbox_coll']
+                    );
                     if (!empty($path['errors'])) {
                         LogsController::add([
                             'isTech'    => true,
@@ -164,13 +177,28 @@ class FolderPrintController
                 if (is_array($resource['attachments'])) {
                     foreach ($resource['attachments'] as $attachment) {
                         if (!Validator::intVal()->validate($attachment)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Attachment id is not an integer']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Attachment id is not an integer']
+                            );
                         }
                     }
 
                     $attachments = AttachmentModel::get([
-                        'select'  => ['res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                                      'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'],
+                        'select'  => [
+                            'res_id',
+                            'res_id_master',
+                            'recipient_type',
+                            'recipient_id',
+                            'typist',
+                            'status',
+                            'attachment_type',
+                            'creation_date',
+                            'identifier',
+                            'title',
+                            'format',
+                            'docserver_id',
+                            'origin'
+                        ],
                         'where'   => ['res_id in (?)', 'status not in (?)'],
                         'data'    => [$resource['attachments'], ['DEL', 'OBS']],
                         'orderBy' => ['creation_date desc']
@@ -181,8 +209,21 @@ class FolderPrintController
                     }
                 } else {
                     $attachments = AttachmentModel::get([
-                        'select'  => ['res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                                      'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'],
+                        'select'  => [
+                            'res_id',
+                            'res_id_master',
+                            'recipient_type',
+                            'recipient_id',
+                            'typist',
+                            'status',
+                            'attachment_type',
+                            'creation_date',
+                            'identifier',
+                            'title',
+                            'format',
+                            'docserver_id',
+                            'origin'
+                        ],
                         'where'   => ['res_id_master = ?', 'status not in (?)'],
                         'data'    => [$resource['resId'], ['DEL', 'OBS']],
                         'orderBy' => ['creation_date desc']
@@ -190,20 +231,35 @@ class FolderPrintController
                 }
 
                 if (!empty($attachments)) {
-                    $chronoResource = ResModel::getById(['select' => ['alt_identifier'], 'resId' => $resource['resId']]);
+                    $chronoResource = ResModel::getById(
+                        ['select' => ['alt_identifier'], 'resId' => $resource['resId']]
+                    );
                     $chronoResource = $chronoResource['alt_identifier'];
 
                     $attachmentsIds = array_column($attachments, 'res_id');
 
                     foreach ($attachments as $attachment) {
                         if ($attachment['res_id_master'] != $resource['resId']) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Attachment not linked to resource']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Attachment not linked to resource']
+                            );
                         }
 
                         $originAttachment = AttachmentModel::get([
                             'select' => [
-                                'res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                                'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'
+                                'res_id',
+                                'res_id_master',
+                                'recipient_type',
+                                'recipient_id',
+                                'typist',
+                                'status',
+                                'attachment_type',
+                                'creation_date',
+                                'identifier',
+                                'title',
+                                'format',
+                                'docserver_id',
+                                'origin'
                             ],
                             'where'  => ['origin = ?', 'status not in (?)'],
                             'data'   => [$attachment['res_id'] . ',res_attachments', ['DEL', 'OBS']]
@@ -218,7 +274,9 @@ class FolderPrintController
                             $attachment = $originAttachment;
                         }
 
-                        $path = FolderPrintController::getDocumentFilePath(['document' => $attachment, 'collId' => 'attachments_coll']);
+                        $path = FolderPrintController::getDocumentFilePath(
+                            ['document' => $attachment, 'collId' => 'attachments_coll']
+                        );
                         if (!empty($path['errors'])) {
                             LogsController::add([
                                 'isTech'    => true,
@@ -248,7 +306,9 @@ class FolderPrintController
                 if (is_array($resource['notes'])) {
                     foreach ($resource['notes'] as $attachment) {
                         if (!Validator::intVal()->validate($attachment)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Note id is not an integer']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Note id is not an integer']
+                            );
                         }
                     }
 
@@ -269,10 +329,32 @@ class FolderPrintController
                             $allowed = true;
                         }
 
-                        $noteEntities = NoteEntityModel::getWithEntityInfo(['select' => ['item_id', 'short_label'], 'where' => ['note_id = ?'], 'data' => [$attachment['id']]]);
+                        $noteEntities = NoteEntityModel::getWithEntityInfo(
+                            [
+                                'select' =>
+                                [
+                                    'item_id',
+                                    'short_label'
+                                ], 'where' =>
+                                [
+                                    'note_id = ?'
+                                ], 'data' =>
+                                [
+                                    $attachment['id']
+                                ]
+                            ]
+                        );
                         if (!empty($noteEntities)) {
                             foreach ($noteEntities as $noteEntity) {
-                                $attachment['entities_restriction'][] = ['short_label' => $noteEntity['short_label'], 'item_id' => [$noteEntity['item_id']]];
+                                $attachment['entities_restriction'][] =
+                                    [
+                                        'short_label' =>
+                                        $noteEntity['short_label'],
+                                        'item_id' =>
+                                        [
+                                            $noteEntity['item_id']
+                                        ]
+                                    ];
 
                                 if (in_array($noteEntity['item_id'], $userEntities)) {
                                     $allowed = true;
@@ -299,7 +381,9 @@ class FolderPrintController
                 }
 
                 if (!empty($notes)) {
-                    $noteFilePath = FolderPrintController::getNotesFilePath(['notes' => $notes, 'resId' => $resource['resId']]);
+                    $noteFilePath = FolderPrintController::getNotesFilePath(
+                        ['notes' => $notes, 'resId' => $resource['resId']]
+                    );
 
                     if (!empty($noteFilePath['errors'])) {
                         return $response->withStatus($noteFilePath['code'])->withJson(['errors' => $noteFilePath['errors']]);
@@ -317,23 +401,49 @@ class FolderPrintController
                 if (is_array($resource['acknowledgementReceipts'])) {
                     foreach ($resource['acknowledgementReceipts'] as $acknowledgementReceipt) {
                         if (!Validator::intVal()->validate($acknowledgementReceipt)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Acknowledgement Receipt id is not an integer']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Acknowledgement Receipt id is not an integer']
+                            );
                         }
                     }
 
                     $acknowledgementReceipts = AcknowledgementReceiptModel::getByIds([
-                        'select' => ['id', 'res_id', 'format', 'contact_id', 'user_id', 'creation_date', 'send_date', 'docserver_id', 'path',
-                                     'filename', 'fingerprint'],
+                        'select' => [
+                            'id',
+                            'res_id',
+                            'format',
+                            'contact_id',
+                            'user_id',
+                            'creation_date',
+                            'send_date',
+                            'docserver_id',
+                            'path',
+                            'filename',
+                            'fingerprint'
+                        ],
                         'ids'    => $resource['acknowledgementReceipts']
                     ]);
 
                     if (count($acknowledgementReceipts) < count($resource['acknowledgementReceipts'])) {
-                        return $response->withStatus(400)->withJson(['errors' => 'Acknowledgement Receipt(s) not found']);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => 'Acknowledgement Receipt(s) not found']
+                        );
                     }
                 } else {
                     $acknowledgementReceipts = AcknowledgementReceiptModel::get([
-                        'select' => ['id', 'res_id', 'format', 'contact_id', 'user_id', 'creation_date', 'send_date', 'docserver_id', 'path',
-                                     'filename', 'fingerprint'],
+                        'select' => [
+                            'id',
+                            'res_id',
+                            'format',
+                            'contact_id',
+                            'user_id',
+                            'creation_date',
+                            'send_date',
+                            'docserver_id',
+                            'path',
+                            'filename',
+                            'fingerprint'
+                        ],
                         'where'  => ['res_id = ?'],
                         'data'   => [$resource['resId']]
                     ]);
@@ -342,11 +452,15 @@ class FolderPrintController
                 if (!empty($acknowledgementReceipts)) {
                     foreach ($acknowledgementReceipts as $acknowledgementReceipt) {
                         if ($acknowledgementReceipt['res_id'] != $resource['resId']) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Acknowledgement Receipt not linked to resource']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Acknowledgement Receipt not linked to resource']
+                            );
                         }
 
                         if ($withSeparators) {
-                            $documentPaths[] = FolderPrintController::getAcknowledgementReceiptSeparator(['acknowledgementReceipt' => $acknowledgementReceipt]);
+                            $documentPaths[] = FolderPrintController::getAcknowledgementReceiptSeparator(
+                                ['acknowledgementReceipt' => $acknowledgementReceipt]
+                            );
                         }
                         $path = FolderPrintController::getDocumentFilePath(['document' => $acknowledgementReceipt]);
 
@@ -366,11 +480,25 @@ class FolderPrintController
                 if (is_array($resource['emails'])) {
                     foreach ($resource['emails'] as $email) {
                         if (!Validator::intVal()->validate($email)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'Email id is not an integer']);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => 'Email id is not an integer']
+                            );
                         }
                     }
                     $emails = EmailModel::get([
-                        'select'  => ['id', 'user_id', 'sender', 'recipients', 'cc', 'cci', 'object', 'body', 'document', 'send_date', 'status'],
+                        'select'  => [
+                            'id',
+                            'user_id',
+                            'sender',
+                            'recipients',
+                            'cc',
+                            'cci',
+                            'object',
+                            'body',
+                            'document',
+                            'send_date',
+                            'status'
+                        ],
                         'where'   => ['id in (?)', "object NOT LIKE '[AR]%'"],
                         'data'    => [$resource['emails']],
                         'orderBy' => ['creation_date desc']
@@ -380,8 +508,23 @@ class FolderPrintController
                     }
                 } else {
                     $emails = EmailModel::get([
-                        'select'  => ['id', 'user_id', 'sender', 'recipients', 'cc', 'cci', 'object', 'body', 'document', 'send_date', 'status'],
-                        'where'   => ["cast(document->>'id' as INT) = ? ", "(object NOT LIKE '[AR]%' OR object is null)"],
+                        'select'  => [
+                            'id',
+                            'user_id',
+                            'sender',
+                            'recipients',
+                            'cc',
+                            'cci',
+                            'object',
+                            'body',
+                            'document',
+                            'send_date',
+                            'status'
+                        ],
+                        'where'   =>
+                            [
+                                "cast(document->>'id' as INT) = ? ", "(object NOT LIKE '[AR]%' OR object is null)"
+                            ],
                         'data'    => [$resource['resId']],
                         'orderBy' => ['creation_date desc']
                     ]);
@@ -393,7 +536,12 @@ class FolderPrintController
                         if (!empty($emailDocument['id']) && $emailDocument['id'] != $resource['resId']) {
                             return $response->withStatus(400)->withJson(['errors' => 'Email not linked to resource']);
                         }
-                        $emailFilePath = FolderPrintController::getEmailFilePath(['email' => $email, 'resId' => $resource['resId']]);
+                        $emailFilePath = FolderPrintController::getEmailFilePath(
+                            [
+                                'email' => $email,
+                                'resId' => $resource['resId']
+                            ]
+                        );
 
                         if (file_exists($emailFilePath)) {
                             $documentPaths[] = $emailFilePath;
@@ -409,33 +557,77 @@ class FolderPrintController
                 if (is_array($resource['linkedResourcesAttachments'])) {
                     foreach ($resource['linkedResourcesAttachments'] as $attachment) {
                         if (!Validator::intVal()->validate($attachment)) {
-                            return $response->withStatus(400)->withJson(['errors' => 'LinkedResources attachment id is not an integer']);
+                            return $response->withStatus(400)->withJson(
+                                [
+                                    'errors' => 'LinkedResources attachment id is not an integer'
+                                ]
+                            );
                         }
                     }
                     $attachments = AttachmentModel::get([
-                        'select'  => ['res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                            'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'],
+                        'select'  => [
+                            'res_id',
+                            'res_id_master',
+                            'recipient_type',
+                            'recipient_id',
+                            'typist',
+                            'status',
+                            'attachment_type',
+                            'creation_date',
+                            'identifier',
+                            'title',
+                            'format',
+                            'docserver_id',
+                            'origin'
+                        ],
                         'where'   => ['res_id in (?)', 'status not in (?)'],
                         'data'    => [$resource['linkedResourcesAttachments'], ['DEL', 'OBS']],
                         'orderBy' => ['creation_date desc']
                     ]);
 
                     if (count($attachments) < count($resource['linkedResourcesAttachments'])) {
-                        return $response->withStatus(400)->withJson(['errors' => 'LinkedResources attachments not found']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => 'LinkedResources attachments not found'
+                            ]
+                        );
                     }
 
                     $linkedResources = array_column($attachments, 'res_id_master');
                     if (!ResController::hasRightByResId(['resId' => $linkedResources, 'userId' => $GLOBALS['id']])) {
-                        return $response->withStatus(403)->withJson(['errors' => 'LinkedResources out of perimeter']);
+                        return $response->withStatus(403)->withJson(
+                            [
+                                'errors' => 'LinkedResources out of perimeter'
+                            ]
+                        );
                     }
                 } else {
-                    $oLinkedResources = ResModel::getById(['resId' => $resource['resId'], 'select' => ['linked_resources']]);
+                    $oLinkedResources = ResModel::getById(
+                        [
+                            'resId' => $resource['resId'],
+                            'select' => ['linked_resources']
+                        ]
+                    );
                     $linkedResources = json_decode($oLinkedResources['linked_resources'], true);
                     $attachments = [];
                     if (!empty($linkedResources)) {
                         $attachments = AttachmentModel::get([
-                            'select'  => ['res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                                'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'],
+                            'select'  =>
+                                [
+                                    'res_id',
+                                    'res_id_master',
+                                    'recipient_type',
+                                    'recipient_id',
+                                    'typist',
+                                    'status',
+                                    'attachment_type',
+                                    'creation_date',
+                                    'identifier',
+                                    'title',
+                                    'format',
+                                    'docserver_id',
+                                    'origin'
+                                ],
                             'where'   => ['res_id_master in (?)', 'status not in (?)'],
                             'data'    => [$linkedResources, ['DEL', 'OBS']],
                             'orderBy' => ['creation_date desc']
@@ -446,13 +638,30 @@ class FolderPrintController
                 $attachmentsIds = array_column($attachments, 'res_id');
 
                 foreach ($attachments as $attachment) {
-                    $resourceInfo = ResModel::getById(['resId' => $attachment['res_id_master'], 'select' => ['alt_identifier']]);
+                    $resourceInfo = ResModel::getById(
+                        [
+                            'resId' => $attachment['res_id_master'],
+                            'select' => ['alt_identifier']
+                        ]
+                    );
                     $chronoResource = $resourceInfo['alt_identifier'];
 
                     $originAttachment = AttachmentModel::get([
-                        'select' => [
-                            'res_id', 'res_id_master', 'recipient_type', 'recipient_id', 'typist', 'status', 'attachment_type',
-                            'creation_date', 'identifier', 'title', 'format', 'docserver_id', 'origin'
+                        'select' =>
+                            [
+                                'res_id',
+                                'res_id_master',
+                                'recipient_type',
+                                'recipient_id',
+                                'typist',
+                                'status',
+                                'attachment_type',
+                                'creation_date',
+                                'identifier',
+                                'title',
+                                'format',
+                                'docserver_id',
+                                'origin'
                         ],
                         'where'  => ['origin = ?', 'status not in (?)'],
                         'data'   => [$attachment['res_id'] . ',res_attachments', ['DEL', 'OBS']]
@@ -468,13 +677,20 @@ class FolderPrintController
                     }
 
                     if ($withSeparators) {
-                        $linkedAttachmentsPath[$attachment['res_id_master']][] = FolderPrintController::getAttachmentSeparator([
-                            'attachment'     => $attachment,
-                            'chronoResource' => $chronoResource
-                        ]);
+                        $linkedAttachmentsPath[$attachment['res_id_master']][] =
+                            FolderPrintController::getAttachmentSeparator(
+                            [
+                                'attachment'     => $attachment,
+                                'chronoResource' => $chronoResource
+                            ]);
                     }
 
-                    $path = FolderPrintController::getDocumentFilePath(['document' => $attachment, 'collId' => 'attachments_coll']);
+                    $path = FolderPrintController::getDocumentFilePath(
+                        [
+                            'document' => $attachment,
+                            'collId' => 'attachments_coll'
+                        ]
+                    );
                     if (!empty($path['errors'])) {
                         LogsController::add([
                             'isTech'    => true,
@@ -493,27 +709,56 @@ class FolderPrintController
 
             if (!empty($resource['linkedResources'])) {
                 $controlResource = ResModel::getById(['resId' => $resource['resId'], 'select' => ['linked_resources']]);
-                $controlResource['linked_resources'] = json_decode($controlResource['linked_resources'], true);
+                $controlResource['linked_resources'] =
+                    json_decode($controlResource['linked_resources'], true);
                 if (!is_array($resource['linkedResources'])) {
                     $resource['linkedResources'] = $controlResource['linked_resources'];
                 }
-                if (!empty($resource['linkedResources']) && !ResController::hasRightByResId(['resId' => $resource['linkedResources'], 'userId' => $GLOBALS['id']])) {
+                if (!empty($resource['linkedResources']) &&
+                    !ResController::hasRightByResId(
+                        [
+                            'resId' => $resource['linkedResources'],
+                            'userId' => $GLOBALS['id']
+                        ]
+                    )
+                ) {
                     return $response->withStatus(403)->withJson(['errors' => 'LinkedResources out of perimeter']);
                 }
                 foreach ($resource['linkedResources'] as $linkedResource) {
                     if (!Validator::intVal()->validate($linkedResource)) {
-                        return $response->withStatus(400)->withJson(['errors' => 'LinkedResources resId is not an integer']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => 'LinkedResources resId is not an integer'
+                            ]
+                        );
                     }
                     if (!in_array($linkedResource, $controlResource['linked_resources'])) {
-                        return $response->withStatus(400)->withJson(['errors' => 'LinkedResources resId is not linked to resource']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => 'LinkedResources resId is not linked to resource'
+                            ]
+                        );
                     }
 
                     $document = ResModel::getById([
-                        'select' => ['res_id', 'docserver_id', 'path', 'filename', 'fingerprint', 'category_id', 'alt_identifier'],
+                        'select' =>
+                            [
+                                'res_id',
+                                'docserver_id',
+                                'path',
+                                'filename',
+                                'fingerprint',
+                                'category_id',
+                                'alt_identifier'
+                            ],
                         'resId'  => $linkedResource
                     ]);
                     if (empty($document)) {
-                        return $response->withStatus(400)->withJson(['errors' => 'LinkedResources Document does not exist']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => 'LinkedResources Document does not exist'
+                            ]
+                        );
                     }
 
                     if (empty($document['filename'])) {
@@ -529,7 +774,12 @@ class FolderPrintController
                         continue;
                     }
 
-                    $path = FolderPrintController::getDocumentFilePath(['document' => $document, 'collId' => 'letterbox_coll']);
+                    $path = FolderPrintController::getDocumentFilePath(
+                        [
+                            'document' => $document,
+                            'collId' => 'letterbox_coll'
+                        ]
+                    );
                     if (!empty($path['errors'])) {
                         LogsController::add([
                             'isTech'    => true,
@@ -544,7 +794,12 @@ class FolderPrintController
                     }
 
                     if ($withSummarySheet) {
-                        $documentPaths[] = FolderPrintController::getSummarySheet(['units' => $units, 'resId' => $linkedResource]);
+                        $documentPaths[] = FolderPrintController::getSummarySheet(
+                            [
+                                'units' => $units,
+                                'resId' => $linkedResource
+                            ]
+                        );
                     }
 
                     $documentPaths[] = $path;
@@ -597,11 +852,15 @@ class FolderPrintController
                     return $response->withStatus(500)->withJson(['errors' => 'Merge PDF file not created']);
                 }
 
-                // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf, convertedAr_*.pdf and listNotes_*.pdf after merged is complete
+                // delete all tmp email_*.pdf, attachment_*.pdf, summarySheet_*.pdf,
+                // convertedAr_*.pdf and listNotes_*.pdf after merged is complete
                 foreach ($documentPaths as $documentPath) {
                     if (
-                        strpos($documentPath, "email_") !== false           || strpos($documentPath, "attachment_") !== false   || strpos($documentPath, "summarySheet_") !== false
-                        || strpos($documentPath, "convertedAr_") !== false  || strpos($documentPath, "listNotes_") !== false
+                        strpos($documentPath, "email_") !== false ||
+                        strpos($documentPath, "attachment_") !== false ||
+                        strpos($documentPath, "summarySheet_") !== false ||
+                        strpos($documentPath, "convertedAr_") !== false  ||
+                        strpos($documentPath, "listNotes_") !== false
                     ) {
                         unlink($documentPath);
                     }
@@ -668,7 +927,12 @@ class FolderPrintController
         $resourceDocument = $args['document'];
 
         if (!empty($args['collId']) && in_array($args['collId'], ['letterbox_coll', 'attachments_coll'])) {
-            $document = ConvertPdfController::getConvertedPdfById(['resId' => $resourceDocument['res_id'], 'collId' => $args['collId']]);
+            $document = ConvertPdfController::getConvertedPdfById(
+                [
+                    'resId' => $resourceDocument['res_id'],
+                    'collId' => $args['collId']
+                ]
+            );
             if (!empty($document['errors'])) {
                 return ['errors' => 'Conversion error : ' . $document['errors'], 'code' => 400];
             }
@@ -687,14 +951,28 @@ class FolderPrintController
             return ['errors' => 'Docserver does not exist', 'code' => 400];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace(
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+            ) . $document['filename'];
 
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver', 'code' => 404];
         }
 
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+        $docserverType = DocserverTypeModel::getById(
+            [
+                'id' =>
+                    $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']
+            ]
+        );
+        $fingerprint = StoreController::getFingerPrint(
+            [
+                'filePath' => $pathToDocument,
+                'mode' => $docserverType['fingerprint_mode']
+            ]
+        );
         if ($document['fingerprint'] != $fingerprint) {
             return ['errors' => 'Fingerprints do not match', 'code' => 400];
         }
@@ -721,7 +999,10 @@ class FolderPrintController
             $noteText = str_replace('←', '<=', $note['note_text']);
 
             $date = explode('-', date('d-m-Y', strtotime($note['creation_date'])));
-            $date = $date[0] . '/' . $date[1] . '/' . $date[2] . ' ' . date('H:i', strtotime($note['creation_date']));
+            $date = $date[0] . '/' . $date[1] . '/' . $date[2] . ' ' . date(
+                'H:i',
+                strtotime($note['creation_date']
+                ));
 
             $notes[] = ['user' => $userName, 'note' => $noteText, 'date' => $date];
         }
@@ -777,8 +1058,10 @@ class FolderPrintController
         $acknowledgementReceipt = $args['acknowledgementReceipt'];
 
         $contact = ContactModel::getById([
-            'select' => ['id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
-                         'address_town', 'address_country', 'company'],
+            'select' => [
+                'id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
+                'address_town', 'address_country', 'company'
+            ],
             'id'     => $acknowledgementReceipt['contact_id']
         ]);
         if ($acknowledgementReceipt['format'] == 'html') {
@@ -820,24 +1103,163 @@ class FolderPrintController
         $pdf->SetY($pdf->GetY() + 40);
 
         $pdf->SetFont('', '', 10);
-        $pdf->MultiCell($width, 30, '<b>' . _CREATED_BY . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $creator['firstname'] . ' ' . $creator['lastname'], 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CREATED_BY . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $creator['firstname'] .
+            ' ' .
+            $creator['lastname'],
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _CREATED . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $creationDate, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CREATED . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $creationDate,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _SENT_DATE . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $sendDate, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _SENT_DATE . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $sendDate,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _FORMAT . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $acknowledgementReceipt['format'], 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _FORMAT . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $acknowledgementReceipt['format'],
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _SENT_TO . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $displayContact, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _SENT_TO .
+            '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $displayContact,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
 
         $tmpDir = CoreConfigModel::getTmpPath();
-        $filePathOnTmp = $tmpDir . 'convertedAr_' . $acknowledgementReceipt['id'] . '_SEPARATOR_' . $GLOBALS['id'] . '.pdf';
+        $filePathOnTmp =
+            $tmpDir .
+            'convertedAr_' .
+            $acknowledgementReceipt['id'] .
+            '_SEPARATOR_' .
+            $GLOBALS['id'] .
+            '.pdf';
         $pdf->Output($filePathOnTmp, 'F');
 
         return $filePathOnTmp;
@@ -883,8 +1305,10 @@ class FolderPrintController
             $displayContact = UserModel::getLabelledUserById(['id' => $attachment['recipient_id']]);
         } elseif ($attachment['recipient_type'] == 'contact') {
             $contact = ContactModel::getById([
-                'select' => ['id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
-                             'address_town', 'address_country', 'company'],
+                'select' => [
+                    'id', 'firstname', 'lastname', 'email', 'address_number', 'address_street', 'address_postcode',
+                    'address_town', 'address_country', 'company'
+                ],
                 'id'     => $attachment['recipient_id']
             ]);
             $displayContact = ContactController::getFormattedContactWithAddress([
@@ -925,29 +1349,238 @@ class FolderPrintController
         $pdf->SetY($pdf->GetY() + 40);
         $pdf->SetFont('', '', 10);
 
-        $pdf->MultiCell($width, 30, '<b>' . _CHRONO_NUMBER_MASTER . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $chronoResource, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CHRONO_NUMBER_MASTER . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $chronoResource,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _SUBJECT . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $attachment['title'], 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _SUBJECT . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $attachment['title'],
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _CREATED_BY . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $creator['firstname'] . ' ' . $creator['lastname'], 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CREATED_BY . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $creator['firstname'] . ' ' . $creator['lastname'],
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _CREATED . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $creationDate, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CREATED . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $creationDate,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        )
+        ;
 
-        $pdf->MultiCell($width, 30, '<b>' . _FORMAT . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $attachment['format'], 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _FORMAT . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $attachment['format'],
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _STATUS . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $status, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _STATUS . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $status,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _DOCTYPE . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $attachmentType, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _DOCTYPE . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $attachmentType,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
-        $pdf->MultiCell($width, 30, '<b>' . _CONTACT . '</b>', 1, 'L', false, 0, '', '', true, 0, true);
-        $pdf->MultiCell($width, 30, $displayContact, 1, 'L', false, 1, '', '', true, 0, true);
+        $pdf->MultiCell(
+            $width,
+            30,
+            '<b>' . _CONTACT . '</b>',
+            1,
+            'L',
+            false,
+            0,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
+        $pdf->MultiCell(
+            $width,
+            30,
+            $displayContact,
+            1,
+            'L',
+            false,
+            1,
+            '',
+            '',
+            true,
+            0,
+            true
+        );
 
 
         $tmpDir = CoreConfigModel::getTmpPath();
@@ -1012,7 +1645,10 @@ class FolderPrintController
         </tr>
         </tbody>
         </table>
-        <table style=\"width: $widthTable_px; border-style: solid; border-color: #000000;\" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">
+        <table style=\"width: $widthTable_px;
+         border-style: solid;
+          border-color: #000000;
+          \" border=\"1\" cellspacing=\"0\" cellpadding=\"5\">
         <tbody>
         <tr>
         <td style=\"padding-bottom: $cellPaddingBottom_px;\"><b>" . _SENDER . "</b></td>
@@ -1044,7 +1680,11 @@ class FolderPrintController
 
         $tmpDir = CoreConfigModel::getTmpPath();
         $filePathInTmpNoExtension = $tmpDir . 'email_' . $email['id'] . '_' . $GLOBALS['id'];
-        file_put_contents($filePathInTmpNoExtension . '.html', mb_convert_encoding($emailMeta_emailDataBody, 'HTML', 'UTF-8'));
+        file_put_contents(
+            $filePathInTmpNoExtension .
+            '.html',
+            mb_convert_encoding($emailMeta_emailDataBody, 'HTML', 'UTF-8')
+        );
         ConvertPdfController::convertInPdf(['fullFilename' => $filePathInTmpNoExtension . '.html']);
 
         if (file_exists($filePathInTmpNoExtension . '.html')) {
@@ -1064,8 +1704,24 @@ class FolderPrintController
         $resId = $args['resId'];
 
         $resource = ResModel::getById([
-            'select' => ['res_id', 'alt_identifier', 'type_id', 'model_id', 'subject', 'admission_date', 'creation_date',
-                         'doc_date', 'initiator', 'typist', 'category_id', 'status', 'priority', 'process_limit_date', 'destination'],
+            'select' =>
+                [
+                    'res_id',
+                    'alt_identifier',
+                    'type_id',
+                    'model_id',
+                    'subject',
+                    'admission_date',
+                    'creation_date',
+                    'doc_date',
+                    'initiator',
+                    'typist',
+                    'category_id',
+                    'status',
+                    'priority',
+                    'process_limit_date',
+                    'destination'
+                ],
             'resId'  => $resId
         ]);
 
