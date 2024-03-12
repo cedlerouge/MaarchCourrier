@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -25,8 +26,10 @@ class LogsControllerTest extends CourrierTestCase
 
     protected function setUp(): void
     {
-        self::$generalConfigPath = (file_exists("config/config.json") ? "config/config.json" : "config/config.json.default");
-        
+        self::$generalConfigPath = (
+            file_exists("config/config.json") ? "config/config.json" : "config/config.json.default"
+        );
+
         $generalConfig = file_get_contents(self::$generalConfigPath);
         $generalConfig = json_decode($generalConfig, true);
         self::$generalConfigOriginal = $generalConfig;
@@ -36,15 +39,21 @@ class LogsControllerTest extends CourrierTestCase
         $generalConfig['log']['queries']['file'] = '/tmp/queries.log';
         self::$filesToDelete = ['/tmp/fonctionnel.log', '/tmp/technique.log', '/tmp/queries.log'];
 
-        file_put_contents(self::$generalConfigPath, json_encode($generalConfig, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents(
+            self::$generalConfigPath,
+            json_encode(
+                $generalConfig,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+            )
+        );
     }
 
-    public function testCheckOriginalConfigIsNotEmpty()
+    public function testCheckOriginalConfigIsNotEmpty(): void
     {
         $this->assertNotEmpty(self::$generalConfigOriginal);
     }
 
-    public function testGetLogConfig()
+    public function testGetLogConfig(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -59,7 +68,7 @@ class LogsControllerTest extends CourrierTestCase
     {
         // Arrange
         $logConfig = [];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, []);
 
@@ -72,7 +81,7 @@ class LogsControllerTest extends CourrierTestCase
     {
         // Arrange
         $logConfig = ["toto"];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, []);
 
@@ -85,7 +94,7 @@ class LogsControllerTest extends CourrierTestCase
     {
         // Arrange
         $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, []);
 
@@ -103,16 +112,15 @@ class LogsControllerTest extends CourrierTestCase
             "level"      => "INFO",
             "lineFormat" => "test",
         ];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
         $handlers = $logger->getHandlers();
-        
+
         // Assert
         $this->assertNotEmpty($logger);
         $this->assertCount(1, $handlers);
         $this->assertInstanceOf(FilterHandler::class, $handlers[0]);
-        
     }
 
     public function testInitMonologLoggerTechniqueLogFileNotFound(): void
@@ -120,13 +128,13 @@ class LogsControllerTest extends CourrierTestCase
         // Arrange
         $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
         $loggerConfiguration = ["lineFormat" => "test"];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
-        
+
         // Assert
         $this->assertNotEmpty($logger);
-        
+
         $this->assertSame(['code' => 400, 'errors' => "Logger configuration 'file' path is empty"], $logger);
     }
 
@@ -138,15 +146,14 @@ class LogsControllerTest extends CourrierTestCase
             "file"       => "test/test",
             "lineFormat" => "test"
         ];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
-        
+
         // Assert
         $this->assertNotEmpty($logger);
-        
-        $this->assertSame(['code' => 400, 'errors' => "Logger configuration 'level' is empty"], $logger);
 
+        $this->assertSame(['code' => 400, 'errors' => "Logger configuration 'level' is empty"], $logger);
     }
 
     public function testInitMonologLoggerHasProcessors(): void
@@ -154,15 +161,15 @@ class LogsControllerTest extends CourrierTestCase
         // Arrange
         $logConfig = ["dateTimeFormat" => "d/m/Y H:i:s"];
         $loggerConfiguration = [
-            "file"       => "test/test", 
+            "file"       => "test/test",
             "level"      => "INFO",
             "lineFormat" => "test"
         ];
-        
+
         // Act
         $logger = LogsController::initMonologLogger($logConfig, $loggerConfiguration);
         $processors = $logger->getProcessors();
-        
+
         // Assert
         $this->assertNotEmpty($logger);
         $this->assertNotEmpty($processors);
@@ -171,11 +178,11 @@ class LogsControllerTest extends CourrierTestCase
         $this->assertInstanceOf(ProcessIdProcessor::class, $processors[1]);
     }
 
-    public function testGetLogTypeWrongLogType(): void 
+    public function testGetLogTypeWrongLogType(): void
     {
         // Arrange
         $logType = "toto";
-        
+
         // Act
         $logConfig = LogsController::getLogType($logType);
 
@@ -199,7 +206,7 @@ class LogsControllerTest extends CourrierTestCase
     }
 
 
-    public function testLogFonctionnel()
+    public function testLogFonctionnel(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -217,17 +224,33 @@ class LogsControllerTest extends CourrierTestCase
 //        $logMessage = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
 
         // check output
-        $this->assertFileExists($logConfig['logFonctionnel']['file'], "Le fichier LogFonctionnel n'est pas créé : " . $logConfig['logFonctionnel']['file']);
+        $this->assertFileExists(
+            $logConfig['logFonctionnel']['file'],
+            "Le fichier LogFonctionnel n'est pas créé : " . $logConfig['logFonctionnel']['file']
+        );
         $logFileOutput = file_get_contents($logConfig['logFonctionnel']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
-        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
-        $this->assertStringContainsString("ERROR", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-//        $this->assertStringContainsString("$logMessage", $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
+        $this->assertStringContainsString(
+            "[" . getmypid() . "]",
+            $logFileOutput,
+            "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'"
+        );
+        $this->assertStringContainsString(
+            "[SCRIPT]",
+            $logFileOutput,
+            "Log file output doesn't contains '[SCRIPT]'"
+        );
+        $this->assertStringContainsString(
+            "ERROR",
+            $logFileOutput,
+            "Log file output doesn't contains the log level error '[ERROR]'"
+        );
+//        $this->assertStringContainsString(
+//"$logMessage", $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
-    public function testLogTechnique()
+    public function testLogTechnique(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -246,19 +269,35 @@ class LogsControllerTest extends CourrierTestCase
 //        $logMessage = $logsController->prepareLogLine($lineData);
 
         // check output
-        $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
+        $this->assertFileExists(
+            $logConfig['logTechnique']['file'],
+            "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']
+        );
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
 //        var_dump($logFileOutput);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
-        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
-        $this->assertStringContainsString("ERROR", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-//        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
+        $this->assertStringContainsString(
+            "[" . getmypid() . "]",
+            $logFileOutput,
+            "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'"
+        );
+        $this->assertStringContainsString(
+            "[SCRIPT]",
+            $logFileOutput,
+            "Log file output doesn't contains '[SCRIPT]'"
+        );
+        $this->assertStringContainsString(
+            "ERROR",
+            $logFileOutput,
+            "Log file output doesn't contains the log level error '[ERROR]'"
+        );
+//        $this->assertStringContainsString(
+//$logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
-    public function testLogQueries()
+    public function testLogQueries(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -272,20 +311,36 @@ class LogsControllerTest extends CourrierTestCase
         ];
 
         $logsController->add($lineData);
-//        $logMessage = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
+//    $logMessage = $logsController->prepareLogLine(['logConfig' => $logConfig, 'lineData' => $lineData]);
 
         // check output
-        $this->assertFileExists($logConfig['queries']['file'], "Le fichier queries n'est pas créé : " . $logConfig['queries']['file']);
+        $this->assertFileExists(
+            $logConfig['queries']['file'],
+            "Le fichier queries n'est pas créé : " . $logConfig['queries']['file']
+        );
         $logFileOutput = file_get_contents($logConfig['queries']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
-        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
-        $this->assertStringContainsString("ERROR", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-//        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
+        $this->assertStringContainsString(
+            "[" . getmypid() . "]",
+            $logFileOutput,
+            "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'"
+        );
+        $this->assertStringContainsString(
+            "[SCRIPT]",
+            $logFileOutput,
+            "Log file output doesn't contains '[SCRIPT]'"
+        );
+        $this->assertStringContainsString(
+            "ERROR",
+            $logFileOutput,
+            "Log file output doesn't contains the log level error '[ERROR]'"
+        );
+//        $this->assertStringContainsString(
+//$logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
-    public function testLogFileOutputWithLogLevelError()
+    public function testLogFileOutputWithLogLevelError(): void
     {
         $logsController = new LogsController();
         $logConfig = LogsController::getLogConfig();
@@ -322,22 +377,46 @@ class LogsControllerTest extends CourrierTestCase
         ]);
 
         // check output
-        $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
+        $this->assertFileExists(
+            $logConfig['logTechnique']['file'],
+            "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']
+        );
         $logFileOutput = file_get_contents($logConfig['logTechnique']['file']);
 
         $this->assertNotEmpty($logFileOutput);
-        $this->assertStringContainsString("[" . getmypid() . "]", $logFileOutput, "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'");
-        $this->assertStringContainsString("[SCRIPT]", $logFileOutput, "Log file output doesn't contains '[SCRIPT]'");
-        $this->assertStringContainsString("ALERT", $logFileOutput, "Log file output doesn't contains the log level alert '[ALERT]'");
-        $this->assertStringContainsString("ERROR", $logFileOutput, "Log file output doesn't contains the log level error '[ERROR]'");
-        $this->assertStringNotContainsString("DEBUG", $logFileOutput, "Log file output contains the log level debug '[DEBUG]'");
-//        $this->assertStringContainsString($logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
+        $this->assertStringContainsString(
+            "[" . getmypid() . "]",
+            $logFileOutput,
+            "Log file output doesn't contains the current php process ID '[" . getmypid() . "]'"
+        );
+        $this->assertStringContainsString(
+            "[SCRIPT]",
+            $logFileOutput,
+            "Log file output doesn't contains '[SCRIPT]'"
+        );
+        $this->assertStringContainsString(
+            "ALERT",
+            $logFileOutput,
+            "Log file output doesn't contains the log level alert '[ALERT]'"
+        );
+        $this->assertStringContainsString(
+            "ERROR",
+            $logFileOutput,
+            "Log file output doesn't contains the log level error '[ERROR]'"
+        );
+        $this->assertStringNotContainsString(
+            "DEBUG",
+            $logFileOutput,
+            "Log file output contains the log level debug '[DEBUG]'"
+        );
+//        $this->assertStringContainsString(
+//$logMessage, $logFileOutput, "Log file output doesn't contains the correct message '$logMessage'");
     }
 
     /**
      * @dataProvider provideFileSizeData
      */
-    public function testCalculateMaxFileSizeToBytes($input, $expectedOutput)
+    public function testCalculateMaxFileSizeToBytes(string $input, int $expectedOutput): void
     {
         $logsController = new LogsController();
 
@@ -346,7 +425,7 @@ class LogsControllerTest extends CourrierTestCase
         $this->assertSame($expectedOutput, $bytes);
     }
 
-    public function provideFileSizeData()
+    public function provideFileSizeData(): array
     {
         return [
             '10000 string value' => [
@@ -376,7 +455,7 @@ class LogsControllerTest extends CourrierTestCase
         ];
     }
 
-    public function testRotateLogFileBySize()
+    public function testRotateLogFileBySize(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -403,11 +482,14 @@ class LogsControllerTest extends CourrierTestCase
         $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . "-1." . $path_parts['extension'];
         self::$filesToDelete[] = $newFilePath;
 
-        $this->assertFileExists($logConfig['logTechnique']['file'], "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']);
+        $this->assertFileExists(
+            $logConfig['logTechnique']['file'],
+            "Le fichier logTechnique n'est pas créé : " . $logConfig['logTechnique']['file']
+        );
         $this->assertFileExists($newFilePath, "Le fichier logTechnique backup n'est pas créé : $newFilePath");
     }
 
-    public function testRotateLogFileByMaxFiles()
+    public function testRotateLogFileByMaxFiles(): void
     {
         $logsController = new LogsController();
         $logConfig = $logsController->getLogConfig();
@@ -423,7 +505,7 @@ class LogsControllerTest extends CourrierTestCase
         ];
 
 
-        for ($index=0; $index < ((int)$logConfig['logTechnique']['maxBackupFiles'] + 3); $index++) {
+        for ($index = 0; $index < ((int)$logConfig['logTechnique']['maxBackupFiles'] + 3); $index++) {
             $logsController->add($lineData);
             $logsController->rotateLogFileBySize([
                 'path'      => $logConfig['logTechnique']['file'],
@@ -454,6 +536,12 @@ class LogsControllerTest extends CourrierTestCase
             }
         }
 
-        file_put_contents(self::$generalConfigPath, json_encode(self::$generalConfigOriginal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents(
+            self::$generalConfigPath,
+            json_encode(
+                self::$generalConfigOriginal,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+            )
+        );
     }
 }
