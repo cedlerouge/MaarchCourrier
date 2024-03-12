@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -9,7 +9,6 @@ import { ConfirmComponent } from '@plugins/modal/confirm.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { AuthService } from '@service/auth.service';
 
 @Component({
     selector: 'app-my-baskets',
@@ -17,7 +16,7 @@ import { AuthService } from '@service/auth.service';
     styleUrls: ['./baskets.component.scss'],
 })
 
-export class MyBasketsComponent implements OnInit {
+export class MyBasketsComponent {
 
     @Input() userBaskets: any[];
     @Input() redirectedBaskets: any[];
@@ -36,8 +35,6 @@ export class MyBasketsComponent implements OnInit {
         public dialog: MatDialog,
 
     ) {}
-
-    ngOnInit(): void {}
 
     masterToggleBaskets(event: any) {
         if (event.checked) {
@@ -150,10 +147,12 @@ export class MyBasketsComponent implements OnInit {
         ).subscribe();
     }
 
+    // TODO: REWORK THIS BEHAVIOR
     showActions(basket: any) {
         $('#' + basket.basket_id + '_' + basket.group_id).show();
     }
 
+    // TODO: REWORK THIS BEHAVIOR
     hideActions(basket: any) {
         $('#' + basket.basket_id + '_' + basket.group_id).hide();
     }

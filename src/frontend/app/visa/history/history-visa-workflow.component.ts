@@ -42,7 +42,7 @@ export class HistoryVisaWorkflowComponent implements OnInit {
     loadWorkflowHistory() {
         this.loading = true;
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/circuitsHistory?type=visaCircuit`).pipe(
                 tap((data: any) => {
                     this.visaWorkflowHistory = data['listInstanceHistory'];

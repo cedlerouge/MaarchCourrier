@@ -345,8 +345,8 @@ export class RegisteredMailImportComponent implements OnInit {
             this.countAdd = this.csvData.filter((data: any, index: number) => index > 0 && this.functionsService.empty(data[this.associatedColumns['id']])).length;
             this.countUp = this.csvData.filter((data: any, index: number) => index > 0 && !this.functionsService.empty(data[this.associatedColumns['id']])).length;
         } else {
-            this.countAdd = this.csvData.filter((data: any, index: number) => this.functionsService.empty(data[this.associatedColumns['id']])).length;
-            this.countUp = this.csvData.filter((data: any, index: number) => !this.functionsService.empty(data[this.associatedColumns['id']])).length;
+            this.countAdd = this.csvData.filter((data: any) => this.functionsService.empty(data[this.associatedColumns['id']])).length;
+            this.countUp = this.csvData.filter((data: any) => !this.functionsService.empty(data[this.associatedColumns['id']])).length;
         }
         this.initData();
     }

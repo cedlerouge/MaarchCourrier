@@ -1,4 +1,4 @@
-import { Component, Input, NgZone, OnInit } from '@angular/core';
+import { Component, Input, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -17,7 +17,7 @@ import { ExternalSignatoryBookManagerService } from '@service/externalSignatoryB
     providers: [ExternalSignatoryBookManagerService]
 })
 
-export class MySignatureBookComponent implements OnInit {
+export class MySignatureBookComponent {
 
     @Input() signatureModel: any;
     @Input() userSignatures: any[];
@@ -40,8 +40,6 @@ export class MySignatureBookComponent implements OnInit {
             componentAfterUpload: (base64Content: any) => this.processAfterUpload(base64Content),
         };
     }
-
-    ngOnInit(): void {}
 
     clickOnUploader(id: string) {
         $('#' + id).click();
@@ -67,7 +65,6 @@ export class MySignatureBookComponent implements OnInit {
     }
 
     uploadSignatureTrigger(fileInput: any) {
-        console.log(this.signatureModel);
         if (fileInput.target.files && fileInput.target.files[0]) {
             const reader = new FileReader();
 
@@ -128,11 +125,15 @@ export class MySignatureBookComponent implements OnInit {
 
     updateSignature(signature: any) {
         this.http.put('../rest/users/' + this.headerService.user.id + '/signatures/' + signature.id, { 'label': signature.signature_label })
-            .subscribe((data: any) => {
-                this.notify.success(this.translate.instant('lang.signatureUpdated'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            .pipe(
+                tap(() => {
+                    this.notify.success(this.translate.instant('lang.signatureUpdated'));
+                }),
+                catchError((err: any) => {
+                    this.notify.handleSoftErrors(err);
+                    return of(false);
+                }))
+            .subscribe();
     }
 
     deleteSignature(id: number) {
