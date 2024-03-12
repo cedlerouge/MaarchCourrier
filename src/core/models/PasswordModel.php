@@ -167,7 +167,13 @@ class PasswordModel
 
         $cipher_method = 'AES-128-CTR';
         $enc_iv        = openssl_random_pseudo_bytes(openssl_cipher_iv_length($cipher_method));
-        $crypted_token = openssl_encrypt($aArgs['password'], $cipher_method, $enc_key, 0, $enc_iv) . "::" . bin2hex($enc_iv);
+        $crypted_token = openssl_encrypt(
+            $aArgs['password'],
+            $cipher_method,
+            $enc_key,
+            0,
+            $enc_iv
+        ) . "::" . bin2hex($enc_iv);
 
         return $crypted_token;
     }
@@ -191,7 +197,9 @@ class PasswordModel
         try {
             $cryptedPasswordParts = explode("::", $aArgs['cryptedPassword']);
             if (count($cryptedPasswordParts) !== 2) {
-                throw new \Exception("Invalid format: cryptedPassword should contain two parts separated by '::'");
+                throw new \Exception(
+                    "Invalid format: cryptedPassword should contain two parts separated by '::'"
+                );
             }
             list($crypted_token, $enc_iv) = $cryptedPasswordParts;
 

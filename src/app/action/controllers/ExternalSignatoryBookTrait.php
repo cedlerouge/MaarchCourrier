@@ -44,7 +44,13 @@ trait ExternalSignatoryBookTrait
         if (!empty($args['resources'])) {
             $hasMailing = AttachmentModel::get([
                 'select' => ['res_id', 'status'],
-                'where'  => ["res_id_master in (?)", "attachment_type not in (?)", "status = 'SEND_MASS'", "in_signature_book = 'true'"],
+                'where'  =>
+                    [
+                        "res_id_master in (?)",
+                        "attachment_type not in (?)",
+                        "status = 'SEND_MASS'",
+                        "in_signature_book = 'true'"
+                    ],
                 'data'   => [$args['resources'], ['signed_response']]
             ]);
             if (count($args['resources']) > 1 || !empty($hasMailing)) {
@@ -61,7 +67,12 @@ trait ExternalSignatoryBookTrait
                     ];
                 }
 
-                $massData['resources'][] = ['resId' => $args['resId'], 'data' => $args['data'], 'note' => $args['note']];
+                $massData['resources'][] =
+                    [
+                        'resId' => $args['resId'],
+                        'data' => $args['data'],
+                        'note' => $args['note']
+                    ];
 
                 return ['postscript' => 'src/app/action/scripts/MailingScript.php', 'args' => $massData];
             }
@@ -81,13 +92,23 @@ trait ExternalSignatoryBookTrait
                     'select' => [
                         'res_id', 'status'
                     ],
-                    'where'  => ["res_id_master = ?", "attachment_type not in (?)", "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"],
+                    'where'  =>
+                        [
+                            "res_id_master = ?",
+                            "attachment_type not in (?)",
+                            "status not in ('DEL', 'OBS', 'FRZ', 'TMP', 'SIGN')", "in_signature_book = 'true'"
+                        ],
                     'data'   => [$args['resId'], ['signed_response']]
                 ]);
 
                 foreach ($attachments as $attachment) {
                     if ($attachment['status'] == 'SEND_MASS') {
-                        $generated = AttachmentController::generateMailing(['id' => $attachment['res_id'], 'userId' => $GLOBALS['id']]);
+                        $generated = AttachmentController::generateMailing(
+                            [
+                                'id' => $attachment['res_id'],
+                                'userId' => $GLOBALS['id']
+                            ]
+                        );
                         if (!empty($generated['errors'])) {
                             return ['errors' => [$generated['errors']]];
                         }
@@ -97,7 +118,12 @@ trait ExternalSignatoryBookTrait
 
             $integratedResource = ResModel::get([
                 'select' => [1],
-                'where'  => ['integrations->>\'inSignatureBook\' = \'true\'', 'external_id->>\'signatureBookId\' is null', 'res_id = ?'],
+                'where'  =>
+                    [
+                        'integrations->>\'inSignatureBook\' = \'true\'',
+                        'external_id->>\'signatureBookId\' is null',
+                        'res_id = ?'
+                    ],
                 'data'   => [$args['resId']]
             ]);
             $mainDocumentSigned = AdrModel::getConvertedDocumentById([
@@ -168,7 +194,13 @@ trait ExternalSignatoryBookTrait
         if (!empty($attachmentToFreeze)) {
             if (!empty($attachmentToFreeze['letterbox_coll'])) {
                 ResModel::update([
-                    'postSet' => ['external_id' => "jsonb_set(external_id, '{signatureBookId}', '\"{$attachmentToFreeze['letterbox_coll'][$args['resId']]}\"'::text::jsonb)"],
+                    'postSet' =>
+                        [
+                            'external_id' => "jsonb_set(
+                            external_id, '{signatureBookId}',
+                             '\"{$attachmentToFreeze['letterbox_coll'][$args['resId']]}\"'::text::jsonb
+                            )"
+                        ],
                     'where'   => ['res_id = ?'],
                     'data'    => [$args['resId']]
                 ]);

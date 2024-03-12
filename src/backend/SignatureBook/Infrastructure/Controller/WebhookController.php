@@ -76,8 +76,15 @@ class WebhookController
         $userRepository = new UserRepository();
         $maarchParapheurSignatureService = new MaarchParapheurSignatureService();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $maarchParapheurSignatureService);
+        $webhookValidation = new WebhookValidation(
+            $resourceToSignRepository,
+            $userRepository,
+            $currentUserInformations
+        );
+        $retrieveSignedResource = new RetrieveSignedResource(
+            $currentUserInformations,
+            $maarchParapheurSignatureService
+        );
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
         $webhookCall = new WebhookCall(

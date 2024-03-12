@@ -57,8 +57,32 @@ class DatabasePDO
             $password   = $database['password'];
             self::$type = $database['type'];
 
-            ValidatorModel::notEmpty(['server' => $server, 'port' => $port, 'name' => $name, 'user' => $user], ['server', 'port', 'name', 'user']);
-            ValidatorModel::stringType(['server' => $server, 'name' => $name, 'user' => $user], ['server', 'name', 'user']);
+            ValidatorModel::notEmpty(
+                [
+                    'server' => $server,
+                    'port' => $port,
+                    'name' => $name,
+                    'user' => $user
+                ],
+                [
+                    'server',
+                    'port',
+                    'name',
+                    'user'
+                ]
+            );
+            ValidatorModel::stringType(
+                [
+                    'server' => $server,
+                    'name' => $name,
+                    'user' => $user
+                ],
+                [
+                    'server',
+                    'name',
+                    'user'
+                ]
+            );
             ValidatorModel::intVal(['port' => $port], ['port']);
 
             $formattedDriver = 'pgsql';
@@ -140,7 +164,10 @@ class DatabasePDO
             }
             $query->execute($data);
         } catch (\PDOException $PDOException) {
-            if (strpos($PDOException->getMessage(), 'Admin shutdown: 7') !== false || strpos($PDOException->getMessage(), 'General error: 7') !== false) {
+            if (
+                strpos($PDOException->getMessage(), 'Admin shutdown: 7') !== false ||
+                strpos($PDOException->getMessage(), 'General error: 7') !== false
+            ) {
                 DatabasePDO::reset();
                 $db = new DatabasePDO();
                 $query = $db->query($queryString, $data);

@@ -53,7 +53,9 @@ class LogProcessor
             'USER'      => $GLOBALS['login'] ?? ':noUser',
             'WHAT'      => $this->lineData['eventId'] ?? ':noEventId',
             'ID_MODULE' => $this->lineData['moduleId'] ?? ':noModuleId',
-            'REMOTE_IP' => (empty($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR'] == '::1') ? gethostbyname(gethostname()) : $_SERVER['REMOTE_ADDR']
+            'REMOTE_IP' => (
+                empty($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR'] == '::1') ?
+                gethostbyname(gethostname()) : $_SERVER['REMOTE_ADDR']
         ];
 
         return array_merge($record, $newData);

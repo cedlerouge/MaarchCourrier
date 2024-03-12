@@ -28,7 +28,8 @@ class DatabaseModel
         ValidatorModel::notEmpty($args, ['id', 'value']);
         ValidatorModel::stringType($args, ['id']);
 
-        $query = "CREATE SEQUENCE \"{$args['id']}\" INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
+        $query = "CREATE SEQUENCE \"{$args['id']}\" INCREMENT 1 MINVALUE 1
+         MAXVALUE 9223372036854775807 START {$args['value']} CACHE 1";
 
         $db = new DatabasePDO();
         $db->query($query);

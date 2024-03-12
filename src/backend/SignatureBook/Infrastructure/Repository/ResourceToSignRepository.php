@@ -24,7 +24,17 @@ class ResourceToSignRepository implements ResourceToSignRepositoryInterface
     {
         return AttachmentModel::getById([
             'id' => $resId,
-            'select' => ['res_id_master', 'title', 'typist', 'identifier', 'recipient_id', 'recipient_type', 'format', 'status']
+            'select' =>
+                [
+                    'res_id_master',
+                    'title',
+                    'typist',
+                    'identifier',
+                    'recipient_id',
+                    'recipient_type',
+                    'format',
+                    'status'
+                ]
         ]);
     }
 
