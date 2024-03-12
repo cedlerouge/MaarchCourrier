@@ -416,7 +416,7 @@ class LogsControllerTest extends CourrierTestCase
     /**
      * @dataProvider provideFileSizeData
      */
-    public function testCalculateMaxFileSizeToBytes(string $input, int $expectedOutput): void
+    public function testCalculateMaxFileSizeToBytes(string|int $input, ?int $expectedOutput): void
     {
         $logsController = new LogsController();
 
