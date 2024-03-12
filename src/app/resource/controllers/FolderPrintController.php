@@ -386,7 +386,11 @@ class FolderPrintController
                     );
 
                     if (!empty($noteFilePath['errors'])) {
-                        return $response->withStatus($noteFilePath['code'])->withJson(['errors' => $noteFilePath['errors']]);
+                        return $response->withStatus($noteFilePath['code'])->withJson(
+                            [
+                                'errors' => $noteFilePath['errors']
+                            ]
+                        );
                     }
 
                     if (file_exists($noteFilePath)) {
@@ -679,10 +683,11 @@ class FolderPrintController
                     if ($withSeparators) {
                         $linkedAttachmentsPath[$attachment['res_id_master']][] =
                             FolderPrintController::getAttachmentSeparator(
-                            [
+                                [
                                 'attachment'     => $attachment,
                                 'chronoResource' => $chronoResource
-                            ]);
+                                ]
+                            );
                     }
 
                     $path = FolderPrintController::getDocumentFilePath(
@@ -714,7 +719,8 @@ class FolderPrintController
                 if (!is_array($resource['linkedResources'])) {
                     $resource['linkedResources'] = $controlResource['linked_resources'];
                 }
-                if (!empty($resource['linkedResources']) &&
+                if (
+                    !empty($resource['linkedResources']) &&
                     !ResController::hasRightByResId(
                         [
                             'resId' => $resource['linkedResources'],
@@ -918,7 +924,7 @@ class FolderPrintController
         return $response->withHeader('Content-Type', $mimeType);
     }
 
-    private static function getDocumentFilePath(array $args)
+    private static function getDocumentFilePath(array $args): array|string
     {
         ValidatorModel::notEmpty($args, ['document']);
         ValidatorModel::arrayType($args, ['document']);
@@ -955,7 +961,7 @@ class FolderPrintController
             '#',
             DIRECTORY_SEPARATOR,
             $document['path']
-            ) . $document['filename'];
+        ) . $document['filename'];
 
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver', 'code' => 404];
@@ -980,7 +986,7 @@ class FolderPrintController
         return $pathToDocument;
     }
 
-    private static function getNotesFilePath(array $args)
+    private static function getNotesFilePath(array $args): array|string
     {
         ValidatorModel::notEmpty($args, ['notes', 'resId']);
         ValidatorModel::arrayType($args, ['notes']);
@@ -1001,8 +1007,8 @@ class FolderPrintController
             $date = explode('-', date('d-m-Y', strtotime($note['creation_date'])));
             $date = $date[0] . '/' . $date[1] . '/' . $date[2] . ' ' . date(
                 'H:i',
-                strtotime($note['creation_date']
-                ));
+                strtotime($note['creation_date'])
+            );
 
             $notes[] = ['user' => $userName, 'note' => $noteText, 'date' => $date];
         }
@@ -1050,7 +1056,7 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
-    private static function getAcknowledgementReceiptSeparator(array $args)
+    private static function getAcknowledgementReceiptSeparator(array $args): string
     {
         ValidatorModel::notEmpty($args, ['acknowledgementReceipt']);
         ValidatorModel::arrayType($args, ['acknowledgementReceipt']);
@@ -1265,7 +1271,7 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
-    private static function getPathConvertedAcknowledgementReceipt(array $args)
+    private static function getPathConvertedAcknowledgementReceipt(array $args): string
     {
         ValidatorModel::notEmpty($args, ['acknowledgementReceipt', 'pathHtml']);
         ValidatorModel::arrayType($args, ['acknowledgementReceipt']);
@@ -1292,7 +1298,7 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
-    private static function getAttachmentSeparator(array $args)
+    private static function getAttachmentSeparator(array $args): string
     {
         ValidatorModel::notEmpty($args, ['attachment']);
         ValidatorModel::arrayType($args, ['attachment']);
@@ -1590,7 +1596,7 @@ class FolderPrintController
         return $filePathOnTmp;
     }
 
-    private static function getEmailFilePath(array $args)
+    private static function getEmailFilePath(array $args): string
     {
         ValidatorModel::notEmpty($args, ['email', 'resId']);
         ValidatorModel::arrayType($args, ['email']);
@@ -1694,7 +1700,7 @@ class FolderPrintController
         return $filePathInTmpNoExtension . '.pdf';
     }
 
-    private static function getSummarySheet(array $args)
+    private static function getSummarySheet(array $args): string
     {
         ValidatorModel::notEmpty($args, ['units', 'resId']);
         ValidatorModel::arrayType($args, ['units']);
