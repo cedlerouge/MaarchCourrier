@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 

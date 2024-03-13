@@ -19,7 +19,7 @@ use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProble
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 

@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\ResourceAttached;
 use MaarchCourrier\SignatureBook\Domain\ResourceToSign;

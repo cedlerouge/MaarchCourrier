@@ -15,7 +15,7 @@
 namespace MaarchCourrier\Tests\Unit\Authorization\Mock;
 
 use MaarchCourrier\Authorization\Domain\Port\AccessControlServiceInterface;
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 class AccessControlServiceMock implements AccessControlServiceInterface

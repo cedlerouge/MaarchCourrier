@@ -16,7 +16,7 @@ namespace MaarchCourrier\Authorization\Infrastructure;
 
 use Group\controllers\PrivilegeController;
 use MaarchCourrier\Authorization\Domain\Port\AccessControlServiceInterface;
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 class AccessControlService implements AccessControlServiceInterface

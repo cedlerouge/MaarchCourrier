@@ -17,7 +17,7 @@ use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
 use Entity\models\ListInstanceModel;
 use Exception;
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;

@@ -14,7 +14,7 @@
 
 namespace MaarchCourrier\Authorization\Domain\Port;
 
-use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 interface AccessControlServiceInterface
