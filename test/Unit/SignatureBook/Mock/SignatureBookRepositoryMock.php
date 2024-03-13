@@ -16,8 +16,7 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\ResourceAttached;
-use MaarchCourrier\SignatureBook\Domain\ResourceToSign;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 
 class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
@@ -30,14 +29,15 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
+     * @param ?CurrentUserInterface $currentUser
      *
-     * @return ResourceToSign[]
+     * @return SignatureBookResource[]
      */
-    public function getIncomingMainResourceAndAttachments(Resource $resource): array
+    public function getIncomingMainResourceAndAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
     {
         $resourcesToSign = [];
 
-        $resourceToSign = new ResourceToSign();
+        $resourceToSign = new SignatureBookResource();
         $resourceToSign->setResId($resource->getResId())
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
             ->setChrono("MAARCH/2024A/34")
@@ -50,14 +50,15 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
+     * @param ?CurrentUserInterface $currentUser
      *
-     * @return ResourceAttached[]
+     * @return SignatureBookResource[]
      */
-    public function getAttachments(Resource $resource): array
+    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
     {
         $resourcesAttached = [];
 
-        $resourceAttached = new ResourceAttached();
+        $resourceAttached = new SignatureBookResource();
         $resourceAttached->setResId(101)
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
             ->setSignedResId(null)

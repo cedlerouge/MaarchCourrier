@@ -78,11 +78,12 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
+     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      * @throws Exception
      */
-    public function getAttachments(Resource $resource): array
+    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
     {
         $resourcesAttached = [];
 
@@ -102,7 +103,10 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = '(select id from attachment_types where type_id = res_attachments.attachment_type) ';
         $attachmentTypeId .= 'as attachment_type_id';
         $attachments = AttachmentModel::get([
-            'select'    => ['res_id', 'res_id_master', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type', 'format'],
+            'select'    => [
+                'res_id', 'res_id_master', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type',
+                'format', 'typist'
+            ],
             'where'     => [
                 'res_id_master = ?', 'attachment_type != ?', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'
             ],
@@ -110,8 +114,20 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             'orderBy'   => [$orderBy]
         ]);
 
+        $canUpdateDocuments = false;
+        if (!empty($currentUser)) {
+            $canUpdateDocuments = $this->canUpdateResourcesInSignatureBook($resource, $currentUser);
+        }
+
         foreach ($attachments as $value) {
             $isConverted = ConvertPdfController::canConvert(['extension' => $value['format']]);
+
+            $canModify = false;
+            $canDelete = false;
+            if ($canUpdateDocuments || (!empty($currentUser) && $value['typist'] == $currentUser)) {
+                $canModify = true;
+                $canDelete = true;
+            }
 
             $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($value['res_id'])
@@ -121,12 +137,14 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
                 ->setSignedResId($value['relation'])
                 ->setResType($value['attachment_type_id'])
                 ->setType($value['attachment_type'])
-                ->setIsConverted($isConverted);
+                ->setIsConverted($isConverted)
+                ->setCanModify($canModify)
+                ->setCanDelete($canDelete);
             $resourcesAttached[] = $resourceAttached;
         }
 
 
-        // if main resource is not integrated to signatureBook, then add to attachments
+        // if main resource is not integrated to signatureBook, then add to attlocauxachments
         if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
             $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
 
@@ -136,7 +154,8 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
                 ->setChrono($resource->getAltIdentifier())
                 ->setResType(0)
                 ->setType(_MAIN_DOCUMENT)
-                ->setIsConverted($isConverted);
+                ->setIsConverted($isConverted)
+                ->setCanModify($canUpdateDocuments);
             $resourcesAttached[] = $resourceAttached;
         }
 

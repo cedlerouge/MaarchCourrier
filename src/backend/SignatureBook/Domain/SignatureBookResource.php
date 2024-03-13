@@ -14,6 +14,8 @@ class SignatureBookResource implements JsonSerializable
     private int $resType;
     private string $type;
     private bool $isConverted;
+    private bool $canModify = false;
+    private bool $canDelete = false;
 
     /**
      * @return int
@@ -167,7 +169,43 @@ class SignatureBookResource implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function isCanModify(): bool
+    {
+        return $this->canModify;
+    }
 
+    /**
+     * @param bool $canModify
+     *
+     * @return SignatureBookResource
+     */
+    public function setCanModify(bool $canModify): self
+    {
+        $this->canModify = $canModify;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCanDelete(): bool
+    {
+        return $this->canDelete;
+    }
+
+    /**
+     * @param bool $canDelete
+     *
+     * @return SignatureBookResource
+     */
+    public function setCanDelete(bool $canDelete): self
+    {
+        $this->canDelete = $canDelete;
+        return $this;
+    }
 
     public function jsonSerialize(): array
     {
@@ -179,7 +217,9 @@ class SignatureBookResource implements JsonSerializable
             'signedResId' => $this->getSignedResId(),
             'resType' => $this->getResType(),
             'type' => $this->getType(),
-            'isConverted' => $this->isConverted()
+            'isConverted' => $this->isConverted(),
+            'canModify' => $this->isCanModify(),
+            'canDelete' => $this->isCanDelete()
         ];
     }
 }

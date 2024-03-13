@@ -29,10 +29,11 @@ interface SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
+     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      */
-    public function getAttachments(Resource $resource): array;
+    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array;
 
     public function canUpdateResourcesInSignatureBook(Resource $resource, CurrentUserInterface $currentUser): bool;
 

@@ -54,8 +54,8 @@ class RetrieveSignatureBook
             throw new ResourceDoesNotExistProblem();
         }
 
-        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource);
-        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource);
+        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource, $this->currentUser);
+        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource, $this->currentUser);
         $canSignResources = $this->accessControlService->hasPrivilege('sign_document', $this->currentUser);
         $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($resource, $this->currentUser);
         $hasActiveWorkflow = $this->signatureBookRepository->doesMainResourceHasActiveWorkflow($resource);
