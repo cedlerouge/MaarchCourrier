@@ -81,7 +81,7 @@
     "sdaoudi/oauth2-keycloak": "^3.1.0",
     "jasig/phpcas": "1.5.0",
     "php-ews/php-ews": "^1.0",
-    "monolog/monolog": "^2.6",
+    "monolog/monolog": "^2.9.2",
     "psr/log": "3.0.0",
     "psr/cache": "3.0.0",
     "slim/psr7": "^1.6",
