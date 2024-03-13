@@ -43,7 +43,6 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             $resourceToSign->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
-                ->setSignedResId(null)
                 ->setResType(0)
                 ->setType(_MAIN_DOCUMENT)
                 ->setIsConverted($isConverted);
@@ -54,7 +53,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = $attachmentTypeId['id'];
 
         $incomingMailAttachments = AttachmentModel::get([
-            'select' => ['res_id', 'title', 'identifier', 'relation', 'attachment_type', 'format'],
+            'select' => ['res_id', 'res_id_master', 'title', 'identifier', 'relation', 'attachment_type', 'format'],
             'where'  => ['res_id_master = ?', 'attachment_type = ?', "status not in ('DEL', 'TMP', 'OBS')"],
             'data'   => [$resource->getResId(), 'incoming_mail_attachment']
         ]);
@@ -64,6 +63,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
             $resourceToSign = new SignatureBookResource();
             $resourceToSign->setResId($value['res_id'])
+                ->setResIdMaster($value['res_id_master'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
@@ -102,7 +102,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = '(select id from attachment_types where type_id = res_attachments.attachment_type) ';
         $attachmentTypeId .= 'as attachment_type_id';
         $attachments = AttachmentModel::get([
-            'select'    => ['res_id', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type', 'format'],
+            'select'    => ['res_id', 'res_id_master', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type', 'format'],
             'where'     => [
                 'res_id_master = ?', 'attachment_type != ?', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'
             ],
@@ -115,6 +115,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
             $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($value['res_id'])
+                ->setResIdMaster($value['res_id_master'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
@@ -133,7 +134,6 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             $resourceAttached->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
-                ->setSignedResId(null)
                 ->setResType(0)
                 ->setType(_MAIN_DOCUMENT)
                 ->setIsConverted($isConverted);

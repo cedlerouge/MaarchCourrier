@@ -7,9 +7,10 @@ use JsonSerializable;
 class SignatureBookResource implements JsonSerializable
 {
     private int $resId;
+    private ?int $resIdMaster = null;
     private string $title;
     private string $chrono;
-    private ?int $signedResId;
+    private ?int $signedResId = null;
     private int $resType;
     private string $type;
     private bool $isConverted;
@@ -30,6 +31,25 @@ class SignatureBookResource implements JsonSerializable
     public function setResId(int $resId): self
     {
         $this->resId = $resId;
+        return $this;
+    }
+
+    /**
+     * @return ?int
+     */
+    public function getResIdMaster(): ?int
+    {
+        return $this->resIdMaster;
+    }
+
+    /**
+     * @param ?int $resIdMaster
+     *
+     * @return SignatureBookResource
+     */
+    public function setResIdMaster(?int $resIdMaster): self
+    {
+        $this->resIdMaster = $resIdMaster;
         return $this;
     }
 
@@ -153,6 +173,7 @@ class SignatureBookResource implements JsonSerializable
     {
         return [
             'resId' => $this->getResId(),
+            'resIdMaster' => $this->getResIdMaster(),
             'title' => $this->getTitle(),
             'chrono' => $this->getChrono(),
             'signedResId' => $this->getSignedResId(),
