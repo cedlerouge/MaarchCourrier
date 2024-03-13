@@ -12,6 +12,7 @@ class SignatureBookResource implements JsonSerializable
     private ?int $signedResId;
     private int $resType;
     private string $type;
+    private bool $isConverted;
 
     /**
      * @return int
@@ -62,7 +63,7 @@ class SignatureBookResource implements JsonSerializable
     /**
      * @param string $chrono
      *
-     * @return ResourceToSign
+     * @return SignatureBookResource
      */
     public function setChrono(string $chrono): self
     {
@@ -127,6 +128,27 @@ class SignatureBookResource implements JsonSerializable
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    public function isConverted(): bool
+    {
+        return $this->isConverted;
+    }
+
+    /**
+     * @param bool $isConverted
+     *
+     * @return SignatureBookResource
+     */
+    public function setIsConverted(bool $isConverted): self
+    {
+        $this->isConverted = $isConverted;
+        return $this;
+    }
+
+
+
     public function jsonSerialize(): array
     {
         return [
@@ -135,7 +157,8 @@ class SignatureBookResource implements JsonSerializable
             'chrono' => $this->getChrono(),
             'signedResId' => $this->getSignedResId(),
             'resType' => $this->getResType(),
-            'type' => $this->getType()
+            'type' => $this->getType(),
+            'isConverted' => $this->isConverted()
         ];
     }
 }

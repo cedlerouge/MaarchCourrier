@@ -15,6 +15,7 @@ namespace MaarchCourrier\SignatureBook\Infrastructure\Repository;
 
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
+use Convert\controllers\ConvertPdfController;
 use Entity\models\ListInstanceModel;
 use Exception;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
@@ -36,13 +37,16 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $resourcesToSign = [];
 
         if (!empty($resource->getFilename()) && !empty($resource->getIntegrations()['inSignatureBook'])) {
+            $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
+
             $resourceToSign = new SignatureBookResource();
             $resourceToSign->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
                 ->setSignedResId(null)
                 ->setResType(0)
-                ->setType(_MAIN_DOCUMENT);
+                ->setType(_MAIN_DOCUMENT)
+                ->setIsConverted($isConverted);
             $resourcesToSign[] = $resourceToSign;
         }
 
@@ -50,19 +54,22 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = $attachmentTypeId['id'];
 
         $incomingMailAttachments = AttachmentModel::get([
-            'select' => ['res_id', 'title', 'identifier', 'relation', 'attachment_type'],
+            'select' => ['res_id', 'title', 'identifier', 'relation', 'attachment_type', 'format'],
             'where'  => ['res_id_master = ?', 'attachment_type = ?', "status not in ('DEL', 'TMP', 'OBS')"],
             'data'   => [$resource->getResId(), 'incoming_mail_attachment']
         ]);
 
         foreach ($incomingMailAttachments as $value) {
+            $isConverted = ConvertPdfController::canConvert(['extension' => $value['format']]);
+
             $resourceToSign = new SignatureBookResource();
             $resourceToSign->setResId($value['res_id'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
                 ->setResType($attachmentTypeId)
-                ->setType($value['attachment_type']);
+                ->setType($value['attachment_type'])
+                ->setIsConverted($isConverted);
             $resourcesToSign[] = $resourceToSign;
         }
 
@@ -95,7 +102,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = '(select id from attachment_types where type_id = res_attachments.attachment_type) ';
         $attachmentTypeId .= 'as attachment_type_id';
         $attachments = AttachmentModel::get([
-            'select'    => ['res_id', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type'],
+            'select'    => ['res_id', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type', 'format'],
             'where'     => [
                 'res_id_master = ?', 'attachment_type != ?', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'
             ],
@@ -104,26 +111,32 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         ]);
 
         foreach ($attachments as $value) {
+            $isConverted = ConvertPdfController::canConvert(['extension' => $value['format']]);
+
             $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($value['res_id'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
                 ->setResType($value['attachment_type_id'])
-                ->setType($value['attachment_type']);
+                ->setType($value['attachment_type'])
+                ->setIsConverted($isConverted);
             $resourcesAttached[] = $resourceAttached;
         }
 
 
         // if main resource is not integrated to signatureBook, then add to attachments
         if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
+            $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
+
             $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
                 ->setSignedResId(null)
                 ->setResType(0)
-                ->setType(_MAIN_DOCUMENT);
+                ->setType(_MAIN_DOCUMENT)
+                ->setIsConverted($isConverted);
             $resourcesAttached[] = $resourceAttached;
         }
 
