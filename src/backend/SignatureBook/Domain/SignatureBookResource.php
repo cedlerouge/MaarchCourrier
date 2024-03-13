@@ -2,10 +2,13 @@
 
 namespace MaarchCourrier\SignatureBook\Domain;
 
-class SignatureBookResource
+use JsonSerializable;
+
+class SignatureBookResource implements JsonSerializable
 {
     private int $resId;
     private string $title;
+    private string $chrono;
     private ?int $signedResId;
     private int $resType;
     private string $type;
@@ -45,6 +48,25 @@ class SignatureBookResource
     public function setTitle(string $title): self
     {
         $this->title = $title;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getChrono(): string
+    {
+        return $this->chrono;
+    }
+
+    /**
+     * @param string $chrono
+     *
+     * @return ResourceToSign
+     */
+    public function setChrono(string $chrono): self
+    {
+        $this->chrono = $chrono;
         return $this;
     }
 
@@ -103,5 +125,17 @@ class SignatureBookResource
     {
         $this->type = $type;
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'resId' => $this->getResId(),
+            'title' => $this->getTitle(),
+            'chrono' => $this->getChrono(),
+            'signedResId' => $this->getSignedResId(),
+            'resType' => $this->getResType(),
+            'type' => $this->getType()
+        ];
     }
 }

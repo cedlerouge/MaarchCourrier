@@ -15,8 +15,7 @@
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
-use MaarchCourrier\SignatureBook\Domain\ResourceAttached;
-use MaarchCourrier\SignatureBook\Domain\ResourceToSign;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 
 interface SignatureBookRepositoryInterface
@@ -24,14 +23,14 @@ interface SignatureBookRepositoryInterface
     /**
      * @param Resource $resource
      *
-     * @return ResourceToSign[]
+     * @return SignatureBookResource[]
      */
     public function getIncomingMainResourceAndAttachments(Resource $resource): array;
 
     /**
      * @param Resource $resource
      *
-     * @return ResourceAttached[]
+     * @return SignatureBookResource[]
      */
     public function getAttachments(Resource $resource): array;
 

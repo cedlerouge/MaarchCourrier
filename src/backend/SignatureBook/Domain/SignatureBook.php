@@ -19,11 +19,11 @@ use JsonSerializable;
 class SignatureBook implements JsonSerializable
 {
     /**
-     * @var ResourceToSign[]
+     * @var SignatureBookResource[]
      */
     private array $resourcesToSign;
     /**
-     * @var ResourceAttached[]
+     * @var SignatureBookResource[]
      */
     private array $resourcesAttached;
     private bool $canSignResources;
@@ -43,7 +43,7 @@ class SignatureBook implements JsonSerializable
 
 
     /**
-     * @return ResourceToSign[]
+     * @return SignatureBookResource[]
      */
     public function getResourcesToSign(): array
     {
@@ -51,7 +51,7 @@ class SignatureBook implements JsonSerializable
     }
 
     /**
-     * @param ResourceToSign[] $resourcesToSign
+     * @param SignatureBookResource[] $resourcesToSign
      *
      * @return SignatureBook
      */
@@ -62,18 +62,18 @@ class SignatureBook implements JsonSerializable
     }
 
     /**
-     * @param ResourceToSign $resourceToSign
+     * @param SignatureBookResource $resourceToSign
      *
      * @return SignatureBook
      */
-    public function addResourceToSign(ResourceToSign $resourceToSign): self
+    public function addResourceToSign(SignatureBookResource $resourceToSign): self
     {
         $this->resourcesToSign[] = $resourceToSign;
         return $this;
     }
 
     /**
-     * @return ResourceAttached[]
+     * @return SignatureBookResource[]
      */
     public function getResourcesAttached(): array
     {
@@ -81,7 +81,7 @@ class SignatureBook implements JsonSerializable
     }
 
     /**
-     * @param ResourceAttached[] $resourcesAttached
+     * @param SignatureBookResource[] $resourcesAttached
      *
      * @return SignatureBook
      */
@@ -92,11 +92,11 @@ class SignatureBook implements JsonSerializable
     }
 
     /**
-     * @param ResourceAttached $resourceAttached
+     * @param SignatureBookResource $resourceAttached
      *
      * @return SignatureBook
      */
-    public function addResourceAttached(ResourceAttached $resourceAttached): self
+    public function addResourceAttached(SignatureBookResource $resourceAttached): self
     {
         $this->resourcesAttached[] = $resourceAttached;
         return $this;

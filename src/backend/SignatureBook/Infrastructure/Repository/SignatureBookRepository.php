@@ -19,8 +19,7 @@ use Entity\models\ListInstanceModel;
 use Exception;
 use MaarchCourrier\Core\Domain\Port\CurrentUserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
-use MaarchCourrier\SignatureBook\Domain\ResourceAttached;
-use MaarchCourrier\SignatureBook\Domain\ResourceToSign;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 use SrcCore\models\DatabaseModel;
 
@@ -29,7 +28,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
     /**
      * @param Resource $resource
      *
-     * @return ResourceToSign[]
+     * @return SignatureBookResource[]
      * @throws Exception
      */
     public function getIncomingMainResourceAndAttachments(Resource $resource): array
@@ -37,12 +36,13 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $resourcesToSign = [];
 
         if (!empty($resource->getFilename()) && !empty($resource->getIntegrations()['inSignatureBook'])) {
-            $resourceToSign = new ResourceToSign();
+            $resourceToSign = new SignatureBookResource();
             $resourceToSign->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
                 ->setSignedResId(null)
-                ->setResType(0);
+                ->setResType(0)
+                ->setType(_MAIN_DOCUMENT);
             $resourcesToSign[] = $resourceToSign;
         }
 
@@ -56,12 +56,13 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         ]);
 
         foreach ($incomingMailAttachments as $value) {
-            $resourceToSign = new ResourceToSign();
+            $resourceToSign = new SignatureBookResource();
             $resourceToSign->setResId($value['res_id'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
-                ->setResType($attachmentTypeId);
+                ->setResType($attachmentTypeId)
+                ->setType($value['attachment_type']);
             $resourcesToSign[] = $resourceToSign;
         }
 
@@ -71,7 +72,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
     /**
      * @param Resource $resource
      *
-     * @return ResourceAttached[]
+     * @return SignatureBookResource[]
      * @throws Exception
      */
     public function getAttachments(Resource $resource): array
@@ -94,7 +95,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $attachmentTypeId = '(select id from attachment_types where type_id = res_attachments.attachment_type) ';
         $attachmentTypeId .= 'as attachment_type_id';
         $attachments = AttachmentModel::get([
-            'select'    => ['res_id', 'title', 'relation', $attachmentTypeId],
+            'select'    => ['res_id', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type'],
             'where'     => [
                 'res_id_master = ?', 'attachment_type != ?', "status not in ('DEL', 'OBS')", 'in_signature_book = TRUE'
             ],
@@ -103,22 +104,26 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         ]);
 
         foreach ($attachments as $value) {
-            $resourceAttached = new ResourceAttached();
+            $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($value['res_id'])
                 ->setTitle($value['title'])
+                ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
-                ->setResType($value['attachment_type_id']);
+                ->setResType($value['attachment_type_id'])
+                ->setType($value['attachment_type']);
             $resourcesAttached[] = $resourceAttached;
         }
 
 
         // if main resource is not integrated to signatureBook, then add to attachments
         if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
-            $resourceAttached = new ResourceAttached();
+            $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
+                ->setChrono($resource->getAltIdentifier())
                 ->setSignedResId(null)
-                ->setResType(0);
+                ->setResType(0)
+                ->setType(_MAIN_DOCUMENT);
             $resourcesAttached[] = $resourceAttached;
         }
 
