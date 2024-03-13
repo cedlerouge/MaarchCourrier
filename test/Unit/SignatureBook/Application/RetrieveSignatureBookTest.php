@@ -17,8 +17,7 @@ namespace Unit\SignatureBook\Application;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
-use MaarchCourrier\SignatureBook\Domain\ResourceAttached;
-use MaarchCourrier\SignatureBook\Domain\ResourceToSign;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\AccessControlServiceMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourceAccessControlServiceMock;
@@ -107,10 +106,10 @@ class RetrieveSignatureBookTest extends TestCase
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(19, 1, 1);
 
         $this->assertNotEmpty($signatureBook->getResourcesToSign());
-        $this->assertContainsOnlyInstancesOf(ResourceToSign::class, $signatureBook->getResourcesToSign());
+        $this->assertContainsOnlyInstancesOf(SignatureBookResource::class, $signatureBook->getResourcesToSign());
 
         $this->assertNotEmpty($signatureBook->getResourcesAttached());
-        $this->assertContainsOnlyInstancesOf(ResourceAttached::class, $signatureBook->getResourcesAttached());
+        $this->assertContainsOnlyInstancesOf(SignatureBookResource::class, $signatureBook->getResourcesAttached());
 
         $this->assertIsBool($signatureBook->isCanSignResources());
         $this->assertIsBool($signatureBook->isCanUpdateResources());
