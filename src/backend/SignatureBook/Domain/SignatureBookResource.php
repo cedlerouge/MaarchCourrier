@@ -11,8 +11,8 @@ class SignatureBookResource implements JsonSerializable
     private string $title;
     private string $chrono;
     private ?int $signedResId = null;
-    private int $resType;
     private string $type;
+    private string $typeLabel;
     private bool $isConverted;
     private bool $canModify = false;
     private bool $canDelete = false;
@@ -113,25 +113,6 @@ class SignatureBookResource implements JsonSerializable
     }
 
     /**
-     * @return int
-     */
-    public function getResType(): int
-    {
-        return $this->resType;
-    }
-
-    /**
-     * @param int $resType
-     *
-     * @return SignatureBookResource
-     */
-    public function setResType(int $resType): self
-    {
-        $this->resType = $resType;
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getType(): string
@@ -147,6 +128,25 @@ class SignatureBookResource implements JsonSerializable
     public function setType(string $type): self
     {
         $this->type = $type;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTypeLabel(): string
+    {
+        return $this->typeLabel;
+    }
+
+    /**
+     * @param string $typeLabel
+     *
+     * @return SignatureBookResource
+     */
+    public function setTypeLabel(string $typeLabel): self
+    {
+        $this->typeLabel = $typeLabel;
         return $this;
     }
 
@@ -215,8 +215,8 @@ class SignatureBookResource implements JsonSerializable
             'title' => $this->getTitle(),
             'chrono' => $this->getChrono(),
             'signedResId' => $this->getSignedResId(),
-            'resType' => $this->getResType(),
             'type' => $this->getType(),
+            'typeLabel' => $this->getTypeLabel(),
             'isConverted' => $this->isConverted(),
             'canModify' => $this->isCanModify(),
             'canDelete' => $this->isCanDelete()

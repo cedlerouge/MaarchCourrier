@@ -43,14 +43,14 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             $resourceToSign->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
-                ->setResType(0)
-                ->setType(_MAIN_DOCUMENT)
+                ->setType('main_document')
+                ->setTypeLabel(_MAIN_DOCUMENT)
                 ->setIsConverted($isConverted);
             $resourcesToSign[] = $resourceToSign;
         }
 
-        $attachmentTypeId = AttachmentTypeModel::getByTypeId(['typeId' => 'incoming_mail_attachment']);
-        $attachmentTypeId = $attachmentTypeId['id'];
+        $attachmentTypeLabel = AttachmentTypeModel::getByTypeId(['typeId' => 'incoming_mail_attachment']);
+        $attachmentTypeLabel = $attachmentTypeLabel['label'];
 
         $incomingMailAttachments = AttachmentModel::get([
             'select' => ['res_id', 'res_id_master', 'title', 'identifier', 'relation', 'attachment_type', 'format'],
@@ -67,8 +67,8 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
-                ->setResType($attachmentTypeId)
                 ->setType($value['attachment_type'])
+                ->setTypeLabel($attachmentTypeLabel)
                 ->setIsConverted($isConverted);
             $resourcesToSign[] = $resourceToSign;
         }
@@ -100,11 +100,12 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         }
         $orderBy .= " ELSE {$c} END, validation_date DESC NULLS LAST, creation_date DESC";
 
-        $attachmentTypeId = '(select id from attachment_types where type_id = res_attachments.attachment_type) ';
-        $attachmentTypeId .= 'as attachment_type_id';
+        $attachmentTypeLabel = '(select label from attachment_types where type_id = res_attachments.attachment_type) ';
+        $attachmentTypeLabel .= 'as attachment_type_label';
+
         $attachments = AttachmentModel::get([
             'select'    => [
-                'res_id', 'res_id_master', 'title', 'identifier', 'relation', $attachmentTypeId, 'attachment_type',
+                'res_id', 'res_id_master', 'title', 'identifier', 'relation', $attachmentTypeLabel, 'attachment_type',
                 'format', 'typist'
             ],
             'where'     => [
@@ -135,8 +136,8 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
                 ->setSignedResId($value['relation'])
-                ->setResType($value['attachment_type_id'])
                 ->setType($value['attachment_type'])
+                ->setTypeLabel($value['attachment_type_label'])
                 ->setIsConverted($isConverted)
                 ->setCanModify($canModify)
                 ->setCanDelete($canDelete);
@@ -152,8 +153,8 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             $resourceAttached->setResId($resource->getResId())
                 ->setTitle($resource->getSubject())
                 ->setChrono($resource->getAltIdentifier())
-                ->setResType(0)
-                ->setType(_MAIN_DOCUMENT)
+                ->setType('main_document')
+                ->setTypeLabel(_MAIN_DOCUMENT)
                 ->setIsConverted($isConverted)
                 ->setCanModify($canUpdateDocuments);
             $resourcesAttached[] = $resourceAttached;
