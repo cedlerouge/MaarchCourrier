@@ -13,7 +13,7 @@ class SignatureBookResource implements JsonSerializable
     private ?int $signedResId = null;
     private string $type;
     private string $typeLabel;
-    private bool $isConverted;
+    private bool $isConverted = false;
     private bool $canModify = false;
     private bool $canDelete = false;
 

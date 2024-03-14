@@ -41,8 +41,8 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
         $resourceToSign->setResId($resource->getResId())
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
             ->setChrono("MAARCH/2024A/34")
-            ->setSignedResId(null)
-            ->setResType(0);
+            ->setType('main_document')
+            ->setTypeLabel(_MAIN_DOCUMENT);
         $resourcesToSign[] = $resourceToSign;
 
         return $resourcesToSign;
@@ -60,9 +60,10 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 
         $resourceAttached = new SignatureBookResource();
         $resourceAttached->setResId(101)
+            ->setResIdMaster($resource->getResId())
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
-            ->setSignedResId(null)
-            ->setResType(1);
+            ->setType('simple_attachment')
+            ->setTypeLabel(_MAIN_DOCUMENT);
         $resourcesAttached[] = $resourceAttached;
 
         return $resourcesAttached;
