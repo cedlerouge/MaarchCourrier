@@ -1,8 +1,9 @@
 ## Container file for Maarch Courrier dependency only
 
 # TODO switch to 8.2/8.3
-# TODO add parameter for custom registry
-FROM php:8.1-apache-bullseye as base
+ARG BASE_REGISTRY=docker.io/
+
+FROM ${BASE_REGISTRY}php:8.1-apache-bullseye as base
 
 # Copy dependencies lists
 COPY ./container/dependences.apt ./container/dependences.php /mnt/

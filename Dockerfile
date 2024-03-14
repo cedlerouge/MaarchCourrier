@@ -37,9 +37,9 @@ COPY src/core /app/src/core
 COPY src/backend /app/src/backend
 
 RUN composer install --ignore-platform-reqs --no-scripts --no-dev
+
 #
 # Front build
-# TODO addin
 #
 FROM node:20.9-alpine AS front
 
@@ -53,8 +53,6 @@ RUN  npm -v && node -v \
 COPY src/frontend /app/src/frontend/
 
 RUN npm run build-prod \
-    && mv node_modules/tinymce tinymce/ \
-    && mv node_modules/tinymce-i18n tinymce-i18n/ \
     && rm -rf node_modules
 
 
@@ -63,8 +61,6 @@ FROM base_app as app
 # Copy built vendor + dist folders
 COPY --chown=www-data:www-data --from=composer /app/vendor ./vendor/
 COPY --chown=www-data:www-data --from=front /app/dist ./dist/
-COPY --chown=www-data:www-data --from=front /app/tinymce ./node_modules/tinymce
-COPY --chown=www-data:www-data --from=front /app/tinymce-i18n ./node_modules/tinymce-i18n
 
 # Set default entrypoint
 COPY --chown=root:www-data container/entrypoint.sh /bin/entrypoint.sh

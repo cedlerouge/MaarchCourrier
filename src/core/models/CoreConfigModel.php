@@ -40,9 +40,6 @@ class CoreConfigModel
             return self::$customId;
         }
 
-//        $explodeUrl = explode('/', $_SERVER['SCRIPT_NAME']);
-//        $path = $explodeUrl[count($explodeUrl) - 3];
-
         $explodedUrl = explode('/rest/', $_SERVER['REQUEST_URI']);
         $path = $explodedUrl[0];
         $path = explode('/', $path);
