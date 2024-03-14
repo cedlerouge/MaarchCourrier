@@ -28,6 +28,7 @@ use Docserver\controllers\DocserverController;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Entity\models\ListInstanceModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use Group\models\GroupModel;
 use History\controllers\HistoryController;
@@ -59,7 +60,17 @@ class SignatureBookController
     ];
     public const SIGNATORY_ROLE_DEFAULT = SignatureBookController::SIGNATORY_ROLE_MANDATORY;
 
-    public function getSignatureBook(Request $request, Response $response, array $aArgs)
+    /**
+     * @deprecated This function is deprecated and will be removed in version 25.x.x
+     *
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     *
+     * @return Response
+     * @throws Exception
+     */
+    public function getSignatureBook(Request $request, Response $response, array $aArgs): Response
     {
         $resId = $aArgs['resId'];
 
