@@ -82,26 +82,39 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         return new Promise((resolve) => {
             this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
                 map((data: any) => {
-                    const attachments = data.attachments.map((attachment: any) => new Attachment({
-                        resId: attachment.res_id,
-                        resIdMaster: attachment?.isResource ? null : attachment.res_id,
+                    // Mapping resources to sign
+                    const resourcesToSign = data.resourcesToSign.map((resource: any) => new Attachment({
+                        resId: resource.resId,
+                        resIdMaster: resource.resIdMaster ===  null ? null : resource.resId,
+                        signedResId: resource.signedResId,
+                        chrono: resource.chrono,
+                        title: resource.title,
+                        type: resource.type,
+                        typeLabel: resource.typeLabel,
+                        canConvert: resource.isConverted,
+                        canDelete: resource.canDelete,
+                        canUpdate: resource.canModify
+                    }));
+
+                    // Mapping resources attached as annex
+                    const resourcesAttached = data.resourcesAttached.map((attachment: any) => new Attachment({
+                        resId: attachment.resId,
+                        resIdMaster: attachment.resIdMaster ===  null ? null : attachment.resId,
+                        chrono: attachment.chrono,
+                        title: attachment.title,
+                        type: attachment.type,
+                        typeLabel: attachment.typeLabel,
+                        signedResId: attachment.signedResId,
                         canConvert: attachment.isConverted,
                         canDelete: attachment.canDelete,
-                        canUpdate: attachment.canModify,
-                        chrono: attachment.alt_identifier ?? attachment.identifier ?? null,
-                        creationDate: attachment.creation_date ?? null,
-                        title: attachment.title,
-                        typeLabel: attachment.attachment_type,
-                        sign: attachment.sign ?? false
+                        canUpdate: attachment.canModify
                     }));
-                    return attachments;
-                }),
-                tap((attachments: Attachment[]) => {
-                    // Filter attachments based on the "sign" property, which is set to True and mapped to the "docsToSign" array
-                    this.docsToSign = attachments.filter((attachment) => attachment.sign);
 
-                    // Filter attachments based on the "sign" property, which is set to False and mapped to the "attachments" array
-                    this.attachments = attachments.filter((attachment) => !attachment.sign);
+                    return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
+                }),
+                tap((data: { resourcesToSign: Attachment[], resourcesAttached: Attachment[] }) => {
+                    this.docsToSign = data.resourcesToSign;
+                    this.attachments = data.resourcesAttached;
 
                     this.loadingAttachments = false;
                     this.loadingDocsToSign = false;
