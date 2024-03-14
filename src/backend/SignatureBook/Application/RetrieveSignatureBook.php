@@ -35,15 +35,13 @@ class RetrieveSignatureBook
     }
 
     /**
-     * @param int $userId
-     * @param int $basketId
      * @param int $resId
      *
      * @return SignatureBook
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function getSignatureBook(int $userId, int $basketId, int $resId): SignatureBook
+    public function getSignatureBook(int $resId): SignatureBook
     {
         if (!$this->mainResourceAccessControl->hasRightByResId($resId, $this->currentUser)) {
             throw new MainResourceOutOfPerimeterProblem();
@@ -54,7 +52,7 @@ class RetrieveSignatureBook
             throw new ResourceDoesNotExistProblem();
         }
 
-        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource, $this->currentUser);
+        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource);
         $resourcesAttached = $this->signatureBookRepository->getAttachments($resource, $this->currentUser);
         $canSignResources = $this->accessControlService->hasPrivilege('sign_document', $this->currentUser);
         $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($resource, $this->currentUser);

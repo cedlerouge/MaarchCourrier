@@ -14,18 +14,19 @@
 
 namespace MaarchCourrier\SignatureBook\Infrastructure\Controller;
 
+use Exception;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
 use MaarchCourrier\Authorization\Infrastructure\AccessControlService;
 use MaarchCourrier\Authorization\Infrastructure\MainResourceAccessControlService;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\SignatureBookRepository;
+use MaarchCourrier\SignatureBook\Infrastructure\SignatureBookConfigLoader;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use Resource\Infrastructure\ResourceData;
 use SignatureBook\controllers\SignatureBookController;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
-use SrcCore\models\CoreConfigModel;
 
 class RetrieveSignatureBookController
 {
@@ -37,13 +38,12 @@ class RetrieveSignatureBookController
      * @return Response
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
+     * @throws Exception
      */
     public function getSignatureBook(Request $request, Response $response, array $args): Response
     {
-        #region Todo : refacto when SignatureBookConfigRepository is ready
-        $config = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
-        $isEnable = $config['config']['newInternalParaph'] ?? false;
-        #endregion
+        $confLoader = new SignatureBookConfigLoader();
+        $isEnable = $confLoader->getConfig()->isNewInternalParaph();
 
         if (!$isEnable) {
             $signatureBookController = new SignatureBookController();
@@ -57,6 +57,6 @@ class RetrieveSignatureBookController
             new ResourceData(),
             new SignatureBookRepository()
         );
-        return $response->withJson([$retrieve->getSignatureBook($args['userId'], $args['basketId'], $args['resId'])]);
+        return $response->withJson([$retrieve->getSignatureBook($args['resId'])]);
     }
 }

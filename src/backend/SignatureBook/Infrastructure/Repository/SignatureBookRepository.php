@@ -125,7 +125,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
             $canModify = false;
             $canDelete = false;
-            if ($canUpdateDocuments || (!empty($currentUser) && $value['typist'] == $currentUser)) {
+            if ($canUpdateDocuments || (!empty($currentUser) && $value['typist'] == $currentUser->getCurrentUserId())) {
                 $canModify = true;
                 $canDelete = true;
             }
