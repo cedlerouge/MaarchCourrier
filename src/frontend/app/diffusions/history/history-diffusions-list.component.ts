@@ -52,7 +52,7 @@ export class HistoryDiffusionsListComponent implements OnInit {
     }
 
     getListinstanceHistory() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/listInstanceHistory`).pipe(
                 tap((data: any) => {
                     this.diffListHistory = data['listInstanceHistory'];
@@ -66,7 +66,7 @@ export class HistoryDiffusionsListComponent implements OnInit {
     }
 
     initRoles() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/roles').pipe(
                 map((data: any) => {
                     data.roles = data.roles.map((role: any) => ({

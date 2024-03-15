@@ -174,7 +174,7 @@ export class AttachmentPageComponent implements OnInit {
     }
 
     getContacts() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.attachment.resIdMaster.value}?light=true`).pipe(
                 tap(async (data: any) => {
                     if (data.categoryId === 'outgoing') {

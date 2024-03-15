@@ -11,8 +11,6 @@ import { MaarchTreeComponent } from '../../../plugins/tree/maarch-tree.component
 import { of } from 'rxjs';
 import { SessionStorageService } from '@service/session-storage.service';
 
-declare let $: any;
-
 @Component({
     templateUrl: 'send-alfresco-action.component.html',
     styleUrls: ['send-alfresco-action.component.scss'],

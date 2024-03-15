@@ -24,7 +24,7 @@
         </div>
         <div class="container" [class.fullContainer]="appService.getViewMode()">
             <div class="container-content">
-                <app-contact-form *ngIf="!loading" [creationMode]="creationMode" [contactId]="contactId" (onSubmitEvent)="goToList()"></app-contact-form>
+                <app-contact-form *ngIf="!loading" [creationMode]="creationMode" [contactId]="contactId" (submitEvent)="goToList()"></app-contact-form>
             </div>
         </div>
     </mat-sidenav-content>

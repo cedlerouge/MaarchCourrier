@@ -86,7 +86,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getDoctypes() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/doctypes').pipe(
                 tap((data: any) => {
                     let arrValues: any[] = [];
@@ -127,7 +127,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getBaskets() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/baskets').pipe(
                 tap((data: any) => {
                     this.baskets = data.baskets.map((basket: any) => ({
@@ -141,7 +141,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getStatuses() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/statuses').pipe(
                 tap((data: any) => {
                     this.statuses = data.statuses.map((status: any) => ({
@@ -155,7 +155,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getPriorities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/priorities').pipe(
                 tap((data: any) => {
                     this.priorities = data.priorities;
@@ -166,7 +166,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getIndexingModels() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/indexingModels').pipe(
                 tap((data: any) => {
                     this.indexingModels = data.indexingModels.filter((info: any) => info.private === false);
@@ -177,7 +177,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getAttachmentTypes() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/attachmentsTypes').pipe(
                 tap((data: any) => {
                     Object.keys(data.attachmentsTypes).forEach(templateType => {
@@ -193,7 +193,7 @@ export class MaarchToMaarchParametersComponent implements OnInit {
     }
 
     getConfiguration() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/m2m/configuration').pipe(
                 map((data: any) => data.configuration),
                 tap((data: any) => {

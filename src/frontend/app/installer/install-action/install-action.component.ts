@@ -69,7 +69,7 @@ export class InstallActionComponent implements OnInit, AfterViewInit {
     }
 
     doStep(index: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.installerService.isStepAlreadyLaunched(this.data[index].idStep)) {
                 this.steps[index].state = 'OK';
                 resolve(true);
