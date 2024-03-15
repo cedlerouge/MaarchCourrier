@@ -1,29 +1,31 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Database Model
-* @author dev@maarch.org
-*/
+ * @brief Database Model
+ * @author dev@maarch.org
+ */
 
 namespace SrcCore\models;
+
+use Exception;
+use PDO;
 
 class DatabaseModel
 {
     /**
      * Database create a new sequence
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function createSequence(array $args)
+    public static function createSequence(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id', 'value']);
         ValidatorModel::stringType($args, ['id']);
@@ -39,11 +41,10 @@ class DatabaseModel
     /**
      * Database update an existing sequence
      * @param array $args
-     *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function updateSequence(array $args)
+    public static function updateSequence(array $args): int
     {
         ValidatorModel::notEmpty($args, ['id', 'value']);
         ValidatorModel::stringType($args, ['id']);
@@ -53,18 +54,17 @@ class DatabaseModel
 
         $db = new DatabasePDO();
         $stmt = $db->query($query);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['setval'];
     }
 
     /**
      * Database delete an existing sequence
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function deleteSequence(array $args)
+    public static function deleteSequence(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id']);
         ValidatorModel::stringType($args, ['id']);
@@ -79,11 +79,10 @@ class DatabaseModel
     /**
      * Database increase_chrono function
      * @param array $args
-     *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function createOrIncreaseChrono(array $args)
+    public static function createOrIncreaseChrono(array $args): int
     {
         ValidatorModel::notEmpty($args, ['chronoIdName', 'chronoSeqName']);
         ValidatorModel::stringType($args, ['chronoIdName', 'chronoSeqName']);
@@ -92,18 +91,17 @@ class DatabaseModel
 
         $db = new DatabasePDO();
         $stmt = $db->query($query);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row['increase_chrono'];
     }
 
     /**
      * Database Nextval Sequence Function
      * @param array $args
-     *
      * @return int
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function getNextSequenceValue(array $args)
+    public static function getNextSequenceValue(array $args): int
     {
         ValidatorModel::notEmpty($args, ['sequenceId']);
         ValidatorModel::stringType($args, ['sequenceId']);
@@ -113,19 +111,18 @@ class DatabaseModel
         $db = new DatabasePDO();
         $stmt = $db->query($query);
 
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $row['nextval'];
     }
 
     /**
-    * Database Select Function
-    * @param array $args
-    * @throws \Exception if number of tables is different from number of joins
-    *
-    * @return array
-    */
-    public static function select(array $args)
+     * Database Select Function
+     * @param array $args
+     * @return array
+     * @throws Exception if number of tables is different from number of joins
+     */
+    public static function select(array $args): array
     {
         ValidatorModel::notEmpty($args, ['select', 'table']);
         ValidatorModel::arrayType($args, ['select', 'table']);
@@ -136,11 +133,11 @@ class DatabaseModel
         if (!empty($args['left_join'])) {
             ValidatorModel::arrayType($args, ['left_join']);
             if (count($tmpTable) - 1 != count($args['left_join'])) {
-                throw new \Exception('Number of tables doesn\'t match with number of joins');
+                throw new Exception('Number of tables doesn\'t match with number of joins');
             }
             $i = 1;
             foreach ($args['left_join'] as $value) {
-                $args['table'] .=  " LEFT JOIN {$tmpTable[$i]} ON {$value}";
+                $args['table'] .= " LEFT JOIN {$tmpTable[$i]} ON {$value}";
                 $i++;
             }
         }
@@ -201,7 +198,7 @@ class DatabaseModel
         $stmt = $db->query($query, $args['data']);
 
         $rowset = [];
-        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $rowset[] = $row;
         }
 
@@ -211,11 +208,10 @@ class DatabaseModel
     /**
      * Database Insert Into Function
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function insert(array $args)
+    public static function insert(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['table', 'columnsValues']);
         ValidatorModel::stringType($args, ['table']);
@@ -247,17 +243,16 @@ class DatabaseModel
     /**
      * Database Insert Multiple Function
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function insertMultiple(array $args)
+    public static function insertMultiple(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['table', 'columns', 'values']);
         ValidatorModel::stringType($args, ['table']);
         ValidatorModel::arrayType($args, ['values', 'columns']);
 
-        $data    = [];
+        $data = [];
         $aValues = [];
 
         foreach ($args['values'] as $values) {
@@ -267,13 +262,13 @@ class DatabaseModel
                     $aValue[] = $value;
                 } else {
                     $aValue[] = '?';
-                    $data[]   = $value;
+                    $data[] = $value;
                 }
             }
             $aValues[] = '(' . implode(',', $aValue) . ')';
         }
 
-        $valuesString  = implode(', ', $aValues);
+        $valuesString = implode(', ', $aValues);
         $columns = implode(', ', $args['columns']);
 
         $query = "INSERT INTO {$args['table']} ({$columns}) VALUES {$valuesString}";
@@ -287,11 +282,10 @@ class DatabaseModel
     /**
      * Database Update Function
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function update(array $args)
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['table', 'where']);
         ValidatorModel::stringType($args, ['table']);
@@ -302,7 +296,7 @@ class DatabaseModel
         }
         ValidatorModel::arrayType($args, ['data']);
 
-        $querySet  = [];
+        $querySet = [];
         $dataSet = [];
         if (!empty($args['set'])) {
             foreach ($args['set'] as $key => $value) {
@@ -334,11 +328,10 @@ class DatabaseModel
     /**
      * Database Delete From Function
      * @param array $args
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function delete(array $args)
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['table', 'where']);
         ValidatorModel::stringType($args, ['table']);
@@ -360,11 +353,10 @@ class DatabaseModel
 
     /**
      * Database Begin Transaction Function
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function beginTransaction()
+    public static function beginTransaction(): bool
     {
         $db = new DatabasePDO();
 
@@ -373,11 +365,10 @@ class DatabaseModel
 
     /**
      * Database Commit Transaction Function
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function commitTransaction()
+    public static function commitTransaction(): bool
     {
         $db = new DatabasePDO();
 
@@ -386,11 +377,10 @@ class DatabaseModel
 
     /**
      * Database Rollback Transaction Function
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function rollbackTransaction()
+    public static function rollbackTransaction(): bool
     {
         $db = new DatabasePDO();
 
@@ -400,11 +390,10 @@ class DatabaseModel
     /**
      * Database Exec Function
      * @param string $query
-     *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function exec(string $query)
+    public static function exec(string $query): bool
     {
         $db = new DatabasePDO();
 
@@ -414,11 +403,10 @@ class DatabaseModel
     /**
      * Database Select column_name
      * @param array $args
-     * @throws \Exception
-     *
      * @return array
+     * @throws Exception
      */
-    public static function getColumns(array $args)
+    public static function getColumns(array $args): array
     {
         ValidatorModel::notEmpty($args, ['table']);
         ValidatorModel::stringType($args, ['table']);
@@ -429,7 +417,7 @@ class DatabaseModel
         $stmt = $db->query($query, [$args['table']]);
 
         $rowset = [];
-        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $rowset[] = $row;
         }
 

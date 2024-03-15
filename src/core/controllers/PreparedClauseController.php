@@ -1,19 +1,20 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Prepared Clause Controller
-* @author dev@maarch.org
-*/
+ * @brief Prepared Clause Controller
+ * @author dev@maarch.org
+ */
 
 namespace SrcCore\controllers;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use Entity\models\EntityModel;
 use Resource\models\ResModel;
@@ -21,6 +22,11 @@ use User\models\UserModel;
 
 class PreparedClauseController
 {
+    /**
+     * @param array $aArgs
+     * @return string
+     * @throws Exception
+     */
     public static function getPreparedClause(array $aArgs): string
     {
         ValidatorModel::notEmpty($aArgs, ['clause', 'userId']);
@@ -30,24 +36,24 @@ class PreparedClauseController
         $clause = $aArgs['clause'];
         $user = UserModel::getById(['id' => $aArgs['userId'], 'select' => ['user_id', 'mail']]);
 
-        if (preg_match('/@user_id/', $clause)) {
+        if (str_contains($clause, '@user_id')) {
             $clause = str_replace('@user_id', "{$aArgs['userId']}", $clause);
         }
-        if (preg_match('/@user/', $clause)) {
+        if (str_contains($clause, '@user')) {
             $clause = str_replace('@user', "'{$user['user_id']}'", $clause);
         }
-        if (preg_match('/@email/', $clause)) {
+        if (str_contains($clause, '@email')) {
             $clause = str_replace('@email', "'{$user['mail']}'", $clause);
         }
-        if (preg_match('/@my_entities_id/', $clause)) {
+        if (str_contains($clause, '@my_entities_id')) {
             $entities = EntityModel::getByUserId(['userId' => $aArgs['userId'], 'select' => ['entity_id']]);
             $entities = array_column($entities, 'entity_id');
             if (!empty($entities)) {
                 $entities = EntityModel::get(
                     [
                         'select' => ['id'],
-                        'where' => ['entity_id in (?)'],
-                        'data' => [$entities]
+                        'where'  => ['entity_id in (?)'],
+                        'data'   => [$entities]
                     ]
                 );
             }
@@ -65,7 +71,7 @@ class PreparedClauseController
 
             $clause = str_replace('@my_entities_id', $myEntitiesClause, $clause);
         }
-        if (preg_match('/@my_entities/', $clause)) {
+        if (str_contains($clause, '@my_entities')) {
             $entities = EntityModel::getByUserId(['userId' => $aArgs['userId'], 'select' => ['entity_id']]);
 
             $myEntitiesClause = '';
@@ -81,7 +87,7 @@ class PreparedClauseController
 
             $clause = str_replace('@my_entities', $myEntitiesClause, $clause);
         }
-        if (preg_match('/@my_primary_entity_id/', $clause)) {
+        if (str_contains($clause, '@my_primary_entity_id')) {
             $entity = UserModel::getPrimaryEntityById(['id' => $aArgs['userId'], 'select' => ['entities.id']]);
 
             if (empty($entity)) {
@@ -92,7 +98,7 @@ class PreparedClauseController
 
             $clause = str_replace('@my_primary_entity_id', $primaryEntity, $clause);
         }
-        if (preg_match('/@my_primary_entity/', $clause)) {
+        if (str_contains($clause, '@my_primary_entity')) {
             $entity = UserModel::getPrimaryEntityById(['id' => $aArgs['userId'], 'select' => ['entities.entity_id']]);
 
             if (empty($entity)) {
@@ -103,7 +109,7 @@ class PreparedClauseController
 
             $clause = str_replace('@my_primary_entity', $primaryEntity, $clause);
         }
-        if (preg_match('/@all_entities/', $clause)) {
+        if (str_contains($clause, '@all_entities')) {
             $allEntities = EntityModel::get(['select' => ['entity_id'], 'where' => ['enabled = ?'], 'data' => ['Y']]);
 
             $allEntitiesClause = '';
@@ -130,8 +136,8 @@ class PreparedClauseController
             for ($i = 0; $i < $total; $i++) {
                 $aEntities = [];
                 $tmpSubEntities = str_replace("'", '', $subEntities[1][$i]);
-                if (preg_match('/,/', $tmpSubEntities)) {
-                    $aEntities = preg_split('/,/', $tmpSubEntities);
+                if (str_contains($tmpSubEntities, ',')) {
+                    $aEntities = explode(',', $tmpSubEntities);
                 } else {
                     $aEntities[] = $tmpSubEntities;
                 }
@@ -170,8 +176,8 @@ class PreparedClauseController
             for ($i = 0; $i < $total; $i++) {
                 $aEntities = [];
                 $tmpSubEntities = str_replace("'", '', $subEntities[1][$i]);
-                if (preg_match('/,/', $tmpSubEntities)) {
-                    $aEntities = preg_split('/,/', $tmpSubEntities);
+                if (str_contains($tmpSubEntities, ',')) {
+                    $aEntities = explode(',', $tmpSubEntities);
                 } else {
                     $aEntities[] = $tmpSubEntities;
                 }
@@ -203,47 +209,47 @@ class PreparedClauseController
         $total = preg_match_all(
             "|@immediate_children\[('[^\]]*')\]|",
             $clause,
-            $immediateChildrens,
+            $immediateChildren,
             PREG_PATTERN_ORDER
         );
         if ($total > 0) {
             for ($i = 0; $i < $total; $i++) {
                 $aEntities = [];
-                $tmpImmediateChildrens = str_replace("'", '', $immediateChildrens[1][$i]);
-                if (preg_match('/,/', $tmpImmediateChildrens)) {
-                    $aEntities = preg_split('/,/', $tmpImmediateChildrens);
+                $tmpImmediateChildren = str_replace("'", '', $immediateChildren[1][$i]);
+                if (str_contains($tmpImmediateChildren, ',')) {
+                    $aEntities = explode(',', $tmpImmediateChildren);
                 } else {
-                    $aEntities[] = $tmpImmediateChildrens;
+                    $aEntities[] = $tmpImmediateChildren;
                 }
 
-                $allImmediateChildrens = [];
+                $allImmediateChildren = [];
                 foreach ($aEntities as $entity) {
-                    $immediateChildrensForEntity = EntityModel::get(
+                    $immediateChildrenForEntity = EntityModel::get(
                         [
                             'select' => ['entity_id'],
-                            'where' => ['parent_entity_id = ?'],
-                            'data' => [trim($entity)]
+                            'where'  => ['parent_entity_id = ?'],
+                            'data'   => [trim($entity)]
                         ]
                     );
-                    foreach ($immediateChildrensForEntity as $value) {
-                        $allImmediateChildrens[] = $value['entity_id'];
+                    foreach ($immediateChildrenForEntity as $value) {
+                        $allImmediateChildren[] = $value['entity_id'];
                     }
                 }
 
-                $allImmediateChildrensClause = '';
-                foreach ($allImmediateChildrens as $key => $allImmediateChild) {
+                $allImmediateChildrenClause = '';
+                foreach ($allImmediateChildren as $key => $allImmediateChild) {
                     if ($key > 0) {
-                        $allImmediateChildrensClause .= ", ";
+                        $allImmediateChildrenClause .= ", ";
                     }
-                    $allImmediateChildrensClause .= "'{$allImmediateChild}'";
+                    $allImmediateChildrenClause .= "'{$allImmediateChild}'";
                 }
-                if (empty($allImmediateChildrensClause)) {
-                    $allImmediateChildrensClause = "''";
+                if (empty($allImmediateChildrenClause)) {
+                    $allImmediateChildrenClause = "''";
                 }
 
                 $clause = preg_replace(
                     "|@immediate_children\['[^\]]*'\]|",
-                    $allImmediateChildrensClause,
+                    $allImmediateChildrenClause,
                     $clause,
                     1
                 );
@@ -263,7 +269,7 @@ class PreparedClauseController
                     $entity = EntityModel::getByEntityId(
                         [
                             'entityId' => $tmpParentEntity,
-                            'select' => ['entity_id', 'parent_entity_id']
+                            'select'   => ['entity_id', 'parent_entity_id']
                         ]
                     );
                 }
@@ -290,7 +296,7 @@ class PreparedClauseController
                     $sisterEntity = EntityModel::getByEntityId(
                         [
                             'entityId' => $tmpSisterEntity,
-                            'select' => ['parent_entity_id']
+                            'select'   => ['parent_entity_id']
                         ]
                     );
                 }
@@ -299,8 +305,9 @@ class PreparedClauseController
                     $allSisterEntities = EntityModel::get(
                         [
                             'select' => ['entity_id'],
-                            'where' => ['parent_entity_id = ?'],
-                            'data' => [$sisterEntity['parent_entity_id']
+                            'where'  => ['parent_entity_id = ?'],
+                            'data'   => [
+                                $sisterEntity['parent_entity_id']
                             ]
                         ]
                     );
@@ -338,8 +345,8 @@ class PreparedClauseController
                 $allEntitiesType = EntityModel::get(
                     [
                         'select' => ['entity_id'],
-                        'where' => ['entity_type = ?'],
-                        'data' => [$tmpEntityType]
+                        'where'  => ['entity_type = ?'],
+                        'data'   => [$tmpEntityType]
                     ]
                 );
 
@@ -361,7 +368,12 @@ class PreparedClauseController
         return "({$clause})";
     }
 
-    public static function isRequestValid(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return bool
+     * @throws Exception
+     */
+    public static function isRequestValid(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['clause', 'userId']);
         ValidatorModel::stringType($aArgs, ['clause', 'userId']);
@@ -397,13 +409,13 @@ drop|execute|grant|insert|load|lock|move|reset|truncate|update|select)\b#i',
         try {
             ResModel::getOnView(
                 [
-                    'select' => $aArgs['select'],
-                    'where' => [$clause, '1=1'],
+                    'select'  => $aArgs['select'],
+                    'where'   => [$clause, '1=1'],
                     'orderBy' => $aArgs['orderBy'] ?? [],
-                    'limit' => $aArgs['limit'] ?? null
+                    'limit'   => $aArgs['limit'] ?? null
                 ]
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
 
