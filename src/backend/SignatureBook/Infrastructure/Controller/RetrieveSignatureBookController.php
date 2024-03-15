@@ -57,6 +57,6 @@ class RetrieveSignatureBookController
             new ResourceData(),
             new SignatureBookRepository()
         );
-        return $response->withJson([$retrieve->getSignatureBook($args['resId'])]);
+        return $response->withJson($retrieve->getSignatureBook($args['resId']));
     }
 }
