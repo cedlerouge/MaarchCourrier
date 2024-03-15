@@ -1,3 +1,6 @@
+<div *ngIf="loading" class="loading" style="display:flex;height:100%;">
+    <mat-spinner style="margin:auto;"></mat-spinner>
+</div>
 <div class="signatorybook-container">
     <div class="signatorybook-header">
         <div class="signatorybook-header-left" style="justify-content: start">
@@ -17,7 +20,7 @@
         </div>
         <div class="signatorybook-header-center" style="justify-content: center">
             <mat-icon class="maarchLogo" svgIcon="maarchLogoFull"></mat-icon>
-            <div>Parapheur électronique</div>
+            <div>{{signatureBookService.basketLabel}}</div>
             <button mat-icon-button [title]="'lang.backBasket' | translate" (click)="backToBasket()">
                 <mat-icon class="fa-solid fa-arrow-right-from-bracket" style="font-size: 17px;"></mat-icon>
             </button>
@@ -45,9 +48,9 @@
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs *ngIf="!loadingAttachments && !loadingDocsToSign" position="left" [documents]="attachments"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" position="left" [documents]="attachments"></app-maarch-sb-tabs>
                     </ng-scrollbar>
-                    <div class="book-content">
+                    <div class="book-content" *ngIf="!loadingAttachments">
                         <app-maarch-sb-content
                             position="left"
                             style="display: contents;"

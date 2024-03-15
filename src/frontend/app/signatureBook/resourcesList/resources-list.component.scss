@@ -27,18 +27,21 @@
 }
 
 .selectedRes {
-    background-color: var(--maarch-color-secondary-opacity-30);
+    background-color: var(--maarch-color-secondary-opacity-20);
 }
 
 .mat-toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 
     .basket-label {
-        display: flex;
         flex: 1 auto;
     }
 
     .mat-icon-button {
-        font-size: 20px;
+        font-size: 28px;
     }
 }
 
@@ -56,4 +59,9 @@
     .date {
         flex: 2 auto;
     }
+}
+
+.status-icon {
+    margin-right: 12px;
+    font-size: 21px;
 }

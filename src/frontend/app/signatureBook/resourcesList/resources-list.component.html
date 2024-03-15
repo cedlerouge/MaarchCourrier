@@ -1,8 +1,8 @@
 <mat-toolbar color="primary" role="banner" [attr.aria-label]="basketLabel" class="mat-toolbar">
-    <span class="basket-label" role="heading">{{ basketLabel }}</span>
     <button mat-icon-button [attr.aria-label]="'lang.closeSidePanel' | translate" [title]="'lang.closeSidePanel' | translate" (click)="closeResListPanel.emit()">
-        <mat-icon class="fa fa-arrow-left"></mat-icon>
+        <mat-icon class="fa fa-stream material-icons"></mat-icon>
     </button>
+    <span class="basket-label" role="heading">{{ basketLabel }}</span>
 </mat-toolbar>
 <div *ngFor="let resource of resources" [class.selectedRes]="resource.resId === resId" style="cursor: pointer;" (click)="goToResource(resource)">
     <div class="row">
@@ -14,11 +14,11 @@
             </button>
         </div>
         <div class="col-md-2">
-            <mat-icon style="margin-right: 12px;" [title]="resource.statusLabel"
+            <mat-icon class="status-icon" [title]="resource.statusLabel"
                 [ngStyle]="{'color': resource.priorityColor}" color="primary"
                 aria-hidden="true"
                 class="{{resource.statusImage.charAt(0)}}{{resource.statusImage.charAt(1)}} {{resource.statusImage}} {{resource.statusImage.charAt(0)}}{{resource.statusImage.charAt(1)}}-2x">
-            </mat-icon> <span>{{resource.chrono}}</span>
+            </mat-icon> <span [title]="resource.chrono">{{resource.chrono}}</span>
         </div>
         <div class="col-md col-md-date">
             <mat-icon color="default" class="fa fa-calendar-alt" aria-hidden="true" [title]="'lang.creationDate' | translate"></mat-icon>
@@ -32,8 +32,8 @@
                 (click)="$event.stopPropagation();">
             </mat-checkbox>
         </div>
-        <div class="col-md-2">
-           <span class="subject">{{resource.subject}}</span>
+        <div class="col-md-2" [title]="resource.subject">
+           <span class="subject">{{resource.subject | shorten : 30:'...'}}</span>
         </div>
         <div class="col-md col-md-date">
             <mat-icon color="default" class="fa fa-bell" aria-hidden="true" [title]="'lang.processLimitDate' | translate"></mat-icon>

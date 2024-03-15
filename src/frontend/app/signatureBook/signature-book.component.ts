@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,12 +16,13 @@ import { SignatureBookService } from './signature-book.service';
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
-export class SignatureBookComponent implements OnInit, OnDestroy {
+export class SignatureBookComponent implements OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
 
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
+    loading: boolean = true;
 
     resId: number = 0;
     basketId: number;
@@ -45,6 +46,9 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         private actionsService: ActionsService,
         private actionService: ActionsService
     ) {
+
+        this.initParams();
+
         this.subscription = this.actionsService.catchActionWithData().pipe(
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
             tap(() => {
@@ -59,27 +63,34 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         this.unlockResource();
     }
 
-    async ngOnInit(): Promise<void> {
-        await this.initParams();
-        if (this.resId !== undefined) {
-            this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-            await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
-            await this.initDocuments();
-        } else {
-            this.router.navigate(['/home']);
-        }
+    initParams(): void {
+        this.route.params.subscribe(params => {
+            this.resetValues();
+
+            this.resId = params['resId'];
+            this.basketId = params['basketId'];
+            this.groupId = params['groupId'];
+            this.userId = params['userId'];
+
+            if (this.resId !== undefined) {
+                this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+                this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
+                this.initDocuments();
+            } else {
+                this.router.navigate(['/home']);
+            }
+        });
     }
 
-    initParams(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.route.params.subscribe(params => {
-                this.resId = params['resId'];
-                this.basketId = params['basketId'];
-                this.groupId = params['groupId'];
-                this.userId = params['userId'];
-                resolve(true);
-            });
-        });
+    resetValues(): void {
+        this.loading = true;
+        this.loadingDocsToSign = true;
+        this.loadingAttachments = true;
+
+        this.attachments = [];
+        this.docsToSign = [];
+
+        this.subscription?.unsubscribe();
     }
 
     initDocuments(): Promise<boolean> {
@@ -109,12 +120,14 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
                     this.loadingAttachments = false;
                     this.loadingDocsToSign = false;
+                    this.loading = false;
 
                     resolve(true);
                 }),
 
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
+                    this.loading = false;
                     resolve(false);
                     return of(false);
                 })
