@@ -1,7 +1,10 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { ListProperties } from "@models/list-properties.model";
+import { ResourcesList } from "@models/resources-list.model";
+import { FiltersListService } from "@service/filtersList.service";
 import { NotificationService } from "@service/notification/notification.service";
-import { catchError, of, tap } from "rxjs";
+import { catchError, map, of, tap } from "rxjs";
 
 @Injectable({
     providedIn: 'root',
@@ -10,10 +13,14 @@ import { catchError, of, tap } from "rxjs";
 export class SignatureBookService {
     config = new SignatureBookConfig();
 
+    resourcesList: ResourcesList[];
+    resourcesListIds: number[] = [];
+    basketLabel: string = '';
+
     constructor(
         private http: HttpClient,
-        private notifications: NotificationService
-
+        private notifications: NotificationService,
+        private filtersListService: FiltersListService,
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookInterface | null> {
@@ -30,6 +37,43 @@ export class SignatureBookService {
                 })
             ).subscribe();
         })
+    }
+
+    getResourcesBasket(userId: number, groupId: number, basketId: number): Promise<ResourcesList[] | []> {
+        return new Promise((resolve) => {
+            const listProperties: ListProperties = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
+            const offset: number =  parseInt(listProperties.page) * listProperties.pageSize;
+            const limit: number = listProperties.pageSize;
+            const filters: string = this.filtersListService.getUrlFilters();
+
+            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${limit}&offset=${offset}${filters}`).pipe(
+                map((data: any) => {
+                    this.resourcesListIds = data.allResources;
+                    this.basketLabel = data.basketLabel;
+                    const resourcesList = data.resources.map((resource: any) => new ResourcesList({
+                        resId: resource.resId,
+                        subject: resource.subject,
+                        chrono: resource.chrono,
+                        statusImage: resource.statusImage,
+                        statusLabel: resource.statusLabel,
+                        priorityColor: resource.priorityColor,
+                        mailTracking: resource.mailTracking,
+                        creationDate: resource.creationDate,
+                        processLimitDate: resource.processLimitDate
+                    }));
+                    return resourcesList;
+                }),
+                tap((data: any) => {
+                    this.resourcesList = data;
+                    resolve(this.resourcesList);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve([]);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 }
 

@@ -31,12 +31,21 @@
         </div>
     </div>
     <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
-        <mat-drawer #drawerResList mode="over"> Parapheur électronique </mat-drawer>
+        <mat-drawer #drawerResList mode="over" [ngStyle]="{'width': '500px'}">
+            <app-resources-list
+                [resId]="+resId"
+                [userId]="userId"
+                [groupId]="groupId"
+                [basketId]="basketId"
+                [basketLabel]="signatureBookService.basketLabel"
+                [resources]="signatureBookService.resourcesList"
+                (closeResListPanel)="drawerResList.close()"></app-resources-list>
+        </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">
             <div class="signatorybook-contents">
                 <div class="signatorybook-content">
                     <ng-scrollbar class="book-mark" autoHeightDisabled="false">
-                        <app-maarch-sb-tabs *ngIf="!loadingAttachments" position="left" [documents]="attachments"></app-maarch-sb-tabs>
+                        <app-maarch-sb-tabs *ngIf="!loadingAttachments && !loadingDocsToSign" position="left" [documents]="attachments"></app-maarch-sb-tabs>
                     </ng-scrollbar>
                     <div class="book-content">
                         <app-maarch-sb-content

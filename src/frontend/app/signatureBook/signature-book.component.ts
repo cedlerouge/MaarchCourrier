@@ -10,6 +10,7 @@ import { StampInterface } from '@models/signature-book.model';
 
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
+import { SignatureBookService } from './signature-book.service';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -33,8 +34,11 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     subscription: Subscription;
     defaultStamp: StampInterface;
 
+    allResources: any[] = [];
+
     constructor(
         public http: HttpClient,
+        public signatureBookService: SignatureBookService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
@@ -57,9 +61,9 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
     async ngOnInit(): Promise<void> {
         await this.initParams();
-
         if (this.resId !== undefined) {
             this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+            await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
             await this.initDocuments();
         } else {
             this.router.navigate(['/home']);
