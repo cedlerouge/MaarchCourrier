@@ -7,8 +7,8 @@
 -- *************************************************************************--
 --DATABASE_BACKUP|parameters
 
--- The query will only insert the new row if there is no existing row with the id equal to allowMultipleAvisAssignment.
--- If a row with that id already exists, the INSERT statement will not execute.
+-- La requête n'insérera la nouvelle ligne que s'il n'y a pas de ligne existante avec l'identifiant égal à allowMultipleAvisAssignment.
+-- Si une ligne avec cet identifiant existe déjà, l'instruction INSERT ne s'exécutera pas.
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date)
 SELECT 'allowMultipleAvisAssignment', 'Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle', NULL, 0, NULL
     WHERE NOT EXISTS (
