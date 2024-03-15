@@ -216,9 +216,7 @@ class ListInstanceController
                         ParameterModel::create([
                             'id' => 'allowMultipleAvisAssignment',
                             'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
-                            'param_value_string' => 'NULL',
-                            'param_value_int' => 0,
-                            'param_value_date' => 'NULL'
+                            'param_value_int' => 0
                         ]);
                         $allowMultipleAvisAssignment = 0;
                     } else {
