@@ -19,6 +19,7 @@ import { SignatureBookService } from './signature-book.service';
 export class SignatureBookComponent implements OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
+    @ViewChild('drawerResList', { static: true }) drawerResList: MatDrawer;
 
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
@@ -91,6 +92,7 @@ export class SignatureBookComponent implements OnDestroy {
         this.docsToSign = [];
 
         this.subscription?.unsubscribe();
+        this.drawerResList?.close();
     }
 
     initDocuments(): Promise<boolean> {
