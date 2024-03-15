@@ -4,7 +4,10 @@
     </button>
     <span class="basket-label" role="heading">{{ basketLabel }}</span>
 </mat-toolbar>
-<div *ngFor="let resource of resources" [class.selectedRes]="resource.resId === resId" style="cursor: pointer;" (click)="goToResource(resource)">
+<div *ngFor="let resource of resources" [class.selectedRes]="resource.resId === resId"
+    class="resourcesList"
+    style="cursor: pointer;"
+    (click)="goToResource(resource)">
     <div class="row">
         <div class="col-md-1">
             <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"

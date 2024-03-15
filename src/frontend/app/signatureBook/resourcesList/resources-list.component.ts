@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { ActionsService } from '@appRoot/actions/actions.service';
 import { ResourcesList } from '@models/resources-list.model';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
@@ -24,15 +23,17 @@ export class ResourcesListComponent {
 
     @Output() closeResListPanel = new EventEmitter<any>();
 
+    selectedResource: ResourcesList;
+
     constructor(
         public translate: TranslateService,
         private router: Router,
         private http: HttpClient,
-        private notifications: NotificationService,
-        private actionService: ActionsService
+        private notifications: NotificationService
     ) { }
 
     goToResource(resource: ResourcesList): void {
+        this.selectedResource = resource;
         const resIds: number[] = this.resources.map((resource: ResourcesList) => resource.resId);
         // Check if the resource is locked
         this.http.put(`../rest/resourcesList/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/locked`, { resources: resIds }).pipe(
