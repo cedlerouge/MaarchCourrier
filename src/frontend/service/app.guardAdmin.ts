@@ -28,12 +28,6 @@ export class AppGuardAdmin implements CanActivate {
         this.headerService.resetSideNavSelection();
 
         if (this.appService.coreLoaded) {
-
-            if (!this.headerService.user.privileges.includes("admin")) {
-                this.router.navigate(['/home']);
-                return of(false);
-            }
-
             if (!this.handleNavigaton(state) || !this.hasAdminPrivilege(state)) {
                 this.router.navigate(['/administration']);
                 return of(false);
@@ -44,11 +38,6 @@ export class AppGuardAdmin implements CanActivate {
 
         return this.appService.catchEvent().pipe(
             map(() => {
-                if (!this.headerService.user.privileges.includes("admin")) {
-                    this.router.navigate(['/home']);
-                    return false;
-                }
-
                 const isAuth = this.handleNavigaton(state);
                 if (!isAuth || !this.hasAdminPrivilege(state)) {
                     this.router.navigate(['/administration']);
@@ -87,6 +76,6 @@ export class AppGuardAdmin implements CanActivate {
             id: privilege.id,
             route: privilege.route
         }));
-        return userPrivileges.indexOf(adminPrivilegesService.find((item: any) => item.route === urlState)?.id) > -1;
+        return userPrivileges.indexOf(adminPrivilegesService.find((item: any) => urlState.startsWith(item.route))?.id) > -1;
     }
 }
