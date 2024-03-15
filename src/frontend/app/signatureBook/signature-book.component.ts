@@ -83,32 +83,10 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
             this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
                 map((data: any) => {
                     // Mapping resources to sign
-                    const resourcesToSign = data.resourcesToSign.map((resource: any) => new Attachment({
-                        resId: resource.resId,
-                        resIdMaster: resource.resIdMaster ===  null ? null : resource.resId,
-                        signedResId: resource.signedResId,
-                        chrono: resource.chrono,
-                        title: resource.title,
-                        type: resource.type,
-                        typeLabel: resource.typeLabel,
-                        canConvert: resource.isConverted,
-                        canDelete: resource.canDelete,
-                        canUpdate: resource.canModify
-                    }));
+                    const resourcesToSign = data.resourcesToSign.map((resource: any) => this.mapAttachment(resource));
 
                     // Mapping resources attached as annex
-                    const resourcesAttached = data.resourcesAttached.map((attachment: any) => new Attachment({
-                        resId: attachment.resId,
-                        resIdMaster: attachment.resIdMaster ===  null ? null : attachment.resId,
-                        chrono: attachment.chrono,
-                        title: attachment.title,
-                        type: attachment.type,
-                        typeLabel: attachment.typeLabel,
-                        signedResId: attachment.signedResId,
-                        canConvert: attachment.isConverted,
-                        canDelete: attachment.canDelete,
-                        canUpdate: attachment.canModify
-                    }));
+                    const resourcesAttached = data.resourcesAttached.map((attachment: any) => this.mapAttachment(attachment));
 
                     return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
                 }),
@@ -121,7 +99,6 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
                     resolve(true);
                 }),
-
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
                     resolve(false);
@@ -145,5 +122,21 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     async unlockResource(): Promise<void> {
         this.actionService.stopRefreshResourceLock();
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+    }
+
+    // Helper function to map attachment data
+    private mapAttachment(data: any): Attachment {
+        return new Attachment({
+            resId: data.resId,
+            resIdMaster: data.resIdMaster === null ? null : data.resId,
+            signedResId: data.signedResId,
+            chrono: data.chrono,
+            title: data.title,
+            type: data.type,
+            typeLabel: data.typeLabel,
+            canConvert: data.isConverted,
+            canDelete: data.canDelete,
+            canUpdate: data.canModify
+        });
     }
 }
