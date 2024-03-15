@@ -17,7 +17,7 @@
             <input *ngIf="!canManageMail()" matInput [value]="currentSender.label" readonly>
             <mat-select *ngIf="canManageMail()" [compareWith]="this.compareSenders" [(ngModel)]="currentSender"
                 required>
-                <mat-option *ngFor="let sender of availableSenders | sortBy: 'label'" [value]="sender">
+                <mat-option *ngFor="let sender of availableSenders | sortBy: 'label'" [value]="sender">
                     {{sender.label}} ({{sender.m2m}})
                 </mat-option>
             </mat-select>
@@ -69,8 +69,8 @@
                         <button mat-menu-item style="line-height: normal;" disableRipple
                             *ngFor="let attach of numericPackageAttachTool[keyVal.key].list"
                             [disabled]="isSelectedAttach(attach,keyVal.key)"
-                            (click)="$event.stopPropagation();toggleAttach(attach,keyVal.key,'original');">
-                            <span (click)="$event.stopPropagation();toggleAttach(attach,keyVal.key,'original')"
+                            (click)="$event.stopPropagation();toggleAttach(attach,keyVal.key);">
+                            <span (click)="$event.stopPropagation();toggleAttach(attach,keyVal.key)"
                                 [title]="attach.label">
                                 <div style="font-size: 10px;opacity: 0.5;">{{attach.chrono}} - {{attach.typeLabel}}
                                     ({{attach.creator}})</div>

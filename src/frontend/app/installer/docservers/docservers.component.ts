@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, ValidatorFn } from '@angular/forms';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -12,7 +12,7 @@ import { catchError, tap } from 'rxjs/operators';
     templateUrl: './docservers.component.html',
     styleUrls: ['./docservers.component.scss']
 })
-export class DocserversComponent implements OnInit {
+export class DocserversComponent {
 
     @Output() nextStep = new EventEmitter<string>();
 
@@ -25,7 +25,7 @@ export class DocserversComponent implements OnInit {
         public http: HttpClient,
         private installerService: InstallerService
     ) {
-        const valPath: ValidatorFn[] = [Validators.pattern(/^[^\'\<\>\|\*\:\?]+$/), Validators.required];
+        const valPath: ValidatorFn[] = [Validators.pattern(/^[^'<>|*:?]+$/), Validators.required];
 
         this.stepFormGroup = this._formBuilder.group({
             docserversPath: ['/opt/maarch/docservers/', valPath],
@@ -36,10 +36,6 @@ export class DocserversComponent implements OnInit {
             tap(() => this.stepFormGroup.controls['stateStep'].setValue(''))
         ).subscribe();
     }
-
-    ngOnInit(): void {
-    }
-
 
     isValidStep() {
         if (this.installerService.isStepAlreadyLaunched('docserver')) {
@@ -65,12 +61,12 @@ export class DocserversComponent implements OnInit {
         };
 
         this.http.get('../rest/installer/docservers', { params: info }).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.notify.success(this.translate.instant('lang.rightInformations'));
                 this.stepFormGroup.controls['stateStep'].setValue('success');
                 this.nextStep.emit();
             }),
-            catchError((err: any) => {
+            catchError(() => {
                 this.notify.error(this.translate.instant('lang.pathUnreacheable'));
                 this.stepFormGroup.controls['stateStep'].setValue('');
                 return of(false);

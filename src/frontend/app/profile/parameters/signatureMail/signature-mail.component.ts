@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -17,7 +17,7 @@ declare let tinymce: any;
     styleUrls: ['./signature-mail.component.scss'],
 })
 
-export class MySignatureMailComponent implements OnInit {
+export class MySignatureMailComponent {
 
     @Input() mailSignatureModel: any;
     @Input() userEmailSignatures: any[];
@@ -30,8 +30,6 @@ export class MySignatureMailComponent implements OnInit {
         public headerService: HeaderService,
         public dialog: MatDialog
     ){}
-
-    ngOnInit(): void {}
 
     initMce() {
         tinymce.remove('textarea');

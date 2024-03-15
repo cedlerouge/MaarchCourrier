@@ -292,7 +292,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     loadTmpFile(filenameOnTmp: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.loading = true;
             this.loadingInfo.mode = 'determinate';
 
@@ -530,16 +530,16 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     upload(data: any) {
         const uploadURL = '../rest/convertedFile';
-
+        let downloadProgress = 0;
+        let uploadProgress = 0;
         return this.http.post<any>(uploadURL, data, {
             reportProgress: true,
             observe: 'events'
         }).pipe(map((event) => {
-
             switch (event.type) {
                 case HttpEventType.DownloadProgress:
 
-                    const downloadProgress = Math.round(100 * event.loaded / event.total);
+                    downloadProgress = Math.round(100 * event.loaded / event.total);
                     this.loadingInfo.percent = downloadProgress;
                     this.loadingInfo.mode = 'determinate';
                     this.loadingInfo.message = `3/3 ${this.translate.instant('lang.downloadConvertedFile')}...`;
@@ -547,17 +547,17 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
                     return { status: 'progress', message: downloadProgress };
 
                 case HttpEventType.UploadProgress:
-                    const progress = Math.round(100 * event.loaded / event.total);
-                    this.loadingInfo.percent = progress;
+                    uploadProgress = Math.round(100 * event.loaded / event.total);
+                    this.loadingInfo.percent = uploadProgress;
 
-                    if (progress === 100) {
+                    if (uploadProgress === 100) {
                         this.loadingInfo.mode = 'indeterminate';
                         this.loadingInfo.message = `2/3 ${this.translate.instant('lang.convertingFile')}...`;
                     } else {
                         this.loadingInfo.mode = 'determinate';
                         this.loadingInfo.message = `1/3 ${this.translate.instant('lang.loadingFile')}...`;
                     }
-                    return { status: 'progress', message: progress };
+                    return { status: 'progress', message: uploadProgress };
 
                 case HttpEventType.Response:
                     return event.body;
@@ -570,6 +570,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
 
     requestWithLoader(url: string) {
         this.loadingInfo.percent = 0;
+        let downloadProgress = 0;
 
         return this.http.get<any>(url, {
             reportProgress: true,
@@ -577,8 +578,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
         }).pipe(map((event) => {
             switch (event.type) {
                 case HttpEventType.DownloadProgress:
-
-                    const downloadProgress = Math.round(100 * event.loaded / event.total);
+                    downloadProgress = Math.round(100 * event.loaded / event.total);
                     this.loadingInfo.percent = downloadProgress;
                     this.loadingInfo.mode = 'determinate';
                     this.loadingInfo.message = '';
@@ -595,7 +595,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     onError(error: any) {
-        console.log(error);
+        console.debug(error);
     }
 
     cleanFile(confirm: boolean = true) {
@@ -870,7 +870,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     loadMainDocumentSubInformations() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/versionsInformations`).pipe(
                 tap((data: any) => {
                     const mainDocVersions = data.DOC;
@@ -1325,7 +1325,7 @@ export class DocumentViewerComponent implements OnInit, OnDestroy {
     }
 
     loadTmpDocument(base64Content: string, format: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/convertedFile/encodedFile', { format: format, encodedFile: base64Content }).pipe(
                 tap((data: any) => {
                     this.file = {

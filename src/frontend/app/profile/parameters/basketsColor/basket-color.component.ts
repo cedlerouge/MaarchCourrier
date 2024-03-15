@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -11,7 +11,7 @@ import { HeaderService } from '@service/header.service';
     styleUrls: ['./basket-color.component.scss'],
 })
 
-export class BasketColorComponent implements OnInit {
+export class BasketColorComponent {
 
     @Input() userGroupBaskets: any;
 
@@ -23,8 +23,6 @@ export class BasketColorComponent implements OnInit {
         public headerService: HeaderService,
 
     ) {}
-
-    ngOnInit(): void {}
 
     updateBasketColor(i: number, y: number) {
         this.http.put('../rest/currentUser/groups/' + this.userGroupBaskets[i].groupSerialId + '/baskets/' + this.userGroupBaskets[i].baskets[y].basket_id, { 'color': this.userGroupBaskets[i].baskets[y].color })

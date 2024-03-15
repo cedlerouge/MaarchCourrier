@@ -65,10 +65,10 @@ export class PrintSeparatorComponent implements OnInit {
 
         setTimeout(() => {
             $('#jstree')
-                .on('select_node.jstree', (e: any, data: any) => {
+                .on('select_node.jstree', () => {
                     this.separator.entities = $('#jstree').jstree('get_checked', null, true); // to trigger disable button if no entities
                 })
-                .on('deselect_node.jstree', (e: any, data: any) => {
+                .on('deselect_node.jstree', () => {
                     this.separator.entities = $('#jstree').jstree('get_checked', null, true); // to trigger disable button if no entities
                 })
                 .jstree({

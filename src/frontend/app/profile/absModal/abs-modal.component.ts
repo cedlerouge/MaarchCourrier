@@ -4,7 +4,7 @@ import { NotificationService } from '@service/notification/notification.service'
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { HttpClient } from '@angular/common/http';
 import { NoteEditorComponent } from '../../notes/note-editor.component';
-import { tap, exhaustMap, catchError, finalize } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
 import { AuthService } from '@service/auth.service';
@@ -52,7 +52,7 @@ export class AbsModalComponent implements OnInit {
     }
 
     getBasketInfo() {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve) => {
             let objBasket = {};
             this.data.user.baskets.filter((basket: any) => !basket.basketSearch).forEach((basket: any) => {
                 objBasket = { ...basket };
@@ -112,41 +112,47 @@ export class AbsModalComponent implements OnInit {
         basket.userToDisplay = null;
     }
 
-    redirectBaskets() {
-        return new Promise(async (resolve, reject) => {
-            const res = await this.clearRedirections();
-            if (res) {
-                const basketsRedirect: any[] = [];
+    async redirectBaskets(): Promise<boolean> {
+        const res = await this.clearRedirections();
+        if (res) {
+            const basketsRedirect: any[] = [];
 
-                this.baskets.filter((item: any) => item.userToDisplay !== null).forEach((elem: any) => {
-                    if (!this.isInitialRedirection(elem)) {
-                        basketsRedirect.push(
-                            {
-                                actual_user_id: elem.actual_user_id,
-                                basket_id: elem.basket_id,
-                                group_id: elem.groupSerialId,
-                                originalOwner: null
-                            }
-                        );
-                    }
-                });
-                if (basketsRedirect.length > 0) {
-                    this.http.post('../rest/users/' + this.data.user.id + '/redirectedBaskets', basketsRedirect).pipe(
-                        tap((data: any) => {
-                            resolve(true);
-                        }),
-                        catchError((err: any) => {
-                            this.notify.handleErrors(err);
-                            resolve(false);
-                            return of(false);
-                        })
-                    ).subscribe();
-                } else {
-                    resolve(true);
+            this.baskets.filter((item: any) => item.userToDisplay !== null).forEach((elem: any) => {
+                if (!this.isInitialRedirection(elem)) {
+                    basketsRedirect.push(
+                        {
+                            actual_user_id: elem.actual_user_id,
+                            basket_id: elem.basket_id,
+                            group_id: elem.groupSerialId,
+                            originalOwner: null
+                        }
+                    );
                 }
+            });
+            if (basketsRedirect.length > 0) {
+                const res = await this.setUserRedirectedBaskets(basketsRedirect)
+                return res;
+                
             } else {
-                resolve(false);
+                return true;
             }
+        } else {
+            return false;
+        }
+    }
+
+    setUserRedirectedBaskets(basketsRedirect: any[]): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.http.post('../rest/users/' + this.data.user.id + '/redirectedBaskets', basketsRedirect).pipe(
+                tap(() => {
+                    resolve(true);
+                }),
+                catchError((err: any) => {
+                    this.notify.handleErrors(err);
+                    resolve(false);
+                    return of(false);
+                })
+            ).subscribe();
         });
     }
 
@@ -154,29 +160,27 @@ export class AbsModalComponent implements OnInit {
         return this.data.user.redirectedBaskets.find((redBasket: any) => basket.basket_id === redBasket.basket_id && basket.groupSerialId === redBasket.group_id && basket.actual_user_id === redBasket.actual_user_id);
     }
 
-    clearRedirections() {
-        return new Promise(async (resolve, reject) => {
-            const redirectedBasketIds: number[] = [];
-            this.data.user.redirectedBaskets.forEach((redBasket: any) => {
-                if (this.baskets.find((basket: any) => basket.basket_id === redBasket.basket_id && basket.groupSerialId === redBasket.group_id && basket.actual_user_id !== redBasket.actual_user_id) !== undefined) {
-                    redirectedBasketIds.push(redBasket.id);
-                }
-            });
-            if (redirectedBasketIds.length > 0) {
-                const res = await this.delBasketAssignRedirection(redirectedBasketIds);
-                resolve(res);
-            } else {
-                resolve(true);
+    async clearRedirections() {
+        const redirectedBasketIds: number[] = [];
+        this.data.user.redirectedBaskets.forEach((redBasket: any) => {
+            if (this.baskets.find((basket: any) => basket.basket_id === redBasket.basket_id && basket.groupSerialId === redBasket.group_id && basket.actual_user_id !== redBasket.actual_user_id) !== undefined) {
+                redirectedBasketIds.push(redBasket.id);
             }
         });
+        if (redirectedBasketIds.length > 0) {
+            const res = await this.delBasketAssignRedirection(redirectedBasketIds);
+            return res;
+        } else {
+            return true;
+        }
     }
 
-    delBasketAssignRedirection(redirectedBasketIds: number[]) {
+    delBasketAssignRedirection(redirectedBasketIds: number[]): Promise<boolean> {
         const queryParam = '?redirectedBasketIds[]=' + redirectedBasketIds.join('&redirectedBasketIds[]=');
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.delete('../rest/users/' + this.data.user.id + '/redirectedBaskets' + queryParam).pipe(
-                tap((data: any) => {
+                tap(() => {
                     resolve(true);
                 }),
                 catchError((err: any) => {
@@ -215,7 +219,7 @@ export class AbsModalComponent implements OnInit {
                 endDate: this.functions.formatDateObjectToDateString(this.endDate, true)
             };
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if ((this.startDate && (redirectedBaskets.length > 0 || redirectedBaskets.length === 0)) || this.canceled) {
                 this.http.put('../rest/users/' + this.data.user.id + '/absence', { absenceDate, redirectedBaskets }).pipe(
                     tap(() => {
