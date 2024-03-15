@@ -64,7 +64,7 @@ export class SignatureBookComponent implements OnDestroy {
     }
 
     initParams(): void {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe(async params => {
             this.resetValues();
 
             this.resId = params['resId'];
@@ -74,8 +74,8 @@ export class SignatureBookComponent implements OnDestroy {
 
             if (this.resId !== undefined) {
                 this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-                this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
-                this.initDocuments();
+                await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
+                await this.initDocuments();
             } else {
                 this.router.navigate(['/home']);
             }
