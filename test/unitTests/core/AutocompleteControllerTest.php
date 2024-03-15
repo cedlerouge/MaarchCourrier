@@ -1,4 +1,5 @@
 <?php
+
 /**
 * Copyright Maarch since 2008 under licence GPLv3.
 * See LICENCE.txt file at the root folder for more details.
@@ -17,7 +18,7 @@ use MaarchCourrier\Tests\CourrierTestCase;
 
 class AutocompleteControllerTest extends CourrierTestCase
 {
-    public function testGetContactsForGroups()
+    public function testGetContactsForGroups(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -43,7 +44,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetMaarchParapheurUsers()
+    public function testGetMaarchParapheurUsers(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -69,20 +70,23 @@ class AutocompleteControllerTest extends CourrierTestCase
 
         $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
-
         $this->assertIsArray($responseBody);
-        foreach ($responseBody as $user) {
-            $this->assertIsInt($user->id);
-            $this->assertNotEmpty($user->firstname);
-            $this->assertNotEmpty($user->lastname);
-            $this->assertNotEmpty($user->email);
-            $this->assertIsBool($user->substitute);
-            $this->assertNotEmpty($user->idToDisplay);
-            $this->assertIsInt($user->externalId->maarchParapheur);
+        if (empty($responseBody) || !empty($responseBody->errors)) {
+            $this->markTestSkipped('No users found or an error occurred in MaarchParapheur response.');
+        } else {
+            foreach ($responseBody as $user) {
+                $this->assertIsInt($user->id);
+                $this->assertNotEmpty($user->firstname);
+                $this->assertNotEmpty($user->lastname);
+                $this->assertNotEmpty($user->email);
+                $this->assertIsBool($user->substitute);
+                $this->assertNotEmpty($user->idToDisplay);
+                $this->assertIsInt($user->externalId->maarchParapheur);
+            }
         }
     }
 
-    public function testGetCorrespondents()
+    public function testGetCorrespondents(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -109,7 +113,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetUsers()
+    public function testGetUsers(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -137,7 +141,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetUsersForAdministration()
+    public function testGetUsersForAdministration(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -192,7 +196,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
-    public function testGetUsersForCircuit()
+    public function testGetUsersForCircuit(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -220,7 +224,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetContactsCompany()
+    public function testGetContactsCompany(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -250,7 +254,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $this->assertNotEmpty($contact->addressCountry);
     }
 
-    public function testGetEntities()
+    public function testGetEntities(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -278,7 +282,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetStatuses()
+    public function testGetStatuses(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -301,7 +305,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetBanAddresses()
+    public function testGetBanAddresses(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -353,7 +357,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $this->assertSame('Bad Request', $responseBody->errors);
     }
 
-    public function testGetAvailableContactsForM2M()
+    public function testGetAvailableContactsForM2M(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -378,7 +382,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetFolders()
+    public function testGetFolders(): void
     {
         $GLOBALS['login'] = 'bblier';
         $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
@@ -412,7 +416,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
-    public function testGetTags()
+    public function testGetTags(): void
     {
         $autocompleteController = new AutoCompleteController();
 
