@@ -38,7 +38,7 @@ export class AppGuardAdmin implements CanActivate {
 
         return this.appService.catchEvent().pipe(
             map(() => {
-                const isAuth = this.handleNavigaton(state);
+                const isAuth: boolean = this.handleNavigaton(state);
                 if (!isAuth || !this.hasAdminPrivilege(state)) {
                     this.router.navigate(['/administration']);
                 }
@@ -52,9 +52,9 @@ export class AppGuardAdmin implements CanActivate {
     }
 
     handleNavigaton(state: RouterStateSnapshot): boolean {
-        let $state = false;
+        let $state: boolean = false;
 
-        const tokenInfo = this.authService.getToken();
+        const tokenInfo: string = this.authService.getToken();
 
         if (tokenInfo !== null) {
             this.headerService.hideSideBar = false;
