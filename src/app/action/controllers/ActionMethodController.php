@@ -861,8 +861,18 @@ class ActionMethodController
         }
 
         $listinstanceCtrl = [];
-        $allowMultipleAvisAssignment = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'allowMultipleAvisAssignment']);
+        $allowMultipleAvisAssignment = ParameterModel::getById([
+            'select' => ['param_value_int'],
+            'id' => 'allowMultipleAvisAssignment'
+        ]);
         if (empty($allowMultipleAvisAssignment)){
+            ParameterModel::create([
+                'id' => 'allowMultipleAvisAssignment',
+                'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                'param_value_string' => 'NULL',
+                'param_value_int' => 0,
+                'param_value_date' => 'NULL'
+            ]);
             $allowMultipleAvisAssignment = 0;
         } else {
             $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
