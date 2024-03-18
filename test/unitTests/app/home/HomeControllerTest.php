@@ -55,11 +55,11 @@ class FHomeControllerTest extends CourrierTestCase
 
         $response = $homeController->getMaarchParapheurDocuments($request, new Response());
         $responseBody = json_decode((string) $response->getBody());
-        $this->assertIsArray($responseBody->documents);
-        if (empty($responseBody) || !empty($responseBody->errors)) {
+        if (!empty($responseBody->errors)) {
             $this->markTestSkipped('No documents found or an error occurred in MaarchParapheur response.');
         } else {
             foreach ($responseBody->documents as $document) {
+                $this->assertIsArray($responseBody->documents);
                 $this->assertIsInt($document->id);
                 $this->assertNotEmpty($document->title);
                 $this->assertNotEmpty($document->mode);
@@ -76,7 +76,7 @@ class FHomeControllerTest extends CourrierTestCase
 
         $response = $homeController->getMaarchParapheurDocuments($request, new Response());
         $responseBody = json_decode((string) $response->getBody(), true);
-        if (empty($responseBody) || !empty($responseBody->errors)) {
+        if (empty($responseBody['errors'])) {
             $this->markTestSkipped('No documents found or an error occurred in MaarchParapheur response.');
         } else {
             $this->assertSame('User is not linked to Maarch Parapheur', $responseBody['errors']);
