@@ -185,6 +185,7 @@ class SignatureBook implements JsonSerializable
             $array['resourcesToSign'][$i] = $resourcesToSign[$i]->jsonSerialize();
         }
 
+        $array['resourcesAttached'] = [];
         $resourcesAttached = $this->getResourcesAttached();
         for ($i = 0; $i < count($resourcesAttached); $i++) {
             $array['resourcesAttached'][$i] = $resourcesAttached[$i]->jsonSerialize();
