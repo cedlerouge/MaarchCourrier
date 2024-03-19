@@ -18,7 +18,7 @@ use SrcCore\http\Response;
 use MaarchCourrier\Tests\CourrierTestCase;
 use User\models\UserModel;
 
-class FHomeControllerTest extends CourrierTestCase
+class HomeControllerTest extends CourrierTestCase
 {
     public function testGet(): void
     {
