@@ -43,7 +43,7 @@ class RetrieveSignatureBook
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
-        if (!$this->mainResourceAccessControl->hasRightByResId($resId, $this->currentUser)) {
+        if (!$this->mainResourceAccessControl->hasRightByResId($resId, $this->currentUser->getCurrentUser())) {
             throw new MainResourceOutOfPerimeterProblem();
         }
 
