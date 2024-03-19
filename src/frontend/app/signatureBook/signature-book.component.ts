@@ -3,13 +3,14 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, filter, map, of, tap } from 'rxjs';
+import { filter, tap } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StampInterface } from '@models/signature-book.model';
 
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
+import { SignatureBookService } from './signature-book.service';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -35,6 +36,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
     constructor(
         public http: HttpClient,
+        public signatureBookService: SignatureBookService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
@@ -78,33 +80,12 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         });
     }
 
-    initDocuments(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
-                map((data: any) => {
-                    // Mapping resources to sign
-                    const resourcesToSign = data.resourcesToSign.map((resource: any) => this.mapAttachment(resource));
-
-                    // Mapping resources attached as annex
-                    const resourcesAttached = data.resourcesAttached.map((attachment: any) => this.mapAttachment(attachment));
-
-                    return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
-                }),
-                tap((data: { resourcesToSign: Attachment[], resourcesAttached: Attachment[] }) => {
-                    this.docsToSign = data.resourcesToSign;
-                    this.attachments = data.resourcesAttached;
-
-                    this.loadingAttachments = false;
-                    this.loadingDocsToSign = false;
-
-                    resolve(true);
-                }),
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    resolve(false);
-                    return of(false);
-                })
-            ).subscribe();
+    async initDocuments(): Promise<void>{
+        await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
+            this.docsToSign = data.resourcesToSign;
+            this.attachments = data.resourcesAttached;
+            this.loadingAttachments = false;
+            this.loadingDocsToSign = false;
         });
     }
 
