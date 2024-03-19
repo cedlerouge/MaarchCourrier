@@ -59,8 +59,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $response = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        if (!empty($responseBody->errors)) {
-            $this->markTestSkipped('No users found or an error occurred in MaarchParapheur response.');
+        if (
+            !empty($responseBody->errors) &&
+            !str_contains($responseBody->errors, 'Could not resolve host: ')
+        ) {
+            $this->markTestSkipped('An error occurred in MaarchParapheur response.');
         } else {
             $this->assertIsArray($responseBody);
             $this->assertEmpty($responseBody);
@@ -73,8 +76,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $response = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
         $this->assertIsArray($responseBody);
-        if (empty($responseBody['errors'])) {
-            $this->markTestSkipped('No users found or an error occurred in MaarchParapheur response.');
+        if (
+            !empty($responseBody->errors) &&
+            !str_contains($responseBody->errors, 'Could not resolve host: ')
+        ) {
+            $this->markTestSkipped('An error occurred in MaarchParapheur response.');
         } else {
             foreach ($responseBody as $user) {
                 $this->assertIsInt($user->id);

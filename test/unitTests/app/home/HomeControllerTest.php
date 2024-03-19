@@ -56,9 +56,9 @@ class FHomeControllerTest extends CourrierTestCase
         $responseBody = json_decode((string)$response->getBody());
         if (
             !empty($responseBody->errors) &&
-            $responseBody->errors == 'Could not resolve host: preview.maarchparapheur.com'
+            !str_contains($responseBody->errors, 'Could not resolve host: ')
         ) {
-            $this->markTestSkipped('No documents found or an error occurred in MaarchParapheur response.');
+            $this->markTestSkipped('An error occurred in MaarchParapheur response.');
         } else {
             foreach ($responseBody->documents as $document) {
                 $this->assertIsArray($responseBody->documents);
