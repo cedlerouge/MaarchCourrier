@@ -62,7 +62,6 @@ class FastParapheurController
     /**
      * @param Request $request
      * @param Response $response
-     *
      * @return Response
      * @throws Exception
      */
@@ -95,7 +94,6 @@ class FastParapheurController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -159,7 +157,6 @@ class FastParapheurController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      */
     public function unlinkUserToFastParapheur(Request $request, Response $response, array $args): Response
@@ -195,7 +192,6 @@ class FastParapheurController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -227,7 +223,6 @@ class FastParapheurController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     *
      * @return Response
      * @throws Exception
      */
@@ -381,7 +376,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -703,7 +697,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return void
      * @throws Exception
      */
@@ -738,7 +731,6 @@ class FastParapheurController
      * Create proof from history data, get proof from fast (Fiche de Circulation)
      *
      * @param array $args documentId, config, historyData, filename, signEncodedFile
-     *
      * @throws Exception
      */
     public static function makeHistoryProof(array $args): array
@@ -827,7 +819,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -858,7 +849,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -944,7 +934,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return void
      * @throws Exception
      */
@@ -992,7 +981,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|array[]|string[]
      * @throws Exception
      */
@@ -1005,7 +993,7 @@ class FastParapheurController
         $label = $args['label'];
         $subscriberId = $args['businessId'];
 
-        // Retrieve the annexes of the attachemnt to sign (other attachment and the original document)
+        // Retrieve the annexes of the attachment to sign (other attachment and the original document)
         $annexes = [];
         $annexes['letterbox'] = ResModel::get([
             'select' => [
@@ -1139,7 +1127,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|string[]
      * @throws Exception
      */
@@ -1213,9 +1200,8 @@ class FastParapheurController
      *                      - config
      *                      - circuitId
      *                      - fileName
-     *                      - circuib64AttachmenttId
+     *                      - circuib64AttachmentId
      *                      - label
-     *
      * @throws Exception
      */
     public static function uploadFileToFast(array $args): array
@@ -1306,6 +1292,7 @@ class FastParapheurController
         ];
 
         $otpInfo = [];
+        $indexOTP = 0;
         foreach ($args['steps'] as $index => $step) {
             $stepMode = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
 
@@ -1338,10 +1325,11 @@ class FastParapheurController
                     'step'    => 'OTPSignature',
                     'members' => [$step['email']]
                 ];
-                $otpInfo['OTP_firstname_' . $index] = $step['firstname'];
-                $otpInfo['OTP_lastname_' . $index] = $step['lastname'];
-                $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
-                $otpInfo['OTP_email_' . $index] = $step['email'];
+                $otpInfo['OTP_firstname_' . $indexOTP] = $step['firstname'];
+                $otpInfo['OTP_lastname_' . $indexOTP] = $step['lastname'];
+                $otpInfo['OTP_phonenumber_' . $indexOTP] = $step['phone'];
+                $otpInfo['OTP_email_' . $indexOTP] = $step['email'];
+                $indexOTP++;
             } else {
                 return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
@@ -1483,9 +1471,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentMainDocument['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentMainDocument['comment'],
-                            'maxLength' => 251
-                        ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
+                                'filename'  => $sentMainDocument['comment'],
+                                'maxLength' => 251
+                            ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentMainDocument['comment']
                 ];
@@ -1505,9 +1493,9 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentMainDocument['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentMainDocument['comment'],
-                        'maxLength' => 251
-                    ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
+                            'filename'  => $sentMainDocument['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
@@ -1524,9 +1512,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentAttachment['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentAttachment['comment'],
-                            'maxLength' => 251
-                        ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
+                                'filename'  => $sentAttachment['comment'],
+                                'maxLength' => 251
+                            ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentAttachment['comment']
                 ];
@@ -1545,9 +1533,9 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentAttachment['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentAttachment['comment'],
-                        'maxLength' => 251
-                    ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
+                            'filename'  => $sentAttachment['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
@@ -1617,7 +1605,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -1659,7 +1646,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|false
      */
     public static function download(array $args)
@@ -1688,7 +1674,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      * @throws Exception
      */
@@ -1778,7 +1763,7 @@ class FastParapheurController
                 return ['error' => _VISA_WORKFLOW_NOT_FOUND];
             }
 
-            // check if circuidId is an email
+            // check if circuitId is an email
             if (Validator::email()->notEmpty()->validate($user['user_id'])) {
                 $user['user_id'] = explode("@", $user['user_id'])[0];
             }
@@ -1804,7 +1789,6 @@ class FastParapheurController
     /**
      * Recommandations minimales Fast à respecter
      * Espacement minimum de 30 minutes pour le même document
-     *
      * @param   $args :
      *  - documentId : 'externalid' of res_letterbox
      *  - config : FastParapheur configuration
@@ -1842,7 +1826,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return string[]|true
      * @throws Exception
      */
@@ -1912,7 +1895,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return string
      * @throws Exception
      */
@@ -1949,7 +1931,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array
      */
     public static function getUsers(array $args): array
@@ -1991,7 +1972,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|true
      * @throws Exception
      */
@@ -2076,7 +2056,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return string|string[]
      * @throws Exception
      */
@@ -2176,7 +2155,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|array[]
      * @throws Exception
      */
@@ -2208,7 +2186,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return string
      * @throws Exception
      */
@@ -2378,7 +2355,6 @@ class FastParapheurController
      * @param array $documentHistory
      * @param array $knownWorkflow
      * @param array $config
-     *
      * @return array
      * @throws Exception
      */
@@ -2425,7 +2401,6 @@ class FastParapheurController
 
     /**
      * @param array $args
-     *
      * @return array|string[]
      * @throws Exception
      */
