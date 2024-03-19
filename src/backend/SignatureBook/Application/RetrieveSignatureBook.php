@@ -26,11 +26,11 @@ use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 class RetrieveSignatureBook
 {
     public function __construct(
-        public CurrentUserInterface $currentUser,
-        public AccessControlServiceInterface $accessControlService,
-        public MainResourceAccessControlInterface $mainResourceAccessControl,
-        public MainResourceRepositoryInterface $mainResourceRepository,
-        public SignatureBookRepositoryInterface $signatureBookRepository
+        private readonly CurrentUserInterface $currentUser,
+        private readonly AccessControlServiceInterface $accessControlService,
+        private readonly MainResourceAccessControlInterface $mainResourceAccessControl,
+        private readonly MainResourceRepositoryInterface $mainResourceRepository,
+        private readonly SignatureBookRepositoryInterface $signatureBookRepository
     ) {
     }
 
