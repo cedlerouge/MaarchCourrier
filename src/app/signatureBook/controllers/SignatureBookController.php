@@ -61,7 +61,7 @@ class SignatureBookController
     public const SIGNATORY_ROLE_DEFAULT = SignatureBookController::SIGNATORY_ROLE_MANDATORY;
 
     /**
-     * @deprecated This function is deprecated and will be removed in version 25.x.x
+     * @deprecated This function is deprecated and will be removed in future version
      *
      * @param Request $request
      * @param Response $response
