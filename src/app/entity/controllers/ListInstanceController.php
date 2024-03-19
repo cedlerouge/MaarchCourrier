@@ -208,8 +208,16 @@ class ListInstanceController
                         $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
                     }
 
-                    $allowMultipleAvisAssignment = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'allowMultipleAvisAssignment']);
+                    $allowMultipleAvisAssignment = ParameterModel::getById([
+                        'select' => ['param_value_int'],
+                        'id' => 'allowMultipleAvisAssignment'
+                    ]);
                     if (empty($allowMultipleAvisAssignment)){
+                        ParameterModel::create([
+                            'id' => 'allowMultipleAvisAssignment',
+                            'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                            'param_value_int' => 0
+                        ]);
                         $allowMultipleAvisAssignment = 0;
                     } else {
                         $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
