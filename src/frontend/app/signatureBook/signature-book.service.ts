@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { ListProperties } from "@models/list-properties.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
+import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
 
@@ -21,6 +22,7 @@ export class SignatureBookService {
         private http: HttpClient,
         private notifications: NotificationService,
         private filtersListService: FiltersListService,
+        private headerService: HeaderService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookInterface | null> {
@@ -74,6 +76,32 @@ export class SignatureBookService {
                 })
             ).subscribe();
         });
+    }
+
+    toggleMailTracking(resource: ResourcesList) {
+        if (!resource.mailTracking) {
+            this.http.post('../rest/resources/follow', { resources: [resource.resId] }).pipe(
+                tap(() => {
+                    this.headerService.nbResourcesFollowed++;
+                    resource.mailTracking = !resource.mailTracking;
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        } else {
+            this.http.delete('../rest/resources/unfollow', { body: { resources: [resource.resId] } }).pipe(
+                tap(() => {
+                    this.headerService.nbResourcesFollowed--;
+                    resource.mailTracking = !resource.mailTracking;
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    return of(false);
+                })
+            ).subscribe();
+        }
     }
 }
 

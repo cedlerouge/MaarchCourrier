@@ -75,7 +75,6 @@ export class SignatureBookComponent implements OnDestroy {
 
             if (this.resId !== undefined) {
                 this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-                await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
                 await this.initDocuments();
             } else {
                 this.router.navigate(['/home']);

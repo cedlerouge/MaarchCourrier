@@ -140,8 +140,10 @@
     font-weight: bold;
 }
 
-::ng-deep .mat-drawer-inner-container {
-    overflow-x: hidden !important;
+.drawer-res-list {
+    ::ng-deep .mat-drawer-inner-container {
+        overflow: auto !important;
+    }
 }
 
 .loading {
