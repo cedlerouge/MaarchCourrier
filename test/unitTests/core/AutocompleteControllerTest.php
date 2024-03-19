@@ -61,7 +61,7 @@ class AutocompleteControllerTest extends CourrierTestCase
 
         if (
             !empty($responseBody->errors) &&
-            !str_contains($responseBody->errors, 'Could not resolve host: ')
+            str_contains($responseBody->errors, 'Could not resolve host: ')
         ) {
             $this->markTestSkipped('An error occurred in MaarchParapheur response.');
         } else {
@@ -78,7 +78,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $this->assertIsArray($responseBody);
         if (
             !empty($responseBody->errors) &&
-            !str_contains($responseBody->errors, 'Could not resolve host: ')
+            str_contains($responseBody->errors, 'Could not resolve host: ')
         ) {
             $this->markTestSkipped('An error occurred in MaarchParapheur response.');
         } else {
