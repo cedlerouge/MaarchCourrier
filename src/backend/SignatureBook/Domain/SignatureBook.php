@@ -178,24 +178,13 @@ class SignatureBook implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        $array = [];
-
-        $resourcesToSign = $this->getResourcesToSign();
-        for ($i = 0; $i < count($resourcesToSign); $i++) {
-            $array['resourcesToSign'][$i] = $resourcesToSign[$i]->jsonSerialize();
-        }
-
-        $array['resourcesAttached'] = [];
-        $resourcesAttached = $this->getResourcesAttached();
-        for ($i = 0; $i < count($resourcesAttached); $i++) {
-            $array['resourcesAttached'][$i] = $resourcesAttached[$i]->jsonSerialize();
-        }
-
-        return array_merge($array, [
-            'canSignResources' => $this->isCanSignResources(),
-            'canUpdateResources' => $this->isCanUpdateResources(),
-            'hasActiveWorkflow' => $this->isHasActiveWorkflow(),
+        return [
+            'resourcesToSign'       => $this->getResourcesToSign(),
+            'resourcesAttached'     => $this->getResourcesAttached(),
+            'canSignResources'      => $this->isCanSignResources(),
+            'canUpdateResources'    => $this->isCanUpdateResources(),
+            'hasActiveWorkflow'     => $this->isHasActiveWorkflow(),
             'isCurrentWorkflowUser' => $this->isCurrentWorkflowUser(),
-        ]);
+        ];
     }
 }

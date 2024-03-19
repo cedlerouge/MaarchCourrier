@@ -29,18 +29,18 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
-     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      */
-    public function getIncomingMainResourceAndAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
+    public function getIncomingMainResource(Resource $resource): array
     {
         $resourcesToSign = [];
 
-        $resourceToSign = new SignatureBookResource();
-        $resourceToSign->setResId($resource->getResId())
+        $resourceToSign = (new SignatureBookResource())
+            ->setResId($resource->getResId())
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
             ->setChrono("MAARCH/2024A/34")
+            ->setCreatorId($resource->getTypist())
             ->setType('main_document')
             ->setTypeLabel(_MAIN_DOCUMENT);
         $resourcesToSign[] = $resourceToSign;
@@ -50,19 +50,39 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
-     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      */
-    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
+    public function getIncomingAttachments(Resource $resource): array
+    {
+        $resourcesToSign = [];
+
+        $resourceToSign = (new SignatureBookResource())
+            ->setResId($resource->getResId())
+            ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
+            ->setChrono("MAARCH/2024A/34")
+            ->setType('response_project')
+            ->setTypeLabel("Projet de réponse");
+        $resourcesToSign[] = $resourceToSign;
+
+        return $resourcesToSign;
+    }
+
+    /**
+     * @param Resource $resource
+     *
+     * @return SignatureBookResource[]
+     */
+    public function getAttachments(Resource $resource): array
     {
         $resourcesAttached = [];
 
-        $resourceAttached = new SignatureBookResource();
-        $resourceAttached->setResId(101)
+        $resourceAttached = (new SignatureBookResource())
+            ->setResId(101)
             ->setResIdMaster($resource->getResId())
             ->setTitle("HellDivers 2 : How’d you like the TASTE of FREEDOM?")
-            ->setType('simple_attachment')
+            ->setCreatorId($resource->getTypist())
+            ->setType('main_document')
             ->setTypeLabel(_MAIN_DOCUMENT);
         $resourcesAttached[] = $resourceAttached;
 
@@ -70,7 +90,6 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
     }
 
     public function canUpdateResourcesInSignatureBook(
-        Resource $resource,
         CurrentUserInterface $currentUser
     ): bool {
 

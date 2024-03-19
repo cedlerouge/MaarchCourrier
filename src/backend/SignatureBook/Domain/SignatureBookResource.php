@@ -3,6 +3,7 @@
 namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 class SignatureBookResource implements JsonSerializable
 {
@@ -10,6 +11,7 @@ class SignatureBookResource implements JsonSerializable
     private ?int $resIdMaster = null;
     private string $title;
     private string $chrono;
+    private int $creatorId;
     private ?int $signedResId = null;
     private string $type;
     private string $typeLabel;
@@ -90,6 +92,25 @@ class SignatureBookResource implements JsonSerializable
     public function setChrono(string $chrono): self
     {
         $this->chrono = $chrono;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreatorId(): int
+    {
+        return $this->creatorId;
+    }
+
+    /**
+     * @param int $creatorId
+     *
+     * @return SignatureBookResource
+     */
+    public function setCreatorId(int $creatorId): self
+    {
+        $this->creatorId = $creatorId;
         return $this;
     }
 

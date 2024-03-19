@@ -52,10 +52,32 @@ class RetrieveSignatureBook
             throw new ResourceDoesNotExistProblem();
         }
 
-        $resourcesToSign = $this->signatureBookRepository->getIncomingMainResourceAndAttachments($resource);
-        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource, $this->currentUser);
+        $resourcesToSign = [];
+        $incomingMainResource = $this->signatureBookRepository->getIncomingMainResource($resource)[0];
+        if (!empty($resource->getFilename()) && !empty($resource->getIntegrations()['inSignatureBook'])) {
+            $resourcesToSign[] = $incomingMainResource;
+        }
+        $incomingAttachments = $this->signatureBookRepository->getIncomingAttachments($resource);
+        $resourcesToSign = array_merge($resourcesToSign, $incomingAttachments);
+
+        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource);
+        $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($this->currentUser);
+
+        foreach ($resourcesAttached as $resourceAttached) {
+            $isCreator = $resourceAttached->getCreatorId() == $this->currentUser->getCurrentUserId();
+            $canModify = $canUpdateDocuments || $isCreator;
+            $canDelete = $canModify; // Deletion permission follows the same logic as modification permission.
+
+            $resourceAttached->setCanModify($canModify);
+            $resourceAttached->setCanDelete($canDelete);
+        }
+
+        if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
+            $incomingMainResource->setCanModify($canUpdateDocuments);
+            $resourcesAttached[] = $incomingMainResource;
+        }
+
         $canSignResources = $this->accessControlService->hasPrivilege('sign_document', $this->currentUser);
-        $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($resource, $this->currentUser);
         $hasActiveWorkflow = $this->signatureBookRepository->doesMainResourceHasActiveWorkflow($resource);
         $workflowUserId = $this->signatureBookRepository->getWorkflowUserIdByCurrentStep($resource);
 

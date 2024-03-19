@@ -25,17 +25,23 @@ interface SignatureBookRepositoryInterface
      *
      * @return SignatureBookResource[]
      */
-    public function getIncomingMainResourceAndAttachments(Resource $resource): array;
+    public function getIncomingMainResource(Resource $resource): array;
 
     /**
      * @param Resource $resource
-     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      */
-    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array;
+    public function getIncomingAttachments(Resource $resource): array;
 
-    public function canUpdateResourcesInSignatureBook(Resource $resource, CurrentUserInterface $currentUser): bool;
+    /**
+     * @param Resource $resource
+     *
+     * @return SignatureBookResource[]
+     */
+    public function getAttachments(Resource $resource): array;
+
+    public function canUpdateResourcesInSignatureBook(CurrentUserInterface $currentUser): bool;
 
     /**
      * @param Resource $resource

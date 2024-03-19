@@ -32,28 +32,42 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
      * @return SignatureBookResource[]
      * @throws Exception
      */
-    public function getIncomingMainResourceAndAttachments(Resource $resource): array
+    public function getIncomingMainResource(Resource $resource): array
+    {
+        $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
+
+        $resourceToSign = (new SignatureBookResource())
+            ->setResId($resource->getResId())
+            ->setTitle($resource->getSubject())
+            /**
+             * TODO : Refacto Resource domain to replace property 'typist' of int by 'creator' of UserInterface
+             */
+            ->setCreatorId($resource->getTypist())
+            ->setChrono($resource->getAltIdentifier())
+            ->setType('main_document')
+            ->setTypeLabel(_MAIN_DOCUMENT)
+            ->setIsConverted($isConverted);
+
+        return [$resourceToSign];
+    }
+
+    /**
+     * @param Resource $resource
+     *
+     * @return SignatureBookResource[]
+     * @throws Exception
+     */
+    public function getIncomingAttachments(Resource $resource): array
     {
         $resourcesToSign = [];
-
-        if (!empty($resource->getFilename()) && !empty($resource->getIntegrations()['inSignatureBook'])) {
-            $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
-
-            $resourceToSign = new SignatureBookResource();
-            $resourceToSign->setResId($resource->getResId())
-                ->setTitle($resource->getSubject())
-                ->setChrono($resource->getAltIdentifier())
-                ->setType('main_document')
-                ->setTypeLabel(_MAIN_DOCUMENT)
-                ->setIsConverted($isConverted);
-            $resourcesToSign[] = $resourceToSign;
-        }
 
         $attachmentTypeLabel = AttachmentTypeModel::getByTypeId(['typeId' => 'incoming_mail_attachment']);
         $attachmentTypeLabel = $attachmentTypeLabel['label'];
 
         $incomingMailAttachments = AttachmentModel::get([
-            'select' => ['res_id', 'res_id_master', 'title', 'identifier', 'relation', 'attachment_type', 'format'],
+            'select' => [
+                'res_id', 'res_id_master', 'title', 'identifier', 'relation', 'attachment_type', 'format', 'typist'
+            ],
             'where'  => ['res_id_master = ?', 'attachment_type = ?', "status not in ('DEL', 'TMP', 'OBS')"],
             'data'   => [$resource->getResId(), 'incoming_mail_attachment']
         ]);
@@ -61,11 +75,15 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         foreach ($incomingMailAttachments as $value) {
             $isConverted = ConvertPdfController::canConvert(['extension' => $value['format']]);
 
-            $resourceToSign = new SignatureBookResource();
-            $resourceToSign->setResId($value['res_id'])
+            $resourceToSign = (new SignatureBookResource())
+                ->setResId($value['res_id'])
                 ->setResIdMaster($value['res_id_master'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
+                /**
+                 * TODO : Refacto Resource domain to replace property 'typist' of int by 'creator' of UserInterface
+                 */
+                ->setCreatorId($value['typist'])
                 ->setSignedResId($value['relation'])
                 ->setType($value['attachment_type'])
                 ->setTypeLabel($attachmentTypeLabel)
@@ -78,12 +96,11 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
     /**
      * @param Resource $resource
-     * @param ?CurrentUserInterface $currentUser
      *
      * @return SignatureBookResource[]
      * @throws Exception
      */
-    public function getAttachments(Resource $resource, CurrentUserInterface $currentUser = null): array
+    public function getAttachments(Resource $resource): array
     {
         $resourcesAttached = [];
 
@@ -115,63 +132,36 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
             'orderBy'   => [$orderBy]
         ]);
 
-        $canUpdateDocuments = false;
-        if (!empty($currentUser)) {
-            $canUpdateDocuments = $this->canUpdateResourcesInSignatureBook($resource, $currentUser);
-        }
-
         foreach ($attachments as $value) {
             $isConverted = ConvertPdfController::canConvert(['extension' => $value['format']]);
-
-            $canModify = false;
-            $canDelete = false;
-            if ($canUpdateDocuments || (!empty($currentUser) && $value['typist'] == $currentUser->getCurrentUserId())) {
-                $canModify = true;
-                $canDelete = true;
-            }
 
             $resourceAttached = new SignatureBookResource();
             $resourceAttached->setResId($value['res_id'])
                 ->setResIdMaster($value['res_id_master'])
                 ->setTitle($value['title'])
                 ->setChrono($value['identifier'] ?? '')
+                /**
+                 * TODO : Refacto Resource domain to replace property 'typist' of int by 'creator' of UserInterface
+                 */
+                ->setCreatorId($value['typist'])
                 ->setSignedResId($value['relation'])
                 ->setType($value['attachment_type'])
                 ->setTypeLabel($value['attachment_type_label'])
-                ->setIsConverted($isConverted)
-                ->setCanModify($canModify)
-                ->setCanDelete($canDelete);
+                ->setIsConverted($isConverted);
             $resourcesAttached[] = $resourceAttached;
         }
 
-
-        // if main resource is not integrated to signatureBook, then add to attlocauxachments
-        if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
-            $isConverted = ConvertPdfController::canConvert(['extension' => $resource->getFormat()]);
-
-            $resourceAttached = new SignatureBookResource();
-            $resourceAttached->setResId($resource->getResId())
-                ->setTitle($resource->getSubject())
-                ->setChrono($resource->getAltIdentifier())
-                ->setType('main_document')
-                ->setTypeLabel(_MAIN_DOCUMENT)
-                ->setIsConverted($isConverted)
-                ->setCanModify($canUpdateDocuments);
-            $resourcesAttached[] = $resourceAttached;
-        }
 
         return $resourcesAttached;
     }
 
     /**
-     * @param Resource $resource
      * @param CurrentUserInterface $currentUser
      *
      * @return bool
      * @throws Exception
      */
     public function canUpdateResourcesInSignatureBook(
-        Resource $resource,
         CurrentUserInterface $currentUser
     ): bool {
 
@@ -189,7 +179,7 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
 
         $redirectCheck = DatabaseModel::select([
             'select'    => ['true'],
-            'table'      => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc', 'redirected_baskets rb'],
+            'table'     => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc', 'redirected_baskets rb'],
             'left_join' => ['gb.group_id = ug.group_id', 'ug.id = uc.group_id', 'ug.id = rb.group_id '],
             'where'     => [
                 'uc.user_id = rb.owner_user_id',
