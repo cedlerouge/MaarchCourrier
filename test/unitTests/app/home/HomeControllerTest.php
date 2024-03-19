@@ -1,16 +1,15 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-*
-* @brief   HomeControllerTest
-*
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ * @brief   HomeControllerTest
+ *
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace MaarchCourrier\Tests\app\home;
 
@@ -32,7 +31,7 @@ class FHomeControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $response = $homeController->get($request, new Response());
-        $responseBody = json_decode((string) $response->getBody());
+        $responseBody = json_decode((string)$response->getBody());
 
         $this->assertNotNull($responseBody->regroupedBaskets);
         $this->assertNotNull($responseBody->assignedBaskets);
@@ -54,8 +53,11 @@ class FHomeControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $response = $homeController->getMaarchParapheurDocuments($request, new Response());
-        $responseBody = json_decode((string) $response->getBody());
-        if (!empty($responseBody->errors)) {
+        $responseBody = json_decode((string)$response->getBody());
+        if (
+            !empty($responseBody->errors) &&
+            $responseBody->errors == 'Could not resolve host: preview.maarchparapheur.com'
+        ) {
             $this->markTestSkipped('No documents found or an error occurred in MaarchParapheur response.');
         } else {
             foreach ($responseBody->documents as $document) {
@@ -75,11 +77,7 @@ class FHomeControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $response = $homeController->getMaarchParapheurDocuments($request, new Response());
-        $responseBody = json_decode((string) $response->getBody(), true);
-        if (empty($responseBody['errors'])) {
-            $this->markTestSkipped('No documents found or an error occurred in MaarchParapheur response.');
-        } else {
-            $this->assertSame('User is not linked to Maarch Parapheur', $responseBody['errors']);
-        }
+        $responseBody = json_decode((string)$response->getBody(), true);
+        $this->assertSame('User is not linked to Maarch Parapheur', $responseBody['errors']);
     }
 }
