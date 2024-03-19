@@ -51,22 +51,22 @@ export class AppGuardAdmin implements CanActivate {
         );
     }
 
-    handleNavigaton(state: RouterStateSnapshot): boolean {
-        let $state: boolean = false;
+    handleNavigaton(routerState: RouterStateSnapshot): boolean {
+        let state: boolean = false;
 
         const tokenInfo: string = this.authService.getToken();
 
         if (tokenInfo !== null) {
             this.headerService.hideSideBar = false;
             this.headerService.sideBarAdmin = true;
-            this.authService.setCachedUrl(state.url.replace(/^\//g, ''));
-            $state = true;
+            this.authService.setCachedUrl(routerState.url.replace(/^\//g, ''));
+            state = true;
         } else {
             this.authService.logout(false, true);
-            $state = false;
+            state = false;
         }
-        console.debug(`GUARD ADMIN: ${state.url} DONE !`);
-        return $state;
+        console.debug(`GUARD ADMIN: ${routerState.url} DONE !`);
+        return state;
     }
 
     hasAdminPrivilege(state: RouterStateSnapshot): boolean {
