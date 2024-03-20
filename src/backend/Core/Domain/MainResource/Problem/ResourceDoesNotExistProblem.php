@@ -14,9 +14,9 @@
 
 namespace MaarchCourrier\Core\Domain\MainResource\Problem;
 
-use Exception;
+use MaarchCourrier\Core\Domain\Problem\Problem;
 
-class ResourceDoesNotExistProblem extends Exception
+class ResourceDoesNotExistProblem extends Problem
 {
     public function __construct()
     {

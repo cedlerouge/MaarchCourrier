@@ -43,13 +43,13 @@ class RetrieveSignatureBook
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
-        if (!$this->mainResourceAccessControl->hasRightByResId($resId, $this->currentUser->getCurrentUser())) {
-            throw new MainResourceOutOfPerimeterProblem();
-        }
-
         $resource = $this->mainResourceRepository->getMainResourceData($resId);
         if ($resource === null) {
             throw new ResourceDoesNotExistProblem();
+        }
+
+        if (!$this->mainResourceAccessControl->hasRightByResId($resource->getResId(), $this->currentUser->getCurrentUser())) {
+            throw new MainResourceOutOfPerimeterProblem();
         }
 
         $resourcesToSign = [];
