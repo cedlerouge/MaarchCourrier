@@ -26,6 +26,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     @Output() closeResListPanel = new EventEmitter<any>();
 
     resources: ResourcesList[] = [];
+    selectedResource: ResourcesList;
 
     itemSize: number = 5;
 
@@ -69,6 +70,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     goToResource(resource: ResourcesList): void {
+        this.selectedResource = resource;
         this.actionsService.goToResource(this.resources, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
             // Check if the resource is locked
             if (resourcesToProcess.indexOf(resource.resId) > -1) {
