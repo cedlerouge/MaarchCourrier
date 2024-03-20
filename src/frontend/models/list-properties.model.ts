@@ -1,4 +1,4 @@
-export interface ListProperties {
+export interface ListPropertiesInterface {
     'id': number;
     'groupId': number;
     'targetId': number;

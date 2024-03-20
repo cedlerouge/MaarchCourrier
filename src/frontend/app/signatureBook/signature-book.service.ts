@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { ListProperties } from "@models/list-properties.model";
+import { ListPropertiesInterface } from "@models/list-properties.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
@@ -48,7 +48,7 @@ export class SignatureBookService {
 
     getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard'): Promise<ResourcesList[] | []> {
         return new Promise((resolve) => {
-            const listProperties: ListProperties = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
+            const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
             this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * listProperties.pageSize;
             this.limit = listProperties.pageSize;
             const filters: string = this.filtersListService.getUrlFilters();
@@ -90,28 +90,36 @@ export class SignatureBookService {
 
     toggleMailTracking(resource: ResourcesList) {
         if (!resource.mailTracking) {
-            this.http.post('../rest/resources/follow', { resources: [resource.resId] }).pipe(
-                tap(() => {
-                    this.headerService.nbResourcesFollowed++;
-                    resource.mailTracking = !resource.mailTracking;
-                }),
-                catchError((err: any) => {
-                    this.notifications.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.followResources(resource);
         } else {
-            this.http.delete('../rest/resources/unfollow', { body: { resources: [resource.resId] } }).pipe(
-                tap(() => {
-                    this.headerService.nbResourcesFollowed--;
-                    resource.mailTracking = !resource.mailTracking;
-                }),
-                catchError((err: any) => {
-                    this.notifications.handleSoftErrors(err);
-                    return of(false);
-                })
-            ).subscribe();
+            this.unFollowResources(resource);
         }
+    }
+
+    followResources(resource: ResourcesList): void {
+        this.http.post('../rest/resources/follow', { resources: [resource.resId] }).pipe(
+            tap(() => {
+                this.headerService.nbResourcesFollowed++;
+                resource.mailTracking = !resource.mailTracking;
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    unFollowResources(resource: ResourcesList): void {
+        this.http.delete('../rest/resources/unfollow', { body: { resources: [resource.resId] } }).pipe(
+            tap(() => {
+                this.headerService.nbResourcesFollowed--;
+                resource.mailTracking = !resource.mailTracking;
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }
 

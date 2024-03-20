@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ListProperties } from '@models/list-properties.model';
+import { ListPropertiesInterface } from '@models/list-properties.model';
 
 @Injectable()
 export class FiltersListService {
@@ -19,7 +19,7 @@ export class FiltersListService {
 
         this.listsPropertiesIndex = 0;
         this.mode = mode;
-        let listProperties: ListProperties;
+        let listProperties: ListPropertiesInterface;
 
         if (this.listsProperties != null) {
             this.listsProperties.forEach((element, index) => {

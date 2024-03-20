@@ -24,7 +24,7 @@ class FakeLoader implements TranslateLoader {
     }
 }
 
-describe('SignatureBookStampsComponent', () => {
+describe('ResourcesListComponent', () => {
     let component: ResourcesListComponent;
     let fixture: ComponentFixture<ResourcesListComponent>;
     let translateService: TranslateService;
