@@ -142,7 +142,7 @@
 
 .drawer-res-list {
     ::ng-deep .mat-drawer-inner-container {
-        overflow: auto !important;
+        overflow: hidden !important;
     }
 }
 
