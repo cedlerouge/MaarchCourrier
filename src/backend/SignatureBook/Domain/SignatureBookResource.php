@@ -3,7 +3,6 @@
 namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
-use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 class SignatureBookResource implements JsonSerializable
 {
