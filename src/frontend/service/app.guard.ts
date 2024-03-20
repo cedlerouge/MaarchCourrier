@@ -46,8 +46,8 @@ export class AppGuard implements CanActivate {
         );
     }
 
-    handleNavigaton(route: ActivatedRouteSnapshot, RouterState: RouterStateSnapshot): boolean {
-        const urlArr = RouterState.url.replace(/^\/+|\/+$/g, '').split('/');
+    handleNavigaton(route: ActivatedRouteSnapshot, routerState: RouterStateSnapshot): boolean {
+        const urlArr = routerState.url.replace(/^\/+|\/+$/g, '').split('/');
         let state = false;
 
         if (route.url.join('/') === 'login') {
@@ -74,14 +74,14 @@ export class AppGuard implements CanActivate {
                 } else {
                     this.headerService.sideBarAdmin = false;
                 }
-                this.authService.setCachedUrl(RouterState.url.replace(/^\//g, ''));
+                this.authService.setCachedUrl(routerState.url.replace(/^\//g, ''));
                 state = true;
             } else {
                 this.authService.logout(false, true);
                 state = false;
             }
         }
-        console.debug(`GUARD: ${RouterState.url} DONE !`);
+        console.debug(`GUARD: ${routerState.url} DONE !`);
         return state;
     }
 }
