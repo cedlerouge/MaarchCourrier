@@ -29,7 +29,7 @@ export class AppGuardAdmin implements CanActivate {
 
         if (this.appService.coreLoaded) {
             if (!this.handleNavigaton(state) || !this.hasAdminPrivilege(state)) {
-                this.router.navigate(['/administration']);
+                this.router.navigate(['/home']);
                 return of(false);
             }
 
@@ -40,7 +40,7 @@ export class AppGuardAdmin implements CanActivate {
             map(() => {
                 const isAuth: boolean = this.handleNavigaton(state);
                 if (!isAuth || !this.hasAdminPrivilege(state)) {
-                    this.router.navigate(['/administration']);
+                    this.router.navigate(['/home']);
                 }
                 return isAuth;
             }),
@@ -76,6 +76,6 @@ export class AppGuardAdmin implements CanActivate {
             id: privilege.id,
             route: privilege.route
         }));
-        return userPrivileges.indexOf(adminPrivilegesService.find((item: any) => urlState.startsWith(item.route))?.id) > -1;
+        return userPrivileges.indexOf(adminPrivilegesService.find((item: any) => urlState.startsWith(item.route))?.id) > -1 || userPrivileges.includes('admin');
     }
 }
