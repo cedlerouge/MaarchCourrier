@@ -23,6 +23,11 @@
 
     .subject {
         font-weight: bold;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 1;
     }
 }
 

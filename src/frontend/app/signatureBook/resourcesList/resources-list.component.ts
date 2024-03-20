@@ -37,7 +37,8 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         public signatureBookService: SignatureBookService,
         private actionsService: ActionsService,
         private router: Router,
-        private notifications: NotificationService
+        private notifications: NotificationService,
+        private actionService: ActionsService
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -70,16 +71,24 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     goToResource(resource: ResourcesList): void {
+        this.loading = true;
         this.selectedResource = resource;
         this.actionsService.goToResource(this.resources, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
             // Check if the resource is locked
             if (resourcesToProcess.indexOf(resource.resId) > -1) {
                 const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resource.resId}`;
                 this.router.navigate([path]);
+                this.unlockResource();
             } else {
                 this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
             }
         });
+        this.loading = false;
+    }
+
+    async unlockResource(): Promise<void> {
+        this.actionService.stopRefreshResourceLock();
+        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
 }
 
