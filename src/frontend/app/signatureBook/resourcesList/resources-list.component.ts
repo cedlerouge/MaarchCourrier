@@ -28,7 +28,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     resources: ResourcesList[] = [];
     selectedResource: ResourcesList;
 
-    itemSize: number = 5;
+    itemSize: number = this.signatureBookService.limit;
 
     loading: boolean = true;
 
@@ -49,17 +49,13 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     async ngAfterViewInit() {
-        this.loadDatas();
         // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async () => {
             const end: number = this.viewport.getRenderedRange().end;
-            const total: number = this.viewport.getDataLength();
             // Check if scrolled to the end of the list
-            if (end === total) {
-                // Keep loading data until resources list count
-                while (this.resources.length <= this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
-                    this.loadDatas();
-                }
+            if (this.resources.length > 0 && end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
+                // load data
+                this.loadDatas();
             }
         });
     }
