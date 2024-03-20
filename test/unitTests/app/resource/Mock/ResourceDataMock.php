@@ -29,11 +29,21 @@ class ResourceDataMock implements MainResourceRepositoryInterface
     public int $resId = 1;
     public bool $convertedPdfByIdHasFailed = false;
     public bool $latestPdfVersionExist = true;
+    public bool $isIntegratedInSignatureBook = false;
+    public bool $isIntegratedInShipping = false;
 
     public function getMainResourceData(int $resId): ?Resource
     {
         if (!$this->doesResourceExist) {
             return null;
+        }
+
+        $integrations = [];
+        if ($this->isIntegratedInSignatureBook) {
+            $integrations['inSignatureBook'] = true;
+        }
+        if ($this->isIntegratedInShipping) {
+            $integrations['inShipping'] = true;
         }
 
         $resourceFromDB = [
@@ -45,7 +55,8 @@ class ResourceDataMock implements MainResourceRepositoryInterface
             'version'       => 1,
             'fingerprint'   => $this->fingerprint,
             'format'        => 'pdf',
-            'typist'        => 1
+            'typist'        => 1,
+            'integrations'  => json_encode($integrations)
         ];
 
         $resource = Resource::createFromArray($resourceFromDB);

@@ -56,7 +56,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws ResourceDoesNotExistProblem
      * @throws MainResourceOutOfPerimeterProblem
      */
-    public function testGetSignatureBookWhenUserHasNoRightAccessReturnAProblem(): void
+    public function testCannotAccessSignatureBookWhenUserHasNoRightAccessReturnAProblem(): void
     {
         $this->mainResourceAccessControlServiceMock->doesUserHasRight = false;
         $this->expectExceptionObject(new MainResourceOutOfPerimeterProblem());
@@ -68,7 +68,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testIfMainResourceDoesNotExistReturnAProblem(): void
+    public function testCannotGetMainResourceWhenResourceDoesNotExistReturnAProblem(): void
     {
         $this->resourceDataMock->doesResourceExist = false;
         $this->expectExceptionObject(new ResourceDoesNotExistProblem());
@@ -80,47 +80,75 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCannotUpdateDocumentsInSignatureBookIfBasketOrRedirectBasketParamIsDisableOrDoesNotExist(): void
+    public function testGetMainResourceInResourcesToSignWhenIntegrateInSignatoryBook(): void
+    {
+        $this->resourceDataMock->isIntegratedInSignatureBook = true;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+
+        $this->assertNotEmpty($signatureBook->getResourcesToSign());
+        $this->assertSame('main_document', $signatureBook->getResourcesToSign()[0]->getType());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testGetMainResourceInResourcesAttachedWhenNotIntegratedInSignatoryBook(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttachedSize = count($signatureBook->getResourcesAttached());
+
+        $this->assertNotEmpty($signatureBook->getResourcesToSign());
+        $this->assertNotSame('main_document', $signatureBook->getResourcesToSign()[0]->getType());
+        $this->assertSame('main_document', $signatureBook->getResourcesAttached()[$resourcesAttachedSize - 1]->getType());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanUpdateDocumentsInSignatureBookBasketWhenBasketParamIsEnable(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+
+        $this->assertIsBool($signatureBook->isCanUpdateResources());
+        $this->assertTrue($signatureBook->isCanUpdateResources());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanUpdateDocumentsInSignatureBookBasketWhenRedirectBasketParamIsEnable()
+    {
+        $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookBasket = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+
+        $this->assertIsBool($signatureBook->isCanUpdateResources());
+        $this->assertTrue($signatureBook->isCanUpdateResources());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotUpdateDocumentsInSignatureBookBasketWhenParamDoesNotExistInUserBasketAndInRedirectBasket()
     {
         $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookBasket = false;
         $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookRedirectBasket = false;
 
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
-        $this->assertNotEmpty($signatureBook->getResourcesToSign());
         $this->assertIsBool($signatureBook->isCanUpdateResources());
         $this->assertFalse($signatureBook->isCanUpdateResources());
     }
 
-    /**
-     * @return void
-     * @throws MainResourceOutOfPerimeterProblem
-     * @throws ResourceDoesNotExistProblem
-     */
-    public function testCanUpdateDocumentsInSignatureBookIfBasketParamIsEnable(): void
-    {
-        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
-
-        $this->assertNotEmpty($signatureBook->getResourcesToSign());
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertTrue($signatureBook->isCanUpdateResources());
-    }
-
-    /**
-     * @return void
-     * @throws MainResourceOutOfPerimeterProblem
-     * @throws ResourceDoesNotExistProblem
-     */
-    public function testCanUpdateDocumentsInSignatureBookIfUserDoesNotHaveBasketButHaveRedirectBasketAndParamIsEnable(): void
-    {
-        $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookBasket = false;
-
-        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
-
-        $this->assertNotEmpty($signatureBook->getResourcesToSign());
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertTrue($signatureBook->isCanUpdateResources());
-    }
 
     /**
      * @return void
