@@ -19,11 +19,12 @@ import { SignatureBookService } from './signature-book.service';
 export class SignatureBookComponent implements OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
-    @ViewChild('drawerResList', { static: true }) drawerResList: MatDrawer;
+    @ViewChild('drawerResList', { static: false }) drawerResList: MatDrawer;
 
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
     loading: boolean = true;
+    loadResList: boolean = false;
 
     resId: number = 0;
     basketId: number;
@@ -150,5 +151,12 @@ export class SignatureBookComponent implements OnDestroy {
     async unlockResource(): Promise<void> {
         this.actionService.stopRefreshResourceLock();
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+    }
+
+    toggleResList(): void {
+        this.loadResList = true;
+        setTimeout(() => {
+            this.drawerResList?.toggle();
+        }, 0);
     }
 }

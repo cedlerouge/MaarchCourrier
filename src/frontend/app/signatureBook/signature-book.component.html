@@ -9,7 +9,7 @@
                     <i class="fa fa-angle-left" style="height: auto"></i>
                     <span>{{ 'lang.previous' | translate }}</span>
                 </button>
-                <button mat-icon-button (click)="drawerResList.toggle(); signatureBookService.getResourcesBasket(userId, groupId, basketId)">
+                <button mat-icon-button (click)="toggleResList()">
                     <mat-icon class="fa fa-inbox"></mat-icon>
                 </button>
                 <button mat-button class="next-button" [title]="'lang.nextRes' | translate">
@@ -34,14 +34,13 @@
         </div>
     </div>
     <mat-drawer-container style="flex: 1" [hasBackdrop]="true">
-        <mat-drawer #drawerResList class="drawer-res-list" mode="over" [ngStyle]="{'width': '500px'}">
+        <mat-drawer *ngIf="loadResList" #drawerResList class="drawer-res-list" mode="over" [ngStyle]="{'width': '500px'}">
             <app-resources-list
                 [resId]="+resId"
                 [userId]="userId"
                 [groupId]="groupId"
                 [basketId]="basketId"
                 [basketLabel]="signatureBookService.basketLabel"
-                [resources]="signatureBookService.resourcesList"
                 (closeResListPanel)="drawerResList.close()"></app-resources-list>
         </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">

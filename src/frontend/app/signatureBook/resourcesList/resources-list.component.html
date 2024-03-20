@@ -4,44 +4,56 @@
     </button>
     <span class="basket-label" role="heading">{{ basketLabel }}</span>
 </mat-toolbar>
-<div *ngFor="let resource of resources" [class.selectedRes]="resource.resId === resId"
-    class="resourcesList"
-    style="cursor: pointer;"
-    (click)="goToResource(resource)">
-    <div class="row">
-        <div class="col-md-1">
-            <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
-                [title]="(resource.mailTracking === true ? 'lang.untrackThisMail' : 'lang.trackThisMail' ) | translate"
-                (click)="$event.stopPropagation(); toggleMailTracking(resource)">
-                <mat-icon [ngClass]="[resource.mailTracking ? 'fas fa-star' : 'far fa-star']" aria-hidden="true"></mat-icon>
-            </button>
+<div *ngIf="loading" style="display:flex;height:100%;">
+    <mat-spinner style="margin:auto;"></mat-spinner>
+</div>
+<div class="virtual-scroll-viewport-div ">
+    <cdk-virtual-scroll-viewport appendOnly [itemSize]="5" class="example-viewport" #viewport>
+        <div *cdkVirtualFor="let resource of resources" class="resourcesList" [class.selectedRes]="resource.resId === resId"
+            style="cursor: pointer;"
+            (click)="goToResource(resource)">
+            <div class="row">
+                <div class="col-md-1">
+                    <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
+                        [title]="(resource.mailTracking === true ? 'lang.untrackThisMail' : 'lang.trackThisMail' ) | translate"
+                        (click)="$event.stopPropagation(); signatureBookService.toggleMailTracking(resource)">
+                        <mat-icon [ngClass]="[resource.mailTracking ? 'fas fa-star' : 'far fa-star']" aria-hidden="true"></mat-icon>
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <mat-icon *ngIf="resource.statusLabel === null" class="status-icon" [title]="'lang.undefined' | translate"
+                        [ngStyle]="{'color': resource.priorityColor}" color="primary"
+                        aria-hidden="true"
+                        class="fa fa-question-circle fa-2x">
+                    </mat-icon>
+                    <mat-icon *ngIf="resource.statusLabel !== null" class="status-icon" [title]="resource.statusLabel"
+                        [ngStyle]="{'color': resource.priorityColor}" color="primary"
+                        aria-hidden="true"
+                        class="{{resource.statusImage.substring(0, 2)}} {{resource.statusImage}} {{resource.statusImage.substring(0, 2)}}-2x">
+                    </mat-icon>
+                    <span [title]="resource.chrono">{{resource.chrono}}</span>
+                </div>
+                <div class="col-md col-md-date">
+                    <mat-icon color="default" class="fa fa-calendar-alt" aria-hidden="true" [title]="'lang.creationDate' | translate"></mat-icon>
+                    <span class="date" [title]="('lang.creationDate' | translate) + ' : ' + (resource.creationDate | date:'dd/MM/y')">{{resource.creationDate | date:'dd/MM/y'}}</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-1">
+                    <mat-checkbox color="primary"
+                        aria-label="Sélectionner cette ressource"
+                        (click)="$event.stopPropagation();">
+                    </mat-checkbox>
+                </div>
+                <div class="col-md-2" [title]="resource.subject">
+                   <span class="subject">{{resource.subject | shorten : 35:'...'}}</span>
+                </div>
+                <div class="col-md col-md-date">
+                    <mat-icon color="default" class="fa fa-bell" aria-hidden="true" [title]="'lang.processLimitDate' | translate"></mat-icon>
+                    <span class="date" [title]="resource.processLimitDate === null ? ('lang.undefined' | translate) : (('lang.processLimitDate' | translate) + ' : ' + (resource.processLimitDate | date:'dd/MM/y'))">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
+                </div>
+            </div>
+            <mat-divider></mat-divider>
         </div>
-        <div class="col-md-2">
-            <mat-icon class="status-icon" [title]="resource.statusLabel"
-                [ngStyle]="{'color': resource.priorityColor}" color="primary"
-                aria-hidden="true"
-                class="{{resource.statusImage.charAt(0)}}{{resource.statusImage.charAt(1)}} {{resource.statusImage}} {{resource.statusImage.charAt(0)}}{{resource.statusImage.charAt(1)}}-2x">
-            </mat-icon> <span [title]="resource.chrono">{{resource.chrono}}</span>
-        </div>
-        <div class="col-md col-md-date">
-            <mat-icon color="default" class="fa fa-calendar-alt" aria-hidden="true" [title]="'lang.creationDate' | translate"></mat-icon>
-            <span class="date" [title]="resource.creationDate | date:'dd/MM/y'">{{resource.creationDate | date:'dd/MM/y'}}</span>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-1">
-            <mat-checkbox color="primary"
-                aria-label="Sélectionner cette ressource"
-                (click)="$event.stopPropagation();">
-            </mat-checkbox>
-        </div>
-        <div class="col-md-2" [title]="resource.subject">
-           <span class="subject">{{resource.subject | shorten : 30:'...'}}</span>
-        </div>
-        <div class="col-md col-md-date">
-            <mat-icon color="default" class="fa fa-bell" aria-hidden="true" [title]="'lang.processLimitDate' | translate"></mat-icon>
-            <span class="date" [title]="resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
-        </div>
-    </div>
-    <mat-divider></mat-divider>
+      </cdk-virtual-scroll-viewport>
 </div>

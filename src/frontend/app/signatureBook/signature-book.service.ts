@@ -14,8 +14,13 @@ import { catchError, map, of, tap } from "rxjs";
 export class SignatureBookService {
     config = new SignatureBookConfig();
 
-    resourcesList: ResourcesList[];
+    resourcesList: ResourcesList[] = [];
     resourcesListIds: number[] = [];
+
+    resourcesListCount: number = null;
+    offset: number = null;
+    limit: number = null;
+
     basketLabel: string = '';
 
     constructor(
@@ -41,16 +46,21 @@ export class SignatureBookService {
         })
     }
 
-    getResourcesBasket(userId: number, groupId: number, basketId: number): Promise<ResourcesList[] | []> {
+    getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard'): Promise<ResourcesList[] | []> {
         return new Promise((resolve) => {
             const listProperties: ListProperties = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
-            const offset: number =  parseInt(listProperties.page) * listProperties.pageSize;
-            const limit: number = listProperties.pageSize;
+            this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * listProperties.pageSize;
+            this.limit = listProperties.pageSize;
             const filters: string = this.filtersListService.getUrlFilters();
 
-            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${limit}&offset=${offset}${filters}`).pipe(
+            if (mode === 'infiniteScroll') {
+                this.offset = this.offset + this.limit;
+            }
+
+            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${this.limit}&offset=${this.offset}${filters}`).pipe(
                 map((data: any) => {
                     this.resourcesListIds = data.allResources;
+                    this.resourcesListCount = data.count;
                     this.basketLabel = data.basketLabel;
                     const resourcesList = data.resources.map((resource: any) => new ResourcesList({
                         resId: resource.resId,
