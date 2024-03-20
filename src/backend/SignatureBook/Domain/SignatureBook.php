@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief ListInstance class
+ * @brief SignatureBook class
  * @author dev@maarch.org
  */
 

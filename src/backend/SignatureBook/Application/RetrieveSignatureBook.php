@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief continueCircuitAction class
+ * @brief RetrieveSignatureBook class
  * @author dev@maarch.org
  */
 
