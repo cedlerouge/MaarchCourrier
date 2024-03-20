@@ -50,7 +50,7 @@
                 </div>
                 <div class="col-md col-md-date">
                     <mat-icon color="default" class="fa fa-bell" aria-hidden="true" [title]="'lang.processLimitDate' | translate"></mat-icon>
-                    <span class="date" [title]="resource.processLimitDate === null ? ('lang.undefined' | translate) : (('lang.processLimitDate' | translate) + ' : ' + (resource.processLimitDate | date:'dd/MM/y'))">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
+                    <span class="date" [title]="('lang.processLimitDate' | translate) + ' : ' + (resource.processLimitDate === null ? ('lang.undefined' | translate) : (resource.processLimitDate | date:'dd/MM/y'))">{{resource.processLimitDate === null ? ('lang.undefined' | translate) : resource.processLimitDate | date:'dd/MM/y'}}</span>
                 </div>
             </div>
             <mat-divider></mat-divider>
