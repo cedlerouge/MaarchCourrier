@@ -294,9 +294,8 @@ class CurlModel
                         is_array($subvalue) && !empty($subvalue['isFile']) && !empty($subvalue['filename']) &&
                         !empty($subvalue['content'])
                     ) {
-                        $postData .= "Content-Disposition: form-data;
-                            name=\"{$key}\";
-                            filename=\"{$subvalue['filename']}\"\r\n";
+                        $postData .= "Content-Disposition: form-data;" .
+                            " name=\"{$key}\"; filename=\"{$subvalue['filename']}\"\r\n";
                         $postData .= "\r\n{$subvalue['content']}\r\n";
                     } else {
                         $postData .= "Content-Disposition: form-data; name=\"{$key}\"\r\n";
