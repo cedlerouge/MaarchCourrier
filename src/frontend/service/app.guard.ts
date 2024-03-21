@@ -46,16 +46,16 @@ export class AppGuard implements CanActivate {
         );
     }
 
-    handleNavigaton(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-        const urlArr = state.url.replace(/^\/+|\/+$/g, '').split('/');
-        let $state = false;
+    handleNavigaton(route: ActivatedRouteSnapshot, routerState: RouterStateSnapshot): boolean {
+        const urlArr = routerState.url.replace(/^\/+|\/+$/g, '').split('/');
+        let state = false;
 
         if (route.url.join('/') === 'login') {
             if (this.authService.isAuth()) {
                 this.router.navigate(['/home']);
-                $state = false;
+                state = false;
             } else {
-                $state = true;
+                state = true;
             }
         } else {
             const tokenInfo = this.authService.getToken();
@@ -74,15 +74,15 @@ export class AppGuard implements CanActivate {
                 } else {
                     this.headerService.sideBarAdmin = false;
                 }
-                this.authService.setCachedUrl(state.url.replace(/^\//g, ''));
-                $state = true;
+                this.authService.setCachedUrl(routerState.url.replace(/^\//g, ''));
+                state = true;
             } else {
                 this.authService.logout(false, true);
-                $state = false;
+                state = false;
             }
         }
-        console.debug(`GUARD: ${state.url} DONE !`);
-        return $state;
+        console.debug(`GUARD: ${routerState.url} DONE !`);
+        return state;
     }
 }
 
