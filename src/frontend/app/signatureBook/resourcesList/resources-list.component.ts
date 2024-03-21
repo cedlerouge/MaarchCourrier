@@ -23,7 +23,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     @Input() userId: number;
     @Input() basketLabel: string = '';
 
-    @Output() closeResListPanel = new EventEmitter<any>();
+    @Output() closeResListPanel = new EventEmitter<string>();
 
     resources: ResourcesList[] = [];
     selectedResource: ResourcesList;
@@ -67,11 +67,11 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     goToResource(resource: ResourcesList): void {
-        this.loading = true;
         this.selectedResource = resource;
         this.actionsService.goToResource(this.resources, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
             // Check if the resource is locked
             if (resourcesToProcess.indexOf(resource.resId) > -1) {
+                this.closeResListPanel.emit('goToResource');
                 const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resource.resId}`;
                 this.router.navigate([path]);
                 this.unlockResource();
@@ -79,7 +79,6 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
                 this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
             }
         });
-        this.loading = false;
     }
 
     async unlockResource(): Promise<void> {

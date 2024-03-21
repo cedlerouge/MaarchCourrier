@@ -159,4 +159,9 @@ export class SignatureBookComponent implements OnDestroy {
             this.drawerResList?.toggle();
         }, 0);
     }
+
+    closeResListPanel(value: string) {
+        this.loading = value === 'goToResource';
+        this.drawerResList.close()
+    }
 }

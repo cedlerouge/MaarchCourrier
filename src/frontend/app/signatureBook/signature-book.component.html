@@ -33,7 +33,7 @@
             </div>
         </div>
     </div>
-    <mat-drawer-container style="flex: 1" [hasBackdrop]="true">
+    <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
         <mat-drawer *ngIf="loadResList" #drawerResList class="drawer-res-list" mode="over" [ngStyle]="{'width': '500px'}">
             <app-resources-list
                 [resId]="+resId"
@@ -41,7 +41,7 @@
                 [groupId]="groupId"
                 [basketId]="basketId"
                 [basketLabel]="signatureBookService.basketLabel"
-                (closeResListPanel)="drawerResList.close()"></app-resources-list>
+                (closeResListPanel)="closeResListPanel($event)"></app-resources-list>
         </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">
             <div class="signatorybook-contents">
