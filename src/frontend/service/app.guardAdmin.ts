@@ -76,6 +76,6 @@ export class AppGuardAdmin implements CanActivate {
             id: privilege.id,
             route: privilege.route
         }));
-        return userPrivileges.indexOf(adminPrivilegesService.find((item: any) => urlState.startsWith(item.route))?.id) > -1 || userPrivileges.includes('admin');
+        return (userPrivileges.indexOf(adminPrivilegesService.find((item: any) => urlState.startsWith(item.route))?.id) > -1) || (urlState === '/administration' && userPrivileges.includes('admin'));
     }
 }
