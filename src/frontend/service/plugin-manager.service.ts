@@ -4,6 +4,11 @@ import { HttpClient } from '@angular/common/http';
 import { NotificationService } from './notification/notification.service';
 import { AuthService } from './auth.service';
 
+export interface PluginConfigInterface {
+    id: string;
+    url: string;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -23,15 +28,15 @@ export class PluginManagerService {
         return this.notificationService;
     }
 
-    async storePlugins(pluginNames: string[]) {
-        for (let index = 0; index < pluginNames.length; index++) {
-            const pluginName = pluginNames[index];
+    async storePlugins(plugins: PluginConfigInterface[]) {
+        for (let index = 0; index < plugins.length; index++) {
+            const plugin = plugins[index];
             try {
-                const plugin = await this.loadRemotePlugin(pluginName);
-                this.plugins[pluginName] = plugin;
-                console.info(`PLUGIN ${pluginName} LOADED`);
+                const pluginContent = await this.loadRemotePlugin(plugin);
+                this.plugins[plugin.id] = pluginContent;
+                console.info(`PLUGIN ${plugin.id} LOADED`);
             } catch (err) {
-                console.error(`PLUGIN ${pluginName} FAILED: ${err}`);
+                console.error(`PLUGIN ${plugin.id} FAILED: ${err}`);
             }
         }
     }
@@ -58,11 +63,11 @@ export class PluginManagerService {
         }
     }
 
-    loadRemotePlugin(pluginName: string): Promise<any> {
+    loadRemotePlugin(plugin: PluginConfigInterface): Promise<any> {
         return loadRemoteModule({
             type: 'module',
-            remoteEntry: `../plugins/${pluginName}/remoteEntry.js`,
-            exposedModule: `./${pluginName}`,
+            remoteEntry: `${plugin.url}/remoteEntry.js`,
+            exposedModule: `./${plugin.id}`,
         });
     }
 }
