@@ -32,12 +32,18 @@ class RetrieveSignedResource
      * @param SignedResource $signedResource
      * @param string $urlRetrieveDoc
      * @return SignedResource
+     * @throws NoEncodedContentRetrievedProblem
      */
-    public function retrieveSignedResourceContent(SignedResource $signedResource, string $urlRetrieveDoc): SignedResource
-    {
+    public function retrieveSignedResourceContent(
+        SignedResource $signedResource,
+        string $urlRetrieveDoc
+    ): SignedResource {
         $accessToken = $this->currentUser->generateNewToken();
 
-        $curlResponseContent = $this->maarchParapheurSignatureService->retrieveDocumentSign($accessToken, $urlRetrieveDoc);
+        $curlResponseContent = $this->maarchParapheurSignatureService->retrieveDocumentSign(
+            $accessToken,
+            $urlRetrieveDoc
+        );
 
         if (!empty($curlResponseContent['response']['encodedDocument'])) {
             $signedResource->setEncodedContent($curlResponseContent['response']['encodedDocument']);
