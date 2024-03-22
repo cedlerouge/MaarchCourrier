@@ -7,7 +7,7 @@
 </div>
 <div class="virtual-scroll-viewport-div" [style.height]="calculateContainerHeight()">
     <cdk-virtual-scroll-viewport appendOnly [itemSize]="itemSize" class="virtual-scroll-viewport" #viewport>
-        <div *cdkVirtualFor="let resource of resources" class="resourcesList" #resourceElement [class.selectedRes]="resource.resId === resId" (wheel)="handleScrollEvent($event)"
+        <div *cdkVirtualFor="let resource of resources" #resourceElement [class.selectedRes]="resource.resId === resId" (wheel)="handleScrollEvent($event)"
             style="cursor: pointer;"
             (click)="goToResource(resource)">
             <div class="row">

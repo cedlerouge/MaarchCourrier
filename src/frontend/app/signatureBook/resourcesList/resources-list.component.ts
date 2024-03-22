@@ -56,6 +56,14 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     async ngAfterViewInit() {
+        const selectedResource: ResourcesList = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
+        const index: number = this.resources.indexOf(selectedResource);
+        if (index !== -1) {
+            // get the position of the element
+            const position = index * this.itemSize;
+            // scroll to the element
+            this.viewport.scrollToIndex(position);
+        }
         // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
             this.scrolledIndex = index;

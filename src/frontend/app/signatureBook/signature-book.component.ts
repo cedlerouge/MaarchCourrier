@@ -162,6 +162,6 @@ export class SignatureBookComponent implements OnDestroy {
 
     closeResListPanel(value: string) {
         this.loading = value === 'goToResource';
-        this.drawerResList.close()
+        this.drawerResList.close();
     }
 }
