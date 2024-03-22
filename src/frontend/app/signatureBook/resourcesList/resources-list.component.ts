@@ -76,7 +76,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     */
     async loadDatas(isPrevious: boolean = false): Promise<void> {
         // Fetch data from the backend
-        const array: any = await this.signatureBookService.getResourcesBasket(
+        const array: ResourcesList[] = await this.signatureBookService.getResourcesBasket(
             this.userId,
             this.groupId,
             this.basketId,
