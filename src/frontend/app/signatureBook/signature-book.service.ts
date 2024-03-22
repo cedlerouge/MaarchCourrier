@@ -49,8 +49,8 @@ export class SignatureBookService {
     getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard'): Promise<ResourcesList[] | []> {
         return new Promise((resolve) => {
             const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
-            this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * listProperties.pageSize;
-            this.limit = listProperties.pageSize;
+            this.limit = 15;
+            this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * this.limit;
             const filters: string = this.filtersListService.getUrlFilters();
 
             if (mode === 'infiniteScroll') {

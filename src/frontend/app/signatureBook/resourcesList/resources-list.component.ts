@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ResourcesList } from '@models/resources-list.model';
 import { TranslateService } from '@ngx-translate/core';
 import { SignatureBookService } from '../signature-book.service';
@@ -16,6 +16,7 @@ import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 export class ResourcesListComponent implements AfterViewInit, OnInit {
 
     @ViewChild('viewport', { static: false }) viewport: CdkVirtualScrollViewport;
+    @ViewChild('resourceElement', { static: false }) resourceElement: ElementRef;
 
     @Input() resId: number;
     @Input() basketId: number;
@@ -28,7 +29,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     resources: ResourcesList[] = [];
     selectedResource: ResourcesList;
 
-    itemSize: number = this.signatureBookService.limit;
+    itemSize: number = 0;
 
     loading: boolean = true;
 
@@ -38,7 +39,8 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         private actionsService: ActionsService,
         private router: Router,
         private notifications: NotificationService,
-        private actionService: ActionsService
+        private actionService: ActionsService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -46,15 +48,20 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
             this.resources = await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
         }
         this.loading = false;
+        // Get element height
+        setTimeout(() => {
+            const elementHeight = this.resourceElement?.nativeElement?.getBoundingClientRect()?.height;
+            this.itemSize = elementHeight;
+        }, 10);
     }
 
     async ngAfterViewInit() {
         // Handle scrolledIndexChange event
-        this.viewport.scrolledIndexChange.subscribe(async () => {
+        this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
             const end: number = this.viewport.getRenderedRange().end;
             // Check if scrolled to the end of the list
-            if (this.resources.length > 0 && end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
-                // load data
+            if (end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
+            // load data
                 this.loadDatas();
             }
         });
@@ -84,6 +91,32 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     async unlockResource(): Promise<void> {
         this.actionService.stopRefreshResourceLock();
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+    }
+
+    calculateContainerHeight(): string {
+        const resourcesLength = this.resources.length;
+        // This should be the height of your item in pixels
+        const itemHeight = this.itemSize;
+        // The final number of items to keep visible
+        const visibleItems = 15;
+        setTimeout(() => {
+            /* Makes CdkVirtualScrollViewport to refresh its internal size values after
+            * changing the container height. This should be delayed with a "setTimeout"
+            * because we want it to be executed after the container has effectively
+            * changed its height. Another option would be a resize listener for the
+            * container and call this line there but it may requires a library to detect the resize event.
+            * */
+            this.viewport.checkViewportSize();
+        }, 50);
+        // It calculates the container height for the first items in the list
+        // It means the container will expand until it reaches `itemSizepx`
+        // and will keep this size.
+        if (resourcesLength <= visibleItems) {
+            return `${itemHeight * resourcesLength}px`;
+        }
+        // This function is called from the template so it ensures the container will have
+        // the final height if number of items are greater than the value in "visibleItems".
+        return `${itemHeight * visibleItems}px`;
     }
 }
 

@@ -5,9 +5,9 @@
 <div *ngIf="loading" style="display:flex;height:100%;">
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
-<div class="virtual-scroll-viewport-div">
-    <cdk-virtual-scroll-viewport appendOnly [itemSize]="5" class="virtual-scroll-viewport" #viewport>
-        <div *cdkVirtualFor="let resource of resources" class="resourcesList" [class.selectedRes]="resource.resId === resId"
+<div class="virtual-scroll-viewport-div" [style.height]="calculateContainerHeight()">
+    <cdk-virtual-scroll-viewport appendOnly [itemSize]="itemSize" class="virtual-scroll-viewport" #viewport>
+        <div *cdkVirtualFor="let resource of resources" class="resourcesList" #resourceElement [class.selectedRes]="resource.resId === resId"
             style="cursor: pointer;"
             (click)="goToResource(resource)">
             <div class="row">
