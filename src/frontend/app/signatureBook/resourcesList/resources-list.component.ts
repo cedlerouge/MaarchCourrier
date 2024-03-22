@@ -56,14 +56,8 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     async ngAfterViewInit() {
-        const selectedResource: ResourcesList = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
-        const index: number = this.resources.indexOf(selectedResource);
-        if (index !== -1) {
-            // get the position of the element
-            const position = index * this.itemSize;
-            // scroll to the element
-            this.viewport.scrollToIndex(position);
-        }
+        this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
+        this.scrollToSelectedResource();
         // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
             this.scrolledIndex = index;
@@ -121,6 +115,9 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
                 // Navigate to the resource
                 this.router.navigate([path]);
 
+                // scroll to the selected resource
+                this.scrollToSelectedResource();
+
                 // Unlock the resource
                 this.unlockResource();
             } else {
@@ -175,6 +172,21 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
                 // Load previous data
                 this.loadDatas(true);
             }
+        }
+    }
+
+    /**
+     * Scrolls to the selected resource.
+    */
+    scrollToSelectedResource(): void {
+        // Get the index of the selected resource
+        const index: number = this.resources.indexOf(this.selectedResource);
+        // If the selected resource exists in the list
+        if (index !== -1) {
+            // Calculate the position of the element
+            const position = index * this.itemSize;
+            // Scroll to the element
+            this.viewport.scrollToIndex(position);
         }
     }
 }
