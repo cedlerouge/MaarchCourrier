@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ResourcesList } from '@models/resources-list.model';
 import { TranslateService } from '@ngx-translate/core';
 import { SignatureBookService } from '../signature-book.service';
@@ -30,6 +30,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     selectedResource: ResourcesList;
 
     itemSize: number = 0;
+    scrolledIndex: number = 0;
 
     loading: boolean = true;
 
@@ -40,7 +41,6 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         private router: Router,
         private notifications: NotificationService,
         private actionService: ActionsService,
-        private cdr: ChangeDetectorRef
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -58,31 +58,65 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     async ngAfterViewInit() {
         // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
+            this.scrolledIndex = index;
             const end: number = this.viewport.getRenderedRange().end;
             // Check if scrolled to the end of the list
-            if (end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
+            if (index > 0 && end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
             // load data
                 this.loadDatas();
             }
         });
     }
 
-    async loadDatas(): Promise<void> {
-        const array = await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId, 'infiniteScroll');
-        const concatArray: ResourcesList[] = this.resources.concat(array);
-        this.resources = concatArray;
+    /**
+     * Asynchronously loads data from the backend.
+     * @param isPrevious Indicates whether to load previous data.
+    */
+    async loadDatas(isPrevious: boolean = false): Promise<void> {
+        // Fetch data from the backend
+        const array: any = await this.signatureBookService.getResourcesBasket(
+            this.userId,
+            this.groupId,
+            this.basketId,
+            'infiniteScroll',
+            isPrevious
+        );
+
+        // Concatenate fetched data with existing data
+        if (!isPrevious) {
+            const concatArray: ResourcesList[] = this.resources.concat(array);
+            this.resources = concatArray;
+        } else {
+            // If loading previous data, prepend fetched data to existing data
+            this.resources = [...array, ...this.resources];
+        }
     }
 
+    /**
+     * Navigates to the selected resource.
+     * @param resource The resource to navigate to.
+    */
     goToResource(resource: ResourcesList): void {
+        // Set the selected resource
         this.selectedResource = resource;
+
+        // Call the actions service to navigate to the resource
         this.actionsService.goToResource(this.resources, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
             // Check if the resource is locked
             if (resourcesToProcess.indexOf(resource.resId) > -1) {
+                // Emit event to close the resource list panel
                 this.closeResListPanel.emit('goToResource');
+
+                // Construct the path to navigate to
                 const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resource.resId}`;
+
+                // Navigate to the resource
                 this.router.navigate([path]);
+
+                // Unlock the resource
                 this.unlockResource();
             } else {
+                // Notify user that the resource is locked
                 this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
             }
         });
@@ -117,6 +151,23 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         // This function is called from the template so it ensures the container will have
         // the final height if number of items are greater than the value in "visibleItems".
         return `${itemHeight * visibleItems}px`;
+    }
+
+    /**
+     * Handles the scroll event triggered by mouse wheel.
+     * @param event The wheel event object.
+    */
+    handleScrollEvent(event: WheelEvent) {
+        // Check if scrolling upwards
+        if (event.deltaY < 0) {
+            // If scrolled to the top and more data is available and offset is greater than 0
+            if (this.scrolledIndex === 0 &&
+            this.resources.length < this.signatureBookService.resourcesListCount &&
+            this.signatureBookService.offset > 0) {
+                // Load previous data
+                this.loadDatas(true);
+            }
+        }
     }
 }
 

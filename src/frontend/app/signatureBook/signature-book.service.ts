@@ -46,15 +46,19 @@ export class SignatureBookService {
         })
     }
 
-    getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard'): Promise<ResourcesList[] | []> {
+    getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard', isPrevious: boolean = false): Promise<ResourcesList[] | []> {
         return new Promise((resolve) => {
             const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
-            this.limit = 15;
+            this.limit = isPrevious ? listProperties.pageSize : 15;
             this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * this.limit;
             const filters: string = this.filtersListService.getUrlFilters();
 
             if (mode === 'infiniteScroll') {
-                this.offset = this.offset + this.limit;
+                if (isPrevious) {
+                    this.offset = this.offset - this.limit;
+                } else {
+                    this.offset = this.offset + this.limit;
+                }
             }
 
             this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${this.limit}&offset=${this.offset}${filters}`).pipe(
