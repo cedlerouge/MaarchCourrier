@@ -21,26 +21,15 @@ class SignatureBook implements JsonSerializable
     /**
      * @var SignatureBookResource[]
      */
-    private array $resourcesToSign;
+    private array $resourcesToSign = [];
     /**
      * @var SignatureBookResource[]
      */
-    private array $resourcesAttached;
-    private bool $canSignResources;
-    private bool $canUpdateResources;
-    private bool $hasActiveWorkflow;
-    private bool $isCurrentWorkflowUser;
-
-    public function __construct()
-    {
-        $this->resourcesToSign = [];
-        $this->resourcesAttached = [];
-        $this->canSignResources = false;
-        $this->canUpdateResources = false;
-        $this->hasActiveWorkflow = false;
-        $this->isCurrentWorkflowUser = false;
-    }
-
+    private array $resourcesAttached = [];
+    private bool $canSignResources = false;
+    private bool $canUpdateResources = false;
+    private bool $hasActiveWorkflow = false;
+    private bool $isCurrentWorkflowUser = false;
 
     /**
      * @return SignatureBookResource[]

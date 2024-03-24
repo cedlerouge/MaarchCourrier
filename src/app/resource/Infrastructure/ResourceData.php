@@ -17,7 +17,8 @@ namespace Resource\Infrastructure;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
 use Resource\controllers\ResController;
 use Resource\Domain\Docserver;
 use Resource\Domain\Resource;
@@ -25,7 +26,7 @@ use Resource\Domain\ResourceConverted;
 use Resource\models\ResModel;
 use SrcCore\models\TextFormatModel;
 
-class ResourceData implements MainResourceRepositoryInterface
+class ResourceData implements ResourceRepositoryInterface
 {
     public function getMainResourceData(int $resId): ?Resource
     {

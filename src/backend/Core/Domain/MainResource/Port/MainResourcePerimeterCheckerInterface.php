@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief MaarchParapheurSignatureService class
+ * @brief Main Resource Perimeter Checker Interface
  * @author dev@maarch.org
  */
 
@@ -16,7 +16,7 @@ namespace MaarchCourrier\Core\Domain\MainResource\Port;
 
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
-interface MainResourceAccessControlInterface
+interface MainResourcePerimeterCheckerInterface
 {
     /**
      * Check if user has rights over the resource

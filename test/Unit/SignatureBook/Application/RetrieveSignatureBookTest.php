@@ -12,43 +12,126 @@
  * @author  dev@maarch.org
  */
 
-namespace Unit\SignatureBook\Application;
+namespace MaarchCourrier\Tests\Unit\SignatureBook\Application;
 
+use MaarchCourrier\Attachment\Domain\Attachment;
+use MaarchCourrier\Attachment\Domain\AttachmentType;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
+use MaarchCourrier\DocumentStorage\Domain\Document;
+use MaarchCourrier\MainResource\Domain\Integration;
+use MaarchCourrier\MainResource\Domain\MainResource;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
-use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
-use MaarchCourrier\Tests\Unit\Authorization\Mock\AccessControlServiceMock;
-use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourceAccessControlServiceMock;
+use MaarchCourrier\Tests\Unit\Attachment\Mock\AttachmentRepositoryMock;
+use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourcePerimeterCheckerServiceMock;
+use MaarchCourrier\Tests\Unit\Authorization\Mock\PrivilegeCheckerMock;
+use MaarchCourrier\Tests\Unit\DocumentConversion\Stub\ConvertPdfServiceStub;
+use MaarchCourrier\Tests\Unit\MainResource\Mock\MainResourceRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Repository\VisaWorkflowRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\SignatureBookRepositoryMock;
+use MaarchCourrier\User\Domain\User;
 use PHPUnit\Framework\TestCase;
 
 class RetrieveSignatureBookTest extends TestCase
 {
     private RetrieveSignatureBook $retrieveSignatureBook;
+    private MainResourceRepositoryMock $mainResourceRepositoryMock;
     private CurrentUserInformationsMock $currentUserInformationsMock;
-    private AccessControlServiceMock $accessControlServiceMock;
-    private MainResourceAccessControlServiceMock $mainResourceAccessControlServiceMock;
-    private ResourceDataMock $resourceDataMock;
+    private MainResourcePerimeterCheckerServiceMock $mainResourceAccessControlServiceMock;
     private SignatureBookRepositoryMock $signatureBookRepositoryMock;
+    private ConvertPdfServiceStub $convertPdfServiceStub;
+    private AttachmentRepositoryMock $attachmentRepositoryMock;
+    private PrivilegeCheckerMock $privilegeCheckerMock;
+    private VisaWorkflowRepositoryMock $visaWorkflowRepositoryMock;
+
+    private User $user;
 
     protected function setUp(): void
     {
+        $this->mainResourceRepositoryMock = new MainResourceRepositoryMock();
         $this->currentUserInformationsMock = new CurrentUserInformationsMock();
-        $this->accessControlServiceMock = new AccessControlServiceMock();
-        $this->mainResourceAccessControlServiceMock = new MainResourceAccessControlServiceMock();
-        $this->resourceDataMock = new ResourceDataMock();
+        $this->mainResourceAccessControlServiceMock = new MainResourcePerimeterCheckerServiceMock();
         $this->signatureBookRepositoryMock = new SignatureBookRepositoryMock();
+        $this->convertPdfServiceStub = new ConvertPdfServiceStub();
+
+        $this->attachmentRepositoryMock = new AttachmentRepositoryMock();
+        $this->privilegeCheckerMock = new PrivilegeCheckerMock();
+        $this->visaWorkflowRepositoryMock = new VisaWorkflowRepositoryMock();
+
+        $this->user = new User();
+        $this->user->setId(1);
+        $document = (new Document())
+            ->setFileName('the-file.pdf')
+            ->setFileExtension('pdf');
+        $integration = (new Integration())->setInSignatureBook(false);
+        $this->mainResourceRepositoryMock->mainResource = (new MainResource())
+            ->setResId(42)
+            ->setSubject('Courrier Test')
+            ->setTypist($this->user)
+            ->setChrono('MAARCH/2024/1')
+            ->setDocument($document)
+            ->setIntegration($integration);
+
+        $this->attachmentRepositoryMock->attachmentsInSignatureBook = $this->makeAttachmentList($document);
 
         $this->retrieveSignatureBook = new RetrieveSignatureBook(
+            $this->mainResourceRepositoryMock,
             $this->currentUserInformationsMock,
-            $this->accessControlServiceMock,
             $this->mainResourceAccessControlServiceMock,
-            $this->resourceDataMock,
-            $this->signatureBookRepositoryMock
+            $this->signatureBookRepositoryMock,
+            $this->convertPdfServiceStub,
+            $this->attachmentRepositoryMock,
+            $this->privilegeCheckerMock,
+            $this->visaWorkflowRepositoryMock
         );
+    }
+
+    private function makeAttachmentList(Document $document): array
+    {
+        $list = [];
+        $signableAttachmentType = (new AttachmentType())
+            ->setType('response_project')
+            ->setLabel('Projet de réponse')
+            ->setSignable(true);
+        $nonSignableAttachmentType = (new AttachmentType())
+            ->setType('simple_attachment')
+            ->setLabel('Pièce jointe')
+            ->setSignable(false);
+
+        $list[] = (new Attachment())
+            ->setResId(1)
+            ->setTitle('Demande de document')
+            ->setChrono('MAARCH/2024/1')
+            ->setMainResource($this->mainResourceRepositoryMock->mainResource)
+            ->setTypist($this->user)
+            ->setRelation(1)
+            ->setType($signableAttachmentType)
+            ->setDocument($document);
+        $list[] = (new Attachment())
+            ->setResId(2)
+            ->setTitle('Piece identité')
+            ->setChrono('MAARCH/2024/2')
+            ->setMainResource($this->mainResourceRepositoryMock->mainResource)
+            ->setTypist($this->user)
+            ->setRelation(1)
+            ->setType($nonSignableAttachmentType)
+            ->setDocument($document);
+
+        return $list;
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotGetMainResourceWhenResourceDoesNotExistReturnAProblem(): void
+    {
+        $this->mainResourceRepositoryMock->mainResource = null;
+        $this->expectExceptionObject(new ResourceDoesNotExistProblem());
+        $this->retrieveSignatureBook->getSignatureBook(100);
     }
 
     /**
@@ -68,11 +151,22 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCannotGetMainResourceWhenResourceDoesNotExistReturnAProblem(): void
+    public function testCanUpdateDocumentsInSignatureBookBasketWhenBasketParamIsEnable(): void
     {
-        $this->resourceDataMock->doesResourceExist = false;
-        $this->expectExceptionObject(new ResourceDoesNotExistProblem());
-        $this->retrieveSignatureBook->getSignatureBook(100);
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $this->assertTrue($signatureBook->isCanUpdateResources());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotUpdateDocumentsInSignatureBookBasketWhenBasketParamIsDisable()
+    {
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $this->assertFalse($signatureBook->isCanUpdateResources());
     }
 
     /**
@@ -82,7 +176,8 @@ class RetrieveSignatureBookTest extends TestCase
      */
     public function testGetMainResourceInResourcesToSignWhenIntegrateInSignatoryBook(): void
     {
-        $this->resourceDataMock->isIntegratedInSignatureBook = true;
+        $integration = (new Integration())->setInSignatureBook(true);
+        $this->mainResourceRepositoryMock->mainResource->setIntegration($integration);
 
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
@@ -98,11 +193,84 @@ class RetrieveSignatureBookTest extends TestCase
     public function testGetMainResourceInResourcesAttachedWhenNotIntegratedInSignatoryBook(): void
     {
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
-        $resourcesAttachedSize = count($signatureBook->getResourcesAttached());
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $this->assertSame('main_document', $resourcesAttached[0]->getType());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanModifyMainResourceWhenNotIntegrateInSignatoryBookAndSignatureBookParamIsEnable(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanModifyMainResourceWhenNotIntegratedAndSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
+    {
+        $this->currentUserInformationsMock->userId = 1;
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotModifyMainResourceWhenNotIntegrateAndSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
+    {
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertFalse($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotDeleteMainResourceInSignatureBook(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertFalse($resourcesAttached[0]->isCanDelete());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanGetASignableAttachmentInSignatureBookFromMainResource(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
         $this->assertNotEmpty($signatureBook->getResourcesToSign());
-        $this->assertNotSame('main_document', $signatureBook->getResourcesToSign()[0]->getType());
-        $this->assertSame('main_document', $signatureBook->getResourcesAttached()[$resourcesAttachedSize - 1]->getType());
+        $this->assertSame('response_project', $signatureBook->getResourcesToSign()[0]->getType());
     }
 
     /**
@@ -110,12 +278,12 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCanUpdateDocumentsInSignatureBookBasketWhenBasketParamIsEnable(): void
+    public function testCanGetANonSignableAttachmentInSignatureBookFromMainResource(): void
     {
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertTrue($signatureBook->isCanUpdateResources());
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertSame('simple_attachment', $signatureBook->getResourcesAttached()[1]->getType());
     }
 
     /**
@@ -123,14 +291,12 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCanUpdateDocumentsInSignatureBookBasketWhenRedirectBasketParamIsEnable()
+    public function testIsMainDocumentConvertedInSignatureBook(): void
     {
-        $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookBasket = false;
-
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertTrue($signatureBook->isCanUpdateResources());
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($signatureBook->getResourcesAttached()[0]->isConverted());
     }
 
     /**
@@ -138,16 +304,170 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCannotUpdateDocumentsInSignatureBookBasketWhenParamDoesNotExistInUserBasketAndInRedirectBasket()
+    public function testIsASignableAttachmentDocumentConvertedInSignatureBook(): void
     {
-        $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookBasket = false;
-        $this->signatureBookRepositoryMock->isUpdateResourcesInSignatureBookRedirectBasket = false;
-
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertFalse($signatureBook->isCanUpdateResources());
+        $this->assertNotEmpty($signatureBook->getResourcesToSign());
+        $this->assertTrue($signatureBook->getResourcesToSign()[0]->isConverted());
     }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testIsANonSignableAttachmentDocumentConvertedInSignatureBook(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($signatureBook->getResourcesAttached()[1]->isConverted());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanModifyANonSignableAttachmentWhenSignatureBookParamIsEnable(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanModifyANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
+    {
+        $this->currentUserInformationsMock->userId = 1;
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotModifyANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
+    {
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertFalse($lastResourceAttached->isCanModify());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanDeleteANonSignableAttachmentWhenSignatureBookParamIsEnable(): void
+    {
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanDelete());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCanDeleteANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsDocCreator(): void
+    {
+        $this->currentUserInformationsMock->userId = 1;
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertTrue($lastResourceAttached->isCanDelete());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotDeleteANonSignableAttachmentWhenSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
+    {
+        $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
+
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $resourcesAttached = $signatureBook->getResourcesAttached();
+        $lastResourceAttached = end($resourcesAttached);
+
+        $this->assertNotEmpty($signatureBook->getResourcesAttached());
+        $this->assertFalse($lastResourceAttached->isCanDelete());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testDoesSignatureBookResourceHasAnActiveWorkflow(): void
+    {
+        $this->visaWorkflowRepositoryMock->isActiveWorkflow = true;
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $this->assertTrue($signatureBook->isHasActiveWorkflow());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testIsCurrentUserTheSameInWorkflowStep(): void
+    {
+        $this->currentUserInformationsMock->userId = 1;
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $this->assertTrue($signatureBook->isCurrentWorkflowUser());
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testIsCurrentUserHasSignDocumentPrivilege(): void
+    {
+        $this->privilegeCheckerMock->hasPrivilege = true;
+        $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
+        $this->assertTrue($signatureBook->isCanSignResources());
+    }
+
+
+
+
+
+
+
+
 
 
     /**
@@ -159,15 +479,8 @@ class RetrieveSignatureBookTest extends TestCase
     {
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
 
-        $this->assertNotEmpty($signatureBook->getResourcesToSign());
         $this->assertContainsOnlyInstancesOf(SignatureBookResource::class, $signatureBook->getResourcesToSign());
 
-        $this->assertNotEmpty($signatureBook->getResourcesAttached());
         $this->assertContainsOnlyInstancesOf(SignatureBookResource::class, $signatureBook->getResourcesAttached());
-
-        $this->assertIsBool($signatureBook->isCanSignResources());
-        $this->assertIsBool($signatureBook->isCanUpdateResources());
-        $this->assertIsBool($signatureBook->isHasActiveWorkflow());
-        $this->assertIsBool($signatureBook->isCurrentWorkflowUser());
     }
 }

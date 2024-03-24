@@ -14,7 +14,8 @@
 
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock;
 
-use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
@@ -22,8 +23,7 @@ use Resource\Domain\Resource;
 class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 {
     public bool $hasActiveWorkflow = true;
-    public bool $isUpdateResourcesInSignatureBookBasket = true;
-    public bool $isUpdateResourcesInSignatureBookRedirectBasket = true;
+    public bool $canUpdateResourcesInSignatureBook = true;
     public int $workflowUserId = 19;
     public bool $isCurrentWorkflowUser = true;
 
@@ -89,16 +89,9 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
         return $resourcesAttached;
     }
 
-    public function canUpdateResourcesInSignatureBook(
-        CurrentUserInterface $currentUser
-    ): bool {
-
-        if ($this->isUpdateResourcesInSignatureBookBasket ||
-            $this->isUpdateResourcesInSignatureBookRedirectBasket) {
-            return true;
-        }
-
-        return false;
+    public function canUpdateResourcesInSignatureBook(MainResourceInterface $mainResource, UserInterface $user): bool
+    {
+        return $this->canUpdateResourcesInSignatureBook;
     }
 
     public function doesMainResourceHasActiveWorkflow(Resource $resource): bool

@@ -14,9 +14,9 @@
 
 namespace Resource\Application;
 
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
@@ -24,18 +24,18 @@ use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
 use Resource\Domain\Exceptions\ResourceHasNoFileException;
 use Resource\Domain\Exceptions\ResourceIncorrectVersionException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
-use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceConverted;
+use Resource\Domain\ResourceFileInfo;
 
 class RetrieveVersionResource
 {
-    private MainResourceRepositoryInterface $resourceRepository;
+    private ResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     public function __construct(
-        MainResourceRepositoryInterface $resourceRepositoryInterface,
+        ResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {

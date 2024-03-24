@@ -14,10 +14,10 @@
 
 namespace MaarchCourrier\Tests\Unit\Authorization\Mock;
 
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourcePerimeterCheckerInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
-class MainResourceAccessControlServiceMock implements MainResourceAccessControlInterface
+class MainResourcePerimeterCheckerServiceMock implements MainResourcePerimeterCheckerInterface
 {
     public bool $doesUserHasRight = true;
 

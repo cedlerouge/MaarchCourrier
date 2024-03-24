@@ -15,6 +15,8 @@
 namespace MaarchCourrier\SignatureBook\Domain;
 
 use JsonSerializable;
+use MaarchCourrier\Core\Domain\Attachment\Port\AttachmentInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
 
 class SignatureBookResource implements JsonSerializable
 {
@@ -30,9 +32,31 @@ class SignatureBookResource implements JsonSerializable
     private bool $canModify = false;
     private bool $canDelete = false;
 
-    /**
-     * @return int
-     */
+
+    public static function createFromMainResource(MainResourceInterface $mainResource): SignatureBookResource
+    {
+        return (new SignatureBookResource())
+            ->setResId($mainResource->getResId())
+            ->setTitle($mainResource->getSubject())
+            ->setCreatorId($mainResource->getTypist()->getId())
+            ->setChrono($mainResource->getChrono())
+            ->setType('main_document')
+            ->setTypeLabel('Document Principal');
+    }
+
+    public static function createFromAttachment(AttachmentInterface $attachment): SignatureBookResource
+    {
+        return (new SignatureBookResource())
+            ->setResId($attachment->getResId())
+            ->setResIdMaster($attachment->getMainResource()->getResId())
+            ->setTitle($attachment->getTitle())
+            ->setChrono($attachment->getChrono())
+            ->setCreatorId($attachment->getTypist()->getId())
+            ->setSignedResId($attachment->getRelation())
+            ->setType($attachment->getTypeIdentifier())
+            ->setTypeLabel($attachment->getTypeLabel());
+    }
+
     public function getResId(): int
     {
         return $this->resId;
@@ -242,16 +266,16 @@ class SignatureBookResource implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'resId' => $this->getResId(),
+            'resId'       => $this->getResId(),
             'resIdMaster' => $this->getResIdMaster(),
-            'title' => $this->getTitle(),
-            'chrono' => $this->getChrono(),
+            'title'       => $this->getTitle(),
+            'chrono'      => $this->getChrono(),
             'signedResId' => $this->getSignedResId(),
-            'type' => $this->getType(),
-            'typeLabel' => $this->getTypeLabel(),
+            'type'        => $this->getType(),
+            'typeLabel'   => $this->getTypeLabel(),
             'isConverted' => $this->isConverted(),
-            'canModify' => $this->isCanModify(),
-            'canDelete' => $this->isCanDelete()
+            'canModify'   => $this->isCanModify(),
+            'canDelete'   => $this->isCanDelete()
         ];
     }
 }

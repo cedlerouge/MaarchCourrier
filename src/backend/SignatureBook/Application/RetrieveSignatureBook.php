@@ -14,23 +14,31 @@
 
 namespace MaarchCourrier\SignatureBook\Application;
 
-use MaarchCourrier\Authorization\Domain\Port\AccessControlServiceInterface;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\Attachment\Port\AttachmentRepositoryInterface;
+use MaarchCourrier\Core\Domain\Authorization\Port\PrivilegeCheckerInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourcePerimeterCheckerInterface;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\DocumentConversion\Domain\Port\ConvertPdfServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Port\VisaWorkflowRepositoryInterface;
+use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
+use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 
 class RetrieveSignatureBook
 {
     public function __construct(
-        private readonly CurrentUserInterface $currentUser,
-        private readonly AccessControlServiceInterface $accessControlService,
-        private readonly MainResourceAccessControlInterface $mainResourceAccessControl,
         private readonly MainResourceRepositoryInterface $mainResourceRepository,
-        private readonly SignatureBookRepositoryInterface $signatureBookRepository
+        private readonly CurrentUserInterface $currentUser,
+        private readonly MainResourcePerimeterCheckerInterface $mainResourceAccessControl,
+        private readonly SignatureBookRepositoryInterface $signatureBookRepository,
+        private readonly ConvertPdfServiceInterface $convertPdfService,
+        private readonly AttachmentRepositoryInterface $attachmentRepository,
+        private readonly PrivilegeCheckerInterface $privilegeChecker,
+        private readonly VisaWorkflowRepositoryInterface $visaWorkflowRepository,
     ) {
     }
 
@@ -43,43 +51,89 @@ class RetrieveSignatureBook
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
-        $resource = $this->mainResourceRepository->getMainResourceData($resId);
+        $resource = $this->mainResourceRepository->getMainResourceByResId($resId);
         if ($resource === null) {
             throw new ResourceDoesNotExistProblem();
         }
 
-        if (!$this->mainResourceAccessControl->hasRightByResId($resource->getResId(), $this->currentUser->getCurrentUser())) {
+        $currentUser = $this->currentUser->getCurrentUser();
+        if (!$this->mainResourceAccessControl->hasRightByResId($resource->getResId(), $currentUser)) {
             throw new MainResourceOutOfPerimeterProblem();
         }
 
+        $canUpdateDocuments = $this->signatureBookRepository
+            ->canUpdateResourcesInSignatureBook($resource, $currentUser);
+
         $resourcesToSign = [];
-        $incomingMainResource = $this->signatureBookRepository->getIncomingMainResource($resource)[0];
-        if (!empty($resource->getFilename()) && !empty($resource->getIntegrations()['inSignatureBook'])) {
-            $resourcesToSign[] = $incomingMainResource;
+        $resourcesAttached = [];
+
+        $mainSignatureBookResource = SignatureBookResource::createFromMainResource($resource);
+
+        if (!empty($resource->getFilename())) {
+            $isConverted = $this->convertPdfService->canConvert($resource->getFileFormat());
+            $mainSignatureBookResource->setIsConverted($isConverted);
+
+            if ($resource->isInSignatureBook()) {
+                $resourcesToSign[] = $mainSignatureBookResource;
+            } else {
+                $isCreator = $resource->getTypist()->getId() == $this->currentUser->getCurrentUser()->getId();
+                $canModify = $canUpdateDocuments || $isCreator;
+
+                $mainSignatureBookResource->setCanModify($canModify);
+                $resourcesAttached[] = $mainSignatureBookResource;
+            }
         }
-        $incomingAttachments = $this->signatureBookRepository->getIncomingAttachments($resource);
+
+        /*
+        $attachments = $this->attachmentRepository->getIncomingMailByMainResource($resource);
+
+        $incomingAttachments = [];
+        foreach ($attachments as $attachment) {
+            $incomingAttachments[] = SignatureBookResource::createFromAttachment($attachment);
+        }
         $resourcesToSign = array_merge($resourcesToSign, $incomingAttachments);
 
-        $resourcesAttached = $this->signatureBookRepository->getAttachments($resource);
-        $canUpdateDocuments = $this->signatureBookRepository->canUpdateResourcesInSignatureBook($this->currentUser);
+        $attachments = $this->attachmentRepository->getNonIncomingMailNotInSignatureBookByMainResource($resource);
+        foreach ($attachments as $attachment) {
+            $resourcesAttached[] = SignatureBookResource::createFromAttachment($attachment);
+        }
 
         foreach ($resourcesAttached as $resourceAttached) {
             $isCreator = $resourceAttached->getCreatorId() == $this->currentUser->getCurrentUserId();
             $canModify = $canUpdateDocuments || $isCreator;
-            $canDelete = $canModify; // Deletion permission follows the same logic as modification permission.
+            $canDelete = $canModify;  //Deletion permission follows the same logic as modification permission.
 
             $resourceAttached->setCanModify($canModify);
             $resourceAttached->setCanDelete($canDelete);
         }
+        */
 
-        if (!empty($resource->getFilename()) && empty($resource->getIntegrations()['inSignatureBook'])) {
-            $incomingMainResource->setCanModify($canUpdateDocuments);
-            $resourcesAttached[] = $incomingMainResource;
+        // NEW ATTACHMENT -----
+        $attachments = $this->attachmentRepository->getAttachmentsInSignatureBookByMainResource($resource);
+        foreach ($attachments as $attachment) {
+            $isConverted = $this->convertPdfService->canConvert($attachment->getFileFormat());
+
+            if ($attachment->isSignable()) {
+                $resourcesToSign[] = (SignatureBookResource::createFromAttachment($attachment))
+                    ->setIsConverted($isConverted);
+            } else {
+                $isCreator = $attachment->getTypist()->getId() == $this->currentUser->getCurrentUser()->getId();
+                $canModify = $canUpdateDocuments || $isCreator;
+                $canDelete = $canModify;  //Deletion permission follows the same logic as modification permission.
+
+                $resourcesAttached[] = (SignatureBookResource::createFromAttachment($attachment))
+                    ->setIsConverted($isConverted)
+                    ->setCanModify($canModify)
+                    ->setCanDelete($canDelete);
+            }
         }
+        // -------
 
-        $canSignResources = $this->accessControlService->hasPrivilege('sign_document', $this->currentUser);
-        $hasActiveWorkflow = $this->signatureBookRepository->doesMainResourceHasActiveWorkflow($resource);
-        $workflowUserId = $this->signatureBookRepository->getWorkflowUserIdByCurrentStep($resource);
+        $canSignResources = $this->privilegeChecker->hasPrivilege($currentUser, new SignDocumentPrivilege());
+        $hasActiveWorkflow = $this->visaWorkflowRepository->isWorkflowActiveByMainResource($resource);
+
+        $currentWorkflowUser = $this->visaWorkflowRepository->getCurrentStepUserByMainResource($resource);
+        $isCurrentUserWorkflow = $currentWorkflowUser->getId() === $currentUser->getId();
 
         $signatureBook = new SignatureBook();
         $signatureBook->setResourcesToSign($resourcesToSign)
@@ -87,7 +141,7 @@ class RetrieveSignatureBook
             ->setCanSignResources($canSignResources)
             ->setCanUpdateResources($canUpdateDocuments)
             ->setHasActiveWorkflow($hasActiveWorkflow)
-            ->setIsCurrentWorkflowUser($workflowUserId == $this->currentUser->getCurrentUserId());
+            ->setIsCurrentWorkflowUser($isCurrentUserWorkflow);
 
         return $signatureBook;
     }

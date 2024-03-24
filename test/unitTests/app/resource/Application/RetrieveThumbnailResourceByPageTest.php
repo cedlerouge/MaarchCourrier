@@ -9,6 +9,7 @@
 
 namespace MaarchCourrier\Tests\app\resource\Application;
 
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceLogMock;
@@ -16,7 +17,6 @@ use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveThumbnailResourceByPage;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;

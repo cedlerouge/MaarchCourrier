@@ -15,11 +15,11 @@
 namespace MaarchCourrier\Authorization\Infrastructure;
 
 use Exception;
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceAccessControlInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourcePerimeterCheckerInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use Resource\controllers\ResController;
 
-class MainResourceAccessControlService implements MainResourceAccessControlInterface
+class MainResourcePerimeterCheckerService implements MainResourcePerimeterCheckerInterface
 {
     /**
      * @param int $resId

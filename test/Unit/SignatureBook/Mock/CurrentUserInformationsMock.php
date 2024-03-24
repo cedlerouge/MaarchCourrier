@@ -15,15 +15,16 @@
 namespace MaarchCourrier\Tests\Unit\SignatureBook\Mock;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\User\Domain\User;
 
 class CurrentUserInformationsMock implements CurrentUserInterface
 {
-    private int $userId = 13;
+    public int $userId = 13;
     public string $token = 'Bearer token test';
     public bool $newUserChanged = false;
 
-    public function getCurrentUser(): User
+    public function getCurrentUser(): UserInterface
     {
         return User::createFromArray([
             'id' => $this->userId

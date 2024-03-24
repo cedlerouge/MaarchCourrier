@@ -18,10 +18,12 @@ use Attachment\models\AttachmentTypeModel;
 use Convert\controllers\ConvertPdfController;
 use Entity\models\ListInstanceModel;
 use Exception;
-use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
+use SignatureBook\controllers\SignatureBookController;
 use SrcCore\models\DatabaseModel;
 
 class SignatureBookRepository implements SignatureBookRepositoryInterface
@@ -156,45 +158,18 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
     }
 
     /**
-     * @param CurrentUserInterface $currentUser
+     * @param MainResourceInterface $mainResource
+     * @param UserInterface $user
      *
      * @return bool
-     * @throws Exception
      */
-    public function canUpdateResourcesInSignatureBook(
-        CurrentUserInterface $currentUser
-    ): bool {
-
-        $check = DatabaseModel::select([
-            'select'    => ['true'],
-            'table'     => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc'],
-            'left_join' => ['gb.group_id = ug.group_id', 'ug.id = uc.group_id'],
-            'where'     => ['uc.user_id = ?', 'gb.list_event = ?', "gb.list_event_data->>'canUpdateDocuments' = ?"],
-            'data'      => [$currentUser->getCurrentUserId(), 'signatureBookAction', 'true']
+    public function canUpdateResourcesInSignatureBook(MainResourceInterface $mainResource, UserInterface $user): bool
+    {
+        return SignatureBookController::isResourceInSignatureBook([
+            'resId' => $mainResource->getResId(),
+            'userId' => $user->getId(),
+            'canUpdateDocuments' => true
         ]);
-
-        if (!empty($check)) {
-            return true;
-        }
-
-        $redirectCheck = DatabaseModel::select([
-            'select'    => ['true'],
-            'table'     => ['groupbasket gb', 'usergroups ug', 'usergroup_content uc', 'redirected_baskets rb'],
-            'left_join' => ['gb.group_id = ug.group_id', 'ug.id = uc.group_id', 'ug.id = rb.group_id '],
-            'where'     => [
-                'uc.user_id = rb.owner_user_id',
-                'rb.actual_user_id = ?',
-                'gb.list_event = ?',
-                "gb.list_event_data->>'canUpdateDocuments' = ?"
-            ],
-            'data'      => [$currentUser->getCurrentUserId(), 'signatureBookAction', 'true']
-        ]);
-
-        if (!empty($redirectCheck)) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

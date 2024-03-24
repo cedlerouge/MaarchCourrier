@@ -14,7 +14,8 @@
 
 namespace MaarchCourrier\SignatureBook\Domain\Port;
 
-use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
+use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 
@@ -41,7 +42,13 @@ interface SignatureBookRepositoryInterface
      */
     public function getAttachments(Resource $resource): array;
 
-    public function canUpdateResourcesInSignatureBook(CurrentUserInterface $currentUser): bool;
+    /**
+     * @param MainResourceInterface $mainResource
+     * @param UserInterface $user
+     *
+     * @return bool
+     */
+    public function canUpdateResourcesInSignatureBook(MainResourceInterface $mainResource, UserInterface $user): bool;
 
     /**
      * @param Resource $resource

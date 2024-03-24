@@ -14,11 +14,9 @@
 
 namespace MaarchCourrier\Core\Domain\User\Port;
 
-use MaarchCourrier\User\Domain\User;
-
 interface CurrentUserInterface
 {
-    public function getCurrentUser(): User;
+    public function getCurrentUser(): UserInterface;
     public function getCurrentUserId(): int;
     public function getCurrentUserLogin(): string;
     public function getCurrentUserToken(): string;

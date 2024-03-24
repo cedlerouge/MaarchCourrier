@@ -14,31 +14,31 @@
 
 namespace Resource\Application;
 
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
 use Resource\Domain\Exceptions\ResourceOutOfPerimeterException;
 use Resource\Domain\Exceptions\ResourcePageNotFoundException;
-use Resource\Domain\Exceptions\ThumbnailNotFoundInDocserverOrNotReadableException;
 use Resource\Domain\Exceptions\SetaPdfResultException;
-use Resource\Domain\ResourceFileInfo;
+use Resource\Domain\Exceptions\ThumbnailNotFoundInDocserverOrNotReadableException;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\Ports\ResourceLogInterface;
 use Resource\Domain\ResourceConverted;
+use Resource\Domain\ResourceFileInfo;
 use Throwable;
 
 class RetrieveThumbnailResourceByPage
 {
-    private MainResourceRepositoryInterface $resourceRepository;
+    private ResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private ResourceLogInterface $resourceLog;
 
     public function __construct(
-        MainResourceRepositoryInterface $resourceRepositoryInterface,
+        ResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         ResourceLogInterface $resourceLog
     ) {

@@ -9,13 +9,13 @@
 
 namespace MaarchCourrier\Tests\app\resource\Mock;
 
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
 use Resource\Domain\Docserver;
 use Resource\Domain\Resource;
 use Resource\Domain\ResourceConverted;
 use SrcCore\models\TextFormatModel;
 
-class ResourceDataMock implements MainResourceRepositoryInterface
+class ResourceDataMock implements ResourceRepositoryInterface
 {
     public bool $doesResourceExist = true;
     public bool $doesResourceFileExistInDatabase = true;
