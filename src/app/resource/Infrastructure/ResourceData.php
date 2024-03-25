@@ -17,7 +17,6 @@ namespace Resource\Infrastructure;
 use Convert\controllers\ConvertPdfController;
 use Convert\models\AdrModel;
 use Docserver\models\DocserverModel;
-use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
 use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
 use Resource\controllers\ResController;
 use Resource\Domain\Docserver;

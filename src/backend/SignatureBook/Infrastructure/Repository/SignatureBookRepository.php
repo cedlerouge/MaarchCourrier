@@ -24,7 +24,6 @@ use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use Resource\Domain\Resource;
 use SignatureBook\controllers\SignatureBookController;
-use SrcCore\models\DatabaseModel;
 
 class SignatureBookRepository implements SignatureBookRepositoryInterface
 {
