@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,17 +10,23 @@ import { StampInterface } from '@models/signature-book.model';
 
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
+import { SignatureBookService } from './signature-book.service';
+import { ResourcesListComponent } from './resourcesList/resources-list.component';
 
 @Component({
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
 })
-export class SignatureBookComponent implements OnInit, OnDestroy {
+export class SignatureBookComponent implements OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
+    @ViewChild('drawerResList', { static: false }) drawerResList: MatDrawer;
+    @ViewChild('resourcesList', { static: false }) resourcesList: ResourcesListComponent;
 
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
+    loading: boolean = true;
+    loadResList: boolean = false;
 
     resId: number = 0;
     basketId: number;
@@ -33,14 +39,20 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     subscription: Subscription;
     defaultStamp: StampInterface;
 
+    allResources: any[] = [];
+
     constructor(
         public http: HttpClient,
+        public signatureBookService: SignatureBookService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
         private actionsService: ActionsService,
         private actionService: ActionsService
     ) {
+
+        this.initParams();
+
         this.subscription = this.actionsService.catchActionWithData().pipe(
             filter((data: MessageActionInterface) => data.id === 'selectedStamp'),
             tap(() => {
@@ -55,27 +67,34 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         this.unlockResource();
     }
 
-    async ngOnInit(): Promise<void> {
-        await this.initParams();
+    initParams(): void {
+        this.route.params.subscribe(async params => {
+            this.resetValues();
 
-        if (this.resId !== undefined) {
-            this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-            await this.initDocuments();
-        } else {
-            this.router.navigate(['/home']);
-        }
+            this.resId = params['resId'];
+            this.basketId = params['basketId'];
+            this.groupId = params['groupId'];
+            this.userId = params['userId'];
+
+            if (this.resId !== undefined) {
+                this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+                await this.initDocuments();
+            } else {
+                this.router.navigate(['/home']);
+            }
+        });
     }
 
-    initParams(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.route.params.subscribe(params => {
-                this.resId = params['resId'];
-                this.basketId = params['basketId'];
-                this.groupId = params['groupId'];
-                this.userId = params['userId'];
-                resolve(true);
-            });
-        });
+    resetValues(): void {
+        this.loading = true;
+        this.loadingDocsToSign = true;
+        this.loadingAttachments = true;
+
+        this.attachments = [];
+        this.docsToSign = [];
+
+        this.subscription?.unsubscribe();
+        this.drawerResList?.close();
     }
 
     initDocuments(): Promise<boolean> {
@@ -105,12 +124,14 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
                     this.loadingAttachments = false;
                     this.loadingDocsToSign = false;
+                    this.loading = false;
 
                     resolve(true);
                 }),
 
                 catchError((err: any) => {
                     this.notify.handleErrors(err);
+                    this.loading = false;
                     resolve(false);
                     return of(false);
                 })
@@ -132,5 +153,18 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     async unlockResource(): Promise<void> {
         this.actionService.stopRefreshResourceLock();
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+    }
+
+    toggleResList(): void {
+        this.loadResList = true;
+        setTimeout(() => {
+            this.drawerResList?.toggle();
+            this.resourcesList?.scrollToSelectedResource();
+        }, 0);
+    }
+
+    closeResListPanel(value: string) {
+        this.loading = value === 'goToResource';
+        this.drawerResList.close();
     }
 }

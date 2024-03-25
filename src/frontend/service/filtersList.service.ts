@@ -1,23 +1,5 @@
 import { Injectable } from '@angular/core';
-
-interface ListProperties {
-    'id': number;
-    'groupId': number;
-    'targetId': number;
-    'page': string;
-    'pageSize': number;
-    'order': string;
-    'orderDir': string;
-    'search': string;
-    'delayed': boolean;
-    'categories': string[];
-    'priorities': string[];
-    'entities': string[];
-    'subEntities': string[];
-    'statuses': string[];
-    'doctypes': string[];
-    'folders': string[];
-}
+import { ListPropertiesInterface } from '@models/list-properties.model';
 
 @Injectable()
 export class FiltersListService {
@@ -37,7 +19,7 @@ export class FiltersListService {
 
         this.listsPropertiesIndex = 0;
         this.mode = mode;
-        let listProperties: ListProperties;
+        let listProperties: ListPropertiesInterface;
 
         if (this.listsProperties != null) {
             this.listsProperties.forEach((element, index) => {

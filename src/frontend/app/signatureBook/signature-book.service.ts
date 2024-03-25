@@ -1,7 +1,11 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { ListPropertiesInterface } from "@models/list-properties.model";
+import { ResourcesList } from "@models/resources-list.model";
+import { FiltersListService } from "@service/filtersList.service";
+import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
-import { catchError, of, tap } from "rxjs";
+import { catchError, map, of, tap } from "rxjs";
 
 @Injectable({
     providedIn: 'root',
@@ -10,10 +14,20 @@ import { catchError, of, tap } from "rxjs";
 export class SignatureBookService {
     config = new SignatureBookConfig();
 
+    resourcesList: ResourcesList[] = [];
+    resourcesListIds: number[] = [];
+
+    resourcesListCount: number = null;
+    offset: number = null;
+    limit: number = null;
+
+    basketLabel: string = '';
+
     constructor(
         private http: HttpClient,
-        private notifications: NotificationService
-
+        private notifications: NotificationService,
+        private filtersListService: FiltersListService,
+        private headerService: HeaderService
     ) {}
 
     getInternalSignatureBookConfig(): Promise<SignatureBookInterface | null> {
@@ -30,6 +44,88 @@ export class SignatureBookService {
                 })
             ).subscribe();
         })
+    }
+
+    getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard', isPrevious: boolean = false): Promise<ResourcesList[] | []> {
+        return new Promise((resolve) => {
+            const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
+            this.limit = isPrevious ? listProperties.pageSize : 15;
+            this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * this.limit;
+            const filters: string = this.filtersListService.getUrlFilters();
+
+            if (mode === 'infiniteScroll') {
+                if (isPrevious) {
+                    this.offset = this.offset - this.limit;
+                } else {
+                    this.offset = this.offset + this.limit;
+                }
+            }
+
+            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${this.limit}&offset=${this.offset}${filters}`).pipe(
+                map((data: any) => {
+                    this.resourcesListIds = data.allResources;
+                    this.resourcesListCount = data.count;
+                    this.basketLabel = data.basketLabel;
+                    const resourcesList: ResourcesList[] = data.resources.map((resource: any) => new ResourcesList({
+                        resId: resource.resId,
+                        subject: resource.subject,
+                        chrono: resource.chrono,
+                        statusImage: resource.statusImage,
+                        statusLabel: resource.statusLabel,
+                        priorityColor: resource.priorityColor,
+                        mailTracking: resource.mailTracking,
+                        creationDate: resource.creationDate,
+                        processLimitDate: resource.processLimitDate,
+                        isLocked: resource.isLocked,
+                        locker: resource.locker
+                    }));
+                    return resourcesList;
+                }),
+                tap((data: any) => {
+                    this.resourcesList = data;
+                    resolve(this.resourcesList);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleSoftErrors(err);
+                    resolve([]);
+                    return of(false);
+                })
+            ).subscribe();
+        });
+    }
+
+    toggleMailTracking(resource: ResourcesList) {
+        if (!resource.mailTracking) {
+            this.followResources(resource);
+        } else {
+            this.unFollowResources(resource);
+        }
+    }
+
+    followResources(resource: ResourcesList): void {
+        this.http.post('../rest/resources/follow', { resources: [resource.resId] }).pipe(
+            tap(() => {
+                this.headerService.nbResourcesFollowed++;
+                resource.mailTracking = !resource.mailTracking;
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
+    }
+
+    unFollowResources(resource: ResourcesList): void {
+        this.http.delete('../rest/resources/unfollow', { body: { resources: [resource.resId] } }).pipe(
+            tap(() => {
+                this.headerService.nbResourcesFollowed--;
+                resource.mailTracking = !resource.mailTracking;
+            }),
+            catchError((err: any) => {
+                this.notifications.handleSoftErrors(err);
+                return of(false);
+            })
+        ).subscribe();
     }
 }
 
