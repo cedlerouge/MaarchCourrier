@@ -11,6 +11,7 @@ import { StampInterface } from '@models/signature-book.model';
 import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 import { SignatureBookService } from './signature-book.service';
+import { ResourcesListComponent } from './resourcesList/resources-list.component';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -20,6 +21,7 @@ export class SignatureBookComponent implements OnDestroy {
 
     @ViewChild('drawerStamps', { static: true }) stampsPanel: MatDrawer;
     @ViewChild('drawerResList', { static: false }) drawerResList: MatDrawer;
+    @ViewChild('resourcesList', { static: false }) resourcesList: ResourcesListComponent;
 
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
@@ -157,6 +159,7 @@ export class SignatureBookComponent implements OnDestroy {
         this.loadResList = true;
         setTimeout(() => {
             this.drawerResList?.toggle();
+            this.resourcesList?.scrollToSelectedResource();
         }, 0);
     }
 

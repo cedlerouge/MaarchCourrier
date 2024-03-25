@@ -182,6 +182,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     */
     scrollToSelectedResource(): void {
         // Get the index of the selected resource
+        this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
         const index: number = this.resources.indexOf(this.selectedResource);
         // If the selected resource exists in the list
         if (index !== -1) {

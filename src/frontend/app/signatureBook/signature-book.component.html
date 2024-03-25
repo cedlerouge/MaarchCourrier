@@ -36,6 +36,7 @@
     <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
         <mat-drawer *ngIf="loadResList" #drawerResList class="drawer-res-list" mode="over" [ngStyle]="{'width': '500px'}">
             <app-resources-list
+                #resourcesList
                 [resId]="+resId"
                 [userId]="userId"
                 [groupId]="groupId"
