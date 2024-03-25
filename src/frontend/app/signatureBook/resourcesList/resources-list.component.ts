@@ -50,14 +50,14 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         this.loading = false;
         // Get element height
         setTimeout(() => {
+            this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
             const elementHeight = this.resourceElement?.nativeElement?.getBoundingClientRect()?.height;
             this.itemSize = elementHeight;
+            this.scrollToSelectedResource();
         }, 10);
     }
 
     async ngAfterViewInit() {
-        this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
-        this.scrollToSelectedResource();
         // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
             this.scrolledIndex = index;
@@ -186,7 +186,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
             // Calculate the position of the element
             const position = index * this.itemSize;
             // Scroll to the element
-            this.viewport.scrollToIndex(position);
+            this.viewport.scrollToOffset(position);
         }
     }
 }
