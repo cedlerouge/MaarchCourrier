@@ -113,7 +113,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[1];
+            const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[0];
             secondResource.click();
 
             fixture.detectChanges();
