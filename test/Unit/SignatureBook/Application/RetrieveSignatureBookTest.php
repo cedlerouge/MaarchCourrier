@@ -127,7 +127,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCannotGetMainResourceWhenResourceDoesNotExistReturnAProblem(): void
+    public function testCannotGetMainResourceWhenResourceDoesNotExist(): void
     {
         $this->mainResourceRepositoryMock->mainResource = null;
         $this->expectExceptionObject(new ResourceDoesNotExistProblem());
@@ -139,7 +139,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws ResourceDoesNotExistProblem
      * @throws MainResourceOutOfPerimeterProblem
      */
-    public function testCannotAccessSignatureBookWhenUserHasNoRightAccessReturnAProblem(): void
+    public function testCannotAccessSignatureBookWhenUserHasNoRightAccess(): void
     {
         $this->mainResourceAccessControlServiceMock->doesUserHasRight = false;
         $this->expectExceptionObject(new MainResourceOutOfPerimeterProblem());
@@ -174,7 +174,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testGetMainResourceInResourcesToSignWhenIntegrateInSignatoryBook(): void
+    public function testGetMainResourceInResourcesToSignWhenIntegratedInSignatoryBook(): void
     {
         $integration = (new Integration())->setInSignatureBook(true);
         $this->mainResourceRepositoryMock->mainResource->setIntegration($integration);
@@ -202,7 +202,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCanModifyMainResourceWhenNotIntegrateInSignatoryBookAndSignatureBookParamIsEnable(): void
+    public function testCanModifyMainResourceWhenNotIntegratedInSignatoryBookAndSignatureBookParamIsEnable(): void
     {
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
         $resourcesAttached = $signatureBook->getResourcesAttached();
@@ -235,7 +235,7 @@ class RetrieveSignatureBookTest extends TestCase
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
-    public function testCannotModifyMainResourceWhenNotIntegrateAndSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
+    public function testCannotModifyMainResourceWhenNotIntegratedAndSignatureBookParamDisabledAndCurrentUserIsNotDocCreator(): void
     {
         $this->signatureBookRepositoryMock->canUpdateResourcesInSignatureBook = false;
         $signatureBook = $this->retrieveSignatureBook->getSignatureBook(100);
