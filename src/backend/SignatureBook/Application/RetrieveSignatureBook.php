@@ -84,31 +84,6 @@ class RetrieveSignatureBook
             }
         }
 
-        /*
-        $attachments = $this->attachmentRepository->getIncomingMailByMainResource($resource);
-
-        $incomingAttachments = [];
-        foreach ($attachments as $attachment) {
-            $incomingAttachments[] = SignatureBookResource::createFromAttachment($attachment);
-        }
-        $resourcesToSign = array_merge($resourcesToSign, $incomingAttachments);
-
-        $attachments = $this->attachmentRepository->getNonIncomingMailNotInSignatureBookByMainResource($resource);
-        foreach ($attachments as $attachment) {
-            $resourcesAttached[] = SignatureBookResource::createFromAttachment($attachment);
-        }
-
-        foreach ($resourcesAttached as $resourceAttached) {
-            $isCreator = $resourceAttached->getCreatorId() == $this->currentUser->getCurrentUserId();
-            $canModify = $canUpdateDocuments || $isCreator;
-            $canDelete = $canModify;  //Deletion permission follows the same logic as modification permission.
-
-            $resourceAttached->setCanModify($canModify);
-            $resourceAttached->setCanDelete($canDelete);
-        }
-        */
-
-        // NEW ATTACHMENT -----
         $attachments = $this->attachmentRepository->getAttachmentsInSignatureBookByMainResource($resource);
         foreach ($attachments as $attachment) {
             $isConverted = $this->convertPdfService->canConvert($attachment->getFileFormat());
@@ -127,13 +102,15 @@ class RetrieveSignatureBook
                     ->setCanDelete($canDelete);
             }
         }
-        // -------
 
         $canSignResources = $this->privilegeChecker->hasPrivilege($currentUser, new SignDocumentPrivilege());
         $hasActiveWorkflow = $this->visaWorkflowRepository->isWorkflowActiveByMainResource($resource);
 
+        $isCurrentUserWorkflow = false;
         $currentWorkflowUser = $this->visaWorkflowRepository->getCurrentStepUserByMainResource($resource);
-        $isCurrentUserWorkflow = $currentWorkflowUser->getId() === $currentUser->getId();
+        if(!empty($currentWorkflowUser)) {
+            $isCurrentUserWorkflow = $currentWorkflowUser->getId() === $currentUser->getId();
+        }
 
         $signatureBook = new SignatureBook();
         $signatureBook->setResourcesToSign($resourcesToSign)

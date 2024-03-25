@@ -58,10 +58,6 @@ class AttachmentRepository implements AttachmentRepositoryInterface
         /** @var Attachment[] $attachments */
         $attachments = [];
         foreach ($data as $attachment) {
-            //$typist = $this->userFactory->createUser([
-            //    'id' => $attachment['typist']
-            //]);
-
             $typist = $this->userFactory->createRetrieveUser()->getUserById($attachment['typist']);
 
             $attachments[] = (new Attachment())
@@ -116,10 +112,6 @@ class AttachmentRepository implements AttachmentRepositoryInterface
         /** @var Attachment[] $attachments */
         $attachments = [];
         foreach ($data as $attachment) {
-            //$typist = $this->userFactory->createUser([
-            //    'id' => $attachment['typist']
-            //]);
-
             $typist = $this->userFactory->createRetrieveUser()->getUserById($attachment['typist']);
 
             $attachments[] = (new Attachment())
@@ -162,10 +154,6 @@ class AttachmentRepository implements AttachmentRepositoryInterface
         /** @var Attachment[] $attachments */
         $attachments = [];
         foreach ($data as $attachment) {
-            //$typist = $this->userFactory->createUser([
-            //    'id' => $attachment['typist']
-            //]);
-
             $typist = $this->userFactory->createRetrieveUser()->getUserById($attachment['typist']);
 
             $document = (new Document())

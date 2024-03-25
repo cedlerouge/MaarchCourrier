@@ -39,10 +39,6 @@ class MainResourceRepository implements MainResourceRepositoryInterface
             return null;
         }
 
-        //$typist = $this->userFactory->createUserFromArray([
-        //    $resource['typist']
-        //]);
-
         $typist = $this->userFactory->createRetrieveUser()->getUserById($resource['typist']);
 
         $document = (new Document())
