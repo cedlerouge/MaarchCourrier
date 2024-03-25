@@ -103,7 +103,8 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         this.selectedResource = resource;
 
         // Call the actions service to navigate to the resource
-        this.actionsService.goToResource(this.resources, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
+        const resIds: number[] = this.resources.map((resource: ResourcesList) => resource.resId);
+        this.actionsService.goToResource(resIds, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
             // Check if the resource is locked
             if (resourcesToProcess.indexOf(resource.resId) > -1) {
                 // Emit event to close the resource list panel

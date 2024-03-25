@@ -12,6 +12,9 @@ import { Attachment } from '@models/attachment.model';
 import { MessageActionInterface } from '@models/actions.model';
 import { SignatureBookService } from './signature-book.service';
 import { ResourcesListComponent } from './resourcesList/resources-list.component';
+import { TranslateService } from '@ngx-translate/core';
+import { FunctionsService } from '@service/functions.service';
+import { ResourcesList } from '@models/resources-list.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
@@ -39,11 +42,16 @@ export class SignatureBookComponent implements OnDestroy {
     subscription: Subscription;
     defaultStamp: StampInterface;
 
-    allResources: any[] = [];
+    allResourcesIds: any[] = [];
+
+    canGoToNext: boolean = false;
+    canGoToPrevious: boolean = false;
 
     constructor(
         public http: HttpClient,
         public signatureBookService: SignatureBookService,
+        public translate: TranslateService,
+        public functions: FunctionsService,
         private route: ActivatedRoute,
         private router: Router,
         private notify: NotificationService,
@@ -78,6 +86,11 @@ export class SignatureBookComponent implements OnDestroy {
 
             if (this.resId !== undefined) {
                 this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+                const resources: ResourcesList[] = await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
+                this.allResourcesIds = resources.map((resource: ResourcesList) => resource.resId);
+                const index: number = this.allResourcesIds.indexOf(parseInt(this.resId.toString(), 10));
+                this.canGoToNext = !this.functions.empty(this.allResourcesIds[index + 1]);
+                this.canGoToPrevious = !this.functions.empty(this.allResourcesIds[index - 1]);
                 await this.initDocuments();
             } else {
                 this.router.navigate(['/home']);
@@ -166,5 +179,30 @@ export class SignatureBookComponent implements OnDestroy {
     closeResListPanel(value: string) {
         this.loading = value === 'goToResource';
         this.drawerResList.close();
+    }
+
+    goToResource(event: string = 'next' || 'previous') {
+        this.actionService.goToResource(this.allResourcesIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
+            const allResourcesUnlock: number[] = resourcesToProcess;
+            const index: number = this.allResourcesIds.indexOf(parseInt(this.resId.toString(), 10));
+            const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
+            let indexLoop: number = index;
+
+            do {
+                indexLoop = indexLoop + nextLoop;
+                if ((indexLoop < 0) || (indexLoop === this.allResourcesIds.length)) {
+                    indexLoop = -1;
+                    break;
+                }
+
+            } while (!allResourcesUnlock.includes(this.allResourcesIds[indexLoop]));
+
+            if (indexLoop === -1) {
+                this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
+            } else {
+                const path: string = '/signatureBook/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources/' + this.allResourcesIds[indexLoop];
+                this.router.navigate([path]);
+            }
+        }));
     }
 }

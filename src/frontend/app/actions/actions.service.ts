@@ -49,7 +49,6 @@ import { CheckAcknowledgmentRecordManagementComponent } from './check-acknowledg
 import { FiltersListService } from '@service/filtersList.service';
 import { SessionStorageService } from '@service/session-storage.service';
 import { Action, MessageAction, MessageActionInterface } from '@models/actions.model';
-import { ResourcesList } from '@models/resources-list.model';
 
 @Injectable()
 export class ActionsService implements OnDestroy {
@@ -407,9 +406,8 @@ export class ActionsService implements OnDestroy {
         }
     }
 
-    goToResource(resources: ResourcesList[], userId: number, groupId: number, basketId: number): Observable<number[]> {
-        const resIds: number[] = resources.map((resource: ResourcesList) => resource.resId);
-        return this.http.put(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}/locked`, { resources: resIds }).pipe(
+    goToResource(resources: number[], userId: number, groupId: number, basketId: number): Observable<number[]> {
+        return this.http.put(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}/locked`, { resources: resources }).pipe(
             map((data: any) => data.resourcesToProcess),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
