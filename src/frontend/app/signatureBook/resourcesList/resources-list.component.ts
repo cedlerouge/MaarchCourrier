@@ -115,11 +115,13 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
                 // Navigate to the resource
                 this.router.navigate([path]);
 
-                // scroll to the selected resource
-                this.scrollToSelectedResource();
-
                 // Unlock the resource
                 this.unlockResource();
+
+                setTimeout(() => {
+                    // scroll to the selected resource
+                    this.scrollToSelectedResource();
+                }, 0);
             } else {
                 // Notify user that the resource is locked
                 this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
