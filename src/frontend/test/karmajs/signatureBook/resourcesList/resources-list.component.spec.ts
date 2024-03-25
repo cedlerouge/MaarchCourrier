@@ -68,6 +68,7 @@ describe('ResourcesListComponent', () => {
         component = fixture.componentInstance;
 
         fixture.detectChanges();
+        flush();
     }));
 
     describe('Create component', () => {
@@ -83,7 +84,8 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick();
 
-            expect(fixture.nativeElement.querySelectorAll('.resourcesList').length).toEqual(4);
+            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(4);
+            flush();
         }));
 
         it('Check if the resource line is highlighted when its resId matches the one passed as input and contains the selectedRes class', fakeAsync(() => {
@@ -93,8 +95,10 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick();
 
-            const firstResource = fixture.nativeElement.querySelectorAll('.resourcesList')[0];
+            const firstResource = fixture.nativeElement.querySelectorAll('#resourceElement')[0];
             expect(firstResource.classList.contains('selectedRes')).toBeTrue();
+
+            flush();
         }));
     });
 
@@ -109,7 +113,7 @@ describe('ResourcesListComponent', () => {
             fixture.detectChanges();
             tick(100);
 
-            const secondResource = fixture.nativeElement.querySelectorAll('.resourcesList')[1];
+            const secondResource = fixture.nativeElement.querySelectorAll('#resourceElement')[1];
             secondResource.click();
 
             fixture.detectChanges();
@@ -131,9 +135,6 @@ describe('ResourcesListComponent', () => {
                 const path: string = `/signatureBook/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/resources/${component.selectedResource.resId}`
                 expect(navigateSpy).toHaveBeenCalledWith([path]);
             }, 100);
-
-            tick(300);
-            fixture.detectChanges();
             flush();
         }));
     })
