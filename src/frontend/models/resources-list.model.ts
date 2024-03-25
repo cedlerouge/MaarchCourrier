@@ -5,9 +5,11 @@ export interface ResourcesListInterface {
     statusImage: string;
     statusLabel: string;
     creationDate: string;
+    locker: string;
     processLimitDate: string
     priorityColor: string;
     mailTracking: boolean;
+    isLocked: boolean;
 }
 
 export class ResourcesList implements ResourcesListInterface {
@@ -19,6 +21,8 @@ export class ResourcesList implements ResourcesListInterface {
     priorityColor: string = '';
     creationDate: string = '';
     processLimitDate: string = '';
+    locker: string = '';
+    isLocked: boolean = false;
     mailTracking: boolean = false;
 
     constructor(json: any = null) {

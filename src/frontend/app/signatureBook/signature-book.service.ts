@@ -66,7 +66,7 @@ export class SignatureBookService {
                     this.resourcesListIds = data.allResources;
                     this.resourcesListCount = data.count;
                     this.basketLabel = data.basketLabel;
-                    const resourcesList = data.resources.map((resource: any) => new ResourcesList({
+                    const resourcesList: ResourcesList[] = data.resources.map((resource: any) => new ResourcesList({
                         resId: resource.resId,
                         subject: resource.subject,
                         chrono: resource.chrono,
@@ -75,7 +75,9 @@ export class SignatureBookService {
                         priorityColor: resource.priorityColor,
                         mailTracking: resource.mailTracking,
                         creationDate: resource.creationDate,
-                        processLimitDate: resource.processLimitDate
+                        processLimitDate: resource.processLimitDate,
+                        isLocked: resource.isLocked,
+                        locker: resource.locker
                     }));
                     return resourcesList;
                 }),

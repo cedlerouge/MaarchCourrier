@@ -7,9 +7,13 @@
 </div>
 <div class="virtual-scroll-viewport-div" [style.height]="calculateContainerHeight()">
     <cdk-virtual-scroll-viewport appendOnly [itemSize]="itemSize" class="virtual-scroll-viewport" #viewport>
-        <div *cdkVirtualFor="let resource of resources" #resourceElement [class.selectedRes]="resource.resId === resId" id="resourceElement" (wheel)="handleScrollEvent($event)"
+        <div *cdkVirtualFor="let resource of resources" #resourceElement
             style="cursor: pointer;"
-            (click)="goToResource(resource)">
+            [title]="resource.subject"
+            [class.selectedRes]="resource.resId === resId"
+            [class.lockedRes]="resource.isLocked" id="resourceElement"
+            (wheel)="handleScrollEvent($event)"
+            (click)="!resource.isLocked ? goToResource(resource): ''">
             <div class="row">
                 <div class="col-md-1">
                     <button mat-icon-button class="followIcon" [attr.aria-label]="(resource.mailTracking ? 'lang.untrackThisMail' : 'lang.trackThisMail') | translate"
@@ -19,16 +23,19 @@
                     </button>
                 </div>
                 <div class="col-md-2">
-                    <mat-icon *ngIf="resource.statusLabel === null" class="status-icon" [title]="'lang.undefined' | translate"
-                        [ngStyle]="{'color': resource.priorityColor}" color="primary"
-                        aria-hidden="true"
-                        class="fa fa-question-circle fa-2x">
-                    </mat-icon>
-                    <mat-icon *ngIf="resource.statusLabel !== null" class="status-icon" [title]="resource.statusLabel"
-                        [ngStyle]="{'color': resource.priorityColor}" color="primary"
-                        aria-hidden="true"
-                        class="{{resource.statusImage.substring(0, 2)}} {{resource.statusImage}} {{resource.statusImage.substring(0, 2)}}-2x">
-                    </mat-icon>
+                    <mat-icon *ngIf="resource.isLocked" title="{{'lang.warnLockResInProgress' | translate}} : {{resource.locker}}" style="color: red; font-size: 21px; margin-right: 11px;" class="fa fa-lock fa-2x"></mat-icon>
+                    <ng-container *ngIf="!resource.isLocked">
+                        <mat-icon *ngIf="resource.statusLabel === null" class="status-icon" [title]="'lang.undefined' | translate"
+                            [ngStyle]="{'color': resource.priorityColor}" color="primary"
+                            aria-hidden="true"
+                            class="fa fa-question-circle fa-2x">
+                        </mat-icon>
+                        <mat-icon *ngIf="resource.statusLabel !== null" class="status-icon" [title]="resource.statusLabel"
+                            [ngStyle]="{'color': resource.priorityColor}" color="primary"
+                            aria-hidden="true"
+                            class="{{resource.statusImage.substring(0, 2)}} {{resource.statusImage}} {{resource.statusImage.substring(0, 2)}}-2x">
+                        </mat-icon>
+                    </ng-container>
                     <span [title]="resource.chrono">{{resource.chrono}}</span>
                 </div>
                 <div class="col-md col-md-date">

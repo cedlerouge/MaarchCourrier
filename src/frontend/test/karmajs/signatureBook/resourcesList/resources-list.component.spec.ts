@@ -137,6 +137,25 @@ describe('ResourcesListComponent', () => {
             }, 100);
             flush();
         }));
+    });
+
+    describe('Resource lock', () => {
+        it('Check if the last resource is locked and navigation is not allowed', fakeAsync(() => {
+            component.resources = getResources();
+
+            fixture.detectChanges();
+            tick(100);
+
+            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[3];
+            expect(lastResource.classList.contains('lockedRes')).toBeTrue();
+
+            fixture.detectChanges();
+            tick(100);
+
+            lastResource.click();
+
+            httpTestingController.expectNone(`../rest/resourcesList/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/locked`);
+        }));
     })
 });
 
@@ -151,7 +170,9 @@ function getResources(): ResourcesList[] {
             "priorityColor": "#009dc5",
             "creationDate": "2024-03-15 13:28:00.706412",
             "processLimitDate": "2024-06-12 23:59:59",
-            "mailTracking": false
+            "mailTracking": false,
+            "isLocked": false,
+            "locker": ''
         },
         {
             "resId": 102,
@@ -162,7 +183,9 @@ function getResources(): ResourcesList[] {
             "priorityColor": "#009dc5",
             "creationDate": "2024-03-14 11:54:41.258402",
             "processLimitDate": null,
-            "mailTracking": false
+            "mailTracking": false,
+            "isLocked": false,
+            "locker": ''
         },
         {
             "resId": 101,
@@ -173,7 +196,9 @@ function getResources(): ResourcesList[] {
             "priorityColor": "#ffa500",
             "creationDate": "2024-03-14 10:53:02.737637",
             "processLimitDate": "2024-03-26 23:59:59",
-            "mailTracking": false
+            "mailTracking": false,
+            "isLocked": false,
+            "locker": ''
         },
         {
             "resId": 100,
@@ -184,7 +209,9 @@ function getResources(): ResourcesList[] {
             "priorityColor": "#009dc5",
             "creationDate": "2024-03-06 17:24:03.75654",
             "processLimitDate": "2024-06-03 23:59:59",
-            "mailTracking": false
+            "mailTracking": false,
+            "isLocked": true,
+            "locker": 'Barbara BAIN'
         }
     ];
 
