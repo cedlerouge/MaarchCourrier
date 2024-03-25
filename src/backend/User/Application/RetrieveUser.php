@@ -35,11 +35,15 @@ class RetrieveUser
      */
     public function getUserById(int $id): ?UserInterface
     {
-        if ($id <= 0)  throw new ParameterMustBeGreaterThanZeroException('id');
+        if ($id <= 0) {
+            throw new ParameterMustBeGreaterThanZeroException('id');
+        }
 
         $user = $this->userRepository->getUserById($id);
 
-        if (empty($user)) throw new UserDoesNotExistProblem();
+        if (empty($user)) {
+            throw new UserDoesNotExistProblem();
+        }
 
         return $user;
     }

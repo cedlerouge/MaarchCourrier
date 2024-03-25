@@ -16,7 +16,7 @@ namespace MaarchCourrier\DocumentConversion\Infrastructure\Service;
 
 use Convert\controllers\ConvertPdfController;
 use MaarchCourrier\DocumentConversion\Domain\Port\ConvertPdfServiceInterface;
-use \Exception;
+use Exception;
 
 class ConvertPdfService implements ConvertPdfServiceInterface
 {

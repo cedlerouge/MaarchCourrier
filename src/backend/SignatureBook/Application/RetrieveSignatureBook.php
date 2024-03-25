@@ -108,7 +108,7 @@ class RetrieveSignatureBook
 
         $isCurrentUserWorkflow = false;
         $currentWorkflowUser = $this->visaWorkflowRepository->getCurrentStepUserByMainResource($resource);
-        if(!empty($currentWorkflowUser)) {
+        if (!empty($currentWorkflowUser)) {
             $isCurrentUserWorkflow = $currentWorkflowUser->getId() === $currentUser->getId();
         }
 
