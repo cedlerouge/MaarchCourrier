@@ -29,15 +29,38 @@ use User\models\UserModel;
 
 class HistoryController
 {
-    public function get(Request $request, Response $response)
+    public function get(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         if (!empty($queryParams['resId'])) {
-            if (!Validator::notEmpty()->intVal()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
+            if (
+                !Validator::notEmpty()->intVal()->validate($queryParams['resId']) ||
+                !ResController::hasRightByResId(
+                    [
+                        'resId' => [$queryParams['resId']],
+                        'userId' => $GLOBALS['id']
+                    ]
+                )
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
-            } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])) {
-                if (empty($queryParams['onlyActions']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])) {
+            } elseif (
+                !PrivilegeController::hasPrivilege(
+                    [
+                        'privilegeId' => 'view_full_history',
+                        'userId' => $GLOBALS['id']
+                    ]
+                )
+            ) {
+                if (
+                    empty($queryParams['onlyActions']) ||
+                    !PrivilegeController::hasPrivilege(
+                        [
+                            'privilegeId' => 'view_doc_history',
+                            'userId' => $GLOBALS['id']
+                        ]
+                    )
+                ) {
                     return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
                 }
             }
@@ -132,7 +155,10 @@ class HistoryController
         if (!empty($queryParams['order'])) {
             $order = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
             $orderBy = str_replace(['userLabel'], ['user_id'], $queryParams['order']);
-            $orderBy = !in_array($orderBy, ['event_date', 'user_id', 'info', 'remote_ip']) ? ['event_date DESC'] : ["{$orderBy} {$order}"];
+            $orderBy = !in_array(
+                $orderBy,
+                ['event_date', 'user_id', 'info', 'remote_ip']
+            ) ? ['event_date DESC'] : ["{$orderBy} {$order}"];
         }
 
         $history = HistoryModel::get([
@@ -153,7 +179,7 @@ class HistoryController
         return $response->withJson(['history' => $history, 'count' => $total]);
     }
 
-    public static function add(array $aArgs)
+    public static function add(array $aArgs): void
     {
         ValidatorModel::notEmpty($aArgs, ['tableName', 'recordId', 'eventType', 'info', 'eventId']);
         ValidatorModel::stringType($aArgs, ['tableName', 'eventType', 'info', 'eventId', 'moduleId', 'level']);
@@ -194,9 +220,17 @@ class HistoryController
         ]);
     }
 
-    public function getByUserId(Request $request, Response $response, array $aArgs)
+    public function getByUserId(Request $request, Response $response, array $aArgs): Response
     {
-        if ($aArgs['userSerialId'] != $GLOBALS['id'] && !PrivilegeController::hasPrivilege(['privilegeId' => 'view_history', 'userId' => $GLOBALS['id']])) {
+        if (
+            $aArgs['userSerialId'] != $GLOBALS['id'] &&
+            !PrivilegeController::hasPrivilege(
+                [
+                    'privilegeId' => 'view_history',
+                    'userId' => $GLOBALS['id']
+                ]
+            )
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -211,19 +245,49 @@ class HistoryController
         return $response->withJson(['histories' => $aHistories]);
     }
 
-    public function getAvailableFilters(Request $request, Response $response)
+    public function getAvailableFilters(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
 
         if (!empty($queryParams['resId'])) {
-            if (!Validator::notEmpty()->intVal()->validate($queryParams['resId']) || !ResController::hasRightByResId(['resId' => [$queryParams['resId']], 'userId' => $GLOBALS['id']])) {
+            if (
+                !Validator::notEmpty()->intVal()->validate($queryParams['resId']) ||
+                !ResController::hasRightByResId(
+                    [
+                        'resId' => [$queryParams['resId']],
+                        'userId' => $GLOBALS['id']
+                    ]
+                )
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
-            } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_full_history', 'userId' => $GLOBALS['id']])) {
-                if (empty($queryParams['onlyActions']) || !PrivilegeController::hasPrivilege(['privilegeId' => 'view_doc_history', 'userId' => $GLOBALS['id']])) {
+            } elseif (
+                !PrivilegeController::hasPrivilege(
+                    [
+                        'privilegeId' => 'view_full_history',
+                        'userId' => $GLOBALS['id']
+                    ]
+                )
+            ) {
+                if (
+                    empty($queryParams['onlyActions']) ||
+                    !PrivilegeController::hasPrivilege(
+                        [
+                            'privilegeId' => 'view_doc_history',
+                            'userId' => $GLOBALS['id']
+                        ]
+                    )
+                ) {
                     return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
                 }
             }
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_history', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            !PrivilegeController::hasPrivilege(
+                [
+                    'privilegeId' => 'view_history',
+                    'userId' => $GLOBALS['id']
+                ]
+            )
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -271,16 +335,26 @@ class HistoryController
         $users = [];
         foreach ($usersInHistory as $value) {
             if (!empty($value['user_id'])) {
-                $user = UserModel::getById(['id' => $value['user_id'], 'select' => ['user_id', 'firstname', 'lastname']]);
+                $user = UserModel::getById(
+                    [
+                        'id' => $value['user_id'],
+                        'select' => ['user_id', 'firstname', 'lastname']
+                    ]
+                );
             }
 
-            $users[] = ['id' => $value['user_id'] ?? null, 'login' => $user['user_id'] ?? null, 'label' => !empty($user['user_id']) ? "{$user['firstname']} {$user['lastname']}" : null];
+            $users[] = [
+                'id' => $value['user_id'] ??
+                null, 'login' => $user['user_id'] ??
+                null, 'label' => !empty($user['user_id']) ?
+                "{$user['firstname']} {$user['lastname']}" : null
+            ];
         }
 
         return $response->withJson(['actions' => $actions, 'systemActions' => $systemActions, 'users' => $users]);
     }
 
-    public function exportHistory(Request $request, Response $response)
+    public function exportHistory(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -289,8 +363,15 @@ class HistoryController
         $body = $request->getParsedBody();
         $queryParams = $request->getQueryParams();
 
-        if (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array($body['delimiter'], [',', ';', 'TAB'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']);
+        if (
+            !Validator::stringType()->notEmpty()->validate($body['delimiter']) ||
+            !in_array($body['delimiter'], [',', ';', 'TAB'])
+        ) {
+            return $response->withStatus(400)->withJson(
+                [
+                    'errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']'
+                ]
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['format'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Format data is empty or not an array']);
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['data'])) {
@@ -300,13 +381,20 @@ class HistoryController
         }
 
         $limit = 1000;
-        if (!empty($queryParams['limit']) && is_numeric($queryParams['limit']) && (int)$queryParams['limit'] != $limit) {
+        if (
+            !empty($queryParams['limit']) &&
+            is_numeric($queryParams['limit']) &&
+            (int)$queryParams['limit'] != $limit
+        ) {
             $limit = (int)$queryParams['limit'];
         }
 
         $where = [];
         $data = [];
-        if (!empty($body['parameters']['filterUsed']['users']) && is_array($body['parameters']['filterUsed']['users'])) {
+        if (
+            !empty($body['parameters']['filterUsed']['users']) &&
+            is_array($body['parameters']['filterUsed']['users'])
+        ) {
             $userLogins = [];
             foreach ($body['parameters']['filterUsed']['users'] as $user) {
                 $userLogins[] = $user['login'];
@@ -324,12 +412,18 @@ class HistoryController
         }
 
         $eventTypes = [];
-        if (!empty($body['parameters']['filterUsed']['actions']) && is_array($body['parameters']['filterUsed']['actions'])) {
+        if (
+            !empty($body['parameters']['filterUsed']['actions']) &&
+            is_array($body['parameters']['filterUsed']['actions'])
+        ) {
             foreach ($body['parameters']['filterUsed']['actions'] as $action) {
                 $eventTypes[] = "ACTION#{$action['id']}";
             }
         }
-        if (!empty($body['parameters']['filterUsed']['systemActions']) && is_array($body['parameters']['filterUsed']['systemActions'])) {
+        if (
+            !empty($body['parameters']['filterUsed']['systemActions']) &&
+            is_array($body['parameters']['filterUsed']['systemActions'])
+        ) {
             foreach ($body['parameters']['filterUsed']['systemActions'] as $systemAction) {
                 $eventTypes[] = $systemAction['id'];
             }
@@ -345,7 +439,8 @@ class HistoryController
         $csvHead = [];
         foreach ($body['data'] as $field) {
             if ($field['value'] === 'userLabel') {
-                $fields[] = "(SELECT concat(firstname, ' ', lastname) from users where users.id = history.user_id) as userLabel";
+                $fields[] = "(SELECT concat(firstname, ' ', lastname) from" .
+                    " users where users.id = history.user_id) as userLabel";
             } else {
                 $fields[] = $field['value'];
             }
