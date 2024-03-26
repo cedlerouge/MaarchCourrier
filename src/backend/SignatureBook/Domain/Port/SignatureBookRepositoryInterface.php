@@ -63,4 +63,12 @@ interface SignatureBookRepositoryInterface
      * @return ?int
      */
     public function getWorkflowUserIdByCurrentStep(Resource $resource): ?int;
+
+    /**
+     * @param MainResourceInterface $mainResource
+     * @param UserInterface $user
+     *
+     * @return bool
+     */
+    public function isMainResourceInSignatureBookBasket(MainResourceInterface $mainResource, UserInterface $user): bool;
 }

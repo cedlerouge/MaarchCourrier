@@ -23,6 +23,7 @@ use Resource\Domain\Resource;
 class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
 {
     public bool $hasActiveWorkflow = true;
+    public bool $isInSignatureBookBasket = true;
     public bool $canUpdateResourcesInSignatureBook = true;
     public int $workflowUserId = 19;
     public bool $isCurrentWorkflowUser = true;
@@ -105,5 +106,10 @@ class SignatureBookRepositoryMock implements SignatureBookRepositoryInterface
             return $this->workflowUserId;
         }
         return 2;
+    }
+
+    public function isMainResourceInSignatureBookBasket(MainResourceInterface $mainResource, UserInterface $user): bool
+    {
+        return $this->isInSignatureBookBasket;
     }
 }

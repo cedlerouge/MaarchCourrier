@@ -22,6 +22,7 @@ use MaarchCourrier\DocumentStorage\Domain\Document;
 use MaarchCourrier\MainResource\Domain\Integration;
 use MaarchCourrier\MainResource\Domain\MainResource;
 use MaarchCourrier\SignatureBook\Application\RetrieveSignatureBook;
+use MaarchCourrier\SignatureBook\Domain\Problem\MainResourceDoesNotExistInSignatureBookBasketProblem;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 use MaarchCourrier\Tests\Unit\Attachment\Mock\AttachmentRepositoryMock;
 use MaarchCourrier\Tests\Unit\Authorization\Mock\MainResourcePerimeterCheckerServiceMock;
@@ -124,6 +125,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -136,8 +138,9 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
-     * @throws ResourceDoesNotExistProblem
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
      */
     public function testCannotAccessSignatureBookWhenUserHasNoRightAccess(): void
     {
@@ -148,6 +151,20 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
+     * @throws MainResourceOutOfPerimeterProblem
+     * @throws ResourceDoesNotExistProblem
+     */
+    public function testCannotGetSignatureBookResourceIfNotInSignatureBookBasket(): void
+    {
+        $this->signatureBookRepositoryMock->isInSignatureBookBasket = false;
+        $this->expectExceptionObject(new MainResourceDoesNotExistInSignatureBookBasketProblem());
+        $this->retrieveSignatureBook->getSignatureBook(100);
+    }
+
+    /**
+     * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -159,6 +176,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -171,6 +189,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -187,6 +206,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -199,6 +219,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -214,6 +235,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -232,6 +254,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -248,6 +271,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -262,6 +286,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -275,6 +300,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -288,6 +314,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -301,6 +328,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -314,6 +342,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -327,6 +356,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -342,6 +372,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -360,6 +391,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -377,6 +409,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -392,6 +425,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -410,6 +444,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -427,6 +462,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -439,6 +475,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */
@@ -451,6 +488,7 @@ class RetrieveSignatureBookTest extends TestCase
 
     /**
      * @return void
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
      */

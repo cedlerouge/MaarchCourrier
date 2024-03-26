@@ -25,6 +25,7 @@ use MaarchCourrier\DocumentConversion\Domain\Port\ConvertPdfServiceInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\SignatureBookRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\VisaWorkflowRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Privilege\SignDocumentPrivilege;
+use MaarchCourrier\SignatureBook\Domain\Problem\MainResourceDoesNotExistInSignatureBookBasketProblem;
 use MaarchCourrier\SignatureBook\Domain\SignatureBook;
 use MaarchCourrier\SignatureBook\Domain\SignatureBookResource;
 
@@ -48,6 +49,7 @@ class RetrieveSignatureBook
      * @return SignatureBook
      * @throws MainResourceOutOfPerimeterProblem
      * @throws ResourceDoesNotExistProblem
+     * @throws MainResourceDoesNotExistInSignatureBookBasketProblem
      */
     public function getSignatureBook(int $resId): SignatureBook
     {
@@ -59,6 +61,12 @@ class RetrieveSignatureBook
         $currentUser = $this->currentUser->getCurrentUser();
         if (!$this->mainResourceAccessControl->hasRightByResId($resource->getResId(), $currentUser)) {
             throw new MainResourceOutOfPerimeterProblem();
+        }
+
+        $isInSignatureBook = $this->signatureBookRepository
+            ->isMainResourceInSignatureBookBasket($resource, $currentUser);
+        if (empty($isInSignatureBook)) {
+            throw new MainResourceDoesNotExistInSignatureBookBasketProblem();
         }
 
         $canUpdateDocuments = $this->signatureBookRepository

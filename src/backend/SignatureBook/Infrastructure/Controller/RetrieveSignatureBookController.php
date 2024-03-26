@@ -62,7 +62,7 @@ class RetrieveSignatureBookController
             new ConvertPdfService(),
             new AttachmentRepository(new UserFactory()),
             new PrivilegeChecker(),
-            new VisaWorkflowRepository(new UserFactory()),
+            new VisaWorkflowRepository(new UserFactory())
         );
         return $response->withJson($retrieve->getSignatureBook($args['resId']));
     }

@@ -197,4 +197,12 @@ class SignatureBookRepository implements SignatureBookRepositoryInterface
         $currentStep = ListInstanceModel::getCurrentStepByResId(['resId' => $resource->getResId()]);
         return $currentStep['item_id'] ?? null;
     }
+
+    public function isMainResourceInSignatureBookBasket(MainResourceInterface $mainResource, UserInterface $user): bool
+    {
+        return SignatureBookController::isResourceInSignatureBook([
+            'resId' => $mainResource->getResId(),
+            'userId' => $user->getId()
+        ]);
+    }
 }
