@@ -131,7 +131,7 @@ class HistoryController
         $orderBy = [];
         if (!empty($queryParams['order'])) {
             $order = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
-            $orderBy = str_replace(['userLabel'], ['user_id'], $queryParams['orderBy']);
+            $orderBy = str_replace(['userLabel'], ['user_id'], $queryParams['order']);
             $orderBy = !in_array($orderBy, ['event_date', 'user_id', 'info', 'remote_ip']) ? ['event_date DESC'] : ["{$orderBy} {$order}"];
         }
 
