@@ -42,7 +42,6 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
     {
         if (!empty($this->mainResourceId)) {
             ResModel::delete(['where' => ['res_id = ?'], 'data' => [$this->mainResourceId]]);
-            ListInstanceModel::delete(['where' => ['res_id = ?'], 'data' => [$this->mainResourceId]]);
         }
         if (!empty($this->attachmentIds)) {
             AttachmentModel::delete(['where' => ['res_id in (?)'], 'data' => [$this->attachmentIds]]);
