@@ -15,39 +15,38 @@
 namespace Functional\SignatureBook\Infrastructure\Controller;
 
 use Attachment\controllers\AttachmentController;
+use Attachment\models\AttachmentModel;
 use Entity\controllers\ListInstanceController;
+use Entity\models\ListInstanceModel;
 use MaarchCourrier\Authorization\Domain\Problem\MainResourceOutOfPerimeterProblem;
 use MaarchCourrier\Core\Domain\MainResource\Problem\ResourceDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveSignatureBookController;
 use MaarchCourrier\Tests\CourrierTestCase;
 use Resource\controllers\ResController;
-use Resource\controllers\ResourceListController;
+use Resource\models\ResModel;
 use SrcCore\http\Response;
 
 class RetrieveSignatureBookControllerTest extends CourrierTestCase
 {
-    private int $connectedUser = 19; //bbain
+    private int $connectedUser;
     private ?int $mainResourceId;
+    private ?array $attachmentIds = [];
 
     protected function setUp(): void
     {
         $this->connectAsUser('mmanfred');
         $this->connectedUser = $GLOBALS['id'];
+    }
 
-        $fileContent = file_get_contents('test/Functional/samples/test.txt');
-        $encodedFile = base64_encode($fileContent);
-
-        //create main document
-        $this->mainResourceId = $this->createMainResource($encodedFile);
-
-        //create attachments
-        $this->createAttachments($this->mainResourceId, $encodedFile);
-
-        //create workflow visa for resource
-        $this->createVisaCircuitForMainResource($this->mainResourceId);
-
-        //send main resource to internal signature book
-        $this->sendMainResourceToInternalSignatureBook($this->mainResourceId);
+    protected function tearDown(): void
+    {
+        if (!empty($this->mainResourceId)) {
+            ResModel::delete(['where' => ['res_id = ?'], 'data' => [$this->mainResourceId]]);
+            ListInstanceModel::delete(['where' => ['res_id = ?'], 'data' => [$this->mainResourceId]]);
+        }
+        if (!empty($this->attachmentIds)) {
+            AttachmentModel::delete(['where' => ['res_id in (?)'], 'data' => [$this->attachmentIds]]);
+        }
     }
 
     private function createMainResource(string $encodedFileContent): int
@@ -68,7 +67,6 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
             'typist'           => $this->connectedUser,
             'priority'         => 'poiuytre1357nbvc',
             'senders'          => [['type' => 'user', 'id' => 19]],
-            'diffusionList'    => [["id" => 17, "mode" => "dest", "type" => "user"],["id" => 12, "mode" => "cc", "type" => "entity"], ["id" => 8, "mode" => "cc", "type" => "user"]],
             'integrations'     => ['inSignatureBook' => true]
         ];
         $fullRequest = $this->createRequestWithBody('POST', $body);
@@ -97,7 +95,9 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
         $attachmentController = new AttachmentController();
-        $attachmentController->create($fullRequest, new Response());
+        $response = $attachmentController->create($fullRequest, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+        $this->attachmentIds[] = $responseBody->id;
 
         //Not signable and in signature book
         $body['type'] = 'simple_attachment';
@@ -105,7 +105,9 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
         $attachmentController = new AttachmentController();
-        $attachmentController->create($fullRequest, new Response());
+        $response = $attachmentController->create($fullRequest, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+        $this->attachmentIds[] = $responseBody->id;
 
         //Signable and not in signature book
         $body['type'] = 'simple_attachment';
@@ -114,7 +116,9 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         $fullRequest = $this->createRequestWithBody('POST', $body);
 
         $attachmentController = new AttachmentController();
-        $attachmentController->create($fullRequest, new Response());
+        $response = $attachmentController->create($fullRequest, new Response());
+        $responseBody = json_decode((string)$response->getBody());
+        $this->attachmentIds[] = $responseBody->id;
     }
 
     private function createVisaCircuitForMainResource(int $resId): void
@@ -127,8 +131,6 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
                         [
                             "item_id"               => $this->connectedUser,
                             "item_type"             => "user",
-                            "item_entity"           => "Pôle Jeunesse et Sport",
-                            "labelToDisplay"        => "Barbara BAIN",
                             "externalId"            => null,
                             "difflist_type"         => "VISA_CIRCUIT",
                             "signatory"             => false,
@@ -149,25 +151,11 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
 
     private function sendMainResourceToInternalSignatureBook(int $mainResourceId): void
     {
-        $body = [
-            "resources" => [
-                $mainResourceId
-            ],
-            "note" => [
-                "content" => "",
-                "entities" => []
-            ]
-        ];
-        $fullRequest = $this->createRequestWithBody('PUT', $body);
-        $args = [
-            'userId'    => $this->connectedUser,
-            'groupId'   => 2,
-            'basketId'  => 4,
-            'actionId'  => 414
-        ];
-
-        $resourceListController = new ResourceListController();
-        $resourceListController->setAction($fullRequest, new Response(), $args);
+        ResModel::update([
+            'set'   => ['status' => 'ESIG'],
+            'where' => ['res_id = ?'],
+            'data'  => [$mainResourceId]
+        ]);
     }
 
     /**
@@ -176,6 +164,22 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
      */
     public function testGetSignatureBookResourcesWhenNoErrorsOccurred(): void
     {
+        //Arrange
+        $fileContent = file_get_contents('test/Functional/samples/test.txt');
+        $encodedFile = base64_encode($fileContent);
+
+        //create main document
+        $this->mainResourceId = $this->createMainResource($encodedFile);
+
+        //create attachments
+        $this->createAttachments($this->mainResourceId, $encodedFile);
+
+        //create workflow visa for resource
+        $this->createVisaCircuitForMainResource($this->mainResourceId);
+
+        //send main resource to internal signature book
+        $this->sendMainResourceToInternalSignatureBook($this->mainResourceId);
+
         $args = [
             'userId'    => $this->connectedUser,
             'groupId'   => 4,
@@ -184,10 +188,12 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         ];
         $fullRequest = $this->createRequestWithBody('GET', $args);
 
+        //Act
         $retrieveSignatureBookController = new RetrieveSignatureBookController();
         $response = $retrieveSignatureBookController->getSignatureBook($fullRequest, new Response(), $args);
         $responseBody = json_decode((string)$response->getBody());
 
+        //Assert
         $this->assertNotEmpty($responseBody->resourcesToSign);
         $this->assertSame(2, count($responseBody->resourcesToSign));
         $this->assertSame(100, $responseBody->resourcesToSign[0]->resId);
