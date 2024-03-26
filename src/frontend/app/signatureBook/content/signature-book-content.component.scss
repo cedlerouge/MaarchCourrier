@@ -25,6 +25,14 @@ iframe {
     border: none;
 }
 
+.subject {
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box !important;
+}
+
 .subSubject {
     color: var(--maarch-color-secondary);
     align-self: flex-end;
