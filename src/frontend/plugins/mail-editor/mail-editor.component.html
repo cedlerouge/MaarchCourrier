@@ -115,11 +115,11 @@
                             <div class="attachListContainer">
                                 <div>
                                     <button mat-raised-button class="extensionButton" color="primary"
-                                        *ngIf="attach.status !== 'SIGN'"
+                                        *ngIf="attach.status !== 'SIGN' && !attach.isSigned"
                                         (click)="toggleAttachMail(attach,keyVal.key,'original');">.{{attach.format}}
                                     </button><br/>
                                     <button mat-raised-button class="extensionButton" color="primary"
-                                        *ngIf="(!functions.empty(attach.convertedDocument) && attach.format !== 'pdf') || attach.status === 'SIGN'"
+                                        *ngIf="(!functions.empty(attach.convertedDocument) && attach.format !== 'pdf') || attach.status === 'SIGN' || attach.isSigned"
                                         (click)="toggleAttachMail(attach,keyVal.key,'pdf');">
                                         .pdf
                                     </button>

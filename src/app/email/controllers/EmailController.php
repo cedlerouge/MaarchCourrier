@@ -503,21 +503,29 @@ class EmailController
         $document = [];
         if (!empty($resource['filename'])) {
             $convertedResource = AdrModel::getDocuments([
-                'select'    => ['docserver_id', 'path', 'filename'],
+                'select'    => ['docserver_id', 'path', 'filename', 'type'],
                 'where'     => ['res_id = ?', 'type in (?)', 'version = ?'],
                 'data'      => [$args['resId'], ['PDF', 'SIGN'], $resource['version']],
                 'orderBy'   => ["type='SIGN' DESC"],
                 'limit'     => 1
             ]);
             $convertedDocument = null;
+            $isSigned = false;
             if (!empty($convertedResource[0])) {
-                $docserver = DocserverModel::getByDocserverId(['docserverId' => $convertedResource[0]['docserver_id'], 'select' => ['path_template']]);
-                $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $convertedResource[0]['path']) . $convertedResource[0]['filename'];
+                $docserver = DocserverModel::getByDocserverId([
+                    'docserverId' => $convertedResource[0]['docserver_id'],
+                    'select' => ['path_template']
+                ]);
+                $pathToDocument = $docserver['path_template'] .
+                    str_replace('#', DIRECTORY_SEPARATOR, $convertedResource[0]['path']) .
+                    $convertedResource[0]['filename'];
                 if (file_exists($pathToDocument)) {
                     $convertedDocument = [
                         'size'  => StoreController::getFormattedSizeFromBytes(['size' => filesize($pathToDocument)])
                     ];
                 }
+
+                $isSigned = ($convertedResource[0]['type'] === 'SIGN');
             }
 
             $document = [
@@ -527,7 +535,8 @@ class EmailController
                 'convertedDocument' => $convertedDocument,
                 'creator'           => UserModel::getLabelledUserById(['id' => $resource['typist']]),
                 'format'            => $resource['format'],
-                'size'              => StoreController::getFormattedSizeFromBytes(['size' => $resource['filesize']])
+                'size'              => StoreController::getFormattedSizeFromBytes(['size' => $resource['filesize']]),
+                'isSigned'          => $isSigned
             ];
         }
 
