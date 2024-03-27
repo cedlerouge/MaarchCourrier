@@ -78,9 +78,10 @@ export class SendAvisParallelComponent implements AfterViewInit {
     }
 
     async onSubmit() {
+        const allowMultipleAvis: boolean = await this.getAvisParameter();
         const hasDuplicateUsersWithSameMode = this.hasDuplicateUsersWithSameMode(this.appAvisWorkflow.avisWorkflow.items);
 
-        if (hasDuplicateUsersWithSameMode) {
+        if (!allowMultipleAvis && hasDuplicateUsersWithSameMode) {
             this.alertDialogRef = this.dialog.open(AlertComponent, {
                 panelClass: 'maarch-modal',
                 autoFocus: false,
@@ -167,6 +168,20 @@ export class SendAvisParallelComponent implements AfterViewInit {
             }
         }
         return false;
+    }
+
+    getAvisParameter(): Promise<boolean> {
+        return new Promise((resolve) => {
+            this.http.get('../rest/parameters/allowMultipleAvisAssignment').pipe(
+                tap((data: any) => {
+                    resolve(data.parameter.param_value_int === 1 ?? false);
+                }),
+                catchError(() => {
+                    resolve(false);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
 }

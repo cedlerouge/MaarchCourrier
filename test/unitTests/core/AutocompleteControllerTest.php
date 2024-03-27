@@ -1,13 +1,13 @@
 <?php
-/**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
 
-* @brief   ActionsControllerTest
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+/**
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   ActionsControllerTest
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace MaarchCourrier\Tests\core;
 
@@ -17,7 +17,7 @@ use MaarchCourrier\Tests\CourrierTestCase;
 
 class AutocompleteControllerTest extends CourrierTestCase
 {
-    public function testGetContactsForGroups()
+    public function testGetContactsForGroups(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -25,12 +25,12 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'maarch',
-            'type'      => 'all'
+            'search' => 'maarch',
+            'type'   => 'all'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getContacts($fullRequest, new Response());
+        $response = $autocompleteController->getContacts($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -43,7 +43,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetMaarchParapheurUsers()
+    public function testGetMaarchParapheurUsers(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -51,38 +51,50 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search' => 'manfred',
+            'search'                 => 'manfred',
             'exludeAlreadyConnected' => 'true'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
+        $response = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        $this->assertIsArray($responseBody);
-        $this->assertEmpty($responseBody);
-
+        if (
+            !empty($responseBody->errors) &&
+            str_contains($responseBody->errors, 'Could not resolve host: ')
+        ) {
+            $this->markTestSkipped('An error occurred in MaarchParapheur response.');
+        } else {
+            $this->assertIsArray($responseBody);
+            $this->assertEmpty($responseBody);
+        }
         $aArgs = [
             'search' => 'jane'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
+        $response = $autocompleteController->getMaarchParapheurUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
-
         $this->assertIsArray($responseBody);
-        foreach ($responseBody as $user) {
-            $this->assertIsInt($user->id);
-            $this->assertNotEmpty($user->firstname);
-            $this->assertNotEmpty($user->lastname);
-            $this->assertNotEmpty($user->email);
-            $this->assertIsBool($user->substitute);
-            $this->assertNotEmpty($user->idToDisplay);
-            $this->assertIsInt($user->externalId->maarchParapheur);
+        if (
+            !empty($responseBody->errors) &&
+            str_contains($responseBody->errors, 'Could not resolve host: ')
+        ) {
+            $this->markTestSkipped('An error occurred in MaarchParapheur response.');
+        } else {
+            foreach ($responseBody as $user) {
+                $this->assertIsInt($user->id);
+                $this->assertNotEmpty($user->firstname);
+                $this->assertNotEmpty($user->lastname);
+                $this->assertNotEmpty($user->email);
+                $this->assertIsBool($user->substitute);
+                $this->assertNotEmpty($user->idToDisplay);
+                $this->assertIsInt($user->externalId->maarchParapheur);
+            }
         }
     }
 
-    public function testGetCorrespondents()
+    public function testGetCorrespondents(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -90,12 +102,12 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'maarch',
-            'color'      => true
+            'search' => 'maarch',
+            'color'  => true
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getCorrespondents($fullRequest, new Response());
+        $response = $autocompleteController->getCorrespondents($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         foreach ($responseBody as $value) {
@@ -109,7 +121,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetUsers()
+    public function testGetUsers(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -117,11 +129,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'bain'
+            'search' => 'bain'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsers($fullRequest, new Response());
+        $response = $autocompleteController->getUsers($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -137,7 +149,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetUsersForAdministration()
+    public function testGetUsersForAdministration(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -145,11 +157,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'bern',
+            'search' => 'bern',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
+        $response = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -169,11 +181,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
 
         $aArgs = [
-            'search'    => 'blier',
+            'search' => 'blier',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
+        $response = $autocompleteController->getUsersForAdministration($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -192,7 +204,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
-    public function testGetUsersForCircuit()
+    public function testGetUsersForCircuit(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -200,11 +212,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'dau',
+            'search' => 'dau',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getUsersForCircuit($fullRequest, new Response());
+        $response = $autocompleteController->getUsersForCircuit($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -220,7 +232,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetContactsCompany()
+    public function testGetContactsCompany(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -232,7 +244,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getContactsCompany($fullRequest, new Response());
+        $response = $autocompleteController->getContactsCompany($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -250,7 +262,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $this->assertNotEmpty($contact->addressCountry);
     }
 
-    public function testGetEntities()
+    public function testGetEntities(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -258,11 +270,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'mai',
+            'search' => 'mai',
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getEntities($fullRequest, new Response());
+        $response = $autocompleteController->getEntities($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -278,14 +290,14 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetStatuses()
+    public function testGetStatuses(): void
     {
         $autocompleteController = new AutoCompleteController();
 
         //  GET
         $request = $this->createRequest('GET');
 
-        $response     = $autocompleteController->getStatuses($request, new Response());
+        $response = $autocompleteController->getStatuses($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -301,7 +313,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetBanAddresses()
+    public function testGetBanAddresses(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -309,12 +321,12 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'department'    => '75',
-            'address'       => 'italie'
+            'department' => '75',
+            'address'    => 'italie'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getBanAddresses($fullRequest, new Response());
+        $response = $autocompleteController->getBanAddresses($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -337,23 +349,23 @@ class AutocompleteControllerTest extends CourrierTestCase
 
         // Errors
         $aArgs = [
-            'department'    => '100',
-            'address'       => 'italie'
+            'department' => '100',
+            'address'    => 'italie'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getBanAddresses($fullRequest, new Response());
+        $response = $autocompleteController->getBanAddresses($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Department indexes do not exist', $responseBody->errors);
 
-        $response     = $autocompleteController->getBanAddresses($request, new Response());
+        $response = $autocompleteController->getBanAddresses($request, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertSame('Bad Request', $responseBody->errors);
     }
 
-    public function testGetAvailableContactsForM2M()
+    public function testGetAvailableContactsForM2M(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -365,7 +377,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getAvailableContactsForM2M($fullRequest, new Response());
+        $response = $autocompleteController->getAvailableContactsForM2M($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -378,7 +390,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         }
     }
 
-    public function testGetFolders()
+    public function testGetFolders(): void
     {
         $GLOBALS['login'] = 'bblier';
         $userInfo = \User\models\UserModel::getByLogin(['login' => $GLOBALS['login'], 'select' => ['id']]);
@@ -394,7 +406,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getFolders($fullRequest, new Response());
+        $response = $autocompleteController->getFolders($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);
@@ -412,7 +424,7 @@ class AutocompleteControllerTest extends CourrierTestCase
         $GLOBALS['id'] = $userInfo['id'];
     }
 
-    public function testGetTags()
+    public function testGetTags(): void
     {
         $autocompleteController = new AutoCompleteController();
 
@@ -420,11 +432,11 @@ class AutocompleteControllerTest extends CourrierTestCase
         $request = $this->createRequest('GET');
 
         $aArgs = [
-            'search'    => 'maa'
+            'search' => 'maa'
         ];
         $fullRequest = $request->withQueryParams($aArgs);
 
-        $response     = $autocompleteController->getTags($fullRequest, new Response());
+        $response = $autocompleteController->getTags($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
         $this->assertIsArray($responseBody);

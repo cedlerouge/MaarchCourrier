@@ -11,6 +11,7 @@ namespace MaarchCourrier\Tests\app\entity;
 
 use Entity\controllers\ListInstanceController;
 use MaarchCourrier\Tests\CourrierTestCase;
+use Parameter\models\ParameterModel;
 use Resource\controllers\ResController;
 use Resource\models\ResModel;
 use SrcCore\http\Response;
@@ -20,6 +21,29 @@ use User\models\UserModel;
 class ListInstanceControllerTest extends CourrierTestCase
 {
     private static $resourceId = null;
+
+    private static bool $allowMultipleAvisAssignmentHaveToBeCreated = false;
+
+    public static function setUpBeforeClass(): void
+    {
+        $parameter = ParameterModel::getById(['id' => 'allowMultipleAvisAssignment']);
+        if (empty($parameter)) {
+            self::$allowMultipleAvisAssignmentHaveToBeCreated = true;
+            ParameterModel::create(['id' => 'allowMultipleAvisAssignment', 'param_value_int' => 0]);
+        }
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        if (self::$allowMultipleAvisAssignmentHaveToBeCreated){
+            ParameterModel::delete(['id' => 'allowMultipleAvisAssignment']);
+        }
+    }
+
+    private function setAllowMultipleAvisAssignment(int $value = 0): void
+    {
+        ParameterModel::update(['id' => 'allowMultipleAvisAssignment', 'param_value_int' => $value]);
+    }
 
     public function testInit()
     {
@@ -560,11 +584,69 @@ class ListInstanceControllerTest extends CourrierTestCase
         $this->assertSame('listInstances component is empty or not an object', $responseBody['errors']);
     }
 
-    public function testCannotSetParallelOpinionCircuitWithSameUserAndRole()
+
+
+
+    public function testCanSetParallelOpinionCircuitWithSameUserAndRoleIfParameterAllowMultipleAvisAssignmentIsTrue()
     {
         $listInstanceController = new ListInstanceController();
 
         // ARRANGE
+        $this->setAllowMultipleAvisAssignment(1);
+
+        // ACT : Modification d'une liste de diffusion avec 2x la même personne pour avis
+
+        $body = [
+            [
+                'resId'         => self::$resourceId,
+                'listInstances' => [
+                    [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 19,
+                        'item_mode'       => "dest",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 1,
+                        'item_mode'       => "cc",
+                        'item_type'       => "entity",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ], [
+                        'difflist_type'   => "entity_id",
+                        'item_id'         => 10,
+                        'item_mode'       => "avis",
+                        'item_type'       => "user",
+                        'process_date'    => null,
+                        'process_comment' => null
+                    ]
+                ]
+            ]
+        ];
+
+        $fullRequest = $this->createRequestWithBody('PUT', $body);
+        $response = $listInstanceController->update($fullRequest, new Response());
+
+        // ASSERT
+        // Attendu : Aucune erreur pour la mise à jour de la liste de diffusion
+        $this->assertSame(204, $response->getStatusCode());
+    }
+
+    public function testCannotSetParallelOpinionCircuitWithSameUserAndRoleIfParameterAllowMultipleAvisAssignmentIsFalse()
+    {
+        $listInstanceController = new ListInstanceController();
+
+        // ARRANGE
+        $this->setAllowMultipleAvisAssignment(0);
 
         // ACT : Modification d'une liste de diffusion avec 2x la même personne pour avis
 
