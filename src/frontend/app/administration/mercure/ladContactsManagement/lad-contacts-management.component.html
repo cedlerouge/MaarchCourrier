@@ -21,7 +21,7 @@
                     <mat-spinner style="margin:auto;"></mat-spinner>
                 </div>
                 <mat-card *ngIf="!loading" class="card-app-content">
-                    <div class="row" style="margin:0px;">
+                    <div class="row" style="margin:0;">
                         <div class="col-md-12 col-xs-12">
                             <mat-card class="card-stats">
                                 <mat-card-header class="card-header">
@@ -40,7 +40,7 @@
                                                 <mat-card-title *ngIf="indexationState.dateIndexation !== ''" class="card-title">
                                                     {{ indexationState.dateIndexation }}
                                                 </mat-card-title>
-                                                <mat-card-title *ngIf="indexationState.dateIndexation == ''" class="card-title">
+                                                <mat-card-title *ngIf="indexationState.dateIndexation === ''" class="card-title">
                                                     {{'lang.never' | translate}}
                                                 </mat-card-title>
                                             </div>
@@ -54,7 +54,7 @@
                                                     {{'lang.pctIndexation' | translate}}
                                                 </p>
                                                 <mat-card-title class="card-title">
-                                                    {{ indexationState.pctIndexationContacts }} ({{ indexationState.countIndexedContacts }} / {{ indexationState.countAllContacts }})
+                                                    {{ indexationState.pctIndexationContacts | number: '1.0-1'}} ({{ indexationState.countIndexedContacts }} / {{ indexationState.countAllContacts }})
                                                 </mat-card-title>
                                             </div>
                                         </div>

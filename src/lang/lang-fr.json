@@ -2846,5 +2846,7 @@
     "applyStamp": "Apposer la griffe sur le document",
     "noStamp": "Aucune griffe",
     "noDocumentToSign": "Aucun document à viser / signer",
-    "noAnnex": "Aucune pièce jointe en annexe"
+    "noAnnex": "Aucune pièce jointe en annexe",
+    "visaAvisWorkflow": "Circuit de visa / avis",
+    "allowMultipleAvisAssignment": "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle"
 }

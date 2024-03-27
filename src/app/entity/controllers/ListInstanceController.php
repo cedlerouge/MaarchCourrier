@@ -210,7 +210,28 @@ class ListInstanceController
                         $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']] = [];
                     }
 
-                    if (in_array($itemListinstance['item_type'] . '#' . $itemListinstance['item_id'], $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']])) {
+                    $allowMultipleAvisAssignment = ParameterModel::getById([
+                        'select' => ['param_value_int'],
+                        'id' => 'allowMultipleAvisAssignment'
+                    ]);
+                    if (empty($allowMultipleAvisAssignment)){
+                        ParameterModel::create([
+                            'id' => 'allowMultipleAvisAssignment',
+                            'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                            'param_value_int' => 0
+                        ]);
+                        $allowMultipleAvisAssignment = 0;
+                    } else {
+                        $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
+                    }
+
+                    if (
+                        in_array(
+                            $itemListinstance['item_type'] . '#' .$itemListinstance['item_id'],
+                            $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']]
+                        ) &&
+                        !(in_array($itemListinstance['item_mode'], ['avis', 'avis_copy', 'avis_info']) && $allowMultipleAvisAssignment == 1)
+                    ) {
                         return $response->withStatus(400)->withJson(['errors' => 'Some users/entities are present at least twice with the same role']);
                     } else {
                         $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'];
