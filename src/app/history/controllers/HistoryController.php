@@ -1,20 +1,21 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief History Controller
-* @author dev@maarch.org
-*/
+ * @brief History Controller
+ * @author dev@maarch.org
+ */
 
 namespace History\controllers;
 
 use Action\models\ActionModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use Resource\controllers\ResController;
 use Respect\Validation\Validator;
@@ -29,6 +30,11 @@ use User\models\UserModel;
 
 class HistoryController
 {
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
     public function get(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
@@ -38,7 +44,7 @@ class HistoryController
                 !Validator::notEmpty()->intVal()->validate($queryParams['resId']) ||
                 !ResController::hasRightByResId(
                     [
-                        'resId' => [$queryParams['resId']],
+                        'resId'  => [$queryParams['resId']],
                         'userId' => $GLOBALS['id']
                     ]
                 )
@@ -48,7 +54,7 @@ class HistoryController
                 !PrivilegeController::hasPrivilege(
                     [
                         'privilegeId' => 'view_full_history',
-                        'userId' => $GLOBALS['id']
+                        'userId'      => $GLOBALS['id']
                     ]
                 )
             ) {
@@ -57,7 +63,7 @@ class HistoryController
                     !PrivilegeController::hasPrivilege(
                         [
                             'privilegeId' => 'view_doc_history',
-                            'userId' => $GLOBALS['id']
+                            'userId'      => $GLOBALS['id']
                         ]
                     )
                 ) {
@@ -94,30 +100,30 @@ class HistoryController
                 $users = UserModel::get(['select' => ['id'], 'where' => ['user_id in (?)'], 'data' => [$userLogins]]);
                 $users = array_column($users, 'id');
             }
-            $users   = array_merge($users, $userIds);
+            $users = array_merge($users, $userIds);
             $where[] = 'user_id in (?)';
-            $data[]  = $users;
+            $data[] = $users;
         }
 
         if (!empty($queryParams['startDate'])) {
             $where[] = 'event_date > ?';
-            $data[]  = $queryParams['startDate'];
+            $data[] = $queryParams['startDate'];
         }
         if (!empty($queryParams['endDate'])) {
             $where[] = 'event_date < ?';
-            $data[]  = $queryParams['endDate'];
+            $data[] = $queryParams['endDate'];
         }
 
         if (!empty($queryParams['resId'])) {
             $where[] = 'table_name in (?)';
-            $data[]  = ['res_letterbox', 'res_view_letterbox'];
+            $data[] = ['res_letterbox', 'res_view_letterbox'];
 
             $where[] = 'record_id = ?';
-            $data[]  = $queryParams['resId'];
+            $data[] = $queryParams['resId'];
         }
         if (!empty($queryParams['onlyActions'])) {
             $where[] = 'event_type like ?';
-            $data[]  = 'ACTION#%';
+            $data[] = 'ACTION#%';
         }
 
         $eventTypes = [];
@@ -139,12 +145,12 @@ class HistoryController
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchFields]);
 
             $requestData = AutoCompleteController::getDataForRequest([
-                'search'        => $queryParams['search'],
-                'fields'        => $fields,
-                'where'         => $where,
-                'data'          => $data,
-                'fieldsNumber'  => 2,
-                'longField'     => true
+                'search'       => $queryParams['search'],
+                'fields'       => $fields,
+                'where'        => $where,
+                'data'         => $data,
+                'fieldsNumber' => 2,
+                'longField'    => true
             ]);
 
             $where = $requestData['where'];
@@ -162,12 +168,12 @@ class HistoryController
         }
 
         $history = HistoryModel::get([
-            'select'    => ['record_id', 'event_date', 'user_id', 'info', 'remote_ip', 'count(1) OVER()'],
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => $orderBy,
-            'offset'    => $offset,
-            'limit'     => $limit
+            'select'  => ['record_id', 'event_date', 'user_id', 'info', 'remote_ip', 'count(1) OVER()'],
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => $orderBy,
+            'offset'  => $offset,
+            'limit'   => $limit
         ]);
 
         $total = $history[0]['count'] ?? 0;
@@ -179,6 +185,11 @@ class HistoryController
         return $response->withJson(['history' => $history, 'count' => $total]);
     }
 
+    /**
+     * @param array $aArgs
+     * @return void
+     * @throws Exception
+     */
     public static function add(array $aArgs): void
     {
         ValidatorModel::notEmpty($aArgs, ['tableName', 'recordId', 'eventType', 'info', 'eventId']);
@@ -220,6 +231,12 @@ class HistoryController
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     */
     public function getByUserId(Request $request, Response $response, array $aArgs): Response
     {
         if (
@@ -227,7 +244,7 @@ class HistoryController
             !PrivilegeController::hasPrivilege(
                 [
                     'privilegeId' => 'view_history',
-                    'userId' => $GLOBALS['id']
+                    'userId'      => $GLOBALS['id']
                 ]
             )
         ) {
@@ -235,16 +252,21 @@ class HistoryController
         }
 
         $aHistories = HistoryModel::get([
-            'select'    => ['info','record_id', 'event_date'],
-            'where'     => ['user_id = ?'],
-            'data'      => [$aArgs['userSerialId']],
-            'orderBy'   => ['event_date DESC'],
-            'limit'     => 500
+            'select'  => ['info', 'record_id', 'event_date'],
+            'where'   => ['user_id = ?'],
+            'data'    => [$aArgs['userSerialId']],
+            'orderBy' => ['event_date DESC'],
+            'limit'   => 500
         ]);
 
         return $response->withJson(['histories' => $aHistories]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
     public function getAvailableFilters(Request $request, Response $response): Response
     {
         $queryParams = $request->getQueryParams();
@@ -254,7 +276,7 @@ class HistoryController
                 !Validator::notEmpty()->intVal()->validate($queryParams['resId']) ||
                 !ResController::hasRightByResId(
                     [
-                        'resId' => [$queryParams['resId']],
+                        'resId'  => [$queryParams['resId']],
                         'userId' => $GLOBALS['id']
                     ]
                 )
@@ -264,7 +286,7 @@ class HistoryController
                 !PrivilegeController::hasPrivilege(
                     [
                         'privilegeId' => 'view_full_history',
-                        'userId' => $GLOBALS['id']
+                        'userId'      => $GLOBALS['id']
                     ]
                 )
             ) {
@@ -273,7 +295,7 @@ class HistoryController
                     !PrivilegeController::hasPrivilege(
                         [
                             'privilegeId' => 'view_doc_history',
-                            'userId' => $GLOBALS['id']
+                            'userId'      => $GLOBALS['id']
                         ]
                     )
                 ) {
@@ -284,7 +306,7 @@ class HistoryController
             !PrivilegeController::hasPrivilege(
                 [
                     'privilegeId' => 'view_history',
-                    'userId' => $GLOBALS['id']
+                    'userId'      => $GLOBALS['id']
                 ]
             )
         ) {
@@ -306,9 +328,9 @@ class HistoryController
         }
 
         $eventTypes = HistoryModel::get([
-            'select'    => ['DISTINCT(event_type)'],
-            'where'     => $where,
-            'data'      => $data
+            'select' => ['DISTINCT(event_type)'],
+            'where'  => $where,
+            'data'   => $data
         ]);
 
         $actions = [];
@@ -327,9 +349,9 @@ class HistoryController
         }
 
         $usersInHistory = HistoryModel::get([
-            'select'    => ['DISTINCT(user_id)'],
-            'where'     => $where,
-            'data'      => $data
+            'select' => ['DISTINCT(user_id)'],
+            'where'  => $where,
+            'data'   => $data
         ]);
 
         $users = [];
@@ -337,23 +359,30 @@ class HistoryController
             if (!empty($value['user_id'])) {
                 $user = UserModel::getById(
                     [
-                        'id' => $value['user_id'],
+                        'id'     => $value['user_id'],
                         'select' => ['user_id', 'firstname', 'lastname']
                     ]
                 );
             }
 
             $users[] = [
-                'id' => $value['user_id'] ??
-                null, 'login' => $user['user_id'] ??
-                null, 'label' => !empty($user['user_id']) ?
-                "{$user['firstname']} {$user['lastname']}" : null
+                'id'    => $value['user_id'] ??
+                    null,
+                'login' => $user['user_id'] ??
+                    null,
+                'label' => !empty($user['user_id']) ?
+                    "{$user['firstname']} {$user['lastname']}" : null
             ];
         }
 
         return $response->withJson(['actions' => $actions, 'systemActions' => $systemActions, 'users' => $users]);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
     public function exportHistory(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
@@ -400,15 +429,15 @@ class HistoryController
                 $userLogins[] = $user['login'];
             }
             $where[] = 'user_id in (?)';
-            $data[]  = $userLogins;
+            $data[] = $userLogins;
         }
         if (!empty($body['parameters']['startDate'])) {
             $where[] = 'event_date > ?';
-            $data[]  = $body['parameters']['startDate'];
+            $data[] = $body['parameters']['startDate'];
         }
         if (!empty($body['parameters']['endDate'])) {
             $where[] = 'event_date < ?';
-            $data[]  = $body['parameters']['endDate'];
+            $data[] = $body['parameters']['endDate'];
         }
 
         $eventTypes = [];
@@ -455,11 +484,11 @@ class HistoryController
         fputcsv($file, $csvHead, $delimiter);
 
         $histories = HistoryModel::get([
-            'select'    => $fields,
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => $orderBy,
-            'limit'     => $limit
+            'select'  => $fields,
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => $orderBy,
+            'limit'   => $limit
         ]);
 
         foreach ($histories as $history) {
