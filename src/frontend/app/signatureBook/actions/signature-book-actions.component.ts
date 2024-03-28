@@ -56,10 +56,6 @@ export class SignatureBookActionsComponent implements OnInit {
                             this.documentDatas.encodedDocument = value.split(',')[1];
                         });
                     }
-                }),
-                tap(() => {
-                    // Traitement des données reçues après qu'une action a été capturée
-                    this.processAfterAction();
                 })
             )
             .subscribe();
@@ -98,7 +94,7 @@ export class SignatureBookActionsComponent implements OnInit {
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
-                tap((data: any) => {
+                tap(async (data: any) => {
                     this.actionsService.launchAction(
                         action,
                         this.userId,

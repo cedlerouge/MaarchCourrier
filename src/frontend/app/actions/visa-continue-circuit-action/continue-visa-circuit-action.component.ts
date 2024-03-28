@@ -133,7 +133,6 @@ export class ContinueVisaCircuitActionComponent implements OnInit {
                             this.executeAction(realResSelected, data);
                         }
                     }),
-                    finalize(() => this.backToBasket()),
                     catchError((err: any) => {
                         this.notify.handleSoftErrors(err);
                         return of(false);

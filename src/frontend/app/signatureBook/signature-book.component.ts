@@ -33,6 +33,8 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     subscription: Subscription;
     defaultStamp: StampInterface;
 
+    processedIdSubscription: Subscription;
+
     constructor(
         public http: HttpClient,
         private route: ActivatedRoute,
@@ -48,6 +50,11 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                 this.notify.success('apposition de la griffe!');
             })
         ).subscribe();
+
+        // Event after process action
+        this.processedIdSubscription = this.actionService.catchAction().subscribe(message => {
+            this.processAfterAction();
+        });
     }
 
     @HostListener('window:unload', [ '$event' ])
@@ -118,6 +125,10 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         });
     }
 
+    processAfterAction() {
+        this.backToBasket();
+    }
+
     backToBasket(): void {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
@@ -130,7 +141,8 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
     }
 
     async unlockResource(): Promise<void> {
+        const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.actionService.stopRefreshResourceLock();
-        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
     }
 }
