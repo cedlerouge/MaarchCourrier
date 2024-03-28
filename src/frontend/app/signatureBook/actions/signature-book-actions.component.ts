@@ -94,7 +94,7 @@ export class SignatureBookActionsComponent implements OnInit {
         this.http
             .get(`../rest/resources/${this.resId}?light=true`)
             .pipe(
-                tap(async (data: any) => {
+                tap((data: any) => {
                     this.actionsService.launchAction(
                         action,
                         this.userId,
