@@ -19,18 +19,6 @@ use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
 interface AttachmentRepositoryInterface
 {
     /**
-     * @param MainResourceInterface $mainResource
-     * @return AttachmentInterface[]
-     */
-    public function getIncomingMailByMainResource(MainResourceInterface $mainResource): array;
-
-    /**
-     * @param MainResourceInterface $mainResource
-     * @return AttachmentInterface[]
-     */
-    public function getNonIncomingMailNotInSignatureBookByMainResource(MainResourceInterface $mainResource): array;
-
-    /**
      * @return AttachmentInterface[]
      */
     public function getAttachmentsInSignatureBookByMainResource(MainResourceInterface $mainResource): array;
