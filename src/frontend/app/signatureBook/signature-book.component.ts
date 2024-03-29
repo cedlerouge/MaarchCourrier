@@ -42,7 +42,7 @@ export class SignatureBookComponent implements OnDestroy {
     subscription: Subscription;
     defaultStamp: StampInterface;
 
-    processedIdSubscription: Subscription;
+    processActionSubscription: Subscription;
     allResourcesIds: any[] = [];
 
     canGoToNext: boolean = false;
@@ -71,7 +71,7 @@ export class SignatureBookComponent implements OnDestroy {
         ).subscribe();
 
         // Event after process action
-        this.processedIdSubscription = this.actionService.catchAction().subscribe(() => {
+        this.processActionSubscription = this.actionService.catchAction().subscribe(() => {
             this.processAfterAction();
         });
     }
@@ -170,7 +170,7 @@ export class SignatureBookComponent implements OnDestroy {
     ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
-        this.processedIdSubscription.unsubscribe();
+        this.processActionSubscription.unsubscribe();
         this.unlockResource();
     }
 
