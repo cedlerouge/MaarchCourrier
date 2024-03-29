@@ -117,6 +117,7 @@ export class SignatureBookComponent implements OnDestroy {
             this.attachments = data.resourcesAttached;
             this.loadingAttachments = false;
             this.loadingDocsToSign = false;
+            this.loading = false;
         });
     }
 
