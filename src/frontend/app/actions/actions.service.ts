@@ -786,8 +786,8 @@ export class ActionsService implements OnDestroy {
     sendSignatureBookAction() {
         const dialogRef = this.dialog.open(SendSignatureBookActionComponent, {
             panelClass: 'maarch-modal',
-            width: this.currentResIds.length > 1 ? '580px' : '',
-            height: this.currentResIds.length > 1 ? 'auto' : '99vh',
+            width: this.currentResIds.length > 1 || this.currentResIds.length === 0 ? '590px' : '',
+            height: this.currentResIds.length > 1 || this.currentResIds.length === 0 ? 'auto' : '99vh',
             autoFocus: false,
             disableClose: true,
             data: this.setDatasActionToSend()

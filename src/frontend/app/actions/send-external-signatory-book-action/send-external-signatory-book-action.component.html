@@ -22,7 +22,7 @@
                     </div>
                     <div *ngIf="data.resIds.length === 1" class="toggleIntegration">
                         <button *ngIf="data.resIds.length === 1" class="attachmentIcon" color="primary"
-                            mat-icon-button title="{{'lang.attachmentsInSignatoryBook' | translate}}"
+                            mat-icon-button [title]="getIntegratedAttachments() + ' ' + ('lang.attachmentsInSignatoryBook' | translate)"
                             (click)="onSidenavStateChanged()">
                             <mat-icon fontSet="fas"
                                 [matBadge]="getIntegratedAttachments()"

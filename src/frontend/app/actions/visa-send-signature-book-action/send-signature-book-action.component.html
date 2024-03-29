@@ -15,8 +15,8 @@
                         {{'lang.elements' | translate}}</b> ?
                 </div>
                 <div *ngIf="data.resIds.length === 1" class="toggle-integration">
-                    <button class="attachment-icon " color="primary"
-                        mat-icon-button [title]="'lang.attachmentsInSignatoryBook' | translate"
+                    <button class="attachment-icon" color="primary" autofocus
+                        mat-icon-button [title]="getIntegratedAttachmentsLength() + ' ' + ('lang.attachmentsInSignatoryBook' | translate)"
                         (click)="onSidenavStateChanged()">
                         <mat-icon fontSet="fas"
                             [matBadge]="getIntegratedAttachmentsLength()"
