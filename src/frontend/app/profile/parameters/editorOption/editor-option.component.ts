@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { NotificationService } from '@service/notification/notification.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ import { of } from 'rxjs';
     styleUrls: ['./editor-option.component.scss'],
 })
 
-export class EditorOptionComponent implements OnInit {
+export class EditorOptionComponent {
 
     @Input() docEdition: any;
 
@@ -37,8 +37,6 @@ export class EditorOptionComponent implements OnInit {
             })
         ).subscribe();
     }
-
-    ngOnInit(): void {}
 
     updateUserPreferences() {
         this.http.put('../rest/currentUser/profile/preferences', { documentEdition: this.docEdition }).pipe(

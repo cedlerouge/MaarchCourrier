@@ -20,17 +20,17 @@
         <div class="col-md-12 form-group" style="margin-top: 10px;">
             <div style="text-align:center;">
                 <button mat-raised-button color="primary" type="submit"
-                    *ngIf="mailSignatureModel.selected==-1"
+                    *ngIf="mailSignatureModel.selected === -1"
                     [disabled]="!emailSignatureForm.form.valid">{{'lang.save' | translate}}</button>
                 <button mat-raised-button color="primary" type="button"
-                    *ngIf="mailSignatureModel.selected!=-1"
+                    *ngIf="mailSignatureModel.selected !== -1"
                     (click)="updateEmailSignature()"
                     [disabled]="!emailSignatureForm.form.valid">{{'lang.update' | translate}}</button>
                 <button mat-raised-button color="warn" type="button"
-                    *ngIf="mailSignatureModel.selected!=-1"
+                    *ngIf="mailSignatureModel.selected !== -1"
                     (click)="deleteEmailSignature()">{{'lang.delete' | translate}}</button>
                 <button mat-raised-button color="default" type="button"
-                    *ngIf="mailSignatureModel.selected!=-1"
+                    *ngIf="mailSignatureModel.selected !== -1"
                     (click)="resetEmailSignature()">{{'lang.cancel' | translate}}</button>
             </div>
         </div>

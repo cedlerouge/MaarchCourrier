@@ -107,7 +107,10 @@ define('_USER_ENTITY_CREATION', 'Entité ajoutée pour utilisateur');
 define('_USER_ENTITY_MODIFICATION', 'Entité modifiée pour utilisateur');
 define('_USER_ENTITY_SUPPRESSION', 'Entité supprimée pour utilisateur');
 define('_USER_ALREADY_LINK_GROUP', 'L\'utilisateur est déjà lié à ce groupe');
-define('_CANNOT_ADD_USER_IN_THIS_GROUP', 'Vous n\'avez pas les droits suffisants pour ajouter des utilisateurs à ce groupe');
+define(
+    '_CANNOT_ADD_USER_IN_THIS_GROUP',
+    'Vous n\'avez pas les droits suffisants pour ajouter des utilisateurs à ce groupe'
+);
 define('_USER_ALREADY_LINK_ENTITY', 'L\'utilisateur est déjà lié à cette entité');
 define('_VISA_USER', 'Pour visa');
 define('_WRONG_FILE_TYPE', 'Ce type de fichier n\'est pas permis');
@@ -123,8 +126,17 @@ define('_UNCHANGED', 'Inchangé');
 define('_NO_PAGE', 'Aucune page');
 define('_NO_KEYWORD', 'Aucun mot clé');
 define('_INDEXING', 'Indexation');
-define('_KEYWORD_REDIRECT_DESC', 'Permet de définir les options disponibles sur l\'action depuis la bannette, notamment les services et / ou les utilisateurs disponibles pour la redirection.');
-define('_KEYWORD_INDEXING_DESC', 'Permet de définir les options disponibles sur l\'action depuis la bannette, notamment les services traitant disponibles et le/les statut(s) potentiels pour un enregistrement / modification de courrier.');
+define(
+    '_KEYWORD_REDIRECT_DESC',
+    'Permet de définir les options disponibles sur l\'action depuis la bannette, notamment les services et / ou
+     les utilisateurs disponibles pour la redirection.'
+);
+define(
+    '_KEYWORD_INDEXING_DESC',
+    'Permet de définir les options disponibles sur l\'action depuis la bannette,
+     notamment les services traitant disponibles et le/les statut(s)
+     potentiels pour un enregistrement / modification de courrier.'
+);
 define('_SIMPLE_MAIL', 'Courrier simple');
 define('_EMAIL', 'Courriel');
 define('_FAX', 'Fax');
@@ -221,7 +233,11 @@ define("_FREEZE_FOLDER", "Geler le dossier");
 define("_CLOSE_FOLDER", "Clôturer le dossier");
 define("_TAG_DEFAULT", "Mot-clé");
 define("_PRIVATE_TAGS", "Lier les Mots-clé à l'entité de l'utilisateur (Niveau direction)");
-define("_PRIVATE_TAGS_DESC", "L'utilisateur ne verra que les Mots-clé qui ont été restreints à sa direction (l'ajout / modification associera le mot clé automatiquement à sa direction).");
+define(
+    "_PRIVATE_TAGS_DESC",
+    "L'utilisateur ne verra que les Mots-clé qui ont été restreints à sa direction
+     (l'ajout / modification associera le mot clé automatiquement à sa direction)."
+);
 define('_REDIRECTION', 'Rediriger');
 define('_NOT_INCOMING_CATEGORY', 'Catégorie différente de \'Courrier arrivée\'');
 define('_NO_CONTACT', 'Pas de contact associé');
@@ -336,20 +352,42 @@ define("_INDEXINGMODEL_MODIFICATION", "Modèle d'enregistrement modifié");
 define("_INDEXINGMODEL_SUPPRESSION", "Modèle d'enregistrement supprimé");
 define("_PRIORITY_DELAY_ALREADY_SET", "Ce délai de traitement est déjà défini pour une autre priorité");
 define("_NOTIFICATIONS_FORGOT_PASSWORD_SUBJECT", "[Maarch Courrier] Demande de réinitialisation de mot de passe");
-define("_NOTIFICATIONS_FORGOT_PASSWORD_BODY", "Bonjour,<br/><br/>Vous avez demandé à retrouver le mot de passe d'accès à votre compte Maarch Courrier.<br/><br/>Pour modifier votre mot de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>");
-define("_NOTIFICATIONS_FORGOT_PASSWORD_FOOTER", "<br/><br/>Si vous n'êtes pas à l'origine de cette demande, merci d'ignorer ce courriel.<br/><br/>Pour toutes questions, merci de contacter l'administrateur de la solution.");
+define(
+    "_NOTIFICATIONS_FORGOT_PASSWORD_BODY",
+    "Bonjour,<br/><br/>Vous avez demandé à retrouver le mot de passe d'accès à votre compte Maarch Courrier.<br/>
+<br/>Pour modifier votre mot de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>"
+);
+define(
+    "_NOTIFICATIONS_FORGOT_PASSWORD_FOOTER",
+    "<br/><br/>Si vous n'êtes pas à l'origine de cette demande, merci d'ignorer ce courriel.<br/>
+<br/>Pour toutes questions, merci de contacter l'administrateur de la solution."
+);
 define("_PASSWORD_REINIT_SENT", "Réinitialisation du mot de passe envoyé");
 define("_PASSWORD_REINIT", "Mot de passe réinitialisé");
 define("_NOTIFICATIONS_USER_CREATION_SUBJECT", "[Maarch Courrier] Activer votre compte utilisateur");
-define("_NOTIFICATIONS_USER_CREATION_BODY", "Bienvenue,<br/><br/>Vous disposez maintenant d'un compte dans l'application de gestion électronique de courrier Maarch Courrier.<br/><br/>Pour vous connecter et définir votre mot de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>");
+define(
+    "_NOTIFICATIONS_USER_CREATION_BODY",
+    "Bienvenue,<br/><br/>Vous disposez maintenant d'un compte dans l'application de gestion 
+électronique de courrier Maarch Courrier.<br/><br/>Pour vous connecter et définir votre mot 
+de passe, merci de bien vouloir cliquer sur le lien ci-dessous :<br/><br/>"
+);
 define("_CLICK_HERE", "Cliquez-ici pour définir votre mot de passe");
 define("_YOUR_ID", "<b>Votre identifiant :</b>");
-define("_NOTIFICATIONS_USER_CREATION_FOOTER", "<br/><br/>Ce message est envoyé automatiquement à la suite d'une action de l'administrateur.<br/>Merci de ne pas y répondre.<br/><br/>Pour toutes questions, merci de contacter l'administrateur technique de la solution.");
+define(
+    "_NOTIFICATIONS_USER_CREATION_FOOTER",
+    "<br/><br/>Ce message est envoyé automatiquement à la suite d'une action de l'administrateur.
+<br/>Merci de ne pas y répondre.<br/><br/>Pour toutes questions, 
+merci de contacter l'administrateur technique de la solution."
+);
 define("_M2M_ANNUARY_IS_NOT_SET", "Aucun annuaire M2M paramétré");
 define("_M2M_LDAP_AUTHENTICATION_FAILED", "Connexion impossible à l'annuaire M2M");
 define("_M2M_LDAP_ADD_FAILED", "Problème lors de l'ajout du contact dans l'annuaire M2M");
 define("_NO_M2M_ANNUARY_AVAILABLE", "Aucun annuaire M2M disponible");
-define("_CANNOT_SYNCHRONIZE_M2M_ANNUARY", "Le contact ne peut pas être ajouté dans l'annuaire car un des champs suivants est manquant : Société, moyen de communication, service");
+define(
+    "_CANNOT_SYNCHRONIZE_M2M_ANNUARY",
+    "Le contact ne peut pas être ajouté dans l'annuaire car un des champs suivants est manquant :
+     Société, moyen de communication, service"
+);
 define("_DATE_LOCALE", "fr_FR.utf8");
 define("_USER_PREFERENCE_UPDATED", "Préférences utilisateur modifiées");
 define("_USER_FEATURE_TOUR_UPDATED", "Une ou plusieurs étapes du didacticiel ont été faites");
@@ -421,10 +459,22 @@ define('_REGISTERED_MAIL_NOT_DISTRIBUTED', 'Accusé de réception reçu : recomm
 define('_CONFIGURATION_UPDATED', 'Configuration modifiée');
 define('_SEND_TO_RECORD_MANAGEMENT', 'Envoyer dans un système d\'archivage électronique');
 define('_SEND_TO_RECORD_MANAGEMENT_DESC', 'Envoyer dans un système d\'archivage électronique');
-define('_CHECK_REPLY_RECORD_MANAGEMENT', 'Vérification de la réponse au transfert du système d\'archivage électronique');
-define('_CHECK_REPLY_RECORD_MANAGEMENT_DESC', 'Vérification de la réponse au transfert du système d\'archivage électronique');
-define('_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT', 'Vérification du transfert du paquet au système d\'archivage électronique');
-define('_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT_DESC', 'Vérification du transfert du paquet au système d\'archivage électronique');
+define(
+    '_CHECK_REPLY_RECORD_MANAGEMENT',
+    'Vérification de la réponse au transfert du système d\'archivage électronique'
+);
+define(
+    '_CHECK_REPLY_RECORD_MANAGEMENT_DESC',
+    'Vérification de la réponse au transfert du système d\'archivage électronique'
+);
+define(
+    '_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT',
+    'Vérification du transfert du paquet au système d\'archivage électronique'
+);
+define(
+    '_CHECK_ACKNOWLEDGMENT_RECORD_MANAGEMENT_DESC',
+    'Vérification du transfert du paquet au système d\'archivage électronique'
+);
 define('_RESET_RECORD_MANAGEMENT', 'Remise à zéro du circuit d\'archivage');
 define('_RESET_RECORD_MANAGEMENT_DESC', 'Remise à zéro du circuit d\'archivage');
 define('_USER_SKIPPED', 'Utilisateur passé');
@@ -456,8 +506,14 @@ define('_VISA_WORKFLOW_ENTITY_NOT_FOUND', "Aucun \"Entité traitante\" attaché 
 define("_FOR_ATTACHMENT", "Pour la PJ");
 define('_FOR_MAIN_DOC', "Pour le Document principal");
 define('_PARAMETER_VALUE_INT_FOR_CHRONO', 'Le type Entier est obligatoire pour les numéros chrono!');
-define('_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR', "Aucun identifiant 'subscriberId' fourni. vérifiez votre configuration FastParapheur");
-define('_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR', "Aucun 'Type de circuit' fourni. vérifiez votre configuration FastParapheur");
+define(
+    '_NO_SUBSCRIBER_ID_FOUND_FAST_PARAPHEUR',
+    "Aucun identifiant 'subscriberId' fourni. vérifiez votre configuration FastParapheur"
+);
+define(
+    '_NO_WORKFLOW_TYPE_FOUND_FAST_PARAPHEUR',
+    "Aucun 'Type de circuit' fourni. vérifiez votre configuration FastParapheur"
+);
 define('_DB_UPDATED_WITH_FILE', 'Base de données mise à jour avec le fichier');
 define('_APP_UPDATED_TO_TAG', 'Application mise à jour au tag');
 define('_SHIPPING_ATTACH_DEPOSIT_PROOF', 'Preuve de dépôt Maileva');
@@ -469,7 +525,11 @@ define('_STANDARD_', "Par défaut");
 define('_REST_', "Utilisateur WebService (API)");
 define('_ROOT_VISIBLE_', "Compte super administrateur visible dans les workflows (Assignable)");
 define('_ROOT_INVISIBLE_', "Compte super administrateur non visible dans les workflows (Non Assignable)");
-define('_EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE', "Un utilisateur externe a été trouvé mais l'option OTP est désactivée. Voir dans la configuration de SignatoryBooks.");
+define(
+    '_EXTERNAL_USER_FOUND_BUT_OPTION_OTP_DISABLE',
+    "Un utilisateur externe a été trouvé mais l'option OTP est désactivée.
+     Voir dans la configuration de SignatoryBooks."
+);
 define('ALL_ENTITIES_TEXT', "Toutes les entités");
 define('_DOC_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', "Le document principal n'existe plus dans le parapheur externe");
 define('_ATTACH_DOES_NOT_EXIST_IN_EXTERNAL_SIGNATORY', array(

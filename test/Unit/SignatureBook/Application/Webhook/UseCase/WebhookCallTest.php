@@ -19,7 +19,6 @@ use MaarchCourrier\SignatureBook\Application\Webhook\StoreSignedResource;
 use MaarchCourrier\SignatureBook\Application\Webhook\UseCase\WebhookCall;
 use MaarchCourrier\SignatureBook\Application\Webhook\WebhookValidation;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
-use MaarchCourrier\SignatureBook\Domain\Problem\CurlRequestErrorProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceAlreadySignProblem;
@@ -33,7 +32,7 @@ use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\SignatureHistoryServiceSpy;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\StoreSignedResourceServiceMock;
-use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use PHPUnit\Framework\TestCase;
 
 class WebhookCallTest extends TestCase

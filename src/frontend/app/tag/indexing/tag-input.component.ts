@@ -7,7 +7,7 @@ import { AppService } from '@service/app.service';
 import { SortPipe } from '../../../plugins/sorting.pipe';
 import { UntypedFormControl } from '@angular/forms';
 import { Observable, of } from 'rxjs';
-import { debounceTime, filter, distinctUntilChanged, tap, switchMap, exhaustMap, catchError, map } from 'rxjs/operators';
+import { debounceTime, filter, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
 import { LatinisePipe } from 'ngx-pipes';
 import { PrivilegeService } from '@service/privileges.service';
 import { FunctionsService } from '@service/functions.service';
@@ -79,7 +79,7 @@ export class TagInputComponent implements OnInit {
                         if (!this.functionsService.empty(this.tmpObject)) {
                             this.valuesToDisplay[this.tmpObject['id']] = this.tmpObject[this.key];
                             this.tmpObject = null;
-                        } else {
+                        } else {
                             this.initFormValue();
                         }
 
@@ -172,7 +172,7 @@ export class TagInputComponent implements OnInit {
             this.control.setValue(arrValue);
         } else {
             this.http.delete('../rest/tags/' + this.control.value[index]).pipe(
-                tap((data: any) => {
+                tap(() => {
                     const arrValue = this.control.value;
                     this.control.value.splice(index, 1);
                     this.control.setValue(arrValue);

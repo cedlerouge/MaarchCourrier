@@ -17,7 +17,6 @@ import { catchError, exhaustMap, filter, tap } from 'rxjs/operators';
 import { of, Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 
-declare let $: any;
 
 @Component({
     templateUrl: 'profile.component.html',
@@ -207,8 +206,8 @@ export class ProfileComponent implements OnInit {
         this.passwordModel.currentPassword = this.firstFormGroup.controls['currentPasswordCtrl'].value;
         this.passwordModel.newPassword = this.firstFormGroup.controls['newPasswordCtrl'].value;
         this.passwordModel.reNewPassword = this.firstFormGroup.controls['retypePasswordCtrl'].value;
-        this.http.put('../rest/users/' + this.user.id + '/password', this.passwordModel)
-            .subscribe((data: any) => {
+        this.http.put('../rest/users/' + this.user.id + '/password', this.passwordModel).pipe(
+            tap(() => {
                 this.showPassword = false;
                 this.passwordModel = {
                     currentPassword: '',
@@ -216,9 +215,12 @@ export class ProfileComponent implements OnInit {
                     reNewPassword: '',
                 };
                 this.notify.success(this.translate.instant('lang.passwordUpdated'));
-            }, (err) => {
-                this.notify.error(err.error.errors);
-            });
+            }),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err)
+                return of(false);
+            })
+        ).subscribe();
     }
 
     onSubmit() {

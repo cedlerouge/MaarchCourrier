@@ -56,8 +56,8 @@ use ZipArchive;
  */
 class FastParapheurController
 {
-    public const  INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
-    public const  INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
+    public const INVALID_DOC_ID_ERROR = "Internal error: Invalid docId";
+    public const INVALID_DOC_ID_TYPE_ERROR = "Internal error: Failed to convert value of type 'java.lang.String' to required type 'long'";
 
     /**
      * @param Request $request
@@ -74,7 +74,8 @@ class FastParapheurController
 
         $signatureModes = FastParapheurController::getSignatureModes(['mapping' => true]);
         if (!empty($signatureModes['errors'])) {
-            return $response->withStatus($signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]);
+            return $response->withStatus((int)$signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]
+            );
         }
 
         $optionOtp = false;
@@ -379,10 +380,10 @@ class FastParapheurController
 
     /**
      * @param array $args
-     * @return mixed
+     * @return array
      * @throws Exception
      */
-    public static function retrieveSignedMails(array $args): mixed
+    public static function retrieveSignedMails(array $args): array
     {
         $version = $args['version'];
 
@@ -862,7 +863,7 @@ class FastParapheurController
     {
         ValidatorModel::notEmpty($args, ['resId', 'config']);
 
-        $signatoryInfo = null;
+        $signatoryInfo = [];
 
         if (
             empty($args['config']['data']['integratedWorkflow']) ||
@@ -879,11 +880,14 @@ class FastParapheurController
                 $signatoryInfo = $user[0];
             }
         } elseif (!empty($args['valueResponse']['userFastId'] ?? null)) {
-            $signatoryInfo = UserModel::get([
+            $user = UserModel::get([
                 'select' => ['id', "CONCAT(firstname, ' ', lastname) as name"],
                 'where'  => ['external_id->>\'fastParapheur\' = ?'],
                 'data'   => [$args['valueResponse']['userFastId']]
-            ])[0];
+            ]);
+            if (!empty($user[0])) {
+                $signatoryInfo = $user[0];
+            }
         } elseif (!empty($args['valueResponse']['userFullname'])) {
             $search = $args['valueResponse']['userFullname'];
             $signatoryInfo['name'] = _EXTERNAL_USER . " (" . $search . ")";
@@ -1202,11 +1206,12 @@ class FastParapheurController
 
     /**
      * Function to send files to FastParapheur only
+     *
      * @param array $args :
      *                      - config
      *                      - circuitId
      *                      - fileName
-     *                      - circuib64AttachmenttId
+     *                      - circuib64AttachmentId
      *                      - label
      * @throws Exception
      */
@@ -1218,7 +1223,8 @@ class FastParapheurController
 
         $curlReturn = CurlModel::exec([
             'url'           => $args['config']['data']['url'] . '/documents/v2/' .
-                $args['config']['data']['subscriberId'] . '/' . $args['circuitId'] . '/upload',
+                $args['config']['data']['subscriberId'] . '/' .
+                $args['circuitId'] . '/upload',
             'method'        => 'POST',
             'options'       => [
                 CURLOPT_SSLCERT       => $args['config']['data']['certPath'],
@@ -1269,7 +1275,7 @@ class FastParapheurController
      *   ]
      * @throws Exception
      */
-    public static function uploadWithSteps(array $args): array|bool
+    public static function uploadWithSteps(array $args): array
     {
         ValidatorModel::notEmpty($args, ['resIdMaster', 'steps', 'config', 'workflowType']);
         ValidatorModel::intType($args, ['resIdMaster']);
@@ -1297,6 +1303,7 @@ class FastParapheurController
         ];
 
         $otpInfo = [];
+        $indexOTP = 0;
         foreach ($args['steps'] as $index => $step) {
             $stepMode = FastParapheurController::getSignatureModeById(['signatureModeId' => $step['mode']]);
 
@@ -1329,10 +1336,11 @@ class FastParapheurController
                     'step'    => 'OTPSignature',
                     'members' => [$step['email']]
                 ];
-                $otpInfo['OTP_firstname_' . $index] = $step['firstname'];
-                $otpInfo['OTP_lastname_' . $index] = $step['lastname'];
-                $otpInfo['OTP_phonenumber_' . $index] = $step['phone'];
-                $otpInfo['OTP_email_' . $index] = $step['email'];
+                $otpInfo['OTP_firstname_' . $indexOTP] = $step['firstname'];
+                $otpInfo['OTP_lastname_' . $indexOTP] = $step['lastname'];
+                $otpInfo['OTP_phonenumber_' . $indexOTP] = $step['phone'];
+                $otpInfo['OTP_email_' . $indexOTP] = $step['email'];
+                $indexOTP++;
             } else {
                 return ['error' => 'step number ' . ($index + 1) . ' is invalid', 'code' => 400];
             }
@@ -1474,10 +1482,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentMainDocument['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentMainDocument['comment'] . '.' .
-                                pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
-                            'maxLength' => 50
-                        ])
+                                'filename'  => $sentMainDocument['comment'],
+                                'maxLength' => 251
+                            ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentMainDocument['comment']
                 ];
@@ -1497,10 +1504,9 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentMainDocument['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentMainDocument['comment'] . '.' .
-                            pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                            'filename'  => $sentMainDocument['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentMainDocument['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
@@ -1517,10 +1523,9 @@ class FastParapheurController
                     'doc'     => [
                         'path'     => $sentAttachment['path'],
                         'filename' => TextFormatModel::formatFilename([
-                            'filename'  => $sentAttachment['comment'] . '.' .
-                                pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
-                            'maxLength' => 50
-                        ])
+                                'filename'  => $sentAttachment['comment'],
+                                'maxLength' => 251
+                            ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                     ],
                     'comment' => $sentAttachment['comment']
                 ];
@@ -1539,15 +1544,14 @@ class FastParapheurController
                     'isFile'   => true,
                     'content'  => file_get_contents($sentAttachment['path']),
                     'filename' => TextFormatModel::formatFilename([
-                        'filename'  => $sentAttachment['comment'] . '.' .
-                            pathinfo($sentAttachment['path'], PATHINFO_EXTENSION),
-                        'maxLength' => 50
-                    ])
+                            'filename'  => $sentAttachment['comment'],
+                            'maxLength' => 251
+                        ]) . '.' . pathinfo($sentAttachment['path'], PATHINFO_EXTENSION)
                 ];
             }
         }
 
-        if (!empty($otpInfoXML['content'])) {
+        if (empty($otpInfoXML['content'] ?? null)) {
             $user = UserModel::getById(['id' => $GLOBALS['id'], 'select' => ['user_id']]);
             $summarySheetFilePath = FastParapheurController::getSummarySheetFile([
                 'docResId' => $args['resIdMaster'],
@@ -1654,9 +1658,8 @@ class FastParapheurController
     /**
      * @param array $args
      * @return array|false
-     * @throws Exception
      */
-    public static function download(array $args): false|array
+    public static function download(array $args)
     {
         $curlReturn = CurlModel::exec([
             'url'          => $args['config']['data']['url'] . '/documents/v2/' . $args['documentId'] . '/download',
@@ -1682,10 +1685,10 @@ class FastParapheurController
 
     /**
      * @param array $args
-     * @return array|bool
+     * @return array
      * @throws Exception
      */
-    public static function sendDatas(array $args): array|bool
+    public static function sendDatas(array $args): array
     {
         $config = $args['config'];
 
@@ -1771,7 +1774,7 @@ class FastParapheurController
                 return ['error' => _VISA_WORKFLOW_NOT_FOUND];
             }
 
-            // check if circuidId is an email
+            // check if circuitId is an email
             if (Validator::email()->notEmpty()->validate($user['user_id'])) {
                 $user['user_id'] = explode("@", $user['user_id'])[0];
             }
@@ -1797,7 +1800,6 @@ class FastParapheurController
     /**
      * Recommandations minimales Fast à respecter
      * Espacement minimum de 30 minutes pour le même document
-     *
      * @param   $args :
      *  - documentId : 'externalId' of res_letterbox
      *  - config : FastParapheur configuration
@@ -1965,6 +1967,7 @@ class FastParapheurController
             return [];
         }
 
+
         if (!empty($args['noFormat'])) {
             return $curlReturn['response']['users'];
         }
@@ -2019,10 +2022,10 @@ class FastParapheurController
     }
 
     /**
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getConfig(): mixed
+    public static function getConfig(): array
     {
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
@@ -2196,14 +2199,15 @@ class FastParapheurController
 
     /**
      * @param array $args
-     * @return mixed|string
+     * @return string
      * @throws Exception
      */
-    public static function getSignatureModeById(array $args): mixed
+    public static function getSignatureModeById(array $args): string
     {
         ValidatorModel::notEmpty($args, ['signatureModeId']);
         ValidatorModel::stringType($args, ['signatureModeId']);
 
+        $signatureModeId = "";
         switch ($args['signatureModeId']) {
             case 'sign':
                 $signatureModeId = 'signature';
@@ -2370,7 +2374,10 @@ class FastParapheurController
     public static function getLastFastWorkflowAction(array $documentHistory, array $knownWorkflow, array $config): array
     {
         ValidatorModel::notEmpty($config, ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']);
-        ValidatorModel::stringType($config, ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']);
+        ValidatorModel::stringType(
+            $config,
+            ['validatedState', 'validatedVisaState', 'refusedState', 'refusedVisaState']
+        );
 
         if (empty($knownWorkflow) || empty($documentHistory)) {
             return [];

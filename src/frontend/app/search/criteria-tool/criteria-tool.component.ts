@@ -207,6 +207,7 @@ export class CriteriaToolComponent implements OnInit {
 
             }
         } catch (error) {
+            console.debug(error);
         }
     }
 
@@ -339,7 +340,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     resetAllCriteria() {
-        this.currentCriteria.forEach((field: any, index: number) => {
+        this.currentCriteria.forEach((field: any) => {
             this.resetCriteria(field.identifier, null, false);
         });
 
@@ -419,7 +420,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_doctype_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/doctypes').pipe(
                 tap((data: any) => {
                     let arrValues: any[] = [];
@@ -465,7 +466,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_priority_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/priorities').pipe(
                 tap((data: any) => {
                     elem.values = data.priorities;
@@ -480,7 +481,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_status_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/statuses').pipe(
                 tap((data: any) => {
                     elem.values = data.statuses
@@ -500,7 +501,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_category_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/categories').pipe(
                 tap((data: any) => {
                     elem.values = data.categories.map((val: any) => ({
@@ -519,7 +520,7 @@ export class CriteriaToolComponent implements OnInit {
 
     set_attachment_type_field(elem: any) {
         elem.values = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/attachmentsTypes').pipe(
                 tap((data: any) => {
                     Object.keys(data.attachmentsTypes).forEach(templateType => {
@@ -540,7 +541,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_groupSign_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/groups').pipe(
                 tap((data: any) => {
                     elem.values = data.groups.map((group: any) => ({
@@ -560,7 +561,7 @@ export class CriteriaToolComponent implements OnInit {
 
     set_destination_field(elem: any) {
         elem.values = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/indexingModels/entities').pipe(
                 tap((data: any) => {
                     let title = '';
@@ -589,7 +590,7 @@ export class CriteriaToolComponent implements OnInit {
 
     set_initiator_field(elem: any) {
         elem.values = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/indexingModels/entities').pipe(
                 tap((data: any) => {
                     let title = '';
@@ -617,7 +618,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_registeredMail_issuingSite_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/registeredMail/sites').pipe(
                 tap((data: any) => {
                     elem.values = data['sites'].map((item: any) => ({
@@ -642,7 +643,7 @@ export class CriteriaToolComponent implements OnInit {
     }
 
     set_senderDepartment_field(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/departments').pipe(
                 tap((data: any) => {
                     elem.values = [];
@@ -676,7 +677,7 @@ export class CriteriaToolComponent implements OnInit {
 
     saveSearchTemplate() {
         const query: any = [];
-        this.currentCriteria.forEach((field: any, index: number) => {
+        this.currentCriteria.forEach((field: any) => {
             query.push(
                 {
                     identifier: field.identifier,

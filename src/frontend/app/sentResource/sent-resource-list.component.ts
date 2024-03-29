@@ -304,7 +304,7 @@ export class SentResourceListComponent implements OnInit {
                 ).subscribe();
             }
         } else if (row.type === 'shipping') {
-            const dialogRef = this.dialog.open(ShippingModalComponent, {
+            this.dialog.open(ShippingModalComponent, {
                 panelClass: 'maarch-modal', width: '60vw', disableClose: true,
                 data: {
                     title: title,

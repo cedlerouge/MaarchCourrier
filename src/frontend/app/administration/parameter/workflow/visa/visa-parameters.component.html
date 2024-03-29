@@ -1,4 +1,4 @@
-<div class="alert-message alert-message-info" [innerHTML]="'lang.infoVisaParameters' | translate" style="min-width: 100%">
+<div class="alert-message alert-message-info" [innerHTML]="'lang.infoVisaParameters' | translate" style="min-width: 100%; margin-top: -5px !important;">
 </div>
 <form [formGroup]="visaParameters" style="display: contents;">
     <div>
@@ -13,7 +13,7 @@
     </div>
 
     <div style="margin-left: 5px;">
-        <mat-slide-toggle style="width: 20%; margin-bottom: 20px;" color="primary" name="minimumVisaRole"
+        <mat-slide-toggle style="width: auto; margin-bottom: 20px;" color="primary" name="minimumVisaRole"
             [checked]="visaParameters.controls['minimumVisaRole'].value !== 0"
             [ngStyle]="{'display': visaParameters.controls['minimumVisaRole'].value !== 0 ? 'inline-block' : 'flex'}" 
             (toggleChange)="toggle('minimumVisaRole')">
@@ -29,7 +29,7 @@
     </div>
 
     <div style="margin-left: 5px;">
-        <mat-slide-toggle style="width: 20%; margin-bottom: 20px;" color="primary" name="maximumSignRole"
+        <mat-slide-toggle style="width: auto; margin-bottom: 20px;" color="primary" name="maximumSignRole"
             [ngStyle]="{'display': visaParameters.controls['maximumSignRole'].value !== 0 ? 'inline-block' : 'flex'}"
             [checked]="visaParameters.controls['maximumSignRole'].value !== 0"
             (toggleChange)="toggle('maximumSignRole')">

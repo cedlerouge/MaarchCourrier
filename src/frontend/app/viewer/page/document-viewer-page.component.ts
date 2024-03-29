@@ -29,7 +29,7 @@ export class DocumentViewerPageComponent implements OnInit {
             if (typeof params['resId'] !== 'undefined') {
                 this.resId = params['resId'];
                 this.http.get(`../rest/resources/${this.resId}/fileInformation`).pipe(
-                    tap((data: any) => {
+                    tap(() => {
                         this.loading = false;
                     }),
                     catchError((err: any) => {

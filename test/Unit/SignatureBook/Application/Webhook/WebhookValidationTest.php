@@ -25,7 +25,7 @@ use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
-use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use PHPUnit\Framework\TestCase;
 
 class WebhookValidationTest extends TestCase
@@ -41,7 +41,8 @@ class WebhookValidationTest extends TestCase
             'message'     => '',
             'updatedDate' => "2024-03-01T13:19:59+01:00"
         ],
-        'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQiOjE1OSwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
+        'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQi
+                             OjE1OSwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
         'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
     ];
 
@@ -57,7 +58,9 @@ class WebhookValidationTest extends TestCase
         $currentUserInformationsMock = new CurrentUserInformationsMock();
 
         $this->webhookValidation = new WebhookValidation(
-            $this->resourceToSignRepositoryMock, $this->userRepositoryMock, $currentUserInformationsMock
+            $this->resourceToSignRepositoryMock,
+            $this->userRepositoryMock,
+            $currentUserInformationsMock
         );
     }
 
@@ -71,7 +74,8 @@ class WebhookValidationTest extends TestCase
                 'message'     => '',
                 'updatedDate' => null
             ],
-            'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQiOjE1OSwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
+            'token'          => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyZXNfaWQiOjE1O
+                                 SwidXNlcklkIjoxMH0.olM35fZrHlsYXTRceohEqijjIOqCNolVSbw0v5eKW78',
             'retrieveDocUri' => "http://10.1.5.12/maarch-parapheur-api/rest/documents/11/content?mode=base64&type=esign"
         ];
 

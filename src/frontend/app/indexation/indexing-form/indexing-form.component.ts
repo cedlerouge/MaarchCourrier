@@ -325,9 +325,9 @@ export class IndexingFormComponent implements OnInit {
     }
 
     initFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.fieldCategories.forEach(element => {
-                this['indexingModels_' + element] = this.indexingModelsCore.filter((x: any, i: any, a: any) => x.unit === element);
+                this['indexingModels_' + element] = this.indexingModelsCore.filter((x: any) => x.unit === element);
                 this['indexingModels_' + element].forEach((field: any) => {
                     this.initValidator(field);
                 });
@@ -337,7 +337,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     initCustomFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
 
             this.http.get(`../rest/customFields?resId=${this.resId}`).pipe(
                 tap((data: any) => {
@@ -479,7 +479,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     saveData() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.isValidForm()) {
                 this.mustFixErrors = false;
                 const formatdatas = this.formatDatas(this.getDatas());
@@ -615,7 +615,7 @@ export class IndexingFormComponent implements OnInit {
     setDestinationField(elem: any) {
         const route = this.adminMode || this.mode !== 'indexation' ? '../rest/indexingModels/entities' : `../rest/indexing/groups/${this.groupId}/entities`;
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(route).pipe(
                 tap((data: any) => {
                     this.entitiesArray = [];
@@ -630,7 +630,7 @@ export class IndexingFormComponent implements OnInit {
                     }));
 
                     const parents: any[] = this.sortPipe.transform(myEntities.filter((item: any) => this.functions.empty(item.parentId)), 'title');
-                    parents.forEach((entity: any, index: number) => {
+                    parents.forEach((entity: any) => {
                         this.entitiesArray.push(entity);
                         const soretdArray: any[] = this.sortPipe.transform(myEntities.filter((item: any) => item.parentId === entity.entityId), 'title');
                         soretdArray.forEach((element: any) => {
@@ -644,7 +644,6 @@ export class IndexingFormComponent implements OnInit {
                     this.entitiesArray = [... new Set(this.entitiesArray)];
 
                     if (this.adminMode) {
-                        const title = '';
                         elem.values = [
                             {
                                 id: '#myPrimaryEntity',
@@ -660,7 +659,6 @@ export class IndexingFormComponent implements OnInit {
                             disabled: false
                         })));
                     } else {
-                        const title = '';
                         if (elem.default_value === '#myPrimaryEntity') {
                             this.selfDest = this.currentCategory === 'outgoing';
                             elem.default_value = this.headerService.user.entities[0]?.id;
@@ -706,7 +704,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     setCategoryField(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/categories').pipe(
                 tap((data: any) => {
                     elem.values = data.categories;
@@ -717,7 +715,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     setPriorityField(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/priorities').pipe(
                 tap(async (data: any) => {
                     elem.values = data.priorities;
@@ -732,7 +730,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     setDoctypeField(elem: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/doctypes').pipe(
                 tap(async (data: any) => {
                     let arrValues: any[] = [];
@@ -876,7 +874,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     setResource(saveResourceState: boolean = true) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}`).pipe(
                 tap(async (data: any) => {
                     this.resDataClone = JSON.parse(JSON.stringify(data));
@@ -973,7 +971,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     getCurrentInitiator(field: any, initiatorId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/entities/${initiatorId}`).pipe(
                 tap((data: any) => {
                     field.values.unshift({
@@ -1129,7 +1127,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     getAllowedValues(id: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/indexingModels/${id}`).pipe(
                 tap(async (data: any) => {
                     this.allowedValues = data.indexingModel.fields.find((item: any) => item.identifier === 'doctype').allowedValues;
@@ -1311,7 +1309,7 @@ export class IndexingFormComponent implements OnInit {
         this.changeRegisteredMailItems(categoryId);
     }
 
-    changeDestination(entityIds: number[], allowedEntities: number[]) {
+    changeDestination(entityIds: number[]) {
 
         if (entityIds.indexOf(this.arrFormControl['destination'].value) === -1) {
             this.arrFormControl['destination'].setValue(entityIds[0]);
@@ -1327,7 +1325,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     calcLimitDate(field: any, value: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let limitDate: any = null;
             const objToSend: any = {
                 doctype: value,
@@ -1366,7 +1364,7 @@ export class IndexingFormComponent implements OnInit {
     }
 
     calcLimitDateByPriority(field: any, value: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.functions.empty(value) && !this.functions.empty(this.arrFormControl['processLimitDate'])) {
                 this.arrFormControl['processLimitDate'].setValue(null);
                 return;
@@ -1440,18 +1438,16 @@ export class IndexingFormComponent implements OnInit {
         return items.filter((item: any) => item.id === selectedItemId)[0].label;
     }
 
-    setAllowedValues(field: any, afterSaveEvent: boolean = false) {
-        return new Promise(async (resolve) => {
-            if (!this.functions.empty(field.allowedValues)) {
-                field.values.filter((val: any) => !val.isTitle).forEach((item: any) => {
-                    item.disabled = field.allowedValues.indexOf(item.id) === -1;
-                });
-            }
-            if (!this.adminMode && field.identifier === 'doctype') {
-                await this.checkDisabledValues(field, afterSaveEvent);
-            }
-            resolve(true);
-        });
+    async setAllowedValues(field: any, afterSaveEvent: boolean = false): Promise<boolean> {
+        if (!this.functions.empty(field.allowedValues)) {
+            field.values.filter((val: any) => !val.isTitle).forEach((item: any) => {
+                item.disabled = field.allowedValues.indexOf(item.id) === -1;
+            });
+        }
+        if (!this.adminMode && field.identifier === 'doctype') {
+            await this.checkDisabledValues(field, afterSaveEvent);
+        }
+        return true;
     }
 
     checkDisabledValues(field: any, afterSaveEvent: boolean = false) {
