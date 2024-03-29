@@ -990,12 +990,12 @@ class ActionMethodController
         $listinstanceCtrl = [];
         $allowMultipleAvisAssignment = ParameterModel::getById([
             'select' => ['param_value_int'],
-            'id' => 'allowMultipleAvisAssignment'
+            'id'     => 'allowMultipleAvisAssignment'
         ]);
-        if (empty($allowMultipleAvisAssignment)){
+        if (empty($allowMultipleAvisAssignment)) {
             ParameterModel::create([
-                'id' => 'allowMultipleAvisAssignment',
-                'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                'id'              => 'allowMultipleAvisAssignment',
+                'description'     => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
                 'param_value_int' => 0
             ]);
             $allowMultipleAvisAssignment = 0;
@@ -1016,7 +1016,10 @@ class ActionMethodController
             }
             if (
                 $allowMultipleAvisAssignment === 0 &&
-                in_array($instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'], $listinstanceCtrl)
+                in_array(
+                    $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'],
+                    $listinstanceCtrl
+                )
             ) {
                 return ['errors' => ["Some users/entities are present at least twice with the same role"]];
             } else {

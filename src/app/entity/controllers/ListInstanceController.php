@@ -42,11 +42,16 @@ class ListInstanceController
 
     public function getByResId(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $listInstances = ListInstanceModel::get(['select' => ['*'], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'entity_id']]);
+        $listInstances = ListInstanceModel::get(
+            ['select' => ['*'], 'where' => ['res_id = ?', 'difflist_type = ?'], 'data' => [$args['resId'], 'entity_id']]
+        );
         foreach ($listInstances as $key => $value) {
             if ($value['item_type'] == 'entity_id') {
                 $entity = EntityModel::getById(['id' => $value['item_id'], 'select' => ['entity_label', 'entity_id']]);
@@ -59,7 +64,9 @@ class ListInstanceController
                 $listInstances[$key]['item_id'] = $user['user_id'];
                 $listInstances[$key]['itemSerialId'] = $value['item_id'];
                 $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(['id' => $value['item_id']]);
-                $listInstances[$key]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(['id' => $value['item_id'], 'select' => ['entities.entity_label']])['entity_label'];
+                $listInstances[$key]['descriptionToDisplay'] = UserModel::getPrimaryEntityById(
+                    ['id' => $value['item_id'], 'select' => ['entities.entity_label']]
+                )['entity_label'];
             }
         }
         $hasHistory = ListInstanceHistoryDetailModel::get([
@@ -73,11 +80,32 @@ class ListInstanceController
 
     public function getVisaCircuitByResId(Request $request, Response $response, array $aArgs)
     {
-        if (!Validator::intVal()->validate($aArgs['resId']) || !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($aArgs['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $listInstances = ListInstanceModel::getVisaCircuitByResId(['select' => ['listinstance_id', 'sequence', 'item_id', 'item_type', 'firstname as item_firstname', 'lastname as item_lastname', 'viewed', 'process_date', 'process_comment', 'signatory', 'requested_signature', 'delegate'], 'id' => $aArgs['resId']]);
+        $listInstances = ListInstanceModel::getVisaCircuitByResId(
+            [
+                'select' => [
+                    'listinstance_id',
+                    'sequence',
+                    'item_id',
+                    'item_type',
+                    'firstname as item_firstname',
+                    'lastname as item_lastname',
+                    'viewed',
+                    'process_date',
+                    'process_comment',
+                    'signatory',
+                    'requested_signature',
+                    'delegate'
+                ],
+                'id'     => $aArgs['resId']
+            ]
+        );
         foreach ($listInstances as $key => $value) {
             $primaryEntity = UserModel::getPrimaryEntityById(['select' => ['entity_label'], 'id' => $value['item_id']]);
             $listInstances[$key]['item_entity'] = $primaryEntity['entity_label'] ?? '';
@@ -90,12 +118,18 @@ class ListInstanceController
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
             if (!empty($listInstances[$key]['delegate'])) {
-                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(['id' => $listInstances[$key]['delegate']]);
+                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(
+                    ['id' => $listInstances[$key]['delegate']]
+                );
                 $listInstances[$key]['delegatedBy'] = $itemLabel;
             }
 
             $listInstances[$key]['hasPrivilege'] = true;
-            if (empty($value['process_date']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']]) && !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])) {
+            if (
+                empty($value['process_date']) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $value['item_id']]) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $value['item_id']])
+            ) {
                 $listInstances[$key]['hasPrivilege'] = false;
             }
         }
@@ -111,11 +145,30 @@ class ListInstanceController
 
     public function getOpinionCircuitByResId(Request $request, Response $response, array $aArgs)
     {
-        if (!Validator::intVal()->validate($aArgs['resId']) || !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($aArgs['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $listInstances = ListInstanceModel::getAvisCircuitByResId(['select' => ['listinstance_id', 'sequence', 'item_id', 'item_type', 'firstname as item_firstname', 'lastname as item_lastname', 'viewed', 'process_date', 'process_comment', 'delegate'], 'id' => $aArgs['resId']]);
+        $listInstances = ListInstanceModel::getAvisCircuitByResId(
+            [
+                'select' => [
+                    'listinstance_id',
+                    'sequence',
+                    'item_id',
+                    'item_type',
+                    'firstname as item_firstname',
+                    'lastname as item_lastname',
+                    'viewed',
+                    'process_date',
+                    'process_comment',
+                    'delegate'
+                ],
+                'id'     => $aArgs['resId']
+            ]
+        );
         foreach ($listInstances as $key => $value) {
             $primaryEntity = UserModel::getPrimaryEntityById(['select' => ['entity_label'], 'id' => $value['item_id']]);
             $listInstances[$key]['item_entity'] = $primaryEntity['entity_label'] ?? '';
@@ -128,12 +181,17 @@ class ListInstanceController
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
             if (!empty($listInstances[$key]['delegate'])) {
-                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(['id' => $listInstances[$key]['delegate']]);
+                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(
+                    ['id' => $listInstances[$key]['delegate']]
+                );
                 $listInstances[$key]['delegatedBy'] = $itemLabel;
             }
 
             $listInstances[$key]['hasPrivilege'] = true;
-            if (empty($value['process_date']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])) {
+            if (
+                empty($value['process_date']) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])
+            ) {
                 $listInstances[$key]['hasPrivilege'] = false;
             }
         }
@@ -143,11 +201,32 @@ class ListInstanceController
 
     public function getParallelOpinionByResId(Request $request, Response $response, array $aArgs)
     {
-        if (!Validator::intVal()->validate($aArgs['resId']) || !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($aArgs['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$aArgs['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Document out of perimeter']);
         }
 
-        $listInstances = ListInstanceModel::getParallelOpinionByResId(['select' => ['listinstance_id', 'sequence', 'item_mode', 'item_id', 'item_type', 'firstname as item_firstname', 'lastname as item_lastname', 'entity_label as item_entity', 'viewed', 'process_date', 'process_comment', 'delegate'], 'id' => $aArgs['resId']]);
+        $listInstances = ListInstanceModel::getParallelOpinionByResId(
+            [
+                'select' => [
+                    'listinstance_id',
+                    'sequence',
+                    'item_mode',
+                    'item_id',
+                    'item_type',
+                    'firstname as item_firstname',
+                    'lastname as item_lastname',
+                    'entity_label as item_entity',
+                    'viewed',
+                    'process_date',
+                    'process_comment',
+                    'delegate'
+                ],
+                'id'     => $aArgs['resId']
+            ]
+        );
         foreach ($listInstances as $key => $value) {
             $primaryEntity = UserModel::getPrimaryEntityById(['select' => ['entity_label'], 'id' => $value['item_id']]);
             $listInstances[$key]['item_entity'] = $primaryEntity['entity_label'] ?? '';
@@ -160,12 +239,17 @@ class ListInstanceController
             $listInstances[$key]['labelToDisplay'] = $itemLabel;
             $listInstances[$key]['delegatedBy'] = null;
             if (!empty($listInstances[$key]['delegate'])) {
-                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(['id' => $listInstances[$key]['delegate']]);
+                $listInstances[$key]['labelToDisplay'] = UserModel::getLabelledUserById(
+                    ['id' => $listInstances[$key]['delegate']]
+                );
                 $listInstances[$key]['delegatedBy'] = $itemLabel;
             }
 
             $listInstances[$key]['hasPrivilege'] = true;
-            if (empty($value['process_date']) && !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])) {
+            if (
+                empty($value['process_date']) &&
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $value['item_id']])
+            ) {
                 $listInstances[$key]['hasPrivilege'] = false;
             }
         }
@@ -177,13 +261,22 @@ class ListInstanceController
     {
         $fullRight = false;
 
-        if (PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]) || PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_details', 'userId' => $GLOBALS['id']])) {
+        if (
+            PrivilegeController::hasPrivilege(['privilegeId' => 'admin_users', 'userId' => $GLOBALS['id']]) ||
+            PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_details', 'userId' => $GLOBALS['id']])
+        ) {
             $fullRight = true;
         } else {
             if (
-                !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_details', 'userId' => $GLOBALS['id']])
-                && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_process', 'userId' => $GLOBALS['id']])
-                && !PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_except_recipient_process', 'userId' => $GLOBALS['id']])
+                !PrivilegeController::hasPrivilege(
+                    ['privilegeId' => 'update_diffusion_except_recipient_details', 'userId' => $GLOBALS['id']]
+                )
+                && !PrivilegeController::hasPrivilege(
+                    ['privilegeId' => 'update_diffusion_process', 'userId' => $GLOBALS['id']]
+                )
+                && !PrivilegeController::hasPrivilege(
+                    ['privilegeId' => 'update_diffusion_except_recipient_process', 'userId' => $GLOBALS['id']]
+                )
             ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
@@ -203,7 +296,9 @@ class ListInstanceController
             if (isset($listInstanceByRes['listInstances'])) {
                 foreach ($listInstanceByRes['listInstances'] as $itemListinstance) {
                     if (!Validator::arrayType()->notEmpty()->validate($itemListinstance)) {
-                        return $response->withStatus(400)->withJson(['errors' => 'listInstances component is empty or not an object']);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => 'listInstances component is empty or not an object']
+                        );
                     }
 
                     if (!array_key_exists($itemListinstance['item_mode'], $listinstanceCtrl[$keyRes])) {
@@ -212,12 +307,12 @@ class ListInstanceController
 
                     $allowMultipleAvisAssignment = ParameterModel::getById([
                         'select' => ['param_value_int'],
-                        'id' => 'allowMultipleAvisAssignment'
+                        'id'     => 'allowMultipleAvisAssignment'
                     ]);
-                    if (empty($allowMultipleAvisAssignment)){
+                    if (empty($allowMultipleAvisAssignment)) {
                         ParameterModel::create([
-                            'id' => 'allowMultipleAvisAssignment',
-                            'description' => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                            'id'              => 'allowMultipleAvisAssignment',
+                            'description'     => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
                             'param_value_int' => 0
                         ]);
                         $allowMultipleAvisAssignment = 0;
@@ -227,20 +322,26 @@ class ListInstanceController
 
                     if (
                         in_array(
-                            $itemListinstance['item_type'] . '#' .$itemListinstance['item_id'],
+                            $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'],
                             $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']]
                         ) &&
-                        !(in_array($itemListinstance['item_mode'], ['avis', 'avis_copy', 'avis_info']) && $allowMultipleAvisAssignment == 1)
+                        !(in_array($itemListinstance['item_mode'], ['avis', 'avis_copy', 'avis_info']) &&
+                            $allowMultipleAvisAssignment == 1)
                     ) {
-                        return $response->withStatus(400)->withJson(['errors' => 'Some users/entities are present at least twice with the same role']);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => 'Some users/entities are present at least twice with the same role']
+                        );
                     } else {
-                        $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] . '#' . $itemListinstance['item_id'];
+                        $listinstanceCtrl[$keyRes][$itemListinstance['item_mode']][] = $itemListinstance['item_type'] .
+                            '#' . $itemListinstance['item_id'];
                     }
                 }
             }
         }
 
-        $controller = ListInstanceController::updateListInstance(['data' => $body, 'userId' => $GLOBALS['id'], 'fullRight' => $fullRight]);
+        $controller = ListInstanceController::updateListInstance(
+            ['data' => $body, 'userId' => $GLOBALS['id'], 'fullRight' => $fullRight]
+        );
         if (!empty($controller['errors'])) {
             return $response->withStatus($controller['code'])->withJson(['errors' => $controller['errors']]);
         }
@@ -278,7 +379,10 @@ class ListInstanceController
                 return ['errors' => 'resId is empty', 'code' => 400];
             }
 
-            if (!Validator::intVal()->validate($listInstanceByRes['resId']) || !ResController::hasRightByResId(['resId' => [$listInstanceByRes['resId']], 'userId' => $args['userId']])) {
+            if (
+                !Validator::intVal()->validate($listInstanceByRes['resId']) ||
+                !ResController::hasRightByResId(['resId' => [$listInstanceByRes['resId']], 'userId' => $args['userId']])
+            ) {
                 DatabaseModel::rollbackTransaction();
                 return ['errors' => 'Document out of perimeter', 'code' => 403];
             }
@@ -332,7 +436,9 @@ class ListInstanceController
                     }
                 } elseif (in_array($instance['item_type'], ['entity_id', 'entity'])) {
                     if (!is_numeric($instance['item_id'])) {
-                        $entity = EntityModel::getByEntityId(['entityId' => $instance['item_id'], 'select' => ['id', 'enabled']]);
+                        $entity = EntityModel::getByEntityId(
+                            ['entityId' => $instance['item_id'], 'select' => ['id', 'enabled']]
+                        );
                         $instance['item_id'] = $entity['id'];
                     } else {
                         $entity = EntityModel::getById(['id' => $instance['item_id'], 'select' => ['enabled']]);
@@ -351,11 +457,22 @@ class ListInstanceController
                 if ($instance['item_mode'] == 'dest' && !$args['fullRight']) {
                     foreach ($listInstances as $listInstance) {
                         if ($listInstance['item_mode'] == 'dest') {
-                            if ($listInstance['item_type'] != $instance['item_type'] || $listInstance['item_id'] != $instance['item_id']) {
-                                if (!PrivilegeController::hasPrivilege(['privilegeId' => 'update_diffusion_process', 'userId' => $args['userId']])) {
+                            if (
+                                $listInstance['item_type'] != $instance['item_type'] ||
+                                $listInstance['item_id'] != $instance['item_id']
+                            ) {
+                                if (
+                                    !PrivilegeController::hasPrivilege(
+                                        ['privilegeId' => 'update_diffusion_process', 'userId' => $args['userId']]
+                                    )
+                                ) {
                                     DatabaseModel::rollbackTransaction();
                                     return ['errors' => 'Privilege forbidden : update assignee', 'code' => 403];
-                                } elseif (!PrivilegeController::isResourceInProcess(['userId' => $args['userId'], 'resId' => $listInstanceByRes['resId']])) {
+                                } elseif (
+                                    !PrivilegeController::isResourceInProcess(
+                                        ['userId' => $args['userId'], 'resId' => $listInstanceByRes['resId']]
+                                    )
+                                ) {
                                     DatabaseModel::rollbackTransaction();
                                     return ['errors' => 'Privilege forbidden : update assignee', 'code' => 403];
                                 }
@@ -385,18 +502,31 @@ class ListInstanceController
 
                 if ($instance['item_mode'] == 'dest') {
                     $set = ['dest_user' => $instance['item_id']];
-                    $entities = UserEntityModel::get(['select' => ['entity_id', 'primary_entity'], 'where' => ['user_id = ?'], 'data' => [$instance['item_id']]]);
+                    $entities = UserEntityModel::get(
+                        [
+                            'select' => ['entity_id', 'primary_entity'],
+                            'where'  => ['user_id = ?'],
+                            'data'   => [$instance['item_id']]
+                        ]
+                    );
                     $entitiesId = array_column($entities, 'entity_id');
                     $userEntities = [];
                     if (!empty($entitiesId)) {
-                        $userEntities = EntityModel::get(['select' => ['id', 'entity_id'], 'where' => ['entity_id in (?)'], 'data' => [$entitiesId]]);
+                        $userEntities = EntityModel::get(
+                            ['select' => ['id', 'entity_id'], 'where' => ['entity_id in (?)'], 'data' => [$entitiesId]]
+                        );
                     }
                     $userEntities = array_column($userEntities, 'entity_id', 'id');
-                    if (!empty($listInstanceByRes['destination']) && !empty($userEntities[$listInstanceByRes['destination']])) {
+                    if (
+                        !empty($listInstanceByRes['destination']) &&
+                        !empty($userEntities[$listInstanceByRes['destination']])
+                    ) {
                         $set['destination'] = $userEntities[$listInstanceByRes['destination']];
                     } else {
                         $changeDestination = true;
-                        $resource = ResModel::getById(['select' => ['destination'], 'resId' => $listInstanceByRes['resId']]);
+                        $resource = ResModel::getById(
+                            ['select' => ['destination'], 'resId' => $listInstanceByRes['resId']]
+                        );
                         foreach ($entities as $entity) {
                             if ($entity['entity_id'] == $resource['destination']) {
                                 $changeDestination = false;
@@ -440,7 +570,9 @@ class ListInstanceController
                 ]);
             }
 
-            $listInstanceHistoryId = ListInstanceHistoryModel::create(['resId' => $listInstanceByRes['resId'], 'userId' => $args['userId']]);
+            $listInstanceHistoryId = ListInstanceHistoryModel::create(
+                ['resId' => $listInstanceByRes['resId'], 'userId' => $args['userId']]
+            );
             foreach ($listInstances as $listInstance) {
                 ListInstanceHistoryDetailModel::create([
                     'listinstance_history_id' => $listInstanceHistoryId,
@@ -470,14 +602,19 @@ class ListInstanceController
         $body = $request->getParsedBody();
         if (!Validator::arrayType()->notEmpty()->validate($body)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body is not set or not an array']);
-        } elseif (!Validator::stringType()->validate($args['type']) || !in_array($args['type'], ['visaCircuit', 'opinionCircuit'])) {
+        } elseif (
+            !Validator::stringType()->validate($args['type']) ||
+            !in_array($args['type'], ['visaCircuit', 'opinionCircuit'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Route params type is empty or not valid']);
         }
 
         if ($args['type'] == 'visaCircuit') {
             $minimumVisaRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'minimumVisaRole']);
             $maximumSignRole = ParameterModel::getById(['select' => ['param_value_int'], 'id' => 'maximumSignRole']);
-            $workflowSignatoryRole = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']);
+            $workflowSignatoryRole = ParameterModel::getById(
+                ['select' => ['param_value_string'], 'id' => 'workflowSignatoryRole']
+            );
 
             $minimumVisaRole = !empty($minimumVisaRole['param_value_int']) ? $minimumVisaRole['param_value_int'] : 0;
             $maximumSignRole = !empty($maximumSignRole['param_value_int']) ? $maximumSignRole['param_value_int'] : 0;
@@ -492,23 +629,49 @@ class ListInstanceController
         foreach ($body['resources'] as $resourceKey => $resource) {
             if (empty($resource['resId'])) {
                 DatabaseModel::rollbackTransaction();
-                return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] resId is empty"]);
-            } elseif (!Validator::intVal()->validate($resource['resId']) || !ResController::hasRightByResId(['resId' => [$resource['resId']], 'userId' => $GLOBALS['id']])) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body resources[{$resourceKey}] resId is empty"]
+                );
+            } elseif (
+                !Validator::intVal()->validate($resource['resId']) ||
+                !ResController::hasRightByResId(['resId' => [$resource['resId']], 'userId' => $GLOBALS['id']])
+            ) {
                 DatabaseModel::rollbackTransaction();
                 return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
             } elseif (!Validator::arrayType()->notEmpty()->validate($resource['listInstances'])) {
                 DatabaseModel::rollbackTransaction();
-                return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances is empty"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body resources[{$resourceKey}] listInstances is empty"]
+                );
             }
 
-            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL) {
+            if (
+                $args['type'] == 'visaCircuit' &&
+                $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY_FINAL
+            ) {
                 $last = count($resource['listInstances']) - 1;
-                if (empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['requested_signature']) {
+                if (
+                    empty($resource['listInstances'][$last]['process_date']) &&
+                    !$resource['listInstances'][$last]['requested_signature']
+                ) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
-                } elseif (!empty($resource['listInstances'][$last]['process_date']) && !$resource['listInstances'][$last]['signatory']) {
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory",
+                            'lang'   => 'lastNotSignatory'
+                        ]
+                    );
+                } elseif (
+                    !empty($resource['listInstances'][$last]['process_date']) &&
+                    !$resource['listInstances'][$last]['signatory']
+                ) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory", 'lang' => 'lastNotSignatory']);
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => "Body resources[{$resourceKey}] listInstances last user is not a signatory",
+                            'lang'   => 'lastNotSignatory'
+                        ]
+                    );
                 }
             }
 
@@ -550,34 +713,57 @@ class ListInstanceController
                     continue;
                 } elseif (empty($listInstance['item_id'])) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id is empty"]);
-                } elseif (!empty($listInstance['process_comment']) && !Validator::stringType()->length(1, 255)->validate($listInstance['process_comment'])) {
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id is empty"]
+                    );
+                } elseif (
+                    !empty($listInstance['process_comment']) &&
+                    !Validator::stringType()->length(1, 255)->validate($listInstance['process_comment'])
+                ) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] process_comment is too long"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] process_comment is too long"]
+                    );
                 }
 
-                if (!empty($newListSequenceOrdered['sequence']) && $listInstance['sequence'] < $minSequenceNoProcessDate) {
+                if (
+                    !empty($newListSequenceOrdered['sequence']) &&
+                    $listInstance['sequence'] < $minSequenceNoProcessDate
+                ) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] sequence is before already processed users"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] sequence is before already processed users"]
+                    );
                 }
 
                 if (!is_numeric($listInstance['item_id'])) {
-                    $user = UserModel::getByLogin(['login' => $listInstance['item_id'], 'select' => ['id'], 'noDeleted' => true]);
+                    $user = UserModel::getByLogin(
+                        ['login' => $listInstance['item_id'], 'select' => ['id'], 'noDeleted' => true]
+                    );
                     $listInstance['item_id'] = $user['id'] ?? null;
                 } else {
-                    $user = UserModel::getById(['id' => $listInstance['item_id'], 'select' => ['id'], 'noDeleted' => true]);
+                    $user = UserModel::getById(
+                        ['id' => $listInstance['item_id'], 'select' => ['id'], 'noDeleted' => true]
+                    );
                 }
                 $listInstance['item_type'] = 'user_id';
                 if (empty($user)) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id does not exist"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id does not exist"]
+                    );
                 }
                 if ($args['type'] == 'visaCircuit') {
-                    if (!PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $user['id']]) && !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $user['id']])) {
+                    if (
+                        !PrivilegeController::hasPrivilege(['privilegeId' => 'visa_documents', 'userId' => $user['id']]) &&
+                        !PrivilegeController::hasPrivilege(['privilegeId' => 'sign_document', 'userId' => $user['id']])
+                    ) {
                         $rawOriginalListInstances = array_column($originalListInstances, 'item_id');
                         if (!in_array($user['id'], $rawOriginalListInstances)) {
                             DatabaseModel::rollbackTransaction();
-                            return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id has not enough privileges"]);
+                            return $response->withStatus(400)->withJson(
+                                ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id has not enough privileges"]
+                            );
                         }
                     }
                     $listInstance['item_mode'] = $listInstance['requested_signature'] ? 'sign' : 'visa';
@@ -586,9 +772,13 @@ class ListInstanceController
                         $body['canSuspend'] = true;
                     }
                 } else {
-                    if (!PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $user['id']])) {
+                    if (
+                        !PrivilegeController::hasPrivilege(['privilegeId' => 'avis_documents', 'userId' => $user['id']])
+                    ) {
                         DatabaseModel::rollbackTransaction();
-                        return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id has not enough privileges"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body resources[{$resourceKey}] listInstances[{$key}] item_id has not enough privileges"]
+                        );
                     }
                     $listInstance['item_mode'] = 'avis';
                 }
@@ -613,16 +803,26 @@ class ListInstanceController
                 }
             }
 
-            if ($args['type'] == 'visaCircuit' && $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign && $body['canSuspend'] === false) {
+            if (
+                $args['type'] == 'visaCircuit' &&
+                $workflowSignatoryRole == SignatureBookController::SIGNATORY_ROLE_MANDATORY && !$hasSign &&
+                $body['canSuspend'] === false
+            ) {
                 DatabaseModel::rollbackTransaction();
-                return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances requires at least one sign user", 'lang' => 'signUserRequired']);
+                return $response->withStatus(400)->withJson(
+                    [
+                        'errors' => "Body resources[{$resourceKey}] listInstances requires at least one sign user",
+                        'lang'   => 'signUserRequired'
+                    ]
+                );
             }
 
             if ($args['type'] == 'visaCircuit' && (!empty($minimumVisaRole) || !empty($maximumSignRole))) {
                 $nbVisaRole = 0;
                 $nbSignRole = 0;
                 foreach ($listInstances as $listInstance) {
-                    $isSign = $listInstance['signatory'] || ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
+                    $isSign = $listInstance['signatory'] ||
+                        ($listInstance['requested_signature'] && $listInstance['process_date'] == null);
                     if ($isSign) {
                         $nbSignRole++;
                     } else {
@@ -631,11 +831,21 @@ class ListInstanceController
                 }
                 if ($minimumVisaRole != 0 && $nbVisaRole < $minimumVisaRole) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances does not have enough visa users", 'lang' => 'notEnoughVisaUser']);
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => "Body resources[{$resourceKey}] listInstances does not have enough visa users",
+                            'lang'   => 'notEnoughVisaUser'
+                        ]
+                    );
                 }
                 if ($maximumSignRole != 0 && $nbSignRole > $maximumSignRole) {
                     DatabaseModel::rollbackTransaction();
-                    return $response->withStatus(400)->withJson(['errors' => "Body resources[{$resourceKey}] listInstances has too many sign users", 'lang' => 'tooManySignUser']);
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => "Body resources[{$resourceKey}] listInstances has too many sign users",
+                            'lang'   => 'tooManySignUser'
+                        ]
+                    );
                 }
             }
 
@@ -660,7 +870,9 @@ class ListInstanceController
                 ]);
             }
 
-            $listInstanceHistoryId = ListInstanceHistoryModel::create(['resId' => $resource['resId'], 'userId' => $GLOBALS['id']]);
+            $listInstanceHistoryId = ListInstanceHistoryModel::create(
+                ['resId' => $resource['resId'], 'userId' => $GLOBALS['id']]
+            );
             foreach ($listInstances as $key => $listInstance) {
                 ListInstanceModel::create([
                     'res_id'              => $resource['resId'],
@@ -720,17 +932,35 @@ class ListInstanceController
 
     public function deleteCircuit(Request $request, Response $response, array $args)
     {
-        if (!Validator::intVal()->validate($args['resId']) || !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])) {
+        if (
+            !Validator::intVal()->validate($args['resId']) ||
+            !ResController::hasRightByResId(['resId' => [$args['resId']], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Resource out of perimeter']);
-        } elseif (!Validator::stringType()->validate($args['type']) || !in_array($args['type'], ['visaCircuit', 'opinionCircuit'])) {
+        } elseif (
+            !Validator::stringType()->validate($args['type']) ||
+            !in_array($args['type'], ['visaCircuit', 'opinionCircuit'])
+        ) {
             return $response->withStatus(400)->withJson(['errors' => 'Route params type is empty or not valid']);
-        } elseif ($args['type'] == 'visaCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'config_visa_workflow', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            $args['type'] == 'visaCircuit' &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'config_visa_workflow', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
-        } elseif ($args['type'] == 'opinionCircuit' && !PrivilegeController::hasPrivilege(['privilegeId' => 'config_avis_workflow', 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            $args['type'] == 'opinionCircuit' &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'config_avis_workflow', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $circuit = ListInstanceModel::get(['select' => [1], 'where' => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'], 'data' => [$args['resId'], self::MAPPING_TYPES[$args['type']]]]);
+        $circuit = ListInstanceModel::get(
+            [
+                'select' => [1],
+                'where'  => ['res_id = ?', 'difflist_type = ?', 'process_date is not null'],
+                'data'   => [$args['resId'], self::MAPPING_TYPES[$args['type']]]
+            ]
+        );
         if (!empty($circuit)) {
             return $response->withStatus(403)->withJson(['errors' => 'Circuit has already begun']);
         }
