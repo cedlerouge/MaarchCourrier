@@ -83,13 +83,13 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         this.loading = false;
     }
 
-    async onSubmit() {
+    async onSubmit(): Promise<any> {
         this.loading = true;
 
         if (this.data.resIds.length === 0) {
-            let res = await this.indexDocument();
+            let res: boolean = await this.indexDocument();
             if (res) {
-                res = await this.appVisaWorkflow.saveVisaWorkflow(this.data.resIds);
+                res = await this.appVisaWorkflow.saveVisaWorkflow(this.data.resIds) as boolean;
             }
             if (res) {
                 this.executeIndexingAction(this.data.resIds[0]);
@@ -107,7 +107,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         this.loading = false;
     }
 
-    indexDocument() {
+    indexDocument(): Promise<boolean> {
         this.data.resource['integrations'] = {
             inSignatureBook: true
         };
@@ -127,7 +127,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         });
     }
 
-    executeAction(realResSelected: number[]) {
+    executeAction(realResSelected: number[]): void {
         this.http.put(this.data.processActionRoute, { resources: realResSelected, note: this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
@@ -168,8 +168,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         ).subscribe();
     }
 
-    executeIndexingAction(resId: number) {
-
+    executeIndexingAction(resId: number): void {
         this.http.put(this.data.indexActionRoute, { resource: resId, note: this.noteEditor.getNote() }).pipe(
             tap((data: any) => {
                 if (!data) {
@@ -187,7 +186,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         ).subscribe();
     }
 
-    async initVisaWorkflow() {
+    async initVisaWorkflow(): Promise<any> {
         if (this.data.resIds.length === 0) {
             // Indexing page
             if (!this.functions.empty(this.data.resource.destination) && !this.noResourceToProcess) {
@@ -211,8 +210,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     }
 
-    async loadWorkflowEntity() {
-
+    async loadWorkflowEntity(): Promise<any> {
         if (this.appVisaWorkflow !== undefined) {
             if (this.appVisaWorkflow.emptyWorkflow()) {
                 await this.appVisaWorkflow.loadDefaultWorkflow(this.data.resIds[0]);
@@ -227,7 +225,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     }
 
-    checkSignatureBookInIndexingPage() {
+    checkSignatureBookInIndexingPage(): void {
         if (this.data.resource.encodedFile === null) {
             this.noResourceToProcess = true;
             this.resourcesError = [
@@ -239,34 +237,42 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     }
 
-    checkSignatureBook() {
+    checkSignatureBook(): Promise<boolean> {
         this.resourcesError = [];
-
         return new Promise((resolve) => {
-            this.http.post('../rest/resourcesList/users/' + this.data.userId + '/groups/' + this.data.groupId + '/baskets/' + this.data.basketId + '/actions/' + this.data.action.id + '/checkSignatureBook', { resources: this.data.resIds })
-                .subscribe((data: any) => {
-                    if (!this.functions.empty(data.resourcesInformations.error)) {
-                        this.resourcesError = data.resourcesInformations.error;
-                    }
-                    this.noResourceToProcess = this.data.resIds.length === this.resourcesError.length;
-                    if (data.resourcesInformations.success) {
-                        this.resourcesMailing = data.resourcesInformations.success.filter((element: any) => element.mailing);
-                    }
-                    this.minimumVisaRole = data.minimumVisaRole;
-                    this.maximumSignRole = data.maximumSignRole;
-                    this.lastOneMustBeSignatory = data.workflowEndBySignatory;
-                    this.workflowSignatoryRole = data.workflowSignatoryRole;
-                    this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
-                    this.lockVisaCircuit = data.lockVisaCircuit;
-                    resolve(true);
-                }, (err: any) => {
-                    this.notify.handleSoftErrors(err);
-                    this.dialogRef.close();
-                });
+            this.http.post('../rest/resourcesList/users/' + this.data.userId +
+                '/groups/' + this.data.groupId +
+                '/baskets/' + this.data.basketId +
+                '/actions/' + this.data.action.id +
+                '/checkSignatureBook', { resources: this.data.resIds })
+                .pipe(
+                    tap((data: any) => {
+                        if (!this.functions.empty(data.resourcesInformations.error)) {
+                            this.resourcesError = data.resourcesInformations.error;
+                        }
+                        this.noResourceToProcess = this.data.resIds.length === this.resourcesError.length;
+                        if (data.resourcesInformations.success) {
+                            this.resourcesMailing = data.resourcesInformations.success.filter((element: any) => element.mailing);
+                        }
+                        this.minimumVisaRole = data.minimumVisaRole;
+                        this.maximumSignRole = data.maximumSignRole;
+                        this.lastOneMustBeSignatory = data.workflowEndBySignatory;
+                        this.workflowSignatoryRole = data.workflowSignatoryRole;
+                        this.lastOneMustBeSignatory = this.workflowSignatoryRole === 'mandatory_final';
+                        this.lockVisaCircuit = data.lockVisaCircuit;
+                        resolve(true);
+                    }),
+                    catchError((err: any) => {
+                        this.notify.handleSoftErrors(err);
+                        this.dialogRef.close();
+                        resolve(false);
+                        return of(false);
+                    })
+                ).subscribe();
         });
     }
 
-    toggleIntegration(integrationId: string) {
+    toggleIntegration(integrationId: string): void {
         this.loading = true;
         this.http.put('../rest/resourcesList/integrations', { resources: this.data.resIds, integrations: { [integrationId]: !this.data.resource.integrations[integrationId] } }).pipe(
             tap(async () => {
@@ -290,17 +296,17 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         ).subscribe();
     }
 
-    async afterAttachmentToggle() {
+    async afterAttachmentToggle(): Promise<void> {
         await this.checkSignatureBook();
         this.loadWorkflowEntity();
         this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
     }
 
-    isValidAction() {
+    isValidAction(): boolean {
         return !this.noResourceToProcess && this.appVisaWorkflow !== undefined && !this.appVisaWorkflow.emptyWorkflow() && !this.appVisaWorkflow.workflowEnd() && this.signNumberCorrect && this.visaNumberCorrect && this.atLeastOneSign && ((this.lastOneIsSign && this.lastOneMustBeSignatory) || !this.lastOneMustBeSignatory);
     }
 
-    checkWorkflowParameters(items: any[]) {
+    checkWorkflowParameters(items: any[]): void {
         let nbVisaRole = 0;
         let nbSignRole = 0;
         this.visaWorkflowClone = JSON.parse(JSON.stringify(items));
@@ -338,7 +344,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
         }
     }
 
-    async loadVisaSignParameters() {
+    async loadVisaSignParameters(): Promise<boolean> {
         return new Promise((resolve) => {
             this.http.get('../rest/parameters/minimumVisaRole').pipe(
                 tap((data: any) => {
