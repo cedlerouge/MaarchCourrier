@@ -786,9 +786,23 @@ export class ActionsService implements OnDestroy {
     sendSignatureBookAction() {
         const dialogRef = this.dialog.open(SendSignatureBookActionComponent, {
             panelClass: 'maarch-modal',
+            width: this.currentResIds.length > 1 ? '580px' : '',
+            height: this.currentResIds.length > 1 ? 'auto' : '99vh',
             autoFocus: false,
             disableClose: true,
             data: this.setDatasActionToSend()
+        });
+        // Subscribe to the sidenavStateChanged event of the SendSignatureBookActionComponent instance
+        dialogRef.componentInstance.sidenavStateChanged.subscribe((isSidenavOpened: boolean) => {
+            // Check if the sidenav is closed/opened
+            if (!isSidenavOpened) {
+                // If closed, update the size of the dialog to a fixed width
+                dialogRef.updateSize('auto', 'auto');
+            } else {
+                // If opened, update the size of the dialog to its default or empty value
+                // This might be used to let the dialog size adjust based on its content or other factors
+                dialogRef.updateSize('auto', '99vh');
+            }
         });
         dialogRef.afterClosed().pipe(
             tap((resIds: any) => {
@@ -798,7 +812,10 @@ export class ActionsService implements OnDestroy {
             tap((resIds: any) => {
                 this.endAction(resIds);
             }),
-            finalize(() => this.loading = false),
+            finalize(() => {
+                dialogRef.componentInstance.sidenavStateChanged.unsubscribe();
+                this.loading = false
+            }),
             catchError((err: any) => {
                 this.notify.handleErrors(err);
                 return of(false);

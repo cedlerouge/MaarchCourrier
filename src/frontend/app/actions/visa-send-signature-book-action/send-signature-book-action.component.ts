@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, AfterViewInit, Input } from '@angular/core';
+import { Component, Inject, ViewChild, AfterViewInit, Input, EventEmitter, Output } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -12,6 +12,9 @@ import { ActionsService } from '../actions.service';
 import { Router } from '@angular/router';
 import { SessionStorageService } from '@service/session-storage.service';
 import { UserWorkflow } from '@models/user-workflow.model';
+import { MatSidenav } from '@angular/material/sidenav';
+import { AttachmentsListComponent } from '@appRoot/attachments/attachments-list.component';
+import { AppService } from '@service/app.service';
 
 @Component({
     templateUrl: 'send-signature-book-action.component.html',
@@ -21,6 +24,10 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
 
     @ViewChild('noteEditor', { static: false }) noteEditor: NoteEditorComponent;
     @ViewChild('appVisaWorkflow', { static: false }) appVisaWorkflow: VisaWorkflowComponent;
+    @ViewChild('attachmentsList', { static: false }) attachmentsList: AttachmentsListComponent;
+    @ViewChild('snav2', { static: false }) public snav2: MatSidenav;
+
+    @Output() sidenavStateChanged = new EventEmitter<boolean>();
 
     actionService: ActionsService; // To resolve circular dependencies
 
@@ -53,13 +60,14 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     inLocalStorage: boolean = false;
 
     constructor(
+        @Inject(MAT_DIALOG_DATA) public data: any,
         public translate: TranslateService,
         public http: HttpClient,
-        private notify: NotificationService,
         public dialogRef: MatDialogRef<SendSignatureBookActionComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any,
         public functions: FunctionsService,
         public route: Router,
+        private notify: NotificationService,
+        public appService: AppService,
         private sessionStorage: SessionStorageService
     ) { }
 
@@ -259,6 +267,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     }
 
     toggleIntegration(integrationId: string) {
+        this.loading = true;
         this.http.put('../rest/resourcesList/integrations', { resources: this.data.resIds, integrations: { [integrationId]: !this.data.resource.integrations[integrationId] } }).pipe(
             tap(async () => {
                 this.data.resource.integrations[integrationId] = !this.data.resource.integrations[integrationId];
@@ -272,6 +281,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                         this.checkWorkflowParameters(this.appVisaWorkflow.visaWorkflow.items);
                     }
                 }, 100);
+                this.loading = false
             }),
             catchError((err: any) => {
                 this.notify.handleSoftErrors(err);
@@ -283,6 +293,7 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
     async afterAttachmentToggle() {
         await this.checkSignatureBook();
         this.loadWorkflowEntity();
+        this.attachmentsList.setTaget(this.attachmentsList.currentIntegrationTarget);
     }
 
     isValidAction() {
@@ -353,5 +364,19 @@ export class SendSignatureBookActionComponent implements AfterViewInit {
                 })
             ).subscribe();
         });
+    }
+
+    onSidenavStateChanged(): void {
+        /*
+         * Toggle mat-sidenav &
+         * Emit an event indicating the current state of the sidenav (true for open, false for closed)
+         * Used in the actions.service sendSignatureBookAction() function
+        */
+        this.snav2?.toggle();
+        this.sidenavStateChanged.emit(this.snav2?.opened);
+    }
+
+    getIntegratedAttachmentsLength(): number {
+        return this.attachmentsList?.attachmentsClone.filter((attachment: any) => attachment.inSignatureBook).length;
     }
 }

@@ -14,10 +14,19 @@
                     <b *ngIf="data.resIds.length > 1" color="primary" class="highlight">{{data.resIds.length}}
                         {{'lang.elements' | translate}}</b> ?
                 </div>
-                <div *ngIf="data.resIds.length === 1" style="padding:10px;display: flex;flex-direction: column;">
+                <div *ngIf="data.resIds.length === 1" class="toggle-integration">
+                    <button class="attachment-icon " color="primary"
+                        mat-icon-button [title]="'lang.attachmentsInSignatoryBook' | translate"
+                        (click)="onSidenavStateChanged()">
+                        <mat-icon fontSet="fas"
+                            [matBadge]="getIntegratedAttachmentsLength()"
+                            fontIcon="fa-paperclip fa-2x">
+                        </mat-icon>
+                    </button>
                     <mat-checkbox color="primary" *ngFor="let inteKey of integrationsInfo | keyvalue"
                         (click)="toggleIntegration(inteKey.key)" [checked]="data.resource.integrations[inteKey.key]">
-                        {{'lang.' + inteKey.key + '_doc' | translate}}</mat-checkbox>
+                        {{'lang.' + inteKey.key + '_doc' | translate}}
+                    </mat-checkbox>
                 </div>
                 <div *ngIf="!noResourceToProcess && (!visaNumberCorrect || !signNumberCorrect || !atLeastOneSign || (!lastOneIsSign && lastOneMustBeSignatory))" class="alert-message alert-message-danger" role="alert">
                     <p *ngIf="!visaNumberCorrect">
@@ -63,10 +72,19 @@
                     </div>
                 </div>
             </mat-sidenav-content>
-            <mat-sidenav position='end' [opened]="data.resIds.length === 1 && noResourceToProcess" mode="side"
-                style="overflow-x:hidden;" autoFocus="false" [ngStyle]="{'width': '400px'}">
-                <app-attachments-list *ngIf="data.resIds.length === 1 && noResourceToProcess" [resId]="data.resIds[0]"
-                    (afterActionAttachment)="afterAttachmentToggle()"></app-attachments-list>
+            <mat-sidenav *ngIf="data.resIds.length === 1" #snav2
+                position='end'
+                autoFocus="false"
+                fixedTopGap="56"
+                [mode]="appService.getViewMode() ? 'over' : 'side'"
+                [opened]="true"
+                [ngStyle]="{'width': '600px'}"
+                style="overflow-x:hidden;">
+                <app-attachments-list #attachmentsList
+                    [isModal]="true"
+                    [resId]="data.resIds[0]"
+                    (afterActionAttachment)="afterAttachmentToggle()">
+                </app-attachments-list>
             </mat-sidenav>
         </mat-sidenav-container>
     </div>

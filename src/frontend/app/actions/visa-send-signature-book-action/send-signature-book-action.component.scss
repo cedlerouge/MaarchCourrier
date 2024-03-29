@@ -1,6 +1,10 @@
 
 .mat-dialog-content-container {
     min-height: 500px;
+
+    ::ng-deep .mat-sidenav-content {
+        overflow-x: hidden !important;
+    }
 }
 
 .highlight {
@@ -129,4 +133,18 @@
 
 .unchecked {
     opacity: 0.5;
+}
+
+.toggle-integration {
+    display: flow-root;
+    padding: 10px;
+}
+
+.attachment-icon {
+    position: relative;
+    display: inline;
+    left: auto;
+    bottom: 10px;
+    float: right;
+    left: 15px;
 }
