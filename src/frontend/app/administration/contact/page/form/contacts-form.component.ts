@@ -1230,7 +1230,7 @@ export class ContactsFormComponent implements OnInit {
         }
     }
 
-    toUpperCase(target: any) {
+    toUpperCase(target: any, ev: any) {
         setTimeout(() => {
             const test = target.control.value;
             if (['lastname'].indexOf(target.id) > -1 && target.display) {
