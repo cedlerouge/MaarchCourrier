@@ -49,7 +49,8 @@
                 [basketId]="basketId"
                 [basketLabel]="signatureBookService.basketLabel"
                 (afterInit)="setNextPrev()"
-                (afterGoToResource)="openResListPanel();">
+                (afterGoToResource)="openResListPanel();"
+                (closeDrawerResList)="drawerResList?.close()">
             </app-resources-list>
         </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">

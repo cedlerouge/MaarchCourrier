@@ -90,3 +90,13 @@
     opacity: 0.5;
     cursor: not-allowed !important;
 }
+
+.basket-label {
+    flex: 1 auto;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-all;
+}

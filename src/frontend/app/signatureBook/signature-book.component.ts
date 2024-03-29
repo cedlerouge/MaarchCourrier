@@ -108,7 +108,6 @@ export class SignatureBookComponent implements OnDestroy {
         this.docsToSign = [];
 
         this.subscription?.unsubscribe();
-        this.drawerResList?.close();
     }
 
     initDocuments(): Promise<boolean> {
@@ -176,11 +175,11 @@ export class SignatureBookComponent implements OnDestroy {
     openResListPanel() {
         setTimeout(() => {
             this.drawerResList.open();
-        }, 300);  
+        }, 300);
     }
 
     showPanelContent() {
-        this.resourcesList.initViewPort(); 
+        this.resourcesList.initViewPort();
     }
 
     goToResource(event: string = 'next' || 'previous') {
