@@ -6,15 +6,15 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 import { NotificationService } from '@service/notification/notification.service';
 import { Router } from '@angular/router';
 import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { FiltersListService } from '@service/filtersList.service';
+import { ListPropertiesInterface } from '@models/list-properties.model';
 
 @Component({
     selector: 'app-resources-list',
     templateUrl: 'resources-list.component.html',
     styleUrls: ['resources-list.component.scss'],
 })
-
 export class ResourcesListComponent implements AfterViewInit, OnInit {
-
     @ViewChild('viewport', { static: false }) viewport: CdkVirtualScrollViewport;
     @ViewChild('resourceElement', { static: false }) resourceElement: ElementRef;
 
@@ -24,15 +24,22 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     @Input() userId: number;
     @Input() basketLabel: string = '';
 
-    @Output() closeResListPanel = new EventEmitter<string>();
+    @Output() afterGoToResource = new EventEmitter<boolean>();
+    @Output() afterInit = new EventEmitter<boolean>();
 
     resources: ResourcesList[] = [];
-    selectedResource: ResourcesList;
 
     itemSize: number = 0;
     scrolledIndex: number = 0;
 
     loading: boolean = true;
+    viewportHeight = 0;
+
+    firstResIdInList = 0;
+    limit = 0;
+    lastStartPage = 0;
+    lastPage = 0;
+    endList: boolean = false;
 
     constructor(
         public translate: TranslateService,
@@ -41,93 +48,158 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         private router: Router,
         private notifications: NotificationService,
         private actionService: ActionsService,
+        private filtersListService: FiltersListService
     ) { }
 
     async ngOnInit(): Promise<void> {
         if (this.resources.length === 0) {
-            this.resources = await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
+            await this.initData();
         }
         this.loading = false;
-        // Get element height
-        setTimeout(() => {
-            this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
-            const elementHeight = this.resourceElement?.nativeElement?.getBoundingClientRect()?.height;
-            this.itemSize = elementHeight;
-            this.scrollToSelectedResource();
-        }, 10);
+        this.afterInit.emit(true);
+    }
+
+    initViewPort() {
+        if (this.viewportHeight === 0) {
+            this.viewportHeight = this.calculateContainerHeight();
+            setTimeout(() => {
+                this.scrollToSelectedResource();   
+            }, 0);
+        }
     }
 
     async ngAfterViewInit() {
-        // Handle scrolledIndexChange event
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
             this.scrolledIndex = index;
             const end: number = this.viewport.getRenderedRange().end;
             // Check if scrolled to the end of the list
-            if (index > 0 && end === this.resources.length && this.resources.length < this.signatureBookService.resourcesListCount && this.signatureBookService.offset < 100) {
-            // load data
-                this.loadDatas();
+            if (!this.loading) {
+                this.loading = true;
+                if (index === 0 && this.lastStartPage > 0) {
+                    this.lastStartPage = this.lastStartPage - 1;
+                    await this.loadPreviousData();
+                } else if (index > 0 && end === this.resources.length && !this.endList) {
+                    this.lastPage = this.lastPage + 1;
+                    await this.loadNextData();
+                }
+                this.loading = false;
             }
         });
     }
 
-    /**
-     * Asynchronously loads data from the backend.
-     * @param isPrevious Indicates whether to load previous data.
-    */
-    async loadDatas(isPrevious: boolean = false): Promise<void> {
+    async initData(): Promise<void> {
+        let page = 0;
+
+        const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(
+            this.userId,
+            this.groupId,
+            this.basketId,
+            'basket'
+        );
+
+        page = parseInt(listProperties.page);
+        this.limit = listProperties.pageSize;
+
+        this.lastStartPage = page;
+        this.lastPage = page;
+
         // Fetch data from the backend
         const array: ResourcesList[] = await this.signatureBookService.getResourcesBasket(
             this.userId,
             this.groupId,
             this.basketId,
-            'infiniteScroll',
-            isPrevious
+            this.limit,
+            page
         );
-
-        // Concatenate fetched data with existing data
-        if (!isPrevious) {
-            const concatArray: ResourcesList[] = this.resources.concat(array);
-            this.resources = concatArray;
+        if (array.length === 0) {
+            this.endList = true;
         } else {
-            // If loading previous data, prepend fetched data to existing data
-            this.resources = [...array, ...this.resources];
+            this.appendData(array, 'after');
+
+            if (page > 0) {
+                this.lastStartPage = this.lastStartPage - 1;
+                await this.loadPreviousData(false);
+            } else if (this.limit < 15) {
+                this.lastPage = this.lastPage + 1;
+                await this.loadNextData();
+            }
         }
+    }
+
+    async loadNextData(): Promise<void> {
+        // Fetch data from the backend
+        const array: ResourcesList[] = await this.signatureBookService.getResourcesBasket(
+            this.userId,
+            this.groupId,
+            this.basketId,
+            this.limit,
+            this.lastPage
+        );
+        if (array.length === 0) {
+            this.endList = true;
+        } else {
+            this.appendData(array, 'after');
+        }
+    }
+
+    async loadPreviousData(scrollTo: boolean = true): Promise<void> {
+        // Fetch data from the backend
+        const array: ResourcesList[] = await this.signatureBookService.getResourcesBasket(
+            this.userId,
+            this.groupId,
+            this.basketId,
+            this.limit,
+            this.lastStartPage
+        );
+        this.appendData(array, 'before');
+        if (scrollTo) {
+            this.scrollToFirstResIdInList();
+        }
+        this.firstResIdInList = this.resources[0].resId;
+    }
+
+    appendData(data: ResourcesList[], mode: 'before' | 'after' = 'after') {
+        let concatArray: ResourcesList[] = [];
+        if (mode === 'before') {
+            concatArray = data.concat(this.resources);
+        } else if (mode === 'after') {
+            concatArray = this.resources.concat(data);
+        }
+        this.resources = concatArray;
     }
 
     /**
      * Navigates to the selected resource.
-     * @param resource The resource to navigate to.
-    */
-    goToResource(resource: ResourcesList): void {
+     * @param resId resId resource to navigate to.
+     */
+    goToResource(resId: number): void {
         // Set the selected resource
-        this.selectedResource = resource;
+        this.resId = resId;
 
         // Call the actions service to navigate to the resource
         const resIds: number[] = this.resources.map((resource: ResourcesList) => resource.resId);
-        this.actionsService.goToResource(resIds, this.userId, this.groupId, this.basketId).subscribe((resourcesToProcess: number[]) => {
-            // Check if the resource is locked
-            if (resourcesToProcess.indexOf(resource.resId) > -1) {
-                // Emit event to close the resource list panel
-                this.closeResListPanel.emit('goToResource');
+        this.actionsService
+            .goToResource(resIds, this.userId, this.groupId, this.basketId)
+            .subscribe((resourcesToProcess: number[]) => {
+                // Check if the resource is locked
+                if (resourcesToProcess.indexOf(resId) > -1) {
+                    // Emit event to close the resource list panel
+                    this.afterGoToResource.emit(true);
 
-                // Construct the path to navigate to
-                const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resource.resId}`;
+                    // Construct the path to navigate to
+                    const path: string = `/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${resId}`;
 
-                // Navigate to the resource
-                this.router.navigate([path]);
+                    // Navigate to the resource
+                    this.router.navigate([path]);
 
-                // Unlock the resource
-                this.unlockResource();
+                    // Unlock the resource
+                    this.unlockResource();
 
-                setTimeout(() => {
-                    // scroll to the selected resource
-                    this.scrollToSelectedResource();
-                }, 0);
-            } else {
-                // Notify user that the resource is locked
-                this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
-            }
-        });
+                } else {
+                    // Notify user that the resource is locked
+                    this.notifications.error(this.translate.instant('lang.warnResourceLockedByUser'));
+                }
+            });
     }
 
     async unlockResource(): Promise<void> {
@@ -135,63 +207,49 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
     }
 
-    calculateContainerHeight(): string {
+    calculateContainerHeight(): number {
         const resourcesLength = this.resources.length;
         // This should be the height of your item in pixels
-        const itemHeight = this.itemSize;
+        const itemHeight = 85;
         // The final number of items to keep visible
         const visibleItems = 15;
         setTimeout(() => {
             /* Makes CdkVirtualScrollViewport to refresh its internal size values after
-            * changing the container height. This should be delayed with a "setTimeout"
-            * because we want it to be executed after the container has effectively
-            * changed its height. Another option would be a resize listener for the
-            * container and call this line there but it may requires a library to detect the resize event.
-            * */
+             * changing the container height. This should be delayed with a "setTimeout"
+             * because we want it to be executed after the container has effectively
+             * changed its height. Another option would be a resize listener for the
+             * container and call this line there but it may requires a library to detect the resize event.
+             * */
             this.viewport.checkViewportSize();
         }, 50);
         // It calculates the container height for the first items in the list
         // It means the container will expand until it reaches `itemSizepx`
         // and will keep this size.
         if (resourcesLength <= visibleItems) {
-            return `${itemHeight * resourcesLength}px`;
+            return itemHeight * resourcesLength;
         }
         // This function is called from the template so it ensures the container will have
         // the final height if number of items are greater than the value in "visibleItems".
-        return `${itemHeight * visibleItems}px`;
-    }
-
-    /**
-     * Handles the scroll event triggered by mouse wheel.
-     * @param event The wheel event object.
-    */
-    handleScrollEvent(event: WheelEvent) {
-        // Check if scrolling upwards
-        if (event.deltaY < 0) {
-            // If scrolled to the top and more data is available and offset is greater than 0
-            if (this.scrolledIndex === 0 &&
-            this.resources.length < this.signatureBookService.resourcesListCount &&
-            this.signatureBookService.offset > 0) {
-                // Load previous data
-                this.loadDatas(true);
-            }
-        }
+        return itemHeight * visibleItems;
     }
 
     /**
      * Scrolls to the selected resource.
-    */
+     */
     scrollToSelectedResource(): void {
         // Get the index of the selected resource
-        this.selectedResource = this.resources.find((resource: ResourcesList) => resource.resId === this.resId);
-        const index: number = this.resources.indexOf(this.selectedResource);
+        const index: number = this.resources.map((res) => res.resId).indexOf(this.resId);
+
         // If the selected resource exists in the list
         if (index !== -1) {
-            // Calculate the position of the element
-            const position = index * this.itemSize;
-            // Scroll to the element
-            this.viewport.scrollToOffset(position);
+            this.viewport.scrollToIndex(index);
+        }
+    }
+
+    scrollToFirstResIdInList(): void {
+        const index: number = this.resources.map((res) => res.resId).indexOf(this.firstResIdInList);
+        if (index !== -1) {
+            this.viewport.scrollToIndex(index);
         }
     }
 }
-
