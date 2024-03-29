@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { ResourcesList } from '@models/resources-list.model';
 import { TranslateService } from '@ngx-translate/core';
 import { SignatureBookService } from '../signature-book.service';
@@ -16,7 +16,6 @@ import { ListPropertiesInterface } from '@models/list-properties.model';
 })
 export class ResourcesListComponent implements AfterViewInit, OnInit {
     @ViewChild('viewport', { static: false }) viewport: CdkVirtualScrollViewport;
-    @ViewChild('resourceElement', { static: false }) resourceElement: ElementRef;
 
     @Input() resId: number;
     @Input() basketId: number;
@@ -29,17 +28,14 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
 
     resources: ResourcesList[] = [];
 
-    itemSize: number = 0;
-    scrolledIndex: number = 0;
-
     loading: boolean = true;
-    viewportHeight = 0;
-
-    firstResIdInList = 0;
-    limit = 0;
-    lastStartPage = 0;
-    lastPage = 0;
     endList: boolean = false;
+
+    viewportHeight: number = 0;
+    firstResIdInList: number = 0;
+    limit: number = 0;
+    lastStartPage: number = 0;
+    lastPage: number = 0;
 
     constructor(
         public translate: TranslateService,
@@ -63,14 +59,13 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
         if (this.viewportHeight === 0) {
             this.viewportHeight = this.calculateContainerHeight();
             setTimeout(() => {
-                this.scrollToSelectedResource();   
+                this.scrollToSelectedResource();
             }, 0);
         }
     }
 
     async ngAfterViewInit() {
         this.viewport.scrolledIndexChange.subscribe(async (index: number) => {
-            this.scrolledIndex = index;
             const end: number = this.viewport.getRenderedRange().end;
             // Check if scrolled to the end of the list
             if (!this.loading) {
@@ -208,11 +203,11 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
     }
 
     calculateContainerHeight(): number {
-        const resourcesLength = this.resources.length;
+        const resourcesLength: number = this.resources.length;
         // This should be the height of your item in pixels
-        const itemHeight = 85;
+        const itemHeight: number = 85;
         // The final number of items to keep visible
-        const visibleItems = 15;
+        const visibleItems: number = 15;
         setTimeout(() => {
             /* Makes CdkVirtualScrollViewport to refresh its internal size values after
              * changing the container height. This should be delayed with a "setTimeout"

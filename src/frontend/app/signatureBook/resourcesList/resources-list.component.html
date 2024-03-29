@@ -6,7 +6,7 @@
     <mat-spinner style="margin:auto;"></mat-spinner>
 </div>
 <cdk-virtual-scroll-viewport [itemSize]="85" class="virtual-scroll-viewport" #viewport [style.height.px]="viewportHeight">
-    <div *cdkVirtualFor="let resource of resources" #resourceElement
+    <div *cdkVirtualFor="let resource of resources"
         style="cursor: pointer;"
         [title]="resource.subject"
         [class.selectedRes]="resource.resId === resId"

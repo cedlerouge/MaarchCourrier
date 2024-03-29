@@ -82,11 +82,10 @@ describe('ResourcesListComponent', () => {
     describe('Load resources', () => {
         it('check whether the resourcesList division contains the resources', fakeAsync(() => {
             component.resources = getResources();
-
             fixture.detectChanges();
-            tick();
+            tick(300);
 
-            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(4);
+            expect(fixture.nativeElement.querySelectorAll('#resourceElement').length).toEqual(3);
             flush();
         }));
 
@@ -146,9 +145,9 @@ describe('ResourcesListComponent', () => {
             component.resources = getResources();
 
             fixture.detectChanges();
-            tick(100);
+            tick(300);
 
-            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[3];
+            const lastResource = fixture.nativeElement.querySelectorAll('#resourceElement')[2];
             expect(lastResource.classList.contains('lockedRes')).toBeTrue();
 
             fixture.detectChanges();
@@ -164,56 +163,43 @@ describe('ResourcesListComponent', () => {
 function getResources(): ResourcesList[] {
     const resources: ResourcesList[] = [
         {
-            "resId": 103,
-            "subject": "Courrier départ",
-            "chrono": "MAARCH/2024D/35",
-            "statusImage": "fm-letter-status-aval",
-            "statusLabel": "A e-viser",
-            "priorityColor": "#009dc5",
-            "creationDate": "2024-03-15 13:28:00.706412",
-            "processLimitDate": "2024-06-12 23:59:59",
-            "mailTracking": false,
-            "isLocked": false,
-            "locker": ''
+            resId: 103,
+            subject: "Courrier départ",
+            chrono: "MAARCH/2024D/35",
+            statusImage: "fm-letter-status-aval",
+            statusLabel: "A e-viser",
+            priorityColor: "#009dc5",
+            creationDate: "2024-03-15 13:28:00.706412",
+            processLimitDate: "2024-06-12 23:59:59",
+            mailTracking: false,
+            isLocked: false,
+            locker: ''
         },
         {
-            "resId": 102,
-            "subject": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est quisquam recusandae rerum perferendis illo eum magnam hic tempore error asperiores! Cupiditate doloribus ipsum dolor. Quaerat cum commodi voluptatem nam repudianda",
-            "chrono": "MAARCH/2024D/34",
-            "statusImage": "fm-letter-status-aval",
-            "statusLabel": "A e-viser",
-            "priorityColor": "#009dc5",
-            "creationDate": "2024-03-14 11:54:41.258402",
-            "processLimitDate": null,
-            "mailTracking": false,
-            "isLocked": false,
-            "locker": ''
+            resId: 102,
+            subject: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Est quisquam recusandae rerum perferendis illo eum magnam hic tempore error asperiores! Cupiditate doloribus ipsum dolor. Quaerat cum commodi voluptatem nam repudianda",
+            chrono: "MAARCH/2024D/34",
+            statusImage: "fm-letter-status-aval",
+            statusLabel: "A e-viser",
+            priorityColor: "#009dc5",
+            creationDate: "2024-03-14 11:54:41.258402",
+            processLimitDate: null,
+            mailTracking: false,
+            isLocked: false,
+            locker: ''
         },
         {
-            "resId": 101,
-            "subject": "Courrier de test 2",
-            "chrono": "MAARCH/2024A/2",
-            "statusImage": "fm-letter-status-aval",
-            "statusLabel": "A e-viser",
-            "priorityColor": "#ffa500",
-            "creationDate": "2024-03-14 10:53:02.737637",
-            "processLimitDate": "2024-03-26 23:59:59",
-            "mailTracking": false,
-            "isLocked": false,
-            "locker": ''
-        },
-        {
-            "resId": 100,
-            "subject": "Courrier de test",
-            "chrono": "MAARCH/2024A/1",
-            "statusImage": "fm-letter-status-aval",
-            "statusLabel": "A e-viser",
-            "priorityColor": "#009dc5",
-            "creationDate": "2024-03-06 17:24:03.75654",
-            "processLimitDate": "2024-06-03 23:59:59",
-            "mailTracking": false,
-            "isLocked": true,
-            "locker": 'Barbara BAIN'
+            resId: 101,
+            subject: "Courrier de test 2",
+            chrono: "MAARCH/2024A/2",
+            statusImage: "fm-letter-status-aval",
+            statusLabel: "A e-viser",
+            priorityColor: "#ffa500",
+            creationDate: "2024-03-14 10:53:02.737637",
+            processLimitDate: "2024-03-26 23:59:59",
+            mailTracking: false,
+            isLocked: true,
+            locker: 'Barbara BAIN'
         }
     ];
 
