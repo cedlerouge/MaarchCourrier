@@ -31,7 +31,7 @@ use MaarchCourrier\SignatureBook\Infrastructure\MaarchParapheurSignatureService;
 use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use MaarchCourrier\SignatureBook\Infrastructure\SignatureHistoryService;
 use MaarchCourrier\SignatureBook\Infrastructure\StoreSignedResourceService;
-use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 use Slim\Psr7\Request;
@@ -76,8 +76,15 @@ class WebhookController
         $userRepository = new UserRepository();
         $maarchParapheurSignatureService = new MaarchParapheurSignatureService();
 
-        $webhookValidation = new WebhookValidation($resourceToSignRepository, $userRepository, $currentUserInformations);
-        $retrieveSignedResource = new RetrieveSignedResource($currentUserInformations, $maarchParapheurSignatureService);
+        $webhookValidation = new WebhookValidation(
+            $resourceToSignRepository,
+            $userRepository,
+            $currentUserInformations
+        );
+        $retrieveSignedResource = new RetrieveSignedResource(
+            $currentUserInformations,
+            $maarchParapheurSignatureService
+        );
         $storeSignedResource = new StoreSignedResource($resourceToSignRepository, $storeSignedResourceService);
 
         $webhookCall = new WebhookCall(

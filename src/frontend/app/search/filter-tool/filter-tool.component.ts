@@ -1,4 +1,4 @@
-import { Component, OnInit, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { AppService } from '@service/app.service';
@@ -9,7 +9,7 @@ import { FunctionsService } from '@service/functions.service';
     templateUrl: 'filter-tool.component.html',
     styleUrls: ['filter-tool.component.scss']
 })
-export class FilterToolComponent implements OnInit {
+export class FilterToolComponent {
 
     @Input() filters: any = {};
     @Input() isLoadingResults: boolean = false;
@@ -21,8 +21,6 @@ export class FilterToolComponent implements OnInit {
         public http: HttpClient,
         public appService: AppService,
         public functions: FunctionsService) { }
-
-    ngOnInit(): void { }
 
     setfilters(filters: any) {
         this.filters = filters;

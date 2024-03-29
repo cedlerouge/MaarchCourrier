@@ -120,7 +120,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
         (<any>window).pdfWorkerSrc = 'pdfjs/pdf.worker.min.js';
 
         // Event after process action
-        this.subscription = this.actionService.catchAction().subscribe(message => {
+        this.subscription = this.actionService.catchAction().subscribe(() => {
             this.processAfterAction();
         });
     }
@@ -248,7 +248,7 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
                 $('#send').removeAttr('disabled');
                 $('#send').css('opacity', '1');
 
-                this.changeLocation(idToGo, 'action');
+                this.changeLocation(idToGo);
             } else {
                 this.backToBasket();
             }
@@ -662,12 +662,17 @@ export class SignatureBookComponent implements OnInit, OnDestroy {
 
     backToDetails() {
         this.http.put('../rest/resourcesList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/unlock', { resources: [this.resId] })
-            .subscribe((data: any) => {
-                this.router.navigate([`/resources/${this.resId}`]);
-            }, (err: any) => { });
+            .pipe(
+                tap(() => {
+                    this.router.navigate([`/resources/${this.resId}`]);
+                }),
+                catchError(() => {
+                    return of(false);
+                })
+            ).subscribe();
     }
 
-    async changeLocation(resId: number, origin: string) {
+    async changeLocation(resId: number) {
         if (resId !== this.resId) {
             const data: any = await this.actionService.canExecuteAction([resId], this.userId, this.groupId, this.basketId);
 

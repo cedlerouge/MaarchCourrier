@@ -770,7 +770,6 @@ export class SearchResultListComponent implements OnInit, OnDestroy {
         if (!this.isLoadingResults) {
             this.appCriteriaTool.toggleTool(true);
             if (identifier !== '_ALL') {
-                const tmpArrCrit = [];
                 if (value === null || this.criteria[identifier].values.length === 1) {
                     this.criteria[identifier].values = [];
                 } else {

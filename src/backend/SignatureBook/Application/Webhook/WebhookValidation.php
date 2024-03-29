@@ -25,7 +25,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorresponding
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
 use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
-use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 
 class WebhookValidation
 {

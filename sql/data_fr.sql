@@ -723,6 +723,7 @@ INSERT INTO parameters (id, description, param_value_string, param_value_int, pa
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('useSectorsForAddresses', 'Utilisation de la table address_sectors pour autocomplétion des adresses ; la BAN est ignorée (valeur = 1)', NULL, 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('noteVisibilityOffAction', 'Visibilité par défaut des annotations hors actions (0 = toutes les entités, 1 = restreint)', NULL, 0, NULL);
 INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('noteVisibilityOnAction', 'Visibilité par défaut des annotations sur les actions (0 = toutes les entités, 1 = restreint)', NULL, 0, NULL);
+INSERT INTO parameters (id, description, param_value_string, param_value_int, param_value_date) VALUES ('allowMultipleAvisAssignment', 'Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle', NULL, 0, NULL);
 
 INSERT INTO password_rules (id, label, value, enabled) VALUES (1, 'minLength', 6, true);
 INSERT INTO password_rules (id, label, value, enabled) VALUES (2, 'complexityUpper', 0, false);

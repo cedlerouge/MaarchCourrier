@@ -406,6 +406,16 @@ export class ActionsService implements OnDestroy {
         }
     }
 
+    goToResource(resources: number[], userId: number, groupId: number, basketId: number): Observable<number[]> {
+        return this.http.put(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}/locked`, { resources: resources }).pipe(
+            map((data: any) => data.resourcesToProcess),
+            catchError((err: any) => {
+                this.notify.handleSoftErrors(err);
+                return of(false);
+            })
+        );
+    }
+
     /* OPEN SPECIFIC ACTION */
     confirmAction() {
 

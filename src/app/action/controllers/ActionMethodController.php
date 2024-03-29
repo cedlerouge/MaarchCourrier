@@ -988,6 +988,21 @@ class ActionMethodController
         }
 
         $listinstanceCtrl = [];
+        $allowMultipleAvisAssignment = ParameterModel::getById([
+            'select' => ['param_value_int'],
+            'id'     => 'allowMultipleAvisAssignment'
+        ]);
+        if (empty($allowMultipleAvisAssignment)) {
+            ParameterModel::create([
+                'id'              => 'allowMultipleAvisAssignment',
+                'description'     => "Un utilisateur peut fournir plusieurs avis tout en conservant le même rôle",
+                'param_value_int' => 0
+            ]);
+            $allowMultipleAvisAssignment = 0;
+        } else {
+            $allowMultipleAvisAssignment = $allowMultipleAvisAssignment['param_value_int'];
+        }
+
         foreach ($args['data']['opinionCircuit'] as $instance) {
             if (!in_array($instance['item_mode'], ['avis', 'avis_copy', 'avis_info'])) {
                 return ['errors' => ['item_mode is different from avis, avis_copy or avis_info']];
@@ -999,8 +1014,8 @@ class ActionMethodController
                     return ['errors' => ["ListInstance {$itemControl} is not set or empty"]];
                 }
             }
-
             if (
+                $allowMultipleAvisAssignment === 0 &&
                 in_array(
                     $instance['item_mode'] . '#' . $instance['item_type'] . '#' . $instance['item_id'],
                     $listinstanceCtrl
@@ -1040,8 +1055,8 @@ class ActionMethodController
                 'item_mode'           => $instance['item_mode'],
                 'added_by_user'       => $GLOBALS['id'],
                 'difflist_type'       => 'entity_id',
-                'process_date'        => null,
-                'process_comment'     => null,
+                'process_date'        => ($allowMultipleAvisAssignment === 1) ? $instance['process_date'] : null,
+                'process_comment'     => ($allowMultipleAvisAssignment === 1) ? $instance['process_comment'] : null,
                 'requested_signature' => false,
                 'viewed'              => empty($instance['viewed']) ? 0 : $instance['viewed']
             ]);
@@ -1161,7 +1176,7 @@ class ActionMethodController
 
         $currentStep = ListInstanceModel::get([
             'select' => ['listinstance_id', 'item_id'],
-            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)'],
+            'where'  => ['res_id = ?', 'difflist_type = ?', 'item_id = ?', 'item_mode in (?)', 'process_date is null'],
             'data'   => [$args['resId'], 'entity_id', $args['userId'], ['avis', 'avis_copy', 'avis_info']],
             'limit'  => 1
         ]);

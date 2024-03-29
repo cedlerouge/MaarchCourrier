@@ -167,7 +167,8 @@ class InstallerController
 
         if ($firstTry) {
             $query = $db->query(
-                "SELECT table_name FROM information_schema.tables WHERE table_schema not in ('pg_catalog', 'information_schema')"
+                "SELECT table_name FROM
+                      information_schema.tables WHERE table_schema not in ('pg_catalog', 'information_schema')"
             );
             $row = $query->fetch(PDO::FETCH_ASSOC);
             if (!empty($row)) {
@@ -473,7 +474,12 @@ class InstallerController
             PDO::ATTR_CASE    => PDO::CASE_NATURAL
         ];
 
-        $connection = "host={$body['server']} port={$body['port']} user={$body['user']} password={$body['password']} dbname={$body['name']}";
+        $connection =
+            "host={$body['server']}
+            port={$body['port']}
+            user={$body['user']}
+            password={$body['password']}
+            dbname={$body['name']}";
         $connected = @pg_connect($connection);
         $db = null;
 
@@ -483,7 +489,8 @@ class InstallerController
             $db = new PDO($dsn, $body['user'], $body['password'], $options);
 
             $query = $db->query(
-                "SELECT table_name FROM information_schema.tables WHERE table_schema not in ('pg_catalog', 'information_schema')"
+                "SELECT table_name FROM information_schema.tables WHERE
+                                                     table_schema not in ('pg_catalog', 'information_schema')"
             );
             $row = $query->fetch(PDO::FETCH_ASSOC);
             if (!empty($row)) {
@@ -643,7 +650,8 @@ class InstallerController
                 return $response->withStatus(400)->withJson(
                     [
                         'errors' =>
-                            "Docserver folder creation failed for path : {$body['path']}/{$body['customId']}/{$docserver}"
+                            "Docserver folder creation failed for path : 
+                            {$body['path']}/{$body['customId']}/{$docserver}"
                     ]
                 );
             }
@@ -676,7 +684,12 @@ class InstallerController
         new DatabasePDO(['customId' => $body['customId']]);
         DatabaseModel::update([
             'table'   => 'docservers',
-            'postSet' => ['path_template' => "replace(path_template, '/opt/maarch/docservers', '{$body['path']}/{$body['customId']}')"],
+            'postSet' =>
+                [
+                    'path_template' => "replace(path_template,
+                     '/opt/maarch/docservers',
+                      '{$body['path']}/{$body['customId']}')"
+                ],
             'where'   => ['1 = 1']
         ]);
 

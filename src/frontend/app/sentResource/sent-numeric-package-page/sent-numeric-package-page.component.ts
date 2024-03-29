@@ -410,11 +410,11 @@ export class SentNumericPackagePageComponent implements OnInit {
                 dialogRef.afterClosed().pipe(
                     filter((data: string) => data === 'ok'),
                     tap(() => {
-                        this.createEmail(true);
+                        this.createEmail();
                     })
                 ).subscribe();
             } else {
-                this.createEmail(true);
+                this.createEmail();
             }
 
         } else {
@@ -422,7 +422,7 @@ export class SentNumericPackagePageComponent implements OnInit {
         }
     }
 
-    createEmail(closeModal: boolean = true) {
+    createEmail() {
         this.http.post(`../rest/resources/${this.data.resId}/messageExchange`, this.formatNumericPackage()).pipe(
             tap(() => {
                 this.notify.success(this.translate.instant('lang.numericPackageSent'));
@@ -478,7 +478,7 @@ export class SentNumericPackagePageComponent implements OnInit {
         ).subscribe();
     }
 
-    toggleAttach(item: any, type: string, mode: string) {
+    toggleAttach(item: any, type: string) {
         if (this.numericPackage.mainExchangeDoc === null && type !== 'notes') {
             this.numericPackage.mainExchangeDoc = {
                 ...item,

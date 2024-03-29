@@ -6,12 +6,12 @@
         <div id="tabSignatureBook">
             <div *ngIf="signatureBook.documents[0] && !signatureBook.documents[0].inSignatureBook"
                 title="{{'lang.mail' | translate}}" class="item"
-                [ngClass]="{'activeTabSignatureBook': headerTab == 'document'}"
+                [ngClass]="{'activeTabSignatureBook': headerTab === 'document'}"
                 (click)="changeSignatureBookLeftContent('document')">
                 <i class="fa fa-file-alt fa-2x"></i>
             </div>
             <div *ngFor="let module of processTool" title="{{module.label}}" class="item"
-                [ngClass]="{'activeTabSignatureBook': headerTab == module.id}"
+                [ngClass]="{'activeTabSignatureBook': headerTab === module.id}"
                 [class.tool-disabled]="!isToolEnabled(module.id)"
                 (click)="isToolEnabled(module.id) ? changeSignatureBookLeftContent(module.id) : false">
                 <i [class]="module.icon"></i>
@@ -45,8 +45,8 @@
             id="resListContent">
             <div class="resListContentPos">
                 <div class="resListContentFrame" *ngFor="let res of signatureBook.resList"
-                    (click)="changeLocation(res.res_id, 'view')"
-                    [ngClass]="{'resListContentFrameSelected': resId == res.res_id}">
+                    (click)="changeLocation(res.res_id)"
+                    [ngClass]="{'resListContentFrameSelected': resId === res.res_id}">
                     <div class="resListContentInfo">
                         <i class="fa fa-compass" title="{{'lang.chronoNumber' | translate}}"></i> {{res.alt_identifier}}
                         <i *ngIf="res.allSigned" class="fa fa-certificate"></i>&nbsp;
@@ -70,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="signatureBook.resList.length == 0" style="position: absolute;top: 48%; left: 3%">
+            <div *ngIf="signatureBook.resList.length === 0" style="position: absolute;top: 48%; left: 3%">
                 <i class="fa fa-spinner fa-spin fa-4x"></i>
             </div>
         </div>
@@ -79,14 +79,14 @@
                 <i class="fa fa-chevron-left" aria-hidden="true" *ngIf="showResLeftPanel"></i>
                 <i class="fa fa-chevron-right" aria-hidden="true" *ngIf="!showResLeftPanel"></i>
             </div>
-            <div *ngIf="headerTab == 'document'" class="contentShow">
+            <div *ngIf="headerTab === 'document'" class="contentShow">
                 <div *ngIf="showTopLeftPanel" class="pjDoc">
                     <div style="height:100%;">
                         <img title="{{document.title}}" id="thumnails_img"
                             *ngFor="let document of signatureBook.documents; let i = index"
                             (click)="changeLeftViewer(i)" [src]="document.thumbnailLink | secureUrl | async"
                             class="leftPanelThumbnails"
-                            [ngClass]="{'panelSelectedThumbnail': i == leftSelectedThumbnail}" />
+                            [ngClass]="{'panelSelectedThumbnail': i === leftSelectedThumbnail}" />
                     </div>
                 </div>
                 <div *ngIf="signatureBook.documents.length - 1 > 0" class="pjDetailsMore"
@@ -107,7 +107,7 @@
                     </button>
                 </div>
                 <pdf-viewer
-                    *ngIf="leftViewerLink != '' && (leftSelectedThumbnail == 0 || signatureBook.documents[leftSelectedThumbnail].format == 'pdf' || signatureBook.documents[leftSelectedThumbnail].isConverted)"
+                    *ngIf="leftViewerLink !== '' && (leftSelectedThumbnail === 0 || signatureBook.documents[leftSelectedThumbnail].format === 'pdf' || signatureBook.documents[leftSelectedThumbnail].isConverted)"
                     id="leftPanelShowDocumentIframe" #leftPanelShowDocumentIframe
                     [src]="leftViewerLink | secureUrl | async"
                     [render-text]="true" [fit-to-page]="false"
@@ -118,7 +118,7 @@
                     [zoom]="zoomLeft"
                     (error)="pdfViewerError(leftViewerLink)">
                 </pdf-viewer>
-                <div *ngIf="leftSelectedThumbnail > 0 && signatureBook.documents[leftSelectedThumbnail].format != 'pdf' && !signatureBook.documents[leftSelectedThumbnail].isConverted"
+                <div *ngIf="leftSelectedThumbnail > 0 && signatureBook.documents[leftSelectedThumbnail].format !== 'pdf' && !signatureBook.documents[leftSelectedThumbnail].isConverted"
                     [ngStyle]="{'height': showTopLeftPanel ? '79%' : '96%'}" class="visaNoPdfWarning">
                     <div style="padding-top: 25%;">
                         {{'lang.noOverviewAvailable' | translate}}<br /><sub>{{'lang.pdfVersionFile' | translate}}
@@ -133,20 +133,20 @@
                     </div>
                 </div>
             </div>
-            <div *ngIf="headerTab == 'notes'" class="contentShow" style="width:98%;">
+            <div *ngIf="headerTab === 'notes'" class="contentShow" style="width:98%;">
                 <app-notes-list #appNotesList [editMode]="true" [resId]="resId"
                     (reloadBadgeNotes)="refreshBadge($event,'notes')">
                 </app-notes-list>
             </div>
-            <div *ngIf="headerTab == 'visaCircuit'" class="contentShow" style="width:98%;overflow-x: hidden;">
+            <div *ngIf="headerTab === 'visaCircuit'" class="contentShow" style="width:98%;overflow-x: hidden;">
                 <app-visa-workflow #appVisaWorkflow [resId]="resId"
                     [adminMode]="privilegeService.hasCurrentUserPrivilege('config_visa_workflow')"
                     [target]="'signatureBook'" (refreshActionsList)="loadActions()"></app-visa-workflow>
             </div>
-            <div *ngIf="headerTab == 'history'" class="contentShow" style="width:98%;">
+            <div *ngIf="headerTab === 'history'" class="contentShow" style="width:98%;">
                 <app-history-list #appHistoryList [resId]="resId"></app-history-list>
             </div>
-            <div *ngIf="headerTab == 'linkedResources'" class="contentShow" style="width:98%;">
+            <div *ngIf="headerTab === 'linkedResources'" class="contentShow" style="width:98%;">
                 <app-linked-resource-list #appLinkedResourceList [resId]="resId"
                     (reloadBadgeLinkedResources)="refreshBadge($event,'linkedResources')">
                 </app-linked-resource-list>
@@ -176,7 +176,7 @@
                             title="{{signatureBook.attachments[rightSelectedThumbnail].attachment_type}}">
                             <label>Type :&nbsp;</label>
                             <span>{{signatureBook.attachments[rightSelectedThumbnail].attachment_type}} <sup
-                                    *ngIf="signatureBook.attachments[rightSelectedThumbnail].status == 'SIGN'"
+                                    *ngIf="signatureBook.attachments[rightSelectedThumbnail].status === 'SIGN'"
                                     style="color:#135F7F;">{{'lang.signed' | translate}}</sup></span>
                         </div>
                         <div class="infoPj" title="{{signatureBook.attachments[rightSelectedThumbnail].title}}">
@@ -257,7 +257,7 @@
                         [resId]="signatureBook.attachments[rightSelectedThumbnail].signed ? signatureBook.attachments[rightSelectedThumbnail].viewerId : signatureBook.attachments[rightSelectedThumbnail].res_id"
                         [title]="signatureBook.attachments[rightSelectedThumbnail].identifier">
                     </app-document-viewer>
-                    <div *ngIf="signatureBook.attachments[rightSelectedThumbnail].format != 'pdf' && signatureBook.attachments[rightSelectedThumbnail].status != 'TMP' && !signatureBook.attachments[rightSelectedThumbnail].isConverted"
+                    <div *ngIf="signatureBook.attachments[rightSelectedThumbnail].format !== 'pdf' && signatureBook.attachments[rightSelectedThumbnail].status !== 'TMP' && !signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         [ngStyle]="{'height': showTopRightPanel ? '79%' : '96%'}" class="visaNoPdfWarning">
                         <div style="padding-top: 25%;">
                             {{'lang.noOverviewAvailable' | translate}}<br /><sub>{{'lang.pdfVersionFile' | translate}}
@@ -271,7 +271,7 @@
                             </a>
                         </div>
                     </div>
-                    <div *ngIf="signatureBook.attachments[rightSelectedThumbnail].status == 'TMP' && !signatureBook.attachments[rightSelectedThumbnail].isConverted"
+                    <div *ngIf="signatureBook.attachments[rightSelectedThumbnail].status === 'TMP' && !signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         [ngStyle]="{'height': showTopRightPanel ? '79%' : '96%'}" class="visaNoPdfWarning">
                         <div style="padding-top: 25%;" [innerHTML]="'lang.editingAttachmentInterrupted' | translate">
                         </div>
@@ -282,13 +282,13 @@
                             </a>
                         </div>
                     </div>
-                    <div *ngIf="signatureBook.signatures[0] && signatureBook.canSign && signatureBook.attachments[rightSelectedThumbnail].status != 'TMP' && signatureBook.attachments[rightSelectedThumbnail].sign && signatureBook.attachments[rightSelectedThumbnail].isConverted"
+                    <div *ngIf="signatureBook.signatures[0] && signatureBook.canSign && signatureBook.attachments[rightSelectedThumbnail].status !== 'TMP' && signatureBook.attachments[rightSelectedThumbnail].sign && signatureBook.attachments[rightSelectedThumbnail].isConverted"
                         (mouseenter)="showSignaturesPanel = true" (mouseleave)="showSignaturesPanel = false"
                         class="pjSign"
-                        [ngClass]="[signatureBook.attachments[rightSelectedThumbnail].status == 'SIGN' ? 'signed' : '']"
+                        [ngClass]="[signatureBook.attachments[rightSelectedThumbnail].status === 'SIGN' ? 'signed' : '']"
                         [ngStyle]="{'box-shadow': signatureBook.listinstance.requested_signature ? 'inset 0px 0px 5px 0px red' : 'inset 0px 0px 5px 0px #656565;'}">
                         <span
-                            *ngIf="signatureBook.attachments[rightSelectedThumbnail].status != 'SIGN' && signatureBook.signatures[0]">
+                            *ngIf="signatureBook.attachments[rightSelectedThumbnail].status !== 'SIGN' && signatureBook.signatures[0]">
                             <span *ngIf="!loadingSign">
                                 <img *ngFor="let signature of signatureBook.signatures; let i = index"
                                     [src]="('../rest/users/' + signature.user_serial_id + '/signatures/' + signature.id + '/content') | secureUrl | async"
@@ -298,7 +298,7 @@
                             </span>
                             <i *ngIf="loadingSign" class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
                         </span>
-                        <span *ngIf="signatureBook.attachments[rightSelectedThumbnail].status == 'SIGN'"
+                        <span *ngIf="signatureBook.attachments[rightSelectedThumbnail].status === 'SIGN'"
                             (click)="unsignFile(signatureBook.attachments[rightSelectedThumbnail])"
                             style="cursor: pointer;color: green;">
                             <i title="{{'lang.unsign' | translate}}" class="fa fa-check fa-2x" aria-hidden="true"></i>
@@ -323,17 +323,17 @@
                 <div title="[{{attachment.attachment_type}}] {{attachment.title}}" style="position: relative;"
                     class="item" *ngFor="let attachment of signatureBook.attachments; let i = index"
                     (click)="changeRightViewer(i)"
-                    [ngClass]="{'panelSelectedThumbnail': i == rightSelectedThumbnail && !showAttachmentPanel}">
+                    [ngClass]="{'panelSelectedThumbnail': i === rightSelectedThumbnail && !showAttachmentPanel}">
                     <span class="fa-stack fa-lg">
                         <i class="far fa-file fa-stack-2x"></i><i
                             style="font-weight:bold;letter-spacing: -1px;">{{attachment.icon}}</i>
                     </span>
-                    <i *ngIf="attachment.sign && attachment.status == 'SIGN'" title="Le document a été signé"
+                    <i *ngIf="attachment.sign && attachment.status === 'SIGN'" title="Le document a été signé"
                         style="position: absolute;top: 12px;right: 6px;" class="fa fa-circle"></i>
-                    <i *ngIf="attachment.sign && attachment.status != 'SIGN' && attachment.status != 'TMP'"
+                    <i *ngIf="attachment.sign && attachment.status !== 'SIGN' && attachment.status !== 'TMP'"
                         title="Le document n'a pas encore été signé" style="position: absolute;top: 12px;right: 6px;"
                         class="far fa-circle"></i>
-                    <i *ngIf="attachment.sign && attachment.status == 'TMP'"
+                    <i *ngIf="attachment.sign && attachment.status === 'TMP'"
                         style="color:green;-ms-transform: rotate(-35deg);-webkit-transform: rotate(-35deg);transform: rotate(-35deg);position: absolute;top: 39px;right: 1px;">{{'lang.draft' | translate}}</i>
                     <br /><i style="position: absolute;margin-left: -9px;">.{{attachment.format}}</i>
                 </div>
@@ -350,7 +350,7 @@
                     <i class="fa fa-plus" style="position:absolute;"></i>
                 </div>
                 <div *ngIf="signatureBook.attachments[rightSelectedThumbnail]">
-                    <div [ngClass]="{'visaDisabledButton': !canUpdateDocument || signatureBook.attachments[rightSelectedThumbnail].status == 'SIGN'}"
+                    <div [ngClass]="{'visaDisabledButton': !canUpdateDocument || signatureBook.attachments[rightSelectedThumbnail].status === 'SIGN'}"
                         title="{{'lang.editDocument' | translate}}" class="visaPjUp"
                         (click)="showAttachment(signatureBook.attachments[rightSelectedThumbnail])">
                         <i class="fa fa-edit fa-2x"></i>

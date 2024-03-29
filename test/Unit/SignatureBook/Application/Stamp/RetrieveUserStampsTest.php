@@ -19,7 +19,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\CannotAccessOtherUsersSignatures
 use MaarchCourrier\SignatureBook\Domain\UserSignature;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Stamp\SignatureRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
-use MaarchCourrier\User\Domain\Problem\UserDoesNotExistProblem;
+use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\User\Infrastructure\CurrentUserInformations;
 use PHPUnit\Framework\TestCase;
 

@@ -139,3 +139,25 @@
     padding: 2px 5px;
     font-weight: bold;
 }
+
+.drawer-res-list {
+    ::ng-deep .mat-drawer-inner-container {
+        overflow: hidden !important;
+    }
+}
+
+.loading {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffffb3;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.hide {
+    display: none;
+}
