@@ -1,26 +1,15 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { ListPropertiesInterface } from "@models/list-properties.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
 
-@Injectable({
-    providedIn: 'root',
-})
-
+@Injectable()
 export class SignatureBookService {
-    config = new SignatureBookConfig();
 
-    resourcesList: ResourcesList[] = [];
     resourcesListIds: number[] = [];
-
-    resourcesListCount: number = null;
-    offset: number = null;
-    limit: number = null;
-
     basketLabel: string = '';
 
     constructor(
@@ -34,8 +23,7 @@ export class SignatureBookService {
         return new Promise((resolve) => {
             this.http.get('../rest/signatureBook/config').pipe(
                 tap((data: SignatureBookInterface) => {
-                    this.config = data;
-                    resolve(this.config);
+                    resolve(data);
                 }),
                 catchError((err: any) => {
                     this.notifications.handleSoftErrors(err);
@@ -46,25 +34,14 @@ export class SignatureBookService {
         })
     }
 
-    getResourcesBasket(userId: number, groupId: number, basketId: number, mode: 'standard' | 'infiniteScroll' = 'standard', isPrevious: boolean = false): Promise<ResourcesList[] | []> {
+    getResourcesBasket(userId: number, groupId: number, basketId: number, limit: number,  page: number): Promise<ResourcesList[] | []> {
         return new Promise((resolve) => {
-            const listProperties: ListPropertiesInterface = this.filtersListService.initListsProperties(userId, groupId, basketId, 'basket');
-            this.limit = isPrevious ? listProperties.pageSize : 15;
-            this.offset = mode === 'infiniteScroll' ? this.offset : parseInt(listProperties.page) * this.limit;
+            const offset = page * limit;
             const filters: string = this.filtersListService.getUrlFilters();
 
-            if (mode === 'infiniteScroll') {
-                if (isPrevious) {
-                    this.offset = this.offset - this.limit;
-                } else {
-                    this.offset = this.offset + this.limit;
-                }
-            }
-
-            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${this.limit}&offset=${this.offset}${filters}`).pipe(
+            this.http.get(`../rest/resourcesList/users/${userId}/groups/${groupId}/baskets/${basketId}?limit=${limit}&offset=${offset}${filters}`).pipe(
                 map((data: any) => {
                     this.resourcesListIds = data.allResources;
-                    this.resourcesListCount = data.count;
                     this.basketLabel = data.basketLabel;
                     const resourcesList: ResourcesList[] = data.resources.map((resource: any) => new ResourcesList({
                         resId: resource.resId,
@@ -82,8 +59,7 @@ export class SignatureBookService {
                     return resourcesList;
                 }),
                 tap((data: any) => {
-                    this.resourcesList = data;
-                    resolve(this.resourcesList);
+                    resolve(data);
                 }),
                 catchError((err: any) => {
                     this.notifications.handleSoftErrors(err);

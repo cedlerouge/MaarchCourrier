@@ -15,6 +15,7 @@ import { DatePipe } from '@angular/common';
 import { FiltersListService } from '@service/filtersList.service';
 import { PrivilegeService } from '@service/privileges.service';
 import { AdministrationService } from '@appRoot/administration/administration.service';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -47,6 +48,7 @@ describe('SignatureBookActionsComponent', () => {
                 FiltersListService,
                 PrivilegeService,
                 AdministrationService,
+                SignatureBookService,
                 DatePipe,
                 TranslateStore,
                 HttpClient,

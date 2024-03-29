@@ -74,7 +74,8 @@ class FastParapheurController
 
         $signatureModes = FastParapheurController::getSignatureModes(['mapping' => true]);
         if (!empty($signatureModes['errors'])) {
-            return $response->withStatus((int)$signatureModes['code'])->withJson(['errors' => $signatureModes['errors']]
+            return $response->withStatus((int)$signatureModes['code'])->withJson(
+                ['errors' => $signatureModes['errors']]
             );
         }
 

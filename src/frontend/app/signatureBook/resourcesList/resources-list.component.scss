@@ -1,8 +1,23 @@
-
 :host {
     display: flex;
     flex-direction: column;
     height: 100%;
+}
+
+.title-list {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    gap: 10px;
+}
+
+.loader {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+    background: #ffffffad;
 }
 
 .followIcon {
@@ -35,6 +50,7 @@
         text-overflow: ellipsis;
         display: -webkit-box !important;
         -webkit-line-clamp: 1;
+        word-break: break-all;
     }
 }
 
@@ -67,18 +83,7 @@
     width: 100%;
     background: white;
     height: 100%;
-
-    ::ng-deep.cdk-virtual-scroll-content-wrapper {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        width: 100%;
-    }
-}
-
-.virtual-scroll-viewport-div {
     position: relative;
-    height: 100%;
-    overflow: auto;
 }
 
 .lockedRes {
