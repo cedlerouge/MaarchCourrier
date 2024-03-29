@@ -75,15 +75,30 @@ class ParameterController
 
     public function getById(Request $request, Response $response, array $aArgs)
     {
-        if (!in_array($aArgs['id'], ['minimumVisaRole', 'maximumSignRole', 'workflowSignatoryRole', 'suggest_links_n_days_ago', 'noteVisibilityOffAction', 'noteVisibilityOnAction', 'allowMultipleAvisAssignment'])
-            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
+        if (
+            !in_array(
+                $aArgs['id'],
+                [
+                    'minimumVisaRole',
+                    'maximumSignRole',
+                    'workflowSignatoryRole',
+                    'suggest_links_n_days_ago',
+                    'noteVisibilityOffAction',
+                    'noteVisibilityOnAction',
+                    'allowMultipleAvisAssignment'
+                ]
+            )
+            && !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
         $parameter = ParameterModel::getById(['id' => $aArgs['id']]);
 
         if (empty($parameter)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Parameter not found', 'lang' => 'parameterNotFound']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Parameter not found', 'lang' => 'parameterNotFound']
+            );
         }
 
         return $response->withJson(['parameter' => $parameter]);
@@ -99,7 +114,8 @@ class ParameterController
 
         $check = Validator::stringType()->notEmpty()->validate($data['id']) && preg_match("/^[\w-]*$/", $data['id']);
         $check = $check && (empty($data['param_value_int']) || Validator::intVal()->validate($data['param_value_int']));
-        $check = $check && (empty($data['param_value_string']) || Validator::stringType()->validate($data['param_value_string']));
+        $check = $check &&
+            (empty($data['param_value_string']) || Validator::stringType()->validate($data['param_value_string']));
         if (!$check) {
             return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
         }
@@ -201,7 +217,9 @@ class ParameterController
                 return $response->withStatus(400)->withJson(['errors' => 'Parameter not found']);
             }
             if (!in_array($body['param_value_string'], ['restrictAccess', 'transfer', 'copy', 'delete'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'param_value_string must be between : restrictAccess, transfer, copy, delete']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'param_value_string must be between : restrictAccess, transfer, copy, delete']
+                );
             }
             ParameterModel::update([
                 'description'        => '',
@@ -211,7 +229,9 @@ class ParameterController
         } else {
             if (in_array($args['id'], ['minimumVisaRole', 'maximumSignRole'])) {
                 if (!Validator::intVal()->validate($body['param_value_int']) || $body['param_value_int'] < 0) {
-                    return $response->withStatus(400)->withJson(['errors' => $args['id'] . ' must be a positive numeric']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => $args['id'] . ' must be a positive numeric']
+                    );
                 }
             }
             $parameter = ParameterModel::getById(['id' => $args['id']]);
@@ -226,7 +246,8 @@ class ParameterController
             }
 
             $check = (empty($body['param_value_int']) || Validator::intVal()->validate($body['param_value_int']));
-            $check = $check && (empty($body['param_value_string']) || Validator::stringType()->validate($body['param_value_string']));
+            $check = $check &&
+                (empty($body['param_value_string']) || Validator::stringType()->validate($body['param_value_string']));
             if (!$check) {
                 return $response->withStatus(400)->withJson(['errors' => 'Bad Request']);
             }
