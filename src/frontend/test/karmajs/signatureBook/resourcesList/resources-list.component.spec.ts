@@ -17,6 +17,7 @@ import { ResourcesListComponent } from '@appRoot/signatureBook/resourcesList/res
 import { ResourcesList } from '@models/resources-list.model';
 import * as langFrJson from '@langs/lang-fr.json';
 import { Router } from '@angular/router';
+import { SignatureBookService } from '@appRoot/signatureBook/signature-book.service';
 
 class FakeLoader implements TranslateLoader {
     getTranslation(): Observable<any> {
@@ -49,6 +50,7 @@ describe('ResourcesListComponent', () => {
                 FoldersService,
                 FiltersListService,
                 PrivilegeService,
+                SignatureBookService,
                 AdministrationService,
                 DatePipe,
                 TranslateStore,
@@ -132,7 +134,7 @@ describe('ResourcesListComponent', () => {
 
             setTimeout(() => {
                 // Check if navigation is called with the correct route
-                const path: string = `/signatureBook/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/resources/${component.selectedResource.resId}`
+                const path: string = `/signatureBook/users/${component.userId}/groups/${component.groupId}/baskets/${component.basketId}/resources/${component.resId}`
                 expect(navigateSpy).toHaveBeenCalledWith([path]);
             }, 100);
             flush();
