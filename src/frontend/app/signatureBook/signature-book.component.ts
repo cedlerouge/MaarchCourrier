@@ -71,7 +71,7 @@ export class SignatureBookComponent implements OnDestroy {
         ).subscribe();
 
         // Event after process action
-        this.processedIdSubscription = this.actionService.catchAction().subscribe(message => {
+        this.processedIdSubscription = this.actionService.catchAction().subscribe(() => {
             this.processAfterAction();
         });
     }
@@ -170,6 +170,7 @@ export class SignatureBookComponent implements OnDestroy {
     ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        this.processedIdSubscription.unsubscribe();
         this.unlockResource();
     }
 
