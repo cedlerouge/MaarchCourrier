@@ -25,6 +25,7 @@ export class ResourcesListComponent implements AfterViewInit, OnInit {
 
     @Output() afterGoToResource = new EventEmitter<boolean>();
     @Output() afterInit = new EventEmitter<boolean>();
+    @Output() closeDrawerResList = new EventEmitter<void>();
 
     resources: ResourcesList[] = [];
 
