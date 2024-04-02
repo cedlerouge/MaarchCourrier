@@ -153,7 +153,7 @@ export class MailSignaturesAdministrationComponent implements OnInit, OnDestroy 
         formatedSignatures.push(this.newSignature);
 
         this.http.put(this.route, { signatures : formatedSignatures }).pipe(
-            tap((data: any) => {
+            tap(() => {
                 this.signatures.push(this.newSignature);
                 this.addMode = false;
                 this.signaturesClone = JSON.parse(JSON.stringify(this.signatures));
