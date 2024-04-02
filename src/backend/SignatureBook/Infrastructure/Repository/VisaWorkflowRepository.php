@@ -18,10 +18,8 @@ namespace MaarchCourrier\SignatureBook\Infrastructure\Repository;
 
 use Entity\models\ListInstanceModel;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
-use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use MaarchCourrier\Core\Domain\User\Port\UserFactoryInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
-use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 use MaarchCourrier\SignatureBook\Domain\Port\VisaWorkflowRepositoryInterface;
 
 class VisaWorkflowRepository implements VisaWorkflowRepositoryInterface
@@ -51,8 +49,6 @@ class VisaWorkflowRepository implements VisaWorkflowRepositoryInterface
      * @param MainResourceInterface $mainResource
      *
      * @return ?UserInterface
-     * @throws ParameterMustBeGreaterThanZeroException
-     * @throws UserDoesNotExistProblem
      */
     public function getCurrentStepUserByMainResource(MainResourceInterface $mainResource): ?UserInterface
     {
@@ -62,6 +58,6 @@ class VisaWorkflowRepository implements VisaWorkflowRepositoryInterface
             return null;
         }
 
-        return $this->userFactory->createRetrieveUser()->getUserById($currentStep['item_id']);
+        return $this->userFactory->createUserFromArray(['id' => $currentStep['item_id']]);
     }
 }

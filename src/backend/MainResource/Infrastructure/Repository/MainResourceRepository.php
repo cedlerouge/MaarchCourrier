@@ -16,6 +16,7 @@ declare(strict_types=1);
 
 namespace MaarchCourrier\MainResource\Infrastructure\Repository;
 
+use Exception;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceInterface;
 use MaarchCourrier\Core\Domain\MainResource\Port\MainResourceRepositoryInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserFactoryInterface;
@@ -31,6 +32,12 @@ class MainResourceRepository implements MainResourceRepositoryInterface
     ) {
     }
 
+    /**
+     * @param int $resId
+     *
+     * @return ?MainResourceInterface
+     * @throws Exception
+     */
     public function getMainResourceByResId(int $resId): ?MainResourceInterface
     {
         $resource = ResModel::getById(['resId'  => $resId, 'select' => ['*']]);
@@ -39,7 +46,7 @@ class MainResourceRepository implements MainResourceRepositoryInterface
             return null;
         }
 
-        $typist = $this->userFactory->createRetrieveUser()->getUserById($resource['typist']);
+        $typist = $this->userFactory->createUserFromArray(['id' => $resource['typist']]);
 
         $document = (new Document())
             ->setFileName($resource['filename'])

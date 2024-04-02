@@ -61,7 +61,7 @@ class AttachmentRepository implements AttachmentRepositoryInterface
         /** @var Attachment[] $attachments */
         $attachments = [];
         foreach ($data as $attachment) {
-            $typist = $this->userFactory->createRetrieveUser()->getUserById($attachment['typist']);
+            $typist = $this->userFactory->createUserFromArray(['id' => $attachment['typist']]);
 
             $document = (new Document())
                 ->setFileName($attachment['filename'])

@@ -18,19 +18,12 @@ namespace MaarchCourrier\User\Infrastructure;
 
 use MaarchCourrier\Core\Domain\User\Port\UserFactoryInterface;
 use MaarchCourrier\Core\Domain\User\Port\UserInterface;
-use MaarchCourrier\User\Application\RetrieveUser;
 use MaarchCourrier\User\Domain\User;
-use MaarchCourrier\User\Infrastructure\Repository\UserRepository;
 
 class UserFactory implements UserFactoryInterface
 {
     public function createUserFromArray(array $values): UserInterface
     {
         return User::createFromArray($values);
-    }
-
-    public function createRetrieveUser(): RetrieveUser
-    {
-        return new RetrieveUser(new UserRepository());
     }
 }

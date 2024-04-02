@@ -48,7 +48,7 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         }
     }
 
-    private function createMainResource(string $encodedFileContent): int
+    private function createMainResource(string $encodedFileContent): void
     {
         $body = [
             'modelId'          => 1,
@@ -74,7 +74,7 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         $response = $resController->create($fullRequest, new Response());
         $responseBody = json_decode((string)$response->getBody());
 
-        return (int)$responseBody->resId;
+        $this->mainResourceId = (int)$responseBody->resId;
     }
 
     private function createAttachments(int $resIdMaster, string $encodedFileContent): void
@@ -168,22 +168,23 @@ class RetrieveSignatureBookControllerTest extends CourrierTestCase
         $encodedFile = base64_encode($fileContent);
 
         //create main document
-        $this->mainResourceId = $this->createMainResource($encodedFile);
+        $this->createMainResource($encodedFile);
+        $mainResourceId = $this->mainResourceId;
 
-        //create attachments
-        $this->createAttachments($this->mainResourceId, $encodedFile);
+            //create attachments
+        $this->createAttachments($mainResourceId, $encodedFile);
 
         //create workflow visa for resource
-        $this->createVisaCircuitForMainResource($this->mainResourceId);
+        $this->createVisaCircuitForMainResource($mainResourceId);
 
         //send main resource to internal signature book
-        $this->sendMainResourceToInternalSignatureBook($this->mainResourceId);
+        $this->sendMainResourceToInternalSignatureBook($mainResourceId);
 
         $args = [
             'userId'    => $this->connectedUser,
             'groupId'   => 4,
             'basketId'  => 16,
-            'resId'     => $this->mainResourceId
+            'resId'     => $mainResourceId
         ];
         $fullRequest = $this->createRequestWithBody('GET', $args);
 

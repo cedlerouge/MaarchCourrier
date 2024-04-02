@@ -14,11 +14,7 @@
 
 namespace MaarchCourrier\Core\Domain\User\Port;
 
-use MaarchCourrier\User\Application\RetrieveUser;
-
 interface UserFactoryInterface
 {
     public function createUserFromArray(array $values): UserInterface;
-
-    public function createRetrieveUser(): RetrieveUser;
 }

@@ -12,11 +12,11 @@
  * @author  dev@maarch.org
  */
 
-namespace MaarchCourrier\Tests\Unit\DocumentConversion\Stub;
+namespace MaarchCourrier\Tests\Unit\DocumentConversion\Mock;
 
 use MaarchCourrier\DocumentConversion\Domain\Port\ConvertPdfServiceInterface;
 
-class ConvertPdfServiceStub implements ConvertPdfServiceInterface
+class ConvertPdfServiceMock implements ConvertPdfServiceInterface
 {
     public bool $isConvertable = true;
 
