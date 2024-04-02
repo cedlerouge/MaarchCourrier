@@ -29,7 +29,6 @@ export class SignatureBookComponent implements OnDestroy {
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
     loading: boolean = true;
-    loadResList: boolean = false;
 
     resId: number = 0;
     basketId: number;
@@ -41,6 +40,8 @@ export class SignatureBookComponent implements OnDestroy {
 
     subscription: Subscription;
     defaultStamp: StampInterface;
+
+    processActionSubscription: Subscription;
 
     canGoToNext: boolean = false;
     canGoToPrevious: boolean = false;
@@ -67,6 +68,11 @@ export class SignatureBookComponent implements OnDestroy {
                 this.notify.success('apposition de la griffe!');
             })
         ).subscribe();
+
+        // Event after process action
+        this.processActionSubscription = this.actionService.catchAction().subscribe(() => {
+            this.processAfterAction();
+        });
     }
 
     @HostListener('window:unload', [ '$event' ])
@@ -152,6 +158,10 @@ export class SignatureBookComponent implements OnDestroy {
         });
     }
 
+    processAfterAction() {
+        this.backToBasket();
+    }
+
     backToBasket(): void {
         const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.router.navigate([path]);
@@ -160,12 +170,14 @@ export class SignatureBookComponent implements OnDestroy {
     ngOnDestroy(): void {
         // unsubscribe to ensure no memory leaks
         this.subscription.unsubscribe();
+        this.processActionSubscription.unsubscribe();
         this.unlockResource();
     }
 
     async unlockResource(): Promise<void> {
+        const path = '/basketList/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId;
         this.actionService.stopRefreshResourceLock();
-        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId]);
+        await this.actionService.unlockResource(this.userId, this.groupId, this.basketId, [this.resId], path);
     }
 
     toggleResList(): void {
