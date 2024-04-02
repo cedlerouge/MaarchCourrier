@@ -40,15 +40,18 @@
         </div>
     </div>
     <mat-drawer-container style="flex: 1" [hasBackdrop]="false">
-        <mat-drawer *ngIf="loadResList" #drawerResList class="drawer-res-list" mode="over" [ngStyle]="{'width': '500px'}">
+        <mat-drawer #drawerResList class="drawer-res-list" autoFocus="false" mode="over" [ngStyle]="{'width': '500px'}" (openedChange)="showPanelContent()">
             <app-resources-list
                 #resourcesList
-                [resId]="+resId"
+                [resId]="resId"
                 [userId]="userId"
                 [groupId]="groupId"
                 [basketId]="basketId"
                 [basketLabel]="signatureBookService.basketLabel"
-                (closeResListPanel)="closeResListPanel($event)"></app-resources-list>
+                (afterInit)="setNextPrev()"
+                (afterGoToResource)="openResListPanel();"
+                (closeDrawerResList)="drawerResList?.close()">
+            </app-resources-list>
         </mat-drawer>
         <mat-drawer-content style="display: flex; flex: 1">
             <div class="signatorybook-contents">

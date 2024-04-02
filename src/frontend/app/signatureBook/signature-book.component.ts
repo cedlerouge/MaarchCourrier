@@ -14,11 +14,11 @@ import { SignatureBookService } from './signature-book.service';
 import { ResourcesListComponent } from './resourcesList/resources-list.component';
 import { TranslateService } from '@ngx-translate/core';
 import { FunctionsService } from '@service/functions.service';
-import { ResourcesList } from '@models/resources-list.model';
 
 @Component({
     templateUrl: 'signature-book.component.html',
     styleUrls: ['signature-book.component.scss'],
+    providers: [SignatureBookService]
 })
 export class SignatureBookComponent implements OnDestroy {
 
@@ -47,6 +47,7 @@ export class SignatureBookComponent implements OnDestroy {
 
     canGoToNext: boolean = false;
     canGoToPrevious: boolean = false;
+    hidePanel: boolean = true;
 
     constructor(
         public http: HttpClient,
@@ -85,23 +86,25 @@ export class SignatureBookComponent implements OnDestroy {
         this.route.params.subscribe(async params => {
             this.resetValues();
 
-            this.resId = params['resId'];
-            this.basketId = params['basketId'];
-            this.groupId = params['groupId'];
-            this.userId = params['userId'];
+            this.resId = parseInt(params['resId']);
+            this.basketId = parseInt(params['basketId']);
+            this.groupId = parseInt(params['groupId']);
+            this.userId = parseInt(params['userId']);
 
             if (this.resId !== undefined) {
                 this.actionService.lockResource(this.userId, this.groupId, this.basketId, [this.resId]);
-                const resources: ResourcesList[] = await this.signatureBookService.getResourcesBasket(this.userId, this.groupId, this.basketId);
-                this.allResourcesIds = resources.map((resource: ResourcesList) => resource.resId);
-                const index: number = this.allResourcesIds.indexOf(parseInt(this.resId.toString(), 10));
-                this.canGoToNext = !this.functions.empty(this.allResourcesIds[index + 1]);
-                this.canGoToPrevious = !this.functions.empty(this.allResourcesIds[index - 1]);
+                this.setNextPrev();
                 await this.initDocuments();
             } else {
                 this.router.navigate(['/home']);
             }
         });
+    }
+
+    setNextPrev() {
+        const index: number = this.signatureBookService.resourcesListIds.indexOf(this.resId);
+        this.canGoToNext = this.signatureBookService.resourcesListIds[index + 1] !== undefined;
+        this.canGoToPrevious = this.signatureBookService.resourcesListIds[index - 1] !== undefined;
     }
 
     resetValues(): void {
@@ -113,7 +116,6 @@ export class SignatureBookComponent implements OnDestroy {
         this.docsToSign = [];
 
         this.subscription?.unsubscribe();
-        this.drawerResList?.close();
     }
 
     initDocuments(): Promise<boolean> {
@@ -181,39 +183,42 @@ export class SignatureBookComponent implements OnDestroy {
     }
 
     toggleResList(): void {
-        this.loadResList = true;
-        setTimeout(() => {
-            this.drawerResList?.toggle();
-            this.resourcesList?.scrollToSelectedResource();
-        }, 0);
+        this.drawerResList?.toggle();
     }
 
-    closeResListPanel(value: string) {
-        this.loading = value === 'goToResource';
-        this.drawerResList.close();
+    openResListPanel() {
+        setTimeout(() => {
+            this.drawerResList.open();
+        }, 300);
+    }
+
+    showPanelContent() {
+        this.resourcesList.initViewPort();
     }
 
     goToResource(event: string = 'next' || 'previous') {
-        this.actionService.goToResource(this.allResourcesIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
+        this.actionService.goToResource(this.signatureBookService.resourcesListIds, this.userId, this.groupId, this.basketId).subscribe(((resourcesToProcess: number[]) => {
             const allResourcesUnlock: number[] = resourcesToProcess;
-            const index: number = this.allResourcesIds.indexOf(parseInt(this.resId.toString(), 10));
+            const index: number = this.signatureBookService.resourcesListIds.indexOf(parseInt(this.resId.toString(), 10));
             const nextLoop = (event === 'next') ? 1 : (event === 'previous') ? -1 : 1;
             let indexLoop: number = index;
 
             do {
                 indexLoop = indexLoop + nextLoop;
-                if ((indexLoop < 0) || (indexLoop === this.allResourcesIds.length)) {
+                if ((indexLoop < 0) || (indexLoop === this.signatureBookService.resourcesListIds.length)) {
                     indexLoop = -1;
                     break;
                 }
 
-            } while (!allResourcesUnlock.includes(this.allResourcesIds[indexLoop]));
+            } while (!allResourcesUnlock.includes(this.signatureBookService.resourcesListIds[indexLoop]));
 
             if (indexLoop === -1) {
                 this.notify.error(this.translate.instant('lang.warnResourceLockedByUser'));
             } else {
-                const path: string = '/signatureBook/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources/' + this.allResourcesIds[indexLoop];
+                const path: string = '/signatureBook/users/' + this.userId + '/groups/' + this.groupId + '/baskets/' + this.basketId + '/resources/' + this.signatureBookService.resourcesListIds[indexLoop];
                 this.router.navigate([path]);
+                this.unlockResource();
+                this.setNextPrev();
             }
         }));
     }
