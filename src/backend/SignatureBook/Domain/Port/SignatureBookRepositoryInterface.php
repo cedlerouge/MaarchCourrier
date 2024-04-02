@@ -19,7 +19,6 @@ use MaarchCourrier\Core\Domain\User\Port\UserInterface;
 
 interface SignatureBookRepositoryInterface
 {
-
     /**
      * @param MainResourceInterface $mainResource
      * @param UserInterface $user
