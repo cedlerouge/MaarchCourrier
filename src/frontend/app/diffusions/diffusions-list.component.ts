@@ -237,7 +237,7 @@ export class DiffusionsListComponent implements OnInit {
     }
 
     getListModel(entityId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/listTemplates/entities/${entityId}?type=diffusionList`).pipe(
                 map((data: any) => {
                     data.listTemplates = data.listTemplates.map((item: any) => item.items.map((item: any) => {
@@ -270,7 +270,7 @@ export class DiffusionsListComponent implements OnInit {
     }
 
     getListinstance(resId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (resId != 0) {
                 this.http.get(`../rest/resources/${resId}/listInstance`).pipe(
                     map((data: any) => {
@@ -343,7 +343,7 @@ export class DiffusionsListComponent implements OnInit {
 
     saveListinstance() {
         if (!this.hasEmptyDest()) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const listInstance: any[] = [
                     {
                         resId: this.resId,
@@ -372,7 +372,7 @@ export class DiffusionsListComponent implements OnInit {
     }
 
     initRoles() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/roles?context=${this.target}`).pipe(
                 map((data: any) => {
                     this.keepDiffusionRoleInOutgoingIndexation = data.parameters['keepDiffusionRoleInOutgoingIndexation'];
@@ -520,7 +520,7 @@ export class DiffusionsListComponent implements OnInit {
     }
 
     isUserInCurrentEntity(userId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/entities/${this.currentEntityId}/users`).pipe(
                 tap((data: any) => {
                     const state = data.users.filter((user: any) => user.id === userId).length > 0;

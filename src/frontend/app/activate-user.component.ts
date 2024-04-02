@@ -7,6 +7,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { AppService } from '@service/app.service';
 import { HeaderService } from '@service/header.service';
 import { AuthService } from '@service/auth.service';
+import { catchError, of, tap } from 'rxjs';
 
 declare let $: any;
 
@@ -82,12 +83,10 @@ export class ActivateUserComponent implements OnInit {
 
     // action on user
     activateUser(): void {
-
-        this.http.put('../rest/users/' + this.headerService.user.id + '/status', { 'status': 'OK' })
-            .subscribe(() => {
+        this.http.put('../rest/users/' + this.headerService.user.id + '/status', { 'status': 'OK' }).pipe(
+            tap(() => {
                 this.headerService.user.status = 'OK';
                 let basketsRedirectedIds: any = '';
-
                 this.user.redirectedBaskets.forEach((elem: any) => {
                     if (this.selectionBaskets.selected.map((e: any) => e.basket_id).indexOf(elem.basket_id) !== -1
                         && this.selectionBaskets.selected.map((e: any) => e.group_id).indexOf(elem.group_id) !== -1) {
@@ -99,23 +98,26 @@ export class ActivateUserComponent implements OnInit {
                 });
 
                 if (basketsRedirectedIds !== '') {
-                    this.http.delete('../rest/users/' + this.headerService.user.id + '/redirectedBaskets?redirectedBasketIds[]=' + basketsRedirectedIds)
-                        .subscribe((data: any) => {
+                    this.http.delete('../rest/users/' + this.headerService.user.id + '/redirectedBaskets?redirectedBasketIds[]=' + basketsRedirectedIds).pipe(
+                        tap(() => {
                             this.router.navigate(['/home']);
                             this.notify.success(this.translate.instant('lang.absOff'));
-                        }, (err) => {
+                        }),
+                        catchError((err: any) => {
                             this.notify.error(err.error.errors);
-                        });
+                            return of(false);
+                        })
+                    ).subscribe();
                 } else {
                     this.router.navigate(['/home']);
                     this.notify.success(this.translate.instant('lang.absOff'));
                 }
-
-
-            }, (err: any) => {
+            }),
+            catchError((err: any) => {
                 this.notify.error(err.error.errors);
-            });
-
+                return of(false);
+            })
+        ).subscribe();
     }
 
     logout() {

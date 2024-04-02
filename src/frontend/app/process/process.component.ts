@@ -236,7 +236,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
 
 
     checkAccesDocument(resId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${resId}/isAllowed`).pipe(
                 tap((data: any) => {
                     if (data.isAllowed) {

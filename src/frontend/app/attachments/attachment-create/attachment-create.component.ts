@@ -118,7 +118,7 @@ export class AttachmentCreateComponent implements OnInit {
     }
 
     loadResource() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.data.resIdMaster}?light=true`).pipe(
                 tap(async (data: any) => {
                     let contact: any = '';
@@ -165,7 +165,7 @@ export class AttachmentCreateComponent implements OnInit {
 
     async getCorrespondents(type) {
         this.resourceContacts = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.data.resIdMaster}/contacts?type=${type}`).pipe(
                 tap((correspondents: any) => {
                     correspondents = correspondents.contacts.filter((contact: any) => contact.type !== 'entity').map((item: any) => ({
@@ -212,7 +212,7 @@ export class AttachmentCreateComponent implements OnInit {
     }
 
     getContact(contactId: number, type: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (type === 'contact') {
                 this.http.get('../rest/contacts/' + contactId).pipe(
                     tap((data: any) => {
@@ -327,7 +327,7 @@ export class AttachmentCreateComponent implements OnInit {
             attachment.recipientType = null;
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post('../rest/attachments', attachment).pipe(
                 tap((data: any) => {
                     resolve(data.id);
@@ -342,7 +342,7 @@ export class AttachmentCreateComponent implements OnInit {
     }
 
     generateMailling(resId: number) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.post(`../rest/attachments/${resId}/mailing`, {}).pipe(
                 tap(() => {
                     resolve(true);

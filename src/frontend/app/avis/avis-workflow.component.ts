@@ -84,7 +84,7 @@ export class AvisWorkflowComponent implements OnInit {
     }
 
     loadAvisRoles() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/roles').pipe(
                 tap((data: any) => {
                     this.availableRoles = data.roles.filter((role: any) => ['avis', 'avis_copy', 'avis_info'].indexOf(role.id) > -1).map((role: any) => ({
@@ -124,7 +124,7 @@ export class AvisWorkflowComponent implements OnInit {
     }
 
     loadAvisUsersList() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/autocomplete/users/circuit?circuit=opinion').pipe(
                 map((data: any) => {
                     data = data.map((user: any) => ({
@@ -158,7 +158,7 @@ export class AvisWorkflowComponent implements OnInit {
             await this.loadDefaultModel();
         }
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/availableCircuits?circuit=opinion').pipe(
                 tap((data: any) => {
                     this.avisTemplates.public = this.avisTemplates.public.concat(data.circuits.filter((item: any) => !item.private).map((item: any) => ({
@@ -193,7 +193,7 @@ export class AvisWorkflowComponent implements OnInit {
     loadDefaultModel() {
         this.avisTemplates.public = [];
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get(`../rest/resources/${this.resId}/defaultCircuit?circuit=opinion`).pipe(
                 tap((data: any) => {
                     if (!this.functions.empty(data.itemsRemoved)) {
@@ -238,7 +238,7 @@ export class AvisWorkflowComponent implements OnInit {
         this.resId = resId;
         this.loading = true;
         this.avisWorkflow.items = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/resources/' + resId + '/opinionCircuit').pipe(
                 tap((data: any) => {
                     if (!this.functions.empty(data.itemsRemoved)) {
@@ -273,7 +273,7 @@ export class AvisWorkflowComponent implements OnInit {
         this.resId = resId;
         this.loading = true;
         this.avisWorkflow.items = [];
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/resources/' + resId + '/parallelOpinion')
                 .subscribe((data: any) => {
                     data.forEach((element: any) => {
@@ -370,7 +370,7 @@ export class AvisWorkflowComponent implements OnInit {
     }
 
     saveAvisWorkflow(resIds: number[] = [this.resId]) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.avisWorkflow.items.length === 0) {
                 this.http.delete(`../rest/resources/${resIds[0]}/circuits/opinionCircuit`).pipe(
                     tap(() => {
@@ -407,7 +407,7 @@ export class AvisWorkflowComponent implements OnInit {
     }
 
     addItemToWorkflow(item: any) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (item.type === 'user') {
                 this.avisWorkflow.items.push({
                     item_id: item.id,
