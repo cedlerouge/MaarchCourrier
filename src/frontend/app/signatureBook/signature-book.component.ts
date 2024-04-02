@@ -29,7 +29,6 @@ export class SignatureBookComponent implements OnDestroy {
     loadingAttachments: boolean = true;
     loadingDocsToSign: boolean = true;
     loading: boolean = true;
-    loadResList: boolean = false;
 
     resId: number = 0;
     basketId: number;
@@ -43,7 +42,6 @@ export class SignatureBookComponent implements OnDestroy {
     defaultStamp: StampInterface;
 
     processActionSubscription: Subscription;
-    allResourcesIds: any[] = [];
 
     canGoToNext: boolean = false;
     canGoToPrevious: boolean = false;
