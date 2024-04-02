@@ -1,4 +1,4 @@
-import { Component, Inject, ViewChild, AfterViewInit, Input } from '@angular/core';
+import { Component, Inject, ViewChild, AfterViewInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { NotificationService } from '@service/notification/notification.service';
 import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';

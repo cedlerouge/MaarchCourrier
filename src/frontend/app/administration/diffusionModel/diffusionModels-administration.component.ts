@@ -57,7 +57,7 @@ export class DiffusionModelsAdministrationComponent implements OnInit {
     }
 
     getListemplates() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/listTemplates').pipe(
                 map((data: any) => {
                     data.listTemplates = data.listTemplates.filter((template: any) => template.entityId === null && ['visaCircuit', 'opinionCircuit'].indexOf(template.type) > -1).map((template: any) => ({

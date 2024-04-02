@@ -12,7 +12,6 @@ import { ContactService } from '@service/contact.service';
 import { FunctionsService } from '@service/functions.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Observable, of } from 'rxjs';
-import { environment } from '../../../../../environments/environment';
 import { LatinisePipe } from 'ngx-pipes';
 import { InputCorrespondentGroupComponent } from '../../group/inputCorrespondent/input-correspondent-group.component';
 import { ConfirmComponent } from '@plugins/modal/confirm.component';
@@ -50,7 +49,7 @@ export class ContactsFormComponent implements OnInit {
     @Input() actionButton: boolean = true;
     @Input() defaultName: string = '';
 
-    @Output() onSubmitEvent = new EventEmitter<number>();
+    @Output() submitEvent = new EventEmitter<number>();
     @Output() linkContact = new EventEmitter<number>();
 
     countries: any = [];
@@ -530,7 +529,7 @@ export class ContactsFormComponent implements OnInit {
                 if (element.identifier === 'email') {
                     valArr.push(Validators.email);
                 } else if (element.identifier === 'phone') {
-                    valArr.push(Validators.pattern(/^\+?((|\ |\.|\(|\)|\-)?(\d)*)*\d$/));
+                    valArr.push(Validators.pattern(/^\+?((| |\.|\(|\)|-)?(\d)*)*\d$/));
                 }
 
                 if (element.mandatory) {
@@ -755,7 +754,7 @@ export class ContactsFormComponent implements OnInit {
     createContact() {
         this.http.post('../rest/contacts', this.formatContact()).pipe(
             tap((data: any) => {
-                this.onSubmitEvent.emit(data.id);
+                this.submitEvent.emit(data.id);
                 if (this.appInputCorrespondentGroup !== undefined) {
                     this.appInputCorrespondentGroup.linkGrpAfterCreation(data.id, 'contact');
                 }
@@ -775,7 +774,7 @@ export class ContactsFormComponent implements OnInit {
     updateContact() {
         this.http.put(`../rest/contacts/${this.contactId}`, this.formatContact()).pipe(
             tap((data: any) => {
-                this.onSubmitEvent.emit(this.contactId);
+                this.submitEvent.emit(this.contactId);
                 this.notify.success(this.translate.instant('lang.contactUpdated'));
                 if (!this.functions.empty(data) && !this.functions.empty(data.warning)) {
                     this.notify.error(data.warning);
@@ -1230,7 +1229,7 @@ export class ContactsFormComponent implements OnInit {
         }
     }
 
-    toUpperCase(target: any, ev: any) {
+    toUpperCase(target: any) {
         setTimeout(() => {
             const test = target.control.value;
             if (['lastname'].indexOf(target.id) > -1 && target.display) {

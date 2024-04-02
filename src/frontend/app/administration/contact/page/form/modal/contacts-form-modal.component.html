@@ -7,7 +7,7 @@
             <mat-icon class="fa fa-times"></mat-icon>
         </button></h1>
     <mat-dialog-content class="modal-container">
-        <app-contact-form #appContactForm [actionButton]="false" [creationMode]="true" [defaultName]="data.defaultName" (onSubmitEvent)="goTo($event)"></app-contact-form>
+        <app-contact-form #appContactForm [actionButton]="false" [creationMode]="true" [defaultName]="data.defaultName" (submitEvent)="goTo($event)"></app-contact-form>
     </mat-dialog-content>
     <span class="divider-modal"></span>
     <div mat-dialog-actions class="actions">

@@ -12,8 +12,6 @@ import { Observable, of } from 'rxjs';
 import { HeaderService } from '@service/header.service';
 import { SessionStorageService } from '@service/session-storage.service';
 
-declare let $: any;
-
 @Component({
     templateUrl: 'redirect-action.component.html',
     styleUrls: ['redirect-action.component.scss'],

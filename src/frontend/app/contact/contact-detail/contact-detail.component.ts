@@ -54,7 +54,7 @@ export class ContactDetailComponent implements OnInit {
     }
 
     getCustomFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/contactsCustomFields').pipe(
                 tap((data: any) => {
                     this.customFields = data.customFields.map((custom: any) => ({

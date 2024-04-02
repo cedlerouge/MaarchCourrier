@@ -266,7 +266,7 @@ export class SearchAdministrationComponent implements OnInit {
     }
 
     initCustomFields() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/customFields').pipe(
                 map((customData: any) => {
                     customData.customFields = customData.customFields.map((info: any) => ({
@@ -363,7 +363,7 @@ export class SearchAdministrationComponent implements OnInit {
     getTemplate() {
         this.displayedSecondaryData = [];
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/search/configuration').pipe(
                 tap((templateData: any) => {
                     this.selectedTemplateDisplayedSecondaryData = templateData.configuration.listDisplay.templateColumns;

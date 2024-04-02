@@ -368,7 +368,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getWatermarkConfiguration() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/watermark/configuration').pipe(
                 tap((data: any) => {
                     if (!this.functions.empty(data.configuration)) {
@@ -391,7 +391,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getAddinOutlookConfConfiguration() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/plugins/outlook/configuration').pipe(
                 tap(async (data: any) => {
                     if (!this.functions.empty(data.configuration) && Object.keys(data.configuration).length > 1) {
@@ -416,7 +416,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getEditorsConfiguration() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/configurations/admin_document_editors').pipe(
                 map((data: any) => data.configuration.value),
                 tap((data: any) => {
@@ -563,7 +563,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getDoctypes() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/doctypes').pipe(
                 tap((data: any) => {
                     let arrValues: any[] = [];
@@ -605,7 +605,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getIndexingModels() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/indexingModels').pipe(
                 tap((data: any) => {
                     this.indexingModels = data.indexingModels.filter((info: any) => info.private === false);
@@ -617,7 +617,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getStatuses() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/statuses').pipe(
                 tap((data: any) => {
                     this.statuses = data.statuses.map((status: any) => ({
@@ -633,7 +633,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     getAttachmentTypes() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.http.get('../rest/attachmentsTypes').pipe(
                 tap((data: any) => {
                     Object.keys(data.attachmentsTypes).forEach(templateType => {
@@ -650,7 +650,7 @@ export class OtherParametersComponent implements OnInit {
     }
 
     setDefaultValues() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             Promise.all([this.getIndexingModels(), this.getDoctypes(), this.getStatuses(), this.getAttachmentTypes()]).then((data: any) => {
                 this.addinOutlookConf.indexingModelId.setValue(data[0]);
                 this.addinOutlookConf.typeId.setValue(data[1]);

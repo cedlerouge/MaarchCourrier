@@ -186,7 +186,7 @@ export class NoteEditorComponent implements OnInit {
     }
 
     getEntities() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if (this.entities.length == 0) {
                 const params = {};
                 if (!this.functions.empty(this.resIds) && this.resIds.length == 1) {

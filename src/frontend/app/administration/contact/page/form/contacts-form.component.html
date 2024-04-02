@@ -122,7 +122,7 @@
                                     *ngIf="field.type === 'string' && field.id !== 'url' && field.id !== 'externalId_m2m' && field.id !== 'addressCountry' && field.id !== 'addressPostcode' && field.id !== 'addressTown'">
                                     <mat-form-field>
                                         <input matInput [formControl]="field.control" [placeholder]="field.label"
-                                            (blur)="checkCompany(field); checkContactName(field); checkFilling();" (ngModelChange)="toUpperCase(field, $event)" [required]="field.required">
+                                            (blur)="checkCompany(field); checkContactName(field); checkFilling();" (ngModelChange)="toUpperCase(field)" [required]="field.required">
                                         <mat-hint *ngIf="!isEmptyValue(field.desc)" align="end"
                                             [innerHTML]="field.desc">
                                         </mat-hint>
