@@ -2822,7 +2822,7 @@
     "tutoStep3": "<span class=\"tuto-label\">Etape 3</span><br/>Faites <kbd>Ctrl</kbd>+<kbd>v</kbd> dans le champ ci-dessous:",
     "copyAuthTokenDesc": "Copie les jetons d'authentification dans votre press-papier. Nécessaire notamment pour le module d'envoi via outlook.",
     "pastell": "IParapheur via Pastell",
-    "attachmentsInSignatoryBook": "Pièces jointes intégrées au parapheur",
+    "attachmentsInSignatoryBook": "Pièce(s) jointes intégrées au parapheur",
     "signTarget": "Visa/Signature",
     "signTargetDesc": "Pièce jointe intégrée au parapheur pour visa/signature",
     "annexTarget": "Annexe",
