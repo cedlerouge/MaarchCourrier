@@ -52,7 +52,7 @@ export class PluginManagerService {
             );
             extraData = {
                 ...extraData,
-                pluginUrl: this.authService.maarchUrl.replace(/\/$/, '') + '/plugins/' + pluginName,
+                pluginUrl: this.authService.plugins.find((plugin) => plugin.id === pluginName).url,
             };
             remoteComponent.instance.init({ ...this, ...extraData });
             return remoteComponent.instance;
