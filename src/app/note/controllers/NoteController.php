@@ -16,6 +16,7 @@
 namespace Note\controllers;
 
 use Email\models\EmailModel;
+use Exception;
 use Note\models\NoteModel;
 use Note\models\NoteEntityModel;
 use Entity\models\EntityModel;
@@ -33,7 +34,14 @@ use SrcCore\models\CoreConfigModel;
 
 class NoteController
 {
-    public function getByResId(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getByResId(Request $request, Response $response, array $args): Response
     {
         if (!Validator::intVal()->validate($args['resId'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Route resId is not an integer']);
@@ -53,11 +61,19 @@ class NoteController
             $limit = (int)$queryParams['limit'];
         }
 
-        $notes = NoteModel::getByUserIdForResource(['select' => ['*'], 'resId' => $args['resId'], 'userId' => $GLOBALS['id'], 'limit' => $limit]);
+        $notes = NoteModel::getByUserIdForResource([
+            'select' => ['*'],
+            'resId'  => $args['resId'],
+            'userId' => $GLOBALS['id'],
+            'limit'  => $limit
+        ]);
 
         foreach ($notes as $key => $note) {
             $user = UserModel::getById(['select' => ['firstname', 'lastname'], 'id' => $note['user_id']]);
-            $primaryEntity = UserModel::getPrimaryEntityById(['id' => $note['user_id'], 'select' => ['entities.entity_label']]);
+            $primaryEntity = UserModel::getPrimaryEntityById([
+                'id'     => $note['user_id'],
+                'select' => ['entities.entity_label']
+            ]);
             $notes[$key]['firstname'] = $user['firstname'];
             $notes[$key]['lastname'] = $user['lastname'];
             $notes[$key]['entity_label'] = $primaryEntity['entity_label'] ?? null;
@@ -69,14 +85,24 @@ class NoteController
         return $response->withJson(['notes' => $notes]);
     }
 
-    public function getById(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getById(Request $request, Response $response, array $args): Response
     {
         if (!NoteController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Note out of perimeter']);
         }
         $note = NoteModel::getById(['id' => $args['id']]);
 
-        $entities = NoteEntityModel::get(['select' => ['item_id'], 'where' => ['note_id = ?'], 'data' => [$args['id']]]);
+        $entities = NoteEntityModel::get([
+            'select' => ['item_id'],
+            'where'  => ['note_id = ?'],
+            'data'   => [$args['id']]
+        ]);
         $entities = array_column($entities, 'item_id');
 
         $note['value'] = $note['note_text'];
@@ -87,7 +113,13 @@ class NoteController
         return $response->withJson($note);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         $body = $request->getParsedBody();
 
@@ -105,9 +137,15 @@ class NoteController
             if (!Validator::arrayType()->validate($body['entities'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body entities is not an array']);
             }
-            $entities = EntityModel::get(['select' => ['count(1)'], 'where' => ['entity_id in (?)'], 'data' => [$body['entities']]]);
+            $entities = EntityModel::get([
+                'select' => ['count(1)'],
+                'where'  => ['entity_id in (?)'],
+                'data'   => [$body['entities']]
+            ]);
             if ($entities[0]['count'] != count($body['entities'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body entities : one or more entities do not exist']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Body entities : one or more entities do not exist'
+                ]);
             }
         }
 
@@ -144,7 +182,14 @@ class NoteController
         return $response->withJson(['noteId' => $noteId]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!NoteController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Note out of perimeter']);
@@ -165,9 +210,15 @@ class NoteController
             if (!Validator::arrayType()->validate($body['entities'])) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body entities is not an array']);
             }
-            $entities = EntityModel::get(['select' => ['count(1)'], 'where' => ['entity_id in (?)'], 'data' => [$body['entities']]]);
+            $entities = EntityModel::get([
+                'select' => ['count(1)'],
+                'where'  => ['entity_id in (?)'],
+                'data'   => [$body['entities']]
+            ]);
             if ($entities[0]['count'] != count($body['entities'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body entities : one or more entities do not exist']);
+                return $response->withStatus(400)->withJson([
+                    'errors' => 'Body entities : one or more entities do not exist'
+                ]);
             }
         }
 
@@ -211,7 +262,14 @@ class NoteController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return mixed
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!NoteController::hasRightById(['id' => $args['id'], 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Note out of perimeter']);
@@ -254,9 +312,12 @@ class NoteController
         });
 
         foreach ($emails as $key => $email) {
-            $emails[$key]['document']['notes'] = array_filter($emails[$key]['document']['notes'], function ($note) use ($args) {
-                return $note != $args['id'];
-            });
+            $emails[$key]['document']['notes'] = array_filter(
+                $emails[$key]['document']['notes'],
+                function ($note) use ($args) {
+                    return $note != $args['id'];
+                }
+            );
             $emails[$key]['document']['notes'] = array_values($emails[$key]['document']['notes']);
             EmailModel::update([
                 'set'   => ['document' => json_encode($emails[$key]['document'])],
@@ -286,7 +347,13 @@ class NoteController
         return $response->withStatus(204);
     }
 
-    public static function getTemplates(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public static function getTemplates(Request $request, Response $response): Response
     {
         $query = $request->getQueryParams();
 
@@ -305,16 +372,27 @@ class NoteController
                     'orderBy' => ['template_label']
                 ]);
             } else {
-                $templates = TemplateModel::getByTarget(['template_target' => 'notes', 'select' => ['template_label', 'template_content']]);
+                $templates = TemplateModel::getByTarget([
+                    'template_target' => 'notes',
+                    'select'          => ['template_label', 'template_content']
+                ]);
             }
         } else {
-            $templates = TemplateModel::getByTarget(['template_target' => 'notes', 'select' => ['template_label', 'template_content']]);
+            $templates = TemplateModel::getByTarget([
+                'template_target' => 'notes',
+                'select'          => ['template_label', 'template_content']
+            ]);
         }
 
         return $response->withJson(['templates' => $templates]);
     }
 
-    public static function getEncodedPdfByIds(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getEncodedPdfByIds(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['ids']);
         ValidatorModel::arrayType($aArgs, ['ids']);
@@ -343,7 +421,12 @@ class NoteController
         return ['encodedDocument' => base64_encode($fileContent)];
     }
 
-    public static function hasRightById(array $args)
+    /**
+     * @param array $args
+     * @return bool
+     * @throws Exception
+     */
+    public static function hasRightById(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['id', 'userId']);
         ValidatorModel::intVal($args, ['id', 'userId']);
@@ -370,7 +453,11 @@ class NoteController
             return false;
         }
 
-        $noteEntities = NoteEntityModel::get(['select' => [1], 'where' => ['note_id = ?', 'item_id in (?)'], 'data' => [$args['id'], $userEntities]]);
+        $noteEntities = NoteEntityModel::get([
+            'select' => [1],
+            'where'  => ['note_id = ?', 'item_id in (?)'],
+            'data'   => [$args['id'], $userEntities]
+        ]);
         if (empty($noteEntities)) {
             return false;
         }

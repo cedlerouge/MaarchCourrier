@@ -12,12 +12,18 @@
 
 namespace Doctype\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 class FirstLevelModelAbstract
 {
-    public static function get(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs = []): array
     {
         ValidatorModel::arrayType($aArgs, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($aArgs, ['limit']);
@@ -34,7 +40,12 @@ class FirstLevelModelAbstract
         return $firstLevel;
     }
 
-    public static function getById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -55,11 +66,18 @@ class FirstLevelModelAbstract
         return $aReturn[0];
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $aArgs): int
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_first_level_label']);
 
-        $aArgs['doctypes_first_level_id'] = DatabaseModel::getNextSequenceValue(['sequenceId' => 'doctypes_first_level_id_seq']);
+        $aArgs['doctypes_first_level_id'] = DatabaseModel::getNextSequenceValue([
+            'sequenceId' => 'doctypes_first_level_id_seq'
+        ]);
         DatabaseModel::insert([
             'table'         => 'doctypes_first_level',
             'columnsValues' => $aArgs
@@ -68,7 +86,12 @@ class FirstLevelModelAbstract
         return $aArgs['doctypes_first_level_id'];
     }
 
-    public static function update(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['doctypes_first_level_id']);
         ValidatorModel::intVal($aArgs, ['doctypes_first_level_id']);

@@ -12,25 +12,34 @@
 
 namespace Folder\models;
 
+use Exception;
 use SrcCore\models\ValidatorModel;
 use SrcCore\models\DatabaseModel;
 
 class FolderModelAbstract
 {
-    public static function get(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $aArgs): array
     {
-        $folders = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'     => ['folders'],
             'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
             'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
             'order_by'  => empty($aArgs['orderBy']) ? ['label'] : $aArgs['orderBy']
         ]);
-
-        return $folders;
     }
 
-    public static function getById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -50,7 +59,12 @@ class FolderModelAbstract
         return $folder[0];
     }
 
-    public static function getFolderPath(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array|mixed
+     * @throws Exception
+     */
+    public static function getFolderPath(array $aArgs): mixed
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -62,28 +76,39 @@ class FolderModelAbstract
         $currentFolder = FolderModel::getById(['select' => ['parent_id', 'label'], 'id' => $aArgs['id']]);
         array_unshift($aArgs['folderPath'], $currentFolder['label']);
         if (!empty($currentFolder['parent_id'])) {
-            return FolderModel::getFolderPath(['id' => $currentFolder['parent_id'], 'folderPath' => $aArgs['folderPath']]);
+            return FolderModel::getFolderPath([
+                'id' => $currentFolder['parent_id'],
+                'folderPath' => $aArgs['folderPath']
+            ]);
         }
 
         return $aArgs['folderPath'];
     }
 
-    public static function getChild(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getChild(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
 
-        $folders = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
             'table'     => ['folders'],
             'where'     => ['parent_id = ?'],
             'data'      => [$aArgs['id']]
         ]);
-
-        return $folders;
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $aArgs): int
     {
         ValidatorModel::notEmpty($aArgs, ['user_id', 'label']);
         ValidatorModel::stringType($aArgs, ['label']);
@@ -107,7 +132,12 @@ class FolderModelAbstract
         return $nextSequenceId;
     }
 
-    public static function update(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where']);
         ValidatorModel::arrayType($args, ['set', 'where', 'data']);
@@ -122,7 +152,12 @@ class FolderModelAbstract
         return true;
     }
 
-    public static function delete(array $args)
+    /**
+     * @param array $args
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['where', 'data']);
         ValidatorModel::arrayType($args, ['where', 'data']);
@@ -136,11 +171,16 @@ class FolderModelAbstract
         return true;
     }
 
-    public static function getWithEntities(array $args = [])
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getWithEntities(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
 
-        $folders = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($args['select']) ? ['*'] : $args['select'],
             'table'     => ['folders', 'entities_folders'],
             'left_join' => ['folders.id = entities_folders.folder_id'],
@@ -148,15 +188,18 @@ class FolderModelAbstract
             'data'      => empty($args['data']) ? [] : $args['data'],
             'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy']
         ]);
-
-        return $folders;
     }
 
-    public static function getWithEntitiesAndResources(array $args = [])
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getWithEntitiesAndResources(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data']);
 
-        $folders = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($args['select']) ? ['*'] : $args['select'],
             'table'     => ['folders', 'entities_folders', 'resources_folders'],
             'left_join' => ['folders.id = entities_folders.folder_id', 'folders.id = resources_folders.folder_id'],
@@ -166,15 +209,18 @@ class FolderModelAbstract
             'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy'],
             'limit'     => empty($args['limit']) ? 0 : $args['limit'],
         ]);
-
-        return $folders;
     }
 
-    public static function getWithResources(array $args = [])
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getWithResources(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data']);
 
-        $folders = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($args['select']) ? ['*'] : $args['select'],
             'table'     => ['folders', 'resources_folders'],
             'left_join' => ['folders.id = resources_folders.folder_id'],
@@ -182,7 +228,5 @@ class FolderModelAbstract
             'data'      => empty($args['data']) ? [] : $args['data'],
             'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy']
         ]);
-
-        return $folders;
     }
 }

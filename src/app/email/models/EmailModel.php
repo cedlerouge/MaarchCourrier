@@ -14,17 +14,23 @@
 
 namespace Email\models;
 
+use Exception;
 use SrcCore\models\DatabaseModel;
 use SrcCore\models\ValidatorModel;
 
 class EmailModel
 {
-    public static function get(array $args = [])
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function get(array $args = []): array
     {
         ValidatorModel::arrayType($args, ['select', 'where', 'data', 'orderBy']);
         ValidatorModel::intType($args, ['limit', 'offset']);
 
-        $emails = DatabaseModel::select([
+        return DatabaseModel::select([
             'select'    => empty($args['select']) ? ['*'] : $args['select'],
             'table'     => ['emails'],
             'where'     => empty($args['where']) ? [] : $args['where'],
@@ -33,11 +39,14 @@ class EmailModel
             'offset'    => empty($args['offset']) ? 0 : $args['offset'],
             'limit'     => empty($args['limit']) ? 0 : $args['limit']
         ]);
-
-        return $emails;
     }
 
-    public static function getById(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return array
+     * @throws Exception
+     */
+    public static function getById(array $aArgs): array
     {
         ValidatorModel::notEmpty($aArgs, ['id']);
         ValidatorModel::intVal($aArgs, ['id']);
@@ -57,11 +66,19 @@ class EmailModel
         return $email[0];
     }
 
-    public static function create(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return int
+     * @throws Exception
+     */
+    public static function create(array $aArgs): int
     {
         ValidatorModel::notEmpty($aArgs, ['userId', 'sender', 'recipients', 'cc', 'cci', 'isHtml', 'status']);
         ValidatorModel::intVal($aArgs, ['userId']);
-        ValidatorModel::stringType($aArgs, ['sender', 'recipients', 'cc', 'cci', 'object', 'body', 'messageExchangeId', 'document', 'isHtml', 'status']);
+        ValidatorModel::stringType(
+            $aArgs,
+            ['sender', 'recipients', 'cc', 'cci', 'object', 'body', 'messageExchangeId', 'document', 'isHtml', 'status']
+        );
 
         $nextSequenceId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'emails_id_seq']);
 
@@ -87,7 +104,12 @@ class EmailModel
         return $nextSequenceId;
     }
 
-    public static function update(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function update(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['set', 'where', 'data']);
         ValidatorModel::arrayType($aArgs, ['set', 'where', 'data']);
@@ -102,7 +124,12 @@ class EmailModel
         return true;
     }
 
-    public static function delete(array $aArgs)
+    /**
+     * @param array $aArgs
+     * @return true
+     * @throws Exception
+     */
+    public static function delete(array $aArgs): bool
     {
         ValidatorModel::notEmpty($aArgs, ['where', 'data']);
         ValidatorModel::arrayType($aArgs, ['where', 'data']);
