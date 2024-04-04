@@ -16,6 +16,7 @@ namespace Contact\controllers;
 use Contact\models\ContactCustomFieldListModel;
 use Contact\models\ContactModel;
 use Contact\models\ContactParameterModel;
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
@@ -24,7 +25,12 @@ use SrcCore\http\Response;
 
 class ContactCustomFieldController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $customFields = ContactCustomFieldListModel::get(['orderBy' => ['label']]);
 
@@ -35,7 +41,13 @@ class ContactCustomFieldController
         return $response->withJson(['customFields' => $customFields]);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -51,7 +63,11 @@ class ContactCustomFieldController
             return $response->withStatus(400)->withJson(['errors' => 'Body values is not an array']);
         }
 
-        $fields = ContactCustomFieldListModel::get(['select' => [1], 'where' => ['label = ?'], 'data' => [$body['label']]]);
+        $fields = ContactCustomFieldListModel::get([
+            'select' => [1],
+            'where' => ['label = ?'],
+            'data' => [$body['label']]
+        ]);
         if (!empty($fields)) {
             return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
         }
@@ -76,7 +92,14 @@ class ContactCustomFieldController
         return $response->withJson(['id' => $id]);
     }
 
-    public function update(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -103,7 +126,11 @@ class ContactCustomFieldController
             return $response->withStatus(400)->withJson(['errors' => 'Custom field not found']);
         }
 
-        $fields = ContactCustomFieldListModel::get(['select' => [1], 'where' => ['label = ?', 'id != ?'], 'data' => [$body['label'], $args['id']]]);
+        $fields = ContactCustomFieldListModel::get([
+            'select' => [1],
+            'where' => ['label = ?', 'id != ?'],
+            'data' => [$body['label'], $args['id']]
+        ]);
         if (!empty($fields)) {
             return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
         }
@@ -114,18 +141,28 @@ class ContactCustomFieldController
                 if (!empty($body['values'][$key]) && !in_array($value, $body['values'])) {
                     if ($field['type'] == 'checkbox') {
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_insert(custom_fields, '{{$args['id']}, 0}', '\"" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"],
+                            'postSet'   => [
+                                'custom_fields' => "jsonb_insert(custom_fields, '{{$args['id']}, 0}', '\"" .
+                                    str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"
+                            ],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
                             'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', (custom_fields->'{$args['id']}') - '" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value) . "')"],
+                            'postSet'   => [
+                                'custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}'," .
+                                    " (custom_fields->'{$args['id']}') - '" .
+                                    str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value) . "')"
+                            ],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
                             'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                     } else {
                         ContactModel::update([
-                            'postSet'   => ['custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" . str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"],
+                            'postSet'   => [
+                                'custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" .
+                                    str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"
+                            ],
                             'where'     => ["custom_fields->'{$args['id']}' @> ?"],
                             'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
@@ -155,7 +192,14 @@ class ContactCustomFieldController
         return $response->withStatus(204);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -167,7 +211,11 @@ class ContactCustomFieldController
 
         $field = ContactCustomFieldListModel::getById(['select' => ['label'], 'id' => $args['id']]);
 
-        ContactModel::update(['postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"], 'where' => ['custom_fields != ?'], 'data' => [null]]);
+        ContactModel::update([
+            'postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"],
+            'where' => ['custom_fields != ?'],
+            'data' => [null]
+        ]);
         ContactParameterModel::delete(['where' => ['identifier = ?'], 'data' => ['contactCustomField_' . $args['id']]]);
 
         ContactCustomFieldListModel::delete([

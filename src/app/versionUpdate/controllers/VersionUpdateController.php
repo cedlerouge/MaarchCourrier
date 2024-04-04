@@ -86,7 +86,6 @@ class VersionUpdateController
             $minorVersionTag = $explodedValue[1];
             $patchVersionTag = $explodedValue[2];
 
-
             if ($majorVersionTag > $currentMajorVersionTag) {
                 $availableMajorVersions[] = $value['name'];
             } elseif ($majorVersionTag == $currentMajorVersionTag && $minorVersionTag > $currentMinorVersionTag) {
@@ -432,7 +431,8 @@ class VersionUpdateController
      * Main function to run sql files
      * @param string $sqlFilePath
      * @param string $docserverMigrationFolderPath
-     * @return  bool    Return true if postgresql dump and sql file executed with sucess or return false if postgresql dump faild
+     * @return  bool    Return true if postgresql dump and sql file executed with success
+     * or return false if postgresql dump failed
      * @throws Exception
      */
     public static function executeTagSqlFile(string $sqlFilePath, string $docserverMigrationFolderPath): bool

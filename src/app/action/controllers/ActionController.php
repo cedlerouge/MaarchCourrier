@@ -264,7 +264,10 @@ class ActionController
 
         if (!in_array($body['component'], GroupController::INDEXING_ACTIONS)) {
             GroupModel::update([
-                'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
+                'postSet' => [
+                    'indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}'," .
+                        " (indexation_parameters->'actions') - '{$args['id']}')"
+                ],
                 'where'   => ["indexation_parameters->'actions' @> ?"],
                 'data'    => ['"' . $args['id'] . '"']
             ]);
@@ -307,7 +310,10 @@ class ActionController
         GroupBasketRedirectModel::delete(['where' => ['action_id = ?'], 'data' => [$args['id']]]);
 
         GroupModel::update([
-            'postSet' => ['indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}', (indexation_parameters->'actions') - '{$args['id']}')"],
+            'postSet' => [
+                'indexation_parameters' => "jsonb_set(indexation_parameters, '{actions}'," .
+                    " (indexation_parameters->'actions') - '{$args['id']}')"
+            ],
             'where'   => ["indexation_parameters->'actions' @> ?"],
             'data'    => ['"' . $args['id'] . '"']
         ]);

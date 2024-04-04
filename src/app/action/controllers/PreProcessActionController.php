@@ -363,7 +363,9 @@ class PreProcessActionController
                 'where'  => ['template_target = ?', 'template_attachment_type = ?', 'value_field = ?'],
                 'data'   => ['acknowledgementReceipt', $templateAttachmentType, $resource['destination']]
             ]);
-            $acknowledgementOptions = !empty($template[0]) ? json_decode($template[0]['options'], true) : null;
+            $acknowledgementOptions = !empty($template[0])
+                ? json_decode($template[0]['options'], true)
+                : null;
             if ($currentMode == 'auto') {
                 if (empty($template[0])) {
                     $noSendAR['number'] += 1;
@@ -439,8 +441,12 @@ class PreProcessActionController
                 $contact = ContactModel::getById(['select' => ['*'], 'id' => $contactToProcess]);
 
                 if (
-                    empty($contact['email']) && (empty($contact['address_street']) || empty($contact['address_town']) ||
-                        empty($contact['address_postcode']))
+                    empty($contact['email']) &&
+                    (
+                        empty($contact['address_street']) ||
+                        empty($contact['address_town']) ||
+                        empty($contact['address_postcode'])
+                    )
                 ) {
                     $noSendAR['number'] += 1;
                     $noSendAR['list'][] = [
@@ -743,7 +749,8 @@ class PreProcessActionController
                                 ];
                                 break;
                             }
-                            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
+                            $filePath = $docserverInfo['path_template'] .
+                                str_replace('#', '/', $adrInfo['path']) .
                                 $adrInfo['filename'];
                             if (!is_file($filePath)) {
                                 $additionalsInfos['noAttachment'][] = [
@@ -786,7 +793,8 @@ class PreProcessActionController
                                 ];
                                 break;
                             }
-                            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
+                            $filePath = $docserverInfo['path_template'] .
+                                str_replace('#', '/', $adrInfo['path']) .
                                 $adrInfo['filename'];
                             if (!is_file($filePath)) {
                                 $additionalsInfos['noAttachment'][] = [
@@ -888,7 +896,8 @@ class PreProcessActionController
                                 ];
                                 break;
                             }
-                            $filePath = $docserverInfo['path_template'] . str_replace('#', '/', $adrInfo['path']) .
+                            $filePath = $docserverInfo['path_template'] .
+                                str_replace('#', '/', $adrInfo['path']) .
                                 $adrInfo['filename'];
                             if (!is_file($filePath)) {
                                 $additionalsInfos['noAttachment'][] = [
@@ -1285,7 +1294,8 @@ class PreProcessActionController
                         }
                         $afnorAddress = ContactController::getContactAfnor($contact);
                         if (
-                            (empty($afnorAddress[1]) && empty($afnorAddress[2])) || empty($afnorAddress[6]) ||
+                            (empty($afnorAddress[1]) && empty($afnorAddress[2])) ||
+                            empty($afnorAddress[6]) ||
                             !preg_match("/^\d{5}\s/", $afnorAddress[6])
                         ) {
                             $canNotSend[] = [
@@ -1440,7 +1450,12 @@ class PreProcessActionController
                 } else {
                     $templateFee = 0;
                 }
-                $aTemplates[$key]['fee'] = number_format($templateFee, 2, '.', '');
+                $aTemplates[$key]['fee'] = number_format(
+                    $templateFee,
+                    2,
+                    '.',
+                    ''
+                );
             }
         }
 
@@ -2682,7 +2697,10 @@ class PreProcessActionController
 
         $resourcesInformations = [];
         foreach ($body['resources'] as $resId) {
-            $resource = ResModel::getById(['select' => ['filename', 'alt_identifier', 'external_id'], 'resId' => $resId]);
+            $resource = ResModel::getById([
+                'select' => ['filename', 'alt_identifier', 'external_id'],
+                'resId' => $resId
+            ]);
             if (empty($resource['filename'])) {
                 $resourcesInformations['error'][] = [
                     'alt_identifier' => $resource['alt_identifier'],
@@ -2791,7 +2809,10 @@ class PreProcessActionController
 
         $resourcesInformations = [];
         foreach ($body['resources'] as $resId) {
-            $resource = ResModel::getById(['select' => ['filename', 'alt_identifier', 'external_id'], 'resId' => $resId]);
+            $resource = ResModel::getById([
+                'select' => ['filename', 'alt_identifier', 'external_id'],
+                'resId' => $resId
+            ]);
             if (empty($resource['filename'])) {
                 $resourcesInformations['error'][] = [
                     'alt_identifier' => $resource['alt_identifier'],

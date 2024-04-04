@@ -18,6 +18,7 @@ use Attachment\models\AttachmentModel;
 use Configuration\models\ConfigurationModel;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
+use Exception;
 use Resource\controllers\StoreController;
 use Resource\models\ResModel;
 use Respect\Validation\Validator;
@@ -28,16 +29,28 @@ use SrcCore\models\CurlModel;
 use SrcCore\models\ValidatorModel;
 use User\models\UserModel;
 
-
 class Office365SharepointController
 {
-    public function sendDocument(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function sendDocument(Request $request, Response $response, array $args): Response
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'privilege' => 'admin_document_editors',
+            'select'    => ['value']
+        ]);
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         if (empty($configuration) || empty($configuration['office365sharepoint'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Office 365 Sharepoint Online is not enabled', 'lang' => 'office365SharepointNotEnabled']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Office 365 Sharepoint Online is not enabled',
+                'lang'   => 'office365SharepointNotEnabled'
+            ]);
         }
         $configuration = $configuration['office365sharepoint'];
 
@@ -70,7 +83,10 @@ class Office365SharepointController
             }
 
             if (!empty($document['docserver_id'])) {
-                $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+                $docserver = DocserverModel::getByDocserverId([
+                    'docserverId' => $document['docserver_id'],
+                    'select'      => ['path_template', 'docserver_type_id']
+                ]);
                 if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                     return $response->withStatus(400)->withJson(['errors' => 'Docserver does not exist']);
                 }
@@ -78,20 +94,35 @@ class Office365SharepointController
                 $docserver['path_template'] = '';
             }
 
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+            $pathToDocument = $docserver['path_template'] .
+                str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
             if (!file_exists($pathToDocument)) {
                 return $response->withStatus(404)->withJson(['errors' => 'Document not found on docserver']);
             }
 
             if ($body['type'] == 'resourceModification' || $body['type'] == 'attachmentModification') {
-                $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-                $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+                $docserverType = DocserverTypeModel::getById([
+                    'id'     => $docserver['docserver_type_id'],
+                    'select' => ['fingerprint_mode']
+                ]);
+                $fingerprint = StoreController::getFingerPrint([
+                    'filePath' => $pathToDocument,
+                    'mode'     => $docserverType['fingerprint_mode']
+                ]);
 
                 if (empty($document['fingerprint']) && $body['type'] == 'resourceModification') {
-                    ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['id']]]);
+                    ResModel::update([
+                        'set'   => ['fingerprint' => $fingerprint],
+                        'where' => ['res_id = ?'],
+                        'data'  => [$args['id']]
+                    ]);
                     $document['fingerprint'] = $fingerprint;
                 } elseif (empty($document['fingerprint']) && $body['type'] == 'attachmentModification') {
-                    AttachmentModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['id']]]);
+                    AttachmentModel::update([
+                        'set'   => ['fingerprint' => $fingerprint],
+                        'where' => ['res_id = ?'],
+                        'data'  => [$args['id']]
+                    ]);
                     $document['fingerprint'] = $fingerprint;
                 }
 
@@ -136,7 +167,8 @@ class Office365SharepointController
         }
 
         $sendResult = CurlModel::exec([
-            'url'        => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/root:/' . $filename . ':/content',
+            'url'        => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/root:/' . $filename . ':/content',
             'bearerAuth' => ['token' => $accessToken],
             'headers'    => ['Content-Type: text/plain'],
             'method'     => 'PUT',
@@ -144,14 +176,18 @@ class Office365SharepointController
         ]);
 
         if ($sendResult['code'] != 201) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not create the document in sharepoint', 'sharepointError' => $sendResult['response']['error']]);
+            return $response->withStatus(400)->withJson([
+                'errors'          => 'Could not create the document in sharepoint',
+                'sharepointError' => $sendResult['response']['error']
+            ]);
         }
 
         $id = $sendResult['response']['id'];
 
         $requestBody = json_encode(['item' => ['@microsoft.graph.conflictBehavior' => 'replace']]);
         $sendResult = CurlModel::exec([
-            'url'        => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/items/' . $id . '/createUploadSession',
+            'url'        => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/items/' . $id . '/createUploadSession',
             'bearerAuth' => ['token' => $accessToken],
             'headers'    => ['Content-Type: application/json', 'Content-Length: ' . strlen($requestBody)],
             'method'     => 'POST',
@@ -159,7 +195,10 @@ class Office365SharepointController
         ]);
 
         if ($sendResult['code'] != 200) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not create upload session to send the document to sharepoint', 'sharepointError' => $sendResult['response']['error']]);
+            return $response->withStatus(400)->withJson([
+                'errors'          => 'Could not create upload session to send the document to sharepoint',
+                'sharepointError' => $sendResult['response']['error']
+            ]);
         }
 
         $sendResult = CurlModel::exec([
@@ -171,7 +210,10 @@ class Office365SharepointController
         ]);
 
         if ($sendResult['code'] != 200) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not send the document to sharepoint', 'sharepointError' => $sendResult['response']['error']]);
+            return $response->withStatus(400)->withJson([
+                'errors'          => 'Could not send the document to sharepoint',
+                'sharepointError' => $sendResult['response']['error']
+            ]);
         }
 
         $webUrl = $sendResult['response']['webUrl'];
@@ -190,7 +232,8 @@ class Office365SharepointController
 
         // Add access permission to the document to the current user
         $result = CurlModel::exec([
-            'url'        => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/items/' . $id . '/invite',
+            'url'        => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/items/' . $id . '/invite',
             'bearerAuth' => ['token' => $accessToken],
             'headers'    => ['Content-Type: application/json'],
             'method'     => 'POST',
@@ -198,19 +241,23 @@ class Office365SharepointController
         ]);
 
         if ($result['code'] != 200) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not share the document with user', 'sharepointError' => $result['response']['error']]);
+            return $response->withStatus(400)->withJson([
+                'errors'          => 'Could not share the document with user',
+                'sharepointError' => $result['response']['error']
+            ]);
         }
 
         // Delete all the other files created by the user, if there are any
         $result = CurlModel::exec([
-            'url'        => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/root/children',
+            'url'        => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/root/children',
             'bearerAuth' => ['token' => $accessToken],
             'method'     => 'GET'
         ]);
 
         if ($result['code'] == 200) {
             foreach ($result['response']['value'] as $child) {
-                if ($child['id'] != $id && strpos($child['name'], 'maarch_' . $GLOBALS['login']) !== false) {
+                if ($child['id'] != $id && str_contains($child['name'], 'maarch_' . $GLOBALS['login'])) {
                     Office365SharepointController::deleteFile([
                         'configuration' => $configuration,
                         'token'         => $accessToken,
@@ -234,13 +281,26 @@ class Office365SharepointController
         return $response->withJson(['webUrl' => $webUrl, 'documentId' => $id]);
     }
 
-    public function getFileContent(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     * @throws Exception
+     */
+    public function getFileContent(Request $request, Response $response, array $args): Response
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'privilege' => 'admin_document_editors',
+            'select'    => ['value']
+        ]);
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         if (empty($configuration) || empty($configuration['office365sharepoint'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Office 365 Sharepoint Online is not enabled', 'lang' => 'office365SharepointNotEnabled']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Office 365 Sharepoint Online is not enabled',
+                'lang'   => 'office365SharepointNotEnabled'
+            ]);
         }
         $configuration = $configuration['office365sharepoint'];
 
@@ -255,7 +315,8 @@ class Office365SharepointController
         }
 
         $result = CurlModel::exec([
-            'url'            => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/items/' . $args['id'] . '/content',
+            'url'            => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/items/' . $args['id'] . '/content',
             'bearerAuth'     => ['token' => $accessToken],
             'method'         => 'GET',
             'followRedirect' => true,
@@ -263,11 +324,16 @@ class Office365SharepointController
         ]);
 
         if ($result['code'] != 200) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not get the document from sharepoint', 'sharepointError' => $result['response']['error']]);
+            return $response->withStatus(400)->withJson([
+                'errors'          => 'Could not get the document from sharepoint',
+                'sharepointError' => $result['response']['error']
+            ]);
         }
 
         if (empty($result['response'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Could not get the document content from sharepoint']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Could not get the document content from sharepoint'
+            ]);
         }
 
         $content = $result['response'];
@@ -275,13 +341,25 @@ class Office365SharepointController
         return $response->withJson(['content' => base64_encode($content)]);
     }
 
-    public function delete(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function delete(Request $request, Response $response, array $args): Response
     {
-        $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_document_editors', 'select' => ['value']]);
+        $configuration = ConfigurationModel::getByPrivilege([
+            'privilege' => 'admin_document_editors',
+            'select'    => ['value']
+        ]);
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
         if (empty($configuration) || empty($configuration['office365sharepoint'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Office 365 Sharepoint Online is not enabled', 'lang' => 'office365SharepointNotEnabled']);
+            return $response->withStatus(400)->withJson([
+                'errors' => 'Office 365 Sharepoint Online is not enabled',
+                'lang'   => 'office365SharepointNotEnabled'
+            ]);
         }
         $configuration = $configuration['office365sharepoint'];
 
@@ -300,12 +378,22 @@ class Office365SharepointController
             return $response->withStatus(400)->withJson(['errors' => $accessToken['errors']]);
         }
 
-        Office365SharepointController::deleteFile(['configuration' => $configuration, 'token' => $accessToken, 'documentId' => $args['id'], 'resId' => $body['resId']]);
+        Office365SharepointController::deleteFile([
+            'configuration' => $configuration,
+            'token'         => $accessToken,
+            'documentId'    => $args['id'],
+            'resId'         => $body['resId']
+        ]);
 
         return $response->withStatus(204);
     }
 
-    public static function getSiteId(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed|string[]
+     * @throws Exception
+     */
+    public static function getSiteId(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['clientId', 'clientSecret', 'tenantId', 'siteUrl']);
         ValidatorModel::stringType($args, ['clientId', 'clientSecret', 'tenantId', 'siteUrl']);
@@ -323,7 +411,7 @@ class Office365SharepointController
         }
         $args['siteUrl'] = str_replace('https://', '', $args['siteUrl']);
         $args['siteUrl'] = str_replace('http://', '', $args['siteUrl']);
-        $explodedSite =  explode('/', $args['siteUrl']);
+        $explodedSite = explode('/', $args['siteUrl']);
 
         $tenantDomain = $explodedSite[0];
         unset($explodedSite[0]);
@@ -332,9 +420,9 @@ class Office365SharepointController
         $url = 'https://graph.microsoft.com/v1.0/sites/' . $tenantDomain . ':/' . $sitePath;
 
         $result = CurlModel::exec([
-            'url'            => $url,
-            'bearerAuth'     => ['token' => $accessToken],
-            'method'         => 'GET'
+            'url'        => $url,
+            'bearerAuth' => ['token' => $accessToken],
+            'method'     => 'GET'
         ]);
 
         if ($result['code'] != 200) {
@@ -348,7 +436,12 @@ class Office365SharepointController
         return $result['response']['id'];
     }
 
-    private static function getAuthenticationToken(array $args)
+    /**
+     * @param array $args
+     * @return array|mixed|string[]
+     * @throws Exception
+     */
+    private static function getAuthenticationToken(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['configuration']);
         ValidatorModel::arrayType($args, ['configuration']);
@@ -366,7 +459,7 @@ class Office365SharepointController
             'url'     => 'https://login.microsoftonline.com/' . $configuration['tenantId'] . '/oauth2/v2.0/token',
             'headers' => ['Content-Type: application/x-www-form-urlencoded'],
             'method'  => 'POST',
-            'body' => implode('&', $body)
+            'body'    => implode('&', $body)
         ]);
 
         if ($curlResponse['code'] != 200) {
@@ -383,7 +476,12 @@ class Office365SharepointController
         return $curlResponse['response']['access_token'];
     }
 
-    private static function deleteFile(array $args)
+    /**
+     * @param array $args
+     * @return void
+     * @throws Exception
+     */
+    private static function deleteFile(array $args): void
     {
         ValidatorModel::notEmpty($args, ['configuration', 'token', 'documentId', 'resId']);
         ValidatorModel::stringType($args, ['token', 'documentId']);
@@ -393,7 +491,8 @@ class Office365SharepointController
         $configuration = $args['configuration'];
 
         $result = CurlModel::exec([
-            'url'        => 'https://graph.microsoft.com/v1.0/sites/' . $configuration['siteId'] . '/drive/items/' . $args['documentId'],
+            'url'        => 'https://graph.microsoft.com/v1.0/sites/' .
+                $configuration['siteId'] . '/drive/items/' . $args['documentId'],
             'bearerAuth' => ['token' => $args['token']],
             'method'     => 'DELETE'
         ]);
@@ -405,7 +504,8 @@ class Office365SharepointController
                 'level'     => 'ERROR',
                 'tableName' => 'letterbox_coll',
                 'recordId'  => $args['resId'],
-                'eventType' => "Failed to delete document {$args['documentId']} : " . json_encode($result['response']['error']),
+                'eventType' => "Failed to delete document {$args['documentId']} : " .
+                    json_encode($result['response']['error']),
                 'eventId'   => "resId : {$args['resId']}"
             ]);
         }

@@ -82,7 +82,9 @@ class ContactController
         $queryParams['limit'] = (empty($queryParams['limit']) ||
         !is_numeric($queryParams['limit']) ? 25 : (int)$queryParams['limit']);
         $order = !in_array($queryParams['order'], ['asc', 'desc']) ? '' : $queryParams['order'];
-        $orderBy = !in_array($queryParams['orderBy'], ['firstname', 'lastname', 'company']) ? ['id'] : ["{$queryParams['orderBy']} {$order}", 'id'];
+        $orderBy = !in_array($queryParams['orderBy'], ['firstname', 'lastname', 'company'])
+            ? ['id']
+            : ["{$queryParams['orderBy']} {$order}", 'id'];
 
         if (!empty($queryParams['search'])) {
             $fields = [
@@ -704,11 +706,25 @@ class ContactController
         $contactParameters = ContactParameterModel::get([
             'select'  => ['*'],
             'orderBy' => [
-                'identifier=\'civility\' desc, identifier=\'firstname\' desc, identifier=\'lastname\' desc,identifier=\'function\' desc, identifier=\'company\' desc, identifier=\'department\' desc,
-            identifier=\'email\' desc,  identifier=\'phone\' desc, identifier=\'addressAdditional1\' desc, identifier=\'addressNumber\' desc, identifier=\'addressStreet\' desc,
-            identifier=\'addressAdditional2\' desc, identifier=\'addressPostcode\' desc, identifier=\'addressTown\' desc, identifier=\'addressCountry\' desc, identifier=\'notes\' desc'
+                'identifier=\'civility\' desc, ' .
+                'identifier=\'firstname\' desc, ' .
+                'identifier=\'lastname\' desc, ' .
+                'identifier=\'function\' desc, ' .
+                'identifier=\'company\' desc, ' .
+                'identifier=\'department\' desc, ' .
+                'identifier=\'email\' desc, ' .
+                'identifier=\'phone\' desc, ' .
+                'identifier=\'addressAdditional1\' desc, ' .
+                'identifier=\'addressNumber\' desc, ' .
+                'identifier=\'addressStreet\' desc, ' .
+                'identifier=\'addressAdditional2\' desc, ' .
+                'identifier=\'addressPostcode\' desc, ' .
+                'identifier=\'addressTown\' desc, ' .
+                'identifier=\'addressCountry\' desc, ' .
+                'identifier=\'notes\' desc'
             ]
         ]);
+
         foreach ($contactParameters as $key => $parameter) {
             if (str_contains($parameter['identifier'], 'contactCustomField_')) {
                 $contactCustomId = str_replace("contactCustomField_", "", $parameter['identifier']);
@@ -902,11 +918,11 @@ class ContactController
                 if (
                     str_contains($ratingColumn['identifier'], 'contactCustomField_') &&
                     !empty(
-                        $customFields[str_replace(
-                            "contactCustomField_",
-                            "",
-                            $ratingColumn['identifier']
-                        )]
+                    $customFields[str_replace(
+                        "contactCustomField_",
+                        "",
+                        $ratingColumn['identifier']
+                    )]
                     )
                 ) {
                     $percent++;
@@ -1090,7 +1106,9 @@ class ContactController
         return $response->withJson(
             [
                 'departments' => $departments,
-                'default'     => empty($defaultDepartment['param_value_string']) ? null : $defaultDepartment['param_value_string']
+                'default'     => empty($defaultDepartment['param_value_string'])
+                    ? null
+                    : $defaultDepartment['param_value_string']
             ]
         );
     }
@@ -1194,7 +1212,8 @@ class ContactController
         $duplicatesQuery = "SELECT " . implode(', ', $fields) . ' FROM contacts WHERE ' . implode(' AND ', $where);
 
         // Create a query that will have the number of duplicates for each duplicate group
-        // this is needed to avoid getting result that only appears once in the result list (and the function dense_rank cannot be used in group by)
+        // this is needed to avoid getting result that only appears once in the result list
+        // (and the function dense_rank cannot be used in group by)
         $duplicatesCountQuery = 'SELECT duplicate_id, count(*) as duplicate_count FROM (' . $duplicatesQuery .
             ') as duplicates_id group by duplicate_id';
 
@@ -1226,7 +1245,6 @@ class ContactController
 
         $contactIds = array_column($duplicates, 'id');
         $contactsUsed = ContactController::isContactUsed(['ids' => $contactIds]);
-
 
         $civilities = ContactCivilityModel::get(['select' => ['*']]);
         $civilities = array_column($civilities, null, 'id');
@@ -1266,7 +1284,11 @@ class ContactController
         }
         $count = $duplicates[0]['total'];
 
-        return $response->withJson(['returnedCount' => count($contacts), 'realCount' => $count, 'contacts' => $contacts]);
+        return $response->withJson([
+            'returnedCount' => count($contacts),
+            'realCount'     => $count,
+            'contacts'      => $contacts
+        ]);
     }
 
     /**
@@ -1584,7 +1606,6 @@ class ContactController
         foreach ($contactCustoms as $contactCustom) {
             $contactCustoms['contactCustomField_' . $contactCustom] = (string)$contactCustom;
         }
-
 
         $contactFields = ContactController::MAPPING_FIELDS;
         $contactFields = array_merge($contactFields, $contactCustoms);
