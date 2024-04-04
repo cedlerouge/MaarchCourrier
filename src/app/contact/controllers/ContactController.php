@@ -921,8 +921,8 @@ class ContactController
                         $customFields[str_replace(
                             "contactCustomField_",
                             "",
-                            $ratingColumn['identifier'])
-                        ]
+                            $ratingColumn['identifier']
+                        )]
                     )
                 ) {
                     $percent++;
