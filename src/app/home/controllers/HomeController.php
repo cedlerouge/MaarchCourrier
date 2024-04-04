@@ -26,7 +26,6 @@ use User\models\UserModel;
 use Parameter\models\ParameterModel;
 
 class HomeController
-
 {
     /**
      * @param Request $request

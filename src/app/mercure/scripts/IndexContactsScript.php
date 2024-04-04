@@ -140,9 +140,12 @@ class IndexContactsScript
                 $tabLexicon[$fieldIndexation['lexicon']] = [];
 
                 //Initialiser le lexique si le fichier Lexique existe déjà
-                if (!$args['indexAll'] && is_file(
+                if (
+                    !$args['indexAll'] &&
+                    is_file(
                         $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . $fieldIndexation['lexicon'] . ".txt"
-                    )) {
+                    )
+                ) {
                     $lexique = fopen(
                         $contactsLexiconsDirectory . DIRECTORY_SEPARATOR .
                         $fieldIndexation['lexicon'] . ".txt",

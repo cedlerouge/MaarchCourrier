@@ -329,9 +329,10 @@ class TagController
             'where' => ['tag_id = ?'],
             'data'  => [$args['id']]
         ]);
-        if (!empty($resourcesTags) && !PrivilegeController::hasPrivilege(
-                ['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']]
-            )) {
+        if (
+            !empty($resourcesTags) &&
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_tag', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 

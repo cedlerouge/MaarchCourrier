@@ -810,12 +810,20 @@ class TileController
         $tile['resourcesNumber'] = null;
 
         if (
-            ($tile['parameters']['privilegeId'] == 'indexing' && !PrivilegeController::canIndex(
-                    ['userId' => $GLOBALS['id'], 'groupId' => $tile['parameters']['groupId']]
-                )) ||
-            ($tile['parameters']['privilegeId'] != 'indexing' && !PrivilegeController::hasPrivilege(
-                    ['privilegeId' => $tile['parameters']['privilegeId'], 'userId' => $GLOBALS['id']]
-                ))
+            (
+                $tile['parameters']['privilegeId'] == 'indexing' &&
+                !PrivilegeController::canIndex([
+                    'userId' => $GLOBALS['id'],
+                    'groupId' => $tile['parameters']['groupId']
+                ])
+            ) ||
+            (
+                $tile['parameters']['privilegeId'] != 'indexing' &&
+                !PrivilegeController::hasPrivilege([
+                    'privilegeId' => $tile['parameters']['privilegeId'],
+                    'userId' => $GLOBALS['id']
+                ])
+            )
         ) {
             return ['errors' => 'Service forbidden'];
         }
@@ -950,9 +958,9 @@ class TileController
             if (
                 !empty($value['values'][0]) &&
                 is_array($value['values'][0]) &&
-                array_key_exists('id',$definedVars['value']['values'][0]) &&
+                array_key_exists('id', $definedVars['value']['values'][0]) &&
                 !in_array($value['identifier'], ['recipients', 'senders']) &&
-                !str_contains($value['identifier'],'role_')
+                !str_contains($value['identifier'], 'role_')
             ) {
                 $value['values'] = array_column($value['values'], 'id');
             } else {

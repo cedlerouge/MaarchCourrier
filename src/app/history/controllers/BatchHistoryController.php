@@ -140,10 +140,10 @@ class BatchHistoryController
         $body = $request->getParsedBody();
         $queryParams = $request->getQueryParams();
 
-        if (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array(
-                $body['delimiter'],
-                [',', ';', 'TAB']
-            )) {
+        if (
+            !Validator::stringType()->notEmpty()->validate($body['delimiter']) ||
+            !in_array($body['delimiter'], [',', ';', 'TAB'])
+        ) {
             return $response->withStatus(400)->withJson(
                 ['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']
             );
@@ -156,9 +156,11 @@ class BatchHistoryController
         }
 
         $limit = 1000;
-        if (!empty($queryParams['limit']) && is_numeric(
-                $queryParams['limit']
-            ) && (int)$queryParams['limit'] != $limit) {
+        if (
+            !empty($queryParams['limit']) &&
+            is_numeric($queryParams['limit']) &&
+            (int)$queryParams['limit'] != $limit
+        ) {
             $limit = (int)$queryParams['limit'];
         }
 
@@ -174,9 +176,10 @@ class BatchHistoryController
         }
 
         $moduleTypes = [];
-        if (!empty($body['parameters']['filterUsed']['modules']) && is_array(
-                $body['parameters']['filterUsed']['modules']
-            )) {
+        if (
+            !empty($body['parameters']['filterUsed']['modules']) &&
+            is_array($body['parameters']['filterUsed']['modules'])
+        ) {
             foreach ($body['parameters']['filterUsed']['modules'] as $module) {
                 $moduleTypes[] = $module['id'];
             }
@@ -187,9 +190,10 @@ class BatchHistoryController
         }
 
         $totalProcessed = [];
-        if (!empty($body['parameters']['filterUsed']['totalProcessed']) && is_array(
-                $body['parameters']['filterUsed']['totalProcessed']
-            )) {
+        if (
+            !empty($body['parameters']['filterUsed']['totalProcessed']) &&
+            is_array($body['parameters']['filterUsed']['totalProcessed'])
+        ) {
             foreach ($body['parameters']['filterUsed']['totalProcessed'] as $processedElm) {
                 $totalProcessed[] = $processedElm['id'];
             }
@@ -200,9 +204,10 @@ class BatchHistoryController
         }
 
         $totalErrors = [];
-        if (!empty($body['parameters']['filterUsed']['totalErrors']) && is_array(
-                $body['parameters']['filterUsed']['totalErrors']
-            )) {
+        if (
+            !empty($body['parameters']['filterUsed']['totalErrors']) &&
+            is_array($body['parameters']['filterUsed']['totalErrors'])
+        ) {
             foreach ($body['parameters']['filterUsed']['totalErrors'] as $errorElm) {
                 $totalErrors[] = $errorElm['id'];
             }
