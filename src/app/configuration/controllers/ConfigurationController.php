@@ -19,6 +19,7 @@ use Basket\models\BasketModel;
 use Configuration\models\ConfigurationModel;
 use ContentManagement\controllers\Office365SharepointController;
 use Doctype\models\DoctypeModel;
+use DOMDocument;
 use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
@@ -35,17 +36,27 @@ use ContentManagement\controllers\DocumentEditorController;
 
 class ConfigurationController
 {
-    public function getByPrivilege(Request $request, Response $response, array $args)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
+     */
+    public function getByPrivilege(Request $request, Response $response, array $args): Response
     {
         if ($args['privilege'] == 'admin_sso') {
-            if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])) {
+            if (
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
         } elseif ($args['privilege'] == 'admin_document_editors') {
             if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => $args['privilege'], 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            !PrivilegeController::hasPrivilege(['privilegeId' => $args['privilege'], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
@@ -68,23 +79,45 @@ class ConfigurationController
     }
 
     /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $args
+     * @return Response
      * @throws Exception
      */
-    public function update(Request $request, Response $response, array $args)
+    public function update(Request $request, Response $response, array $args): Response
     {
         if ($args['privilege'] == 'admin_sso') {
-            if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])) {
+            if (
+                !PrivilegeController::hasPrivilege(['privilegeId' => 'admin_connections', 'userId' => $GLOBALS['id']])
+            ) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
         } elseif ($args['privilege'] == 'admin_document_editors') {
             if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
                 return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
             }
-        } elseif (!PrivilegeController::hasPrivilege(['privilegeId' => $args['privilege'], 'userId' => $GLOBALS['id']])) {
+        } elseif (
+            !PrivilegeController::hasPrivilege(['privilegeId' => $args['privilege'], 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        if (!in_array($args['privilege'], ['admin_email_server', 'admin_search', 'admin_sso', 'admin_document_editors', 'admin_parameters_watermark', 'admin_shippings', 'admin_organization_email_signatures', 'admin_mercure'])) {
+        if (
+            !in_array(
+                $args['privilege'],
+                [
+                    'admin_email_server',
+                    'admin_search',
+                    'admin_sso',
+                    'admin_document_editors',
+                    'admin_parameters_watermark',
+                    'admin_shippings',
+                    'admin_organization_email_signatures',
+                    'admin_mercure'
+                ]
+            )
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Unknown privilege']);
         }
 
@@ -108,19 +141,32 @@ class ConfigurationController
             unset($data['passwordAlreadyExists']);
         } elseif ($args['privilege'] == 'admin_search') {
             if (!Validator::notEmpty()->arrayType()->validate($data['listDisplay'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body listDisplay is empty or not an array']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body listDisplay is empty or not an array']
+                );
             }
-            if (isset($data['listDisplay']['subInfos']) && !Validator::arrayType()->validate($data['listDisplay']['subInfos'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body listDisplay[subInfos] is not set or not an array']);
+            if (
+                isset($data['listDisplay']['subInfos']) &&
+                !Validator::arrayType()->validate($data['listDisplay']['subInfos'])
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body listDisplay[subInfos] is not set or not an array']
+                );
             }
             if (!Validator::intVal()->validate($data['listDisplay']['templateColumns'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body listDisplay[templateColumns] is not set or not an array']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body listDisplay[templateColumns] is not set or not an array']
+                );
             }
             foreach ($data['listDisplay']['subInfos'] as $value) {
                 if (!Validator::stringType()->notEmpty()->validate($value['value'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body listDisplay[subInfos][value] is empty or not a string']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body listDisplay[subInfos][value] is empty or not a string']
+                    );
                 } elseif (!isset($value['cssClasses']) || !is_array($value['cssClasses'])) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body listDisplay[subInfos][cssClasses] is not set or not an array']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body listDisplay[subInfos][cssClasses] is not set or not an array']
+                    );
                 }
             }
 
@@ -134,14 +180,20 @@ class ConfigurationController
                 return $response->withStatus(400)->withJson(['errors' => 'Body url is empty or not a string']);
             }
             if (!Validator::notEmpty()->arrayType()->validate($data['mapping'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body mapping is empty or not an array']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body mapping is empty or not an array']
+                );
             }
             foreach ($data['mapping'] as $key => $mapping) {
                 if (!Validator::notEmpty()->stringType()->validate($mapping['ssoId'])) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body mapping[$key]['ssoId'] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body mapping[$key]['ssoId'] is empty or not a string"]
+                    );
                 }
                 if (!Validator::notEmpty()->stringType()->validate($mapping['maarchId'])) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body mapping[$key]['maarchId'] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body mapping[$key]['maarchId'] is empty or not a string"]
+                    );
                 }
             }
         } elseif ($args['privilege'] == 'admin_document_editors') {
@@ -155,41 +207,92 @@ class ConfigurationController
                     $data[$key] = [];
                 } elseif ($key == 'onlyoffice') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['uri'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body onlyoffice['uri'] is empty or not a string"]
+                        );
                     } elseif (!DocumentEditorController::uriIsValid($editor['uri'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body onlyoffice['uri'] is not a valid URL or IP address",
+                                'lang'   => 'parameterIsNotValidUrlOrIp'
+                            ]
+                        );
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body onlyoffice['uri'] URL or IP address contains protocol http or https",
+                                'lang'   => 'parameterUrlOrIpHaveProtocol'
+                            ]
+                        );
                     } elseif (!Validator::notEmpty()->intVal()->validate($editor['port'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['port'] is empty or not numeric", 'lang' => 'parameterIsNotNumber']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body onlyoffice['port'] is empty or not numeric",
+                                'lang'   => 'parameterIsNotNumber'
+                            ]
+                        );
                     } elseif (!Validator::boolType()->validate($editor['ssl'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body onlyoffice['ssl'] is empty or not a boolean"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body onlyoffice['ssl'] is empty or not a boolean"]
+                        );
                     }
                     $data[$key]['authorizationHeader'] = $editor['authorizationHeader'] ?? '';
                     $data[$key]['token'] = $editor['token'] ?? '';
                 } elseif ($key == 'collaboraonline') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['uri'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body collaboraonline['uri'] is empty or not a string"]
+                        );
                     } elseif (!DocumentEditorController::uriIsValid($editor['uri'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body collaboraonline['uri'] is not a valid URL or IP address",
+                                'lang'   => 'parameterIsNotValidUrlOrIp'
+                            ]
+                        );
                     } elseif (!preg_match('/^(?!https?:\/\/).*$/', $editor['uri'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['uri'] URL or IP address contains protocol http or https", 'lang' => 'parameterUrlOrIpHaveProtocol']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body collaboraonline['uri'] URL or IP address contains protocol http or https",
+                                'lang'   => 'parameterUrlOrIpHaveProtocol'
+                            ]
+                        );
                     } elseif (!Validator::notEmpty()->intVal()->validate($editor['port'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['port'] is empty or not numeric", 'lang' => 'parameterIsNotNumber']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body collaboraonline['port'] is empty or not numeric",
+                                'lang'   => 'parameterIsNotNumber'
+                            ]
+                        );
                     } elseif (!Validator::boolType()->validate($editor['ssl'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body collaboraonline['ssl'] is not set or not a boolean"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body collaboraonline['ssl'] is not set or not a boolean"]
+                        );
                     }
                 } elseif ($key == 'office365sharepoint') {
                     if (!Validator::notEmpty()->stringType()->validate($editor['tenantId'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['tenantId'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body office365sharepoint['tenantId'] is empty or not a string"]
+                        );
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['clientId'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['clientId'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body office365sharepoint['clientId'] is empty or not a string"]
+                        );
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['clientSecret'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['clientSecret'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body office365sharepoint['clientSecret'] is empty or not a string"]
+                        );
                     } elseif (!Validator::notEmpty()->stringType()->validate($editor['siteUrl'] ?? null)) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Body office365sharepoint['siteUrl'] is empty or not a string"]
+                        );
                     } elseif (!DocumentEditorController::uriIsValid($editor['siteUrl'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "Body office365sharepoint['siteUrl'] is not a valid URL or IP address", 'lang' => 'parameterIsNotValidUrlOrIp']);
+                        return $response->withStatus(400)->withJson(
+                            [
+                                'errors' => "Body office365sharepoint['siteUrl'] is not a valid URL or IP address",
+                                'lang'   => 'parameterIsNotValidUrlOrIp'
+                            ]
+                        );
                     }
                     $siteId = Office365SharepointController::getSiteId([
                         'tenantId'     => $editor['tenantId'],
@@ -198,7 +301,9 @@ class ConfigurationController
                         'siteUrl'      => $editor['siteUrl']
                     ]);
                     if (!empty($siteId['errors'])) {
-                        return $response->withStatus(400)->withJson(['errors' => "Error while finding siteId : " . $siteId['errors']]);
+                        return $response->withStatus(400)->withJson(
+                            ['errors' => "Error while finding siteId : " . $siteId['errors']]
+                        );
                     }
                     $data[$key]['siteId'] = $siteId;
                 }
@@ -211,12 +316,16 @@ class ConfigurationController
             } elseif (!Validator::stringType()->validate($data['uri'] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => "Body uri is empty or not a string"]);
             } elseif (!Validator::stringType()->validate($data['authUri'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => "Body authUri is empty or not a string"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body authUri is empty or not a string"]
+                );
             } elseif (!Validator::boolType()->validate($data['enabled'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => "Body enabled is not set or not a boolean"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body enabled is not set or not a boolean"]
+                );
             }
             $data = [
-                'uri' => rtrim($data['uri'], '/'),
+                'uri'     => rtrim($data['uri'], '/'),
                 'authUri' => rtrim($data['authUri'], '/'),
                 'enabled' => $data['enabled'],
             ];
@@ -224,20 +333,28 @@ class ConfigurationController
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
             } elseif (!Validator::arrayType()->validate($data['signatures'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => "Body signatures is empty or not a string"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body signatures is empty or not a string"]
+                );
             }
             foreach ($data['signatures'] as $signature) {
                 if (!Validator::notEmpty()->stringType()->validate($signature['label'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body signature['label'] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body signature['label'] is empty or not a string"]
+                    );
                 } elseif (!Validator::notEmpty()->stringType()->validate($signature['content'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body signature['content'] is empty or not string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body signature['content'] is empty or not string"]
+                    );
                 }
             }
         } elseif ($args['privilege'] == 'admin_lad') {
             if (!Validator::notEmpty()->arrayType()->validate($data)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body is empty or not an array']);
             } elseif (!Validator::boolType()->validate($data['enabled'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => "Body enabled is not set or not a boolean"]);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => "Body enabled is not set or not a boolean"]
+                );
             }
             $data = [
                 'enabled' => $data['enabled'],
@@ -248,7 +365,9 @@ class ConfigurationController
         if (empty(ConfigurationModel::getByPrivilege(['privilege' => $args['privilege'], 'select' => [1]]))) {
             ConfigurationModel::create(['value' => $data, 'privilege' => $args['privilege']]);
         } else {
-            ConfigurationModel::update(['set' => ['value' => $data], 'where' => ['privilege = ?'], 'data' => [$args['privilege']]]);
+            ConfigurationModel::update(
+                ['set' => ['value' => $data], 'where' => ['privilege = ?'], 'data' => [$args['privilege']]]
+            );
         }
 
         HistoryController::add([
@@ -256,13 +375,17 @@ class ConfigurationController
             'recordId'  => $args['privilege'],
             'eventType' => 'UP',
             'eventId'   => 'configurationUp',
-            'info'       => _CONFIGURATION_UPDATED . ' : ' . $args['privilege']
+            'info'      => _CONFIGURATION_UPDATED . ' : ' . $args['privilege']
         ]);
 
         return $response->withJson(['success' => 'success']);
     }
 
-    private static function checkMailer(array $args)
+    /**
+     * @param array $args
+     * @return array|string[]
+     */
+    private static function checkMailer(array $args): array
     {
         if (!Validator::stringType()->notEmpty()->validate($args['type'])) {
             return ['errors' => 'Configuration type is missing', 'code' => 400];
@@ -288,7 +411,13 @@ class ConfigurationController
         return ['success' => 'success'];
     }
 
-    public function getM2MConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getM2MConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -299,8 +428,10 @@ class ConfigurationController
             return $response->withStatus(200)->withJson(['configuration' => null]);
         }
 
-        $attachmentType = AttachmentTypeModel::getByTypeId(['select' => ['id'], 'typeId' => $xmlConfig['res_attachments']['attachment_type']]);
-        $status         = StatusModel::getById(['select' => ['identifier'], 'id' => $xmlConfig['res_letterbox']['status']]);
+        $attachmentType = AttachmentTypeModel::getByTypeId(
+            ['select' => ['id'], 'typeId' => $xmlConfig['res_attachments']['attachment_type']]
+        );
+        $status = StatusModel::getById(['select' => ['identifier'], 'id' => $xmlConfig['res_letterbox']['status']]);
 
         $config = [
             "metadata"         => [
@@ -320,7 +451,7 @@ class ConfigurationController
         ];
 
 
-        $config['annuary']['enabled']      = $xmlConfig['annuaries']['enabled'] == "true" ? true : false;
+        $config['annuary']['enabled'] = $xmlConfig['annuaries']['enabled'] == "true" ? true : false;
         $config['annuary']['organization'] = $xmlConfig['annuaries']['organization'] ?? null;
 
         if (isset($xmlConfig['annuaries']['annuary'])) {
@@ -344,7 +475,13 @@ class ConfigurationController
         return $response->withJson(['configuration' => $config]);
     }
 
-    public function updateM2MConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function updateM2MConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -356,48 +493,68 @@ class ConfigurationController
         if (empty($body)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body is empty']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['basketToRedirect'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body basketToRedirect is empty, not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body basketToRedirect is empty, not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['metadata']['priorityId'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body[metadata] priorityId is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body[metadata] priorityId is empty or not a string']
+            );
         }
 
         foreach (['attachmentTypeId', 'indexingModelId', 'statusId', 'typeId'] as $value) {
             if (!Validator::notEmpty()->intVal()->validate($body['metadata'][$value] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body[metadata] ' . $value . ' is empty, not a string']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body[metadata] ' . $value . ' is empty, not a string']
+                );
             }
         }
 
         $basket = BasketModel::getByBasketId(['select' => [1], 'basketId' => $body['basketToRedirect']]);
         if (empty($basket)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Basket not found', 'lang' => 'basketDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Basket not found', 'lang' => 'basketDoesNotExist']
+            );
         }
 
         $priority = PriorityModel::getById(['select' => [1], 'id' => $body['metadata']['priorityId']]);
         if (empty($priority)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Priority not found', 'lang' => 'priorityDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Priority not found', 'lang' => 'priorityDoesNotExist']
+            );
         }
 
-        $attachmentType = AttachmentTypeModel::getById(['select' => ['type_id'], 'id' => $body['metadata']['attachmentTypeId']]);
+        $attachmentType = AttachmentTypeModel::getById(
+            ['select' => ['type_id'], 'id' => $body['metadata']['attachmentTypeId']]
+        );
         if (empty($attachmentType)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Attachment type not found', 'lang' => 'attachmentTypeDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Attachment type not found', 'lang' => 'attachmentTypeDoesNotExist']
+            );
         }
 
         $indexingModel = IndexingModelModel::getById(['select' => [1], 'id' => $body['metadata']['indexingModelId']]);
         if (empty($indexingModel)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Indexing model not found', 'lang' => 'indexingModelDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Indexing model not found', 'lang' => 'indexingModelDoesNotExist']
+            );
         }
 
         $status = StatusModel::getByIdentifier(['select' => ['id'], 'identifier' => $body['metadata']['statusId']]);
         if (empty($status)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Status not found', 'lang' => 'statusDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Status not found', 'lang' => 'statusDoesNotExist']
+            );
         }
 
         $doctype = DoctypeModel::getById(['select' => [1], 'id' => $body['metadata']['typeId']]);
         if (empty($doctype)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Doctype not found', 'lang' => 'typeIdDoesNotExist']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Doctype not found', 'lang' => 'typeIdDoesNotExist']
+            );
         }
 
-        $customId    = CoreConfigModel::getCustomId();
+        $customId = CoreConfigModel::getCustomId();
         $defaultPath = "config/m2m_config.xml";
         if (!empty($customId)) {
             $path = "custom/{$customId}/{$defaultPath}";
@@ -423,27 +580,39 @@ class ConfigurationController
         foreach ($body['communications'] as $key => $value) {
             if (!empty($value)) {
                 if ($key == 'url' && !filter_var($body['communications']['url'], FILTER_VALIDATE_URL)) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Communications url is not a valid URL', 'lang' => 'urlUndefinedFormat']);
-                } elseif ($key == 'email' && !filter_var($body['communications']['email'], FILTER_VALIDATE_EMAIL)) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Communications email is not a valid email address', 'lang' => 'urlUndefinedFormat']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Communications url is not a valid URL', 'lang' => 'urlUndefinedFormat']
+                    );
+                } elseif (
+                    $key == 'email' && !filter_var(
+                        $body['communications']['email'],
+                        FILTER_VALIDATE_EMAIL
+                    )
+                ) {
+                    return $response->withStatus(400)->withJson(
+                        [
+                            'errors' => 'Communications email is not a valid email address',
+                            'lang'   => 'urlUndefinedFormat'
+                        ]
+                    );
                 }
                 $communication[] = $value;
             }
         }
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => $path]);
-        $loadedXml->res_letterbox->type_id           = $body['metadata']['typeId'];
-        $loadedXml->res_letterbox->status            = $status[0]['id'];
-        $loadedXml->res_letterbox->priority          = $body['metadata']['priorityId'];
-        $loadedXml->res_letterbox->indexingModelId   = $body['metadata']['indexingModelId'];
+        $loadedXml->res_letterbox->type_id = $body['metadata']['typeId'];
+        $loadedXml->res_letterbox->status = $status[0]['id'];
+        $loadedXml->res_letterbox->priority = $body['metadata']['priorityId'];
+        $loadedXml->res_letterbox->indexingModelId = $body['metadata']['indexingModelId'];
         $loadedXml->res_attachments->attachment_type = $attachmentType['type_id'];
-        $loadedXml->basketRedirection_afterUpload    = $body['basketToRedirect'];
-        $loadedXml->m2m_communication                = implode(',', $communication);
-        $loadedXml->m2m_login                        = $login;
-        $loadedXml->m2m_password                     = $password;
+        $loadedXml->basketRedirection_afterUpload = $body['basketToRedirect'];
+        $loadedXml->m2m_communication = implode(',', $communication);
+        $loadedXml->m2m_login = $login;
+        $loadedXml->m2m_password = $password;
 
         unset($loadedXml->annuaries);
-        $loadedXml->annuaries->enabled      = $body['annuary']['enabled'] ? 'true' : 'false';
+        $loadedXml->annuaries->enabled = $body['annuary']['enabled'] ? 'true' : 'false';
         $loadedXml->annuaries->organization = $body['annuary']['organization'] ?? '';
 
         if ($body['annuary']['enabled'] && !empty($body['annuary']['annuaries'])) {
@@ -466,9 +635,13 @@ class ConfigurationController
         return $response->withStatus(204);
     }
 
-    public static function formatXml($simpleXMLElement)
+    /**
+     * @param $simpleXMLElement
+     * @return false|string
+     */
+    public static function formatXml($simpleXMLElement): bool|string
     {
-        $xmlDocument = new \DOMDocument('1.0');
+        $xmlDocument = new DOMDocument('1.0');
         $xmlDocument->preserveWhiteSpace = false;
         $xmlDocument->formatOutput = true;
         $xmlDocument->loadXML($simpleXMLElement->asXML());
@@ -476,7 +649,12 @@ class ConfigurationController
         return $xmlDocument->saveXML();
     }
 
-    public function getWatermarkConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getWatermarkConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -506,13 +684,21 @@ class ConfigurationController
             return $response->withStatus(400)->withJson(['errors' => 'Body text is empty, not a string']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['font'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body font is empty, not a string']);
-        } elseif (!Validator::arrayType()->notEmpty()->validate($body['color'] ?? null) || count($body['color']) != 3) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body color is empty or is not an array or does not have values']);
+        } elseif (
+            !Validator::arrayType()->notEmpty()->validate(
+                $body['color'] ?? null
+            ) || count($body['color']) != 3
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body color is empty or is not an array or does not have values']
+            );
         }
 
         foreach (['posX', 'posY', 'angle', 'opacity', 'size'] as $value) {
             if (!Validator::numericVal()->validate($body[$value] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body ' . $value . ' is not an integer']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body ' . $value . ' is not an integer']
+                );
             }
         }
 
@@ -523,19 +709,26 @@ class ConfigurationController
         }
 
         $body['enabled'] = $body['enabled'] ?? false;
-        $value           = json_encode($body);
+        $value = json_encode($body);
 
         $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_parameters_watermark']);
         if (empty($configuration)) {
             ConfigurationModel::create(['privilege' => 'admin_parameters_watermark', 'value' => $value]);
         } else {
-            ConfigurationModel::update(['set' => ['value' => $value], 'where' => ['privilege = ?'], 'data' => ['admin_parameters_watermark']]);
+            ConfigurationModel::update(
+                ['set' => ['value' => $value], 'where' => ['privilege = ?'], 'data' => ['admin_parameters_watermark']]
+            );
         }
 
         return $response->withStatus(204);
     }
 
-    public function getSedaExportConfiguration(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getSedaExportConfiguration(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_parameters', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -563,26 +756,42 @@ class ConfigurationController
         } elseif (!Validator::stringType()->notEmpty()->validate($body['sae'] ?? null)) {
             return $response->withStatus(400)->withJson(['errors' => 'Body sae is empty or not a string']);
         } elseif (!Validator::stringType()->notEmpty()->validate($body['accessRuleCode'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body accessRuleCode is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body accessRuleCode is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['senderOrgRegNumber'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body senderOrgRegNumber is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body senderOrgRegNumber is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['statusMailToPurge'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusMailToPurge is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusMailToPurge is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['statusReplyReceived'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusReplyReceived is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusReplyReceived is empty or not a string']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['statusReplyRejected'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusReplyRejected is empty or not a string']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusReplyRejected is empty or not a string']
+            );
         }
 
         $statuses = StatusModel::get(['select' => ['id']]);
         $statuses = array_column($statuses, 'id');
 
         if (!in_array($body['statusMailToPurge'], $statuses)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusMailToPurge is not an existing status']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusMailToPurge is not an existing status']
+            );
         } elseif (!in_array($body['statusReplyReceived'], $statuses)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusReplyReceived is not an existing status']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusReplyReceived is not an existing status']
+            );
         } elseif (!in_array($body['statusReplyRejected'], $statuses)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body statusReplyRejected is not an existing status']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body statusReplyRejected is not an existing status']
+            );
         }
 
 
@@ -605,11 +814,20 @@ class ConfigurationController
         if (strtolower($body['sae']) == 'maarchrm') {
             if (!Validator::stringType()->notEmpty()->validate($body['token'] ?? null)) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body token is empty, not a string']);
-            } elseif (!empty($body['userAgent']) && !Validator::stringType()->validate($body['userAgent'] ?? null)) {
+            } elseif (
+                !empty($body['userAgent']) && !Validator::stringType()->validate(
+                    $body['userAgent'] ?? null
+                )
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body userAgent is not a string']);
             } elseif (!Validator::stringType()->notEmpty()->validate($body['urlSAEService'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body urlSAEService is empty, not a string']);
-            } elseif (!empty($body['certificateSSL']) && !Validator::stringType()->validate($body['certificateSSL'] ?? null)) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body urlSAEService is empty, not a string']
+                );
+            } elseif (
+                !empty($body['certificateSSL']) &&
+                !Validator::stringType()->validate($body['certificateSSL'] ?? null)
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'Body certificateSSL is not a string']);
             }
 
@@ -621,36 +839,68 @@ class ConfigurationController
             ];
         } else {
             if (!Validator::arrayType()->notEmpty()->validate($body['externalSAE'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body externalSAE is empty or not an array']);
-            } elseif (!Validator::arrayType()->notEmpty()->validate($body['externalSAE']['retentionRules'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body externalSAE[retentionRules] is empty or not an array']);
-            } elseif (!Validator::arrayType()->notEmpty()->validate($body['externalSAE']['archiveEntities'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body externalSAE[archiveEntities] is empty or not an array']);
-            } elseif (!Validator::arrayType()->notEmpty()->validate($body['externalSAE']['archivalAgreements'] ?? null)) {
-                return $response->withStatus(400)->withJson(['errors' => 'Body externalSAE[archivalAgreements] is empty or not an array']);
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body externalSAE is empty or not an array']
+                );
+            } elseif (
+                !Validator::arrayType()->notEmpty()->validate(
+                    $body['externalSAE']['retentionRules'] ?? null
+                )
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body externalSAE[retentionRules] is empty or not an array']
+                );
+            } elseif (
+                !Validator::arrayType()->notEmpty()->validate(
+                    $body['externalSAE']['archiveEntities'] ?? null
+                )
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body externalSAE[archiveEntities] is empty or not an array']
+                );
+            } elseif (
+                !Validator::arrayType()->notEmpty()->validate(
+                    $body['externalSAE']['archivalAgreements'] ?? null
+                )
+            ) {
+                return $response->withStatus(400)->withJson(
+                    ['errors' => 'Body externalSAE[archivalAgreements] is empty or not an array']
+                );
             }
 
             foreach ($body['externalSAE']['retentionRules'] as $key => $retentionRule) {
                 if (!Validator::stringType()->notEmpty()->validate($retentionRule['id'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[retentionRules][$key][id] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[retentionRules][$key][id] is empty or not a string"]
+                    );
                 } elseif (!Validator::stringType()->notEmpty()->validate($retentionRule['label'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[retentionRules][$key][label] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[retentionRules][$key][label] is empty or not a string"]
+                    );
                 }
             }
 
             foreach ($body['externalSAE']['archiveEntities'] as $key => $archiveEntity) {
                 if (!Validator::stringType()->notEmpty()->validate($archiveEntity['id'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[archiveEntities][$key][id] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[archiveEntities][$key][id] is empty or not a string"]
+                    );
                 } elseif (!Validator::stringType()->notEmpty()->validate($archiveEntity['label'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[archiveEntities][$key][label] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[archiveEntities][$key][label] is empty or not a string"]
+                    );
                 }
             }
 
             foreach ($body['externalSAE']['archivalAgreements'] as $key => $archivalAgreement) {
                 if (!Validator::stringType()->notEmpty()->validate($archivalAgreement['id'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[archivalAgreements][$key][id] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[archivalAgreements][$key][id] is empty or not a string"]
+                    );
                 } elseif (!Validator::stringType()->notEmpty()->validate($archivalAgreement['label'] ?? null)) {
-                    return $response->withStatus(400)->withJson(['errors' => "Body externalSAE[archivalAgreements][$key][label] is empty or not a string"]);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => "Body externalSAE[archivalAgreements][$key][label] is empty or not a string"]
+                    );
                 }
             }
 
@@ -668,7 +918,9 @@ class ConfigurationController
         if (empty($configurationExist)) {
             ConfigurationModel::create(['privilege' => 'admin_export_seda', 'value' => $configuration]);
         } else {
-            ConfigurationModel::update(['set' => ['value' => $configuration], 'where' => ['privilege = ?'], 'data' => ['admin_export_seda']]);
+            ConfigurationModel::update(
+                ['set' => ['value' => $configuration], 'where' => ['privilege = ?'], 'data' => ['admin_export_seda']]
+            );
         }
 
         return $response->withStatus(204);
