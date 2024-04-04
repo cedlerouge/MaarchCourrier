@@ -41,7 +41,7 @@ trait ExportSEDATrait
 {
     /**
      * @param array $args
-     * @return array|array[]|string[]
+     * @return array
      * @throws Exception
      */
     public static function sendToRecordManagement(array $args): array
@@ -62,13 +62,30 @@ trait ExportSEDATrait
         if ($resources === null) {
             $resAcknowledgement = [];
             $attachments = AttachmentModel::get([
-                'select' => ['res_id_master', 'res_id', 'title', 'docserver_id', 'path', 'filename', 'res_id_master', 'fingerprint', 'creation_date', 'identifier', 'attachment_type'],
+                'select' => [
+                    'res_id_master',
+                    'res_id',
+                    'title',
+                    'docserver_id',
+                    'path',
+                    'filename',
+                    'res_id_master',
+                    'fingerprint',
+                    'creation_date',
+                    'identifier',
+                    'attachment_type'
+                ],
                 'where'  => ['res_id_master in (?)', 'status in (?)'],
                 'data'   => [$args['resources'], ['A_TRA', 'TRA']]
             ]);
             $attachmentsData = [];
             foreach ($attachments as $attachment) {
-                if (in_array($attachment['attachment_type'], ['acknowledgement_record_management', 'reply_record_management'])) {
+                if (
+                    in_array(
+                        $attachment['attachment_type'],
+                        ['acknowledgement_record_management', 'reply_record_management']
+                    )
+                ) {
                     $resAcknowledgement[$attachment['res_id_master']] = $attachment['res_id'];
                 } else {
                     $attachmentsData[$attachment['res_id_master']][] = $attachment;
@@ -76,7 +93,25 @@ trait ExportSEDATrait
             }
 
             $resources = ResModel::get([
-                'select' => ['res_id', 'destination', 'type_id', 'subject', 'linked_resources', 'alt_identifier', 'admission_date', 'creation_date', 'modification_date', 'doc_date', 'retention_frozen', 'binding', 'docserver_id', 'path', 'filename', 'version', 'fingerprint'],
+                'select' => [
+                    'res_id',
+                    'destination',
+                    'type_id',
+                    'subject',
+                    'linked_resources',
+                    'alt_identifier',
+                    'admission_date',
+                    'creation_date',
+                    'modification_date',
+                    'doc_date',
+                    'retention_frozen',
+                    'binding',
+                    'docserver_id',
+                    'path',
+                    'filename',
+                    'version',
+                    'fingerprint'
+                ],
                 'where'  => ['res_id in (?)'],
                 'data'   => [$args['resources']]
             ]);
@@ -84,22 +119,42 @@ trait ExportSEDATrait
 
             $doctypesId = array_column($resources, 'type_id');
             $doctypes = DoctypeModel::get([
-                'select' => ['type_id', 'description', 'duration_current_use', 'action_current_use', 'retention_rule', 'retention_final_disposition'],
+                'select' => [
+                    'type_id',
+                    'description',
+                    'duration_current_use',
+                    'action_current_use',
+                    'retention_rule',
+                    'retention_final_disposition'
+                ],
                 'where'  => ['type_id in (?)'],
                 'data'   => [$doctypesId]
             ]);
             $doctypes = array_column($doctypes, null, 'type_id');
 
             $entitiesId = array_column($resources, 'destination');
-            $entities = EntityModel::get(['select' => ['entity_id', 'producer_service', 'entity_label'], 'where' => ['entity_id in (?)'], 'data' => [$entitiesId]]);
+            $entities = EntityModel::get(
+                [
+                    'select' => ['entity_id', 'producer_service', 'entity_label'],
+                    'where'  => ['entity_id in (?)'],
+                    'data'   => [$entitiesId]
+                ]
+            );
             $entities = array_column($entities, null, 'entity_id');
 
-            $bindingDocument = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'bindingDocumentFinalAction']);
-            $nonBindingDocument = ParameterModel::getById(['select' => ['param_value_string'], 'id' => 'nonBindingDocumentFinalAction']);
+            $bindingDocument = ParameterModel::getById(
+                ['select' => ['param_value_string'], 'id' => 'bindingDocumentFinalAction']
+            );
+            $nonBindingDocument = ParameterModel::getById(
+                ['select' => ['param_value_string'], 'id' => 'nonBindingDocumentFinalAction']
+            );
 
             $configuration = ConfigurationModel::getByPrivilege(['privilege' => 'admin_export_seda']);
             $config = [];
-            $config['exportSeda'] = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
+            $config['exportSeda'] = !empty($configuration['value']) ? json_decode(
+                $configuration['value'],
+                true
+            ) : [];
 
             if (count($args['resources']) > 1 && $args['data']['actionMode'] == 'download') {
                 $tmpPath = CoreConfigModel::getTmpPath();
@@ -126,9 +181,15 @@ trait ExportSEDATrait
         } else {
             if ($resource['binding'] === null && !in_array($doctype['action_current_use'], ['transfer', 'copy'])) {
                 return ['errors' => 'action_current_use is not transfer or copy'];
-            } elseif ($resource['binding'] === true && !in_array($bindingDocument['param_value_string'], ['transfer', 'copy'])) {
+            } elseif (
+                $resource['binding'] === true &&
+                !in_array($bindingDocument['param_value_string'], ['transfer', 'copy'])
+            ) {
                 return ['errors' => 'binding document is not transfer or copy'];
-            } elseif ($resource['binding'] === false && !in_array($nonBindingDocument['param_value_string'], ['transfer', 'copy'])) {
+            } elseif (
+                $resource['binding'] === false &&
+                !in_array($nonBindingDocument['param_value_string'], ['transfer', 'copy'])
+            ) {
                 return ['errors' => 'no binding document is not transfer or copy'];
             }
             $date = new \DateTime($resource['creation_date']);
@@ -154,7 +215,7 @@ trait ExportSEDATrait
         }
 
         if ($args['data']['actionMode'] == 'download') {
-            $sedaPackage = ExportSedaTrait::makeSedaPackage([
+            $sedaPackage = self::makeSedaPackage([
                 'resource'               => $resource,
                 'attachments'            => $attachmentsData[$args['resId']] ?? [],
                 'config'                 => $config,
@@ -168,7 +229,10 @@ trait ExportSEDATrait
             if (count($args['resources']) > 1) {
                 $zip = new ZipArchive();
                 if ($zip->open($zipFilename, ZipArchive::CREATE) === true) {
-                    $zip->addFile($sedaPackage['encodedFilePath'], 'sedaPackage' . $resource['res_id'] . '.zip');
+                    $zip->addFile(
+                        $sedaPackage['encodedFilePath'],
+                        'sedaPackage' . $resource['res_id'] . '.zip'
+                    );
                     $zip->close();
 
                     $zipPath = $zipFilename;
@@ -205,9 +269,11 @@ trait ExportSEDATrait
     }
 
     /**
+     * @param array $args
+     * @return array
      * @throws Exception
      */
-    public static function makeSedaPackage($args = []): array
+    public static function makeSedaPackage(array $args = []): array
     {
         $initData = SedaController::initArchivalData([
             'resource'           => $args['resource'],
@@ -224,8 +290,10 @@ trait ExportSEDATrait
             $initData = $initData['archivalData'];
         }
 
-        $history = ExportSEDATrait::getHistory(['resId' => $args['resource']['res_id']]);
-        $folder = ExportSEDATrait::getFolderPath(['selectedFolder' => $args['folder'], 'folders' => $initData['additionalData']['folders']]);
+        $history = self::getHistory(['resId' => $args['resource']['res_id']]);
+        $folder = self::getFolderPath(
+            ['selectedFolder' => $args['folder'], 'folders' => $initData['additionalData']['folders']]
+        );
 
         $dataObjectPackage = [
             'archiveId'                 => $initData['data']['slipInfo']['archiveId'],
@@ -243,8 +311,12 @@ trait ExportSEDATrait
             'accessRuleCode'            => $args['config']['exportSeda']['accessRuleCode'],
             'history'                   => $history['history'],
             'contacts'                  => [
-                'senders'    => ContactController::getParsedContacts(['resId' => $args['resource']['res_id'], 'mode' => 'sender']),
-                'recipients' => ContactController::getParsedContacts(['resId' => $args['resource']['res_id'], 'mode' => 'recipient'])
+                'senders'    => ContactController::getParsedContacts(
+                    ['resId' => $args['resource']['res_id'], 'mode' => 'sender']
+                ),
+                'recipients' => ContactController::getParsedContacts(
+                    ['resId' => $args['resource']['res_id'], 'mode' => 'recipient']
+                )
             ],
             'attachments'               => $initData['archiveUnits'],
             'folders'                   => $folder['folderPath'],
@@ -262,27 +334,34 @@ trait ExportSEDATrait
             ]
         ];
 
-        $sedaPackage = ExportSEDATrait::generateSEDAPackage(['data' => $data]);
+        $sedaPackage = self::generateSEDAPackage(['data' => $data]);
         if (!empty($sedaPackage['errors'])) {
             return ['errors' => [$sedaPackage['errors']]];
         }
 
-        $messageSaved = ExportSEDATrait::saveMessage(['messageObject' => $sedaPackage['messageObject']]);
+        $messageSaved = self::saveMessage(['messageObject' => $sedaPackage['messageObject']]);
         MessageExchangeModel::insertUnitIdentifier([
             'messageId' => $messageSaved['messageId'],
             'tableName' => 'res_letterbox',
             'resId'     => $args['resource']['res_id']
         ]);
 
-        ExportSEDATrait::cleanTmpDocument(['archiveUnits' => $initData['archiveUnits']]);
+        self::cleanTmpDocument(['archiveUnits' => $initData['archiveUnits']]);
 
         return [
-            'messageId'       => $messageSaved['messageId'], 'encodedFilePath' => $sedaPackage['encodedFilePath'],
-            'messageFilename' => $sedaPackage['messageFilename'], 'reference' => $data['messageObject']['messageIdentifier']
+            'messageId'       => $messageSaved['messageId'],
+            'encodedFilePath' => $sedaPackage['encodedFilePath'],
+            'messageFilename' => $sedaPackage['messageFilename'],
+            'reference'       => $data['messageObject']['messageIdentifier']
         ];
     }
 
-    public static function sendSedaPackage($args = []): array
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function sendSedaPackage(array $args = []): array
     {
         $bodyData = [
             'messageFile' => base64_encode(file_get_contents($args['encodedFilePath'])),
@@ -290,7 +369,10 @@ trait ExportSEDATrait
             'schema'      => 'seda2'
         ];
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/medona/archiveTransfer',
+            'url'     => rtrim(
+                $args['config']['exportSeda']['urlSAEService'],
+                '/'
+            ) . '/medona/archiveTransfer',
             'method'  => 'POST',
             'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
             'headers' => [
@@ -307,7 +389,7 @@ trait ExportSEDATrait
             return ['errors' => 'Error returned by the route /medona/create : ' . $curlResponse['response']['message']];
         }
 
-        $acknowledgement = ExportSEDATrait::getAcknowledgement([
+        $acknowledgement = self::getAcknowledgement([
             'config'    => $args['config'],
             'reference' => $args['reference']
         ]);
@@ -332,7 +414,11 @@ trait ExportSEDATrait
         return [];
     }
 
-    public static function saveMessage($args = []): array
+    /**
+     * @param array $args
+     * @return array
+     */
+    public static function saveMessage(array $args = []): array
     {
         $data = new stdClass();
 
@@ -373,7 +459,11 @@ trait ExportSEDATrait
         return ['messageId' => $message['messageId']];
     }
 
-    public static function getFolderPath($args = []): array
+    /**
+     * @param array $args
+     * @return null[]
+     */
+    public static function getFolderPath(array $args = []): array
     {
         $folderPath = null;
         if (!empty($args['selectedFolder'])) {
@@ -392,7 +482,11 @@ trait ExportSEDATrait
         return ['folderPath' => $folderPath];
     }
 
-    public static function getHistory($args = []): array
+    /**
+     * @param array $args
+     * @return array
+     */
+    public static function getHistory(array $args = []): array
     {
         $history = HistoryModel::get([
             'select'  => ['event_date', 'info'],
@@ -404,28 +498,46 @@ trait ExportSEDATrait
         return ['history' => $history];
     }
 
-    public static function getAttachmentFilePath($args = []): array
+    /**
+     * @param array $args
+     * @return string[]
+     * @throws Exception
+     */
+    public static function getAttachmentFilePath(array $args = []): array
     {
         $document['docserver_id'] = $args['data']['docserver_id'];
         $document['path'] = $args['data']['path'];
         $document['filename'] = $args['data']['filename'];
         $document['fingerprint'] = $args['data']['fingerprint'];
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => 'Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace(
+            '#',
+            DIRECTORY_SEPARATOR,
+            $document['path']
+        ) .
+            $document['filename'];
 
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Attachment not found on docserver'];
         }
 
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+        $docserverType = DocserverTypeModel::getById(
+            ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+        );
+        $fingerprint = StoreController::getFingerPrint(
+            ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+        );
         if (empty($document['fingerprint'])) {
-            AttachmentModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+            AttachmentModel::update(
+                ['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]
+            );
             $document['fingerprint'] = $fingerprint;
         }
 
@@ -441,7 +553,11 @@ trait ExportSEDATrait
         return ['filePath' => $pathToDocument];
     }
 
-    public static function getNoteFilePath($args = []): array
+    /**
+     * @param array $args
+     * @return string[]
+     */
+    public static function getNoteFilePath(array $args = []): array
     {
         $encodedDocument = NoteController::getEncodedPdfByIds(['ids' => [$args['id']]]);
 
@@ -452,11 +568,23 @@ trait ExportSEDATrait
         return ['filePath' => $filePath];
     }
 
-    public static function getEmailFilePath($args = []): array
+    /**
+     * @param array $args
+     * @return string[]
+     */
+    public static function getEmailFilePath(array $args = []): array
     {
         $body = str_replace('###', ';', $args['data']['body']);
         $sender = json_decode($args['data']['sender'], true);
-        $data = "Courriel n°" . $args['data']['id'] . "\nDe : " . $sender['email'] . "\nPour : " . implode(", ", json_decode($args['data']['recipients'], true)) . "\nObjet : " . $args['data']['object'] . "\n\n" . strip_tags(html_entity_decode($body));
+        $data = "Courriel n°" . $args['data']['id'] . "\nDe : " . $sender['email'] . "\nPour : " .
+            implode(
+                ", ",
+                json_decode(
+                    $args['data']['recipients'],
+                    true
+                )
+            ) . "\nObjet : " . $args['data']['object'] .
+            "\n\n" . strip_tags(html_entity_decode($body));
 
         $libPath = CoreConfigModel::getFpdiPdfParserLibrary();
         if (file_exists($libPath)) {
@@ -475,9 +603,11 @@ trait ExportSEDATrait
     }
 
     /**
+     * @param array $args
+     * @return string[]
      * @throws Exception
      */
-    public static function getSummarySheetFilePath($args = []): array
+    public static function getSummarySheetFilePath(array $args = []): array
     {
         $units = [];
         $units[] = ['unit' => 'primaryInformations'];
@@ -515,7 +645,23 @@ trait ExportSEDATrait
         }
 
         $mainResource = ResModel::getOnView([
-            'select' => ['process_limit_date', 'status', 'alt_identifier', 'subject', 'priority', 'res_id', 'admission_date', 'creation_date', 'doc_date', 'initiator', 'typist', 'type_label', 'destination', 'filename', 'category_id'],
+            'select' => [
+                'process_limit_date',
+                'status',
+                'alt_identifier',
+                'subject',
+                'priority',
+                'res_id',
+                'admission_date',
+                'creation_date',
+                'doc_date',
+                'initiator',
+                'typist',
+                'type_label',
+                'destination',
+                'filename',
+                'category_id'
+            ],
             'where'  => ['res_id = ?'],
             'data'   => [$args['resId']]
         ]);
@@ -547,13 +693,18 @@ trait ExportSEDATrait
         ]);
 
         $tmpPath = CoreConfigModel::getTmpPath();
-        $summarySheetFilePath = $tmpPath . "summarySheet_" . $args['resId'] . "_" . $GLOBALS['id'] . "_" . rand() . ".pdf";
+        $summarySheetFilePath = $tmpPath . "summarySheet_" . $args['resId'] . "_" . $GLOBALS['id'] . "_" . rand() .
+            ".pdf";
         $pdf->Output($summarySheetFilePath, 'F');
 
         return ['filePath' => $summarySheetFilePath];
     }
 
-    public static function cleanTmpDocument(array $args)
+    /**
+     * @param array $args
+     * @return void
+     */
+    public static function cleanTmpDocument(array $args): void
     {
         foreach ($args['archiveUnits'] as $archiveUnit) {
             if (in_array($archiveUnit['type'], ['note', 'email', 'summarySheet'])) {
@@ -562,7 +713,11 @@ trait ExportSEDATrait
         }
     }
 
-    public static function array2object($data)
+    /**
+     * @param $data
+     * @return mixed|stdClass
+     */
+    public static function array2object($data): mixed
     {
         if (!is_array($data)) {
             return $data;
@@ -577,6 +732,8 @@ trait ExportSEDATrait
     }
 
     /**
+     * @param array $args
+     * @return array
      * @throws Exception
      */
     public static function generateSEDAPackage(array $args): array
@@ -589,10 +746,16 @@ trait ExportSEDATrait
         return $informationsToSend;
     }
 
-    public static function getAcknowledgement($args = []): array
+    /**
+     * @param array $args
+     * @return array|string[]
+     * @throws Exception
+     */
+    public static function getAcknowledgement(array $args = []): array
     {
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/medona/message/reference?reference=' . urlencode($args['reference'] . "_Ack"),
+            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') .
+                '/medona/message/reference?reference=' . urlencode($args['reference'] . "_Ack"),
             'method'  => 'GET',
             'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
             'headers' => [
@@ -605,13 +768,17 @@ trait ExportSEDATrait
         if (!empty($curlResponse['errors'])) {
             return ['errors' => 'Error returned by the route /medona/message/reference : ' . $curlResponse['errors']];
         } elseif ($curlResponse['code'] != 200) {
-            return ['errors' => 'Error returned by the route /medona/message/reference : ' . $curlResponse['response']['message']];
+            return [
+                'errors' => 'Error returned by the route /medona/message/reference : ' .
+                    $curlResponse['response']['message']
+            ];
         }
 
         $messageId = $curlResponse['response']['messageId'];
 
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/medona/message/' . urlencode($messageId) . '/Export',
+            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/medona/message/' .
+                urlencode($messageId) . '/Export',
             'method'  => 'GET',
             'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
             'headers' => [
@@ -622,12 +789,18 @@ trait ExportSEDATrait
         ]);
 
         if (!empty($curlResponse['errors'])) {
-            return ['errors' => 'Error returned by the route /medona/message/{messageId}/Export : ' . $curlResponse['errors']];
+            return [
+                'errors' => 'Error returned by the route /medona/message/{messageId}/Export : ' .
+                    $curlResponse['errors']
+            ];
         } elseif ($curlResponse['code'] != 200) {
-            return ['errors' => 'Error returned by the route /medona/message/{messageId}/Export : ' . $curlResponse['response']['message']];
+            return [
+                'errors' => 'Error returned by the route /medona/message/{messageId}/Export : ' .
+                    $curlResponse['response']['message']
+            ];
         }
 
-        $encodedAcknowledgement = ExportSEDATrait::getXmlFromZipMessage([
+        $encodedAcknowledgement = self::getXmlFromZipMessage([
             'encodedZipDocument' => base64_encode($curlResponse['response']),
             'messageId'          => $messageId
         ]);
@@ -638,6 +811,10 @@ trait ExportSEDATrait
         return ['encodedAcknowledgement' => $encodedAcknowledgement['encodedDocument']];
     }
 
+    /**
+     * @param array $args
+     * @return array|string[]
+     */
     public static function getXmlFromZipMessage(array $args): array
     {
         $tmpPath = CoreConfigModel::getTmpPath();
@@ -663,9 +840,11 @@ trait ExportSEDATrait
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function checkAcknowledgmentRecordManagement(array $args)
+    public static function checkAcknowledgmentRecordManagement(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -679,18 +858,29 @@ trait ExportSEDATrait
             return ['errors' => ['No acknowledgement found']];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $acknowledgement['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $acknowledgement['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => ['Docserver does not exists']];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $acknowledgement['path']) . $acknowledgement['filename'];
+        $pathToDocument = $docserver['path_template'] .
+            str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $acknowledgement['path']
+            ) . $acknowledgement['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => ['File does not exists']];
         }
 
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+        $docserverType = DocserverTypeModel::getById(
+            ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+        );
+        $fingerprint = StoreController::getFingerPrint(
+            ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+        );
         if (!empty($acknowledgement['fingerprint']) && $acknowledgement['fingerprint'] != $fingerprint) {
             return ['errors' => ['Fingerprint does not match']];
         }
@@ -700,12 +890,16 @@ trait ExportSEDATrait
             return ['errors' => ['Acknowledgement is not readable']];
         }
 
-        $messageExchange = MessageExchangeModel::getMessageByReference(['select' => ['message_id'], 'reference' => (string)$acknowledgementXml->MessageReceivedIdentifier]);
+        $messageExchange = MessageExchangeModel::getMessageByReference(
+            ['select' => ['message_id'], 'reference' => (string)$acknowledgementXml->MessageReceivedIdentifier]
+        );
         if (empty($messageExchange)) {
             return ['errors' => ['No acknowledgement found with this reference']];
         }
 
-        $unitIdentifier = MessageExchangeModel::getUnitIdentifierByResId(['select' => ['message_id'], 'resId' => $args['resId']]);
+        $unitIdentifier = MessageExchangeModel::getUnitIdentifierByResId(
+            ['select' => ['message_id'], 'resId' => $args['resId']]
+        );
         if ($unitIdentifier[0]['message_id'] != $messageExchange['message_id']) {
             return ['errors' => ['Wrong acknowledgement']];
         }
@@ -714,9 +908,11 @@ trait ExportSEDATrait
     }
 
     /**
+     * @param array $args
+     * @return array[]|true
      * @throws Exception
      */
-    public static function checkReplyRecordManagement(array $args)
+    public static function checkReplyRecordManagement(array $args): bool|array
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
@@ -730,18 +926,29 @@ trait ExportSEDATrait
             return ['errors' => ['No reply found']];
         }
 
-        $docserver = DocserverModel::getByDocserverId(['docserverId' => $reply['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+        $docserver = DocserverModel::getByDocserverId(
+            ['docserverId' => $reply['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+        );
         if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
             return ['errors' => ['Docserver does not exists']];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $reply['path']) . $reply['filename'];
+        $pathToDocument = $docserver['path_template'] . str_replace(
+            '#',
+            DIRECTORY_SEPARATOR,
+            $reply['path']
+        ) .
+            $reply['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => ['File does not exists']];
         }
 
-        $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-        $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+        $docserverType = DocserverTypeModel::getById(
+            ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+        );
+        $fingerprint = StoreController::getFingerPrint(
+            ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+        );
         if (!empty($reply['fingerprint']) && $reply['fingerprint'] != $fingerprint) {
             return ['errors' => ['Fingerprint does not match']];
         }
@@ -751,18 +958,22 @@ trait ExportSEDATrait
             return ['errors' => ['Reply is not readable']];
         }
 
-        $messageExchange = MessageExchangeModel::getMessageByReference(['select' => ['message_id'], 'reference' => (string)$replyXml->MessageRequestIdentifier]);
+        $messageExchange = MessageExchangeModel::getMessageByReference(
+            ['select' => ['message_id'], 'reference' => (string)$replyXml->MessageRequestIdentifier]
+        );
         if (empty($messageExchange)) {
             return ['errors' => ['No reply found with this reference']];
         }
 
-        $unitIdentifier = MessageExchangeModel::getUnitIdentifierByResId(['select' => ['message_id'], 'resId' => $args['resId']]);
+        $unitIdentifier = MessageExchangeModel::getUnitIdentifierByResId(
+            ['select' => ['message_id'], 'resId' => $args['resId']]
+        );
         if ($unitIdentifier[0]['message_id'] != $messageExchange['message_id']) {
             return ['errors' => ['Wrong reply']];
         }
 
         if ($args['data']['resetAction']) {
-            if (strpos((string)$replyXml->ReplyCode, '000') !== false) {
+            if (str_contains((string)$replyXml->ReplyCode, '000')) {
                 return ['errors' => ['Mail already archived']];
             }
 
@@ -773,8 +984,13 @@ trait ExportSEDATrait
             ]);
 
             MessageExchangeModel::deleteUnitIdentifier(['where' => ['res_id = ?'], 'data' => [$args['resId']]]);
-            MessageExchangeModel::delete(['where' => ['reference in (?)'], 'data' => [[(string)$replyXml->MessageRequestIdentifier, (string)$replyXml->MessageIdentifier]]]);
-        } elseif (strpos((string)$replyXml->ReplyCode, '000') === false) {
+            MessageExchangeModel::delete(
+                [
+                    'where' => ['reference in (?)'],
+                    'data'  => [[(string)$replyXml->MessageRequestIdentifier, (string)$replyXml->MessageIdentifier]]
+                ]
+            );
+        } elseif (!str_contains((string)$replyXml->ReplyCode, '000')) {
             return ['errors' => ['Mail rejected from SAE']];
         }
 

@@ -65,7 +65,10 @@ class ExportController
             if ($rawTemplate['format'] == 'pdf') {
                 $templates['pdf'] = ['data' => json_decode($rawTemplate['data'], true)];
             } elseif ($rawTemplate['format'] == 'csv') {
-                $templates['csv'] = ['delimiter' => $rawTemplate['delimiter'], 'data' => json_decode($rawTemplate['data'], true)];
+                $templates['csv'] = [
+                    'delimiter' => $rawTemplate['delimiter'],
+                    'data'      => json_decode($rawTemplate['data'], true)
+                ];
             }
         }
 
@@ -75,20 +78,30 @@ class ExportController
     /**
      * @param Request $request
      * @param Response $response
-     * @return Message|\Slim\Psr7\Response|Response
+     * @return Response
      * @throws Exception
      */
-    public function updateExport(Request $request, Response $response)
+    public function updateExport(Request $request, Response $response): Response
     {
         set_time_limit(240);
 
         $body = $request->getParsedBody();
         $hasFullAccess = [];
 
-        if (!Validator::stringType()->notEmpty()->validate($body['format']) || !in_array($body['format'], ['pdf', 'csv'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Data format is empty or not a string between [\'pdf\', \'csv\']']);
-        } elseif ($body['format'] == 'csv' && (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array($body['delimiter'], [',', ';', 'TAB']))) {
-            return $response->withStatus(400)->withJson(['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']);
+        if (
+            !Validator::stringType()->notEmpty()->validate($body['format']) ||
+            !in_array($body['format'], ['pdf', 'csv'])
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Data format is empty or not a string between [\'pdf\', \'csv\']']
+            );
+        } elseif (
+            $body['format'] == 'csv' && (!Validator::stringType()->notEmpty()->validate($body['delimiter']) ||
+                !in_array($body['delimiter'], [',', ';', 'TAB']))
+        ) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']
+            );
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['data'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Data data is empty or not an array']);
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['resources'])) {
@@ -121,7 +134,10 @@ class ExportController
         }
 
         foreach ($body['data'] as $value) {
-            if (!isset($value['value']) || !Validator::stringType()->notEmpty()->validate($value['label']) || !Validator::boolType()->validate($value['isFunction'])) {
+            if (
+                !isset($value['value']) || !Validator::stringType()->notEmpty()->validate($value['label']) ||
+                !Validator::boolType()->validate($value['isFunction'])
+            ) {
                 return $response->withStatus(400)->withJson(['errors' => 'One data is not set well']);
             }
         }
@@ -132,7 +148,9 @@ class ExportController
         }
         $order .= 'END';
 
-        $template = ExportTemplateModel::get(['select' => [1], 'where' => ['user_id = ?', 'format = ?'], 'data' => [$GLOBALS['id'], $body['format']]]);
+        $template = ExportTemplateModel::get(
+            ['select' => [1], 'where' => ['user_id = ?', 'format = ?'], 'data' => [$GLOBALS['id'], $body['format']]]
+        );
         if (empty($template)) {
             ExportTemplateModel::create([
                 'userId'    => $GLOBALS['id'],
@@ -211,13 +229,31 @@ class ExportController
         }
 
         if ($body['format'] == 'csv') {
-            $file = ExportController::getCsv(['delimiter' => $body['delimiter'], 'data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
+            $file = ExportController::getCsv(
+                [
+                    'delimiter'     => $body['delimiter'],
+                    'data'          => $body['data'],
+                    'resources'     => $resources,
+                    'chunkedResIds' => $aChunkedResources,
+                    'hasFullRight'  => $hasFullAccess
+                ]
+            );
             $response->write(stream_get_contents($file));
-            $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
+            $response = $response->withAddedHeader(
+                'Content-Disposition',
+                'attachment; filename=export_maarch.csv'
+            );
             $contentType = 'application/vnd.ms-excel';
             fclose($file);
         } else {
-            $pdf = ExportController::getPdf(['data' => $body['data'], 'resources' => $resources, 'chunkedResIds' => $aChunkedResources, 'hasFullRight' => $hasFullAccess]);
+            $pdf = ExportController::getPdf(
+                [
+                    'data'          => $body['data'],
+                    'resources'     => $resources,
+                    'chunkedResIds' => $aChunkedResources,
+                    'hasFullRight'  => $hasFullAccess
+                ]
+            );
 
             $fileContent = $pdf->Output('', 'S');
             $finfo = new finfo(FILEINFO_MIME_TYPE);
@@ -234,10 +270,13 @@ class ExportController
      * @param array $args
      * @param int $userId
      * @return array
+     * @throws Exception
      */
     public static function inBasket(array $args, int $userId): array
     {
-        $authorizedResources = ResController::getAuthorizedResources(['resources' => $args, 'userId' => $userId, 'mode' => 'baskets']);
+        $authorizedResources = ResController::getAuthorizedResources(
+            ['resources' => $args, 'userId' => $userId, 'mode' => 'baskets']
+        );
         $InBaskets = [];
         foreach ($args as $resId) {
             $isInBaskets = in_array($resId, $authorizedResources);
@@ -255,10 +294,13 @@ class ExportController
     /**
      * @param array $args
      * @return array
+     * @throws Exception
      */
     public static function inFolder(array $args): array
     {
-        $userEntities = EntityModel::getWithUserEntities(['select' => ['entities.id'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]);
+        $userEntities = EntityModel::getWithUserEntities(
+            ['select' => ['entities.id'], 'where' => ['user_id = ?'], 'data' => [$GLOBALS['id']]]
+        );
         $userEntities = array_column($userEntities, 'id');
         if (empty($userEntities)) {
             $userEntities = 0;
@@ -266,7 +308,10 @@ class ExportController
 
         $foldersWithResources = FolderModel::getWithEntitiesAndResources([
             'select'  => ['DISTINCT (resources_folders.res_id)', 'resources_folders.folder_id'],
-            'where'   => ['(entities_folders.entity_id in (?) OR folders.user_id = ? OR keyword = ?)', 'resources_folders.res_id in (?)'],
+            'where'   => [
+                '(entities_folders.entity_id in (?) OR folders.user_id = ? OR keyword = ?)',
+                'resources_folders.res_id in (?)'
+            ],
             'data'    => [$userEntities, $GLOBALS['id'], 'ALL_ENTITIES', $args],
             'groupBy' => ['resources_folders.folder_id, resources_folders.res_id']
         ]);
@@ -336,7 +381,11 @@ class ExportController
                         $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $csvContent[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/' . $resource['res_id'];
+                        $csvContent[] = trim(
+                            UrlController::getCoreUrl(),
+                            '/'
+                        ) . '/dist/index.html#/resources/' .
+                            $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $csvContent[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -360,10 +409,14 @@ class ExportController
                     } elseif ($value['value'] == 'getDestinationEntityType') {
                         $csvContent[] = $resource['enthree.entity_type'];
                     } elseif ($value['value'] == 'getSenders') {
-                        $senders = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'sender']);
+                        $senders = ContactController::getFormattedContacts(
+                            ['resId' => $resource['res_id'], 'mode' => 'sender']
+                        );
                         $csvContent[] = implode("\n", $senders);
                     } elseif ($value['value'] == 'getRecipients') {
-                        $recipients = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'recipient']);
+                        $recipients = ContactController::getFormattedContacts(
+                            ['resId' => $resource['res_id'], 'mode' => 'recipient']
+                        );
                         $csvContent[] = implode("\n", $recipients);
                     } elseif ($value['value'] == 'getTypist') {
                         $csvContent[] = UserModel::getLabelledUserById(['id' => $resource['typist']]);
@@ -374,28 +427,66 @@ class ExportController
                         $csvContent[] = empty($tags[$resource['res_id']]) ? '' : $tags[$resource['res_id']];
                     } elseif ($value['value'] == 'getSignatories') {
                         $signatories = ExportController::getSignatories(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $csvContent[] = empty($signatories[$resource['res_id']]) ? '' : $signatories[$resource['res_id']];
+                        $csvContent[] = empty(
+                            $signatories[$resource['res_id']]
+                        ) ? '' : $signatories[$resource['res_id']];
                     } elseif ($value['value'] == 'getSignatureDates') {
-                        $signatureDates = ExportController::getSignatureDates(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $csvContent[] = empty($signatureDates[$resource['res_id']]) ? '' : $signatureDates[$resource['res_id']];
+                        $signatureDates = ExportController::getSignatureDates(
+                            ['chunkedResIds' => $aArgs['chunkedResIds']]
+                        );
+                        $csvContent[] = empty(
+                            $signatureDates[$resource['res_id']]
+                        ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $csvContent[] = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
                     } elseif ($value['value'] == 'getAcknowledgementSendDate') {
-                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $csvContent[] = empty($acknowledgementSendDate[$resource['res_id']]) ? '' : $acknowledgementSendDate[$resource['res_id']];
-                    } elseif (strpos($value['value'], 'custom_') !== false) {
-                        $csvContent[] = ExportController::getCustomFieldValue(['custom' => $value['value'], 'resId' => $resource['res_id']]);
+                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(
+                            ['chunkedResIds' => $aArgs['chunkedResIds']]
+                        );
+                        $csvContent[] = empty(
+                            $acknowledgementSendDate[$resource['res_id']]
+                        ) ? '' : $acknowledgementSendDate[$resource['res_id']];
+                    } elseif (str_contains($value['value'], 'custom_')) {
+                        $csvContent[] = ExportController::getCustomFieldValue(
+                            ['custom' => $value['value'], 'resId' => $resource['res_id']]
+                        );
                     } elseif ($value['value'] == 'getVisaCircuit') {
-                        $csvContent[] = ExportController::getCircuit(['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]);
+                        $csvContent[] = ExportController::getCircuit(
+                            ['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]
+                        );
                     } elseif ($value['value'] == 'getOpinionCircuit') {
-                        $csvContent[] = ExportController::getCircuit(['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]);
+                        $csvContent[] = ExportController::getCircuit(
+                            ['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]
+                        );
                     }
                 } else {
-                    $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
+                    $allDates = [
+                        'doc_date',
+                        'departure_date',
+                        'admission_date',
+                        'process_limit_date',
+                        'opinion_limit_date',
+                        'closing_date'
+                    ];
                     if (in_array($value['value'], $allDates)) {
                         $csvContent[] = TextFormatModel::formatDate($resource[$value['value']]);
-                    } elseif (in_array($value['value'], ['res_id', 'type_label', 'doctypes_first_level_label', 'doctypes_second_level_label', 'format', 'barcode', 'confidentiality', 'alt_identifier', 'subject'])) {
+                    } elseif (
+                        in_array(
+                            $value['value'],
+                            [
+                            'res_id',
+                            'type_label',
+                            'doctypes_first_level_label',
+                            'doctypes_second_level_label',
+                            'format',
+                            'barcode',
+                            'confidentiality',
+                            'alt_identifier',
+                            'subject'
+                            ]
+                        )
+                    ) {
                         $csvContent[] = $resource[$value['value']];
                     }
                 }
@@ -446,10 +537,21 @@ class ExportController
         }
 
         $pdf->SetFont('', 'B', 12);
-        $labelHeight = ExportController::getMaximumHeight($pdf, ['data' => $labels, 'width' => $widthNoMargins / $columnsNumber]);
+        $labelHeight = ExportController::getMaximumHeight(
+            $pdf,
+            ['data' => $labels, 'width' => $widthNoMargins / $columnsNumber]
+        );
         $pdf->SetFillColor(230, 230, 230);
         foreach ($aArgs['data'] as $value) {
-            $pdf->MultiCell($widthNoMargins / $columnsNumber, $labelHeight, $value['label'], 1, 'L', true, 0);
+            $pdf->MultiCell(
+                $widthNoMargins / $columnsNumber,
+                $labelHeight,
+                $value['label'],
+                1,
+                'L',
+                true,
+                0
+            );
         }
 
         $pdf->SetY($pdf->GetY() + $labelHeight);
@@ -480,7 +582,8 @@ class ExportController
                         $copies = ExportController::getCopies(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $content[] = empty($copies[$resource['res_id']]) ? '' : $copies[$resource['res_id']];
                     } elseif ($value['value'] == 'getDetailLink') {
-                        $content[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/' . $resource['res_id'];
+                        $content[] = trim(UrlController::getCoreUrl(), '/') . '/dist/index.html#/resources/' .
+                            $resource['res_id'];
                     } elseif ($value['value'] == 'getParentFolder') {
                         $content[] = ExportController::getParentFolderLabel(['res_id' => $resource['res_id']]);
                     } elseif ($value['value'] == 'getFolder') {
@@ -504,10 +607,14 @@ class ExportController
                     } elseif ($value['value'] == 'getDestinationEntityType') {
                         $content[] = $resource['enthree.entity_type'];
                     } elseif ($value['value'] == 'getSenders') {
-                        $senders = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'sender']);
+                        $senders = ContactController::getFormattedContacts(
+                            ['resId' => $resource['res_id'], 'mode' => 'sender']
+                        );
                         $content[] = implode("\n", $senders);
                     } elseif ($value['value'] == 'getRecipients') {
-                        $recipients = ContactController::getFormattedContacts(['resId' => $resource['res_id'], 'mode' => 'recipient']);
+                        $recipients = ContactController::getFormattedContacts(
+                            ['resId' => $resource['res_id'], 'mode' => 'recipient']
+                        );
                         $content[] = implode("\n", $recipients);
                     } elseif ($value['value'] == 'getTypist') {
                         $content[] = UserModel::getLabelledUserById(['id' => $resource['typist']]);
@@ -520,23 +627,44 @@ class ExportController
                         $signatories = ExportController::getSignatories(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $content[] = empty($signatories[$resource['res_id']]) ? '' : $signatories[$resource['res_id']];
                     } elseif ($value['value'] == 'getSignatureDates') {
-                        $signatureDates = ExportController::getSignatureDates(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $content[] = empty($signatureDates[$resource['res_id']]) ? '' : $signatureDates[$resource['res_id']];
+                        $signatureDates = ExportController::getSignatureDates(
+                            ['chunkedResIds' => $aArgs['chunkedResIds']]
+                        );
+                        $content[] = empty(
+                            $signatureDates[$resource['res_id']]
+                        ) ? '' : $signatureDates[$resource['res_id']];
                     } elseif ($value['value'] == 'getDepartment') {
                         $department = ExportController::getDepartment(['chunkedResIds' => $aArgs['chunkedResIds']]);
                         $content[] = empty($department[$resource['res_id']]) ? '' : $department[$resource['res_id']];
                     } elseif ($value['value'] == 'getAcknowledgementSendDate') {
-                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(['chunkedResIds' => $aArgs['chunkedResIds']]);
-                        $content[] = empty($acknowledgementSendDate[$resource['res_id']]) ? '' : $acknowledgementSendDate[$resource['res_id']];
-                    } elseif (strpos($value['value'], 'custom_') !== false) {
-                        $content[] = ExportController::getCustomFieldValue(['custom' => $value['value'], 'resId' => $resource['res_id']]);
+                        $acknowledgementSendDate = ExportController::getAcknowledgementSendDate(
+                            ['chunkedResIds' => $aArgs['chunkedResIds']]
+                        );
+                        $content[] = empty(
+                            $acknowledgementSendDate[$resource['res_id']]
+                        ) ? '' : $acknowledgementSendDate[$resource['res_id']];
+                    } elseif (str_contains($value['value'], 'custom_')) {
+                        $content[] = ExportController::getCustomFieldValue(
+                            ['custom' => $value['value'], 'resId' => $resource['res_id']]
+                        );
                     } elseif ($value['value'] == 'getVisaCircuit') {
-                        $content[] = ExportController::getCircuit(['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]);
+                        $content[] = ExportController::getCircuit(
+                            ['listType' => 'VISA_CIRCUIT', 'resId' => $resource['res_id']]
+                        );
                     } elseif ($value['value'] == 'getOpinionCircuit') {
-                        $content[] = ExportController::getCircuit(['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]);
+                        $content[] = ExportController::getCircuit(
+                            ['listType' => 'AVIS_CIRCUIT', 'resId' => $resource['res_id']]
+                        );
                     }
                 } else {
-                    $allDates = ['doc_date', 'departure_date', 'admission_date', 'process_limit_date', 'opinion_limit_date', 'closing_date'];
+                    $allDates = [
+                        'doc_date',
+                        'departure_date',
+                        'admission_date',
+                        'process_limit_date',
+                        'opinion_limit_date',
+                        'closing_date'
+                    ];
                     if (in_array($value['value'], $allDates)) {
                         $content[] = TextFormatModel::formatDate($resource[$value['value']]);
                     } else {
@@ -547,7 +675,10 @@ class ExportController
             if (!empty($contentHeight)) {
                 $pdf->SetY($pdf->GetY() + $contentHeight);
             }
-            $contentHeight = ExportController::getMaximumHeight($pdf, ['data' => $content, 'width' => $widthNoMargins / $columnsNumber]);
+            $contentHeight = ExportController::getMaximumHeight(
+                $pdf,
+                ['data' => $content, 'width' => $widthNoMargins / $columnsNumber]
+            );
             if (($pdf->GetY() + $contentHeight) > $bottomHeight) {
                 $pdf->AddPage();
             }
@@ -597,7 +728,9 @@ class ExportController
                     if ($listInstance['item_type'] == 'user_id') {
                         $copies .= UserModel::getLabelledUserById(['id' => $listInstance['item_id']]);
                     } elseif ($listInstance['item_type'] == 'entity_id') {
-                        $entity = EntityModel::getById(['id' => $listInstance['item_id'], 'select' => ['short_label']]);
+                        $entity = EntityModel::getById(
+                            ['id' => $listInstance['item_id'], 'select' => ['short_label']]
+                        );
                         $copies .= $entity['short_label'];
                     }
                     $resId = $listInstance['res_id'];
@@ -664,7 +797,12 @@ class ExportController
                 'select'    => ['res_id', 'address_postcode'],
                 'table'     => ['resource_contacts', 'contacts'],
                 'left_join' => ['resource_contacts.item_id = contacts.id'],
-                'where'     => ["res_id in (?)", "type = 'contact'", "mode = 'sender'", "(address_country ILIKE 'FRANCE' OR address_country = '' OR address_country IS NULL)"],
+                'where'     => [
+                    "res_id in (?)",
+                    "type = 'contact'",
+                    "mode = 'sender'",
+                    "(address_country ILIKE 'FRANCE' OR address_country = '' OR address_country IS NULL)"
+                ],
                 'data'      => [$resIds]
             ]);
 
@@ -815,7 +953,9 @@ class ExportController
                 } else {
                     $aSignatureDates[$attachment['res_id_master']] = '';
                 }
-                $aSignatureDates[$attachment['res_id_master']] .= TextFormatModel::formatDate($attachment['creation_date']);
+                $aSignatureDates[$attachment['res_id_master']] .= TextFormatModel::formatDate(
+                    $attachment['creation_date']
+                );
             }
         }
 
@@ -828,7 +968,7 @@ class ExportController
      * @return float|int
      * @throws Exception
      */
-    private static function getMaximumHeight(Fpdi $pdf, array $args)
+    private static function getMaximumHeight(Fpdi $pdf, array $args): float|int
     {
         ValidatorModel::notEmpty($args, ['data', 'width']);
         ValidatorModel::arrayType($args, ['data']);
@@ -915,7 +1055,7 @@ class ExportController
      * @return mixed|string|null
      * @throws Exception
      */
-    private static function getCustomFieldValue(array $args)
+    private static function getCustomFieldValue(array $args): mixed
     {
         ValidatorModel::notEmpty($args, ['custom', 'resId']);
         ValidatorModel::stringType($args, ['custom']);
@@ -923,12 +1063,18 @@ class ExportController
 
         $customField = explode('_', $args['custom']);
         // Custom fields must be in this format : 'custom_<id custom field>'
-        // So if the explode returns an array with more or less than 2 elements, the format is wrong
+        // So if explode returns an array with more or less than 2 elements, the format is wrong
         if (count($customField) != 2) {
             return null;
         }
         $customFieldId = $customField[1];
-        $customField = ResModel::get(['select' => ["custom_fields->'{$customFieldId}' as csfield"], 'where' => ['res_id = ?'], 'data' => [$args['resId']]]);
+        $customField = ResModel::get(
+            [
+                'select' => ["custom_fields->'{$customFieldId}' as csfield"],
+                'where'  => ['res_id = ?'],
+                'data'   => [$args['resId']]
+            ]
+        );
         if (empty($customField[0]['csfield'])) {
             return null;
         }
@@ -1017,12 +1163,10 @@ class ExportController
                     } else {
                         $label = "{$user} ({$roleLabel})";
                     }
+                } elseif (!empty($delegate)) {
+                    $label = "{$delegate} (" . _INSTEAD_OF . " {$user})";
                 } else {
-                    if (!empty($delegate)) {
-                        $label = "{$delegate} (" . _INSTEAD_OF . " {$user})";
-                    } else {
-                        $label = "{$user}";
-                    }
+                    $label = "{$user}";
                 }
                 $list[] = $label;
             } else {

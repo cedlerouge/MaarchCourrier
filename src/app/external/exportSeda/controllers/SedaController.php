@@ -16,9 +16,11 @@ namespace ExportSeda\controllers;
 
 use Configuration\models\ConfigurationModel;
 use Convert\models\AdrModel;
+use DateTime;
 use Docserver\models\DocserverModel;
 use Docserver\models\DocserverTypeModel;
 use Email\models\EmailModel;
+use Exception;
 use Folder\models\FolderModel;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
@@ -35,11 +37,13 @@ use User\models\UserModel;
 class SedaController
 {
     /**
-     * @throws \Exception
+     * @param array $args
+     * @return array[]|string[]
+     * @throws Exception
      */
-    public static function initArchivalData($args = []): array
+    public static function initArchivalData(array $args = []): array
     {
-        $date = new \DateTime();
+        $date = new DateTime();
 
         $return = [
             'data'           => [
@@ -54,7 +58,8 @@ class SedaController
                     'retentionFinalDisposition' => $args['doctype']['retention_final_disposition']
                 ],
                 'slipInfo' => [
-                    'slipId'    => $GLOBALS['login'] . '-' . $date->format('Ymd-Hisu') . '-' . $args['resource']['res_id'],
+                    'slipId'    => $GLOBALS['login'] . '-' . $date->format('Ymd-Hisu') . '-' .
+                        $args['resource']['res_id'],
                     'archiveId' => 'archive_' . $args['resource']['res_id']
                 ]
             ],
@@ -72,20 +77,37 @@ class SedaController
             ]);
             $document = $convertedDocument[0] ?? $document;
 
-            $docserver = DocserverModel::getByDocserverId(['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]);
+            $docserver = DocserverModel::getByDocserverId(
+                ['docserverId' => $document['docserver_id'], 'select' => ['path_template', 'docserver_type_id']]
+            );
             if (empty($docserver['path_template']) || !file_exists($docserver['path_template'])) {
                 return ['errors' => 'Docserver does not exist'];
             }
 
-            $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $document['path']) . $document['filename'];
+            $pathToDocument = $docserver['path_template'] . str_replace(
+                '#',
+                DIRECTORY_SEPARATOR,
+                $document['path']
+            ) .
+                $document['filename'];
             if (!file_exists($pathToDocument)) {
                 return ['errors' => 'Document not found on docserver'];
             }
 
-            $docserverType = DocserverTypeModel::getById(['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]);
-            $fingerprint = StoreController::getFingerPrint(['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]);
+            $docserverType = DocserverTypeModel::getById(
+                ['id' => $docserver['docserver_type_id'], 'select' => ['fingerprint_mode']]
+            );
+            $fingerprint = StoreController::getFingerPrint(
+                ['filePath' => $pathToDocument, 'mode' => $docserverType['fingerprint_mode']]
+            );
             if (empty($convertedDocument) && empty($document['fingerprint'])) {
-                ResModel::update(['set' => ['fingerprint' => $fingerprint], 'where' => ['res_id = ?'], 'data' => [$args['resource']['res_id']]]);
+                ResModel::update(
+                    [
+                        'set'   => ['fingerprint' => $fingerprint],
+                        'where' => ['res_id = ?'],
+                        'data'  => [$args['resource']['res_id']]
+                    ]
+                );
                 $document['fingerprint'] = $fingerprint;
             }
 
@@ -128,7 +150,13 @@ class SedaController
             $return['archiveUnits'][] = $tmpAttachment;
         }
 
-        $notes = NoteModel::get(['select' => ['note_text', 'id', 'creation_date'], 'where' => ['identifier = ?'], 'data' => [$args['resource']['res_id']]]);
+        $notes = NoteModel::get(
+            [
+                'select' => ['note_text', 'id', 'creation_date'],
+                'where'  => ['identifier = ?'],
+                'data'   => [$args['resource']['res_id']]
+            ]
+        );
         foreach ($notes as $note) {
             $tmpNote = [
                 'id'               => 'note_' . $note['id'],
@@ -217,12 +245,18 @@ class SedaController
         return ['archivalData' => $return];
     }
 
-    public static function getRecipientArchiveEntities($args = []): array
+    /**
+     * @param array $args
+     * @return array[]|string[]
+     * @throws Exception
+     */
+    public static function getRecipientArchiveEntities(array $args = []): array
     {
         $archiveEntities = [];
         if (strtolower($args['config']['exportSeda']['sae']) == 'maarchrm') {
             $curlResponse = CurlModel::exec([
-                'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/organization/organization/Byrole/archiver',
+                'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') .
+                    '/organization/organization/Byrole/archiver',
                 'method'  => 'GET',
                 'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
                 'headers' => [
@@ -233,9 +267,15 @@ class SedaController
             ]);
 
             if (!empty($curlResponse['errors'])) {
-                return ['errors' => 'Error returned by the route /organization/organization/Byrole/archiver : ' . $curlResponse['errors']];
+                return [
+                    'errors' => 'Error returned by the route /organization/organization/Byrole/archiver : ' .
+                        $curlResponse['errors']
+                ];
             } elseif ($curlResponse['code'] != 200) {
-                return ['errors' => 'Error returned by the route /organization/organization/Byrole/archiver : ' . $curlResponse['response']['message']];
+                return [
+                    'errors' => 'Error returned by the route /organization/organization/Byrole/archiver : ' .
+                        $curlResponse['response']['message']
+                ];
             }
 
             $archiveEntitiesAllowed = array_column($args['archivalAgreements'], 'archiveEntityRegNumber');
@@ -252,26 +292,30 @@ class SedaController
                     ];
                 }
             }
-        } else {
-            if (is_array($args['config']['exportSeda']['externalSAE']['archiveEntities'])) {
-                foreach ($args['config']['exportSeda']['externalSAE']['archiveEntities'] as $archiveEntity) {
-                    $archiveEntities[] = [
-                        'id'    => $archiveEntity['id'],
-                        'label' => $archiveEntity['label']
-                    ];
-                }
+        } elseif (is_array($args['config']['exportSeda']['externalSAE']['archiveEntities'])) {
+            foreach ($args['config']['exportSeda']['externalSAE']['archiveEntities'] as $archiveEntity) {
+                $archiveEntities[] = [
+                    'id'    => $archiveEntity['id'],
+                    'label' => $archiveEntity['label']
+                ];
             }
         }
 
         return ['archiveEntities' => $archiveEntities];
     }
 
-    public static function getArchivalAgreements($args = []): array
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getArchivalAgreements(array $args = []): array
     {
         $archivalAgreements = [];
         if (strtolower($args['config']['exportSeda']['sae']) == 'maarchrm') {
             $curlResponse = CurlModel::exec([
-                'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/medona/archivalAgreement/Index',
+                'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') .
+                    '/medona/archivalAgreement/Index',
                 'method'  => 'GET',
                 'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
                 'headers' => [
@@ -282,16 +326,27 @@ class SedaController
             ]);
 
             if (!empty($curlResponse['errors'])) {
-                return ['errors' => 'Error returned by the route /medona/archivalAgreement/Index : ' . $curlResponse['errors']];
+                return [
+                    'errors' => 'Error returned by the route /medona/archivalAgreement/Index : ' .
+                        $curlResponse['errors']
+                ];
             } elseif ($curlResponse['code'] != 200) {
-                return ['errors' => 'Error returned by the route /medona/archivalAgreement/Index : ' . $curlResponse['response']['message']];
+                return [
+                    'errors' => 'Error returned by the route /medona/archivalAgreement/Index : ' .
+                        $curlResponse['response']['message']
+                ];
             }
 
-            $producerService = SedaController::getProducerServiceInfo(['config' => $args['config'], 'producerServiceName' => $args['producerService']]);
+            $producerService = SedaController::getProducerServiceInfo(
+                ['config' => $args['config'], 'producerServiceName' => $args['producerService']]
+            );
             if (!empty($producerService['errors'])) {
                 return ['errors' => $curlResponse['errors']];
             } elseif (empty($producerService['producerServiceInfo'])) {
-                return ['errors' => 'ProducerService does not exists in MaarchRM', 'lang' => 'producerServiceDoesNotExists'];
+                return [
+                    'errors' => 'ProducerService does not exists in MaarchRM',
+                    'lang'   => 'producerServiceDoesNotExists'
+                ];
             }
 
             $archivalAgreements[] = [
@@ -299,7 +354,10 @@ class SedaController
                 'label' => null
             ];
             foreach ($curlResponse['response'] as $retentionRule) {
-                if ($retentionRule['depositorOrgRegNumber'] == $args['senderArchiveEntity'] && in_array($producerService['producerServiceInfo']['orgId'], $retentionRule['originatorOrgIds'])) {
+                if (
+                    $retentionRule['depositorOrgRegNumber'] == $args['senderArchiveEntity'] &&
+                    in_array($producerService['producerServiceInfo']['orgId'], $retentionRule['originatorOrgIds'])
+                ) {
                     $archivalAgreements[] = [
                         'id'                     => $retentionRule['reference'],
                         'label'                  => $retentionRule['name'],
@@ -307,24 +365,28 @@ class SedaController
                     ];
                 }
             }
-        } else {
-            if (is_array($args['config']['exportSeda']['externalSAE']['archivalAgreements'])) {
-                foreach ($args['config']['exportSeda']['externalSAE']['archivalAgreements'] as $archivalAgreement) {
-                    $archivalAgreements[] = [
-                        'id'    => $archivalAgreement['id'],
-                        'label' => $archivalAgreement['label']
-                    ];
-                }
+        } elseif (is_array($args['config']['exportSeda']['externalSAE']['archivalAgreements'])) {
+            foreach ($args['config']['exportSeda']['externalSAE']['archivalAgreements'] as $archivalAgreement) {
+                $archivalAgreements[] = [
+                    'id'    => $archivalAgreement['id'],
+                    'label' => $archivalAgreement['label']
+                ];
             }
         }
 
         return ['archivalAgreements' => $archivalAgreements];
     }
 
-    public static function getProducerServiceInfo($args = []): array
+    /**
+     * @param array $args
+     * @return array
+     * @throws Exception
+     */
+    public static function getProducerServiceInfo(array $args = []): array
     {
         $curlResponse = CurlModel::exec([
-            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') . '/organization/organization/Search?term=' . $args['producerServiceName'],
+            'url'     => rtrim($args['config']['exportSeda']['urlSAEService'], '/') .
+                '/organization/organization/Search?term=' . $args['producerServiceName'],
             'method'  => 'GET',
             'cookie'  => 'LAABS-AUTH=' . urlencode($args['config']['exportSeda']['token']),
             'headers' => [
@@ -335,9 +397,14 @@ class SedaController
         ]);
 
         if (!empty($curlResponse['errors'])) {
-            return ['errors' => 'Error returned by the route /organization/organization/Search : ' . $curlResponse['errors']];
+            return [
+                'errors' => 'Error returned by the route /organization/organization/Search : ' . $curlResponse['errors']
+            ];
         } elseif ($curlResponse['code'] != 200) {
-            return ['errors' => 'Error returned by the route /organization/organization/Search : ' . $curlResponse['response']['message']];
+            return [
+                'errors' => 'Error returned by the route /organization/organization/Search : ' .
+                    $curlResponse['response']['message']
+            ];
         }
 
         foreach ($curlResponse['response'] as $organization) {
@@ -349,7 +416,13 @@ class SedaController
         return ['producerServiceInfo' => null];
     }
 
-    public function getRetentionRules(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function getRetentionRules(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_architecture', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -376,9 +449,19 @@ class SedaController
             ]);
 
             if (!empty($curlResponse['errors'])) {
-                return $response->withStatus(400)->withJson(['errors' => 'Error returned by the route /recordsManagement/retentionRule/Index : ' . $curlResponse['errors']]);
+                return $response->withStatus(400)->withJson(
+                    [
+                        'errors' => 'Error returned by the route /recordsManagement/retentionRule/Index : ' .
+                            $curlResponse['errors']
+                    ]
+                );
             } elseif ($curlResponse['code'] != 200) {
-                return $response->withStatus(400)->withJson(['errors' => 'Error returned by the route /recordsManagement/retentionRule/Index : ' . $curlResponse['response']['message']]);
+                return $response->withStatus(400)->withJson(
+                    [
+                        'errors' => 'Error returned by the route /recordsManagement/retentionRule/Index : ' .
+                            $curlResponse['response']['message']
+                    ]
+                );
             }
 
             $retentionRules[] = [
@@ -391,21 +474,25 @@ class SedaController
                     'label' => $retentionRule['label']
                 ];
             }
-        } else {
-            if (is_array($config['externalSAE']['retentionRules'])) {
-                foreach ($config['externalSAE']['retentionRules'] as $rule) {
-                    $retentionRules[] = [
-                        'id'    => $rule['id'],
-                        'label' => $rule['label']
-                    ];
-                }
+        } elseif (is_array($config['externalSAE']['retentionRules'])) {
+            foreach ($config['externalSAE']['retentionRules'] as $rule) {
+                $retentionRules[] = [
+                    'id'    => $rule['id'],
+                    'label' => $rule['label']
+                ];
             }
         }
 
         return $response->withJson(['retentionRules' => $retentionRules]);
     }
 
-    public function setBindingDocument(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function setBindingDocument(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'set_binding_document', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -462,9 +549,17 @@ class SedaController
         return $response->withStatus(204);
     }
 
-    public function freezeRetentionRule(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function freezeRetentionRule(Request $request, Response $response): Response
     {
-        if (!PrivilegeController::hasPrivilege(['privilegeId' => 'freeze_retention_rule', 'userId' => $GLOBALS['id']])) {
+        if (
+            !PrivilegeController::hasPrivilege(['privilegeId' => 'freeze_retention_rule', 'userId' => $GLOBALS['id']])
+        ) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
