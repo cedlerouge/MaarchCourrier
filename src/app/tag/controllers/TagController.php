@@ -148,7 +148,9 @@ class TagController
             $listTags = [];
             foreach ($body['links'] as $link) {
                 if (!Validator::intVal()->validate($link)) {
-                    return $response->withStatus(400)->withJson(['errors' => 'Body links element is not an integer']);
+                    return $response->withStatus(400)->withJson(
+                        ['errors' => 'Body links element is not an integer']
+                    );
                 }
                 $listTags[] = (string)$link;
             }

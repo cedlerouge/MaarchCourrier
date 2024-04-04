@@ -29,7 +29,6 @@ use Resource\models\ResModel;
 use Resource\models\ResourceListModel;
 use Respect\Validation\Validator;
 use setasign\Fpdi\Tcpdf\Fpdi;
-use Slim\Psr7\Message;
 use Slim\Psr7\Request;
 use SrcCore\http\Response;
 use SrcCore\controllers\UrlController;
@@ -475,15 +474,15 @@ class ExportController
                         in_array(
                             $value['value'],
                             [
-                            'res_id',
-                            'type_label',
-                            'doctypes_first_level_label',
-                            'doctypes_second_level_label',
-                            'format',
-                            'barcode',
-                            'confidentiality',
-                            'alt_identifier',
-                            'subject'
+                                'res_id',
+                                'type_label',
+                                'doctypes_first_level_label',
+                                'doctypes_second_level_label',
+                                'format',
+                                'barcode',
+                                'confidentiality',
+                                'alt_identifier',
+                                'subject'
                             ]
                         )
                     ) {
@@ -683,7 +682,15 @@ class ExportController
                 $pdf->AddPage();
             }
             foreach ($content as $value) {
-                $pdf->MultiCell($widthNoMargins / $columnsNumber, $contentHeight, $value, 1, 'L', false, 0);
+                $pdf->MultiCell(
+                    $widthNoMargins / $columnsNumber,
+                    $contentHeight,
+                    $value,
+                    1,
+                    'L',
+                    false,
+                    0
+                );
             }
         }
 

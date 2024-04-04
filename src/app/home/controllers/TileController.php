@@ -74,6 +74,7 @@ class TileController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -98,6 +99,7 @@ class TileController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function getById(Request $request, Response $response, array $args): Response
     {
@@ -135,14 +137,20 @@ class TileController
             !Validator::stringType()->notEmpty()->validate($body['type'] ?? null) ||
             !in_array($body['type'], TileController::TYPES)
         ) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body type is empty, not a string or not valid']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body type is empty, not a string or not valid']
+            );
         } elseif (
             !Validator::stringType()->notEmpty()->validate($body['view'] ?? null) ||
             !in_array($body['view'], TileController::VIEWS)
         ) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body view is empty, not a string or not valid']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body view is empty, not a string or not valid']
+            );
         } elseif (!Validator::intVal()->validate($body['position'] ?? null)) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body position is not set or not an integer']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body position is not set or not an integer']
+            );
         }
 
         $tiles = TileModel::get([
@@ -200,7 +208,9 @@ class TileController
             !Validator::stringType()->notEmpty()->validate($body['view'] ?? null) ||
             !in_array($body['view'], TileController::VIEWS)
         ) {
-            return $response->withStatus(400)->withJson(['errors' => 'Body view is empty, not a string or not valid']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Body view is empty, not a string or not valid']
+            );
         }
 
         if ($body['view'] != 'chart') {
@@ -534,11 +544,11 @@ class TileController
     /**
      * @param array $tile
      * @param $allResources
-     * @param $order
+     * @param string $order
      * @return bool
      * @throws Exception
      */
-    private static function getResourcesDetails(array &$tile, $allResources, $order = ''): bool
+    private static function getResourcesDetails(array &$tile, $allResources, string $order = ''): bool
     {
         $allResources = array_column($allResources, 'res_id');
         if ($tile['view'] == 'summary') {
@@ -813,7 +823,7 @@ class TileController
             (
                 $tile['parameters']['privilegeId'] == 'indexing' &&
                 !PrivilegeController::canIndex([
-                    'userId' => $GLOBALS['id'],
+                    'userId'  => $GLOBALS['id'],
                     'groupId' => $tile['parameters']['groupId']
                 ])
             ) ||
@@ -821,7 +831,7 @@ class TileController
                 $tile['parameters']['privilegeId'] != 'indexing' &&
                 !PrivilegeController::hasPrivilege([
                     'privilegeId' => $tile['parameters']['privilegeId'],
-                    'userId' => $GLOBALS['id']
+                    'userId'      => $GLOBALS['id']
                 ])
             )
         ) {
@@ -980,7 +990,7 @@ class TileController
 
         $userdataClause = SearchController::getUserDataClause([
             'userId' => $GLOBALS['id'],
-            'login' => $GLOBALS['login']
+            'login'  => $GLOBALS['login']
         ]);
         $searchWhere = $userdataClause['searchWhere'];
         $searchData = $userdataClause['searchData'];
@@ -1026,8 +1036,8 @@ class TileController
 
         $searchableStatuses = StatusModel::get([
             'select' => ['id'],
-            'where' => ['can_be_searched = ?'],
-            'data' => ['Y']
+            'where'  => ['can_be_searched = ?'],
+            'data'   => ['Y']
         ]);
         if (!empty($searchableStatuses)) {
             $searchableStatuses = array_column($searchableStatuses, 'id');

@@ -248,7 +248,10 @@ class BatchHistoryController
         rewind($file);
 
         $response->write(stream_get_contents($file));
-        $response = $response->withAddedHeader('Content-Disposition', 'attachment; filename=export_maarch.csv');
+        $response = $response->withAddedHeader(
+            'Content-Disposition',
+            'attachment; filename=export_maarch.csv'
+        );
         $contentType = 'application/vnd.ms-excel';
         fclose($file);
 

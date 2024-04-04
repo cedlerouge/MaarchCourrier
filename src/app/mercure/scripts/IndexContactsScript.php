@@ -22,6 +22,11 @@ use Convert\controllers\FullTextController;
 use Exception;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabasePDO;
+use Zend_Search_Lucene;
+use Zend_Search_Lucene_Analysis_Analyzer;
+use Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive;
+use Zend_Search_Lucene_Document;
+use Zend_Search_Lucene_Field;
 
 // SAMPLE COMMANDS :
 // (in root app)
@@ -117,14 +122,14 @@ class IndexContactsScript
         //Ouverture des index Lucene
         try {
             if (FullTextController::isDirEmpty($contactsIndexesDirectory)) {
-                $index = \Zend_Search_Lucene::create($contactsIndexesDirectory);
+                $index = Zend_Search_Lucene::create($contactsIndexesDirectory);
             } else {
-                $index = \Zend_Search_Lucene::open($contactsIndexesDirectory);
+                $index = Zend_Search_Lucene::open($contactsIndexesDirectory);
             }
 
-            $index->setFormatVersion(\Zend_Search_Lucene::FORMAT_2_3);
-            \Zend_Search_Lucene_Analysis_Analyzer::setDefault(
-                new \Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
+            $index->setFormatVersion(Zend_Search_Lucene::FORMAT_2_3);
+            Zend_Search_Lucene_Analysis_Analyzer::setDefault(
+                new Zend_Search_Lucene_Analysis_Analyzer_Common_Utf8Num_CaseInsensitive()
             );
         } catch (Exception $e) {
             echo $e->getMessage();
@@ -189,16 +194,16 @@ class IndexContactsScript
                 $index->delete($value);
             }
 
-            $cIdx = new \Zend_Search_Lucene_Document();
+            $cIdx = new Zend_Search_Lucene_Document();
 
             foreach ($ladConfiguration['contactsIndexation'] as $key => $fieldIndexation) {
                 try {
                     if ($key == "id") {
                         $cIdx->addField(
-                            \Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (int)$c['id'])
+                            Zend_Search_Lucene_Field::UnIndexed($fieldIndexation['lucene'], (int)$c['id'])
                         );
                     } else {
-                        $cIdx->addField(\Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
+                        $cIdx->addField(Zend_Search_Lucene_Field::text($fieldIndexation['lucene'], $c[$key], 'utf-8'));
                     }
                 } catch (Exception $e) {
                     echo $e->getMessage();
@@ -213,7 +218,7 @@ class IndexContactsScript
                 }
             }
 
-            $cIdx->addField(\Zend_Search_Lucene_Field::text('UserMWS', $args['customId'], 'utf-8'));
+            $cIdx->addField(Zend_Search_Lucene_Field::text('UserMWS', $args['customId'], 'utf-8'));
 
             $index->addDocument($cIdx);
             $index->commit();
@@ -273,7 +278,7 @@ class IndexContactsScript
                 $contactsLexiconsDirectory . DIRECTORY_SEPARATOR . "lastindexation.flag",
                 "w"
             );
-            if ($flagFile == false) {
+            if (!$flagFile) {
                 echo "Erreur d'écriture du fichier " . $contactsLexiconsDirectory . DIRECTORY_SEPARATOR .
                     "lastindexation.flag" . " !\n";
             } else {

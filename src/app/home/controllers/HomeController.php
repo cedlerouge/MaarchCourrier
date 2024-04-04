@@ -187,7 +187,9 @@ class HomeController
 
         $loadedXml = CoreConfigModel::getXmlLoaded(['path' => 'modules/visa/xml/remoteSignatoryBooks.xml']);
         if (empty($loadedXml)) {
-            return $response->withStatus(400)->withJson(['errors' => 'SignatoryBooks configuration file missing']);
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'SignatoryBooks configuration file missing']
+            );
         }
 
         $url = '';
