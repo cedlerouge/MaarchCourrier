@@ -918,11 +918,11 @@ class ContactController
                 if (
                     str_contains($ratingColumn['identifier'], 'contactCustomField_') &&
                     !empty(
-                    $customFields[str_replace(
-                        "contactCustomField_",
-                        "",
-                        $ratingColumn['identifier']
-                    )]
+                        $customFields[str_replace(
+                            "contactCustomField_",
+                            "",
+                            $ratingColumn['identifier'])
+                        ]
                     )
                 ) {
                     $percent++;
