@@ -1,16 +1,16 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-*
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ *
+ */
 
 /**
-* @brief Batch History Controller
-* @author dev@maarch.org
-*/
+ * @brief Batch History Controller
+ * @author dev@maarch.org
+ */
 
 namespace History\controllers;
 
@@ -23,7 +23,12 @@ use Respect\Validation\Validator;
 
 class BatchHistoryController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_history_batch', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -64,12 +69,12 @@ class BatchHistoryController
             $fields = AutoCompleteController::getInsensitiveFieldsForRequest(['fields' => $searchFields]);
 
             $requestData = AutoCompleteController::getDataForRequest([
-                'search'        => $queryParams['search'],
-                'fields'        => $fields,
-                'where'         => $where,
-                'data'          => $data,
-                'fieldsNumber'  => 2,
-                'longField'     => true
+                'search'       => $queryParams['search'],
+                'fields'       => $fields,
+                'where'        => $where,
+                'data'         => $data,
+                'fieldsNumber' => 2,
+                'longField'    => true
             ]);
 
             $where = $requestData['where'];
@@ -80,16 +85,19 @@ class BatchHistoryController
             $order = $queryParams['order'];
         }
         if (!empty($queryParams['orderBy'])) {
-            $orderBy = !in_array($queryParams['orderBy'], ['event_date', 'module_name', 'total_processed', 'total_errors', 'info']) ? ['event_date DESC'] : ["{$queryParams['orderBy']} {$order}"];
+            $orderBy = !in_array(
+                $queryParams['orderBy'],
+                ['event_date', 'module_name', 'total_processed', 'total_errors', 'info']
+            ) ? ['event_date DESC'] : ["{$queryParams['orderBy']} {$order}"];
         }
 
         $history = BatchHistoryModel::get([
-            'select'    => ['event_date', 'module_name', 'total_processed', 'total_errors', 'info', 'count(1) OVER()'],
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => $orderBy ?? null,
-            'offset'    => $offset,
-            'limit'     => $limit
+            'select'  => ['event_date', 'module_name', 'total_processed', 'total_errors', 'info', 'count(1) OVER()'],
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => $orderBy ?? null,
+            'offset'  => $offset,
+            'limit'   => $limit
         ]);
 
         $total = $history[0]['count'] ?? 0;
@@ -100,7 +108,12 @@ class BatchHistoryController
         return $response->withJson(['history' => $history, 'count' => $total]);
     }
 
-    public function getAvailableFilters(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getAvailableFilters(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'view_history_batch', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -113,7 +126,12 @@ class BatchHistoryController
         return $response->withJson(['modules' => $modules]);
     }
 
-    public function exportBatchHistory(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function exportBatchHistory(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_contacts', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -122,8 +140,13 @@ class BatchHistoryController
         $body = $request->getParsedBody();
         $queryParams = $request->getQueryParams();
 
-        if (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array($body['delimiter'], [',', ';', 'TAB'])) {
-            return $response->withStatus(400)->withJson(['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']);
+        if (!Validator::stringType()->notEmpty()->validate($body['delimiter']) || !in_array(
+                $body['delimiter'],
+                [',', ';', 'TAB']
+            )) {
+            return $response->withStatus(400)->withJson(
+                ['errors' => 'Delimiter is empty or not a string between [\',\', \';\', \'TAB\']']
+            );
         } elseif (!Validator::stringType()->notEmpty()->validate($body['format'])) {
             return $response->withStatus(400)->withJson(['errors' => 'Format data is empty or not an array']);
         } elseif (!Validator::arrayType()->notEmpty()->validate($body['data'])) {
@@ -133,7 +156,9 @@ class BatchHistoryController
         }
 
         $limit = 1000;
-        if (!empty($queryParams['limit']) && is_numeric($queryParams['limit']) && (int)$queryParams['limit'] != $limit) {
+        if (!empty($queryParams['limit']) && is_numeric(
+                $queryParams['limit']
+            ) && (int)$queryParams['limit'] != $limit) {
             $limit = (int)$queryParams['limit'];
         }
 
@@ -141,15 +166,17 @@ class BatchHistoryController
         $data = [];
         if (!empty($body['parameters']['startDate'])) {
             $where[] = 'event_date > ?';
-            $data[]  = $body['parameters']['startDate'];
+            $data[] = $body['parameters']['startDate'];
         }
         if (!empty($body['parameters']['endDate'])) {
             $where[] = 'event_date < ?';
-            $data[]  = $body['parameters']['endDate'];
+            $data[] = $body['parameters']['endDate'];
         }
 
         $moduleTypes = [];
-        if (!empty($body['parameters']['filterUsed']['modules']) && is_array($body['parameters']['filterUsed']['modules'])) {
+        if (!empty($body['parameters']['filterUsed']['modules']) && is_array(
+                $body['parameters']['filterUsed']['modules']
+            )) {
             foreach ($body['parameters']['filterUsed']['modules'] as $module) {
                 $moduleTypes[] = $module['id'];
             }
@@ -160,7 +187,9 @@ class BatchHistoryController
         }
 
         $totalProcessed = [];
-        if (!empty($body['parameters']['filterUsed']['totalProcessed']) && is_array($body['parameters']['filterUsed']['totalProcessed'])) {
+        if (!empty($body['parameters']['filterUsed']['totalProcessed']) && is_array(
+                $body['parameters']['filterUsed']['totalProcessed']
+            )) {
             foreach ($body['parameters']['filterUsed']['totalProcessed'] as $processedElm) {
                 $totalProcessed[] = $processedElm['id'];
             }
@@ -171,7 +200,9 @@ class BatchHistoryController
         }
 
         $totalErrors = [];
-        if (!empty($body['parameters']['filterUsed']['totalErrors']) && is_array($body['parameters']['filterUsed']['totalErrors'])) {
+        if (!empty($body['parameters']['filterUsed']['totalErrors']) && is_array(
+                $body['parameters']['filterUsed']['totalErrors']
+            )) {
             foreach ($body['parameters']['filterUsed']['totalErrors'] as $errorElm) {
                 $totalErrors[] = $errorElm['id'];
             }
@@ -182,7 +213,6 @@ class BatchHistoryController
         }
 
         $orderBy = ['event_date DESC'];
-
 
         $fields = [];
         $csvHead = [];
@@ -199,11 +229,11 @@ class BatchHistoryController
         fputcsv($file, $csvHead, $delimiter);
 
         $histories = BatchHistoryModel::get([
-            'select'    => $fields,
-            'where'     => $where,
-            'data'      => $data,
-            'orderBy'   => $orderBy,
-            'limit'     => $limit
+            'select'  => $fields,
+            'where'   => $where,
+            'data'    => $data,
+            'orderBy' => $orderBy,
+            'limit'   => $limit
         ]);
 
         foreach ($histories as $history) {
