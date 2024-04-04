@@ -1025,8 +1025,7 @@ class ResourceListController
             $assignee .= UserModel::getLabelledUserById(['id' => $listInstances[0]['item_id']]);
         }
         if (!empty($res['destination'])) {
-            $entityLabel = EntityModel::getByEntityId(['select' => ['entity_label'], 'entityId' => $res['destination']]
-            );
+            $entityLabel = EntityModel::getByEntityId(['select' => ['entity_label'], 'entityId' => $res['destination']]);
             $assignee .= (empty($assignee) ? "({$entityLabel['entity_label']})" : " ({$entityLabel['entity_label']})");
         }
 
