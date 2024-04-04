@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   FirstLevelModelAbstract
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   FirstLevelModelAbstract
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Doctype\models;
 
@@ -29,12 +28,12 @@ class FirstLevelModelAbstract
         ValidatorModel::intType($aArgs, ['limit']);
 
         $firstLevel = DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['doctypes_first_level'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
-            'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['doctypes_first_level'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
+            'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
 
         return $firstLevel;
@@ -52,10 +51,10 @@ class FirstLevelModelAbstract
 
         $aReturn = DatabaseModel::select(
             [
-            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'  => ['doctypes_first_level'],
-            'where'  => ['doctypes_first_level_id = ?'],
-            'data'   => [$aArgs['id']]
+                'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+                'table'  => ['doctypes_first_level'],
+                'where'  => ['doctypes_first_level_id = ?'],
+                'data'   => [$aArgs['id']]
             ]
         );
 
@@ -97,10 +96,10 @@ class FirstLevelModelAbstract
         ValidatorModel::intVal($aArgs, ['doctypes_first_level_id']);
 
         DatabaseModel::update([
-            'table'     => 'doctypes_first_level',
-            'set'       => $aArgs,
-            'where'     => ['doctypes_first_level_id = ?'],
-            'data'      => [$aArgs['doctypes_first_level_id']]
+            'table' => 'doctypes_first_level',
+            'set'   => $aArgs,
+            'where' => ['doctypes_first_level_id = ?'],
+            'data'  => [$aArgs['doctypes_first_level_id']]
         ]);
 
         return true;

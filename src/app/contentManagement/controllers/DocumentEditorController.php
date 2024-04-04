@@ -43,7 +43,7 @@ class DocumentEditorController
     {
         $configuration = ConfigurationModel::getByPrivilege([
             'privilege' => 'admin_document_editors',
-            'select' => ['value']
+            'select'    => ['value']
         ]);
         $configuration = !empty($configuration['value']) ? json_decode($configuration['value'], true) : [];
 
@@ -75,7 +75,7 @@ class DocumentEditorController
         if (!DocumentEditorController::uriIsValid($uri)) {
             return [
                 'errors' => "Editor 'uri' is not a valid URL or IP address format",
-                'lang' => 'editorHasNoValidUrlOrIp'
+                'lang'   => 'editorHasNoValidUrlOrIp'
             ];
         }
 

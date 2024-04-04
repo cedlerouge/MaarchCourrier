@@ -1,14 +1,13 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   FolderModelAbstract
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   FolderModelAbstract
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Folder\models;
 
@@ -26,11 +25,11 @@ class FolderModelAbstract
     public static function get(array $aArgs): array
     {
         return DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['folders'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? ['label'] : $aArgs['orderBy']
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['folders'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? ['label'] : $aArgs['orderBy']
         ]);
     }
 
@@ -77,7 +76,7 @@ class FolderModelAbstract
         array_unshift($aArgs['folderPath'], $currentFolder['label']);
         if (!empty($currentFolder['parent_id'])) {
             return FolderModel::getFolderPath([
-                'id' => $currentFolder['parent_id'],
+                'id'         => $currentFolder['parent_id'],
                 'folderPath' => $aArgs['folderPath']
             ]);
         }
@@ -96,10 +95,10 @@ class FolderModelAbstract
         ValidatorModel::intVal($aArgs, ['id']);
 
         return DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['folders'],
-            'where'     => ['parent_id = ?'],
-            'data'      => [$aArgs['id']]
+            'select' => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'  => ['folders'],
+            'where'  => ['parent_id = ?'],
+            'data'   => [$aArgs['id']]
         ]);
     }
 
@@ -118,8 +117,8 @@ class FolderModelAbstract
         $nextSequenceId = DatabaseModel::getNextSequenceValue(['sequenceId' => 'folders_id_seq']);
 
         DatabaseModel::insert([
-            'table'     => 'folders',
-            'columnsValues'     => [
+            'table'         => 'folders',
+            'columnsValues' => [
                 'id'        => $nextSequenceId,
                 'label'     => $aArgs['label'],
                 'public'    => empty($aArgs['public']) ? 'false' : 'true',
@@ -143,10 +142,10 @@ class FolderModelAbstract
         ValidatorModel::arrayType($args, ['set', 'where', 'data']);
 
         DatabaseModel::update([
-            'table'     => 'folders',
-            'set'       => empty($args['set']) ? [] : $args['set'],
-            'where'     => $args['where'],
-            'data'      => empty($args['data']) ? [] : $args['data']
+            'table' => 'folders',
+            'set'   => empty($args['set']) ? [] : $args['set'],
+            'where' => $args['where'],
+            'data'  => empty($args['data']) ? [] : $args['data']
         ]);
 
         return true;

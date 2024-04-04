@@ -80,7 +80,7 @@ class LogsController
     /**
      * @description Get log config by type
      * @param string $logType logFonctionnel | logTechnique | queries
-     * @return  array
+     * @return array
      * @throws Exception
      */
     public static function getLogType(string $logType): array
@@ -96,7 +96,7 @@ class LogsController
 
     /**
      * @description Get log config
-     * @return  array
+     * @return array|null
      * @throws Exception
      */
     public static function getLogConfig(): ?array
@@ -113,7 +113,7 @@ class LogsController
     /**
      * @description Add log line
      * @param array $args
-     * @return  array|bool
+     * @return array|bool
      * @throws Exception
      */
     public static function add(array $args): bool|array
@@ -161,9 +161,9 @@ class LogsController
     }
 
     /**
-     * @description     Write prepare log line with monolog
+     * @description   Write prepare log line with monolog
      * @param array $log
-     * @return  void
+     * @return void
      * @throws Exception
      */
     private static function logWithMonolog(array $log): void
@@ -223,7 +223,7 @@ class LogsController
     /**
      * @description Create new log file based on size and number of files to keep, when file size is exceeded
      * @param array $file
-     * @return  void
+     * @return void
      * @throws Exception
      */
     public static function rotateLogFileBySize(array $file): void

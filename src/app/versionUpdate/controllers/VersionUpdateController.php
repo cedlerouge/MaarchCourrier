@@ -24,6 +24,7 @@ use SrcCore\http\Response;
 use SrcCore\models\CoreConfigModel;
 use SrcCore\models\DatabaseModel;
 use History\controllers\HistoryController;
+use Throwable;
 use User\models\UserModel;
 use SrcCore\controllers\LogsController;
 use SrcCore\interfaces\AutoUpdateInterface;
@@ -191,14 +192,13 @@ class VersionUpdateController
         if (!empty($output)) {
             return $response->withStatus(400)->withJson([
                 'errors' => 'Some files are modified. Can not update application',
-                'lang' => 'canNotUpdateApplication'
+                'lang'   => 'canNotUpdateApplication'
             ]);
         }
 
-        $migrationTagFolderPath = null;
         try {
             $migrationTagFolderPath = VersionUpdateController::getMigrationTagFolderPath($targetTag);
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
             return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
         }
 
@@ -245,9 +245,9 @@ class VersionUpdateController
 
     /**
      * Get the migration tag folder path. Create the path if does not exist.
-     * @param   string      $tagVersion
-     * @throws  Exception   If an occurred from DocserverController::getMigrationFolderPath()
+     * @param string $tagVersion
      * @return  string      Return the path of the migration tag folder
+     * @throws  Exception   If an occurred from DocserverController::getMigrationFolderPath()
      */
     public static function getMigrationTagFolderPath(string $tagVersion): string
     {
@@ -283,10 +283,10 @@ class VersionUpdateController
 
         if (empty($GLOBALS['id'] ?? null)) {
             $user = UserModel::get([
-                'select'    => ['id'],
-                'where'     => ['mode = ? OR mode = ?'],
-                'data'      => ['root_visible', 'root_invisible'],
-                'limit'     => 1
+                'select' => ['id'],
+                'where'  => ['mode = ? OR mode = ?'],
+                'data'   => ['root_visible', 'root_invisible'],
+                'limit'  => 1
             ]);
             $GLOBALS['id'] = $user[0]['id'];
         }
@@ -294,7 +294,7 @@ class VersionUpdateController
         if (!empty($availableFolders['folders'])) {
             try {
                 VersionUpdateController::executeTagFolderFiles($availableFolders['folders']);
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 return $response->withStatus(400)->withJson(['errors' => $th->getMessage()]);
             }
             return $response->withJson(['success' => 'Database has been updated']);
@@ -305,7 +305,7 @@ class VersionUpdateController
 
     /**
      * Get any tag folders that are superior than the current database version
-     * @param   string  $migrationFolderPath    The location of migration folder
+     * @param string $migrationFolderPath The location of migration folder
      * @return  array   Return 'errors' for unexpected errors | Return 'folders' with the list of folders
      */
     public static function getAvailableFolders(string $migrationFolderPath = 'migration'): array
@@ -358,9 +358,9 @@ class VersionUpdateController
 
     /**
      * Central function to run different types of files. SQL or PHP
-     * @param   string[]    $tagFolderList  A list of strings
-     * @throws  Exception
+     * @param string[] $tagFolderList A list of strings
      * @return  true        Return true when successful
+     * @throws  Exception
      */
     public static function executeTagFolderFiles(array $tagFolderList): bool
     {
@@ -377,7 +377,7 @@ class VersionUpdateController
         ]);
 
         foreach ($tagFolderList as $tagFolder) {
-            $tagVersion      = basename($tagFolder);
+            $tagVersion = basename($tagFolder);
             $tagFoldersFiles = scandir($tagFolder);
 
             if (in_array($tagFoldersFiles, ['.gitkeep', '.', '..'])) {
@@ -386,7 +386,7 @@ class VersionUpdateController
 
             try {
                 $migrationTagFolderPath = VersionUpdateController::getMigrationTagFolderPath($tagFolder);
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 throw new Exception($th->getMessage());
             }
 
@@ -552,7 +552,7 @@ class VersionUpdateController
 
             try {
                 $migration->backup();
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 LogsController::add([
                     'isTech'    => true,
                     'moduleId'  => 'Version Update',
@@ -568,14 +568,14 @@ class VersionUpdateController
                 $migration->update();
 
                 $success++;
-            } catch (\Throwable $th) {
+            } catch (Throwable $th) {
                 $logInfo = "Throwable - UPDATE : " . $th->getMessage();
                 $errors++;
 
                 try {
                     $migration->rollback();
                     $rollback++;
-                } catch (\Throwable $th) {
+                } catch (Throwable $th) {
                     $logInfo .= " | Throwable - ROLLBACK : " . $th->getMessage();
                 }
 

@@ -32,12 +32,12 @@ class NoteModel
         ValidatorModel::intType($aArgs, ['limit']);
 
         return DatabaseModel::select([
-            'select'    => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
-            'table'     => ['notes'],
-            'where'     => empty($aArgs['where']) ? [] : $aArgs['where'],
-            'data'      => empty($aArgs['data']) ? [] : $aArgs['data'],
-            'order_by'  => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
-            'limit'     => empty($aArgs['limit']) ? 0 : $aArgs['limit']
+            'select'   => empty($aArgs['select']) ? ['*'] : $aArgs['select'],
+            'table'    => ['notes'],
+            'where'    => empty($aArgs['where']) ? [] : $aArgs['where'],
+            'data'     => empty($aArgs['data']) ? [] : $aArgs['data'],
+            'order_by' => empty($aArgs['orderBy']) ? [] : $aArgs['orderBy'],
+            'limit'    => empty($aArgs['limit']) ? 0 : $aArgs['limit']
         ]);
     }
 
@@ -53,10 +53,10 @@ class NoteModel
         ValidatorModel::arrayType($args, ['select']);
 
         $note = DatabaseModel::select([
-            'select'    => empty($args['select']) ? ['*'] : $args['select'],
-            'table'     => ['notes'],
-            'where'     => ['id = ?'],
-            'data'      => [$args['id']],
+            'select' => empty($args['select']) ? ['*'] : $args['select'],
+            'table'  => ['notes'],
+            'where'  => ['id = ?'],
+            'data'   => [$args['id']],
         ]);
 
         if (empty($note[0])) {
@@ -147,10 +147,10 @@ class NoteModel
         $countedNotes = [];
 
         $aEntities = DatabaseModel::select([
-            'select'    => ['entity_id'],
-            'table'     => ['users_entities'],
-            'where'     => ['user_id = ?'],
-            'data'      => [$aArgs['userId']]
+            'select' => ['entity_id'],
+            'table'  => ['users_entities'],
+            'where'  => ['user_id = ?'],
+            'data'   => [$aArgs['userId']]
         ]);
 
         $entities = array_column($aEntities, 'entity_id');
@@ -206,11 +206,11 @@ class NoteModel
         }
 
         $allNotes = NoteModel::get([
-            'select'    => $aArgs['select'],
-            'where'     => ['identifier = ?'],
-            'data'      => [$aArgs['resId']],
-            'orderBy'   => ['id desc'],
-            'limit'     => empty($aArgs['limit']) ? null : $aArgs['limit']
+            'select'  => $aArgs['select'],
+            'where'   => ['identifier = ?'],
+            'data'    => [$aArgs['resId']],
+            'orderBy' => ['id desc'],
+            'limit'   => empty($aArgs['limit']) ? null : $aArgs['limit']
         ]);
 
         $notes = [];
@@ -223,15 +223,15 @@ class NoteModel
 
             $noteEntities = NoteEntityModel::getWithEntityInfo([
                 'select' => ['item_id', 'short_label'],
-                'where' => ['note_id = ?'],
-                'data' => [$note['id']]
+                'where'  => ['note_id = ?'],
+                'data'   => [$note['id']]
             ]);
 
             if (!empty($noteEntities)) {
                 foreach ($noteEntities as $noteEntity) {
                     $note['entities_restriction'][] = [
                         'short_label' => $noteEntity['short_label'],
-                        'item_id' => [$noteEntity['item_id']]
+                        'item_id'     => [$noteEntity['item_id']]
                     ];
 
                     if (in_array($noteEntity['item_id'], $userEntities)) {
