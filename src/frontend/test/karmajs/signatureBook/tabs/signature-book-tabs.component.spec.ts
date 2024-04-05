@@ -132,9 +132,9 @@ function getAttachments(): Attachment[] {
             canUpdate: false,
             chrono: 'MAARCH/2024A/23',
             title: 'Courrier de test',
-            creationDate: '2024-02-23 14:25:19.341644',
+            type: 'main_document',
             typeLabel: 'Document principal',
-            sign: true
+            signedResId: null,
         },
         {
             resId: 120,
@@ -144,9 +144,9 @@ function getAttachments(): Attachment[] {
             canUpdate: false,
             chrono: 'MAARCH/2024A/24',
             title: 'Pièce jointe test',
-            creationDate: '2024-02-22 14:25:19.341644',
+            type: 'simple_attachment',
             typeLabel: 'Pièce jointe',
-            sign: true
+            signedResId: 1,
         },
         {
             resId: 121,
@@ -156,9 +156,9 @@ function getAttachments(): Attachment[] {
             canUpdate: false,
             chrono: 'MAARCH/2024A/25',
             title: 'Pièce joibte capturée',
-            creationDate: '2024-02-22 14:25:19.341644',
             typeLabel: 'Pièce joibte capturée',
-            sign: false
+            type: 'incoming_mail_attachment',
+            signedResId: 2,
         },
     ];
 
