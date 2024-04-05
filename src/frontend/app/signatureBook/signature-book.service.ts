@@ -6,6 +6,7 @@ import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
+import { mapAttachment } from "./signature-book.utils";
 
 @Injectable()
 export class SignatureBookService {
@@ -40,10 +41,10 @@ export class SignatureBookService {
             this.http.get(`../rest/signatureBook/users/${userId}/groups/${groupId}/baskets/${basketId}/resources/${resId}`).pipe(
                 map((data: any) => {
                     // Mapping resources to sign
-                    const resourcesToSign = data?.resourcesToSign?.map((resource: any) => this._mapAttachment(resource)) ?? [];
+                    const resourcesToSign: Attachment[] = data?.resourcesToSign?.map((resource: any) => mapAttachment(resource)) ?? [];
 
                     // Mapping resources attached as annex
-                    const resourcesAttached = data?.resourcesAttached?.map((attachment: any) => this._mapAttachment(attachment)) ?? [];
+                    const resourcesAttached: Attachment[] = data?.resourcesAttached?.map((attachment: any) => mapAttachment(attachment)) ?? [];
 
                     return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
                 }),
@@ -92,22 +93,6 @@ export class SignatureBookService {
                     return of(false);
                 })
             ).subscribe();
-        });
-    }
-
-    // Helper function to map attachment data
-    private _mapAttachment(data: any): Attachment {
-        return new Attachment({
-            resId: data.resId,
-            resIdMaster: data.resIdMaster === null ? null : data.resId,
-            signedResId: data.signedResId,
-            chrono: data.chrono,
-            title: data.title,
-            type: data.type,
-            typeLabel: data.typeLabel,
-            canConvert: data.isConverted,
-            canDelete: data.canDelete,
-            canUpdate: data.canModify
         });
     }
 
