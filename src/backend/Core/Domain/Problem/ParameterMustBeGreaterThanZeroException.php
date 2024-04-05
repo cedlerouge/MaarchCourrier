@@ -8,13 +8,11 @@
  */
 
 /**
- * @brief ParameterMustBeGreaterThanZeroException class
+ * @brief Parameter Must Be Greater Than Zero Problem
  * @author dev@maarch.org
  */
 
-namespace Resource\Domain\Exceptions;
-
-use MaarchCourrier\Core\Domain\Problem\Problem;
+namespace MaarchCourrier\Core\Domain\Problem;
 
 class ParameterMustBeGreaterThanZeroException extends Problem
 {

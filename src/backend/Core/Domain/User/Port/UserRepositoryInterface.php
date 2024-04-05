@@ -12,15 +12,13 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\User\Domain\Port;
-
-use MaarchCourrier\User\Domain\User;
+namespace MaarchCourrier\Core\Domain\User\Port;
 
 interface UserRepositoryInterface
 {
     /**
      * @param int $userId
-     * @return ?User
+     * @return ?UserInterface
      */
-    public function getUserById(int $userId): ?User;
+    public function getUserById(int $userId): ?UserInterface;
 }

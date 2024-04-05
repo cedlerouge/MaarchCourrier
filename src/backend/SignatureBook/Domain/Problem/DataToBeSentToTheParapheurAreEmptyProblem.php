@@ -11,6 +11,7 @@
  * @brief DataToSentToTheParapheurAreEmptyProblem class
  * @author dev@maarch.org
  */
+
 namespace MaarchCourrier\SignatureBook\Domain\Problem;
 
 use MaarchCourrier\Core\Domain\Problem\Problem;

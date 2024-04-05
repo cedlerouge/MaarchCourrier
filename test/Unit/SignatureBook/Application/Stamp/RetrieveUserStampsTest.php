@@ -8,7 +8,7 @@
  */
 
 /**
- * @brief   User Signature
+ * @brief   Retrieve User Stamps Test
  * @author  dev@maarch.org
  */
 

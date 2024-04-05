@@ -22,7 +22,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\UserRepositoryMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Webhook\ResourceToSignRepositoryMock;
 use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;

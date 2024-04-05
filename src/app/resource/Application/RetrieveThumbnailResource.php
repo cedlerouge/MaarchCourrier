@@ -14,29 +14,29 @@
 
 namespace Resource\Application;
 
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ConvertThumbnailException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
-use Resource\Domain\Ports\ResourceDataInterface;
-use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceConverted;
+use Resource\Domain\ResourceFileInfo;
 
 class RetrieveThumbnailResource
 {
-    private ResourceDataInterface $resourceData;
+    private ResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
+        ResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {
-        $this->resourceData = $resourceDataInterface;
+        $this->resourceRepository = $resourceRepositoryInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
     }
@@ -61,7 +61,7 @@ class RetrieveThumbnailResource
             throw new ParameterMustBeGreaterThanZeroException('resId');
         }
 
-        $document = $this->resourceData->getMainResourceData($resId);
+        $document = $this->resourceRepository->getMainResourceData($resId);
 
         if ($document == null) {
             throw new ResourceDoesNotExistException();
@@ -71,11 +71,11 @@ class RetrieveThumbnailResource
         $noThumbnailPath = 'dist/assets/noThumbnail.png';
         $pathToThumbnail = $noThumbnailPath;
 
-        if (!empty($document->getFilename()) && $this->resourceData->hasRightByResId($resId, $GLOBALS['id'])) {
+        if (!empty($document->getFilename()) && $this->resourceRepository->hasRightByResId($resId, $GLOBALS['id'])) {
             $tnlDocument = $this->getResourceVersion($resId, 'TNL', $document->getVersion());
 
             if ($tnlDocument == null) {
-                $latestPdfVersion = $this->resourceData->getLatestPdfVersion($resId, $document->getVersion());
+                $latestPdfVersion = $this->resourceRepository->getLatestPdfVersion($resId, $document->getVersion());
                 if ($latestPdfVersion == null) {
                     throw new ResourceDoesNotExistException();
                 }
@@ -102,7 +102,7 @@ class RetrieveThumbnailResource
             }
 
             if ($tnlDocument != null) {
-                $checkDocserver = $this->resourceData->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
+                $checkDocserver = $this->resourceRepository->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
                 $isDocserverEncrypted = $checkDocserver->getIsEncrypted() ?? false;
 
                 $pathToThumbnail = $this->resourceFile->buildFilePath($checkDocserver->getPathTemplate(), $tnlDocument->getPath(), $tnlDocument->getFilename());
@@ -132,7 +132,7 @@ class RetrieveThumbnailResource
 
     private function getResourceVersion(int $resId, string $type, int $version): ?ResourceConverted
     {
-        $document = $this->resourceData->getResourceVersion($resId, $type, $version);
+        $document = $this->resourceRepository->getResourceVersion($resId, $type, $version);
 
         if ($document == null) {
             return null;
