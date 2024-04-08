@@ -80,7 +80,9 @@ class RetrieveThumbnailResource
                     throw new ResourceDoesNotExistException();
                 }
 
-                $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($latestPdfVersion);
+                $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath
+                    ->getDocserverAndFilePath($latestPdfVersion);
+
                 $fileContent = $this->resourceFile->getFileContent(
                     $docserverAndFilePath->getFilePath(),
                     $docserverAndFilePath->getDocserver()->getIsEncrypted()
@@ -105,7 +107,12 @@ class RetrieveThumbnailResource
                 $checkDocserver = $this->resourceData->getDocserverDataByDocserverId($tnlDocument->getDocserverId());
                 $isDocserverEncrypted = $checkDocserver->getIsEncrypted() ?? false;
 
-                $pathToThumbnail = $this->resourceFile->buildFilePath($checkDocserver->getPathTemplate(), $tnlDocument->getPath(), $tnlDocument->getFilename());
+                $pathToThumbnail = $this->resourceFile->buildFilePath(
+                    $checkDocserver->getPathTemplate(),
+                    $tnlDocument->getPath(),
+                    $tnlDocument->getFilename()
+                );
+
                 if (!$this->resourceFile->fileExists($pathToThumbnail)) {
                     throw new ResourceNotFoundInDocserverException();
                 }

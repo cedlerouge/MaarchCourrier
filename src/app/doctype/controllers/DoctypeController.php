@@ -1,17 +1,17 @@
 <?php
 
 /**
-* Copyright Maarch since 2008 under licence GPLv3.
-* See LICENCE.txt file at the root folder for more details.
-* This file is part of Maarch software.
-
-* @brief   DoctypeController
-* @author  dev <dev@maarch.org>
-* @ingroup core
-*/
+ * Copyright Maarch since 2008 under licence GPLv3.
+ * See LICENCE.txt file at the root folder for more details.
+ * This file is part of Maarch software.
+ * @brief   DoctypeController
+ * @author  dev <dev@maarch.org>
+ * @ingroup core
+ */
 
 namespace Doctype\controllers;
 
+use Exception;
 use Group\controllers\PrivilegeController;
 use History\controllers\HistoryController;
 use Respect\Validation\Validator;
@@ -24,7 +24,12 @@ use Resource\models\ResModel;
 
 class DoctypeController
 {
-    public function get(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function get(Request $request, Response $response): Response
     {
         $doctypes = DoctypeModel::get([
             'where'    => ['enabled = ?'],
@@ -35,7 +40,14 @@ class DoctypeController
         return $response->withJson(['doctypes' => $doctypes]);
     }
 
-    public function getById(Request $request, Response $response, array $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function getById(Request $request, Response $response, array $aArgs): Response
     {
         if (!Validator::intVal()->validate($aArgs['id']) || !Validator::notEmpty()->validate($aArgs['id'])) {
             return $response->withStatus(500)->withJson(['errors' => 'wrong format for id']);
@@ -51,18 +63,28 @@ class DoctypeController
             }
         }
 
-        $obj['secondLevel']  = SecondLevelModel::get([
-            'select'    => ['doctypes_second_level_id', 'doctypes_second_level_label'],
-            'where'     => ['enabled = ?'],
-            'data'      => ['Y'],
-            'order_by'  => ['doctypes_second_level_label asc']
+        $obj['secondLevel'] = SecondLevelModel::get([
+            'select'   => ['doctypes_second_level_id', 'doctypes_second_level_label'],
+            'where'    => ['enabled = ?'],
+            'data'     => ['Y'],
+            'order_by' => ['doctypes_second_level_label asc']
         ]);
-        $obj['models']       = TemplateModel::getByTarget(['select' => ['template_id', 'template_label', 'template_comment'], 'template_target' => 'doctypes']);
+
+        $obj['models'] = TemplateModel::getByTarget([
+            'select'          => ['template_id', 'template_label', 'template_comment'],
+            'template_target' => 'doctypes'
+        ]);
 
         return $response->withJson($obj);
     }
 
-    public function create(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function create(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_architecture', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -78,7 +100,10 @@ class DoctypeController
             $data['duration_current_use'] = null;
         }
 
-        $secondLevelInfo = SecondLevelModel::getById(['select' => ['doctypes_first_level_id'], 'id' => $data['doctypes_second_level_id']]);
+        $secondLevelInfo = SecondLevelModel::getById([
+            'select' => ['doctypes_first_level_id'],
+            'id'     => $data['doctypes_second_level_id']
+        ]);
 
         if (empty($secondLevelInfo)) {
             return $response->withStatus(500)->withJson(['errors' => 'doctypes_second_level_id does not exists']);
@@ -87,17 +112,17 @@ class DoctypeController
         $data['doctypes_first_level_id'] = $secondLevelInfo['doctypes_first_level_id'];
 
         $doctypeId = DoctypeModel::create([
-            'description'                   => $data['description'],
-            'doctypes_first_level_id'       => $data['doctypes_first_level_id'],
-            'doctypes_second_level_id'      => $data['doctypes_second_level_id'],
-            'duration_current_use'          => $data['duration_current_use'],
-            'action_current_use'            => $data['action_current_use'] ?? null,
-            'retention_rule'                => $data['retention_rule'] ?? null,
-            'retention_final_disposition'   => $data['retention_final_disposition'] ?? null,
-            "process_delay"                 => $data['process_delay'],
-            "delay1"                        => $data['delay1'],
-            "delay2"                        => $data['delay2'],
-            "process_mode"                  => $data['process_mode'],
+            'description'                 => $data['description'],
+            'doctypes_first_level_id'     => $data['doctypes_first_level_id'],
+            'doctypes_second_level_id'    => $data['doctypes_second_level_id'],
+            'duration_current_use'        => $data['duration_current_use'],
+            'action_current_use'          => $data['action_current_use'] ?? null,
+            'retention_rule'              => $data['retention_rule'] ?? null,
+            'retention_final_disposition' => $data['retention_final_disposition'] ?? null,
+            "process_delay"               => $data['process_delay'],
+            "delay1"                      => $data['delay1'],
+            "delay2"                      => $data['delay2'],
+            "process_mode"                => $data['process_mode'],
         ]);
 
         HistoryController::add([
@@ -110,20 +135,27 @@ class DoctypeController
 
         return $response->withJson(
             [
-            'doctypeId'   => $doctypeId,
-            'doctypeTree' => FirstLevelController::getTreeFunction(),
+                'doctypeId'   => $doctypeId,
+                'doctypeTree' => FirstLevelController::getTreeFunction(),
             ]
         );
     }
 
-    public function update(Request $request, Response $response, $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function update(Request $request, Response $response, $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_architecture', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data                            = $request->getParsedBody();
-        $data['type_id']                 = $aArgs['id'];
+        $data = $request->getParsedBody();
+        $data['type_id'] = $aArgs['id'];
 
         $errors = DoctypeController::control($data, 'update');
         if (!empty($errors)) {
@@ -133,25 +165,31 @@ class DoctypeController
             $data['duration_current_use'] = null;
         }
 
-        $secondLevelInfo                 = SecondLevelModel::getById(['select' => ['doctypes_first_level_id'], 'id' => $data['doctypes_second_level_id']]);
+        $secondLevelInfo = SecondLevelModel::getById([
+            'select' => ['doctypes_first_level_id'],
+            'id'     => $data['doctypes_second_level_id']
+        ]);
+
         if (empty($secondLevelInfo)) {
             return $response->withStatus(500)->withJson(['errors' => 'doctypes_second_level_id does not exists']);
         }
         $data['doctypes_first_level_id'] = $secondLevelInfo['doctypes_first_level_id'];
 
         DoctypeModel::update([
-            'type_id'                       => $data['type_id'],
-            'description'                   => $data['description'],
-            'doctypes_first_level_id'       => $data['doctypes_first_level_id'],
-            'doctypes_second_level_id'      => $data['doctypes_second_level_id'],
-            'duration_current_use'          => $data['duration_current_use'],
-            'action_current_use'            => $data['action_current_use'],
-            'retention_rule'                => $data['retention_rule'],
-            'retention_final_disposition'   => empty($data['retention_final_disposition']) ? null : $data['retention_final_disposition'],
-            "process_delay"                 => $data['process_delay'],
-            "delay1"                        => $data['delay1'],
-            "delay2"                        => $data['delay2'],
-            "process_mode"                  => $data['process_mode']
+            'type_id'                     => $data['type_id'],
+            'description'                 => $data['description'],
+            'doctypes_first_level_id'     => $data['doctypes_first_level_id'],
+            'doctypes_second_level_id'    => $data['doctypes_second_level_id'],
+            'duration_current_use'        => $data['duration_current_use'],
+            'action_current_use'          => $data['action_current_use'],
+            'retention_rule'              => $data['retention_rule'],
+            'retention_final_disposition' => empty($data['retention_final_disposition'])
+                ? null
+                : $data['retention_final_disposition'],
+            "process_delay"               => $data['process_delay'],
+            "delay1"                      => $data['delay1'],
+            "delay2"                      => $data['delay2'],
+            "process_mode"                => $data['process_mode']
         ]);
 
         HistoryController::add([
@@ -164,13 +202,20 @@ class DoctypeController
 
         return $response->withJson(
             [
-            'doctype'     => $data,
-            'doctypeTree' => FirstLevelController::getTreeFunction(),
+                'doctype'     => $data,
+                'doctypeTree' => FirstLevelController::getTreeFunction(),
             ]
         );
     }
 
-    public function delete(Request $request, Response $response, $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function delete(Request $request, Response $response, $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_architecture', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -190,10 +235,10 @@ class DoctypeController
         $doctypes = null;
         if ($count[0]['count'] == 0) {
             DoctypeController::deleteAllDoctypeData(['type_id' => $aArgs['id']]);
-            $deleted     = 0;
+            $deleted = 0;
             $doctypeTree = FirstLevelController::getTreeFunction();
         } else {
-            $deleted  = $count[0]['count'];
+            $deleted = $count[0]['count'];
             $doctypes = DoctypeModel::get([
                 'where'    => ['enabled = ?'],
                 'data'     => ['Y'],
@@ -213,13 +258,20 @@ class DoctypeController
         ]);
     }
 
-    public function deleteRedirect(Request $request, Response $response, $aArgs)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param $aArgs
+     * @return Response
+     * @throws Exception
+     */
+    public function deleteRedirect(Request $request, Response $response, $aArgs): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_architecture', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
         }
 
-        $data            = $request->getParsedBody();
+        $data = $request->getParsedBody();
         $data['type_id'] = $aArgs['id'];
 
         if (!Validator::intVal()->validate($data['type_id'])) {
@@ -228,7 +280,10 @@ class DoctypeController
                 ->withJson(['errors' => 'Id is not a numeric']);
         }
 
-        if (!Validator::intVal()->validate($data['new_type_id']) || !Validator::notEmpty()->validate($data['new_type_id'])) {
+        if (
+            !Validator::intVal()->validate($data['new_type_id']) ||
+            !Validator::notEmpty()->validate($data['new_type_id'])
+        ) {
             return $response
                 ->withStatus(500)
                 ->withJson(['errors' => 'wrong format for new_type_id']);
@@ -255,12 +310,17 @@ class DoctypeController
 
         return $response->withJson(
             [
-            'doctypeTree' => FirstLevelController::getTreeFunction()
+                'doctypeTree' => FirstLevelController::getTreeFunction()
             ]
         );
     }
 
-    protected function deleteAllDoctypeData(array $aArgs = [])
+    /**
+     * @param array $aArgs
+     * @return void
+     * @throws Exception
+     */
+    protected function deleteAllDoctypeData(array $aArgs = []): void
     {
         $doctypeInfo = DoctypeModel::getById(['id' => $aArgs['type_id']]);
         if (!empty($doctypeInfo)) {
@@ -276,7 +336,12 @@ class DoctypeController
         }
     }
 
-    protected static function control($aArgs, $mode)
+    /**
+     * @param $aArgs
+     * @param $mode
+     * @return array
+     */
+    protected static function control($aArgs, $mode): array
     {
         $errors = [];
 
@@ -326,7 +391,7 @@ class DoctypeController
         if (
             Validator::notEmpty()->validate($aArgs['duration_current_use'] ?? null) &&
             (!Validator::intVal()->validate($aArgs['duration_current_use'] ?? null) ||
-            ($aArgs['duration_current_use'] ?? 0) < 0)
+                ($aArgs['duration_current_use'] ?? 0) < 0)
         ) {
             $errors[] = 'Invalid duration_current_use value';
         }
