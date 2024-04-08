@@ -1375,11 +1375,8 @@ class ResController extends ResourceControlController
             return ['errors' => 'Docserver does not exist'];
         }
 
-        $pathToDocument = $docserver['path_template'] . str_replace(
-                '#',
-                DIRECTORY_SEPARATOR,
-                $document['path']
-            ) .
+        $pathToDocument = $docserver['path_template'] .
+            str_replace( '#', DIRECTORY_SEPARATOR, $document['path']) .
             $document['filename'];
         if (!file_exists($pathToDocument)) {
             return ['errors' => 'Document not found on docserver'];
