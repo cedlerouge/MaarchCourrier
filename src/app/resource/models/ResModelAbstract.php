@@ -56,13 +56,13 @@ abstract class ResModelAbstract
         ValidatorModel::intType($args, ['limit']);
 
         return DatabaseModel::select([
-            'select'    => $args['select'],
-            'table'     => ['res_letterbox'],
-            'where'     => empty($args['where']) ? [] : $args['where'],
-            'data'      => empty($args['data']) ? [] : $args['data'],
-            'order_by'  => empty($args['orderBy']) ? [] : $args['orderBy'],
-            'limit'     => empty($args['limit']) ? 0 : $args['limit'],
-            'groupBy'   => empty($args['groupBy']) ? [] : $args['groupBy'],
+            'select'   => $args['select'],
+            'table'    => ['res_letterbox'],
+            'where'    => empty($args['where']) ? [] : $args['where'],
+            'data'     => empty($args['data']) ? [] : $args['data'],
+            'order_by' => empty($args['orderBy']) ? [] : $args['orderBy'],
+            'limit'    => empty($args['limit']) ? 0 : $args['limit'],
+            'groupBy'  => empty($args['groupBy']) ? [] : $args['groupBy'],
         ]);
     }
 
@@ -98,7 +98,15 @@ abstract class ResModelAbstract
     public static function create(array $args): bool
     {
         ValidatorModel::notEmpty($args, ['res_id', 'model_id', 'category_id', 'typist', 'creation_date']);
-        ValidatorModel::stringType($args, ['category_id', 'creation_date', 'format', 'docserver_id', 'path', 'filename', 'fingerprint']);
+        ValidatorModel::stringType($args, [
+            'category_id',
+            'creation_date',
+            'format',
+            'docserver_id',
+            'path',
+            'filename',
+            'fingerprint'
+        ]);
         ValidatorModel::intVal($args, ['res_id', 'model_id', 'typist', 'filesize']);
 
         DatabaseModel::insert([
@@ -161,18 +169,35 @@ abstract class ResModelAbstract
         ValidatorModel::arrayType($aArgs, ['select']);
 
         return DatabaseModel::select([
-            'select'    => $aArgs['select'],
-            'table'     => ['history, res_letterbox, status'],
-            'where'     => [
-                'history.user_id = ?', 'history.table_name IN (?)',
-                'history.record_id IS NOT NULL', 'history.record_id != ?',
-                'history.event_id != ?', 'history.event_id NOT LIKE ?',
+            'select'   => $aArgs['select'],
+            'table'    => ['history, res_letterbox, status'],
+            'where'    => [
+                'history.user_id = ?',
+                'history.table_name IN (?)',
+                'history.record_id IS NOT NULL',
+                'history.record_id != ?',
+                'history.event_id != ?',
+                'history.event_id NOT LIKE ?',
                 'CAST(history.record_id AS INT) = res_letterbox.res_id',
                 'res_letterbox.status != ?',
                 'res_letterbox.status = status.id'
             ],
-            'data'     => [$aArgs['userId'], ['res_letterbox', 'res_view_letterbox'], 'none', 'linkup', 'attach%', 'DEL'],
-            'groupBy'  => ['res_letterbox.type_id', 'res_letterbox.creation_date', 'res_letterbox.res_id', 'res_letterbox.subject', 'res_letterbox.status', 'res_letterbox.category_id'],
+            'data'     => [
+                $aArgs['userId'],
+                ['res_letterbox', 'res_view_letterbox'],
+                'none',
+                'linkup',
+                'attach%',
+                'DEL'
+            ],
+            'groupBy'  => [
+                'res_letterbox.type_id',
+                'res_letterbox.creation_date',
+                'res_letterbox.res_id',
+                'res_letterbox.subject',
+                'res_letterbox.status',
+                'res_letterbox.category_id'
+            ],
             'order_by' => ['MAX(history.event_date) DESC'],
             'limit'    => $aArgs['limit']
         ]);
@@ -180,10 +205,10 @@ abstract class ResModelAbstract
 
     /**
      * @param array $args
-     * @return array|mixed
+     * @return array
      * @throws Exception
      */
-    public static function getByAltIdentifier(array $args)
+    public static function getByAltIdentifier(array $args): array
     {
         ValidatorModel::notEmpty($args, ['altIdentifier']);
         ValidatorModel::stringType($args, ['altIdentifier']);
@@ -233,10 +258,10 @@ abstract class ResModelAbstract
 
     /**
      * @param array $args
-     * @return mixed|string
+     * @return string
      * @throws Exception
      */
-    public static function getCategoryLabel(array $args)
+    public static function getCategoryLabel(array $args): string
     {
         ValidatorModel::stringType($args, ['categoryId']);
 

@@ -84,7 +84,10 @@ class RetrieveResource
 
         $docserverAndFilePath = $this->retrieveResourceDocserverAndFilePath->getDocserverAndFilePath($document);
 
-        $fingerPrint = $this->resourceFile->getFingerPrint($docserverAndFilePath->getDocserver()->getDocserverTypeId(), $docserverAndFilePath->getFilePath());
+        $fingerPrint = $this->resourceFile->getFingerPrint(
+            $docserverAndFilePath->getDocserver()->getDocserverTypeId(),
+            $docserverAndFilePath->getFilePath()
+        );
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {
             $this->resourceData->updateFingerprint($resId, $fingerPrint);
             $document->setFingerprint($fingerPrint);

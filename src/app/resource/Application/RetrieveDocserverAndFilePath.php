@@ -34,7 +34,11 @@ class RetrieveDocserverAndFilePath
             throw new ResourceDocserverDoesNotExistException();
         }
 
-        $filePath = $this->resourceFile->buildFilePath($docserver->getPathTemplate(), $document->getPath(), $document->getFilename());
+        $filePath = $this->resourceFile->buildFilePath(
+            $docserver->getPathTemplate(),
+            $document->getPath(),
+            $document->getFilename()
+        );
 
         if (!$this->resourceFile->fileExists($filePath)) {
             throw new ResourceNotFoundInDocserverException();

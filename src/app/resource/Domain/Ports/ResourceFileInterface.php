@@ -39,7 +39,8 @@ interface ResourceFileInterface
      * @param   string  $filePath       The path to the file.
      * @param   bool    $isEncrypted    Flag if the file is encrypted. The default value is false
      *
-     * @return string|null Returns the content of the file as a string if successful, or a string with value null on failure.
+     * @return string|null Returns the content of the file as a string if successful,
+     * or a string with value null on failure.
      */
     public function getFileContent(string $filePath, bool $isEncrypted = false): ?string;
 
@@ -49,7 +50,8 @@ interface ResourceFileInterface
      * @param   int         $resId          Resource id.
      * @param   string|null $fileContent    Resource file content.
      *
-     * @return  string|null   Returns the content of the file as a string if successful, or a string with value 'null' on failure.
+     * @return  string|null   Returns the content of the file as a string if successful,
+     * or a string with value 'null' on failure.
      */
     public function getWatermark(int $resId, ?string $fileContent): ?string;
 

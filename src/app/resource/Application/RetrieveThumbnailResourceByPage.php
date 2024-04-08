@@ -44,7 +44,7 @@ class RetrieveThumbnailResourceByPage
     ) {
         $this->resourceData = $resourceDataInterface;
         $this->resourceFile = $resourceFileInterface;
-        $this->resourceLog  = $resourceLog;
+        $this->resourceLog = $resourceLog;
     }
 
     /**
@@ -84,7 +84,7 @@ class RetrieveThumbnailResourceByPage
         }
 
         $check = $this->resourceFile->convertOnePageToThumbnail($resId, 'resource', $page);
-        if (strpos($check, 'errors:') !== false) {
+        if (str_contains($check, 'errors:')) {
             throw new ConvertThumbnailException($check);
         }
 
@@ -136,7 +136,10 @@ class RetrieveThumbnailResourceByPage
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
         if (empty($type) || (!in_array($type, $this->resourceData::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
-            throw new ParameterCanNotBeEmptyException('type', implode(', ', $this->resourceData::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'");
+            throw new ParameterCanNotBeEmptyException(
+                'type',
+                implode(', ', $this->resourceData::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'"
+            );
         }
 
         $document = $this->resourceData->getResourceVersion($resId, $type, $version);
@@ -176,7 +179,11 @@ class RetrieveThumbnailResourceByPage
             throw new ResourceDocserverDoesNotExistException();
         }
 
-        $pathToThumbnail = $this->resourceFile->buildFilePath($adrDocserver->getPathTemplate(), $resourceConverted->getPath(), $resourceConverted->getFilename());
+        $pathToThumbnail = $this->resourceFile->buildFilePath(
+            $adrDocserver->getPathTemplate(),
+            $resourceConverted->getPath(),
+            $resourceConverted->getFilename()
+        );
 
         return [$adrDocserver, $pathToThumbnail];
     }
