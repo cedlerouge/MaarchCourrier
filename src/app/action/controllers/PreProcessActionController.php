@@ -69,6 +69,7 @@ class PreProcessActionController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public static function getRedirectInformations(Request $request, Response $response, array $args): Response
     {
@@ -2193,11 +2194,11 @@ class PreProcessActionController
             }
 
             $opinionNote = NoteModel::get([
-                'select'   => ['user_id', 'note_text'],
-                'where'    => ['identifier = ?', "note_text like ?"],
-                'data'     => [$resId, '[' . _TO_AVIS . ']%'],
+                'select'  => ['user_id', 'note_text'],
+                'where'   => ['identifier = ?', "note_text like ?"],
+                'data'    => [$resId, '[' . _TO_AVIS . ']%'],
                 'orderBy' => ['creation_date desc'],
-                'limit'    => 1
+                'limit'   => 1
             ]);
 
             if (empty($opinionNote)) {
@@ -2699,7 +2700,7 @@ class PreProcessActionController
         foreach ($body['resources'] as $resId) {
             $resource = ResModel::getById([
                 'select' => ['filename', 'alt_identifier', 'external_id'],
-                'resId' => $resId
+                'resId'  => $resId
             ]);
             if (empty($resource['filename'])) {
                 $resourcesInformations['error'][] = [
@@ -2811,7 +2812,7 @@ class PreProcessActionController
         foreach ($body['resources'] as $resId) {
             $resource = ResModel::getById([
                 'select' => ['filename', 'alt_identifier', 'external_id'],
-                'resId' => $resId
+                'resId'  => $resId
             ]);
             if (empty($resource['filename'])) {
                 $resourcesInformations['error'][] = [

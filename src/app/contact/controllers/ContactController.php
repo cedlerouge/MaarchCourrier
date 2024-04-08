@@ -68,6 +68,7 @@ class ContactController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function get(Request $request, Response $response): Response
     {
@@ -839,6 +840,7 @@ class ContactController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function getLightFormattedContact(Request $request, Response $response, array $args): Response
     {
@@ -1831,6 +1833,7 @@ class ContactController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function getSectorFromAddress(Request $request, Response $response): Response
     {
@@ -2091,6 +2094,7 @@ class ContactController
     /**
      * @param array $args
      * @return array
+     * @throws Exception
      */
     public static function getContactCustomField(
         array $args

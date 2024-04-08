@@ -170,7 +170,12 @@ class PriorityController
         return $response->withJson(['priorities' => PriorityModel::get()]);
     }
 
-    public function getSorted(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     */
+    public function getSorted(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);
@@ -184,7 +189,13 @@ class PriorityController
         return $response->withJson(['priorities' => $priorities]);
     }
 
-    public function updateSort(Request $request, Response $response)
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @return Response
+     * @throws Exception
+     */
+    public function updateSort(Request $request, Response $response): Response
     {
         if (!PrivilegeController::hasPrivilege(['privilegeId' => 'admin_priorities', 'userId' => $GLOBALS['id']])) {
             return $response->withStatus(403)->withJson(['errors' => 'Service forbidden']);

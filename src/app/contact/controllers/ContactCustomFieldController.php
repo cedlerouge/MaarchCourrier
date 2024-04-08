@@ -65,17 +65,17 @@ class ContactCustomFieldController
 
         $fields = ContactCustomFieldListModel::get([
             'select' => [1],
-            'where' => ['label = ?'],
-            'data' => [$body['label']]
+            'where'  => ['label = ?'],
+            'data'   => [$body['label']]
         ]);
         if (!empty($fields)) {
             return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
         }
 
         $id = ContactCustomFieldListModel::create([
-            'label'         => $body['label'],
-            'type'          => $body['type'],
-            'values'        => empty($body['values']) ? '[]' : json_encode($body['values'])
+            'label'  => $body['label'],
+            'type'   => $body['type'],
+            'values' => empty($body['values']) ? '[]' : json_encode($body['values'])
         ]);
 
         ContactParameterModel::create(['identifier' => 'contactCustomField_' . $id]);
@@ -128,8 +128,8 @@ class ContactCustomFieldController
 
         $fields = ContactCustomFieldListModel::get([
             'select' => [1],
-            'where' => ['label = ?', 'id != ?'],
-            'data' => [$body['label'], $args['id']]
+            'where'  => ['label = ?', 'id != ?'],
+            'data'   => [$body['label'], $args['id']]
         ]);
         if (!empty($fields)) {
             return $response->withStatus(400)->withJson(['errors' => 'Custom field with this label already exists']);
@@ -141,30 +141,30 @@ class ContactCustomFieldController
                 if (!empty($body['values'][$key]) && !in_array($value, $body['values'])) {
                     if ($field['type'] == 'checkbox') {
                         ContactModel::update([
-                            'postSet'   => [
+                            'postSet' => [
                                 'custom_fields' => "jsonb_insert(custom_fields, '{{$args['id']}, 0}', '\"" .
                                     str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"
                             ],
-                            'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
+                            'where'   => ["custom_fields->'{$args['id']}' @> ?"],
+                            'data'    => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                         ContactModel::update([
-                            'postSet'   => [
+                            'postSet' => [
                                 'custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}'," .
                                     " (custom_fields->'{$args['id']}') - '" .
                                     str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $value) . "')"
                             ],
-                            'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
+                            'where'   => ["custom_fields->'{$args['id']}' @> ?"],
+                            'data'    => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                     } else {
                         ContactModel::update([
-                            'postSet'   => [
+                            'postSet' => [
                                 'custom_fields' => "jsonb_set(custom_fields, '{{$args['id']}}', '\"" .
                                     str_replace(["\\", "'", '"'], ["\\\\", "''", '\"'], $body['values'][$key]) . "\"')"
                             ],
-                            'where'     => ["custom_fields->'{$args['id']}' @> ?"],
-                            'data'      => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
+                            'where'   => ["custom_fields->'{$args['id']}' @> ?"],
+                            'data'    => ["\"" . str_replace(["\\", '"'], ["\\\\", '\"'], $value) . "\""]
                         ]);
                     }
                 }
@@ -213,8 +213,8 @@ class ContactCustomFieldController
 
         ContactModel::update([
             'postSet' => ['custom_fields' => "custom_fields - '{$args['id']}'"],
-            'where' => ['custom_fields != ?'],
-            'data' => [null]
+            'where'   => ['custom_fields != ?'],
+            'data'    => [null]
         ]);
         ContactParameterModel::delete(['where' => ['identifier = ?'], 'data' => ['contactCustomField_' . $args['id']]]);
 

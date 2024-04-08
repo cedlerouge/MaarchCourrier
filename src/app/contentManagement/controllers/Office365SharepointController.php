@@ -346,6 +346,7 @@ class Office365SharepointController
      * @param Response $response
      * @param array $args
      * @return Response
+     * @throws Exception
      */
     public function delete(Request $request, Response $response, array $args): Response
     {
