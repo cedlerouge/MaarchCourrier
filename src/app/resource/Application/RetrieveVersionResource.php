@@ -71,10 +71,10 @@ class RetrieveVersionResource
         if ($version <= 0) {
             throw new ParameterMustBeGreaterThanZeroException('version');
         }
-        if (empty($type) || (!in_array($type, $this->resourceData::ADR_RESOURCE_TYPES))) {
+        if (empty($type) || (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES))) {
             throw new ParameterCanNotBeEmptyException(
                 'type',
-                implode(', ', $this->resourceData::ADR_RESOURCE_TYPES)
+                implode(', ', $this->resourceRepository::ADR_RESOURCE_TYPES)
             );
         }
 

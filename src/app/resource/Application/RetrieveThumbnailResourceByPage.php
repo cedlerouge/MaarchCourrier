@@ -137,8 +137,10 @@ class RetrieveThumbnailResourceByPage
     private function getResourceVersionThumbnailByPage(int $resId, string $type, int $version): ?ResourceConverted
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) ||
-            (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
+        if (
+            empty($type) ||
+            (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)
+        ) {
             throw new ParameterCanNotBeEmptyException(
                 'type',
                 implode(
