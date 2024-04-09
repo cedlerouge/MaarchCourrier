@@ -3,7 +3,7 @@ import { ActionsService } from '@appRoot/actions/actions.service';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NotificationService } from '@service/notification/notification.service';
-import { catchError, filter, map, of, tap } from 'rxjs';
+import { filter, tap } from 'rxjs';
 import { Subscription } from 'rxjs';
 import { MatDrawer } from '@angular/material/sidenav';
 import { StampInterface } from '@models/signature-book.model';
@@ -116,45 +116,13 @@ export class SignatureBookComponent implements OnDestroy {
         this.subscription?.unsubscribe();
     }
 
-    initDocuments(): Promise<boolean> {
-        return new Promise((resolve) => {
-            this.http.get(`../rest/signatureBook/users/${this.userId}/groups/${this.groupId}/baskets/${this.basketId}/resources/${this.resId}`).pipe(
-                map((data: any) => {
-                    const attachments = data.attachments.map((attachment: any) => new Attachment({
-                        resId: attachment.res_id,
-                        resIdMaster: attachment?.isResource ? null : attachment.res_id,
-                        canConvert: attachment.isConverted,
-                        canDelete: attachment.canDelete,
-                        canUpdate: attachment.canModify,
-                        chrono: attachment.alt_identifier ?? attachment.identifier ?? null,
-                        creationDate: attachment.creation_date ?? null,
-                        title: attachment.title,
-                        typeLabel: attachment.attachment_type,
-                        sign: attachment.sign ?? false
-                    }));
-                    return attachments;
-                }),
-                tap((attachments: Attachment[]) => {
-                    // Filter attachments based on the "sign" property, which is set to True and mapped to the "docsToSign" array
-                    this.docsToSign = attachments.filter((attachment) => attachment.sign);
-
-                    // Filter attachments based on the "sign" property, which is set to False and mapped to the "attachments" array
-                    this.attachments = attachments.filter((attachment) => !attachment.sign);
-
-                    this.loadingAttachments = false;
-                    this.loadingDocsToSign = false;
-                    this.loading = false;
-
-                    resolve(true);
-                }),
-
-                catchError((err: any) => {
-                    this.notify.handleErrors(err);
-                    this.loading = false;
-                    resolve(false);
-                    return of(false);
-                })
-            ).subscribe();
+    async initDocuments(): Promise<void>{
+        await this.signatureBookService.initDocuments(this.userId, this.groupId, this.basketId, this.resId).then((data: any) => {
+            this.docsToSign = data.resourcesToSign;
+            this.attachments = data.resourcesAttached;
+            this.loadingAttachments = false;
+            this.loadingDocsToSign = false;
+            this.loading = false;
         });
     }
 

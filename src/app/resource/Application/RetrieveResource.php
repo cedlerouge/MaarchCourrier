@@ -14,36 +14,36 @@
 
 namespace Resource\Application;
 
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
+use Resource\Domain\Exceptions\ConvertedResultException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
 use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
 use Resource\Domain\Exceptions\ResourceHasNoFileException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
-use Resource\Domain\Exceptions\ConvertedResultException;
-use Resource\Domain\Ports\ResourceDataInterface;
-use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceConverted;
+use Resource\Domain\ResourceFileInfo;
 
 class RetrieveResource
 {
-    private ResourceDataInterface $resourceData;
+    private ResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     /**
-     * @param ResourceDataInterface $resourceDataInterface
+     * @param ResourceRepositoryInterface $resourceRepositoryInterface
      * @param ResourceFileInterface $resourceFileInterface
      * @param RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
      */
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
+        ResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {
-        $this->resourceData = $resourceDataInterface;
+        $this->resourceRepository = $resourceRepositoryInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
     }
@@ -68,7 +68,7 @@ class RetrieveResource
             throw new ParameterMustBeGreaterThanZeroException('resId');
         }
 
-        $document = $this->resourceData->getMainResourceData($resId);
+        $document = $this->resourceRepository->getMainResourceData($resId);
 
         if ($document == null) {
             throw new ResourceDoesNotExistException();
@@ -89,7 +89,7 @@ class RetrieveResource
             $docserverAndFilePath->getFilePath()
         );
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {
-            $this->resourceData->updateFingerprint($resId, $fingerPrint);
+            $this->resourceRepository->updateFingerprint($resId, $fingerPrint);
             $document->setFingerprint($fingerPrint);
         }
 
@@ -111,7 +111,7 @@ class RetrieveResource
             throw new ResourceFailedToGetDocumentFromDocserverException();
         }
 
-        $filename = $this->resourceData->formatFilename($subject);
+        $filename = $this->resourceRepository->formatFilename($subject);
 
         return new ResourceFileInfo(
             $creatorId,
@@ -130,7 +130,7 @@ class RetrieveResource
      */
     private function getConvertedResourcePdfById(int $resId): ResourceConverted
     {
-        $document = $this->resourceData->getConvertedPdfById($resId, 'letterbox_coll');
+        $document = $this->resourceRepository->getConvertedPdfById($resId, 'letterbox_coll');
 
         if (!empty($document['errors'])) {
             throw new ConvertedResultException($document['errors']);

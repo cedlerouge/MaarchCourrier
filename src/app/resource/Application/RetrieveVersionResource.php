@@ -14,8 +14,9 @@
 
 namespace Resource\Application;
 
+use MaarchCourrier\Core\Domain\MainResource\Port\ResourceRepositoryInterface;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ParameterCanNotBeEmptyException;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;
@@ -23,23 +24,22 @@ use Resource\Domain\Exceptions\ResourceFingerPrintDoesNotMatchException;
 use Resource\Domain\Exceptions\ResourceHasNoFileException;
 use Resource\Domain\Exceptions\ResourceIncorrectVersionException;
 use Resource\Domain\Exceptions\ResourceNotFoundInDocserverException;
-use Resource\Domain\Ports\ResourceDataInterface;
-use Resource\Domain\ResourceFileInfo;
 use Resource\Domain\Ports\ResourceFileInterface;
 use Resource\Domain\ResourceConverted;
+use Resource\Domain\ResourceFileInfo;
 
 class RetrieveVersionResource
 {
-    private ResourceDataInterface $resourceData;
+    private ResourceRepositoryInterface $resourceRepository;
     private ResourceFileInterface $resourceFile;
     private RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath;
 
     public function __construct(
-        ResourceDataInterface $resourceDataInterface,
+        ResourceRepositoryInterface $resourceRepositoryInterface,
         ResourceFileInterface $resourceFileInterface,
         RetrieveDocserverAndFilePath $retrieveResourceDocserverAndFilePath
     ) {
-        $this->resourceData = $resourceDataInterface;
+        $this->resourceRepository = $resourceRepositoryInterface;
         $this->resourceFile = $resourceFileInterface;
         $this->retrieveResourceDocserverAndFilePath = $retrieveResourceDocserverAndFilePath;
     }
@@ -78,7 +78,7 @@ class RetrieveVersionResource
             );
         }
 
-        $document = $this->resourceData->getMainResourceData($resId);
+        $document = $this->resourceRepository->getMainResourceData($resId);
 
         if ($document == null) {
             throw new ResourceDoesNotExistException();
@@ -99,14 +99,14 @@ class RetrieveVersionResource
             $docserverAndFilePath->getFilePath()
         );
         if (!empty($fingerPrint) && empty($document->getFingerprint())) {
-            $this->resourceData->updateFingerprint($resId, $fingerPrint);
+            $this->resourceRepository->updateFingerprint($resId, $fingerPrint);
         }
 
         if ($document->getFingerprint() != $fingerPrint) {
             throw new ResourceFingerPrintDoesNotMatchException();
         }
 
-        $filename = $this->resourceData->formatFilename($subject);
+        $filename = $this->resourceRepository->formatFilename($subject);
 
         $fileContentWithNoWatermark = $this->resourceFile->getFileContent(
             $docserverAndFilePath->getFilePath(),
@@ -137,7 +137,7 @@ class RetrieveVersionResource
      */
     private function getResourceVersion(int $resId, string $type, int $version): ResourceConverted
     {
-        $document = $this->resourceData->getResourceVersion($resId, $type, $version);
+        $document = $this->resourceRepository->getResourceVersion($resId, $type, $version);
 
         if ($document == null) {
             throw new ResourceDoesNotExistException();

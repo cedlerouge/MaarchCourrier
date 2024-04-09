@@ -15,11 +15,18 @@
 namespace MaarchCourrier\User\Infrastructure;
 
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\User\Domain\User;
 use SrcCore\controllers\AuthenticationController;
 use SrcCore\controllers\CoreController;
 
 class CurrentUserInformations implements CurrentUserInterface
 {
+    public function getCurrentUser(): User
+    {
+        return User::createFromArray([
+            'id' => $GLOBALS['id']
+        ]);
+    }
     public function getCurrentUserId(): int
     {
         return $GLOBALS['id'];

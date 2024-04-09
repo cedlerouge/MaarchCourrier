@@ -16,6 +16,7 @@ namespace MaarchCourrier\SignatureBook\Application\Webhook;
 
 use DateTime;
 use MaarchCourrier\Core\Domain\User\Port\CurrentUserInterface;
+use MaarchCourrier\Core\Domain\User\Port\UserRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Port\ResourceToSignRepositoryInterface;
 use MaarchCourrier\SignatureBook\Domain\Problem\AttachmentOutOfPerimeterProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
@@ -24,7 +25,6 @@ use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\ResourceIdMasterNotCorrespondingProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\RetrieveDocumentUrlEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
-use MaarchCourrier\User\Domain\Port\UserRepositoryInterface;
 use MaarchCourrier\Core\Domain\User\Problem\UserDoesNotExistProblem;
 
 class WebhookValidation

@@ -14,6 +14,7 @@
 
 use MaarchCourrier\Core\Infrastructure\Error\ErrorHandler;
 use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveConfigController;
+use MaarchCourrier\SignatureBook\Infrastructure\Controller\RetrieveSignatureBookController;
 
 require '../vendor/autoload.php';
 
@@ -563,7 +564,7 @@ $app->get('/shippings/{shippingId}/history', \Shipping\controllers\ShippingContr
 //SignatureBook
 $app->get('/signatureBook/config', RetrieveConfigController::class . ':getConfig');
 $app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources', \SignatureBook\controllers\SignatureBookController::class . ':getResources');
-$app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources/{resId}', \SignatureBook\controllers\SignatureBookController::class . ':getSignatureBook');
+$app->get('/signatureBook/users/{userId}/groups/{groupId}/baskets/{basketId}/resources/{resId}', RetrieveSignatureBookController::class . ':getSignatureBook');
 $app->get('/signatureBook/{resId}/attachments', \SignatureBook\controllers\SignatureBookController::class . ':getAttachmentsById');
 $app->get('/signatureBook/{resId}/incomingMailAttachments', \SignatureBook\controllers\SignatureBookController::class . ':getIncomingMailAndAttachmentsById');
 $app->post('/signatureBook/webhook', \MaarchCourrier\SignatureBook\Infrastructure\Controller\WebhookController::class . ':fetchAndStoreSignedDocumentOnWebhookTrigger');

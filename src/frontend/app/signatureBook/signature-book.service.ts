@@ -1,10 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { Attachment } from "@models/attachment.model";
 import { ResourcesList } from "@models/resources-list.model";
 import { FiltersListService } from "@service/filtersList.service";
 import { HeaderService } from "@service/header.service";
 import { NotificationService } from "@service/notification/notification.service";
 import { catchError, map, of, tap } from "rxjs";
+import { mapAttachment } from "./signature-book.utils";
 
 @Injectable()
 export class SignatureBookService {
@@ -32,6 +34,30 @@ export class SignatureBookService {
                 })
             ).subscribe();
         })
+    }
+
+    initDocuments(userId: number, groupId: number, basketId:number, resId: number): Promise<{ resourcesToSign: Attachment[], resourcesAttached: Attachment[] } | null> {
+        return new Promise((resolve) => {
+            this.http.get(`../rest/signatureBook/users/${userId}/groups/${groupId}/baskets/${basketId}/resources/${resId}`).pipe(
+                map((data: any) => {
+                    // Mapping resources to sign
+                    const resourcesToSign: Attachment[] = data?.resourcesToSign?.map((resource: any) => mapAttachment(resource)) ?? [];
+
+                    // Mapping resources attached as annex
+                    const resourcesAttached: Attachment[] = data?.resourcesAttached?.map((attachment: any) => mapAttachment(attachment)) ?? [];
+
+                    return { resourcesToSign: resourcesToSign, resourcesAttached: resourcesAttached };
+                }),
+                tap((data: { resourcesToSign: Attachment[], resourcesAttached: Attachment[] }) => {
+                    resolve(data);
+                }),
+                catchError((err: any) => {
+                    this.notifications.handleErrors(err);
+                    resolve(null);
+                    return of(false);
+                })
+            ).subscribe();
+        });
     }
 
     getResourcesBasket(userId: number, groupId: number, basketId: number, limit: number,  page: number): Promise<ResourcesList[] | []> {

@@ -9,13 +9,12 @@
 
 namespace MaarchCourrier\Tests\app\resource\Application;
 
-use Exception;
+use MaarchCourrier\Core\Domain\Problem\ParameterMustBeGreaterThanZeroException;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceDataMock;
 use MaarchCourrier\Tests\app\resource\Mock\ResourceFileMock;
 use PHPUnit\Framework\TestCase;
 use Resource\Application\RetrieveDocserverAndFilePath;
 use Resource\Application\RetrieveOriginalResource;
-use Resource\Domain\Exceptions\ParameterMustBeGreaterThanZeroException;
 use Resource\Domain\Exceptions\ResourceDocserverDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceDoesNotExistException;
 use Resource\Domain\Exceptions\ResourceFailedToGetDocumentFromDocserverException;

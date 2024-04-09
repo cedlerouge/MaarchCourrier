@@ -17,7 +17,7 @@ namespace MaarchCourrier\Tests\Unit\SignatureBook\Application\Webhook;
 use MaarchCourrier\SignatureBook\Application\Webhook\RetrieveSignedResource;
 use MaarchCourrier\SignatureBook\Domain\Problem\NoEncodedContentRetrievedProblem;
 use MaarchCourrier\SignatureBook\Domain\SignedResource;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
 use PHPUnit\Framework\TestCase;
 

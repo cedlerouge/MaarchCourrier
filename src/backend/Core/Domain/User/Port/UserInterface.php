@@ -12,9 +12,7 @@
  * @author dev@maarch.org
  */
 
-namespace MaarchCourrier\User\Domain\Port;
-
-use MaarchCourrier\User\Domain\User;
+namespace MaarchCourrier\Core\Domain\User\Port;
 
 interface UserInterface
 {
@@ -25,9 +23,9 @@ interface UserInterface
      * ```
      *
      * @param array $array
-     * @return User
+     * @return UserInterface
      */
-    public static function createFromArray(array $array = []): User;
+    public static function createFromArray(array $array = []): UserInterface;
 
     public function getId(): int;
 

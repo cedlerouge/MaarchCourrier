@@ -19,7 +19,7 @@ use MaarchCourrier\SignatureBook\Domain\Problem\CurrentTokenIsNotFoundProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\DataToBeSentToTheParapheurAreEmptyProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureNotAppliedProblem;
 use MaarchCourrier\SignatureBook\Domain\Problem\SignatureBookNoConfigFoundProblem;
-use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\CurrentUserInformationsMock;
+use MaarchCourrier\Tests\Unit\SignatureBook\Mock\CurrentUserInformationsMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\MaarchParapheurSignatureServiceMock;
 use MaarchCourrier\Tests\Unit\SignatureBook\Mock\Action\SignatureServiceJsonConfigLoaderMock;
 use PHPUnit\Framework\TestCase;
