@@ -49,11 +49,9 @@ class RetrieveThumbnailResourceByPage
 
     /**
      * Retrieves thumbnail of resource by page number.
-     *
      * @param int $resId The ID of the resource.
      * @param int $page The ID of the resource.
-     *
-     * @return  ResourceFileInfo
+     * @return ResourceFileInfo
      * @throws ParameterMustBeGreaterThanZeroException
      * @throws ResourceDoesNotExistException
      * @throws ResourceOutOfPerimeterException
@@ -130,15 +128,23 @@ class RetrieveThumbnailResourceByPage
     }
 
     /**
+     * @param int $resId
+     * @param string $type
+     * @param int $version
+     * @return ResourceConverted|null
      * @throws ParameterCanNotBeEmptyException
      */
     private function getResourceVersionThumbnailByPage(int $resId, string $type, int $version): ?ResourceConverted
     {
         $checkThumbnailPageType = ctype_digit(str_replace('TNL', '', $type));
-        if (empty($type) || (!in_array($type, $this->resourceData::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
+        if (empty($type) ||
+            (!in_array($type, $this->resourceRepository::ADR_RESOURCE_TYPES) && !$checkThumbnailPageType)) {
             throw new ParameterCanNotBeEmptyException(
                 'type',
-                implode(', ', $this->resourceData::ADR_RESOURCE_TYPES) . " or thumbnail page 'TNL*'"
+                implode(
+                    ', ',
+                    $this->resourceRepository::ADR_RESOURCE_TYPES
+                ) . " or thumbnail page 'TNL*'"
             );
         }
 
@@ -162,9 +168,7 @@ class RetrieveThumbnailResourceByPage
 
     /**
      * @param ResourceConverted|null $resourceConverted
-     *
      * @return array
-     *
      * @throws ResourceDocserverDoesNotExistException
      * @throws ResourceDoesNotExistException
      */
