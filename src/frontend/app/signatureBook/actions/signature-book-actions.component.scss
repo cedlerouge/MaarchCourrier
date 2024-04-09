@@ -27,7 +27,9 @@
 }
 
 .book-footer-stamps {
-    margin-right: 12px;
+    position: fixed;
+    bottom: 1%;
+    right: 40.5%;
 }
 
 .sign-button {
@@ -69,6 +71,13 @@
     justify-content: center;
     width: auto;
 
+    outline: none; /* Added for keyboard focus indication */
+
+    &:focus {
+        /* Enhanced focus style for better visibility */
+        outline: 2px solid white;
+    }
+
     ::ng-deep .mat-button-wrapper {
         display: flex;
         align-items: center;
@@ -103,7 +112,7 @@
         background-color: var(--maarch-color-danger);
         position: fixed;
         right: 5.5%;
-        bottom: 12%;
+        bottom: 1%;
     }
 
     &-right {
@@ -113,26 +122,28 @@
         border-radius: 40px;
         position: fixed;
         right: 5.5%;
-        bottom: 20%;
+        bottom: 10%;
+        margin-bottom: 5px;
     }
 }
 
 .button-plus {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     font-size: 24px;
+    margin-left: 30px;
 }
 
 .button-plus,
 .action-button-button-label span {
-    display: none;
+   display: none;
 }
 
-.action-button-right:hover .button-plus,
-.action-button-right:hover .action-button-button-label span,
-.action-button-left:hover .button-plus,
-.action-button-left:hover .action-button-button-label span {
+.action-button:focus .button-plus,
+.action-button:focus .action-button-button-label span,
+.action-button:hover .button-plus,
+.action-button:hover .action-button-button-label span {
     display: flex;
     animation: fadeIn 0.5s ease forwards;
 }

@@ -4,7 +4,7 @@
             <mat-spinner class="spinner-white" diameter="50"></mat-spinner>
         </div>
         <ng-container *ngIf="!loading">
-            <button
+            <button tabindex="0" [attr.aria-label]="rightActions[0]?.label"
                 mat-stroked-button
                 class="action-button action-button-right"
                 (click)="processAction(rightActions[0])">
@@ -14,16 +14,15 @@
                             {{ rightActions[0]?.label | shorten: 45: '...' }}
                         </span>
                 </div>
-                <div class="button-plus" *ngIf="rightActions.length > 1">
-                    <button style="font-size: 24px;"
-                        mat-button
-                        class="action-button-button-plus"
-                        [matMenuTriggerFor]="menuRight"
-                        (click)="$event.stopPropagation()"
-                    >
-                        +
-                    </button>
-                </div>
+                <button *ngIf="rightActions.length > 1" aria-haspopup="menu" tabindex="1"
+                    mat-button
+                    class="button-plus"
+                    [matMenuTriggerFor]="menuRight"
+                    (click)="$event.stopPropagation()"
+                    (mousedown)="$event.preventDefault()"
+                >
+                    <mat-icon class="fa fa-ellipsis-vertical"></mat-icon>
+                </button>
             </button>
             <mat-menu #menuRight="matMenu">
                 <ng-container *ngFor="let action of rightActions; let i = index">
@@ -31,21 +30,23 @@
                 </ng-container>
             </mat-menu>
 
-            <button mat-stroked-button class="action-button action-button-left" (click)="processAction(leftActions[0])">
-                <div class="action-button-button-label" [title]="leftActions[0]?.label">
+            <button tabindex="0" [attr.aria-label]="leftActions[0]?.label"
+                mat-stroked-button class="action-button action-button-left"
+                (click)="processAction(leftActions[0])">
+                <div tabindex="0"  class="action-button-button-label" [title]="leftActions[0]?.label">
                     <mat-icon color="default" class="fa fa-thumbs-down"></mat-icon>
                     <span>
                         {{ leftActions[0]?.label | shorten: 45: '...' }}
                     </span>
                 </div>
                 <div class="button-plus" *ngIf="leftActions.length > 1">
-                    <button
+                    <button style="font-size: 24px;" aria-haspopup="menu"
                         mat-button
                         class="action-button-button-plus"
                         [matMenuTriggerFor]="menuLeft"
                         (click)="$event.stopPropagation()"
                     >
-                        +
+                    <mat-icon class="fa fa-ellipsis-vertical"></mat-icon>
                     </button>
                 </div>
             </button>
@@ -61,12 +62,6 @@
             <mat-spinner class="spinner-white" diameter="50"></mat-spinner>
         </div>
         <div *ngIf="stamp !== undefined" class="sign-button-container">
-            <button *ngIf="stamp !== undefined" mat-button
-                class="open-sign-list-button"
-                [title]="'lang.displayStampsList' | translate"
-                (click)="openSignaturesList()">
-                <mat-icon class="fa fa-angle-left"></mat-icon>
-            </button>
             <button
                 mat-button
                 class="sign-button"
@@ -76,6 +71,12 @@
                 [style.backgroundImage]="'url(' + (stamp?.contentUrl | secureUrl | async) + ')'"
                 (click)="signWithStamp(stamp)"
             ></button>
+            <button *ngIf="stamp !== undefined" mat-button
+                class="open-sign-list-button"
+                [title]="'lang.displayStampsList' | translate"
+                (click)="openSignaturesList()">
+                <mat-icon class="fa fa-angle-right"></mat-icon>
+            </button>
             <div *ngIf="!stamp?.contentUrl" class="no-stamp">
                 {{ 'lang.noStamp' | translate }}
             </div>
