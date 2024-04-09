@@ -12,6 +12,7 @@ import { FunctionsService } from './functions.service';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { AdministrationService } from '@appRoot/administration/administration.service';
+import { PluginConfigInterface } from './plugin-manager.service';
 
 @Injectable({
     providedIn: 'root',
@@ -29,7 +30,7 @@ export class AuthService {
     noInstall: boolean = false;
     externalSignatoryBook: any = null;
     idleTime: number; // Inactivity time
-    plugins: string[];
+    plugins: PluginConfigInterface[];
 
     public userActivitySubscription: Subscription;
     public inactivitySubscription: Subscription;
