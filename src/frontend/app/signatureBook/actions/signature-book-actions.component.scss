@@ -1,66 +1,33 @@
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        visibility: hidden;
+    }
+    to {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
 .book-footer {
     justify-content: center;
     display: flex;
-    gap: 50px;
+    gap: 22px;
     padding: 10px;
-    background-color: var(--maarch-color-primary);
+    background-color: transparent !important;
     align-items: center;
+    position: absolute;
+    flex-direction: column;
+    right: 0;
+    bottom: 0;
 }
 
-.book-footer-center {
-    gap: 20px;
-    flex: 1;
+.book-footer-actions {
     display: flex;
 }
 
-.book-footer-left,
-.book-footer-right {
-    flex: 1;
-}
-
-.action-button {
-    width: 200px;
-    font-size: 20px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    background-color: white;
-    overflow: hidden;
-
-    ::ng-deep .mat-button-wrapper {
-        display: flex;
-
-        .action-button-button-label {
-            white-space: break-spaces;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            line-height: 25px;
-            width: 100%;
-        }
-    }
-
-    &-left {
-        color: var(--maarch-color-danger);
-        border: solid 2px var(--maarch-color-danger);
-    }
-
-    &-right {
-        color: var(--maarch-color-success);
-        border: solid 2px var(--maarch-color-success);
-    }
-}
-
-.action-button-button-plus {
-    padding: 0;
-    justify-content: center;
-    display: flex;
-    min-width: 30px;
-}
-
-.sign-button-container {
-    height: 80px;
-    width: 150px;
-    display: flex;
-    align-items: center;
+.book-footer-stamps {
+    margin-right: 12px;
 }
 
 .sign-button {
@@ -72,16 +39,107 @@
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    border: solid 1px gray;
+    border-radius: 12px;
+}
+
+.sign-button-container {
+    height: 80px;
+    width: 144px;
+    display: flex;
+    align-items: center;
 }
 
 .open-sign-list-button {
-    color: white;
+    color: black;
+    font-size: 19px;
     height: 100%;
     min-width: auto;
 }
 
-.spinner-white ::ng-deep circle {
-    stroke: white !important;
+.action-button {
+    height: 60px;
+    font-size: 20px;
+    padding-top: 3px;
+    padding-bottom: 5px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+
+    ::ng-deep .mat-button-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .action-button-button-label {
+            white-space: break-spaces;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            line-height: 25px;
+            // width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+
+            span {
+                flex: 1 auto;
+                margin-left: 10px;
+                overflow: hidden;
+                -webkit-box-orient: vertical;
+                -webkit-line-clamp: 1;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    &-left {
+        color: white;
+        border: solid 2px var(--maarch-color-danger);
+        border-radius: 40px;
+        background-color: var(--maarch-color-danger);
+        position: fixed;
+        right: 5.5%;
+        bottom: 12%;
+    }
+
+    &-right {
+        color: white;
+        border: solid 2px var(--maarch-color-success);
+        background-color: var(--maarch-color-success);
+        border-radius: 40px;
+        position: fixed;
+        right: 5.5%;
+        bottom: 20%;
+    }
+}
+
+.button-plus {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 24px;
+}
+
+.button-plus,
+.action-button-button-label span {
+    display: none;
+}
+
+.action-button-right:hover .button-plus,
+.action-button-right:hover .action-button-button-label span,
+.action-button-left:hover .button-plus,
+.action-button-left:hover .action-button-button-label span {
+    display: flex;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.book-footer-actions:hover .action-button:not(:hover) .action-button-button-label span,
+.book-footer-actions:hover .action-button:not(:hover) .button-plus {
+    display: none;
 }
 
 .no-stamp {
@@ -89,7 +147,6 @@
     width: 100px;
     text-align: center;
     font-weight: bold;
-    color: white;
     opacity: 0.5;
     border: solid 2px;
     padding: 5px;

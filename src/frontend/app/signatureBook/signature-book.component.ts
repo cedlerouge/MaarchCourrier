@@ -189,3 +189,12 @@ export class SignatureBookComponent implements OnDestroy {
         }));
     }
 }
+
+
+
+/***
+ *  TO DO FOR THE NEXT SPRINT
+ * Mode navigation clavier pour les boutons d'actions
+ * Refacto drawer stamps
+ * Perdre le hover sur le bouton lorsque je clique sur le bouton '+'
+ */
