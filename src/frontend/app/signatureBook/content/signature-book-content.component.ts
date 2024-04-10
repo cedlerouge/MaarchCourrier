@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, Input, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { ActionsService } from '@appRoot/actions/actions.service';
 import { MessageActionInterface } from '@models/actions.model';
 import { Attachment } from '@models/attachment.model';
@@ -19,6 +19,8 @@ export class MaarchSbContentComponent implements OnDestroy {
     @ViewChild('myPlugin', { read: ViewContainerRef, static: true }) myPlugin: ViewContainerRef;
 
     @Input() position: 'left' | 'right' = 'right';
+
+    @Output() documentChangeEnd = new EventEmitter<any>();
 
     subscription: Subscription;
 
@@ -88,8 +90,19 @@ export class MaarchSbContentComponent implements OnDestroy {
             },
             email: this.headerService.user.mail,
             currentLang: this.translateService.instant('lang.language'),
+            documentChangeEnd: this.documentChangeEnd
         };
         this.pluginInstance = await this.pluginManagerService.initPlugin('maarch-plugins-pdftron', this.myPlugin, data);
+        this.documentChangeEnd.pipe(
+            tap((data: any) => {
+                const { resId, title } = this.documentData;
+
+                this.actionsService.emitActionWithData({
+                    id: 'documentToCreate',
+                    data: { resId, title, encodedDocument: data },
+                });
+            })
+        ).subscribe();
     }
 
     getLabel(): string {
