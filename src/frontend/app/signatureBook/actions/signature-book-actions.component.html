@@ -1,7 +1,7 @@
 <div class="book-footer">
     <div class="book-footer-actions">
         <div *ngIf="loading">
-            <mat-spinner class="spinner-white" diameter="50"></mat-spinner>
+            <mat-spinner class="spinner-white" diameter="50" aria-hidden="true"></mat-spinner>
         </div>
         <ng-container *ngIf="!loading">
             <button tabindex="0" [attr.aria-label]="rightActions[0]?.label"
@@ -9,22 +9,24 @@
                 class="action-button action-button-right"
                 (click)="processAction(rightActions[0])">
                 <div class="action-button-button-label" [title]="rightActions[0]?.label">
-                    <mat-icon color="default" class="fa fa-thumbs-up"></mat-icon>
-                        <span>
-                            {{ rightActions[0]?.label | shorten: 45: '...' }}
-                        </span>
+                    <mat-icon color="default" class="fa fa-thumbs-up" aria-hidden="true"></mat-icon>
+                    <span>
+                        {{ rightActions[0]?.label | shorten: 45: '...' }}
+                    </span>
                 </div>
-                <button *ngIf="rightActions.length > 1" aria-haspopup="menu" tabindex="1"
+                <button *ngIf="rightActions.length > 1" aria-haspopup="menu" tabindex="0"
                     mat-button
                     class="button-plus"
                     [matMenuTriggerFor]="menuRight"
+                    [title]="'lang.moreActions' | translate"
+                    [attr.aria-label]="'lang.moreActions' | translate"
                     (click)="$event.stopPropagation()"
                     (mousedown)="$event.preventDefault()"
                 >
-                    <mat-icon class="fa fa-ellipsis-vertical"></mat-icon>
+                    <mat-icon class="fa fa-ellipsis-vertical" aria-hidden="true"></mat-icon>
                 </button>
             </button>
-            <mat-menu #menuRight="matMenu">
+            <mat-menu #menuRight="matMenu" yPosition="above">
                 <ng-container *ngFor="let action of rightActions; let i = index">
                     <button *ngIf="i !== 0" mat-menu-item>{{ action.label }}</button>
                 </ng-container>
@@ -33,24 +35,26 @@
             <button tabindex="0" [attr.aria-label]="leftActions[0]?.label"
                 mat-stroked-button class="action-button action-button-left"
                 (click)="processAction(leftActions[0])">
-                <div tabindex="0"  class="action-button-button-label" [title]="leftActions[0]?.label">
-                    <mat-icon color="default" class="fa fa-thumbs-down"></mat-icon>
+                <div tabindex="0" class="action-button-button-label" [title]="leftActions[0]?.label">
+                    <mat-icon color="default" class="fa fa-thumbs-down" aria-hidden="true"></mat-icon>
                     <span>
                         {{ leftActions[0]?.label | shorten: 45: '...' }}
                     </span>
                 </div>
                 <div class="button-plus" *ngIf="leftActions.length > 1">
-                    <button style="font-size: 24px;" aria-haspopup="menu"
+                    <button aria-haspopup="menu" tabindex="0"
                         mat-button
                         class="action-button-button-plus"
                         [matMenuTriggerFor]="menuLeft"
+                        [title]="'lang.moreActions' | translate"
+                        [attr.aria-label]="'lang.moreActions' | translate"
                         (click)="$event.stopPropagation()"
                     >
-                    <mat-icon class="fa fa-ellipsis-vertical"></mat-icon>
+                        <mat-icon class="fa fa-ellipsis-vertical" aria-hidden="true"></mat-icon>
                     </button>
                 </div>
             </button>
-            <mat-menu #menuLeft="matMenu">
+            <mat-menu #menuLeft="matMenu" yPosition="above">
                 <ng-container *ngFor="let action of leftActions; let i = index">
                     <button *ngIf="i !== 0" mat-menu-item>{{ action.label }}</button>
                 </ng-container>
@@ -59,7 +63,7 @@
     </div>
     <div class="book-footer-stamps">
         <div *ngIf="stamp === undefined">
-            <mat-spinner class="spinner-white" diameter="50"></mat-spinner>
+            <mat-spinner class="spinner-white" diameter="50" aria-hidden="true"></mat-spinner>
         </div>
         <div *ngIf="stamp !== undefined" class="sign-button-container">
             <button
@@ -75,7 +79,7 @@
                 class="open-sign-list-button"
                 [title]="'lang.displayStampsList' | translate"
                 (click)="openSignaturesList()">
-                <mat-icon class="fa fa-angle-right"></mat-icon>
+                <mat-icon class="fa fa-angle-right" aria-hidden="true"></mat-icon>
             </button>
             <div *ngIf="!stamp?.contentUrl" class="no-stamp">
                 {{ 'lang.noStamp' | translate }}
