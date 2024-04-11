@@ -105,7 +105,7 @@
         }
     }
 
-    &-left {
+    &-reject {
         color: white;
         border: solid 2px var(--maarch-color-danger);
         border-radius: 40px;
@@ -115,7 +115,7 @@
         bottom: 1%;
     }
 
-    &-right {
+    &-valid {
         color: white;
         border: solid 2px var(--maarch-color-success);
         background-color: var(--maarch-color-success);
@@ -127,7 +127,7 @@
     }
 }
 
-.button-plus {
+.more-actions {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -141,21 +141,21 @@
     height: 53px;
 }
 
-.button-plus,
+.more-actions,
 .action-button-button-label span {
    display: none;
 }
 
-.action-button:focus .button-plus,
+.action-button:focus .more-actions,
 .action-button:focus .action-button-button-label span,
-.action-button:hover .button-plus,
+.action-button:hover .more-actions,
 .action-button:hover .action-button-button-label span {
     display: flex;
     animation: fadeIn 0.5s ease forwards;
 }
 
 .book-footer-actions:hover .action-button:not(:hover) .action-button-button-label span,
-.book-footer-actions:hover .action-button:not(:hover) .button-plus {
+.book-footer-actions:hover .action-button:not(:hover) .more-actions {
     display: none;
 }
 

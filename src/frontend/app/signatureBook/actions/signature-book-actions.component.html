@@ -6,7 +6,7 @@
         <ng-container *ngIf="!loading">
             <button tabindex="0" [attr.aria-label]="rightActions[0]?.label"
                 mat-stroked-button
-                class="action-button action-button-right"
+                class="action-button action-button-valid"
                 (click)="$event.stopPropagation(); processAction(rightActions[0])"
                 >
                 <div class="action-button-button-label" [title]="rightActions[0]?.label">
@@ -17,8 +17,8 @@
                 </div>
                 <button *ngIf="rightActions.length > 1" aria-haspopup="menu" tabindex="0"
                     mat-button
-                    class="button-plus"
-                    [matMenuTriggerFor]="menuRight"
+                    class="more-actions"
+                    [matMenuTriggerFor]="menuValidationActions"
                     [title]="'lang.moreActions' | translate"
                     [attr.aria-label]="'lang.moreActions' | translate"
                     (click)="$event.stopPropagation()"
@@ -27,14 +27,14 @@
                     <mat-icon class="fa fa-ellipsis-vertical" aria-hidden="true"></mat-icon>
                 </button>
             </button>
-            <mat-menu #menuRight="matMenu" yPosition="above">
+            <mat-menu #menuValidationActions="matMenu" yPosition="above">
                 <ng-container *ngFor="let action of rightActions; let i = index">
                     <button *ngIf="i !== 0" mat-menu-item>{{ action.label }}</button>
                 </ng-container>
             </mat-menu>
 
             <button tabindex="0" [attr.aria-label]="leftActions[0]?.label"
-                mat-stroked-button class="action-button action-button-left"
+                mat-stroked-button class="action-button action-button-reject"
                 (click)="processAction(leftActions[0])">
                 <div tabindex="0" class="action-button-button-label" [title]="leftActions[0]?.label">
                     <mat-icon color="default" class="fa fa-thumbs-down" aria-hidden="true"></mat-icon>
@@ -42,11 +42,11 @@
                         {{ leftActions[0]?.label | shorten: 45: '...' }}
                     </span>
                 </div>
-                <div class="button-plus" *ngIf="leftActions.length > 1">
+                <div class="more-actions" *ngIf="leftActions.length > 1">
                     <button aria-haspopup="menu" tabindex="0"
                         mat-button
-                        class="action-button-button-plus"
-                        [matMenuTriggerFor]="menuLeft"
+                        class="action-button-more-actions"
+                        [matMenuTriggerFor]="menuRefusalActions"
                         [title]="'lang.moreActions' | translate"
                         [attr.aria-label]="'lang.moreActions' | translate"
                         (click)="$event.stopPropagation()"
@@ -55,7 +55,7 @@
                     </button>
                 </div>
             </button>
-            <mat-menu #menuLeft="matMenu" yPosition="above">
+            <mat-menu #menuRefusalActions="matMenu" yPosition="above">
                 <ng-container *ngFor="let action of leftActions; let i = index">
                     <button *ngIf="i !== 0" mat-menu-item>{{ action.label }}</button>
                 </ng-container>
