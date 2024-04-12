@@ -19,6 +19,7 @@ use Alfresco\controllers\AlfrescoController;
 use DateTime;
 use Exception;
 use MaarchCourrier\SignatureBook\Infrastructure\Factory\ContinueCircuitActionFactory;
+use MaarchCourrier\SignatureBook\Infrastructure\Repository\ResourceToSignRepository;
 use Multigest\controllers\MultigestController;
 use Attachment\models\AttachmentModel;
 use Attachment\models\AttachmentTypeModel;
@@ -601,7 +602,7 @@ class ActionMethodController
         }
 
         $listInstance = ListInstanceModel::get([
-            'select'  => ['listinstance_id', 'item_id'],
+            'select'  => ['listinstance_id', 'item_id', 'requested_signature'],
             'where'   => ['res_id = ?', 'difflist_type = ?', 'process_date is null'],
             'data'    => [$args['resId'], 'VISA_CIRCUIT'],
             'orderBy' => ['listinstance_id'],
@@ -614,6 +615,14 @@ class ActionMethodController
         $set = ['process_date' => 'CURRENT_TIMESTAMP'];
         if ($listInstance[0]['item_id'] != $GLOBALS['id']) {
             $set['delegate'] = $GLOBALS['id'];
+        }
+
+        if ($listInstance[0]['requested_signature']) {
+            // Test si la pièce est signée
+            $resourceRepository = new ResourceToSignRepository();
+            if ($resourceRepository->isResourceSigned($args['resId'])) {
+                $set['signatory'] = "true";
+            }
         }
 
         ListInstanceModel::update([
@@ -737,7 +746,10 @@ class ActionMethodController
 
         if (!empty($attachmentToFreeze)) {
             ResModel::update([
-                'postSet' => ['external_id' => "jsonb_set(external_id, '{signatureBookId}', '{$attachmentToFreeze['letterbox_coll'][$args['resId']]}'::text::jsonb)"],
+                'postSet' => [
+                    'external_id' => "jsonb_set(external_id, '{signatureBookId}'," .
+                        " '{$attachmentToFreeze['letterbox_coll'][$args['resId']]}'::text::jsonb)"
+                ],
                 'where'   => ['res_id = ?'],
                 'data'    => [$args['resId']]
             ]);
@@ -863,7 +875,6 @@ class ActionMethodController
     {
         ValidatorModel::notEmpty($args, ['resId']);
         ValidatorModel::intVal($args, ['resId']);
-
 
         $listInstances = ListInstanceModel::get([
             'select'  => ['listinstance_id', 'item_id'],
@@ -1406,7 +1417,8 @@ class ActionMethodController
         if (empty($docserver['path_template'])) {
             return ['errors' => ['Docserver does not exist']];
         }
-        $pathToDocument = $docserver['path_template'] . str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) .
+        $pathToDocument = $docserver['path_template'] .
+            str_replace('#', DIRECTORY_SEPARATOR, $resource['path']) .
             $resource['filename'];
         if (!is_file($pathToDocument)) {
             return ['errors' => ['Document not found on docserver']];
