@@ -244,26 +244,24 @@ class AuthenticationController
                 $user = UserModel::getByLogin(['select' => ['id', 'mode'], 'login' => $_SERVER['PHP_AUTH_USER']]);
                 $userId = $user['id'];
             }
-        } else {
-            if (!empty($authorizationHeaders)) {
-                $token = null;
-                foreach ($authorizationHeaders as $authorizationHeader) {
-                    if (str_starts_with($authorizationHeader, 'Bearer')) {
-                        $token = str_replace('Bearer ', '', $authorizationHeader);
-                    }
+        } elseif (!empty($authorizationHeaders)) {
+            $token = null;
+            foreach ($authorizationHeaders as $authorizationHeader) {
+                if (str_starts_with($authorizationHeader, 'Bearer')) {
+                    $token = str_replace('Bearer ', '', $authorizationHeader);
                 }
-                if (!empty($token)) {
-                    try {
-                        $jwt = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
-                    } catch (Exception $e) {
-                        return null;
-                    }
-                    $jwt['user'] = (array)$jwt['user'];
-                    if (!empty($jwt) && !empty($jwt['user']['id'])) {
-                        $userId = $jwt['user']['id'];
-                    }
-                    $GLOBALS['token'] = $token;
+            }
+            if (!empty($token)) {
+                try {
+                    $jwt = (array)JWT::decode($token, CoreConfigModel::getEncryptKey(), ['HS256']);
+                } catch (Exception $e) {
+                    return null;
                 }
+                $jwt['user'] = (array)$jwt['user'];
+                if (!empty($jwt) && !empty($jwt['user']['id'])) {
+                    $userId = $jwt['user']['id'];
+                }
+                $GLOBALS['token'] = $token;
             }
         }
 
@@ -691,6 +689,9 @@ class AuthenticationController
      */
     private static function casConnection(): array
     {
+        $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $maarchUrl = $configFile['config']['maarchUrl'] ?? '';
+
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
 
         $version = (string)$casConfiguration->CAS_VERSION;
@@ -717,7 +718,7 @@ class AuthenticationController
             phpCAS::setVerbose(true);
         }
 
-        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
+        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $maarchUrl, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
             phpCAS::setCasServerCACert($certificate);
@@ -746,6 +747,9 @@ class AuthenticationController
      */
     private static function casDisconnection(): array
     {
+        $configFile = CoreConfigModel::getJsonLoaded(['path' => 'config/config.json']);
+        $maarchUrl = $configFile['config']['maarchUrl'] ?? '';
+
         $casConfiguration = CoreConfigModel::getXmlLoaded(['path' => 'config/cas_config.xml']);
 
         $version = (string)$casConfiguration->CAS_VERSION;
@@ -767,7 +771,8 @@ class AuthenticationController
         if ($logTypeInfo['level'] == 'DEBUG') {
             phpCAS::setVerbose(true);
         }
-        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $version != 'CAS_VERSION_3_0');
+
+        phpCAS::client(constant($version), $hostname, (int)$port, $uri, $maarchUrl, $version != 'CAS_VERSION_3_0');
 
         if (!empty($certificate)) {
             phpCAS::setCasServerCACert($certificate);
@@ -978,6 +983,7 @@ class AuthenticationController
      * @param Request $request
      * @param Response $response
      * @return Response
+     * @throws Exception
      */
     public function getRefreshedToken(Request $request, Response $response): Response
     {
